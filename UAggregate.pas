@@ -1,0 +1,979 @@
+unit UAggregate;
+
+interface
+
+uses UVectors, SysUtils, Classes, AnsDatatypes, UCommands;
+
+type
+  TAggrFuncType = (afCount, afSum, afMean, afMinMax, afPercentile,
+                   afSD, afSV, afIQR, afISR, afIDR, afDES, afMV, afUNKNOWN);
+
+  TAggrFunc = class(TObject)
+  private
+    fAggrVariable: string;
+    fResVariable: string;
+    fResultVector: TEpiVector;
+    fAggregateVector: TEpiVector;
+    fFuncType: TAggrFuncType;
+  public
+    constructor Create(ResultVar, AggregateVar: string);
+    procedure Execute(Idx: integer); virtual; abstract;
+    procedure SetOutput(Idx: integer); virtual; abstract;
+    procedure Reset(); virtual; abstract;
+    procedure CreateResultVector(Dataframe: TEpiDataframe); virtual; abstract;
+    property ResultVariable: string read fResVariable;
+    property AggregateVariable: string read fAggrVariable;
+    property AggregateVector: TEpiVector read fAggregateVector write fAggregateVector;
+    property FuncType: TAggrFuncType read fFuncType;
+  end;
+
+  TAggrSum = class(TAggrFunc)
+  private
+    Sum: EpiFloat;
+  public
+    constructor Create(ResultVar, AggregateVar: string);
+    procedure Execute(Idx: integer); override;
+    procedure SetOutput(Idx: integer); override;
+    procedure Reset(); override;
+    procedure CreateResultVector(Dataframe: TEpiDataframe);  override;
+  end;
+
+  TAggrCountType = (acMissing, acMissingValue, acNotMissing, acAll);
+
+  TAggrCount = class(TAggrFunc)
+  private
+    Count: EpiInt;
+    CountType: TAggrCountType;
+  public
+    constructor Create(ResultVar, AggregateVar: string; ACountType: TAggrCountType);
+    procedure Execute(Idx: integer); override;
+    procedure SetOutput(Idx: integer); override;
+    procedure Reset(); override;
+    procedure CreateResultVector(Dataframe: TEpiDataframe); override;
+  end;
+
+  TAggrMeanType = (amMean, amStdVar, amStdDev);
+
+  TAggrMean = class(TAggrFunc)
+  private
+    Sum, Stdvar: EpiFloat;
+    Count: EpiInt;
+    MeanType: TAggrMeanType;
+  public
+    constructor Create(ResultVar, AggregateVar: string; AMeanType: TAggrMeanType);
+    procedure Execute(Idx: integer); override;
+    procedure SetOutput(Idx: integer); override;
+    procedure Reset(); override;
+    procedure CreateResultVector(Dataframe: TEpiDataframe); override;
+  end;
+
+  TAggrMinMax = class(TAggrFunc)
+  private
+    Value: EpiFloat;
+    Minimum: Boolean;
+  public
+    constructor Create(ResultVar, AggregateVar: string; FindMin: boolean);
+    procedure Execute(Idx: integer); override;
+    procedure SetOutput(Idx: integer); override;
+    procedure Reset(); override;
+    procedure CreateResultVector(Dataframe: TEpiDataframe); override;
+  end;
+
+  TAggrPercentileType = (ap1, ap5, ap10, ap25, ap50, ap75, ap90, ap95, ap99);
+
+  TAggrPercentile = class(TAggrFunc)
+  private
+    Count, LastCount, MissingCount: EpiInt;
+    PercentileType: TAggrPercentileType;
+  public
+    constructor Create(ResultVar, AggregateVar: string; APercentileType: TAggrPercentileType);
+    procedure Execute(Idx: integer); override;
+    procedure SetOutput(Idx: integer); override;
+    procedure Reset(); override;
+    procedure CreateResultVector(Dataframe: TEpiDataframe); override;
+  end;
+
+  TAggrList = class
+  private
+    fList: TList;
+    namecounter: integer;
+    function VarnameIsAggrFunc(const Varname: string): boolean;
+    function VarnameToAggrFuncType(const Varname: string): TAggrFuncType;
+    function GetItem(const index: integer): TAggrFunc;
+    function ResizeVarname(prefix, name: string): string;
+  public
+    constructor Create(); overload;
+    constructor Create(Cmd: TCommand); overload;
+    procedure Add(Func: TAggrFunc);
+    function ExtractPercentiles(): TAggrList;
+    procedure Insert(const Index: integer; Func: TAggrFunc);
+    procedure SetOutputs(Idx: integer);
+    procedure ResetAll();
+    function Count(): integer;
+    function GetVarList(): TStrings;
+    property Items[const Index: integer]: TAggrFunc read GetItem;
+  end;
+
+  TAggregate = class(TObject)
+  private
+    //
+  protected
+    //
+  public
+    function DoAggregate(Dataframe: TEpiDataframe; ByVars: TStringList; Agl: TAggrList): TEpiDataframe;
+    procedure OutAggregate(Df: TEpiDataframe; Cmd: TCommand);
+    procedure OutStattables(ByVars: TStrings; AggrList: TAggrList; Df: TEpiDataframe; Cmd: TCommand);
+    function AggregateDataframe(Dataframe: TEpiDataframe; AggrByVars: TStringList; AggrList: TAggrList): TEpiDataframe;
+  end;
+
+const
+  Aggregate_Options: array[0..18] of string = (
+      {Only the Statistical options!}
+      'MEAN', 'SD', 'SV', 'MEDIAN', 'SUM', 'MIN', 'MAX', 'P5', 'P10', 'P25', 'P50', 'P75', 'P90', 'P95',
+      'IQR', 'IDR', 'ISR', 'DES', 'MV' );
+
+var
+  OAggregate: TAggregate;
+
+implementation
+
+uses Math, UFrames, UEpiDatatypes, UOutput, UCmdProcessor, UDebug;
+
+const
+  UnitName = 'UAggregate';
+
+function TAggregate.DoAggregate(Dataframe: TEpiDataframe; ByVars: TStringList; Agl: TAggrList): TEpiDataframe;
+var
+  v: TEpiVector;
+  i: integer;
+  dropnames: TStringList;
+  dummy: boolean;
+const
+  procname = 'DoAggregate';
+  procversion = '1.0.0.1';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  dropnames := nil;
+  dummy := false;
+  if ByVars = Nil then
+  begin
+    v := TEpiIntVector.Create('$AGGDummy', dataframe.RowCount);
+    for i := 1 to dataframe.RowCount do
+      v.AsInteger[i] := 0;
+    dataframe.Vectors.Add(v);
+    ByVars := TStringList.Create();
+    ByVars.Add('$AGGDummy');
+    Dummy := true;
+    dropnames := TStringList.Create;
+    dropnames.Add('$AGGDummy');
+  end;
+
+  agl.Insert(0, TAggrCount.Create('N', '', acAll));
+  try
+    result := AggregateDataframe(dataframe, ByVars, agl);
+    if dummy then result.DropVectors(dropnames);
+    v := result.FindVector('N');
+    if v <> nil then
+      v.VariableLabel := '(N) Total observations used in aggregate';
+    result.DataLabel := 'Aggregated: ' + dataframe.FileName + ' ' + dataframe.DataLabel;
+  finally
+    if Assigned(DropNames) then FreeAndNil(DropNames);
+    v := nil;
+  end;
+  ODebug.DecIndent;
+end;
+
+procedure TAggregate.OutAggregate(Df: TEpiDataframe; Cmd: TCommand);
+var
+  i, j: integer;
+  xtab: TStatTable;
+  val: IValue;
+  vns: TStringList;
+  fmt: string;
+const
+  procname = 'OutAggregate';
+  procversion = '1.0.0.1';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  if df <> nil then
+  begin
+    if {(cmd.ParamByName['NOTABLE'] = nil)}
+       (cmd.ParamByName['Q'] = nil) then
+    begin
+      xtab:=dm.OutputList.NewTable(df.VectorCount, df.RowCount+1);
+      xtab.TableType := sttNormal;
+
+      fmt := '%8.2f';
+      if Cmd.ParamByName['D0']<>nil then fmt := '%8.0f'
+      else if Cmd.ParamByName['D1']<>nil then fmt := '%8.1f'
+      else if Cmd.ParamByName['D2']<>nil then fmt := '%8.2f';
+
+      for i:= 0 to df.VectorCount-1 do
+        xtab.Cell[i+1,1] := Trim(df.Vectors[i].Name);
+
+      for i:= 0 to df.VectorCount-1 do
+        for j:= 1 to df.RowCount do
+          if df.Vectors[i].DataType in [EpiTyFloat] then
+            xtab.Cell[i+1,j+1] := Trim(Format(fmt, [df.Vectors[i].AsFloat[j]]))
+          else
+            xtab.Cell[i+1,j+1] := trim(df.Vectors[i].GetValueLabel(Trim(df.Vectors[i].AsString[j]), Cmd.ParameterList));
+
+      dm.CodeMaker.OutputTable(xtab, '');
+      dm.Sendoutput;
+      FreeAndNil(xtab);
+    end;
+
+    val := cmd.ParamByName['SAVE'];
+    if (val <> nil) then
+    begin
+      vns := TStringList.Create;
+      df.Vectors.GetVectorNames(vns);
+      dm.SaveDataFile(val.AsString, vns, df, Cmd);
+      FreeAndNil(vns);
+    end;
+  end;
+  ODebug.DecIndent;
+end;
+
+procedure TAggregate.OutStattables(ByVars: TStrings; AggrList: TAggrList; Df: TEpiDataFrame; Cmd: TCommand);
+var
+  i, j, cols: integer;
+  AggVars: TStrings;
+  CurrentList: TStrings;
+  OutTab: TStatTable;
+const
+  procname = 'OutStattables';
+  procversion = '1.0.0.1';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName, self.ClassName, ProcName, ProcVersion, 1);
+  AggVars := AggrList.GetVarList;
+  CurrentList := TStringList.Create();
+
+  for i := 0 to AggVars.Count -1 do
+  begin
+    CurrentList.Clear;
+    CurrentList.AddStrings(ByVars);
+    CurrentList.Add('N');
+    for j := 0 to df.VectorCount -1 do
+    begin
+      if Pos(AggVars[i], df.Vectors[j].Name) > 0 then
+        CurrentList.Add(df.Vectors[j].Name);
+    end;
+    OutTab := dm.CodeMaker.Output.NewTable(CurrentList.Count)
+  end;
+
+  ODebug.DecIndent;
+end;
+
+function TAggregate.AggregateDataframe(Dataframe: TEpiDataframe; AggrByVars: TStringList; AggrList: TAggrList): TEpiDataframe;
+var
+  sortlist: TEpiVectors;
+  vector: TEpiVector;
+  i, j, k, co, vco, levels, level: integer;
+  AggrFunc: TAggrFunc;
+  PercList: TAggrList;
+
+  Function LevelChanged:boolean;
+  var
+    iv:  integer;
+  begin
+     result:=true;
+     for iv:= 0 to vco-1 do
+        if sortlist[iv].compare(i,i-1)<>0 then exit;
+     result:=false;
+  end;
+
+  Procedure AssignByVarValues(FromVector, ToVector: TEpiVector; FromIdx, ToIdx: integer);
+  begin
+    case FromVector.DataType of
+      EpiTyInteger: ToVector.AsInteger[ToIdx] := FromVector.AsInteger[FromIdx];
+      EpiTyFloat:   ToVector.AsFloat[ToIdx]   := FromVector.AsFloat[FromIdx];
+      EpiTyDate:    ToVector.AsDate[ToIdx]    := FromVector.AsDate[FromIdx];
+      EpiTyString, EpiTyUppercase,
+      EpiTyByte:    ToVector.AsString[ToIdx]  := FromVector.AsString[FromIdx];
+      EpiTyBoolean: ToVector.AsByte[ToIdx]    := FromVector.AsByte[FromIdx];
+    end; //case
+
+  end;
+
+const
+  procname = 'AggregateDataframe';
+  procversion = '1.0.0.0';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+
+  try
+    result := nil;
+    if Dataframe = nil then exit;
+    if AggrByVars = nil then exit;
+    if AggrList = nil then exit;
+
+    sortlist := dataframe.GetVectorListByName(AggrByVars);
+    vco := sortlist.Count;
+
+    co := AggrByVars.Count;
+    AggrByVars.Duplicates := dupIgnore;
+
+    dataframe.Sort(AggrByVars.CommaText);
+    for j := 0 to AggrByVars.Count-co-1 do
+      AggrByVars.Delete(AggrByVars.Count-1);
+
+    // Find the number of stratifications (levels)!
+    co := dataframe.RowCount;
+    levels := 1;
+    i := 2;
+    while i <= co do
+    begin
+      if LevelChanged then
+        inc(levels);
+      inc(i);
+    end;
+
+    result := TEpiDataframe.CreateTemp(levels);
+    Dataframe.CheckProperties.Clone(result.CheckProperties);
+    for i:=0 to AggrByVars.Count-1 do
+    begin
+      Vector := Dataframe.VectorByName[AggrByVars[i]].Clone(result, true);
+      Vector.Length := levels;
+      Result.Vectors.Add(Vector, i);
+    end;
+    Result.Sort(sortlist);
+
+
+    for i:=0 to AggrList.Count -1 do
+    begin
+      AggrFunc := TAggrFunc(AggrList.Items[i]);
+      if AggrFunc.AggregateVariable <> '' then
+        AggrFunc.AggregateVector := Dataframe.VectorByName[aggrfunc.AggregateVariable];
+      AggrFunc.CreateResultVector(result);
+    end;
+
+    // Percentile calculations not correct yet... :(
+    PercList := AggrList.ExtractPercentiles();
+
+    // AGGREGATE!!! Yeeeha.
+    // Do "normal" aggregate operations (this means without any percentile calc.
+    level := 1;
+    for i := 1 to co do
+    begin
+      if (i>1) and (LevelChanged) then
+      begin
+        for j:=0 to AggrByVars.Count-1 do
+          AssignByVarValues(dataframe.VectorByName[AggrByVars[j]], result.VectorByName[AggrByVars[j]],
+                            i-1, level);
+        AggrList.SetOutputs(level);
+        AggrList.ResetAll();
+        inc(level);
+      end;
+      for j := 0 to AggrList.Count -1 do
+      begin
+        AggrFunc := TAggrFunc(AggrList.Items[j]);
+        AggrFunc.Execute(i);
+      end;
+    end;
+    for j:=0 to AggrByVars.Count-1 do
+      AssignByVarValues(dataframe.VectorByName[AggrByVars[j]], result.VectorByName[AggrByVars[j]],
+                        i-1, level);
+    AggrList.SetOutputs(level);
+    AggrList.ResetAll();
+
+
+    for k := 0 to PercList.Count -1 do
+    begin
+      AggrByVars.Add(TAggrFunc(PercList.Items[k]).AggregateVariable);
+      dataframe.Sort(AggrByVars.CommaText);
+      AggrByVars.Delete(AggrByVars.Count-1);
+      level := 1;
+      for i := 1 to co do
+      begin
+        if (i>1) and (LevelChanged) then
+        begin
+          for j:=0 to AggrByVars.Count-1 do
+            AssignByVarValues(dataframe.VectorByName[AggrByVars[j]], result.VectorByName[AggrByVars[j]],
+                              i-1, level);
+          TAggrFunc(PercList.Items[k]).SetOutput(level);
+          TAggrFunc(PercList.Items[k]).Reset();
+          inc(level);
+        end;
+        TAggrFunc(PercList.Items[k]).Execute(i);
+      end;
+      for j:=0 to AggrByVars.Count-1 do
+        AssignByVarValues(dataframe.VectorByName[AggrByVars[j]], result.VectorByName[AggrByVars[j]],
+                          i-1, level);
+      TAggrFunc(PercList.Items[k]).SetOutput(level);
+      TAggrFunc(PercList.Items[k]).Reset();
+    end;
+  finally
+    if Assigned(sortlist) then FreeAndNil(sortlist);
+  end;
+  ODebug.DecIndent;
+end;
+
+{****************************
+ * TAggrFunc implementation *
+ ****************************}
+
+constructor TAggrFunc.Create(ResultVar, AggregateVar: string);
+const
+  procname = 'Create';
+  procversion = '1.0.0.0';
+begin
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 3);
+  fAggrVariable := AggregateVar;
+  fResVariable := ResultVar;
+  Reset();
+end;
+
+{****************************
+ * TAggrList implementation *
+ ****************************}
+
+constructor TAggrList.Create();
+const
+  procname = 'Create';
+  procversion = '1.0.0.0';
+begin
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 3);
+  inherited create();
+  fList := TList.Create();
+  namecounter := 0;
+end;
+
+constructor TAggrList.Create(Cmd: TCommand);
+var
+  varname: string;
+  allvars, varnames: TStringList;
+  val: IValue;
+  i, j: integer;
+
+const
+  procname = 'Agglist Create(Cmd: TCommand)';
+  procversion = '1.0.0.0';
+begin
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 3);
+  inherited create();
+  namecounter := 0;
+  fList := TList.Create();
+  VarNames := TStringList.Create;
+  AllVars := TStringList.Create;
+  for i := 0 to Cmd.ParameterList.Count -1 do
+  begin
+    val := Cmd.Param[i];
+    varname := Val.VarName;
+    if not VarnameIsAggrFunc(Varname) then continue;
+    varnames.CommaText := val.AsString;
+    for j := 0 to varnames.Count -1 do
+    begin
+      if AllVars.IndexOf(Varnames[j]) = -1 then
+      begin
+        AllVars.Add(Varnames[j]);
+        fList.Add(TAggrCount.Create(ResizeVarname('N', varnames[j]), varnames[j], acNotMissing));
+      end;
+      Case VarnameToAggrFuncType(Varname) of
+         afSum:           fList.Add(TAggrSum.Create(ResizeVarname('SUM',Varnames[j]),Varnames[j]));
+         afMean:          fList.Add(TAggrMean.Create(ResizeVarname('MEA',Varnames[j]),Varnames[j], amMean));
+         afMinMax:        if Varname = 'MIN' then
+                            fList.Add(TAggrMinMax.Create(ResizeVarname('MIN', Varnames[j]), Varnames[j],true))
+                          else
+                            fList.Add(TAggrMinMax.Create(ResizeVarname('MAX', Varnames[j]), Varnames[j],false));
+         afPercentile:    begin
+                            case Varname[2] of
+                              '1':  if length(Varname) = 3 then
+                                      fList.Add(TAggrPercentile.Create(ResizeVarname('P10',Varnames[j]),Varnames[j], ap10))
+                                    else
+                                      fList.Add(TAggrPercentile.Create(ResizeVarname('P1',Varnames[j]),Varnames[j], ap1));
+                                      //fList.Add(TAggrPercentile.Create(ResizeVarname('P10',Varnames[j]),Varnames[j], ap10));
+                              '2':  fList.Add(TAggrPercentile.Create(ResizeVarname('P25',Varnames[j]),Varnames[j], ap25));
+                              'E':  fList.Add(TAggrPercentile.Create(ResizeVarname('MED',Varnames[j]),Varnames[j], ap50)); // mEdian... :)
+                              '5':  if length(Varname) = 3 then
+                                      fList.Add(TAggrPercentile.Create(ResizeVarname('MED',Varnames[j]),Varnames[j], ap50))
+                                    else
+                                      fList.Add(TAggrPercentile.Create(ResizeVarname('P5',Varnames[j]),Varnames[j], ap5));
+                              '7':  fList.Add(TAggrPercentile.Create(ResizeVarname('P75',Varnames[j]),Varnames[j], ap75));
+                              '9':  if Varname[3] = '0' then
+                                      fList.Add(TAggrPercentile.Create(ResizeVarname('P90',Varnames[j]),Varnames[j], ap90))
+                                    else if Varname[3] = '5' then
+                                      fList.Add(TAggrPercentile.Create(ResizeVarname('P95',Varnames[j]),Varnames[j], ap95))
+                                    else
+                                      fList.Add(TAggrPercentile.Create(ResizeVarname('P99',Varnames[j]),Varnames[j], ap99));
+                            end;
+                          end;
+         afSD:            fList.Add(TAggrMean.Create(ResizeVarname('SD',Varnames[j]),Varnames[j], amStdDev));
+         afSV:            fList.Add(TAggrMean.Create(ResizeVarname('SV',Varnames[j]),Varnames[j], amStdVar));
+         afIQR:           begin
+                            fList.Add(TAggrPercentile.Create(ResizeVarname('P25',Varnames[j]),Varnames[j], ap25));
+                            fList.Add(TAggrPercentile.Create(ResizeVarname('P75',Varnames[j]),Varnames[j], ap75));
+                          end;
+         afIDR:           begin
+                            fList.Add(TAggrPercentile.Create(ResizeVarname('P10',Varnames[j]),Varnames[j], ap10));
+                            fList.Add(TAggrPercentile.Create(ResizeVarname('P90',Varnames[j]),Varnames[j], ap90));
+                          end;
+         afISR:           begin
+                            fList.Add(TAggrPercentile.Create(ResizeVarname('P5',Varnames[j]),Varnames[j], ap5));
+                            fList.Add(TAggrPercentile.Create(ResizeVarname('P95',Varnames[j]),Varnames[j], ap95));
+                          end;
+         afDES:           begin
+                            fList.Add(TAggrMinMax.Create(ResizeVarname('MIN',Varnames[j]),Varnames[j], true));
+                            fList.Add(TAggrPercentile.Create(ResizeVarname('MED',Varnames[j]),Varnames[j], ap50));
+                            fList.Add(TAggrMinMax.Create(ResizeVarname('MAX',Varnames[j]),Varnames[j], false));
+                          end;
+         afMV:            begin
+                            fList.Add(TAggrCount.Create(ResizeVarname('MIS',Varnames[j]),Varnames[j], acMissing));
+                            fList.Add(TAggrCount.Create(ResizeVarname('MVD',Varnames[j]),Varnames[j], acMissingValue));
+                          end;
+         afUNKNOWN:       dm.Error('Unknown aggregate function: %s', [Varname], 100001);
+      end;  // Case...
+    end;  // For j...
+    varnames.Clear;
+  end;  // For i...
+end;
+
+function TAggrList.VarnameIsAggrFunc(const Varname: string): boolean;
+var
+  i: integer;
+const
+  procname = 'VarnameIsAggrFunc';
+  procversion = '1.0.0.0';
+begin
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
+  result := true;
+  for i := 0 to length(aggregate_options)-1 do
+    if AnsiCompareText(Varname, Aggregate_Options[i]) = 0 then
+      exit;
+  result := false;
+end;
+
+function TAggrList.VarnameToAggrFuncType(const Varname: string): TAggrFuncType;
+var
+  s: string;
+const
+  procname = 'VarnameToAggrFuncType';
+  procversion = '1.0.0.0';
+begin
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
+  s := AnsiUppercase(varname);
+  if s = 'MEAN' then result := afMean
+  else if s = 'SD' then result := afSD
+  else if s = 'SV' then result := afSV
+  else if s = 'MEDIAN' then result := afPercentile
+  else if s = 'SUM' then result := afSum
+  else if s[1] = 'P' then result := afPercentile
+  else if s = 'MIN' then result := afMinMax
+  else if s = 'MAX' then result := afMinMax
+  else if s = 'ISR' then result := afISR
+  else if s = 'IQR' then result := afIQR
+  else if s = 'IDR' then result := afIDR
+  else if s = 'DES' then result := afDES
+  else if s = 'MV' then result := afMV
+  else result := afUNKNOWN;
+end;
+
+function TAggrList.GetItem(const index: integer): TaggrFunc;
+const
+  procname = 'GetItem';
+  procversion = '1.0.0.0';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 3);
+  result := TAggrFunc(fList.Items[index]);
+  ODebug.DecIndent;
+end;
+
+function TAggrList.GetVarList(): TStrings;
+var
+  i: integer;
+const
+  procname = 'GetVarList';
+  procversion = '1.0.0.0';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
+  result := TStringList.Create;
+  for i:=0 to fList.Count-1 do
+  begin
+    if TAggrFunc(fList[i]).AggregateVariable = '' then continue;
+    if result.IndexOf(TAggrFunc(fList[i]).AggregateVariable) = -1 then
+      result.Add(TAggrFunc(fList[i]).AggregateVariable);
+  end;
+  ODebug.DecIndent;
+end;
+
+function TAggrList.ResizeVarname(prefix, name: string): string;
+const
+  procname = 'ResizeVarname';
+  procversion = '1.0.0.0';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
+  if length(prefix+name) < 10 then
+    begin result := prefix+name; exit; end;
+  if pos(prefix, name) = 1 then
+    begin result := name; exit; end;
+  if namecounter = 99 then
+    dm.Error('Aggregate: Too many variables used.', [], 100002);
+  inc(namecounter);
+  result := prefix + copy(name, 1, 5) + IntToStr(namecounter);
+  ODebug.DecIndent;
+end;
+
+
+procedure TAggrList.Add(Func: TAggrFunc);
+const
+  procname = 'Add';
+  procversion = '1.0.0.0';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
+  fList.Add(Func);
+  ODebug.DecIndent;
+end;
+
+function TAggrList.ExtractPercentiles(): TAggrList;
+var
+  i: integer;
+const
+  procname = 'ExtractPercentiles';
+  procversion = '1.0.0.0';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
+  result := TAggrList.Create;
+  for i := fList.Count-1 downto 0 do
+    if TAggrFunc(fList.Items[i]).FuncType = afPercentile then
+      result.Add(TAggrFunc(fList.Extract(fList.Items[i])));
+  ODebug.DecIndent;
+end;
+
+procedure TAggrList.Insert(const Index: integer; Func: TAggrFunc);
+const
+  procname = 'Insert';
+  procversion = '1.0.0.0';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
+  fList.Insert(index, func);
+  ODebug.DecIndent;
+end;
+
+procedure TAggrList.SetOutputs(Idx: integer);
+var
+  i: integer;
+const
+  procname = 'SetOutputs';
+  procversion = '1.0.0.0';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
+  for i := 0 to Count-1 do
+    TAggrFunc(Items[i]).SetOutput(Idx);
+  ODebug.DecIndent;
+end;
+
+procedure TAggrList.ResetAll();
+var
+  i: integer;
+const
+  procname = 'ResetAll';
+  procversion = '1.0.0.0';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
+  for i := 0 to Count-1 do
+    TAggrFunc(Items[i]).Reset();
+  ODebug.DecIndent;
+end;
+
+function TAggrList.Count(): integer;
+const
+  procname = 'Count';
+  procversion = '1.0.0.0';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
+  result := fList.Count;
+  ODebug.DecIndent;
+end;
+
+{****************************
+ * TAggrSum implementation *
+ ****************************}
+
+constructor TAggrSum.Create(ResultVar, AggregateVar: string);
+begin
+  inherited create(ResultVar, AggregateVar);
+  fFuncType := afSum;
+end;
+
+procedure TAggrSum.Execute(Idx: integer);
+begin
+  if fAggregateVector.IsMissing[idx] then exit;
+  Sum := Sum + fAggregateVector.AsFloat[idx];
+end;
+
+procedure TAggrSum.SetOutput(Idx: integer);
+begin
+  fResultVector.AsFloat[idx] := Sum;
+end;
+
+procedure TAggrSum.Reset();
+begin
+  Sum := 0.0;
+end;
+
+procedure TAggrSum.CreateResultVector(Dataframe: TEpiDataframe);
+var
+  pVarDesc: TAnaVariableDescriptor;
+begin
+  pVarDesc := TAnaVariableDescriptor.Create(fResVariable, fAggregateVector.DataType,
+                  fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals);
+  Dataframe.NewVector(pVarDesc);
+  fResultVector := Dataframe.VectorByName[fResVariable];
+  fResultVector.VariableLabel := '(SUM) '+ fAggregateVector.GetVariableLabel;
+end;
+
+{****************************
+ * TAggrCount implementation *
+ ****************************}
+
+constructor TAggrCount.Create(ResultVar, AggregateVar: string; ACountType: TAggrCountType);
+begin
+  inherited create(ResultVar, AggregateVar);
+  CountType := ACountType;
+  fFuncType := afCount;
+end;
+
+procedure TAggrCount.Execute(Idx: integer);
+begin
+  case CountType of
+    acMissing: if fAggregateVector.IsMissing[Idx] then Inc(Count);
+    acMissingValue: if fAggregateVector.IsMissingValue[Idx] then Inc(Count);
+    acNotMissing: if not (fAggregateVector.IsMissingValue[Idx] or
+                          fAggregateVector.IsMissing[Idx]) then Inc(Count);
+    acAll: Inc(Count);
+  end;
+end;
+
+procedure TAggrCount.SetOutput(Idx: integer);
+begin
+  fResultVector.AsFloat[idx] := Count;
+end;
+
+procedure TAggrCount.Reset();
+begin
+  Count := 0;
+end;
+
+procedure TAggrCount.CreateResultVector(Dataframe: TEpiDataframe);
+var
+  pVarDesc: TAnaVariableDescriptor;
+begin
+  pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyInteger, 6, 0);
+  Dataframe.NewVector(pVarDesc);
+  fResultVector := Dataframe.VectorByName[fResVariable];
+  if fAggregateVector <> nil then
+    fResultVector.VariableLabel := '(N) '+ fAggregateVector.GetVariableLabel;
+end;
+
+{****************************
+ * TAggrMean implementation *
+ ****************************}
+
+constructor TAggrMean.Create(ResultVar, AggregateVar: string; AMeanType: TAggrMeanType);
+begin
+  inherited create(ResultVar, AggregateVar);
+  fFuncType := afMean;
+  MeanType := AMeanType;
+end;
+
+procedure TAggrMean.Execute(Idx: integer);
+begin
+  if fAggregateVector.IsMissing[idx] then exit;
+  Sum := Sum + fAggregateVector.AsFloat[idx];
+  Stdvar := Stdvar + IntPower(fAggregateVector.AsFloat[idx], 2);
+  Inc(Count);
+end;
+
+procedure TAggrMean.SetOutput(Idx: integer);
+var
+  mean, stddev: EpiFloat;
+begin
+  if Count = 0 then
+    fResultVector.AsFloat[idx] := NA_FLOAT
+  else
+  begin
+    mean := Sum/Count;
+    if count = 1 then
+    begin
+      stdvar := NA_FLOAT;
+      stddev := NA_FLOAT;
+    end else begin
+      stdvar := (stdvar + (count * IntPower(Mean, 2) - 2 * Mean * Sum)) / (count-1);
+      stddev := sqrt(stdvar);
+    end;
+    case MeanType of
+      amMean: fResultVector.AsFloat[idx] := mean;
+      amStdVar: fResultVector.AsFloat[idx] := stdvar;
+      amStdDev: fResultVector.AsFloat[idx] := stddev;
+    end;
+  end;
+end;
+
+procedure TAggrMean.Reset();
+begin
+  Sum := 0.0;
+  Count := 0;
+  StdVar := 0;
+end;
+
+procedure TAggrMean.CreateResultVector(Dataframe: TEpiDataframe);
+var
+  pVarDesc: TAnaVariableDescriptor;
+begin
+  if (fAggregateVector is TEpiIntVector) then
+    pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat, 6, 4)
+  else
+    pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat,
+                    fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals);
+  Dataframe.NewVector(pVarDesc);
+  fResultVector := Dataframe.VectorByName[fResVariable];
+  case MeanType of
+    amMean: fResultVector.VariableLabel := '(Mean) '+ fAggregateVector.GetVariableLabel;
+    amStdVar: fResultVector.VariableLabel := '(Variance) '+ fAggregateVector.GetVariableLabel;
+    amStdDev: fResultVector.VariableLabel := '(Deviance) '+ fAggregateVector.GetVariableLabel;
+  end;
+end;
+
+{****************************
+ * TAggrMinMax implementation *
+ ****************************}
+
+constructor TAggrMinMax.Create(ResultVar, AggregateVar: string; FindMin: boolean);
+begin
+  inherited Create(ResultVar, AggregateVar);
+  Minimum := FindMin;
+  fFuncType := afMinMax;
+end;
+
+procedure TAggrMinMax.Execute(Idx: integer);
+begin
+  if fAggregateVector.IsMissing[idx] then exit;
+  if Value = NA_FLOAT then
+    Value := fAggregateVector.AsFloat[Idx]
+  else
+    if Minimum then
+      Value := Min(fAggregateVector.AsFloat[Idx], Value)
+    else
+      Value := Max(fAggregateVector.AsFloat[Idx], Value);
+end;
+
+procedure TAggrMinMax.SetOutput(Idx: integer);
+begin
+  fResultVector.AsFloat[idx] := Value;
+end;
+
+procedure TAggrMinMax.Reset();
+begin
+  Value := NA_FLOAT;
+end;
+
+procedure TAggrMinMax.CreateResultVector(Dataframe: TEpiDataframe);
+var
+  pVarDesc: TAnaVariableDescriptor;
+begin
+  pVarDesc := TAnaVariableDescriptor.Create(fResVariable, fAggregateVector.DataType,
+                  fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals);
+  Dataframe.NewVector(pVarDesc);
+  fResultVector := Dataframe.VectorByName[fResVariable];
+  if Minimum then
+    fResultVector.VariableLabel := '(MIN) '+ fAggregateVector.GetVariableLabel
+  else
+    fResultVector.VariableLabel := '(MAX) '+ fAggregateVector.GetVariableLabel;
+end;
+
+{**********************************
+ * TAggrPercentile implementation *
+ **********************************}
+
+constructor TAggrPercentile.Create(ResultVar, AggregateVar: string; APercentileType: TAggrPercentileType);
+begin
+  inherited create(ResultVar, AggregateVar);
+  PercentileType := APercentileType;
+  fFuncType := afPercentile;
+  LastCount := 0;
+  MissingCount := 1;
+end;
+
+procedure TAggrPercentile.Execute(Idx: integer);
+begin
+  Inc(Count);
+  if not (fAggregateVector.IsMissing[Idx] or fAggregateVector.IsMissingValue[Idx]) then
+    Inc(MissingCount);
+end;
+
+procedure TAggrPercentile.SetOutput(Idx: integer);
+var
+  d, ix, offset: integer;
+  w: EpiFloat;
+begin
+  offset := LastCount;
+  d := 0;
+  case PercentileType of
+    ap1 : d:=1;
+    ap5 : d := 5;
+    ap10: d := 10;
+    ap25: d := 25;
+    ap50: d := 50;
+    ap75: d := 75;
+    ap90: d := 90;
+    ap95: d := 95;
+    ap99: d := 99;
+  end;
+  w := min(max(MissingCount*(d/100), 1), MissingCount-1);
+  ix := max(trunc(MissingCount*(d/100)),1);
+  if ((ix+offset+1)>fAggregateVector.Length) then
+    ix := fAggregateVector.Length - offset -1;
+  if ((ix-offset+1) > (MissingCount -1)) then
+    ix := MissingCount -2;
+  if w = ix then
+    fResultVector.AsFloat[idx] := fAggregateVector.AsFloat[ix+offset]
+  else
+    fResultVector.AsFloat[idx] := fAggregateVector.AsFloat[ix+offset] +
+        (fAggregateVector.AsFloat[ix+offset+1]-fAggregateVector.AsFloat[ix+offset])*(w-ix);
+end;
+
+procedure TAggrPercentile.Reset();
+begin
+  LastCount := LastCount + Count;
+  MissingCount := 1;
+  Count := 0;
+end;
+
+procedure TAggrPercentile.CreateResultVector(Dataframe: TEpiDataframe);
+var
+  pVarDesc: TAnaVariableDescriptor;
+begin
+// Old method - should always be floating vector. TC 2007-11-08
+//  pVarDesc := TAnaVariableDescriptor.Create(fResVariable, fAggregateVector.DataType,
+//                  fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals);
+  pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat,
+                                            fAggregateVector.FieldDataSize, 2);
+  Dataframe.NewVector(pVarDesc);
+  fResultVector := Dataframe.VectorByName[fResVariable];
+  case PercentileType of
+    ap1 : fResultVector.VariableLabel := '(1 Percentile) '+ fAggregateVector.GetVariableLabel;
+    ap5 : fResultVector.VariableLabel := '(5 Percentile) '+ fAggregateVector.GetVariableLabel;
+    ap10: fResultVector.VariableLabel := '(10 Percentile) '+ fAggregateVector.GetVariableLabel;
+    ap25: fResultVector.VariableLabel := '(25 Percentile) '+ fAggregateVector.GetVariableLabel;
+    ap50: fResultVector.VariableLabel := '(Median) '+ fAggregateVector.GetVariableLabel;
+    ap75: fResultVector.VariableLabel := '(75 Percentile) '+ fAggregateVector.GetVariableLabel;
+    ap90: fResultVector.VariableLabel := '(90 Percentile) '+ fAggregateVector.GetVariableLabel;
+    ap95: fResultVector.VariableLabel := '(95 Percentile) '+ fAggregateVector.GetVariableLabel;
+    ap99: fResultVector.VariableLabel := '(99 Percentile) '+ fAggregateVector.GetVariableLabel;
+  end;
+end;
+
+end.
