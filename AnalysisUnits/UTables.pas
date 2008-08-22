@@ -1254,12 +1254,13 @@ function TTables.CreateLifeTable(df: TEpiDataFrame; Varnames: TStrings): TEpiDat
 var
   agl: TAggrList;
   AggDF: TEpiDataFrame;
-  LocalVarnames: TStrings;
+  LocalVarnames, IntervalNums: TStrings;
   V1, V2, RangeV, OutcomeV, ByV, CountV,
   GroupV, IntervalV, NumStV, WithDrwV, RiskV, DthV, PrDthV, PrSrvV, CmPrSrvV: TEpiVector;
   i, j, k, St, En, total,
   DC, CeC, CoC,
   DeadInd, CensInd, ContInd: integer;
+
   s: string;
 begin
   LocalVarnames := nil;
@@ -1305,24 +1306,50 @@ begin
     if Cmd.ParamExists['I'] then
     begin
       s := AnsiUpperCase(Trim(Cmd.ParamByName['I'].AsString));
+      IntervalV := TEpiIntVector.Create('$INTERVAL', df.RowCount, df.CheckProperties);
+      df.Vectors.Add(IntervalV);
+      df.Sort(LocalVarnames[1]);
       if s[1] = 'B' then
       begin
-        IntervalV := TEpiIntVector.Create('$INTERVAL', df.RowCount, df.CheckProperties);
-        df.Vectors.Add(IntervalV);
-
         j := StrToInt(Copy(s, 2, Length(s)));
         for i := 1 to df.RowCount do
           IntervalV.AsInteger[i] := (RangeV.AsInteger[i] div j) * j;
-        LocalVarnames.Delete(1);
-        LocalVarnames.Insert(1, IntervalV.Name);
-        df.Vectors.Remove(RangeV);
-        FreeAndNil(RangeV);
-        RangeV := IntervalV;
       end else begin
-
+        IntervalNums := TStringList.Create;
+        SplitString(s, IntervalNums, [',']);
+        St := 1;
+        for i := 0 to IntervalNums.Count -1 do
+        begin
+          k := StrToInt(IntervalNums[i]);
+          if (i = 0) then
+          begin
+            while (St <= df.RowCount) and (RangeV.AsInteger[St] < k) do
+            begin
+              IntervalV.AsInteger[St] := k;
+              inc(st);
+            end;
+          end
+          else if (i = (IntervalNums.Count -1)) then
+          begin
+            while (St <= df.RowCount) and (RangeV.AsInteger[St] > k) do
+            begin
+              IntervalV.AsInteger[St] := k;
+              inc(st);
+            end;
+          end else begin
+            while (St <= df.RowCount) and (RangeV.AsInteger[St] < k) do
+            begin
+              IntervalV.AsInteger[St] := k;
+              inc(st);
+            end;
+          end;
+        end;
       end;
-
-
+      LocalVarnames.Delete(1);
+      LocalVarnames.Insert(1, IntervalV.Name);
+      df.Vectors.Remove(RangeV);
+      FreeAndNil(RangeV);
+      RangeV := IntervalV;
     end;
 
     // Varnames Layout:    
