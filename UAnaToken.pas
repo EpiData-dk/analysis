@@ -113,9 +113,10 @@ opSaveIniScreen =opUserDefined + 103;
 opHelpView = opUserDefined + 104;
 opCIPlot =  opUserDefined + 105;
 opLifeTable =  opUserDefined + 106;
+opShortLifeTable =  opUserDefined + 107;
 
  // last command always for token list below to go from opRead..OpClose:
-opCLOSE = opUserDefined		+107;
+opCLOSE = opUserDefined		+108;
 
  const
  EpiGraphicCmd=[opPie, opBar, opHistogram, opLine, opScatter, opPchart, opIchart, opBox, opBoxPlot, opPareto, opEpiCurve,
@@ -130,7 +131,7 @@ opCLOSE = opUserDefined		+107;
  EpiShowSelectCmds= [opDESCRIBE, opSORT, opFREQ, opTABLES, opMEANS, opREGRESS, opShortSTABles, opSTABLES, opList,
                     opCount, opPie, opBar, opHistogram, opLine, opGenerate, opCorrelate, opKWallis, opShortTABLES, opScatter, opPCHART,
                     opIchart, opBox, opBoxPlot, opRunChart, opSaveData, opShortDescribe, opShortHistogram, opShortMeans, opShortScatter, opShortCorrelate,
-                    opAggregate, opShortAggregate, opXChart, opEpiCurve, opCDFPlot, opDotPlot, opPareto, opCIPlot, opLifeTable];
+                    opAggregate, opShortAggregate, opXChart, opEpiCurve, opCDFPlot, opDotPlot, opPareto, opCIPlot, opLifeTable, opShortLifeTable];
 
  GlobaloptSyntax='NOECHO';
  MaxStringSize=80;
@@ -177,7 +178,7 @@ TokensList: array[opRead..opClose] of String =(
 {88-90}         'AGGREGATE', 'AGG', 'LABEL',
 {91-95}         'LABELDATA', 'CLOSEHELP', 'PRINTVIEWER', 'LABELVALUE', 'MISSINGVALUE',
 {96-100}        'XCHART', 'EVAL', 'EPICURVE', 'CDFPLOT','DOTPLOT','PARETO','TABDIALOG',
-                'MERGE','SAVEINISCREEN','HELPVIEW', 'CIPLOT', 'LIFETABLE',
+                'MERGE','SAVEINISCREEN','HELPVIEW', 'CIPLOT', 'LIFETABLE', 'LTAB',
 
                 // last command always for token list below to go from opRead..OpClose:
                 'CLOSE');

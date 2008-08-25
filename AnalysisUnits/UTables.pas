@@ -1259,9 +1259,12 @@ var
   GroupV, IntervalV, NumStV, WithDrwV, RiskV, DthV, PrDthV, PrSrvV, CmPrSrvV: TEpiVector;
   i, j, k, St, En, total,
   DC, CeC, CoC,
-  DeadInd, CensInd, ContInd: integer;
-
+  DeadInd: Integer;
+  First: Boolean;
   s: string;
+  Opt: TEpiOption;
+  ExitTime: EpiFloat;
+
 begin
   LocalVarnames := nil;
   Agl := nil;
@@ -1277,7 +1280,35 @@ begin
       LocalVarnames.Delete(LocalVarnames.IndexOf(WeightName));
     end;
 
-    // TODO: Establish outcomes - dead/censored/still under observation
+    if Cmd.ParamExists['O'] then
+      DeadInd := Cmd.ParamByName['O'].AsInteger
+    else
+      DeadInd := 1;
+    
+    // Correct timevar if needed by /MT
+    if Cmd.ParamExists['MT'] then
+    begin
+      V1 := Df.FindVector(Cmd.ParamByName['MT'].Value);
+      V2 := Df.FindVector(LocalVarnames[0]);
+      if Cmd.ParamExists['EXIT'] then
+        ExitTime := Cmd.ParamByName['EXIT'].AsInteger
+      else begin
+        ExitTime := -MaxInt;
+        for i := 1 to Df.RowCount do
+          if not (V1.IsMissing[i] or V1.IsMissingValue[i]) then
+            ExitTime := Math.Max(ExitTime, V1.AsFloat[i]);
+      end;
+      for i := 1 to Df.RowCount do
+      begin
+        if (V1.IsMissing[i] or V1.IsMissingValue[i]) then
+          V1.AsFloat[i] := ExitTime;
+        if (V1.AsFloat[i] > ExitTime) then
+        begin
+          V1.AsFloat[i] := ExitTime;
+          V2.AsInteger[i] := DeadInd +1;
+        end;
+      end;
+    end;
 
     // Varnames Layout:     Range variable      |   Start/End variables
     //  ===========================================================
@@ -1286,7 +1317,7 @@ begin
     //   LocalVarnames[2] = (BY)                |   End Variable
     //   LocalVarnames[3] = N/A                 |   (BY)
 
-    // Calculate posible interval
+    // Calculate posible range
     if ((not Cmd.ParamExists['BY']) and (LocalVarnames.Count = 3)) or
         (LocalVarnames.Count = 4) then
     begin
@@ -1303,12 +1334,18 @@ begin
     end else
       RangeV := df.VectorByName[LocalVarnames[1]];
 
+    // Find intervals.
     if Cmd.ParamExists['I'] then
     begin
       s := AnsiUpperCase(Trim(Cmd.ParamByName['I'].AsString));
       IntervalV := TEpiIntVector.Create('$INTERVAL', df.RowCount, df.CheckProperties);
       df.Vectors.Add(IntervalV);
       df.Sort(LocalVarnames[1]);
+      if Length(S) = 0 then
+      begin
+        dm.GetOptionValue('LIFETABLE INTERVAL', opt);
+        s := opt.Value;   
+      end;
       if s[1] = 'B' then
       begin
         j := StrToInt(Copy(s, 2, Length(s)));
@@ -1375,7 +1412,7 @@ begin
     end;
 
     AggDF.Sort(s + LocalVarnames[1] + ',' + LocalVarnames[0]);
-    OAggregate.OutAggregate(AggDF, cmd);
+//    OAggregate.OutAggregate(AggDF, cmd);
 
     // This might be larger than required, but the final size
     // is not known at this stage. However the final size is never
@@ -1413,9 +1450,6 @@ begin
     En:= 1;
     k := 1;
 
-    DeadInd := 2;
-    CensInd := 1;
-
     while true do
     begin
       total := 0;
@@ -1426,6 +1460,7 @@ begin
       end;
 
       i := St;
+      First := true;
       
       while i <= En do
       begin
@@ -1437,20 +1472,26 @@ begin
         IntervalV.AsInteger[k] := RangeV.AsInteger[i];
         // Interval Check should be applied here!
         repeat
+          if OutcomeV.AsInteger[i] = DeadInd then
+            inc(DC, CountV.AsInteger[i])
+          else
+            inc(CeC, CountV.AsInteger[i]);
+{
           if OutcomeV.AsInteger[i] = DeadInd then inc(DC, CountV.AsInteger[i]);
           if OutcomeV.AsInteger[i] = CensInd then inc(CeC, CountV.AsInteger[i]);
-          if OutcomeV.AsInteger[i] = ContInd then inc(CoC, CountV.AsInteger[i]);
+          if OutcomeV.AsInteger[i] = ContInd then inc(CoC, CountV.AsInteger[i]);   }
           inc(i);
-        until (i >= En) or (RangeV.compare(i, i+1) <> 0);
+        until (i > En) or (RangeV.compare(i-1, i) <> 0);
         WithDrwV.AsInteger[k]    := CeC;
         DthV.AsInteger[k]        := DC;
-        if (k = St) then
+        if First then
         begin
           NumStV.AsInteger[k]      := total;
           RiskV.AsFloat[k]         := NumStV.AsInteger[k] - (CeC / 2);
           PrDthV.AsFloat[k]        := DC / RiskV.AsFloat[k];
           PrSrvV.AsFloat[k]        := 1 - PrDthV.AsFloat[k];
           CmPrSrvV.AsFloat[k]      := PrSrvV.AsFloat[k];
+          First := false;
           inc(k);
         end else begin
           NumStV.AsInteger[k]      := NumStV.AsInteger[k-1] - (WithDrwV.AsInteger[k-1] + DthV.AsInteger[k-1]);
@@ -2717,8 +2758,63 @@ begin
 end;
 
 procedure TTables.OutLifeTable(df: TEpiDataframe);
+var
+  OutputTable: TStatTable;
+  Cases, Total, Dead, Tmissing,
+  i: integer;
+  First: boolean;
+
+  function NoLevelChange(): boolean;
+  begin
+    result := false;
+    if i < df.RowCount then exit;
+    if not Cmd.ParamExists['BY'] then
+      result := true
+    else
+      result := df.Vectors[1].compare(i, i+1) <> 0;
+  end;
+
 begin
-  //
+  if Cmd.ParamExists['NT'] then Exit;
+
+  // Summation table:
+  OutputTable := dm.CodeMaker.Output.NewTable(8);  
+  OutputTable.Cell[1,1] := '  ';
+  OutputTable.Cell[2,1] := 'Cases<br>n';
+  OutputTable.Cell[3,1] := 'Total<br>n';
+  OutputTable.Cell[4,1] := 'Dead<br>n';
+  OutputTable.Cell[5,1] := 'Time Missing<br>n';
+  OutputTable.Cell[6,1] := ' <br>T-min';
+  OutputTable.Cell[7,1] := ' <br>T-max';
+  OutputTable.Cell[8,1] := ' <br>Sum time';
+
+  i := 1;
+  while true do
+  begin
+    Outputtable.AddRow;
+    if Cmd.ParamExists['BY'] then
+      OutputTable.Cell[1, OutputTable.RowCount] := df.Vectors[1].GetValueLabel(df.Vectors[1].AsString[i]);
+    OutputTable.Cell[2, OutputTable.RowCount] := df.VectorByName[''].AsString[i];
+
+    first := true;
+    while (NoLevelChange) do
+    begin
+
+    end;
+  end;
+
+{  OutputTable.Caption := title;
+  for j:=0 to scount-1 do
+    if assigned(series[j]) then
+    begin
+      OutputTable.AddRow;
+      OutputTable.Cell[1,OutputTable.RowCount] := zvec.GetValueLabel(inttostr(j));
+      OutputTable.Cell[2,OutputTable.RowCount] := inttostr(cases[j]);
+      OutputTable.Cell[3,OutputTable.RowCount] := inttostr(missings[j]);
+      OutputTable.Cell[4,OutputTable.RowCount] := mins[j];
+      OutputTable.Cell[5,OutputTable.RowCount] := maxs[j];
+      OutputTable.Cell[6,OutputTable.RowCount] := inttostr(cases[j]+missings[j]);
+    end;     }
 end;
 
 {*****************************************

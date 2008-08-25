@@ -3189,7 +3189,7 @@ end;
 function TDM.LifeTable(Varnames: TStrings; cmd: TCommand): boolean;
 var
   df, ltdf: TEpiDataFrame;
-  MissingList: TStrings;
+  MissingList, MaxList: TStrings;
 const
   procname = 'LifeTable';
   procversion = '1.0.0.0';
@@ -3199,33 +3199,73 @@ begin
 
   df := nil;
   MissingList := nil;
+  MaxList := nil;
   try
     CheckVariableNo(Varnames, 2, 3);
     If not CheckDataOpen() then exit;
 
+    // Missing list should contain:
+    // - Outcome
+    // - Timevar(s) (if two present) if not /MT present
+    // - Weigth
     MissingList := TStringList.Create();
     MissingList.AddStrings(Varnames);
-    // Outcome adn by may contain missing;
-    MissingList.Delete(0);
+    MaxList := TStringList.Create();
+    MaxList.AddStrings(Varnames);
+
+    if Cmd.ParamExists['MT'] then
+    begin
+      // Always include Timevar1 if two timevars present. Hence delete var2
+      if varnames.Count = 3 then
+      begin
+        Cmd.ParamByName['MT'].Value := MissingList[2];
+        MissingList.Delete(2);
+        MaxList.Delete(2);
+      end else begin
+        Cmd.ParamByName['MT'].Value := MissingList[1];
+        MissingList.Delete(1);
+        MaxList.Delete(1);
+      end;
+    end;
 
     if Cmd.ParamExists['BY'] then
+    begin
       Varnames.Add(Cmd.ParamByName['BY'].AsString);
+      MaxList.Add(Cmd.ParamByName['BY'].AsString);
+    end;
 
     if Cmd.ParamExists['W'] then
     begin
       Varnames.Add(Cmd.ParamByName['W'].AsString);
-      MissingList.Add(Cmd.ParamByName['W'].AsString)
+      MissingList.Add(Cmd.ParamByName['W'].AsString);
+      MaxList.Add(Cmd.ParamByName['W'].AsString);
     end;
 
     if IsMissingOption(cmd) then
       df := Dataframe.PrepareDataframe(Varnames, MissingList)
+    else if Cmd.ParamExists['MT'] then
+      df := Dataframe.PrepareDataframe(Varnames, MaxList)
     else
       df := Dataframe.PrepareDataframe(Varnames, Varnames);
 
     ltdf := OTables.DoLifeTables(df, varnames, cmd);
+    OTables.OutLifeTable(ltdf);
+
+    if cmd.ParamExists['CLOSE'] then
+    begin
+      dm.InternalCloseFile(fDataframe);
+      fdataframe := ltdf;
+      initDataFrameVars(fDataframe);
+      NotifyInterface(EpiVectorListChanged, integer(dataframe), 0);
+      NotifyInterface(EpiOpenFile, integer(dataframe), 0);
+      OBrowse.UpdateBrowseWindow(fdataframe);
+      OUpdate.UpdateBrowseWindow(fdataframe);
+    end else
+      FreeAndNil(ltdf);
   finally
     if Assigned(df) then FreeAndNil(df);
     if Assigned(MissingList) then FreeAndNil(MissingList);
+    if Assigned(MaxList) then FreeAndNil(MaxList);
     ODebug.DecIndent;
   end;
 end;
@@ -3513,6 +3553,9 @@ begin
   foptions.AddObject('DEBUG LEVEL', TEpiOption.Create('DEBUG LEVEL', '0', EpiTyInteger));
   foptions.AddObject('DEBUG FILENAME', TEpiOption.Create('DEBUG FILENAME', 'moduletest.log', EpiTyString));
   foptions.AddObject('LANGUAGE',TEpiOption.Create('LANGUAGE','English',EpiTyString));
+
+  //lifetable settings
+  foptions.AddObject('LIFETABLE INTERVAL',TEpiOption.Create('LIFETABLE INTERVALN', '0,7,15,30,60,90,180,360,540,720', EpiTyString));
 
   //table design
   foptions.AddObject('TABLE DESIGN',TEpiOption.Create('TABLE DESIGN','LINE',EpiTyString));

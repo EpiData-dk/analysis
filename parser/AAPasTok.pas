@@ -38,9 +38,9 @@ opOpenBracket=25;   {..open bracket: [}
 opCloseBracket=26;  {..close bracket: ]}
 opCaret=27;         {..caret: ^}
 opHash=28;          {..hash: #}
-opAt=29;       {..ampersand: @}
+opAt=29;            {..ampersand: @}
 opQuery=30;         { ? question mark}
-opDoDos=31;          {..exclamation: ! (for doing Dos-commands without typing DOS first)}
+opDoDos=31;         {..exclamation: ! (for doing Dos-commands without typing DOS first)}
 opNot=32;
 opDiv=33;
 opMod=34;
@@ -60,7 +60,7 @@ opUserDefined=101;
 
 Type
 
- TSMTokenType =0..255; //255 keywords should be enough even for Arabic
+ TSMTokenType = 0..255; //255 keywords should be enough even for Arabic
 
  TSMTokenTypeSet = set of TSMTokenType;
 
