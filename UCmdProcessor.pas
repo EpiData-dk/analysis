@@ -3249,7 +3249,9 @@ begin
       df := Dataframe.PrepareDataframe(Varnames, Varnames);
 
     ltdf := OTables.DoLifeTables(df, varnames, cmd);
-    OTables.OutLifeTable(ltdf);
+
+    if Cmd.ParamExists['G'] then
+      OGraph.DoGraphs(ltdf, varnames, cmd);
 
     if cmd.ParamExists['CLOSE'] then
     begin

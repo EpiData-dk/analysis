@@ -118,6 +118,7 @@ type
     function DoPchart(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
                       var SPCDataframe: TEpiDataframe; var OutputTable: TStatTable; var footnote:string): TChart;
     function DoPareto(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
+    function DoLifeTable(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
 
     // COMPLEX/MULTI GRAPHS - SHOULD PREFERABLY USE SIMPLE GRAPHS FOR CONSTRUCTION.
     function DoXChart(Dataframe: TEpiDataframe; Varnames: TStrings; Cmd: TCommand): boolean;
@@ -300,6 +301,8 @@ begin
       opPChart:              chart := DoPchart(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList,
                                                DummyFrame, xtab, footnote);
       opPareto:              chart := DoPareto(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList);
+      opLifeTable,
+      opShortLifeTable:      chart := DoLifeTable(DataFrame, Varnames, Cmd.CommandID, Cmd.ParameterList);
 
     else
       dm.Error('Command not in implemented in DoGraph', [], 113001);
@@ -3546,6 +3549,11 @@ begin
    dm.Sendoutput;
 
   if Dummyform <> nil then FreeAndNil(DummyForm);
+end;
+
+function TGraph.DoLifeTable(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
+begin
+  //
 end;
 
 // draw a pareto plot

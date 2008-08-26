@@ -284,7 +284,7 @@ type
     function CreateFreqTable(df: TEpiDataframe; Varnames: TStrings): TSumTable;
     function CreateStratTable(df: TEpiDataframe; Varnames: TStrings): TSumTable;
     function CreateFVTable(df: TEpiDataframe; Varnames: TStrings): TSumTable;
-    function CreateLifeTable(df: TEpiDataFrame; Varnames: TStrings): TEpiDataFrame;
+    function CreateLifeTable(df: TEpiDataFrame; Varnames: TStrings; var OutputTable: TStatTable): TEpiDataFrame;
     // DoTables is commen entry for Dm (Datamodule).
     function DoTables(dataframe: TEpiDataframe; varnames: TStrings; cmd: TCommand): boolean;
     function DoLifeTables(dataframe: TEpiDataframe; varnames: TStrings; cmd: TCommand): TEpiDataFrame;
@@ -616,14 +616,22 @@ begin
 end;
 
 function TTables.DoLifeTables(dataframe: TEpiDataframe; varnames: TStrings; cmd: TCommand): TEpiDataframe;
+var
+  xTab: TStatTable;
 begin
   self.Cmd := cmd;
   self.OutputOptions := 0;
   result := nil;
   try
-    result := CreateLifeTable(dataframe, varnames);
+    result := CreateLifeTable(dataframe, varnames, xtab);
+    if Assigned(xtab) and (not Cmd.ParamExists['NT']) then
+    begin
+      dm.CodeMaker.OutputTable(xtab, '');
+      dm.Sendoutput();
+    end;
     OutLifeTable(result);
   finally
+    if Assigned(xTab) then FreeAndNil(xTab);
     WeightName := '';
     Weighted := False;
     self.Cmd := nil;
@@ -1250,20 +1258,21 @@ begin
   if Assigned(VList) then FreeAndNil(VList);
 end;
 
-function TTables.CreateLifeTable(df: TEpiDataFrame; Varnames: TStrings): TEpiDataFrame;
+function TTables.CreateLifeTable(df: TEpiDataFrame; Varnames: TStrings; var OutputTable: TStatTable): TEpiDataFrame;
 var
   agl: TAggrList;
   AggDF: TEpiDataFrame;
   LocalVarnames, IntervalNums: TStrings;
   V1, V2, RangeV, OutcomeV, ByV, CountV,
-  GroupV, IntervalV, NumStV, WithDrwV, RiskV, DthV, PrDthV, PrSrvV, CmPrSrvV: TEpiVector;
+  GroupV, IntervalV, NumStV, WithDrwV, RiskV, DthV, PrDthV, PrSrvV, CmPrSrvV, CILO, CIHI: TEpiVector;
   i, j, k, St, En, total,
-  DC, CeC, CoC,
+  DC, CeC,
+  Cases, SumTime, SumCens,
   DeadInd: Integer;
   First: Boolean;
   s: string;
   Opt: TEpiOption;
-  ExitTime: EpiFloat;
+  ExitTime, StdErr: EpiFloat;
 
 begin
   LocalVarnames := nil;
@@ -1432,6 +1441,9 @@ begin
     PrDthV     := TEpiFloatVector.Create('$PRDEATHS', AggDF.RowCount, df.CheckProperties);
     PrSrvV     := TEpiFloatVector.Create('$PRSURV', AggDF.RowCount, df.CheckProperties);
     CmPrSrvV   := TEpiFloatVector.Create('$CMPRSURV', AggDF.RowCount, df.CheckProperties);
+    CILO       := TEpiFloatVector.Create('$CILO', AggDF.RowCount, df.CheckProperties);
+    CIHI       := TEpiFloatVector.Create('$CIHI', AggDF.RowCount, df.CheckProperties);
+
     if Cmd.ParamExists['BY'] then
     begin
       GroupV     := ByV.Clone(result, true);
@@ -1445,10 +1457,26 @@ begin
     result.Vectors.Add(PrDthV);
     result.Vectors.Add(PrSrvV);
     result.Vectors.Add(CmPrSrvV);
+    result.Vectors.Add(CILO);
+    result.Vectors.Add(CIHI);
 
     St := 1;
     En:= 1;
     k := 1;
+
+    // Summation table:
+    OutputTable := dm.CodeMaker.Output.NewTable(8);
+    OutputTable.TableType := sttNormal;
+    OutputTable.Cell[1,1] := '  ';
+    OutputTable.Cell[2,1] := 'Cases<br>n';
+    OutputTable.Cell[3,1] := 'Total<br>n';
+    OutputTable.Cell[4,1] := 'Time Missing<br>n';
+    OutputTable.Cell[5,1] := ' <br>T-min';
+    OutputTable.Cell[6,1] := ' <br>T-max';
+    OutputTable.Cell[7,1] := ' <br>Sum time';
+    OutputTable.Caption := 'LifeTable: ' + OutcomeV.GetVariableLabel(Cmd.ParameterList);
+    if Cmd.ParamExists['BY'] then
+      OutputTable.Caption := OutputTable.Caption + ' by ' + ByV.GetVariableLabel(Cmd.ParameterList);
 
     while true do
     begin
@@ -1461,29 +1489,33 @@ begin
 
       i := St;
       First := true;
-      
+      Cases := 0;
+      SumTime := 0;
+      SumCens := 0;
+      OutputTable.AddRow;
+
       while i <= En do
       begin
         DC := 0;
         CeC := 0;
-        CoC := 0;
         if Cmd.ParamExists['BY'] then
+        begin
           GroupV.AsInteger[k] := ByV.AsInteger[i];
+          OutputTable.Cell[1, OutputTable.RowCount] := ByV.GetValueLabel(ByV.AsString[i]);
+        end else
+          OutputTable.Cell[1, OutputTable.RowCount] := '';
+
         IntervalV.AsInteger[k] := RangeV.AsInteger[i];
-        // Interval Check should be applied here!
         repeat
           if OutcomeV.AsInteger[i] = DeadInd then
             inc(DC, CountV.AsInteger[i])
           else
             inc(CeC, CountV.AsInteger[i]);
-{
-          if OutcomeV.AsInteger[i] = DeadInd then inc(DC, CountV.AsInteger[i]);
-          if OutcomeV.AsInteger[i] = CensInd then inc(CeC, CountV.AsInteger[i]);
-          if OutcomeV.AsInteger[i] = ContInd then inc(CoC, CountV.AsInteger[i]);   }
           inc(i);
         until (i > En) or (RangeV.compare(i-1, i) <> 0);
         WithDrwV.AsInteger[k]    := CeC;
         DthV.AsInteger[k]        := DC;
+        Inc(SumTime, (CeC+DC) * InterValV.AsInteger[k]);
         if First then
         begin
           NumStV.AsInteger[k]      := total;
@@ -1492,22 +1524,32 @@ begin
           PrSrvV.AsFloat[k]        := 1 - PrDthV.AsFloat[k];
           CmPrSrvV.AsFloat[k]      := PrSrvV.AsFloat[k];
           First := false;
-          inc(k);
+          OutputTable.Cell[3, OutputTable.RowCount] := NumStV.AsString[k];
+          OutputTable.Cell[5, OutputTable.RowCount] := IntervalV.AsString[k];
         end else begin
           NumStV.AsInteger[k]      := NumStV.AsInteger[k-1] - (WithDrwV.AsInteger[k-1] + DthV.AsInteger[k-1]);
           RiskV.AsFloat[k]         := NumStV.AsInteger[k] - (CeC / 2);
           PrDthV.AsFloat[k]        := DC / RiskV.AsFloat[k];
           PrSrvV.AsFloat[k]        := 1 - PrDthV.AsFloat[k];
           CmPrSrvV.AsFloat[k]      := CmPrSrvV.AsFloat[k-1] * PrSrvV.AsFloat[k];
-          inc(k);
         end;
+        StdErr := System.Sqrt((CmPrSrvV.AsFloat[k] * (1 - CmPrSrvV.AsFloat[k])) / (Total - SumCens));
+        CILO.AsFloat[k] := CmPrSrvV.AsFloat[k] - (1.96 * StdErr);
+        CIHI.AsFloat[k] := CmPrSrvV.AsFloat[k] + (1.96 * StdErr);
+        Inc(Cases, DC);
+        Inc(SumCens, CeC);
+        inc(k);
       end;
+      OutputTable.Cell[2, OutputTable.RowCount] := IntToStr(Cases);
+      OutputTable.Cell[6, OutputTable.RowCount] := IntervalV.AsString[k-1];
+      OutputTable.Cell[7, OutputTable.RowCount] := IntToStr(SumTime);
       if En = AggDF.RowCount then break;
       St := i;
     end;
     Result.Capacity := k-1;
     Result.SendToOutput(nil);
     dm.Sendoutput;
+
   finally
     if Assigned(LocalVarnames) then FreeAndNil(LocalVarnames);
     if Assigned(Agl) then FreeAndNil(Agl);
@@ -2758,63 +2800,8 @@ begin
 end;
 
 procedure TTables.OutLifeTable(df: TEpiDataframe);
-var
-  OutputTable: TStatTable;
-  Cases, Total, Dead, Tmissing,
-  i: integer;
-  First: boolean;
-
-  function NoLevelChange(): boolean;
-  begin
-    result := false;
-    if i < df.RowCount then exit;
-    if not Cmd.ParamExists['BY'] then
-      result := true
-    else
-      result := df.Vectors[1].compare(i, i+1) <> 0;
-  end;
-
 begin
-  if Cmd.ParamExists['NT'] then Exit;
-
-  // Summation table:
-  OutputTable := dm.CodeMaker.Output.NewTable(8);  
-  OutputTable.Cell[1,1] := '  ';
-  OutputTable.Cell[2,1] := 'Cases<br>n';
-  OutputTable.Cell[3,1] := 'Total<br>n';
-  OutputTable.Cell[4,1] := 'Dead<br>n';
-  OutputTable.Cell[5,1] := 'Time Missing<br>n';
-  OutputTable.Cell[6,1] := ' <br>T-min';
-  OutputTable.Cell[7,1] := ' <br>T-max';
-  OutputTable.Cell[8,1] := ' <br>Sum time';
-
-  i := 1;
-  while true do
-  begin
-    Outputtable.AddRow;
-    if Cmd.ParamExists['BY'] then
-      OutputTable.Cell[1, OutputTable.RowCount] := df.Vectors[1].GetValueLabel(df.Vectors[1].AsString[i]);
-    OutputTable.Cell[2, OutputTable.RowCount] := df.VectorByName[''].AsString[i];
-
-    first := true;
-    while (NoLevelChange) do
-    begin
-
-    end;
-  end;
-
-{  OutputTable.Caption := title;
-  for j:=0 to scount-1 do
-    if assigned(series[j]) then
-    begin
-      OutputTable.AddRow;
-      OutputTable.Cell[1,OutputTable.RowCount] := zvec.GetValueLabel(inttostr(j));
-      OutputTable.Cell[2,OutputTable.RowCount] := inttostr(cases[j]);
-      OutputTable.Cell[3,OutputTable.RowCount] := inttostr(missings[j]);
-      OutputTable.Cell[4,OutputTable.RowCount] := mins[j];
-      OutputTable.Cell[5,OutputTable.RowCount] := maxs[j];
-      OutputTable.Cell[6,OutputTable.RowCount] := inttostr(cases[j]+missings[j]);
-    end;     }
+  //
 end;
 
 {*****************************************
