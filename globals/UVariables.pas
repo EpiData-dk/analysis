@@ -40,25 +40,27 @@ TVarList =  class
 protected
   List : TList;
   function GetVarByName(const VarName: string): IValue;
+  function GetVarExists(const VarName: string): Boolean;
   function GetCloneVarByName(const VarName: string): IValue;
   function GetCount: integer;
   function GetItem(Index: integer): IValue;
   procedure SetItem(Index: integer; const Value: IValue);
 public
- constructor Create;
- Destructor Destroy; override;
- procedure Clear;
- function GetIndexByName(const VarName: string): integer;
- function AddVar( aVar: IValue; const Multiple: boolean = false): Integer;overload;
- function AddVar( const pName : string; pValue:Variant): Integer;overload;
- function RemoveVar( aVar: IValue): Integer;
- function LoadFromString(const source:String):integer;
- function SaveToString:String;
- procedure GetVarNames(AList: TStrings);
- Property Items[Index:integer]:IValue read GetItem write SetItem;default;
- property Count: integer read GetCount;
- property VarbyName[Const VarName:string]: IValue read GetVarByName;
- property CloneByName[Const VarName:string]: IValue read GetCloneVarByName;
+  constructor Create;
+  Destructor Destroy; override;
+  procedure Clear;
+  function GetIndexByName(const VarName: string): integer;
+  function AddVar( aVar: IValue; const Multiple: boolean = false): Integer;overload;
+  function AddVar( const pName : string; pValue:Variant): Integer;overload;
+  function RemoveVar( aVar: IValue): Integer;
+  function LoadFromString(const source:String):integer;
+  function SaveToString:String;
+  procedure GetVarNames(AList: TStrings);
+  Property Items[Index:integer]:IValue read GetItem write SetItem;default;
+  property Count: integer read GetCount;
+  property VarbyName[Const VarName:string]: IValue read GetVarByName;
+  property VarExists[Const VarName:string]: Boolean read GetVarExists;
+  property CloneByName[Const VarName:string]: IValue read GetCloneVarByName;
 end;
 
 
@@ -166,6 +168,11 @@ begin
   idx := GetIndexByName(VarName);
   if idx > -1 then
     result:=Items[idx];
+end;
+
+function TVarList.GetVarExists(const VarName: string): Boolean;
+begin
+  result := Assigned(VarbyName[VarName]);
 end;
 
 function TVarList.GetCloneVarByName(const VarName: string): IValue;

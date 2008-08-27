@@ -193,7 +193,6 @@ begin
 //  Expanded := false;
   Expanded := True;
   ExpandBtnClick(Self);
-
 end;
 
 procedure TGraphDlg.SetupDlg(legalxtype, legalytype: array of integer;by:Boolean=false; weigth: Boolean = False);
@@ -378,8 +377,8 @@ begin
         end
     else if CmdName = 'EPICURVE' then
         begin
-          Combobox1.text := 'Time variable';
-          Combobox2.text := 'Outcome';
+          Combobox1.text := 'Outcome';
+          Combobox2.text := 'Time variable';
         end
     else if CmdName = 'CIPLOT' then
         begin

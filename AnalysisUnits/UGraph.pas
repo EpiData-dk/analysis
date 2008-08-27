@@ -1769,11 +1769,11 @@ begin
 
   try
     // Finding overall max value of second variable.
-    xvec := dataframe.VectorByName[varnames[0]];
-    yvec := dataframe.VectorByName[varnames[1]];
-    maxval := -MaxInt; // yvec.AsInteger[1];
-    aBegin := MaxInt; //xvec.AsInteger[1];
-    aEnd := -MaxInt; //xvec.AsInteger[1];
+    xvec := dataframe.VectorByName[varnames[1]];
+    yvec := dataframe.VectorByName[varnames[0]];
+    maxval := -MaxInt;
+    aBegin := MaxInt;
+    aEnd := -MaxInt;
     for i := 1 to dataframe.RowCount do
     begin
       if xvec.IsMissing[i] then
@@ -1801,9 +1801,9 @@ begin
     if Parameters.VarbyName['TI'] <> nil then
       title := Parameters.VarbyName['TI'].Value;
 
-    footnote := varnames[1] + ' = ' + VarToStr(maxval);
+    footnote := varnames[0] + ' = ' + VarToStr(maxval);
 
-    Varnames.Delete(1);
+    Varnames.Delete(0);
     df := dataframe.prepareDataframe(varnames, nil);
     agglist := TAggrList.Create();
     agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
@@ -1967,11 +1967,11 @@ begin
     begin
       OutputTable := dm.CodeMaker.Output.NewTable(6);  // extend to number of groups in var3
       OutputTable.Cell[1,1] := '  ';
-      OutputTable.Cell[2,1] := 'Cases<br>n';
-      OutputTable.Cell[3,1] := '<u>'+varnames[0] + '</u>'+ '<br><small>Missing</small>';
-      OutputTable.Cell[4,1] := ' <br>Min';
-      OutputTable.Cell[5,1] := ' <br>Max';
-      OutputTable.Cell[6,1] := 'Total<br>N';
+      OutputTable.Cell[2,1] := 'Total<br>N';
+      OutputTable.Cell[3,1] := 'Cases<br>n';
+      OutputTable.Cell[4,1] := '<u>'+varnames[0] + '</u>'+ '<br><small>Missing</small>';
+      OutputTable.Cell[5,1] := ' <br>Min';
+      OutputTable.Cell[6,1] := ' <br>Max';
 
       OutputTable.Caption := title;
       for j:=0 to scount-1 do
@@ -1979,22 +1979,22 @@ begin
         begin
           OutputTable.AddRow;
           OutputTable.Cell[1,OutputTable.RowCount] := zvec.GetValueLabel(inttostr(j));
-          OutputTable.Cell[2,OutputTable.RowCount] := inttostr(cases[j]);
-          OutputTable.Cell[3,OutputTable.RowCount] := inttostr(missings[j]);
-          OutputTable.Cell[4,OutputTable.RowCount] := mins[j];
-          OutputTable.Cell[5,OutputTable.RowCount] := maxs[j];
-          OutputTable.Cell[6,OutputTable.RowCount] := inttostr(cases[j]+missings[j]);
+          OutputTable.Cell[2,OutputTable.RowCount] := inttostr(cases[j]+missings[j]);
+          OutputTable.Cell[3,OutputTable.RowCount] := inttostr(cases[j]);
+          OutputTable.Cell[4,OutputTable.RowCount] := inttostr(missings[j]);
+          OutputTable.Cell[5,OutputTable.RowCount] := mins[j];
+          OutputTable.Cell[6,OutputTable.RowCount] := maxs[j];
         end;
     end; // show table
 
     // add line of totals:
     OutputTable.AddRow;
     OutputTable.Cell[1,OutputTable.RowCount] := 'Total';
-    OutputTable.Cell[2,OutputTable.RowCount] := inttostr(total);
-    OutputTable.Cell[3,OutputTable.RowCount] := inttostr(casemis);
-    OutputTable.Cell[4,OutputTable.RowCount] := mints;
-    OutputTable.Cell[5,OutputTable.RowCount] := maxts;
-    OutputTable.Cell[6,OutputTable.RowCount] := inttostr(total+casemis);
+    OutputTable.Cell[2,OutputTable.RowCount] := inttostr(total+casemis);
+    OutputTable.Cell[3,OutputTable.RowCount] := inttostr(total);
+    OutputTable.Cell[4,OutputTable.RowCount] := inttostr(casemis);
+    OutputTable.Cell[5,OutputTable.RowCount] := mints;
+    OutputTable.Cell[6,OutputTable.RowCount] := maxts;
 
     footnote :=  'Outcome: ' + footnote + '<br>N<sub>non-case</sub>= ' + inttostr(noncase-total-casemis)
        {     +' .<br>' + Varnames[0] + ' : Valid N<sub>case</sub>= ' + inttostr(total) + '    Missing N<sub>case</sub>= ' + inttostr(casemis)};
@@ -2043,25 +2043,25 @@ const
   procname = 'DoCIPlot';
   procversion = '1.0.0.0';
 
-function addline(Chart: TChart; X: Epifloat; axis : integer = 0):Boolean;
-begin
-  try
-    colorline := TColorLineTool.Create(Chart);
-    colorLine.Value := x;
-    if axis = 1 then
-    begin
-        colorLine.Axis := Chart.LeftAxis;
-        colorline.Pen.Color :=  GetGraphColour(0);
-    end else
-    begin
-        ColorLine.Pen.Style := psDot;
-        colorLine.Axis := Chart.BottomAxis;
+  function addline(Chart: TChart; X: Epifloat; axis : integer = 0):Boolean;
+  begin
+    try
+      colorline := TColorLineTool.Create(Chart);
+      colorLine.Value := x;
+      if axis = 1 then
+      begin
+          colorLine.Axis := Chart.LeftAxis;
+          colorline.Pen.Color :=  GetGraphColour(0);
+      end else
+      begin
+          ColorLine.Pen.Style := psDot;
+          colorLine.Axis := Chart.BottomAxis;
+      end;
+      result := True;
+    except
+      result := False;
     end;
-    result := True;
-  except
-    result := False;
   end;
-end;
 
   function CreateTable(var Table : TStatTable;title,variable, Outcome : string): Boolean;
   var
@@ -2195,9 +2195,10 @@ begin
       //FirstVar := df.VectorByName[Varnames[0]].Name;
 
 
-    if (Parameters.VarByName['O'] <> nil)
-      then showvalue := Parameters.VarByName['O'].AsInteger
-      else Showvalue := df.VectorByName[Varnames[Varnames.Count-1]].asInteger[df.RowCount];
+    if (Parameters.VarByName['O'] <> nil) then
+      showvalue := Parameters.VarByName['O'].AsInteger
+    else
+      Showvalue := df.VectorByName[Varnames[Varnames.Count-1]].asInteger[df.RowCount];
 
     footnote :='Proportion of ' + df.VectorByName[Varnames[Varnames.Count-1]].GetVariableLabel
                + ' = ' + df.VectorByName[Varnames[Varnames.Count-1]].GetValueLabel(IntToStr(showvalue),parameters);
@@ -3552,8 +3553,98 @@ begin
 end;
 
 function TGraph.DoLifeTable(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
+var
+  XVec, TVec, YVec, ZVec,
+  CILO, CIHI: TEpiVector;
+  i, j: integer;
+  LineSeries: TLineSeries;
+  CandleSeries: TCandleSeries;
+
+
+  procedure NewSeries();
+  begin
+    inc(j);
+    LineSeries := TLineSeries.Create(Result);
+    LineSeries.Title := ZVec.GetValueLabel(ZVec.AsString[i+1], Parameters);
+    LineSeries.Stairs := true;
+    LineSeries.Color := GetGraphColour(j);
+    LineSeries.AddXY(0, 100);
+    if (not Parameters.VarExists['NOCI']) then
+    begin
+      inc(j);
+      CandleSeries := TCandleSeries.Create(Result);
+      CandleSeries.Title := 'CI for ' + ZVec.GetValueLabel(ZVec.AsString[i+1], Parameters);
+      CandleSeries.Color := GetGraphColour(j);
+      CandleSeries.ShowInLegend := false;
+    end;
+  end;
+
+const
+  procname = 'DoLifeTable';
+  procversion = '1.0.0.0';
 begin
-  //
+  ODebug.IncIndent;
+  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  try
+    result := CreateStandardChart();
+
+    XVec := Dataframe.VectorByName['$INTERVAL'];
+    TVec := DataFrame.VectorByName['$PRSURV'];
+    YVec := Dataframe.VectorByName['$CMPRSURV'];
+
+    if Parameters.VarExists['BY'] then
+      ZVec := DataFrame.VectorByName[Parameters.VarByName['BY'].Value]
+    else begin
+      ZVec := TEpiIntVector.Create('$T', Dataframe.RowCount);
+      for i := 1 to Dataframe.RowCount do
+        zvec.AsInteger[i] := 1;
+    end;
+
+    result.Title.Caption := 'Kaplan-Meier survival curve: ' + Varnames[Varnames.Count-1];
+    if Parameters.VarExists['BY'] then
+      result.Title.Caption := Result.Title.Caption + ' by ' + ZVec.GetVariableLabel(Parameters);
+
+    Result.LeftAxis.Title.Caption := 'Survival (%)';
+    Result.BottomAxis.Title.Caption := 'Time';
+
+    if (not Parameters.VarExists['NOCI']) then
+    begin
+      CILO := Dataframe.VectorByName['$CILO'];
+      CIHI := Dataframe.VectorByName['$CIHI'];
+    end;
+
+    i := 0;
+    j := -1;
+    NewSeries();
+
+    for i := 1 to DataFrame.RowCount do
+    begin
+
+      if TVec.AsFloat[i] < 1 then
+      begin
+        LineSeries.AddXY(XVec.AsInteger[i], YVec.AsFloat[i]*100);
+        if (not Parameters.VarExists['NOCI']) then
+          CandleSeries.AddOHLC(XVec.AsInteger[i], (YVec.AsFloat[i]*100)-0.15, CIHI.AsFloat[i]*100, CILO.AsFloat[i]*100, (YVec.AsFloat[i]*100)+0.15)
+      end;
+
+      if (i < DataFrame.RowCount) and (ZVec.compare(i, i+1) <> 0) then
+      begin
+        LineSeries.ParentChart := result;
+        // Extra point to end line as horisontal line, if last point is marked "censored"
+        LineSeries.AddXY(XVec.AsInteger[i], YVec.AsFloat[i]*100);
+        if (not Parameters.VarExists['NOCI']) then
+          CandleSeries.ParentChart := result;
+        NewSeries();
+      end;
+    end;
+        // Extra point to end line as horisontal line, if last point is marked "censored"
+    LineSeries.AddXY(XVec.AsInteger[i-1], YVec.AsFloat[i-1]*100);
+    LineSeries.ParentChart := result;
+    if (not Parameters.VarExists['NOCI']) then
+      CandleSeries.ParentChart := result;
+  finally
+
+  end;
 end;
 
 // draw a pareto plot

@@ -3251,7 +3251,10 @@ begin
     ltdf := OTables.DoLifeTables(df, varnames, cmd);
 
     if Cmd.ParamExists['G'] then
+    begin
+      Varnames.Add(df.VectorByName[Varnames[0]].GetVariableLabel(Cmd.ParameterList));
       OGraph.DoGraphs(ltdf, varnames, cmd);
+    end;
 
     if cmd.ParamExists['CLOSE'] then
     begin

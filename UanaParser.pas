@@ -254,7 +254,7 @@ begin
                                           PCT_OPTIONS + ' NM FV M S F NT NC NCS ');
     opTableDialog: result:=ParseParamLessCommand(opTableDialog);
 
-    opShortLifeTable,opLifeTable: result := ParseTypicalCommand(Currenttoken.TokenSubType, [PCAllowVarList,PCAllowIf], Gnrl_options + GRAPH_OPTIONS + ' BY W END I O CLOSE EXIT MT');
+    opShortLifeTable,opLifeTable: result := ParseTypicalCommand(Currenttoken.TokenSubType, [PCAllowVarList,PCAllowIf], Gnrl_options + GRAPH_OPTIONS + ' BY W END G NOCI I O CLOSE EXIT MT');
 
     opDescribe, opShortDescribe :result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + 'NM');
     opMeans, opShortMeans: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + 'T E0 E1 E2 E3 BY M ');

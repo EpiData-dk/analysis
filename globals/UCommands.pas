@@ -210,14 +210,15 @@ end;
 
 function TCommand.GetParamExists(const ParamName: string): Boolean;
 begin
-  result := Assigned(ParamByName[ParamName]);
+  assert(FParameterList<>nil,'Parameter list is nil');
+  result := ParameterList.VarExists[ParamName];
 end;
 
 function TCommand.GetNoEcho: Boolean;
 begin
  result:=false;
  if FParameterList=nil then exit;
- Result:=GetParamByname('NOECHO')<>nil;
+ Result := GetParamByname('NOECHO')<>nil;
 end;
 
 

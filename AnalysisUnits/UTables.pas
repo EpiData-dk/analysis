@@ -627,9 +627,9 @@ begin
     if Assigned(xtab) and (not Cmd.ParamExists['NT']) then
     begin
       dm.CodeMaker.OutputTable(xtab, '');
+      OutLifeTable(result);
       dm.Sendoutput();
     end;
-    OutLifeTable(result);
   finally
     if Assigned(xTab) then FreeAndNil(xTab);
     WeightName := '';
@@ -1343,60 +1343,64 @@ begin
     end else
       RangeV := df.VectorByName[LocalVarnames[1]];
 
-    // Find intervals.
+    // =============================
+    // = Find intervals.
     if Cmd.ParamExists['I'] then
+      s := AnsiUpperCase(Trim(Cmd.ParamByName['I'].AsString))
+    else
+      s := 'B1';
+
+    IntervalV := TEpiIntVector.Create('$INTERVAL', df.RowCount, df.CheckProperties);
+    df.Vectors.Add(IntervalV);
+    df.Sort(LocalVarnames[1]);
+    if Length(S) = 0 then
     begin
-      s := AnsiUpperCase(Trim(Cmd.ParamByName['I'].AsString));
-      IntervalV := TEpiIntVector.Create('$INTERVAL', df.RowCount, df.CheckProperties);
-      df.Vectors.Add(IntervalV);
-      df.Sort(LocalVarnames[1]);
-      if Length(S) = 0 then
+      dm.GetOptionValue('LIFETABLE INTERVAL', opt);
+      s := opt.Value;
+    end;
+    if s[1] = 'B' then
+    begin
+      j := StrToInt(Copy(s, 2, Length(s)));
+      for i := 1 to df.RowCount do
+        IntervalV.AsInteger[i] := ((RangeV.AsInteger[i] div j) * j) + j;
+    end else begin
+      IntervalNums := TStringList.Create;
+      SplitString(s, IntervalNums, [',']);
+      St := 1;
+      for i := 0 to IntervalNums.Count -1 do
       begin
-        dm.GetOptionValue('LIFETABLE INTERVAL', opt);
-        s := opt.Value;   
-      end;
-      if s[1] = 'B' then
-      begin
-        j := StrToInt(Copy(s, 2, Length(s)));
-        for i := 1 to df.RowCount do
-          IntervalV.AsInteger[i] := (RangeV.AsInteger[i] div j) * j;
-      end else begin
-        IntervalNums := TStringList.Create;
-        SplitString(s, IntervalNums, [',']);
-        St := 1;
-        for i := 0 to IntervalNums.Count -1 do
+        k := StrToInt(IntervalNums[i]);
+        if (i = 0) then
         begin
-          k := StrToInt(IntervalNums[i]);
-          if (i = 0) then
+          while (St <= df.RowCount) and (RangeV.AsInteger[St] < k) do
           begin
-            while (St <= df.RowCount) and (RangeV.AsInteger[St] < k) do
-            begin
-              IntervalV.AsInteger[St] := k;
-              inc(st);
-            end;
-          end
-          else if (i = (IntervalNums.Count -1)) then
+            IntervalV.AsInteger[St] := k;
+            inc(st);
+          end;
+        end
+        else if (i = (IntervalNums.Count -1)) then
+        begin
+          while (St <= df.RowCount) and (RangeV.AsInteger[St] > k) do
           begin
-            while (St <= df.RowCount) and (RangeV.AsInteger[St] > k) do
-            begin
-              IntervalV.AsInteger[St] := k;
-              inc(st);
-            end;
-          end else begin
-            while (St <= df.RowCount) and (RangeV.AsInteger[St] < k) do
-            begin
-              IntervalV.AsInteger[St] := k;
-              inc(st);
-            end;
+            IntervalV.AsInteger[St] := k;
+            inc(st);
+          end;
+        end else begin
+          while (St <= df.RowCount) and (RangeV.AsInteger[St] < k) do
+          begin
+            IntervalV.AsInteger[St] := k;
+            inc(st);
           end;
         end;
       end;
-      LocalVarnames.Delete(1);
-      LocalVarnames.Insert(1, IntervalV.Name);
-      df.Vectors.Remove(RangeV);
-      FreeAndNil(RangeV);
-      RangeV := IntervalV;
     end;
+    LocalVarnames.Delete(1);
+    LocalVarnames.Insert(1, IntervalV.Name);
+    df.Vectors.Remove(RangeV);
+    FreeAndNil(RangeV);
+    RangeV := IntervalV;
+    // End Intervals.
+    // =============================
 
     // Varnames Layout:    
     //  =======================================
@@ -1441,8 +1445,6 @@ begin
     PrDthV     := TEpiFloatVector.Create('$PRDEATHS', AggDF.RowCount, df.CheckProperties);
     PrSrvV     := TEpiFloatVector.Create('$PRSURV', AggDF.RowCount, df.CheckProperties);
     CmPrSrvV   := TEpiFloatVector.Create('$CMPRSURV', AggDF.RowCount, df.CheckProperties);
-    CILO       := TEpiFloatVector.Create('$CILO', AggDF.RowCount, df.CheckProperties);
-    CIHI       := TEpiFloatVector.Create('$CIHI', AggDF.RowCount, df.CheckProperties);
 
     if Cmd.ParamExists['BY'] then
     begin
@@ -1457,23 +1459,28 @@ begin
     result.Vectors.Add(PrDthV);
     result.Vectors.Add(PrSrvV);
     result.Vectors.Add(CmPrSrvV);
-    result.Vectors.Add(CILO);
-    result.Vectors.Add(CIHI);
+    
+    if (not Cmd.ParamExists['NOCI']) then
+    begin
+      CILO       := TEpiFloatVector.Create('$CILO', AggDF.RowCount, df.CheckProperties);
+      CIHI       := TEpiFloatVector.Create('$CIHI', AggDF.RowCount, df.CheckProperties);
+      result.Vectors.Add(CILO);
+      result.Vectors.Add(CIHI);
+    end;
 
     St := 1;
     En:= 1;
     k := 1;
 
     // Summation table:
-    OutputTable := dm.CodeMaker.Output.NewTable(8);
+    OutputTable := dm.CodeMaker.Output.NewTable(6);
     OutputTable.TableType := sttNormal;
     OutputTable.Cell[1,1] := '  ';
-    OutputTable.Cell[2,1] := 'Cases<br>n';
-    OutputTable.Cell[3,1] := 'Total<br>n';
-    OutputTable.Cell[4,1] := 'Time Missing<br>n';
-    OutputTable.Cell[5,1] := ' <br>T-min';
-    OutputTable.Cell[6,1] := ' <br>T-max';
-    OutputTable.Cell[7,1] := ' <br>Sum time';
+    OutputTable.Cell[2,1] := 'Total<br>N';
+    OutputTable.Cell[3,1] := 'Cases<br>n';
+    OutputTable.Cell[4,1] := ' <br>T-min';
+    OutputTable.Cell[5,1] := 'Time<br>T-max';
+    OutputTable.Cell[6,1] := ' <br>Sum time';
     OutputTable.Caption := 'LifeTable: ' + OutcomeV.GetVariableLabel(Cmd.ParameterList);
     if Cmd.ParamExists['BY'] then
       OutputTable.Caption := OutputTable.Caption + ' by ' + ByV.GetVariableLabel(Cmd.ParameterList);
@@ -1524,8 +1531,8 @@ begin
           PrSrvV.AsFloat[k]        := 1 - PrDthV.AsFloat[k];
           CmPrSrvV.AsFloat[k]      := PrSrvV.AsFloat[k];
           First := false;
-          OutputTable.Cell[3, OutputTable.RowCount] := NumStV.AsString[k];
-          OutputTable.Cell[5, OutputTable.RowCount] := IntervalV.AsString[k];
+          OutputTable.Cell[2, OutputTable.RowCount] := NumStV.AsString[k];
+          OutputTable.Cell[4, OutputTable.RowCount] := IntervalV.AsString[k];
         end else begin
           NumStV.AsInteger[k]      := NumStV.AsInteger[k-1] - (WithDrwV.AsInteger[k-1] + DthV.AsInteger[k-1]);
           RiskV.AsFloat[k]         := NumStV.AsInteger[k] - (CeC / 2);
@@ -1534,22 +1541,22 @@ begin
           CmPrSrvV.AsFloat[k]      := CmPrSrvV.AsFloat[k-1] * PrSrvV.AsFloat[k];
         end;
         StdErr := System.Sqrt((CmPrSrvV.AsFloat[k] * (1 - CmPrSrvV.AsFloat[k])) / (Total - SumCens));
-        CILO.AsFloat[k] := CmPrSrvV.AsFloat[k] - (1.96 * StdErr);
-        CIHI.AsFloat[k] := CmPrSrvV.AsFloat[k] + (1.96 * StdErr);
+        if (not Cmd.ParamExists['NOCI']) then
+        begin
+          CILO.AsFloat[k] := CmPrSrvV.AsFloat[k] - (1.96 * StdErr);
+          CIHI.AsFloat[k] := CmPrSrvV.AsFloat[k] + (1.96 * StdErr);
+        end;
         Inc(Cases, DC);
         Inc(SumCens, CeC);
         inc(k);
       end;
-      OutputTable.Cell[2, OutputTable.RowCount] := IntToStr(Cases);
-      OutputTable.Cell[6, OutputTable.RowCount] := IntervalV.AsString[k-1];
-      OutputTable.Cell[7, OutputTable.RowCount] := IntToStr(SumTime);
+      OutputTable.Cell[3, OutputTable.RowCount] := IntToStr(Cases);
+      OutputTable.Cell[5, OutputTable.RowCount] := IntervalV.AsString[k-1];
+      OutputTable.Cell[6, OutputTable.RowCount] := IntToStr(SumTime);
       if En = AggDF.RowCount then break;
       St := i;
     end;
     Result.Capacity := k-1;
-    Result.SendToOutput(nil);
-    dm.Sendoutput;
-
   finally
     if Assigned(LocalVarnames) then FreeAndNil(LocalVarnames);
     if Assigned(Agl) then FreeAndNil(Agl);
