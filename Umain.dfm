@@ -1,6 +1,6 @@
 object aMainForm: TaMainForm
-  Left = 275
-  Top = 231
+  Left = 420
+  Top = 258
   Width = 852
   Height = 562
   Caption = 'aMainForm'
@@ -4599,6 +4599,7 @@ object aMainForm: TaMainForm
       OnExecute = AcFileSaveExecute
     end
     object AcRunRegress: TAction
+      Category = 'Analysis'
       Caption = '&Regress'
       OnExecute = AcRunRegressExecute
     end
@@ -4809,13 +4810,13 @@ object aMainForm: TaMainForm
       OnExecute = AcShowStartPageExecute
     end
     object AcBrowseFlds: TAction
-      Category = 'data'
+      Category = 'Data'
       Caption = '&Browse'
       ImageIndex = 22
       OnExecute = AcBrowseFldsExecute
     end
     object AcList: TAction
-      Category = 'data'
+      Category = 'Data'
       Caption = 'List..'
       ImageIndex = 44
       OnExecute = AcListExecute
@@ -4831,65 +4832,79 @@ object aMainForm: TaMainForm
       OnExecute = AcShowWindowCommandsLeft
     end
     object AcRunDescribe: TAction
+      Category = 'Analysis'
       Caption = 'AcRunDescribe'
       OnExecute = AcRunDescribeExecute
     end
     object AcRunFreq: TAction
+      Category = 'Analysis'
       Caption = 'AcRunFreq'
       OnExecute = AcRunFreqExecute
     end
     object AcRunScatter: TAction
+      Category = 'Graphs'
       Caption = '&Scatter'
       ImageIndex = 84
       OnExecute = AcRunScatterExecute
     end
     object AcRunBox: TAction
+      Category = 'Graphs'
       Caption = '&Box Plot'
       OnExecute = AcRunBoxExecute
     end
     object AcRunHistogram: TAction
+      Category = 'Graphs'
       Caption = '&Histogram'
       OnExecute = AcRunHistogramExecute
     end
     object AcRunBar: TAction
+      Category = 'Graphs'
       Caption = '&Bar'
       OnExecute = AcRunBarExecute
     end
     object AcRunTable: TAction
+      Category = 'Analysis'
       Caption = 'AcRunTable'
       OnExecute = AcRunTableExecute
     end
     object AcRunLine: TAction
+      Category = 'Graphs'
       Caption = '&Line'
       OnExecute = AcRunLineExecute
     end
     object AcRunMeans: TAction
+      Category = 'Analysis'
       Caption = '&Means'
       OnExecute = AcRunMeansExecute
     end
     object AcRunUpDate: TAction
-      Category = 'data'
+      Category = 'Data'
       Caption = '&Edit Data'
       ImageIndex = 35
       OnExecute = AcWindowEditExecute
     end
     object AcRunIChart: TAction
+      Category = 'Graphs'
       Caption = 'AcRunIChart'
       OnExecute = AcRunIChartExecute
     end
     object AcRunPChart: TAction
+      Category = 'Graphs'
       Caption = 'AcRunPChart'
       OnExecute = AcRunPChartExecute
     end
     object AcRunRunChart: TAction
+      Category = 'Graphs'
       Caption = 'AcRunRunChart'
       OnExecute = AcRunRunChartExecute
     end
     object AcRunPie: TAction
+      Category = 'Graphs'
       Caption = 'AcRunPie'
       OnExecute = AcRunPieExecute
     end
     object AcBrowse1: TAction
+      Category = 'Data'
       Caption = 'Browse '
       ImageIndex = 16
       ShortCut = 117
@@ -4923,10 +4938,12 @@ object aMainForm: TaMainForm
       OnExecute = EditRepeatFindExecute
     end
     object AcRunKwallis: TAction
+      Category = 'Analysis'
       Caption = 'Kwallis'
       OnExecute = AcRunKwallisExecute
     end
     object AcRunCorrelate: TAction
+      Category = 'Analysis'
       Caption = 'Correlate'
       OnExecute = AcRunCorrelateExecute
     end
@@ -4974,12 +4991,11 @@ object aMainForm: TaMainForm
     end
     object AcShowresultvariables: TAction
       Tag = 2210
-      Category = 'data'
+      Category = 'Data'
       Caption = 'Result Variables '
       OnExecute = AcShowresultvariablesExecute
     end
     object AcFileStructure: TAction
-      Category = 'data'
       Caption = 'Variable Definitions'
       OnExecute = AcFileStructureExecute
     end
@@ -4996,7 +5012,7 @@ object aMainForm: TaMainForm
       OnExecute = AclogcloseExecute
     end
     object AcClearResultVariables: TAction
-      Category = 'data'
+      Category = 'Data'
       Caption = 'AcClearResultVariables'
       OnExecute = AcClearResultVariablesExecute
     end
@@ -5006,7 +5022,6 @@ object aMainForm: TaMainForm
       OnExecute = AcShowWindowCommandsLeft
     end
     object Acshowvariables: TAction
-      Category = 'data'
       Caption = 'Acshowvariables'
       ShortCut = 114
       OnExecute = AcShowVariablesLeft
@@ -5039,6 +5054,16 @@ object aMainForm: TaMainForm
       Category = 'File'
       Caption = '&Import From Clipboard'
       OnExecute = AcImportFromClipboardExecute
+    end
+    object AcRunKMPlot: TAction
+      Category = 'Graphs'
+      Caption = 'KMPlot'
+      OnExecute = AcRunKMPlotExecute
+    end
+    object AcRunLifeTable: TAction
+      Category = 'Analysis'
+      Caption = 'LifeTable'
+      OnExecute = AcRunLifeTableExecute
     end
   end
   object Viewerpopup: TPopupMenu
@@ -5210,6 +5235,9 @@ object aMainForm: TaMainForm
       Action = AcRunFreq
       Caption = '&Frequency'
     end
+    object LifeTable1: TMenuItem
+      Action = AcRunLifeTable
+    end
     object N35: TMenuItem
       Caption = '-'
     end
@@ -5235,7 +5263,7 @@ object aMainForm: TaMainForm
     AutoPopup = False
     TrackButton = tbLeftButton
     Left = 313
-    Top = 62
+    Top = 64
     object AcRunScatter1: TMenuItem
       Action = AcRunScatter
     end
@@ -5272,6 +5300,9 @@ object aMainForm: TaMainForm
     object EpiCurve1: TMenuItem
       Caption = 'EpiCurve'
       OnClick = EpiCurve1Click
+    end
+    object KMPlot1: TMenuItem
+      Action = AcRunKMPlot
     end
     object N23: TMenuItem
       Caption = '-'

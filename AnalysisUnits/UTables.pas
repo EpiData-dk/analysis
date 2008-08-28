@@ -222,12 +222,21 @@ type
                 RR,
                 AR: String;
               end;
+  TLTHeader = record
+                IntVal,
+                Beg,
+                Deaths,
+                Lost,
+                Survival,
+                StdErr: string;
+              end;  
   TTableFormats = record
                     EFmt, RFmt, CFmt, TFmt,
                     ColPctHdr, RowPCtHdr, PctHdr, TotPctHdr,
                     CIFmt, CIHdr: string;
                     ORHdr: TORHeader;
                     RRHdr: TRRHeader;
+                    LTHdr: TLTHeader;
                   end;
 
   TTables = class
@@ -264,6 +273,9 @@ type
                                colpcthead,rowpcthead, pctheader, totalpcthead,
                                cifmt,ciheader  : string); overload;}
     procedure Getformats(cmd: TCommand; var TableFormats: TTableFormats);// overload;
+    procedure GetORHeaders(Cmd: TCommand; var ORHeaders: TORHeader);
+    procedure GetRRHeaders(Cmd: TCommand; var RRHeaders: TRRHeader);
+    procedure GetLTHeaders(Cmd: TCommand; var LTHeaders: TLTHeader);
     procedure CollectEstimates(var allestimates : string);
     procedure DoFreqTable(Dataframe: TEpiDataframe; Varnames: TStrings);        // Common procedure for aggregating, statistics and outputting frequency tables
     procedure DoStratifiedTable(Dataframe: TEpiDataframe; Varnames: TStrings);  // Common procedure for aggregating, statistics and outputting stratified tables
@@ -625,11 +637,10 @@ begin
   try
     result := CreateLifeTable(dataframe, varnames, xtab);
     if Assigned(xtab) and (not Cmd.ParamExists['NT']) then
-    begin
       dm.CodeMaker.OutputTable(xtab, '');
+    if (not Cmd.ParamExists['NOLT']) then
       OutLifeTable(result);
-      dm.Sendoutput();
-    end;
+    dm.Sendoutput();
   finally
     if Assigned(xTab) then FreeAndNil(xTab);
     WeightName := '';
@@ -1264,15 +1275,15 @@ var
   AggDF: TEpiDataFrame;
   LocalVarnames, IntervalNums: TStrings;
   V1, V2, RangeV, OutcomeV, ByV, CountV,
-  GroupV, IntervalV, NumStV, WithDrwV, RiskV, DthV, PrDthV, PrSrvV, CmPrSrvV, CILO, CIHI: TEpiVector;
+  GroupV, IntervalV, NumStV, WithDrwV, RiskV, DthV, PrDthV, PrSrvV, CmPrSrvV, StdErr, CILO, CIHI: TEpiVector;
   i, j, k, St, En, total,
   DC, CeC,
-  Cases, SumTime, SumCens,
+  Cases, SumTime, SumCens, GrandCases, GrandTotal,
   DeadInd: Integer;
   First: Boolean;
   s: string;
   Opt: TEpiOption;
-  ExitTime, StdErr: EpiFloat;
+  ExitTime: EpiFloat;
 
 begin
   LocalVarnames := nil;
@@ -1462,8 +1473,10 @@ begin
     
     if (not Cmd.ParamExists['NOCI']) then
     begin
+      StdErr     := TEpiFloatVector.Create('$STDERR', AggDF.RowCount, df.CheckProperties);
       CILO       := TEpiFloatVector.Create('$CILO', AggDF.RowCount, df.CheckProperties);
       CIHI       := TEpiFloatVector.Create('$CIHI', AggDF.RowCount, df.CheckProperties);
+      result.Vectors.Add(StdErr);
       result.Vectors.Add(CILO);
       result.Vectors.Add(CIHI);
     end;
@@ -1484,6 +1497,14 @@ begin
     OutputTable.Caption := 'LifeTable: ' + OutcomeV.GetVariableLabel(Cmd.ParameterList);
     if Cmd.ParamExists['BY'] then
       OutputTable.Caption := OutputTable.Caption + ' by ' + ByV.GetVariableLabel(Cmd.ParameterList);
+
+    s := 'Outcome: ' + OutcomeV.GetVariableLabel(Cmd.ParameterList) + ' = ' +
+         OutcomeV.GetValueLabel(IntToStr(DeadInd), Cmd.ParameterList);
+    OutputTable.Footer := s;
+
+    GrandCases := 0;
+    GrandTotal := 0;
+    dm.AddResult('$OUTCOME', EpiTyInteger, DeadInd, 8,0);
 
     while true do
     begin
@@ -1508,7 +1529,7 @@ begin
         if Cmd.ParamExists['BY'] then
         begin
           GroupV.AsInteger[k] := ByV.AsInteger[i];
-          OutputTable.Cell[1, OutputTable.RowCount] := ByV.GetValueLabel(ByV.AsString[i]);
+          OutputTable.Cell[1, OutputTable.RowCount] := ByV.GetValueLabel(ByV.AsString[i], Cmd.ParameterList);
         end else
           OutputTable.Cell[1, OutputTable.RowCount] := '';
 
@@ -1540,22 +1561,29 @@ begin
           PrSrvV.AsFloat[k]        := 1 - PrDthV.AsFloat[k];
           CmPrSrvV.AsFloat[k]      := CmPrSrvV.AsFloat[k-1] * PrSrvV.AsFloat[k];
         end;
-        StdErr := System.Sqrt((CmPrSrvV.AsFloat[k] * (1 - CmPrSrvV.AsFloat[k])) / (Total - SumCens));
         if (not Cmd.ParamExists['NOCI']) then
         begin
-          CILO.AsFloat[k] := CmPrSrvV.AsFloat[k] - (1.96 * StdErr);
-          CIHI.AsFloat[k] := CmPrSrvV.AsFloat[k] + (1.96 * StdErr);
+          StdErr.AsFloat[k] := System.Sqrt((CmPrSrvV.AsFloat[k] * (1 - CmPrSrvV.AsFloat[k])) / (Total - SumCens));
+          CILO.AsFloat[k]   := CmPrSrvV.AsFloat[k] - (1.96 * StdErr.AsFloat[k]);
+          CIHI.AsFloat[k]   := CmPrSrvV.AsFloat[k] + (1.96 * StdErr.AsFloat[k]);
         end;
         Inc(Cases, DC);
         Inc(SumCens, CeC);
         inc(k);
       end;
+      dm.AddResult('$CASE' + ByV.AsString[St], EpiTyInteger, Cases, 8, 0);
+      dm.AddResult('$TOTAL' + ByV.AsString[St], EpiTyInteger, Total, 8, 0);
+      inc(GrandCases, Cases);
+      inc(GrandTotal, Total);
       OutputTable.Cell[3, OutputTable.RowCount] := IntToStr(Cases);
       OutputTable.Cell[5, OutputTable.RowCount] := IntervalV.AsString[k-1];
       OutputTable.Cell[6, OutputTable.RowCount] := IntToStr(SumTime);
       if En = AggDF.RowCount then break;
       St := i;
     end;
+      dm.AddResult('$CASES', EpiTyInteger, GrandCases, 8, 0);
+      dm.AddResult('$NONCASES', EpiTyInteger, GrandTotal - GrandCases, 8, 0);
+      dm.AddResult('$TOTAL', EpiTyInteger, GrandTotal, 8, 0);
     Result.Capacity := k-1;
   finally
     if Assigned(LocalVarnames) then FreeAndNil(LocalVarnames);
@@ -2807,19 +2835,135 @@ begin
 end;
 
 procedure TTables.OutLifeTable(df: TEpiDataframe);
+var
+  tf: TTableFormats;
+  tab: TStatTable;
+  i: integer;
 begin
-  //
+  Getformats(Cmd, tf);
+
+  if Cmd.ParamExists['NOCI'] then
+    tab := dm.CodeMaker.Output.NewTable(5, df.RowCount+1)
+  else
+    tab := dm.CodeMaker.Output.NewTable(7, df.RowCount+1);
+  tab.TableType := sttStat;
+
+  tab.Footer := 'Observation time weighted for censored obs.';
+  if Cmd.ParamExists['T'] then
+    tab.Footer := tab.Footer + '<br>LogRank test not implemeted.';
+
+  // Headers.
+  tab.Cell[1,1] := tf.LTHdr.IntVal;
+  tab.Cell[2,1] := tf.LTHdr.Beg;
+  tab.Cell[3,1] := tf.LTHdr.Deaths;
+  tab.Cell[4,1] := tf.LTHdr.Lost;
+  tab.Cell[5,1] := tf.LTHdr.Survival;
+  if (not Cmd.ParamExists['NOCI']) then
+  begin
+    tab.Cell[6,1] := tf.LTHdr.StdErr;
+    tab.Cell[7,1] := tf.CIHdr;
+  end;
+
+  for i := 1 to df.RowCount do
+  begin
+    tab.Cell[1,i+1] := df.VectorByName['$INTERVAL'].AsString[i];
+    tab.Cell[2,i+1] := df.VectorByName['$NUMATSTRT'].AsString[i];
+    tab.Cell[3,i+1] := df.VectorByName['$DEATHS'].AsString[i];
+    tab.Cell[4,i+1] := df.VectorByName['$WITHDRAWN'].AsString[i];
+    tab.Cell[5,i+1] := Epiformat(df.VectorByName['$CMPRSURV'].AsFloat[i], tf.EFmt);
+    if (not Cmd.ParamExists['NOCI']) then
+    begin
+      tab.Cell[6,i+1] := Epiformat(df.VectorByName['$STDERR'].AsFloat[i], tf.EFmt);
+      tab.Cell[7,i+1] := EpiCIformat(0, df.VectorByName['$CILO'].AsFloat[i], df.VectorByName['$CIHI'].AsFloat[i], tf.EFmt, tf.CIFmt, tf.CIHdr,1);
+    end;
+  end;
+
+  dm.CodeMaker.OutputTable(tab);
 end;
 
 {*****************************************
   Formats for percentages and estimates:
 ******************************************}
-
-procedure TTables.GetFormats(Cmd: TCommand; var TableFormats: TTableFormats);
+procedure TTables.GetORHeaders(Cmd: TCommand; var ORHeaders: TORHeader);
 var
   Opt: TEpiOption;
   s: string;
   List: TStrings;
+begin
+  if dm.GetOptionValue('TABLE CT OR HEADER', opt) then
+    s := Opt.value else s := 'Outcome:,Case,Non Case,N,Exposed,Non exposed';
+  List := TStringList.Create;
+  SplitString(s, List, [',']);
+  if List.Count <> 6 then
+    dm.Error('Incorrect number of headers for %s header', ['CT OR'], 0, 117006);
+
+  With ORHeaders do
+  begin
+    Outcome := List[0];
+    CCase   := List[1];
+    NCase   := List[2];
+    N       := List[3];
+    Exposed := List[4];
+    NonExposed := List[5];
+  end;
+  FreeAndNil(List);
+end;
+
+procedure TTables.GetRRHeaders(Cmd: TCommand; var RRHeaders: TRRHeader);
+var
+  Opt: TEpiOption;
+  s: string;
+  List: TStrings;
+begin
+  if dm.GetOptionValue('TABLE CT RR HEADER', opt) then
+    s := Opt.value else s := 'Outcome:,Exposed,Not Exposed,N,n,Ill,RR,AR (%)';
+  List := TStringList.Create;
+  SplitString(s, List, [',']);
+  if List.Count <> 8 then
+    dm.Error('Incorrect number of headers for %s header', ['CT RR'], 0, 117006);
+
+  With RRHeaders do
+  begin
+    Outcome    := List[0];
+    Exposed    := List[1];
+    NotExposed := List[2];
+    N          := List[3];
+    SmallN     := List[4];
+    Ill        := List[5];
+    RR         := List[6];
+    AR         := List[7];
+  end;
+  FreeAndNil(List);
+end;
+
+procedure TTables.GetLTHeaders(Cmd: TCommand; var LTHeaders: TLTHEader);
+var
+  Opt: TEpiOption;
+  s: string;
+  List: TStrings;
+begin
+  if dm.GetOptionValue('LIFETABLE HEADER', opt) then
+    s := Opt.value else s := 'Interval,Beg. Total,Deaths,Lost,Survival,Std. Error';
+  List := TStringList.Create;
+  SplitString(s, List, [',']);
+  if List.Count <> 6 then
+    dm.Error('Incorrect number of headers for %s header', ['LifeTable'], 0, 117006);
+
+  With LTHeaders do
+  begin
+    IntVal   := List[0];
+    Beg      := List[1];
+    Deaths   := List[2];
+    Lost     := List[3];
+    Survival := List[4];
+    StdErr   := List[5];
+  end;
+  FreeAndNil(List);
+end;
+
+procedure TTables.GetFormats(Cmd: TCommand; var TableFormats: TTableFormats);
+var
+  Opt: TEpiOption;
 begin
   if dm.GetOptionValue('TABLE PERCENT FORMAT ROW', Opt) then
      TableFormats.RFmt := Opt.value else TableFormats.RFmt := 'P1()';
@@ -2868,42 +3012,9 @@ begin
     TableFormats.CIHdr := Opt.value else TableFormats.CIHdr := '(95% CI)';
     TableFormats.CIHdr := '<font class=ci>' + TableFormats.CIHdr + '</font>';
 
-  if dm.GetOptionValue('TABLE CT OR HEADER', opt) then
-    s := Opt.value else s := 'Outcome:,Case,Non Case,N,Exposed,Non exposed';
-  List := TStringList.Create;
-  SplitString(s, List, [',']);
-  if List.Count <> 6 then
-    dm.Error('Incorrect number of headers for %s header', ['CT OR'], 0, 117006);
-
-  With TableFormats.ORHdr do
-  begin
-    Outcome := List[0];
-    CCase   := List[1];
-    NCase   := List[2];
-    N       := List[3];
-    Exposed := List[4];
-    NonExposed := List[5];
-  end;
-
-  if dm.GetOptionValue('TABLE CT RR HEADER', opt) then
-    s := Opt.value else s := 'Outcome:,Exposed,Not Exposed,N,n,Ill,RR,AR (%)';
-  SplitString(s, List, [',']);
-  if List.Count <> 8 then
-    dm.Error('Incorrect number of headers for %s header', ['CT RR'], 0, 117006);
-
-  With TableFormats.RRHdr do
-  begin
-    Outcome    := List[0];
-    Exposed    := List[1];
-    NotExposed := List[2];
-    N          := List[3];
-    SmallN     := List[4];
-    Ill        := List[5];
-    RR         := List[6];
-    AR         := List[7];
-  end;
-
-  FreeAndNil(List);
+  GetORHeaders(Cmd, TableFormats.ORHdr);
+  GetRRHeaders(Cmd, TableFormats.RRHdr);
+  GetLTHeaders(Cmd, TableFormats.LTHdr);
 end;
 
 {Procedure TTables.GetFormats(cmd : TCommand; var efmt, rfmt, cfmt, tfmt,

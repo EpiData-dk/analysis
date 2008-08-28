@@ -2,7 +2,7 @@ unit Uoutput;
 
 interface
 
-uses sysutils, windows, classes,Graphics,ansDataTypes,UstringConst, CStrings, dialogs, uabout;
+uses sysutils, windows, classes,Graphics, ansDataTypes,UstringConst, CStrings, dialogs, uabout;
 
 
 resourcestring
@@ -118,14 +118,13 @@ TStatTableType = (sttPercents, sttGraph, sttSystem, sttNormal, sttFreq, sttIniti
 
 TStatTable=class(TStatOutputObj)
 private
-//    fcolsList : TList;
-    fdata     :Tstringlist;
-    fcolCount: integer;
-    fRowCount: integer;
-    fAuto    :boolean;
-    fCaption: string;
-//    fTableOptions:TTableOptions;
-    fObjSeq: integer;
+    fdata     : Tstringlist;
+    fcolCount : integer;
+    fRowCount : integer;
+    fAuto     : boolean;
+    fCaption  : string;
+    fFooter   : string;
+    fObjSeq   : integer;
     fTableType: TStatTableType;
     function Getcell(Acol, Arow: integer): string;
     procedure SetCell(Acol, Arow: integer; const Value: string);
@@ -138,11 +137,11 @@ private
     function InsertColumn(x: integer): boolean;
     procedure DeleteColumn(index: integer);
     function AddColumn: boolean;
-    // property columns[index:integer]:TstatColumn read GetColumn;
     property Cell[col,row:integer]:string read Getcell write SetCell;
     procedure InsertRow(x: integer);
     procedure AddRow;
     property Caption : string read fCaption write SetCaption;
+    property Footer  : string read fFooter write fFooter;
     property RowCount:integer read fRowCount;
     property ColCount:integer read fcolCount;
     property TableType: TStatTableType read fTableType write SetTableType;
@@ -164,7 +163,7 @@ private
   fCharset: string;
   FTitle: string;
   fLogType: TEpiOutputType;
-  function InternalOutputTable(xtab: TStatTable;srow,erow:integer;LogType:TEpiOutputType;foot:string{;tabledef:string}): string;
+  function InternalOutputTable(xtab: TStatTable;srow,erow:integer;LogType:TEpiOutputType;foot:string=''): string;
   function InternalOutputPercents(xtab: TStatTable; row, col: integer): string;
   function InternalOutputSystem(xtab: TStatTable; row, col: integer): string;
   function InternalOutputNormal(xtab: TStatTable; row, col: integer): string;
@@ -180,7 +179,7 @@ private
 public
   constructor Create(pOutput:TStatOutputList);
   destructor Destroy;override;
-  function OutputTable(xtab:TStatTable;foot:string{;tabledef:string}) : string;
+  function OutputTable(xtab:TStatTable;foot:string='') : string;
 //  function OutputTabRows(xtab: TStatTable; srow, erow: integer): string;
   function outputPara(xPara: TStatPara): string;
  // function OutputAll(NewOnly:boolean=false):boolean;
@@ -670,7 +669,7 @@ begin
 end;
 
 function THTMLMaker.InternalOutputTable(xtab:TStatTable; srow, erow: integer; LogType: TEpiOutputType;
-                                        foot:string): string;
+                                        foot:string=''): string;
 VAR
   AlignTitle, AlignTable, AlignCellV,
   CellPadding, Wrapped, CellStart, TableCells,
@@ -686,6 +685,11 @@ Begin
     erow:=xtab.rowcount;
     Closeoutput:=true;
   end;
+
+  // TODO -oTorsten: Remove footer "conversion" when 'foot' no longer used.  
+  if (Foot <> '') and (xTab.Footer = '')  then
+    xTab.Footer := Foot;
+
   if LogType=EpiOTHTML then
   begin
     if srow=1 then
@@ -711,20 +715,11 @@ Begin
         TableString := TableString+'<CAPTION class=caption>'+format('%s',[xtab.Caption]) +'</CAPTION>'+CRLF;
     end;
 
-    IF foot = 'GraphSubTables' THEN              // this is a pseudo crosstable for a graph
+    IF xTab.Footer = 'GraphSubTables' THEN              // this is a pseudo crosstable for a graph
     begin
       TableString := TableString + '<CAPTION class=caption>&nbsp;</CAPTION>'+CRLF;
-      foot := '';
+      xTab.Footer := '';
     end;
-
-
-    //Body contents:
-{   // create column name groups
-    FOR c := 1 TO xtab.colcount DO
-               begin
-               TableString := TableString + '<COL id="col' + IntToStr(c) + '">';
-               end;
-  TableString := tableString + CRLF;}
 
     for i:= srow to erow do
     begin
@@ -757,20 +752,20 @@ Begin
     end;
 
      // footer to table ?
-    if  foot <> '' then
+    if  xTab.Footer <> '' then
     begin
       TableRow := TableRow
-                   + format({crlf+ }'<tr><TD class=cellfoot colspan= %d >',[xtab.colcount])
-                   + foot+'</TD>' + CRLF ;
+                   + format('<tr><TD class=cellfoot colspan= %d >',[xtab.colcount])
+                   + xTab.Footer + '</TD>' + CRLF ;
     end;
 
     if Closeoutput then
-      Result := TableString+TableRow+ '</TABLE>'+ CRLF
+      Result := TableString + TableRow+ '</TABLE>'+ CRLF
     else
-      Result := TableString+TableRow{+'</TABLE>'}+CRLF;
-  //HTML output
+      Result := TableString + TableRow + CRLF;
+    //HTML output
   end else begin
-  //txt output
+    //txt output
     for i:= srow to erow do
     begin
       FOR j := 1 TO xtab.colcount DO
@@ -783,22 +778,21 @@ Begin
       TableRow := TableRow+TableCells+CRLF;
       TableCells := '';
     End;
-    if foot <> '' then  TableRow := TableRow+CRLF+foot;
+    if xTab.Footer <> '' then  TableRow := TableRow + CRLF + xTab.Footer;
     Result := striphtml(TableRow);
   end;
-//   result := result;
 End;
 
 
-function THTMLMaker.OutputTable(xtab: TStatTable;foot:string{; Tabledef:string}): string;
+function THTMLMaker.OutputTable(xtab: TStatTable; foot: string=''): string;
 var
  s, s1 : string;
 begin
-  s := InternalOutputTable(xtab,1,MaxInt,EpiOTHTML,foot{,tabledef});
+  s := InternalOutputTable(xtab,1,MaxInt,EpiOTHTML, foot);
   s:= s + ' ';
   if LogType=EpiOTText then
   begin
-    s1 := InternalOutputTable(xtab,1,MaxInt,EpiOTText,foot{,tabledef});
+    s1 := InternalOutputTable(xtab,1,MaxInt,EpiOTText,foot);
     Writeln(s,s1)
   end
   else

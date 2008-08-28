@@ -1825,7 +1825,6 @@ begin
         zvec.AsInteger[i] := 1;
     end;
     df2.Sort(varlist.CommaText);
-    // dm.CodeMaker.OutputTable(df.ToStattable(nil), '');
 
     // Create the graph and set customizable settings.
     result := CreateStandardChart();
@@ -2169,25 +2168,29 @@ begin
 
     The proportion of yes (highest value) is calculated for all as well as by another variable:
 
-       Command syntax : CIPLOT <var> /BY=<byvar1> /BY=<byvar2> ... /BY=<byvarn>
+       Command syntax : CIPLOT <outcome> <var1> <var2> ... /BY=<byvar>
 
-       1) Aggregate on <var>
+       1) Aggregate on <outcome>
        2) Find sum of entries.
        3) Calculate CI on entries.
        4) Plot CI to Chart.
 
-       5) for each /BY=<byvarX> loop
-        a) Aggregate on <byvarX>, <var>
-        b) find sum of entries on each level of <byvarX>
-        c) calculate CI on each entrie on each level of <byvarX>
-        d) Plot CI.
+       5) For each <varX> loop
+        a) For each group in <byvar>
+         i)   Aggregate on <varX>, <outcome>
+         ii)  Find sum of entries on each level of <byvarX>
+         iii) calculate CI on each entrie on each level of <byvarX>
+         iv)  Plot CI. '
+
+
+       NOTE: /BY is not implemented yet.
     *)
 
-    // 1) Aggregate on <var>
+    // 1) Aggregate on <outcome>
     Varlist := TStringList.Create();
-    Varlist.Add(Varnames[Varnames.Count-1]);
+    Varlist.Add(Varnames[0]);
     agglist := TAggrList.Create();
-    agglist.Add(TAggrCount.Create('$S', Varnames[Varnames.Count-1], acAll));
+    agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
     df := OAggregate.AggregateDataframe(dataframe, TStringList(Varlist), agglist);
     //dm.CodeMaker.OutputTable(df.ToStattable(nil), '');
 
@@ -2198,10 +2201,10 @@ begin
     if (Parameters.VarByName['O'] <> nil) then
       showvalue := Parameters.VarByName['O'].AsInteger
     else
-      Showvalue := df.VectorByName[Varnames[Varnames.Count-1]].asInteger[df.RowCount];
+      Showvalue := df.VectorByName[Varnames[0]].asInteger[df.RowCount];
 
-    footnote :='Proportion of ' + df.VectorByName[Varnames[Varnames.Count-1]].GetVariableLabel
-               + ' = ' + df.VectorByName[Varnames[Varnames.Count-1]].GetValueLabel(IntToStr(showvalue),parameters);
+    footnote :='Proportion of ' + df.VectorByName[Varnames[0]].GetVariableLabel
+               + ' = ' + df.VectorByName[Varnames[0]].GetValueLabel(IntToStr(showvalue),parameters);
     result.title.Text.Add(footnote);
 
     // dm.info(footnote);
@@ -2213,7 +2216,7 @@ begin
     for i := 1 to Df.RowCount do
     begin
       inc(sum, vec.AsInteger[i]);
-      if showvalue = df.VectorByName[Varnames[Varnames.Count-1]].asInteger[i] then
+      if showvalue = df.VectorByName[Varnames[0]].asInteger[i] then
         numerator := vec.AsInteger[i] ;
     end;
     if sum = 0 then dm.error('No Data', [], 103005);
@@ -2237,7 +2240,7 @@ begin
 
     // 4) Plot CI to Chart.
     Series.ParentChart := result;
-    result.bottomaxis.Title.Caption := df.VectorByName[Varnames[Varnames.count-1]].name + ' |';
+    result.bottomaxis.Title.Caption := df.VectorByName[Varnames[0]].name + ' |';
 
     // add vertical lines ?
     if (Parameters.VarByName['NL'] = nil) then
@@ -2257,33 +2260,33 @@ begin
         // add output table ?
     if Parameters.VarbyName['NT'] = Nil then
     begin
-     CreateTable(Outputtable,footnote,df.VectorByName[Varnames[Varnames.count-1]].Name,
-                 df.VectorByName[Varnames[Varnames.Count-1]].GetValueLabel(IntToStr(showvalue),parameters));
-     AddToTable(OutPutTable,df.VectorByName[Varnames[Varnames.count-1]].Name,'Total',
+     CreateTable(Outputtable,footnote,df.VectorByName[Varnames[0]].Name,
+                 df.VectorByName[Varnames[0]].GetValueLabel(IntToStr(showvalue),parameters));
+     AddToTable(OutPutTable,df.VectorByName[Varnames[0]].Name,'Total',
               numerator,sum,mid*100,low*100,high*100, parameters);
     end;
 
     footnote :='&nbsp;&nbsp;Crude: Proportion of '
-       + df.VectorByName[Varnames[Varnames.count-1]].Name + ' = ' + Series.xLabel[c] + ' among all <br>'
+       + df.VectorByName[Varnames[0]].Name + ' = ' + Series.xLabel[c] + ' among all <br>'
        +'&nbsp;&nbsp;&nbsp;&nbsp;Proportion of '
-       + df.VectorByName[Varnames[Varnames.count-1]].Name + ' = ' + Series.xLabel[c]
+       + df.VectorByName[Varnames[0]].Name + ' = ' + Series.xLabel[c]
        + ' for each stratum in /by variable(s)';
 
     FreeAndNil(df);  // we do not need this now
 
 
-    // 5) for each /varaible BY=<byvarX> loop
+    // 5) for each varaible <varX>
     c := 1;     //c is candle number
     //for i := 0 to Parameters.Count-1 do
-    for i := 0 to Varnames.Count-2 do
+    for i := 1 to Varnames.Count-1 do
     begin
       //if AnsiUpperCase(Parameters[i].VarName) <> 'BY' then continue;
       // a) Aggregate on <byvarx>, <var>
       Varlist.Clear;
       Varlist.Add(Varnames[i]);
-      Varlist.Add(Varnames[varnames.count-1]);
+      Varlist.Add(Varnames[0]);
       agglist := TAggrList.Create();
-      agglist.Add(TAggrCount.Create('$S', Varnames[varnames.count-1], acAll));
+      agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
       df := OAggregate.AggregateDataframe(dataframe, TStringList(Varlist), agglist);
  //     dm.CodeMaker.OutputTable(df.ToStattable(nil), '');
 
@@ -2318,7 +2321,7 @@ begin
 
          for n := 1 to m do
           begin
-            if (df.VectorByName[Varnames[varnames.count - 1]].AsInteger[j] = showvalue) then
+            if (df.VectorByName[Varnames[0]].AsInteger[j] = showvalue) then
                                          numerator := Vec.AsInteger[j];
             sum := sum + vec.AsInteger[j]; inc(j);
           end;  // end for this byvariable value
@@ -2330,24 +2333,24 @@ begin
             dm.info('No Data', [], 103005)
           else
           begin
-          // with series2 for by variables colours are correct, but xlabel missing
-(*              Series2.AddOHLC(c,(mid*100)-0.25, Low*100, High*100,(mid*100)+0.25);
-              Series2.UpCloseColor := GetGraphColour(c);
-              Series2.DownCloseColor := GetGraphColour(c);
-              Series2.Color := GetGraphColour(c);  *)
-          // but we do for now no colouring:
-          Mid := numerator / Sum;
-          EpiProportionCI(numerator, sum, High, Low);
-          if ((mid*100.0)+0.15> 100.0) then
-             Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0))
-              else                  Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0)+0.15);
-          Series.UpCloseColor := GetGraphColour(c);
-          Series.DownCloseColor := GetGraphColour(c);
-          Series.Color := GetGraphColour(c);
-          Series.xlabel[c] := ByVec.GetValueLabel(ByVec.asstring[j],parameters);
-          if Parameters.VarbyName['NT'] = Nil then
-            AddToTable(OutPutTable,ByVec.Name,Series.xLabel[c],numerator,sum,mid*100,low*100,high*100,parameters);
-          inc(c); // next candle overall
+            // with series2 for by variables colours are correct, but xlabel missing
+  (*              Series2.AddOHLC(c,(mid*100)-0.25, Low*100, High*100,(mid*100)+0.25);
+                Series2.UpCloseColor := GetGraphColour(c);
+                Series2.DownCloseColor := GetGraphColour(c);
+                Series2.Color := GetGraphColour(c);  *)
+            // but we do for now no colouring:
+            Mid := numerator / Sum;
+            EpiProportionCI(numerator, sum, High, Low);
+            if ((mid*100.0)+0.15> 100.0) then
+               Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0))
+                else                  Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0)+0.15);
+            Series.UpCloseColor := GetGraphColour(c);
+            Series.DownCloseColor := GetGraphColour(c);
+            Series.Color := GetGraphColour(c);
+            Series.xlabel[c] := ByVec.GetValueLabel(ByVec.asstring[j],parameters);
+            if Parameters.VarbyName['NT'] = Nil then
+              AddToTable(OutPutTable,ByVec.Name,Series.xLabel[c],numerator,sum,mid*100,low*100,high*100,parameters);
+            inc(c); // next candle overall
           end;
           inc(j); // next stratum this "by" variable
 
@@ -2357,7 +2360,7 @@ begin
        if (Parameters.VarByName['NL'] = nil) then addline(result,c-0.5);
     end; // end by variables
         // show footnote
-        if Parameters.VarbyName['NT'] <> Nil then dm.info(footnote, [], 0);
+    if Parameters.VarbyName['NT'] <> Nil then dm.info(footnote, [], 0);
 
   finally
     if Assigned(df) then FreeAndNil(df);
@@ -3574,7 +3577,7 @@ var
       inc(j);
       CandleSeries := TCandleSeries.Create(Result);
       CandleSeries.Title := 'CI for ' + ZVec.GetValueLabel(ZVec.AsString[i+1], Parameters);
-      CandleSeries.Color := GetGraphColour(j);
+      CandleSeries.HighLowPen.Color := GetGraphColour(j);
       CandleSeries.ShowInLegend := false;
     end;
   end;

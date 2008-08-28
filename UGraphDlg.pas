@@ -175,14 +175,13 @@ begin
   RunBtn.tag:=  DlgResRun;
 end;
 
-procedure TGraphDlg.InitializeDlg(
-const ps: string;
-xvars, yvars: integer; legalxtype, legalytype: array of integer; AdvType: TEpiAdvOptions; By:boolean; Weigth: boolean;
-t1:string='X Variable'; t2:string='Y Variable 1';
-                      t3:string='Y Variable 2';t4:string='Y Variable 3';
-                      tb:string='Y Variable 4';byreq:Boolean=False);
+procedure TGraphDlg.InitializeDlg(const ps: string; xvars, yvars: integer; legalxtype, legalytype: array of integer;
+                                  AdvType: TEpiAdvOptions; By:boolean; Weigth: boolean;
+                                  t1: string='X Variable';   t2: string='Y Variable 1';
+                                  t3: string='Y Variable 2'; t4: string='Y Variable 3';
+                                  tb: string='Y Variable 4'; byreq: Boolean=False);
 begin
-  if not dm.CheckDataOpen() then exit; //m.CheckDataOpen();
+  if not dm.CheckDataOpen() then exit;
   self.Width := 400;
   self.Height := 195;
   ParseString(ps);
@@ -327,17 +326,24 @@ begin
   // Textbox options:
   if trim(Edit3.Text) <> '' then cmd := cmd +
      ' /TEXT="' + xpos1.Text + c + ypos1.Text + c + edit3.Text + c + ChkBxRes(btyp1) + '"';
- { if trim(Edit4.Text) <> '' then cmd := cmd +
-     ' /TEXT="' + xpos2.Text + c + ypos2.Text + c + edit4.Text + c + ChkBxRes(btyp2) + '"';
- }
   if (((CmdName = 'PCHART') or (CmdName = 'RUNCHART') or (CmdName = 'ICHART'))
      and (spctest.checked)) then cmd := cmd + ' /T'; // as default do test for special causes
-
+  if (CmdName = 'LTAB') then
+    cmd := cmd + ' /G /NOLT';
 end;
 
 procedure TGraphDlg.CancelBtnClick(Sender: TObject);
+  function mr2dr(mr: integer): integer;
+  begin
+    case mr of
+      mrOk: result := DlgResRun;
+      mrYes: result := DlgResPaste;
+      mrCancel: result := DlgResCancel;
+    end;
+  end;
+
 begin
-  DlgResult:=Tcomponent(sender).tag;
+  DlgResult := TButton(sender).ModalResult;
   makeCmdString(CmdString);
   close;
 end;
@@ -348,7 +354,6 @@ var
   i: integer;
 
 begin
-
   for i := 0 to GraphDlg.ComponentCount -1 do
   begin
     if (GraphDlg.Components[i] is TMaskEdit) then

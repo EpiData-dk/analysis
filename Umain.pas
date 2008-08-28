@@ -308,6 +308,10 @@ type
     N31: TMenuItem;
     ImpClipBrd: TMenuItem;
     AcImportFromClipboard: TAction;
+    AcRunKMPlot: TAction;
+    AcRunLifeTable: TAction;
+    KMPlot1: TMenuItem;
+    LifeTable1: TMenuItem;
 
     procedure FormCreate(Sender: TObject);
     procedure CmdEditCommand(Sender: TObject);
@@ -454,6 +458,8 @@ type
     procedure HistorylistExit(Sender: TObject);
     procedure Ciplot1Click(Sender: TObject);
     procedure AcImportFromClipboardExecute(Sender: TObject);
+    procedure AcRunKMPlotExecute(Sender: TObject);
+    procedure AcRunLifeTableExecute(Sender: TObject);
     //JL add end
   private
     dbfdata: TEpiDBFdataset;
@@ -2284,12 +2290,12 @@ var
  cmd: string;
  Res: integer;
 begin
-  Res:= showGraphdlg(self,CmdString, cmd, Xvars,Yvars,xlegal,ylegal, AdvType, By, Weigth,
+  Res:= showGraphdlg(self, CmdString, cmd, Xvars,Yvars,xlegal,ylegal, AdvType, By, Weigth,
             t1,t2,t3,t4,tb);
-  if Res <> 3003 {DlgResCancel} then cmdedit.Clear;
+  if Res <> DlgResCancel then cmdedit.Clear;
   case Res of
-    3001 {DlgResRun}: InternalRunCommand(cmd);
-    3005 {DlgResPaste}: cmdedit.insert(cmd)
+    DlgResRun: InternalRunCommand(cmd);
+    DlgResPaste: cmdedit.insert(cmd)
   end;
 end;
 
@@ -2312,11 +2318,11 @@ var
  cmd: string;
  Res: integer;
 begin
- Res:= showdlg(self,CmdString, cmd);
- case Res of
-  DlgResRun: InternalRunCommand(cmd);//cmdedit.doCommand(cmd);
-  DlgResPaste: cmdedit.insert(cmd)
- end;
+  Res:= showdlg(self, CmdString, cmd);
+  case Res of
+    DlgResRun: InternalRunCommand(cmd);//cmdedit.doCommand(cmd);
+    DlgResPaste: cmdedit.insert(cmd)
+  end;
 end;
 
 procedure TaMainForm.AcBrowseFldsExecute(Sender: TObject);
@@ -2552,7 +2558,7 @@ end;
 
 procedure TaMainForm.AcRunMeansExecute(Sender: TObject);
 begin
-     DoDlg('means varlist');
+  DoDlg('means varlist');
 end;
 
 procedure TaMainForm.Togglemenu1Click(Sender: TObject);
@@ -3103,7 +3109,7 @@ end;
 
 procedure TaMainForm.Ciplot1Click(Sender: TObject);
 begin
- DoGraphDlg('CIplot varlist',1,4, [EpiTyFloat,EpiTyInteger,EpiTyDate,EpiTyByte],
+  DoGraphDlg('CIplot varlist',1,4, [EpiTyFloat,EpiTyInteger,EpiTyDate,EpiTyByte],
              [EpiTyFloat,EpiTyInteger,EpiTyBoolean,EpiTyByte], [GrpStdOpt],
              True,False,'Choose Variable','Choose Variable (optional)','Choose Variable (optional)','Choose Variable (optional)',
              'Outcome (Not optional)');
@@ -3112,6 +3118,17 @@ end;
 procedure TaMainForm.AcImportFromClipboardExecute(Sender: TObject);
 begin
   doCommand('Read /CB');
+end;
+
+procedure TaMainForm.AcRunKMPlotExecute(Sender: TObject);
+begin
+  DoGraphDlg('LTAB varlist /G /NOLT', 1, 2, [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte], [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte],
+             [GrpStdOpt], true, true, 'Outcome:', 'Start/Interval', 'End');
+end;
+
+procedure TaMainForm.AcRunLifeTableExecute(Sender: TObject);
+begin
+  DoTableDlg('LTAB');
 end;
 
 end.

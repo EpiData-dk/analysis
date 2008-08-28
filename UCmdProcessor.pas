@@ -3116,18 +3116,19 @@ begin
   try
     S := TStringList.Create;
     if cmd.ParamByName['BY'] <> Nil then
-    begin
+      dm.info('Option %s not implemented yet', ['/BY'], 203034);
+{    begin
       varnames.Add(Cmd.ParamByName['BY'].AsString);
       S.Add(Cmd.ParamByName['BY'].AsString);
     end else
-      dm.Error('/BY=<byvar> cannot be missing', [], 103044);
+      dm.Error('/BY=<byvar> cannot be missing', [], 103044);  }
 
     CheckVariableNo(Varnames, 2);
 
     if (cmd.ParamExists['NM']) then
 //      S.AddStrings(Varnames);
       dm.info('Option %s not implemented yet', ['/NM'], 203034);
-      
+
     S.AddStrings(Varnames);
     df := dataframe.prepareDataframe(Varnames, S);
     OGraph.DoGraphs(df, varnames, cmd);
@@ -3561,6 +3562,7 @@ begin
 
   //lifetable settings
   foptions.AddObject('LIFETABLE INTERVAL',TEpiOption.Create('LIFETABLE INTERVALN', '0,7,15,30,60,90,180,360,540,720', EpiTyString));
+  foptions.AddObject('LIFETABLE HEADER',TEpiOption.Create('LIFETABLE HEADER', 'Interval,Beg. Total,Deaths,Lost,Survival,Std. Error', EpiTyString));
 
   //table design
   foptions.AddObject('TABLE DESIGN',TEpiOption.Create('TABLE DESIGN','LINE',EpiTyString));

@@ -126,7 +126,7 @@ opCLOSE = opUserDefined		+108;
                      opMEANS,opDescribe, opREGRESS,opShortSTABLES,opSTABLES, opCorrelate{,opCount},
                      opShortMeans, opShortCorrelate, opShortDescribe,
                      opKWallis ,opShortTables, opdir, opIchart, opPchart, opRunchart,
-                     opEpiCurve,opCDFPlot,opDotPlot,opTableDialog];
+                     opEpiCurve,opCDFPlot,opDotPlot,opTableDialog, opLifeTable, opShortLifeTable];
 
  EpiShowSelectCmds= [opDESCRIBE, opSORT, opFREQ, opTABLES, opMEANS, opREGRESS, opShortSTABles, opSTABLES, opList,
                     opCount, opPie, opBar, opHistogram, opLine, opGenerate, opCorrelate, opKWallis, opShortTABLES, opScatter, opPCHART,

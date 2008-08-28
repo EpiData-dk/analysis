@@ -2096,6 +2096,7 @@ end;
 procedure TEpiDataFrame.SendToOutput(Varnames: TStrings);
 begin
   dm.CodeMaker.OutputTable(ToStattable(Varnames), '');
+  dm.Sendoutput();
 end;
 
 function TEpiDataFrame.FormatVectors(varnames: Tstrings;const fmt:String): boolean;

@@ -291,7 +291,7 @@ begin
         else if (j = 2) and (trim(ByVar.Caption) = '') then ByVar.Caption := GetVar.Items[GetVar.ItemIndex]
         {    // dm.info(columnvar.caption + '<br>' + rowvar.caption + '<br>' + variables.caption);}
         else if (j > 2) then
-          if (cmdname = 'REGRESS') or (cmdname = 'CORRELATE' )  then
+          if (cmdname = 'REGRESS') or (cmdname = 'CORRELATE' ) then
               ByVar.Caption := ByVar.Caption + ' ' + GetVar.Items[GetVar.ItemIndex]
               else dm.error('Max two variables', [], 104003);
 end;

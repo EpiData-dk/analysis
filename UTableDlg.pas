@@ -127,7 +127,7 @@ begin
   if not assigned(TableDlg) then
   begin
     TableDlg:= TTableDlg.Create(application);
-    TableDlg.MAinform :=frm;
+    TableDlg.Mainform :=frm;
   end;
   TableDlg.InitializeDlg(ParseString);
   OTranslator.TranslateForm(TableDlg);
@@ -147,7 +147,7 @@ end;
 
 procedure TTableDlg.InitializeDlg(const ps: string);
 begin
-       if not dm.CheckDataOpen() then exit; //dm.CheckDataOpen();
+  if not dm.CheckDataOpen() then exit; //dm.CheckDataOpen();
   self.Width := DialogWidth;
   self.Height := DialogHeight;
   ParseString(ps);

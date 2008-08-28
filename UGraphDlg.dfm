@@ -84,6 +84,7 @@ object GraphDlg: TGraphDlg
       Height = 20
       Anchors = [akLeft, akTop, akBottom]
       Caption = '&Run'
+      ModalResult = 1
       TabOrder = 0
       OnClick = CancelBtnClick
     end
@@ -107,6 +108,7 @@ object GraphDlg: TGraphDlg
       Height = 29
       Anchors = [akLeft, akTop, akBottom]
       Caption = '&Paste'
+      ModalResult = 6
       TabOrder = 4
       Visible = False
       OnClick = CancelBtnClick
