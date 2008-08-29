@@ -268,14 +268,14 @@ var
  parser:TSMParser;
  fOnError: TOnParseError;
 
-procedure Error(const ErrorMsg:string='Unknown Error');
+procedure Error(const ErrorMsg: string='Unknown Error');
 var
  handled :boolean;
  Token : TSMToken;
 begin
  handled := false;
  if assigned(fOnError) then
-     fOnError(ErrorMsg,Token,handled);
+     fOnError(ErrorMsg, Token, handled);
  if not handled then
    raise EExpression.Create(format('%s' + #13#10+ 'At line %d',[ErrorMsg,Token.line]));
 end;
@@ -575,7 +575,7 @@ begin
       result:=EpiDateTostr(AsInteger,dfDMY);
    end
   else
-//    Error(format('Cannot read %s as String',[NExprType[ExprType]]));
+    Error(format('Cannot read %s as String',[NExprType[ExprType]]));
       result:=NA_STR;
   end
 end;
@@ -1607,8 +1607,8 @@ try
     Result:= inherited AsInteger;
   end
 except
-   result:=NA_INT;
-//  Error('Invalid argument/mathematical expression');
+  result:=NA_INT;
+  Error('Invalid argument/mathematical expression');
 end;
 end;
 

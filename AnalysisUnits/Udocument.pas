@@ -360,7 +360,7 @@ begin
   begin
     k := 0;
     tab1.Cell[iInc(k),i+2] := dm.dataframe.vectors[i].Name;
-    tab1.Cell[iInc(k),i+2] := AppendDateType(dm.dataframe.vectors[i], GetFieldTypeName(dm.dataframe.vectors[i].FieldDataType));
+    tab1.Cell[iInc(k),i+2] := AppendDateType(dm.dataframe.vectors[i], GetFieldTypeName(dm.dataframe.vectors[i].DataType));
     tab1.Cell[iInc(k),i+2] := inttostr(dm.dataframe.vectors[i].FieldDataSize);
     tab1.Cell[iInc(k),i+2] := inttostr(dm.dataframe.vectors[i].FieldDataDecimals);
     // TODO : Complete Variable should be written - opVariable

@@ -2129,17 +2129,17 @@ function TDM.Eval(Exp: IValue): boolean;
 var
  t : DWord;
 begin
-//t := getTickCount;
-if exp=nil then
-begin
-  error('No expression', [], 103026);
-end
-else
-begin
-   PrintResult(Exp.AsString);
-end;
-//t := getTickCount-t;
-//writeln('Expression evalution ended in '+ floattostr(t div 1000) +' seconds');
+  //t := getTickCount;
+  if exp=nil then
+  begin
+    error('No expression', [], 103026);
+  end
+  else
+  begin
+     PrintResult(Exp.AsString);
+  end;
+  //t := getTickCount-t;
+  //writeln('Expression evalution ended in '+ floattostr(t div 1000) +' seconds');
 end;
 
 function formatAssert:string;
@@ -2415,7 +2415,7 @@ var
  Notify  : Boolean;
 
 begin
-  if (cmd.ParameterCount> 0) then //got commands
+  if (cmd.ParameterCount > 0) then //got commands
   begin
     Param :=cmd.ParamByName['SUBCOMMAND'];
     if param<> nil then
@@ -3259,6 +3259,7 @@ begin
 
     if cmd.ParamExists['CLOSE'] then
     begin
+      ltdf.NormalizeVectorNames(nil);
       dm.InternalCloseFile(fDataframe);
       fdataframe := ltdf;
       initDataFrameVars(fDataframe);

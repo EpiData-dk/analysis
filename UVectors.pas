@@ -483,6 +483,7 @@ public
    function ConvertVector(Name: string; DataType: word; Const txt: string): boolean;
    function DropVectors(varnames: Tstrings): boolean;
    function FormatVectors(varnames: Tstrings; const fmt: String): boolean;
+   function NormalizeVectorNames(varnames: TStrings): boolean;
    function LoadFromDataSet(ADataset:TEpiDataSet):Epiint;
    function AppendNewRows(af: TEpiDataFrame; VAR ExcludedFields,LackingFields,InCompatibleFields:string):boolean;
    function SaveToDataSet(ADataset:TEpiDataSet):Epiint;
@@ -2115,6 +2116,40 @@ begin
   Result:=true;
 end;
 
+(**************************************************
+ * NormalizeVectorNames:
+ *   If a dataframe contains $.... vectornames they are
+ *   stripped of the $ charated. If the resulting names
+ *   conflicts with another vectorname - a number is appended
+ *   at the end.
+ ***************************************************)
+function TEpiDataFrame.NormalizeVectorNames(varnames: TStrings): boolean;
+var
+  VectorList: TEpiVectors;
+  i, j: integer;
+  s: string;
+begin
+  VectorList :=  GetVectorListByName(varnames);
+  j := 1;
+  for i := 0 to VectorList.Count-1 do
+  begin
+    if VectorList[i].Name[1] = '$' then
+    begin
+      s := Copy(VectorList[i].Name, 2, Length(VectorList[i].Name));
+      if Assigned(FindVector(s)) then
+        s := s + IntToStr(j);
+      while Assigned(FindVector(s)) do
+      begin
+        inc(j); 
+        s := Copy(s, 1, length(s)-1) + IntToStr(j);
+      end;
+      VectorList[i].Name := s;
+    end;
+  end;
+end;
+
+
+
 (***********************************************************************
  * PrepareDataframe:                                                   *
  *    Makes a copy of the original dataframe, given certain criterias: *
@@ -2648,7 +2683,8 @@ end;
 
 function TEpiVector.GetFieldDataType: EpiUnInt;
 begin
- Result:=fFldDataType;
+//  Result := fFldDataType;
+  Result := DataType;
 end;
 
 function TEpiVector.GetIsSorted: epibool;
@@ -2895,6 +2931,8 @@ begin
   else
      system.setlength(Fdata, fOrgLength);
   fCheckProperties.OrigFelttype := ftInteger;
+  FieldDataSize := 8;
+  FieldDataDecimals := 0;
 end;
 
 procedure TEpiIntVector.Reset;
@@ -3146,6 +3184,8 @@ begin
   if fOrgLength= -1 then fOrgLength:=1000;
   SetLength(FData, fOrgLength);
   fCheckProperties.OrigFelttype:=ftAlfa;
+  FieldDataSize := 10;
+  FieldDataDecimals := 0;
 end;
 
 procedure TEpiStringVector.Reset;
@@ -3470,8 +3510,8 @@ begin
   if fOrgLength= -1 then fOrgLength:=1000;
   system.setlength(Fdata,fOrgLength);
   fCheckProperties.OrigFelttype:=ftFloat;
-  fFldDataDecimals := 6;
-  fFldDataSize := 12;
+  FieldDataSize := 12;
+  FieldDataDecimals := 6;
 end;
 
 procedure TEpiFloatVector.InternalSort(iLo, iHi: Integer; SortOptions: TSortOptions);
@@ -3698,6 +3738,8 @@ begin
   else
      system.setlength(Fdata,fOrgLength);
   fCheckProperties.OrigFelttype:=ftEuroDate;
+  FieldDataSize := 10;
+  FieldDataDecimals := 0;
 end;
 
 procedure TEpiDateVector.Reset;
@@ -3884,6 +3926,8 @@ begin
   if fOrgLength= -1 then fOrgLength := 1000;
   SetLength(FData, fOrgLength);
   fCheckProperties.OrigFelttype := ftBoolean;
+  FieldDataSize := 1;
+  FieldDataDecimals := 0;
 end;
 
 procedure TEpiBoolVector.Reset;
@@ -4133,6 +4177,8 @@ begin
   if fOrgLength= -1 then fOrgLength:=1000;
   SetLength(FData, fOrgLength);
   fCheckProperties.OrigFelttype:=ftInteger;
+  FieldDataSize := 1;
+  FieldDataDecimals := 0;
 end;
 
 procedure TEpiByteVector.Reset;
