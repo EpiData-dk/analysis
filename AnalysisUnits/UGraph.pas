@@ -3577,7 +3577,7 @@ var
       inc(j);
       CandleSeries := TCandleSeries.Create(Result);
       CandleSeries.Title := 'CI for ' + ZVec.GetValueLabel(ZVec.AsString[i+1], Parameters);
-      CandleSeries.HighLowPen.Color := GetGraphColour(j);
+      CandleSeries.HighLowPen.Color := GetGraphColour(j-1);
       CandleSeries.ShowInLegend := false;
     end;
   end;
@@ -3603,12 +3603,12 @@ begin
         zvec.AsInteger[i] := 1;
     end;
 
-    result.Title.Caption := 'Kaplan-Meier survival curve: ' + Varnames[Varnames.Count-1];
+    result.Title.Caption := 'KM-Plot: ' + Varnames[Varnames.Count-1];
     if Parameters.VarExists['BY'] then
       result.Title.Caption := Result.Title.Caption + ' by ' + ZVec.GetVariableLabel(Parameters);
 
     Result.LeftAxis.Title.Caption := 'Survival (%)';
-    Result.BottomAxis.Title.Caption := 'Time';
+    Result.BottomAxis.Title.Caption := 'Time ' ; // TODO: XVec.GetVariableLabel(Parameters);
 
     if (not Parameters.VarExists['NOCI']) then
     begin

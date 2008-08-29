@@ -385,9 +385,15 @@ begin
           Combobox1.text := 'Outcome';
           Combobox2.text := 'Time variable';
         end
+   else if CmdName = 'LTAB' then
+        begin
+          Combobox1.text := 'Outcome';
+          Combobox2.text := 'Time total (or time start)';
+          Combobox3.text := 'Time end (opional)';
+        end
     else if CmdName = 'CIPLOT' then
         begin
-          Combobox1.text := 'Variable';
+          Combobox1.text := 'Outcome';
           Combobox2.text := 'Variable (optional)';
           Combobox3.text := 'Variable (optional)';
           Combobox4.text := 'Variable (optional)';

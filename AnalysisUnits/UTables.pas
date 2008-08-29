@@ -1304,7 +1304,7 @@ begin
       DeadInd := Cmd.ParamByName['O'].AsInteger
     else
       DeadInd := 1;
-    
+
     // Correct timevar if needed by /MT
     if Cmd.ParamExists['MT'] then
     begin
@@ -1489,12 +1489,12 @@ begin
     OutputTable := dm.CodeMaker.Output.NewTable(6);
     OutputTable.TableType := sttNormal;
     OutputTable.Cell[1,1] := '  ';
-    OutputTable.Cell[2,1] := 'Total<br>N';
-    OutputTable.Cell[3,1] := 'Cases<br>n';
-    OutputTable.Cell[4,1] := ' <br>T-min';
-    OutputTable.Cell[5,1] := 'Time<br>T-max';
-    OutputTable.Cell[6,1] := ' <br>Sum time';
-    OutputTable.Caption := 'LifeTable: ' + OutcomeV.GetVariableLabel(Cmd.ParameterList);
+    OutputTable.Cell[2,1] := 'Total<br><small>N</small>';
+    OutputTable.Cell[3,1] := 'Cases<br><small>n</small>';
+    OutputTable.Cell[4,1] := 'Time<br><small>Minimum</small>';
+    OutputTable.Cell[5,1] := '<br><small>Maximum</small>';
+    OutputTable.Cell[6,1] := '<br><small>Total</small>';
+    OutputTable.Caption := 'Life Table: ' + OutcomeV.GetVariableLabel(Cmd.ParameterList);
     if Cmd.ParamExists['BY'] then
       OutputTable.Caption := OutputTable.Caption + ' by ' + ByV.GetVariableLabel(Cmd.ParameterList);
 
