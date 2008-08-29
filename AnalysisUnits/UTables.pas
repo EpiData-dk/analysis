@@ -1274,8 +1274,8 @@ var
   agl: TAggrList;
   AggDF: TEpiDataFrame;
   LocalVarnames, IntervalNums: TStrings;
-  V1, V2, RangeV, OutcomeV, ByV, CountV,
-  GroupV, IntervalV, NumStV, WithDrwV, RiskV, DthV, PrDthV, PrSrvV, CmPrSrvV, StdErr, CILO, CIHI: TEpiVector;
+  V1, V2, RangeBeg, RangeEnd, OutcomeV, ByV, CountV,
+  GroupV, IvBeg, IvEnd, NumStV, WithDrwV, RiskV, DthV, PrDthV, PrSrvV, CmPrSrvV, StdErr, CILO, CIHI: TEpiVector;
   i, j, k, St, En, total,
   DC, CeC,
   Cases, SumTime, SumCens, GrandCases, GrandTotal,
@@ -1283,7 +1283,7 @@ var
   First: Boolean;
   s: string;
   Opt: TEpiOption;
-  ExitTime: EpiFloat;
+  ExitTime, AdjVal: EpiFloat;
 
 begin
   LocalVarnames := nil;
@@ -1341,18 +1341,18 @@ begin
     if ((not Cmd.ParamExists['BY']) and (LocalVarnames.Count = 3)) or
         (LocalVarnames.Count = 4) then
     begin
-      RangeV := df.VectorByName[LocalVarnames[1]].Clone(df, true);
-      RangeV.Name := '$RANGE';
-      df.Vectors.Add(RangeV);
+      RangeBeg := df.VectorByName[LocalVarnames[1]].Clone(df, true);
+      RangeBeg.Name := '$RANGE';
+      df.Vectors.Add(RangeBeg);
       V1 := df.VectorByName[LocalVarnames[1]];
       V2 := df.VectorByName[LocalVarnames[2]];
       for i := 1 to df.RowCount do
-        RangeV.AsFloat[i] := V2.AsFloat[i] - V1.AsFloat[i];
+        RangeBeg.AsFloat[i] := V2.AsFloat[i] - V1.AsFloat[i];
       LocalVarnames.Delete(2);
       LocalVarnames.Delete(1);
-      LocalVarnames.Insert(1, RangeV.Name);
+      LocalVarnames.Insert(1, RangeBeg.Name);
     end else
-      RangeV := df.VectorByName[LocalVarnames[1]];
+      RangeBeg := df.VectorByName[LocalVarnames[1]];
 
     // =============================
     // = Find intervals.
@@ -1361,8 +1361,10 @@ begin
     else
       s := 'B1';
 
-    IntervalV := TEpiIntVector.Create('$INTERVAL', df.RowCount, df.CheckProperties);
-    df.Vectors.Add(IntervalV);
+    IvBeg := TEpiIntVector.Create('$INTERBEG', df.RowCount, df.CheckProperties);
+    IvEnd := TEpiIntVector.Create('$INTEREND', df.RowCount, df.CheckProperties);
+    df.Vectors.Add(IvBeg);
+    df.Vectors.Add(IvEnd);
     df.Sort(LocalVarnames[1]);
     if Length(S) = 0 then
     begin
@@ -1373,51 +1375,59 @@ begin
     begin
       j := StrToInt(Copy(s, 2, Length(s)));
       for i := 1 to df.RowCount do
-        IntervalV.AsInteger[i] := ((RangeV.AsInteger[i] div j) * j) + j;
+      begin
+        IvBeg.AsInteger[i] := ((RangeBeg.AsInteger[i] div j) * j);
+        IvEnd.AsInteger[i] := ((RangeBeg.AsInteger[i] div j) * j) + j;
+      end;
     end else begin
       IntervalNums := TStringList.Create;
       SplitString(s, IntervalNums, [',']);
       St := 1;
       for i := 0 to IntervalNums.Count -1 do
       begin
-        k := StrToInt(IntervalNums[i]);
+        k := StrToInt(IntervalNums[i])-1;
         if (i = 0) then
         begin
-          while (St <= df.RowCount) and (RangeV.AsInteger[St] < k) do
+          while (St <= df.RowCount) and (RangeBeg.AsInteger[St] <= k) do
           begin
-            IntervalV.AsInteger[St] := k;
+            IvBeg.IsMissing[St] := true;
+            IvEnd.AsInteger[St] := k;
             inc(st);
           end;
         end
         else if (i = (IntervalNums.Count -1)) then
         begin
-          while (St <= df.RowCount) and (RangeV.AsInteger[St] > k) do
+          while (St <= df.RowCount) and (RangeBeg.AsInteger[St] > k) do
           begin
-            IntervalV.AsInteger[St] := k;
+            IvBeg.AsInteger[St] := k;
+            IvEnd.IsMissing[St] := true;
             inc(st);
           end;
         end else begin
-          while (St <= df.RowCount) and (RangeV.AsInteger[St] < k) do
+          while (St <= df.RowCount) and (RangeBeg.AsInteger[St] <= k) do
           begin
-            IntervalV.AsInteger[St] := k;
+            IvBeg.AsInteger[St] := StrToInt(IntervalNums[i-1]);
+            IvEnd.AsInteger[St] := k;
             inc(st);
           end;
         end;
       end;
+      FreeAndNil(IntervalNums);
     end;
     LocalVarnames.Delete(1);
-    LocalVarnames.Insert(1, IntervalV.Name);
-    df.Vectors.Remove(RangeV);
-    FreeAndNil(RangeV);
-    RangeV := IntervalV;
+    LocalVarnames.Insert(1, IvEnd.Name);
+    LocalVarnames.Insert(1, IvBeg.Name);
+    df.Vectors.Remove(RangeBeg);
+    FreeAndNil(RangeBeg);
     // End Intervals.
     // =============================
 
     // Varnames Layout:    
     //  =======================================
     //   LocalVarnames[0] = Outcome variable
-    //   LocalVarnames[1] = Range variable
-    //   LocalVarnames[2] = (BY)             
+    //   LocalVarnames[1] = Inteval begin
+    //   LocalVarnames[2] = Interval end
+    //   LocalVarnames[3] = (BY)
     s := '';
     agl := TAggrList.Create();
     if not Weighted then
@@ -1429,7 +1439,7 @@ begin
 
     if Cmd.ParamExists['BY'] then
     begin
-      s := LocalVarnames[2] + ',';
+      s := LocalVarnames[3] + ',';
       ByV := AggDF.FindVector(Cmd.ParamByName['BY'].AsString);
     end else begin
       ByV := TEpiIntVector.Create('$BY', AggDF.RowCount);
@@ -1446,9 +1456,11 @@ begin
     Result.FileName := AggDF.FileName;
 
     OutcomeV   := AggDF.FindVector(LocalVarnames[0]);
-    RangeV     := AggDF.FindVector(LocalVarnames[1]);
+    RangeBeg   := AggDF.FindVector(LocalVarnames[1]);
+    RangeEnd   := AggDF.FindVector(LocalVarnames[2]);
     CountV     := AggDF.FindVector('$S');
-    IntervalV  := RangeV.Clone(result, true);
+    IvBeg      := TEpiIntVector.Create('$INTERBEG', AggDF.RowCount, df.CheckProperties);
+    IvEnd      := TEpiIntVector.Create('$INTEREND', AggDF.RowCount, df.CheckProperties);
     NumStV     := TEpiIntVector.Create('$NUMATSTRT', AggDF.RowCount, df.CheckProperties);
     WithDrwV   := TEpiIntVector.Create('$WITHDRAWN', AggDF.RowCount, df.CheckProperties);
     RiskV      := TEpiFloatVector.Create('$RISK', AggDF.RowCount, df.CheckProperties);
@@ -1459,10 +1471,11 @@ begin
 
     if Cmd.ParamExists['BY'] then
     begin
-      GroupV     := ByV.Clone(result, true);
+      GroupV   := ByV.Clone(result, true);
       result.Vectors.Add(GroupV);
     end;
-    result.Vectors.Add(IntervalV);
+    result.Vectors.Add(IvBeg);
+    result.Vectors.Add(IvEnd);
     result.Vectors.Add(NumStV);
     result.Vectors.Add(WithDrwV);
     result.Vectors.Add(RiskV);
@@ -1533,31 +1546,36 @@ begin
         end else
           OutputTable.Cell[1, OutputTable.RowCount] := '';
 
-        IntervalV.AsInteger[k] := RangeV.AsInteger[i];
+        IvBeg.AsInteger[k] := RangeBeg.AsInteger[i];
+        IvEnd.AsInteger[k] := RangeEnd.AsInteger[i];
         repeat
           if OutcomeV.AsInteger[i] = DeadInd then
             inc(DC, CountV.AsInteger[i])
           else
             inc(CeC, CountV.AsInteger[i]);
           inc(i);
-        until (i > En) or (RangeV.compare(i-1, i) <> 0);
+        until (i > En) or (RangeBeg.compare(i-1, i) <> 0);
         WithDrwV.AsInteger[k]    := CeC;
         DthV.AsInteger[k]        := DC;
-        Inc(SumTime, (CeC+DC) * InterValV.AsInteger[k]);
+        if Cmd.ParamExists['NOADJ'] then
+          AdjVal := CeC
+        else
+          AdjVal := CeC / 2;
+        Inc(SumTime, (CeC + DC) * IvBeg.AsInteger[k]);
         if First then
         begin
           NumStV.AsInteger[k]      := total;
-          RiskV.AsFloat[k]         := NumStV.AsInteger[k] - (CeC / 2);
-          PrDthV.AsFloat[k]        := DC / RiskV.AsFloat[k];
+          RiskV.AsFloat[k]         := NumStV.AsInteger[k] - AdjVal;
+          PrDthV.AsFloat[k]        := DC / (NumStV.AsInteger[k]);
           PrSrvV.AsFloat[k]        := 1 - PrDthV.AsFloat[k];
           CmPrSrvV.AsFloat[k]      := PrSrvV.AsFloat[k];
           First := false;
           OutputTable.Cell[2, OutputTable.RowCount] := NumStV.AsString[k];
-          OutputTable.Cell[4, OutputTable.RowCount] := IntervalV.AsString[k];
+          OutputTable.Cell[4, OutputTable.RowCount] := IvBeg.AsString[k];
         end else begin
           NumStV.AsInteger[k]      := NumStV.AsInteger[k-1] - (WithDrwV.AsInteger[k-1] + DthV.AsInteger[k-1]);
-          RiskV.AsFloat[k]         := NumStV.AsInteger[k] - (CeC / 2);
-          PrDthV.AsFloat[k]        := DC / RiskV.AsFloat[k];
+          RiskV.AsFloat[k]         := NumStV.AsInteger[k] - AdjVal;
+          PrDthV.AsFloat[k]        := DC / (NumStV.AsInteger[k]);
           PrSrvV.AsFloat[k]        := 1 - PrDthV.AsFloat[k];
           CmPrSrvV.AsFloat[k]      := CmPrSrvV.AsFloat[k-1] * PrSrvV.AsFloat[k];
         end;
@@ -1576,7 +1594,7 @@ begin
       inc(GrandCases, Cases);
       inc(GrandTotal, Total);
       OutputTable.Cell[3, OutputTable.RowCount] := IntToStr(Cases);
-      OutputTable.Cell[5, OutputTable.RowCount] := IntervalV.AsString[k-1];
+      OutputTable.Cell[5, OutputTable.RowCount] := IvEnd.AsString[k-1];
       OutputTable.Cell[6, OutputTable.RowCount] := IntToStr(SumTime);
       if En = AggDF.RowCount then break;
       St := i;
@@ -2838,43 +2856,69 @@ procedure TTables.OutLifeTable(df: TEpiDataframe);
 var
   tf: TTableFormats;
   tab: TStatTable;
-  i: integer;
+  i, r: integer;
+  V: TEpiVector;
 begin
   Getformats(Cmd, tf);
 
   if Cmd.ParamExists['NOCI'] then
-    tab := dm.CodeMaker.Output.NewTable(5, df.RowCount+1)
+    tab := dm.CodeMaker.Output.NewTable(6,1)
   else
-    tab := dm.CodeMaker.Output.NewTable(7, df.RowCount+1);
+    tab := dm.CodeMaker.Output.NewTable(8,1);
   tab.TableType := sttStat;
 
-  tab.Footer := 'Observation time weighted for censored obs.';
+  if not Cmd.ParamExists['NOADJ'] then
+    tab.Footer := 'Observation time weighted for censored obs.';
   if Cmd.ParamExists['T'] then
     tab.Footer := tab.Footer + '<br>LogRank test not implemeted.';
 
   // Headers.
   tab.Cell[1,1] := tf.LTHdr.IntVal;
-  tab.Cell[2,1] := tf.LTHdr.Beg;
-  tab.Cell[3,1] := tf.LTHdr.Deaths;
-  tab.Cell[4,1] := tf.LTHdr.Lost;
-  tab.Cell[5,1] := tf.LTHdr.Survival;
+  tab.Cell[3,1] := tf.LTHdr.Beg;
+  tab.Cell[4,1] := tf.LTHdr.Deaths;
+  tab.Cell[5,1] := tf.LTHdr.Lost;
+  tab.Cell[6,1] := tf.LTHdr.Survival;
   if (not Cmd.ParamExists['NOCI']) then
   begin
-    tab.Cell[6,1] := tf.LTHdr.StdErr;
-    tab.Cell[7,1] := tf.CIHdr;
+    tab.Cell[7,1] := tf.LTHdr.StdErr;
+    tab.Cell[8,1] := tf.CIHdr;
   end;
 
   for i := 1 to df.RowCount do
   begin
-    tab.Cell[1,i+1] := df.VectorByName['$INTERVAL'].AsString[i];
-    tab.Cell[2,i+1] := df.VectorByName['$NUMATSTRT'].AsString[i];
-    tab.Cell[3,i+1] := df.VectorByName['$DEATHS'].AsString[i];
-    tab.Cell[4,i+1] := df.VectorByName['$WITHDRAWN'].AsString[i];
-    tab.Cell[5,i+1] := Epiformat(df.VectorByName['$CMPRSURV'].AsFloat[i], tf.EFmt);
+    if Cmd.ParamExists['BY'] then
+    begin
+      V := df.VectorByName[Cmd.ParamByName['BY'].AsString];
+      if (i = 1) or ((i < df.RowCount) and (V.compare(i-1,i) <> 0)) then
+      begin
+        tab.AddRow;
+        r := Tab.RowCount;
+        tab.Cell[1,r] := V.GetValueLabel(V.AsString[i], Cmd.ParameterList);
+        tab.Cell[2,r] := '';
+        tab.Cell[3,r] := '';
+        tab.Cell[4,r] := '';
+        tab.Cell[5,r] := '';
+        tab.Cell[6,r] := '';
+        if (not Cmd.ParamExists['NOCI']) then
+        begin
+          tab.Cell[7,r] := '';
+          tab.Cell[8,r] := '';
+        end;
+      end;
+    end;
+
+    tab.AddRow;
+    r := Tab.RowCount;
+    tab.Cell[1,r] := df.VectorByName['$INTERBEG'].AsString[i];
+    tab.Cell[2,r] := df.VectorByName['$INTEREND'].AsString[i];
+    tab.Cell[3,r] := df.VectorByName['$NUMATSTRT'].AsString[i];
+    tab.Cell[4,r] := df.VectorByName['$DEATHS'].AsString[i];
+    tab.Cell[5,r] := df.VectorByName['$WITHDRAWN'].AsString[i];
+    tab.Cell[6,r] := Epiformat(df.VectorByName['$CMPRSURV'].AsFloat[i], tf.EFmt);
     if (not Cmd.ParamExists['NOCI']) then
     begin
-      tab.Cell[6,i+1] := Epiformat(df.VectorByName['$STDERR'].AsFloat[i], tf.EFmt);
-      tab.Cell[7,i+1] := EpiCIformat(0, df.VectorByName['$CILO'].AsFloat[i], df.VectorByName['$CIHI'].AsFloat[i], tf.EFmt, tf.CIFmt, tf.CIHdr,1);
+      tab.Cell[7,r] := Epiformat(df.VectorByName['$STDERR'].AsFloat[i], tf.EFmt);
+      tab.Cell[8,r] := EpiCIformat(0, df.VectorByName['$CILO'].AsFloat[i], df.VectorByName['$CIHI'].AsFloat[i], tf.EFmt, tf.CIFmt, tf.CIHdr,1);
     end;
   end;
 

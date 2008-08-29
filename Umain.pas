@@ -3128,7 +3128,7 @@ end;
 
 procedure TaMainForm.AcRunLifeTableExecute(Sender: TObject);
 begin
-  DoTableDlg('LTAB');
+  DoDlg('ltab varlist');
 end;
 
 end.

@@ -104,26 +104,26 @@ end;
 
 procedure TEpiDlg.InitializeDlg(const ps: string);
 begin
-      if not dm.CheckDataOpen() then exit; //dm.CheckDataOpen();
- ParseString(ps);
- if pos(ps,' correlate varlist means varlist kwallis varlist regress varlist ') > 0 then
-    begin
-      AllPanel.Visible := False;
-      StatPanel.Visible := True;
-      MeansBox.Visible := False;
-      if (pos(ps,' means varlist ') > 0) or (pos(ps,' kwallis varlist ') > 0) then
-        begin
-             MeansBox.Visible := True;
-             testchk.Visible := True;
-        end;
-      if pos(ps,' kwallis varlist ') > 0 then testchk.Visible := False;
-    end
-    else
-    begin
-      AllPanel.Visible := True;
-      StatPanel.Visible := False;
-      DesignBox.Visible := False;
-    end;
+  if not dm.CheckDataOpen() then exit; //dm.CheckDataOpen();
+  ParseString(ps);
+  if pos(ps,' correlate varlist means varlist kwallis varlist regress varlist ltab varlist ') > 0 then
+  begin
+    AllPanel.Visible := False;
+    StatPanel.Visible := True;
+    MeansBox.Visible := False;
+    if (pos(ps,' means varlist ') > 0) or (pos(ps,' kwallis varlist ') > 0) then
+      begin
+           MeansBox.Visible := True;
+           testchk.Visible := True;
+      end;
+    if pos(ps,' kwallis varlist ') > 0 then testchk.Visible := False;
+  end
+  else
+  begin
+    AllPanel.Visible := True;
+    StatPanel.Visible := False;
+    DesignBox.Visible := False;
+  end;
   ResetBtnClick(nil);
   SetupDlg(ps);
 end;
@@ -133,6 +133,12 @@ procedure TEpiDlg.SetupDlg(const ps: string);
 begin
   GetVar.Items := dm.dataframe.GetVectorNames(Nil);
   Caption := CmdName;
+
+  if pos(CmdName, ' LTAB' ) > 0 then
+  begin
+    Label2.Caption := 'Outcome:';
+    Label3.Caption := 'Time:';
+  end;
 end;
 
 
@@ -267,7 +273,7 @@ var
 
 begin
 
-  if  pos(cmdname,' REGRESS MEANS CORRELATE KWALLIS ') = 0 then exit;
+  if pos(cmdname,' REGRESS MEANS CORRELATE KWALLIS LTAB ') = 0 then exit;
 
      // check if clear for any of the two labels is needed:
    for i := 0 to GetVar.Count-1 do
@@ -293,7 +299,7 @@ begin
         else if (j > 2) then
           if (cmdname = 'REGRESS') or (cmdname = 'CORRELATE' ) then
               ByVar.Caption := ByVar.Caption + ' ' + GetVar.Items[GetVar.ItemIndex]
-              else dm.error('Max two variables', [], 104003);
+              else dm.error('Max two variables', [], -1, 104003);
 end;
 
 

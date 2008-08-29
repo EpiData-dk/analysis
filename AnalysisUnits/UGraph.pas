@@ -1801,7 +1801,7 @@ begin
     if Parameters.VarbyName['TI'] <> nil then
       title := Parameters.VarbyName['TI'].Value;
 
-    footnote := varnames[0] + ' = ' + VarToStr(maxval);
+    footnote := yvec.GetVariableLabel(Parameters) + ' = ' + yvec.GetValueLabel(VarToStr(maxval), Parameters);
 
     Varnames.Delete(0);
     df := dataframe.prepareDataframe(varnames, nil);
@@ -1968,7 +1968,7 @@ begin
       OutputTable.Cell[1,1] := '  ';
       OutputTable.Cell[2,1] := 'Total<br>N';
       OutputTable.Cell[3,1] := 'Cases<br>n';
-      OutputTable.Cell[4,1] := '<u>'+varnames[0] + '</u>'+ '<br><small>Missing</small>';
+      OutputTable.Cell[4,1] := '<u>'+YVec.GetVariableLabel(Parameters) + '</u>'+ '<br><small>Missing</small>';
       OutputTable.Cell[5,1] := ' <br>Min';
       OutputTable.Cell[6,1] := ' <br>Max';
 
@@ -1977,7 +1977,7 @@ begin
         if assigned(series[j]) then
         begin
           OutputTable.AddRow;
-          OutputTable.Cell[1,OutputTable.RowCount] := zvec.GetValueLabel(inttostr(j));
+          OutputTable.Cell[1,OutputTable.RowCount] := zvec.GetValueLabel(inttostr(j), Parameters);
           OutputTable.Cell[2,OutputTable.RowCount] := inttostr(cases[j]+missings[j]);
           OutputTable.Cell[3,OutputTable.RowCount] := inttostr(cases[j]);
           OutputTable.Cell[4,OutputTable.RowCount] := inttostr(missings[j]);
@@ -3574,10 +3574,9 @@ var
     LineSeries.AddXY(0, 100);
     if (not Parameters.VarExists['NOCI']) then
     begin
-      inc(j);
       CandleSeries := TCandleSeries.Create(Result);
       CandleSeries.Title := 'CI for ' + ZVec.GetValueLabel(ZVec.AsString[i+1], Parameters);
-      CandleSeries.HighLowPen.Color := GetGraphColour(j-1);
+      CandleSeries.HighLowPen.Color := GetGraphColour(j);
       CandleSeries.ShowInLegend := false;
     end;
   end;
@@ -3591,7 +3590,7 @@ begin
   try
     result := CreateStandardChart();
 
-    XVec := Dataframe.VectorByName['$INTERVAL'];
+    XVec := Dataframe.VectorByName['$INTERBEG'];
     TVec := DataFrame.VectorByName['$PRSURV'];
     YVec := Dataframe.VectorByName['$CMPRSURV'];
 
