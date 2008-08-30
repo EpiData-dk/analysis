@@ -3562,8 +3562,8 @@ begin
   foptions.AddObject('LANGUAGE',TEpiOption.Create('LANGUAGE','English',EpiTyString));
 
   //lifetable settings
-  foptions.AddObject('LIFETABLE INTERVAL',TEpiOption.Create('LIFETABLE INTERVALN', '0,7,15,30,60,90,180,360,540,720', EpiTyString));
-  foptions.AddObject('LIFETABLE HEADER',TEpiOption.Create('LIFETABLE HEADER', 'Interval,Beg. Total,Deaths,Lost,Survival,Std. Error', EpiTyString));
+  foptions.AddObject('LIFETABLE INTERVAL',TEpiOption.Create('LIFETABLE INTERVAL', '0,7,15,30,60,90,180,360,540,720,3600,7200,15000', EpiTyString));
+  foptions.AddObject('LIFETABLE HEADER',TEpiOption.Create('LIFETABLE HEADER', 'Interval,N<sub>At risk</sub>,Deaths,Lost,Survival,Std. Error', EpiTyString));
 
   //table design
   foptions.AddObject('TABLE DESIGN',TEpiOption.Create('TABLE DESIGN','LINE',EpiTyString));

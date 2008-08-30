@@ -328,7 +328,7 @@ begin
      ' /TEXT="' + xpos1.Text + c + ypos1.Text + c + edit3.Text + c + ChkBxRes(btyp1) + '"';
   if (((CmdName = 'PCHART') or (CmdName = 'RUNCHART') or (CmdName = 'ICHART'))
      and (spctest.checked)) then cmd := cmd + ' /T'; // as default do test for special causes
-  if (CmdName = 'LTAB') then
+  if (CmdName = 'LIFETABLE') then
     cmd := cmd + ' /G /NOLT';
 end;
 
@@ -385,11 +385,11 @@ begin
           Combobox1.text := 'Outcome';
           Combobox2.text := 'Time variable';
         end
-   else if CmdName = 'LTAB' then
+   else if CmdName = 'LIFETABLE' then
         begin
           Combobox1.text := 'Outcome';
           Combobox2.text := 'Time total (or time start)';
-          Combobox3.text := 'Time end (opional)';
+          Combobox3.text := 'Time end (optional)';
         end
     else if CmdName = 'CIPLOT' then
         begin

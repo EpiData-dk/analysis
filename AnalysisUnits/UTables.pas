@@ -1506,7 +1506,7 @@ begin
     OutputTable.Cell[3,1] := 'Cases<br><small>n</small>';
     OutputTable.Cell[4,1] := 'Time<br><small>Minimum</small>';
     OutputTable.Cell[5,1] := '<br><small>Maximum</small>';
-    OutputTable.Cell[6,1] := '<br><small>Total</small>';
+    OutputTable.Cell[6,1] := '<br><small>Sum <sub>time</sub></small>';
     OutputTable.Caption := 'Life Table: ' + OutcomeV.GetVariableLabel(Cmd.ParameterList);
     if Cmd.ParamExists['BY'] then
       OutputTable.Caption := OutputTable.Caption + ' by ' + ByV.GetVariableLabel(Cmd.ParameterList);
@@ -1557,7 +1557,7 @@ begin
         until (i > En) or (RangeBeg.compare(i-1, i) <> 0);
         WithDrwV.AsInteger[k]    := CeC;
         DthV.AsInteger[k]        := DC;
-        if Cmd.ParamExists['NOADJ'] then
+        if not Cmd.ParamExists['ADJ'] then
           AdjVal := CeC
         else
           AdjVal := CeC / 2;
@@ -2867,13 +2867,19 @@ begin
     tab := dm.CodeMaker.Output.NewTable(8,1);
   tab.TableType := sttStat;
 
-  if not Cmd.ParamExists['NOADJ'] then
-    tab.Footer := 'Observation time weighted for censored obs.';
+  if Cmd.ParamExists['I'] then
+    tab.Footer := 'Outcome and time aggregated to intervals shown'
+  else
+    tab.Footer := 'Recorded time used for all observations (Kaplan-Meier principle)';
+
+  if Cmd.ParamExists['ADJ'] then
+    tab.Footer := '<br>Survival proportion adjustment not implemented';
+
   if Cmd.ParamExists['T'] then
     tab.Footer := tab.Footer + '<br>LogRank test not implemeted.';
 
   // Headers.
-  tab.Cell[1,1] := tf.LTHdr.IntVal;
+  tab.Cell[2,1] := tf.LTHdr.IntVal;
   tab.Cell[3,1] := tf.LTHdr.Beg;
   tab.Cell[4,1] := tf.LTHdr.Deaths;
   tab.Cell[5,1] := tf.LTHdr.Lost;
@@ -2909,8 +2915,8 @@ begin
 
     tab.AddRow;
     r := Tab.RowCount;
-    tab.Cell[1,r] := df.VectorByName['$INTERBEG'].AsString[i];
-    tab.Cell[2,r] := df.VectorByName['$INTEREND'].AsString[i];
+    tab.Cell[1,r] := ' '; //df.VectorByName['$INTERBEG'].AsString[i];
+    tab.Cell[2,r] := df.VectorByName['$INTERBEG'].AsString[i] + '-' + df.VectorByName['$INTEREND'].AsString[i];
     tab.Cell[3,r] := df.VectorByName['$NUMATSTRT'].AsString[i];
     tab.Cell[4,r] := df.VectorByName['$DEATHS'].AsString[i];
     tab.Cell[5,r] := df.VectorByName['$WITHDRAWN'].AsString[i];

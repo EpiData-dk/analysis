@@ -3122,13 +3122,13 @@ end;
 
 procedure TaMainForm.AcRunKMPlotExecute(Sender: TObject);
 begin
-  DoGraphDlg('LTAB varlist /G /NOLT', 1, 2, [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte], [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte],
+  DoGraphDlg('LIFETABLE varlist /G /NOLT', 1, 2, [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte], [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte],
              [GrpStdOpt], true, true, 'Outcome:', 'Start/Interval', 'End');
 end;
 
 procedure TaMainForm.AcRunLifeTableExecute(Sender: TObject);
 begin
-  DoDlg('ltab varlist');
+  DoDlg('lifetable varlist');
 end;
 
 end.

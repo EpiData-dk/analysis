@@ -40,6 +40,7 @@ type
     ValueChk: TCheckBox;
     VLabel: TLabel;
     ExecBtn: TButton;
+    TimeVar: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure CancelBtnClick(Sender: TObject);
     procedure ResetBtnClick(Sender: TObject);
@@ -106,7 +107,7 @@ procedure TEpiDlg.InitializeDlg(const ps: string);
 begin
   if not dm.CheckDataOpen() then exit; //dm.CheckDataOpen();
   ParseString(ps);
-  if pos(ps,' correlate varlist means varlist kwallis varlist regress varlist ltab varlist ') > 0 then
+  if pos(ps,' correlate varlist means varlist kwallis varlist regress varlist lifetable varlist ') > 0 then
   begin
     AllPanel.Visible := False;
     StatPanel.Visible := True;
@@ -134,11 +135,14 @@ begin
   GetVar.Items := dm.dataframe.GetVectorNames(Nil);
   Caption := CmdName;
 
-  if pos(CmdName, ' LTAB' ) > 0 then
+  if pos(CmdName, ' LIFETABLE' ) > 0 then
   begin
     Label2.Caption := 'Outcome:';
-    Label3.Caption := 'Time:';
-  end;
+    Label3.Caption := 'Time:(+ by)';
+    timevar.visible := True;
+  end
+  else
+    timevar.visible := False;
 end;
 
 
@@ -183,14 +187,19 @@ begin
   Cmd:=EpiDlg.Caption;
   if DlgResult in [DlgResCancel, DlgResReset] then exit;
   //GetVarClick(Self);
-  if (Cmd = 'REGRESS') or (Cmd = 'CORRELATE') then
-          cmd := EpiDlg.caption + ' ' + MeanVar.Caption + ' ' + ByVar.caption
+  if (Cmd = 'REGRESS') or (Cmd = 'CORRELATE') or (Cmd = 'LIFETABLE')then
+    begin
+      cmd := EpiDlg.caption + ' ' + MeanVar.Caption + ' ' + ByVar.caption;
+      if (length(TimeVar.Caption) > 0) then
+        cmd := trim(cmd + ' /By=' + TimeVar.Caption);
+    end
   else  if (pos(trim(uppercase(Cmd)),'MEANS KWALLIS') > 0)  then
       begin
           if meanvar.caption = '' then
             begin
-              if CmdName = 'MEANS' then dm.error('Select at least one variable', [], 104001)
-                else dm.error('Select two variables', [], 104002);
+              if CmdName = 'MEANS' then
+                dm.info('Select at least one variable', [], 104001)
+              else dm.error('Select two variables', [], 104002);
               exit;
             end;
 
@@ -273,7 +282,7 @@ var
 
 begin
 
-  if pos(cmdname,' REGRESS MEANS CORRELATE KWALLIS LTAB ') = 0 then exit;
+  if pos(cmdname,' REGRESS MEANS CORRELATE KWALLIS LIFETABLE ') = 0 then exit;
 
      // check if clear for any of the two labels is needed:
    for i := 0 to GetVar.Count-1 do
@@ -298,8 +307,13 @@ begin
         {    // dm.info(columnvar.caption + '<br>' + rowvar.caption + '<br>' + variables.caption);}
         else if (j > 2) then
           if (cmdname = 'REGRESS') or (cmdname = 'CORRELATE' ) then
-              ByVar.Caption := ByVar.Caption + ' ' + GetVar.Items[GetVar.ItemIndex]
-              else dm.error('Max two variables', [], -1, 104003);
+            ByVar.Caption := ByVar.Caption + ' ' + GetVar.Items[GetVar.ItemIndex]
+          else if (cmdname = 'MEANS' ) then
+            dm.error('Max two variables', [], -1, 104003)
+          else if (cmdname = 'LIFETABLE') and (j = 3) then
+            TimeVar.Caption := GetVar.Items[GetVar.ItemIndex]
+          else
+            dm.error('Max three variables', [], -1, 104003);
 end;
 
 
