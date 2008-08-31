@@ -2283,7 +2283,7 @@ begin
     if  {((k=0) and ((SumTable.TableCount = 1) or (SumTable.TableType in [1,2]))) or}
          ((k>0) and (SumTable.TableCount = 1)) or
          ((k=0) and (cmd.ParamByName['NC'] <> nil)) or
-           (cmd.ParamByName['FV'] <> nil) or (cmd.ParamByName['CC'] <> nil) or (cmd.ParamByName['OA'] <> nil) then
+           (cmd.ParamByName['FV'] <> nil) or (cmd.ParamByName['CT'] <> nil) or (cmd.ParamByName['OA'] <> nil) then
       continue;
 
 

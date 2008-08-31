@@ -2251,7 +2251,7 @@ begin
     end;
 
     //add crude line CI
-    if (Parameters.VarByName['NCI'] = nil) then
+    if (Parameters.VarByName['NOCI'] = nil) then
     begin
       addline(result,Low*100,1);
       addline(result, High*100,1);
@@ -3203,7 +3203,7 @@ ichart tid lege mean ucl
       if not tvec2.IsMissing[1] then SLcl.ParentChart := result;
   SYvec.ParentChart := result;
 
-  if not Assigned(Parameters.VarByName['NCI']) then
+  if not Assigned(Parameters.VarByName['NOCI']) then
   begin
     Result.SubFoot.Text.Add(t);
     Result.SubFoot.Visible := true;
@@ -3498,7 +3498,7 @@ pchart tid p pbar ucl lcl
   if not tvec2.IsMissing[1] then SLcl.ParentChart := result;
   SP.ParentChart := result;
 
-  if not Assigned(Parameters.VarByName['NCI']) then
+  if not Assigned(Parameters.VarByName['NCVI']) then
   begin
     Result.SubFoot.Text.Add(t);
     Result.SubFoot.Visible := true;

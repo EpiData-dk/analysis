@@ -236,16 +236,16 @@ begin
     opHistogram, opShortHistogram: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' XONLY  SORT M PCT ' + Gnrl_options + GRAPH_OPTIONS);
     opLine: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + ' M BYC BYS ');
     opScatter, opShortScatter: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + ' M BYC BYS ');
-    opPchart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options +  GRAPH_OPTIONS + SPC_OPTIONS + ' TAB NCI ');
-    opIchart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB NCI ');
-    opRunChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB NCI ');
+    opPchart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options +  GRAPH_OPTIONS + SPC_OPTIONS + ' TAB NCVI ');
+    opIchart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB NCVI ');
+    opRunChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB NCVI ');
     opPareto: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS);
-    opXChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB NCI ');
+    opXChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB NCVI ');
 
     opEpiCurve : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' NT '+ ' '  + Gnrl_options + GRAPH_OPTIONS );
 
     opCDFPlot : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' AGG P ' + ' '  + Gnrl_options + GRAPH_OPTIONS );
-    opCIPlot : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' NM O NL NCI NT ' + Gnrl_options + GRAPH_OPTIONS );
+    opCIPlot : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' NM O NL NOCI NT ' + Gnrl_options + GRAPH_OPTIONS );
     opDotPlot : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' M DI C' + ' ' +  Gnrl_options + GRAPH_OPTIONS);
     opBox,opboxplot: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + ' M OUT1 OUT2 OUT P1090 R NT ');
 
