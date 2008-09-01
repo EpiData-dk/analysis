@@ -440,22 +440,9 @@ var
   varnames: TStrings;
   //opt : TEpiOption;
 begin
-{  // Dataframe might NOT be initialized at this point. Just exit
-  if dataframe = nil then exit;
-  if cmdid in [opSelect, opLet] then
-    varnames := OBrowse.CurrentVarnames
-  else begin
-    varnames := TStringList.Create();
-    dataframe.Vectors.GetVectorNames(varnames);
-  end;
-
-  df := dataframe.prepareDataframe(varnames, nil);
-  if not OBrowse.UpdateBrowseWindow(df)then
-    FreeAndNil(df);     }
-
   // Dataframe might NOT be initialized at this point. Just exit
   if dataframe = nil then exit;
-  if cmdid in [opSelect, opLet] then
+  if cmdid in [opSelect, opLet, opSort] then
     varnames := OUpdate.CurrentVarnames
   else begin
     varnames := TStringList.Create();
@@ -475,67 +462,32 @@ var
  opt: TEpiOption;
 
 begin
-{  if assigned(cmd.ParamByName['TEST']) then
-  begin
-    Vectorlist:=nil;
-    df := nil;
-    if not dm.CheckDataOpen(True) then exit;
-    result := false;
-    try
-     if (dataframe.SelectedRowCount = 0) then
-        begin
-          OBrowse.CloseBrowse();
-          dm.error('No data', [], 103005);
-        end;
-        df := dataframe.prepareDataframe(varnames, nil);
-        Vectorlist:= df.GetVectorListByName(varnames);
-
-      if (cmd.CommandID in [opRead, opGenerate]) then
-      begin
-        if dm.GetOptionValue('DISPLAY DATABROWSER', opt) and (opt.Value = 'ON') then
-          OBrowse.CreateBrowse(df,Vectorlist,VectorID, cmd.CommandID = opUPDATE)
-        else
-          // DF is not used so free it otherwise we have a memory leak (it's the
-          // prepared Dataframe from above).
-          if Assigned(df) then FreeAndNil(df);
-      end else begin
-        OBrowse.CreateBrowse(df,Vectorlist,VectorID, cmd.CommandID = opUPDATE);
-      end;
-
-      OBrowse.Browsing := cmd.CommandID = opBrowse;
-      if Assigned(df) then df.RestoreSelector;  //df.
-      result := true;
-    finally
-      if Assigned(Vectorlist) then FreeAndNil(Vectorlist);
+  df := nil;
+  if not dm.CheckDataOpen(True) then exit;
+  result := false;
+  try
+    if (dataframe.SelectedRowCount = 0) then
+    begin
+      OUpdate.CloseBrowse();
+      dm.error('No data', [], 103005);
     end;
-  end else} begin
-    df := nil;
-    if not dm.CheckDataOpen(True) then exit;
-    result := false;
-    try
-      if (dataframe.SelectedRowCount = 0) then
-      begin
-        OUpdate.CloseBrowse();
-        dm.error('No data', [], 103005);
-      end;
-      df := dataframe.prepareDataframe(varnames, nil);
-      Vectorlist:= df.GetVectorListByName(varnames);
+    df := dataframe.prepareDataframe(varnames, nil);
+    Vectorlist:= df.GetVectorListByName(varnames);
 
-      if (cmd.CommandID in [opRead, opGenerate]) then
-      begin
-        if dm.GetOptionValue('DISPLAY DATABROWSER', opt) and (AnsiUpperCAse(opt.Value) = 'ON') then
-          OUpdate.CreateBrowse(df)
-        else
-          // DF is not used so free it otherwise we have a memory leak (it's the
-          // prepared Dataframe from above).
-          if Assigned(df) then FreeAndNil(df);
-      end else begin                  
-        OUpdate.CreateBrowse(df);
-      end;
-
-      result := true;
-    finally
+    if (cmd.CommandID in [opRead, opGenerate]) then
+    begin
+      if dm.GetOptionValue('DISPLAY DATABROWSER', opt) and (AnsiUpperCAse(opt.Value) = 'ON') then
+        OUpdate.CreateBrowse(df)
+      else
+        // DF is not used so free it otherwise we have a memory leak (it's the
+        // prepared Dataframe from above).
+        if Assigned(df) then FreeAndNil(df);
+    end else begin
+      OUpdate.CreateBrowse(df);
     end;
+
+    result := true;
+  finally
   end;
 end;
 
