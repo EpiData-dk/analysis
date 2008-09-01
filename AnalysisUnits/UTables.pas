@@ -308,7 +308,8 @@ var
 implementation
 
 uses UCmdProcessor, UAggregate, USKTables, SMUtils, Math, UFormats, UEpiDatatypes,
-  StrUtils, Forms, UTableStat, Ustatfunctions,EpiInfoStats, UDebug;
+  StrUtils, Forms, UTableStat, Ustatfunctions,EpiInfoStats, UDebug, EpiDataUtils, UCmdTypes,
+  UDateUtils;
 
 const
   UnitName = 'UTables';
@@ -634,6 +635,7 @@ begin
   self.Cmd := cmd;
   self.OutputOptions := 0;
   result := nil;
+  xtab := nil;
   try
     result := CreateLifeTable(dataframe, varnames, xtab);
     if Assigned(xtab) and (not Cmd.ParamExists['NT']) then
@@ -1311,8 +1313,14 @@ begin
       V1 := Df.FindVector(Cmd.ParamByName['MT'].Value);
       V2 := Df.FindVector(LocalVarnames[0]);
       if Cmd.ParamExists['EXIT'] then
-        ExitTime := Cmd.ParamByName['EXIT'].AsInteger
-      else begin
+      begin
+        s := Cmd.ParamByName['EXIT'].AsString;
+        if MibIsDate(s, ftInteger) then
+          ExitTime := EpiStrToDatefmt(s, '%DMY')
+        else
+          ExitTime := Cmd.ParamByName['EXIT'].AsFloat;
+        s := '';
+      end else begin
         ExitTime := -MaxInt;
         for i := 1 to Df.RowCount do
           if not (V1.IsMissing[i] or V1.IsMissingValue[i]) then
@@ -1383,9 +1391,10 @@ begin
       IntervalNums := TStringList.Create;
       SplitString(s, IntervalNums, [',']);
       St := 1;
-      for i := 0 to IntervalNums.Count -1 do
+      for i := 0 to IntervalNums.Count do
       begin
-        k := StrToInt(IntervalNums[i])-1;
+        if i < IntervalNums.Count then
+          k := StrToInt(IntervalNums[i])-1;
         if (i = 0) then
         begin
           while (St <= df.RowCount) and (RangeBeg.AsInteger[St] <= k) do
@@ -1395,11 +1404,12 @@ begin
             inc(st);
           end;
         end
-        else if (i = (IntervalNums.Count -1)) then
+        else if (i = IntervalNums.Count) then
         begin
+          k := StrToInt(IntervalNums[i-1])-1;
           while (St <= df.RowCount) and (RangeBeg.AsInteger[St] > k) do
           begin
-            IvBeg.AsInteger[St] := k;
+            IvBeg.AsInteger[St] := (k+1);
             IvEnd.IsMissing[St] := true;
             inc(st);
           end;
@@ -1454,6 +1464,7 @@ begin
     Result := TEpiDataFrame.CreateTemp(AggDF.RowCount);
     AggDF.CheckProperties.Clone(result.CheckProperties);
     Result.FileName := AggDF.FileName;
+    Result.Modified := true;
 
     OutcomeV   := AggDF.FindVector(LocalVarnames[0]);
     RangeBeg   := AggDF.FindVector(LocalVarnames[1]);

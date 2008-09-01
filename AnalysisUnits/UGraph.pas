@@ -219,7 +219,7 @@ var
   val: integer;
 const
   colorlist: array[0..9] of TColor =
-  (clRed, clBlue, clBlack,clGreen, clWhite, clYellow, clSkyBlue, clFuchsia,  clGray , clAqua);
+  (clRed, clBlue, clBlack, clGreen, clWhite, clYellow, clSkyBlue, clFuchsia,  clGray , clAqua);
 begin
   result := colorlist[0];
   if dm.GetOptionValue('GRAPH COLOUR TEXT',opt) then

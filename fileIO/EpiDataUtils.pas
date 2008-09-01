@@ -108,10 +108,10 @@ BEGIN
   Result:=True;
   tmpS:=s;
   IF trim(tmpS)='' THEN
-    BEGIN
-      Result:=False;
-      Exit;
-    END;
+  BEGIN
+    Result:=False;
+    Exit;
+  END;
   IF pos('/',tmpS)<>0 THEN
     BEGIN   //first slash is found
       IF (Style=ftYMDDate) OR (Style=ftYMDToday) THEN  //&&

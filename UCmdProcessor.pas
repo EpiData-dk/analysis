@@ -231,7 +231,7 @@ type
     property OldShowResult: boolean read foldShowResult write foldShowResult;
 //    property SavePng: boolean read fSavePng write fSavePng;
     property FileName :string read FFileName write SetFileName;
-    procedure Error(const msg: string; const Args: array of const; severity: integer; translate: Integer = 0);
+    procedure Error(const msg: string; const Args: array of const; translate: Integer = 0; severity: integer= 0);
     procedure PrintCommand(const msg: string);
     procedure Info(const msg: string; translate: Integer = 0); overload;
     procedure Info(const msg: string; const Args: array of const; translate: Integer = 0); overload;
@@ -1401,7 +1401,7 @@ begin
     result:=true;
   except
 //    on E: Exception do
-//      error('Exception occured: %s', [E.message], 0, 103017);
+//      error('Exception occured: %s', [E.message], 103017);
   end;
 end;
 
@@ -2321,7 +2321,7 @@ result := true;
 end;
 
 
-procedure TDM.Error(const msg: string; const Args: array of const; severity: integer; translate: Integer = 0);
+procedure TDM.Error(const msg: string; const Args: array of const; translate: Integer = 0; severity: integer = 0);
 var
   nmsg: string;
 begin
@@ -3191,6 +3191,7 @@ function TDM.LifeTable(Varnames: TStrings; cmd: TCommand): boolean;
 var
   df, ltdf: TEpiDataFrame;
   MissingList, MaxList: TStrings;
+  Exp: IValue;
 const
   procname = 'LifeTable';
   procversion = '1.0.0.0';
@@ -3248,6 +3249,8 @@ begin
       df := Dataframe.PrepareDataframe(Varnames, MaxList)
     else
       df := Dataframe.PrepareDataframe(Varnames, Varnames);
+
+    if df.SelectedRowCount = 0 then error('No Data', [], 103005);
 
     ltdf := OTables.DoLifeTables(df, varnames, cmd);
 
