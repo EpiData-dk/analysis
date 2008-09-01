@@ -274,7 +274,11 @@ begin
   if Combobox2.ItemIndex <> -1 then Cmd := cmd + ' ' + Combobox2.Text;
   if Combobox3.ItemIndex <> -1 then Cmd := cmd + ' ' + Combobox3.Text;
   if Combobox4.ItemIndex <> -1 then Cmd := cmd + ' ' + Combobox4.Text;
-  if Combobox5.ItemIndex <> -1 then Cmd := cmd + ' ' + '/by='+ Combobox5.Text;
+  if Combobox5.ItemIndex <> -1 then
+     if not (CmdName = 'CIPLOT') then
+       Cmd := cmd + ' ' + '/by='+ Combobox5.Text
+     else
+       Cmd := cmd + ' ' +  Combobox5.Text;
   if Combobox6.ItemIndex <> -1 then Cmd := cmd + ' ' + '/W='+ Combobox6.Text;
 
   if trim(Edit1.Text) <> 'Title' then
