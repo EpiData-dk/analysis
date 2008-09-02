@@ -3050,7 +3050,6 @@ end;
 
 function TDM.CIPlot(Varnames: TStrings; cmd: TCommand): boolean;
 var
-  i,j: integer;
   df: TEpiDataFrame;
   s: TStrings;
   byvar : string;
@@ -3061,11 +3060,12 @@ begin
   ODebug.IncIndent;
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   df := nil;
+  s := nil;
 
   if not dm.CheckDataOpen() then exit; //CheckDataOpen();
 
-  j := 0;
   try
+    CheckVariableNo(Varnames, 2);
     S := TStringList.Create;
     if cmd.ParamByName['BY'] <> Nil then
       dm.info('Option %s not implemented yet', ['/BY'], 203034);
@@ -3075,17 +3075,18 @@ begin
     end else
       dm.Error('/BY=<byvar> cannot be missing', [], 103044);  }
 
-    CheckVariableNo(Varnames, 2);
-
+    // Outcome may never contain missing.
+    S.Add(Varnames[0]);
     if (cmd.ParamExists['NM']) then
-//      S.AddStrings(Varnames);
-      dm.info('Option %s not implemented yet', ['/NM'], 203034);
+      S.AddStrings(Varnames);
+//      dm.info('Option %s not implemented yet', ['/NM'], 203034);
 
-    S.AddStrings(Varnames);
+//    S.AddStrings(Varnames);
     df := dataframe.prepareDataframe(Varnames, S);
     OGraph.DoGraphs(df, varnames, cmd);
   finally
     if Assigned(df) then FreeAndNil(df);
+    if Assigned(s) then FreeAndNil(s);
     ODebug.DecIndent;
   end;
 end;

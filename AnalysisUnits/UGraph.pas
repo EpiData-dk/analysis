@@ -112,7 +112,7 @@ type
     function DoCDFPlot(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
                        var OutputTable: TStatTable): TChart;
     function DoCIPlot(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
-                        var OutputTable: TStatTable; var footnote:string): TChart;
+                        var OutputTable: TStatTable): TChart;
     function DoIchart(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
                       var SPCDataframe: TEpiDataframe; var OutputTable: TStatTable; var footnote:string): TChart;
     function DoPchart(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
@@ -291,7 +291,7 @@ begin
       opEpiCurve:            chart := DoEpiCurve(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList,
                                                  xtab,footnote);
       opCDFPlot:             chart := DoCDFPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList, xtab);
-      opCIPlot:              chart := DoCIPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList,xtab,footnote);
+      opCIPlot:              chart := DoCIPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList, xtab);
       opDotPlot:             chart := DoDotPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList);
 
       // TODO : Graph table works, but not optimized. Think of a better generic solution for graphtables.
@@ -2021,22 +2021,17 @@ begin
 end;
 
 function TGraph.DoCIPlot(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
- var OutputTable: TStatTable; var footnote:string): TChart;
+ var OutputTable: TStatTable): TChart;
 
  var
   df: TEpiDataframe;
   agglist: TAggrList;
-  varlist, LineList: TStrings;
-  vec, byvec: TEpiVector;
-  i, j,c, k,n,m, sum, numerator, showvalue: integer;
+  i, j, c, sum, numerator, showvalue: integer;
   Low, High, Mid: EpiFloat;
-  Series, BySeries: TCandleSeries;
+  Series: TCandleSeries;
   ColorLine: TColorLineTool;
-
-{  df: TEpiDataframe;
   sumtab: TSumTable;
-  i, j, showvalue: integer;
-  agl: TAggrList;  }
+  footnote: string;
 
 const
   procname = 'DoCIPlot';
@@ -2062,7 +2057,7 @@ const
     end;
   end;
 
-  function CreateTable(var Table : TStatTable;title,variable, Outcome : string): Boolean;
+  function CreateTable(var Table : TStatTable; title, variable, Outcome : string): Boolean;
   var
     opt : TEpiOption;
   begin
@@ -2074,159 +2069,91 @@ const
       Table.Cell[4,1] := 'Total N';
       Table.Cell[5,1] := '%';
       if dm.GetOptionValue('TABLE CI HEADER', Opt) then
-           Table.Cell[6,1] := '<font class=ci>' + Opt.value  + '</font>'
-        else Table.Cell[6,1] := '<font class=ci>(95% CI)</font>';
+        Table.Cell[6,1] := '<font class=ci>' + Opt.value  + '</font>'
+      else
+        Table.Cell[6,1] := '<font class=ci>(95% CI)</font>';
   end;
 
-  function AddToTable(var Table : TStatTable;Varlabel,valuelabel: string;numerator,sum : Integer;
-        mid,low,high : EpiFloat; Parameters: TVarList): boolean;
+  function AddToTable(var Table : TStatTable; Varlabel,valuelabel: string; numerator, sum : Integer;
+                      mid, low, high : EpiFloat; Parameters: TVarList): boolean;
   var j : integer;
       found : Boolean;
       opt : TEpiOption;
       cifmt,efmt: String;
   begin
-     if (Parameters.VarByName['E1'] <> nil) then efmt := '%8.1f'
-        else if (Parameters.VarByName['E0']<> nil) then efmt := '%8.0f'
-        else if (Parameters.VarByName['E3']<> nil) then efmt := '%8.3f'
-        else if (Parameters.VarByName['E4']<> nil) then efmt := '%8.4f'
-        else efmt := '%4.1f';
+    if (Parameters.VarByName['E1'] <> nil) then efmt := '%8.1f'
+    else if (Parameters.VarByName['E0']<> nil) then efmt := '%8.0f'
+    else if (Parameters.VarByName['E3']<> nil) then efmt := '%8.3f'
+    else if (Parameters.VarByName['E4']<> nil) then efmt := '%8.4f'
+    else efmt := '%4.1f';
 
- // confidence interval formats:
+    // confidence interval formats:
     if dm.GetOptionValue('TABLE CI FORMAT', Opt) then
-       cifmt := Opt.value else cifmt := '() - ';       // (lv - uv)
+      cifmt := Opt.value else cifmt := '() - ';       // (lv - uv)
 
-      Table.AddRow;
-      found := False;
-      for j := 1 to table.RowCount do
-         if (pos(Varlabel,Table.Cell[1,j]) = 1) and not Found then found := True;
+    Table.AddRow;
+    found := False;
+    for j := 1 to table.RowCount do
+      if (pos(Varlabel,Table.Cell[1,j]) = 1) and not Found then found := True;
 
-      if found then  Table.Cell[1,Table.RowCount] := ' '
-           else Table.Cell[1,Table.RowCount] := Varlabel;
-      Table.Cell[2,Table.RowCount] := valuelabel;
-      Table.Cell[3,Table.RowCount] := inttostr(numerator);
-      Table.Cell[4,Table.RowCount] := inttostr(sum);
-      Table.Cell[5,Table.RowCount] := format(efmt,[100*(numerator/sum)]);
-      Table.Cell[6,Table.RowCount] := format(efmt,[low]);
-      Table.Cell[7,Table.RowCount] := format(efmt,[high]);
+    if found then  Table.Cell[1,Table.RowCount] := ' '
+         else Table.Cell[1,Table.RowCount] := Varlabel;
+    Table.Cell[2,Table.RowCount] := valuelabel;
+    Table.Cell[3,Table.RowCount] := inttostr(numerator);
+    Table.Cell[4,Table.RowCount] := inttostr(sum);
+    Table.Cell[5,Table.RowCount] := format(efmt,[100*(numerator/sum)]);
+    Table.Cell[6,Table.RowCount] := format(efmt,[low]);
+    Table.Cell[7,Table.RowCount] := format(efmt,[high]);
   end;
 
 begin
-{// TODO -O TORSTEN: Ny CIPlot kommando baseret på CreateFVTable
-
   ODebug.IncIndent;
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
-  dm.Info('CIPLOT is experimental ');
   sumtab := nil;
 
   try
     result := CreateStandardChart();
 
-    agl := TAggrList.Create();
-    agl.Insert(0, TAggrCount.Create('$S', '', acAll));
-    df := OAggregate.AggregateDataframe(dataframe, TStringList(varnames), agl);
-
-    OTables.Cmd := TCommand.Create(CmdID, Parameters);
-    sumtab := OTables.CreateFVTable(df, Varnames);
-    OTables.OutFVTable(sumtab);
-
-    for i := 1 to sumtab.TableCount do
-    begin
-      if (Parameters.VarByName['O'] <> nil) then
-      begin
-        showvalue := Parameters.VarByName['O'].AsInteger;
-        for j := 1 to sumtab[i].RowCount do
-          if sumtab[i].RowHeaderValue[j] = showvalue then
-            break;
-        showvalue := j;
-      end else
-        Showvalue := sumtab[i].RowCount;
-
-      if showvalue > sumtab[i].RowCount then
-        dm.Error('Observation value not in data set', [], 0);
-
-
-
-
-    end;
-  finally
-    if Assigned(sumtab) then FreeAndNil(sumtab);
-    if assigned(agl) then FreeAndNil(agl);
-  end;
-
-                 }
-
-
-
-  try
-    result := CreateStandardChart();
-   (* Implementation Idea:
-
-    !!!TODO:
-    The first version of this plot will:
-    Show CI (proportion) of observations in highest value of <var> stratified by a number of
-     variables. It is NOT a plot of proportions of the by variable
-
-    The proportion of yes (highest value) is calculated for all as well as by another variable:
-
-       Command syntax : CIPLOT <outcome> <var1> <var2> ... /BY=<byvar>
-
-       1) Aggregate on <outcome>
-       2) Find sum of entries.
-       3) Calculate CI on entries.
-       4) Plot CI to Chart.
-
-       5) For each <varX> loop
-        a) For each group in <byvar>
-         i)   Aggregate on <varX>, <outcome>
-         ii)  Find sum of entries on each level of <byvarX>
-         iii) calculate CI on each entrie on each level of <byvarX>
-         iv)  Plot CI. '
-
-
-       NOTE: /BY is not implemented yet.
-    *)
-
-    // 1) Aggregate on <outcome>
-    Varlist := TStringList.Create();
-    Varlist.Add(Varnames[0]);
     agglist := TAggrList.Create();
-    agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
-    df := OAggregate.AggregateDataframe(dataframe, TStringList(Varlist), agglist);
-    //dm.CodeMaker.OutputTable(df.ToStattable(nil), '');
+    agglist.Insert(0, TAggrCount.Create('$S', '', acAll));
+    df := OAggregate.AggregateDataframe(dataframe, TStringList(varnames), agglist);
 
-    //1a find value to look for:
-      //FirstVar := df.VectorByName[Varnames[0]].Name;
+    if not (Parameters.VarExists['NM']) then
+      Parameters.AddVar('M', '');
+    OTables.Cmd := TCommand.Create(CmdID, Parameters);
 
+    sumtab := OTables.CreateFVTable(df, Varnames);
 
+    c := 0;
+    // There will always be at lease one table.
     if (Parameters.VarByName['O'] <> nil) then
-      showvalue := Parameters.VarByName['O'].AsInteger
-    else
-      Showvalue := df.VectorByName[Varnames[0]].asInteger[df.RowCount];
+    begin
+      showvalue := Parameters.VarByName['O'].AsInteger;
+      for j := 1 to sumtab[1].ColumnCount do
+        if sumtab[1].ColHeaderValue[j] = showvalue then
+          break;
+      showvalue := j;
+    end else
+      Showvalue := sumtab[1].ColumnCount;
 
-    footnote :='Proportion of ' + df.VectorByName[Varnames[0]].GetVariableLabel
-               + ' = ' + df.VectorByName[Varnames[0]].GetValueLabel(IntToStr(showvalue),parameters);
+    if showvalue > sumtab[1].ColumnCount then
+      dm.Error('Observation value not in data set', [], 0);
+    Sum := 0;
+    for i := 1 to Sumtab.TableCount do
+    begin
+      if Sumtab[i].Total > Sum then
+      begin
+        Sum := Sumtab[i].Total;
+        Numerator := Sumtab[i].ColTotal[ShowValue]; 
+      end;
+    end;
+
+    footnote :='Proportion of ' + dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters) +
+               ' = ' + dataframe.VectorByName[Varnames[0]].GetValueLabel(IntToStr(ShowValue), parameters);
     result.title.Text.Add(footnote);
 
-    // dm.info(footnote);
-
-    // 2) Find sum of entries (total sum).
-    vec := df.VectorByName['$S'];
-    sum := 0;
-    numerator := 0;
-    for i := 1 to Df.RowCount do
-    begin
-      inc(sum, vec.AsInteger[i]);
-      if showvalue = df.VectorByName[Varnames[0]].asInteger[i] then
-        numerator := vec.AsInteger[i] ;
-    end;
-    if sum = 0 then dm.error('No Data', [], 103005);
-    c := 0 ;// candle number
-
-        // 3) Calculate CI for unstratified value add as series: (total)
-       //Series: TErrorBarSeries;
     Series := TCandleSeries.Create(nil);
-    //EpiProportionCI(vec.AsInteger[df.RowCount], sum, High, Low);
-    EpiProportionCI(Numerator, sum, High, Low);
+    EpiProportionCI(Numerator, Sum, High, Low);
     Mid := Numerator/ Sum;
     if ((100.0*mid+0.15) > 100.0) then
       Series.AddOHLC(c+0.5,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0))
@@ -2235,12 +2162,9 @@ begin
     Series.UpCloseColor := GetGraphColour(c);
     Series.DownCloseColor := GetGraphColour(c);
     Series.Color := GetGraphColour(c);
-    Series.xLabel[c]:= 'Total' ; // df.VectorByName[Varnames[Varnames.count-1]].GetValueLabel(IntToStr(showvalue),parameters);
+    Series.xLabel[c]:= 'Total';
     Series.Title := 'Proportion';
-
-    // 4) Plot CI to Chart.
     Series.ParentChart := result;
-    result.bottomaxis.Title.Caption := df.VectorByName[Varnames[0]].name + ' |';
 
     // add vertical lines ?
     if (Parameters.VarByName['NL'] = nil) then
@@ -2253,118 +2177,59 @@ begin
     //add crude line CI
     if (Parameters.VarByName['NOCI'] = nil) then
     begin
-      addline(result,Low*100,1);
-      addline(result, High*100,1);
+      addline(result, Low*100, 1);
+      addline(result, High*100, 1);
     end;
 
-        // add output table ?
+    result.bottomaxis.Title.Caption := df.VectorByName[Varnames[0]].name + ' |';
+    inc(c);
+
+    footnote := '&nbsp;&nbsp;Crude: Proportion of ' +
+                dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters) + ' = ' +
+                dataframe.VectorByName[Varnames[0]].GetValueLabel(IntToStr(showvalue)) + ' among all.';
+
     if Parameters.VarbyName['NT'] = Nil then
     begin
-     CreateTable(Outputtable,footnote,df.VectorByName[Varnames[0]].Name,
-                 df.VectorByName[Varnames[0]].GetValueLabel(IntToStr(showvalue),parameters));
-     AddToTable(OutPutTable,df.VectorByName[Varnames[0]].Name,'Total',
-              numerator,sum,mid*100,low*100,high*100, parameters);
+      CreateTable(Outputtable, footnote, dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters),
+                  dataframe.VectorByName[Varnames[0]].GetValueLabel(IntToStr(showvalue), parameters));
+      AddToTable(OutPutTable, dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters), 'Total',
+                 numerator, sum, mid*100, low*100, high*100, parameters);
+      OutputTable.Footer := footnote;
     end;
 
-    footnote :='&nbsp;&nbsp;Crude: Proportion of '
-       + df.VectorByName[Varnames[0]].Name + ' = ' + Series.xLabel[c] + ' among all <br>'
-       +'&nbsp;&nbsp;&nbsp;&nbsp;Proportion of '
-       + df.VectorByName[Varnames[0]].Name + ' = ' + Series.xLabel[c]
-       + ' for each stratum in /by variable(s)';
 
-    FreeAndNil(df);  // we do not need this now
-
-
-    // 5) for each varaible <varX>
-    c := 1;     //c is candle number
-    //for i := 0 to Parameters.Count-1 do
-    for i := 1 to Varnames.Count-1 do
+    for i := 1 to sumtab.TableCount do
     begin
-      //if AnsiUpperCase(Parameters[i].VarName) <> 'BY' then continue;
-      // a) Aggregate on <byvarx>, <var>
-      Varlist.Clear;
-      Varlist.Add(Varnames[i]);
-      Varlist.Add(Varnames[0]);
-      agglist := TAggrList.Create();
-      agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
-      df := OAggregate.AggregateDataframe(dataframe, TStringList(Varlist), agglist);
- //     dm.CodeMaker.OutputTable(df.ToStattable(nil), '');
+      Sum := 0;
 
-      // b) find sum of entries on each level of <byvarX>
-      vec := df.VectorByName['$S'];
-
-      // Propvec := df.VectorByName[PropVec. Parameters[i].AsString];  //
-      byvec := df.VectorByName[Varnames[i]];
-      result.bottomaxis.Title.Caption := result.bottomaxis.Title.Caption + ' ' + byvec.Name + ' |';
-      sum := 0;
-      j := 1;
-
-     // ADD NEW SERIES jsut to get the titles right:
-      BySeries := TCandleSeries.Create(nil);
-      BySeries.Title := Byvec.GetVariableLabel(Parameters);
-      BySeries.ShowInLegend := False;
-
-      while j <= df.RowCount do
+      for j := 1 to Sumtab[i].RowCount do
       begin
-        //begin
-        (* run through all strata
-        find: count in stratum - find number in highest outcome group - display proportion -goto next stratum - end    *)
+        Numerator := SumTab[i].Cell[ShowValue, j].N;
+        Sum := SumTab[i].RowTotal[j];
 
-        k := Byvec.AsInteger[j];
-        sum := 0;
-        numerator := 0;
-        m := 0 ;
-        // How many lines to count on ?
-        for n := 0 to df.RowCount do
-          if (Byvec.AsInteger[j] = Byvec.AsInteger[j+n]) then inc(m);
-          // dm.info(inttostr(m));
-
-         for n := 1 to m do
-          begin
-            if (df.VectorByName[Varnames[0]].AsInteger[j] = showvalue) then
-                                         numerator := Vec.AsInteger[j];
-            sum := sum + vec.AsInteger[j]; inc(j);
-          end;  // end for this byvariable value
-          dec(j);     // decrease to get back to correct J value, inc(j) added one too much
-
-          dm.sysinfo(format('c = %d  j= %d  sum = %d   numerator = %d ',[c,j,sum,numerator]) + ByVec.GetValueLabel(ByVec.asstring[j])); // LabelVector.GetValueLabel(LabelVector.AsString[i])
-          // c) calculate CI on each entry on each level of <byvarX>
-          if sum = 0 then
-            dm.info('No Data', [], 103005)
-          else
-          begin
-            // with series2 for by variables colours are correct, but xlabel missing
-  (*              Series2.AddOHLC(c,(mid*100)-0.25, Low*100, High*100,(mid*100)+0.25);
-                Series2.UpCloseColor := GetGraphColour(c);
-                Series2.DownCloseColor := GetGraphColour(c);
-                Series2.Color := GetGraphColour(c);  *)
-            // but we do for now no colouring:
-            Mid := numerator / Sum;
-            EpiProportionCI(numerator, sum, High, Low);
-            if ((mid*100.0)+0.15> 100.0) then
-               Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0))
-                else                  Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0)+0.15);
-            Series.UpCloseColor := GetGraphColour(c);
-            Series.DownCloseColor := GetGraphColour(c);
-            Series.Color := GetGraphColour(c);
-            Series.xlabel[c] := ByVec.GetValueLabel(ByVec.asstring[j],parameters);
-            if Parameters.VarbyName['NT'] = Nil then
-              AddToTable(OutPutTable,ByVec.Name,Series.xLabel[c],numerator,sum,mid*100,low*100,high*100,parameters);
-            inc(c); // next candle overall
-          end;
-          inc(j); // next stratum this "by" variable
-
-       end;
-       BySeries.ParentChart := result;      // contains only titles
-       FreeAndNil(df);
-       if (Parameters.VarByName['NL'] = nil) then addline(result,c-0.5);
-    end; // end by variables
-        // show footnote
+        EpiProportionCI(Numerator, Sum, High, Low);
+        Mid := Numerator / Sum;
+        if ((100.0*mid+0.15) > 100.0) then
+          Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0))
+        else
+          Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0)+0.15);
+        Series.UpCloseColor := GetGraphColour(c);
+        Series.DownCloseColor := GetGraphColour(c);
+        Series.Color := GetGraphColour(c);
+        Series.xLabel[c]:= SumTab[i].RowHeaderLabel[j];
+        if Parameters.VarbyName['NT'] = Nil then
+          AddToTable(OutPutTable, SumTab[i].RowHeader, Series.xLabel[c], numerator, sum, mid*100, low*100, high*100, parameters);
+        inc(c);
+      end;
+      result.bottomaxis.Title.Caption := result.bottomaxis.Title.Caption + ' ' + SumTab[i].RowHeader + ' |';
+      if (Parameters.VarByName['NL'] = nil) then addline(result,c-0.5);
+    end;
     if Parameters.VarbyName['NT'] <> Nil then dm.info(footnote, [], 0);
-
   finally
+    if Assigned(sumtab) then FreeAndNil(sumtab);
+    if assigned(agglist) then FreeAndNil(agglist);
     if Assigned(df) then FreeAndNil(df);
-  end;    
+  end;
 end;
 
 // draw a cdf and possibly probit plot:

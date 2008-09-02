@@ -71,7 +71,9 @@ type
     function GetRowTotal(const index: integer): EpiUnInt;
     function GetTotal(): EpiUnInt;
     function GetRowHeaderValue(const index: integer): EpiVariant;
-
+    function GetRowHeaderLabel(const index: integer): String;
+    function GetColHeaderValue(const index: integer): EpiVariant;
+    function GetColHeaderLabel(const index: integer): String;
     // 2x2 table estimators as functions :
     function GetFishers2p() :EpiFloat;       // fishers exact 2 sided
     function GetCrudeOR(): EpiFloat;
@@ -101,11 +103,14 @@ type
     property Cell[const col, row: Cardinal]: TTableCell read GetCell;
     property ColTotal[const index: integer]: EpiUnInt read GetColTotal;
     property RowTotal[const index: integer]: EpiUnInt read GetRowTotal;
-//    property ColHeaderLabel[const index: integer]: string read;
-//    property ColHeaderValue[const index: integer]: EpiVariant read;
-//    property RowHeaderLabel[const index: integer]: string read;
+    property ColHeaderLabel[const index: integer]: string read GetColHeaderLabel;
+    property ColHeaderValue[const index: integer]: EpiVariant read GetColHeaderValue;
+    property RowHeaderLabel[const index: integer]: string read GetRowHeaderLabel;
     property RowHeaderValue[const index: integer]: EpiVariant read GetRowHeaderValue;
 
+    property ColHeader: String read fColHeader;
+    property RowHeader: String read fRowHeader;
+    property Caption: String read fCaption;
     //add statistical estimators here - and the variable above in private section
     property DF: EpiInt read fDF write fDF;
     property CHI: EpiFloat read fChi write fChi;
@@ -3305,6 +3310,22 @@ function TTwoWayTable.GetRowHeaderValue(const index: integer): EpiVariant;
 begin
   result := fRowLabel.GetValue(index-1);
 end;
+
+function TTwoWayTable.GetRowHeaderLabel(const index: integer): String;
+begin
+  result := fRowLabel.Get(index-1);
+end;
+
+function TTwoWayTable.GetColHeaderValue(const index: integer): EpiVariant;
+begin
+  result := fColLabel.GetValue(index-1);
+end;
+
+function TTwoWayTable.GetColHeaderLabel(const index: integer): String;
+begin
+  result := fColLabel.Get(index-1);
+end;
+
 
 procedure ExchangeColumns(var Table: TTwoWayTable; Index1, Index2: integer);
 var
