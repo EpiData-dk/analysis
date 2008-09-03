@@ -239,6 +239,7 @@
 61000=No Data
 61001=Read data or generate
 
+
 [UAggregate]
 100001=Unknown aggregate function: %s
 100002=Aggregate: Too many variables used.
@@ -427,6 +428,7 @@
 113010=Period too short: %d <br> (see breaks ? - Date as time variable ?)
 113011=SPC Period too short (breaks ?)
 113012=Record no. %d has a ''count'' value greater than ''total''
+113013=Observation value not in data set
 
 213001=report problem with histogram (drawing last bar): %d
 213002=Boxplot: Median and Inter Quartile Range (IQR=25-75%). Whisker:  %s N=%d

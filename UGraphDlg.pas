@@ -347,7 +347,7 @@ procedure TGraphDlg.CancelBtnClick(Sender: TObject);
   end;
 
 begin
-  DlgResult := TButton(sender).ModalResult;
+  DlgResult := mr2dr(TButton(sender).ModalResult);
   makeCmdString(CmdString);
   close;
 end;
@@ -398,7 +398,7 @@ begin
     else if CmdName = 'CIPLOT' then
         begin
           Combobox1.text := 'Outcome';
-          Combobox2.text := 'Variable (optional)';
+          Combobox2.text := 'Variable';
           Combobox3.text := 'Variable (optional)';
           Combobox4.text := 'Variable (optional)';
           Combobox5.text := 'by Variable';

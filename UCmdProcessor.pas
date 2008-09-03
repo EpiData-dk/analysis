@@ -2817,8 +2817,9 @@ const
 begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   df := nil;
+  missing := nil;
   try
-         if not dm.CheckDataOpen() then exit; //checkdataopen();
+    if not dm.CheckDataOpen() then exit; //checkdataopen();
     CheckVariableNo(Varnames,2);
     missing := TStringList.Create();
     missing.Add(Varnames[0]);
@@ -2833,14 +2834,12 @@ begin
         Missing.Add(cmd.ParamByName['BY'].AsString);
     end;
     df := dataframe.prepareDataframe(Varnames, missing);
-    if cmd.ParamByName['YTEXT'] = nil then
-      cmd.ParameterList.AddVar('YTEXT', df.FindVector(varnames[1]).GetVariableLabel(Cmd.ParameterList));
 
     if df.SelectedRowCount = 0 then error('No Data', [], 103005);
     OGraph.DoGraphs(df, varnames, cmd);
   finally
     if Assigned(df) then FreeAndNil(df);
-    if missing<> nil then FreeAndNil(missing);
+    if Assigned(missing) then FreeAndNil(missing);
   end;
 end;
 
@@ -2978,6 +2977,7 @@ function TDM.EpiCurve(Varnames: TStrings; cmd: TCommand): boolean;
 var
   df: TEpiDataframe;
   VectorList: TEpiVectors;
+  Missing: TStrings;
   i: integer;
 const
   procname = 'EpiCurve';
@@ -2987,15 +2987,21 @@ begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
        if not dm.CheckDataOpen() then exit; //CheckDataOpen();
   if Varnames.Count > 2 then
-    Error('Use: EpiCurve %s %s /by=%s', [varnames[0],varnames[1],varnames[2]], 103042);
-  CheckVariableNo(Varnames, 2, 2);
+    Error('Use: EpiCurve %s %s /by=%s', [varnames[0], varnames[1], varnames[2]], 103042);
   df := nil;
   vectorlist := nil;
+  Missing := nil;
   try
+    CheckVariableNo(Varnames, 2, 2);
+    
+    Missing := TStringList.Create();
+    Missing.Add(Varnames[0]);
+    
     if Cmd.ParamByName['BY'] <> nil then
       varnames.Add(Cmd.ParamByName['BY'].AsString);
+      
     VectorList := dataframe.GetVectorListByName(Varnames);
-    df := dataframe.prepareDataframe(Varnames, nil);//varnames);
+    df := dataframe.prepareDataframe(Varnames, Missing);
     for i := 0 to Varnames.count-1 do
     begin
       if (VectorList[i].DataType = EpiTyString) then

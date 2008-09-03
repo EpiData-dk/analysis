@@ -754,7 +754,7 @@ begin
   begin
     ODos.CD(ExtractFilePath(ParamStr(1)));
     if ExtractFileExt(ParamStr(1)) = 'REC'
-      then dm.info('Cannot yet open rec files directly', [], 206001) // TODO : OpenFile.OpenFile(ParamStr(1),'READ');
+      then dm.info('Cannot yet open rec files directly', 206001) // TODO : OpenFile.OpenFile(ParamStr(1),'READ');
       else dm.RunPGMFile(ParamStr(1));
   end
   else
@@ -1414,7 +1414,7 @@ case Msg.Msg of
          s:= '('+Statusbar.Panels[3].text+')';
      Statusbar.Panels[2].text:= format('%d ',[dataframe.selectedrowcount]);
      Statusbar.Panels[3].text:= s;
-     if (copy(s,1,2) = '((') then dm.info(' '+s,[],0);
+     if (copy(s,1,2) = '((') then dm.info(' '+s,0);
    end;
    EpiOpenFile:
    begin
@@ -3111,7 +3111,7 @@ procedure TaMainForm.Ciplot1Click(Sender: TObject);
 begin
   DoGraphDlg('CIplot varlist',1,4, [EpiTyFloat,EpiTyInteger,EpiTyDate,EpiTyByte],
              [EpiTyFloat,EpiTyInteger,EpiTyBoolean,EpiTyByte], [GrpStdOpt],
-             True,False,'Choose Variable','Choose Variable (optional)','Choose Variable (optional)','Choose Variable (optional)',
+             false,False,'Choose Variable','Choose Variable (optional)','Choose Variable (optional)','Choose Variable (optional)',
              'Outcome (Not optional)');
 end;
 

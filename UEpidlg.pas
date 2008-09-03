@@ -309,11 +309,11 @@ begin
           if (cmdname = 'REGRESS') or (cmdname = 'CORRELATE' ) then
             ByVar.Caption := ByVar.Caption + ' ' + GetVar.Items[GetVar.ItemIndex]
           else if (cmdname = 'MEANS' ) then
-            dm.error('Max two variables', [], -1, 104003)
+            dm.error('Max two variables', [], 104003, -1)
           else if (cmdname = 'LIFETABLE') and (j = 3) then
             TimeVar.Caption := GetVar.Items[GetVar.ItemIndex]
           else
-            dm.error('Max three variables', [], -1, 104003);
+            dm.error('Max three variables', [], 104003, -1);
 end;
 
 

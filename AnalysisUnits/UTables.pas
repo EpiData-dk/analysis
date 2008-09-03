@@ -2961,7 +2961,7 @@ begin
   List := TStringList.Create;
   SplitString(s, List, [',']);
   if List.Count <> 6 then
-    dm.Error('Incorrect number of headers for %s header', ['CT OR'], 0, 117006);
+    dm.Error('Incorrect number of headers for %s header', ['CT OR'], 117006);
 
   With ORHeaders do
   begin
@@ -2986,7 +2986,7 @@ begin
   List := TStringList.Create;
   SplitString(s, List, [',']);
   if List.Count <> 8 then
-    dm.Error('Incorrect number of headers for %s header', ['CT RR'], 0, 117006);
+    dm.Error('Incorrect number of headers for %s header', ['CT RR'], 117006);
 
   With RRHeaders do
   begin
@@ -3013,7 +3013,7 @@ begin
   List := TStringList.Create;
   SplitString(s, List, [',']);
   if List.Count <> 6 then
-    dm.Error('Incorrect number of headers for %s header', ['LifeTable'], 0, 117006);
+    dm.Error('Incorrect number of headers for %s header', ['LifeTable'], 117006);
 
   With LTHeaders do
   begin

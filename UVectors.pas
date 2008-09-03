@@ -585,7 +585,7 @@ begin
     except
         if EpiDataSetClass.GetErrorText<>'' THEN
         begin
-          dm.Error(EpiDataSetClass.GetErrorText, [], -1, 0);
+          dm.Error(EpiDataSetClass.GetErrorText, [], 0, -1);
           EpiDataSetClass.SetErrorText('');
         end;
       raise;
@@ -2423,9 +2423,6 @@ begin
       diff := diff+adddiff;
     end;
 
-
-    if (i<df.rowcount) and vec.IsMissing[i+1] then
-      i := df.RowCount;
     if Diff > 100 then
       dm.Info('Warning: Large gaps. To cancel process press ESC or click stop button.', [], 209003);
     if Diff > 1 then
@@ -2479,6 +2476,8 @@ begin
       df.Sort(GroupVarnames.CommaText);
       inc(i, diff-1)
     end;
+    if (i<df.rowcount) and vec.IsMissing[i+1] then
+      i := df.RowCount;
     inc(i);
   end;
   result := df;
@@ -2520,7 +2519,7 @@ begin
     else
       s := ('Unknown data type');
   end;//case
-  dm.info(Name + txt + s, [], 0);
+  dm.info(Name + txt + s, 0);
   for i := 1 to RowCount do
   begin
     case datatype of
@@ -3184,8 +3183,6 @@ begin
   if fOrgLength= -1 then fOrgLength:=1000;
   SetLength(FData, fOrgLength);
   fCheckProperties.OrigFelttype:=ftAlfa;
-  FieldDataSize := 10;
-  FieldDataDecimals := 0;
 end;
 
 procedure TEpiStringVector.Reset;

@@ -1393,7 +1393,7 @@ const
   procname = 'DoDotPlot';
   procversion = '1.0.0.0';
 begin
-    ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   if varnames.Count < 1 then dm.Error('Minimum 1 variables for %s!', ['DoDotPlot'], 113005);
 
   if Parameters.VarbyName['DI'] <> nil then di := (Parameters.VarbyName['DI'].AsFloat)
@@ -1421,6 +1421,7 @@ begin
 
   // the variable to graph
   yvec := dataframe.VectorByName[Varnames[0]];
+  result.LeftAxis.Title.Caption := Yvec.GetVariableLabel(parameters);
 
   // the pseudo X to use for graphing as x coordinate
   PVarDesc := TAnaVariableDescriptor.CreateLocal('$X',EpiTyFloat,14,6);
@@ -1576,6 +1577,9 @@ begin
 
   xvec := Dataframe.VectorByName[varnames[0]];
 
+  Result.BottomAxis.Title.Caption := XVec.GetVariableLabel(Parameters);
+
+
   // Uncomment when XLAB needed in scatter!
 {  if (Parameters.VarByName['XLAB'] = nil) then }
     lvec := xvec;
@@ -1584,7 +1588,7 @@ begin
     varnames.Delete(varnames.IndexOf(Parameters.VarByName['XLABEL'].AsString));
   end;     }
   // Create the scatter (point) series.
-  if (Parameters.VarbyName['BY'] <> nil) then
+  if Parameters.VarExists['BY'] then
   begin
     k := 0;
     groupvar := Parameters.VarbyName['BY'].AsString;
@@ -1599,6 +1603,8 @@ begin
     i := 1;
     while (i<=xvec.Length) and (yvec.IsMissing[i]) do inc(i);
     dummy := yvec.AsFloat[i];
+    if Varnames.Count = 2 then
+      Result.LeftAxis.Title.Caption := dataframe.VectorByName[Varnames[1]].GetVariableLabel(Parameters);
     for j := 1 to varnames.Count -1 do
     begin
       yvec := dataframe.VectorByName[Varnames[j]];
@@ -1651,6 +1657,8 @@ begin
   end else begin
     result.Title.Text.Add(MultiVarTitle(Dataframe.GetVectorListByName(Varnames), Parameters));
     Dataframe.Sort(varnames[0]);
+    if Varnames.Count = 2 then
+      Result.LeftAxis.Title.Caption := dataframe.VectorByName[Varnames[1]].GetVariableLabel(Parameters);
     for i := 1 to varnames.Count -1 do
     begin
       yvec := dataframe.VectorByName[Varnames[i]];
@@ -1768,9 +1776,9 @@ begin
   if varnames.Count > 3 then Exception.Create('Maximum 3 variables');
 
   try
-    // Finding overall max value of second variable.
-    xvec := dataframe.VectorByName[varnames[1]];
+    // Finding overall max value of first variable.
     yvec := dataframe.VectorByName[varnames[0]];
+    xvec := dataframe.VectorByName[varnames[1]];
     maxval := -MaxInt;
     aBegin := MaxInt;
     aEnd := -MaxInt;
@@ -1829,6 +1837,8 @@ begin
     // Create the graph and set customizable settings.
     result := CreateStandardChart();
     result.Title.Text.Add(title);
+    result.BottomAxis.Title.Caption := xvec.GetVariableLabel(parameters);
+    result.LeftAxis.Title.Caption := 'Count';
 
     if Parameters.VarbyName['YINC'] = nil then
        Parameters.AddVar('YINC', 1);
@@ -2031,7 +2041,7 @@ function TGraph.DoCIPlot(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Wo
   Series: TCandleSeries;
   ColorLine: TColorLineTool;
   sumtab: TSumTable;
-  footnote: string;
+  footnote, s: string;
 
 const
   procname = 'DoCIPlot';
@@ -2137,7 +2147,7 @@ begin
       Showvalue := sumtab[1].ColumnCount;
 
     if showvalue > sumtab[1].ColumnCount then
-      dm.Error('Observation value not in data set', [], 0);
+      dm.Error('Observation value not in data set', [], 113013);
     Sum := 0;
     for i := 1 to Sumtab.TableCount do
     begin
@@ -2147,56 +2157,61 @@ begin
         Numerator := Sumtab[i].ColTotal[ShowValue]; 
       end;
     end;
-
+    s := sumtab[1].ColHeaderLabel[Showvalue];
     footnote :='Proportion of ' + dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters) +
-               ' = ' + dataframe.VectorByName[Varnames[0]].GetValueLabel(IntToStr(ShowValue), parameters);
+               ' = ' + s;
     result.title.Text.Add(footnote);
 
     Series := TCandleSeries.Create(nil);
-    EpiProportionCI(Numerator, Sum, High, Low);
-    Mid := Numerator/ Sum;
-    if ((100.0*mid+0.15) > 100.0) then
-      Series.AddOHLC(c+0.5,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0))
-    else
-      Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0)+0.15);
     Series.UpCloseColor := GetGraphColour(c);
     Series.DownCloseColor := GetGraphColour(c);
     Series.Color := GetGraphColour(c);
-    Series.xLabel[c]:= 'Total';
-    Series.Title := 'Proportion';
     Series.ParentChart := result;
-
-    // add vertical lines ?
-    if (Parameters.VarByName['NL'] = nil) then
-    begin
-      addline(result,0.75);
-      addline(result,-0.75);
-      result.BottomAxis.IStartPos := -10;
-    end;
-
-    //add crude line CI
-    if (Parameters.VarByName['NOCI'] = nil) then
-    begin
-      addline(result, Low*100, 1);
-      addline(result, High*100, 1);
-    end;
-
-    result.bottomaxis.Title.Caption := df.VectorByName[Varnames[0]].name + ' |';
-    inc(c);
+    Series.Title := 'Proportion';
 
     footnote := '&nbsp;&nbsp;Crude: Proportion of ' +
-                dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters) + ' = ' +
-                dataframe.VectorByName[Varnames[0]].GetValueLabel(IntToStr(showvalue)) + ' among all.';
+            dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters) + ' = ' +
+            s + ' among all.';
 
     if Parameters.VarbyName['NT'] = Nil then
     begin
-      CreateTable(Outputtable, footnote, dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters),
-                  dataframe.VectorByName[Varnames[0]].GetValueLabel(IntToStr(showvalue), parameters));
-      AddToTable(OutPutTable, dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters), 'Total',
-                 numerator, sum, mid*100, low*100, high*100, parameters);
+      CreateTable(Outputtable, footnote, dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters), s);
       OutputTable.Footer := footnote;
     end;
 
+    if not (Parameters.VarExists['NOTOT']) then
+    begin
+      EpiProportionCI(Numerator, Sum, High, Low);
+      Mid := Numerator/ Sum;
+      if ((100.0*mid+0.15) > 100.0) then
+        Series.AddOHLC(c+0.5,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0))
+      else
+        Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0)+0.15);
+      Series.xLabel[c]:= 'Total';
+
+      if Parameters.VarbyName['NT'] = Nil then
+        AddToTable(OutPutTable, dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters), 'Total',
+                   numerator, sum, mid*100, low*100, high*100, parameters);
+
+      // add vertical lines ?
+      if (Parameters.VarByName['NL'] = nil) then
+      begin
+        addline(result,0.75);
+        addline(result,-0.75);
+        result.BottomAxis.IStartPos := -10;
+      end;
+
+      //add crude line CI
+      if (Parameters.VarByName['NOCI'] = nil) then
+      begin
+        addline(result, Low*100, 1);
+        addline(result, High*100, 1);
+      end;
+      inc(c);
+    end;
+
+    result.LeftAxis.Title.Caption := 'Percents (%)';
+    result.bottomaxis.Title.Caption := df.VectorByName[Varnames[0]].name + ' |';
 
     for i := 1 to sumtab.TableCount do
     begin
@@ -2213,9 +2228,6 @@ begin
           Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0))
         else
           Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0)+0.15);
-        Series.UpCloseColor := GetGraphColour(c);
-        Series.DownCloseColor := GetGraphColour(c);
-        Series.Color := GetGraphColour(c);
         Series.xLabel[c]:= SumTab[i].RowHeaderLabel[j];
         if Parameters.VarbyName['NT'] = Nil then
           AddToTable(OutPutTable, SumTab[i].RowHeader, Series.xLabel[c], numerator, sum, mid*100, low*100, high*100, parameters);
@@ -2283,6 +2295,7 @@ begin
 
     result := CreateStandardChart();
     result.Title.Text.Add(dataframe.VectorByName[varnames[0]].GetVariableLabel(Parameters));
+    result.BottomAxis.Title.Caption := dataframe.VectorByName[varnames[0]].GetVariableLabel(Parameters);
 
     varlist := TStringList.Create();
     varlist.Assign(varnames);
@@ -2366,6 +2379,7 @@ begin
       OutputTable.AddRow();
       OutputTable.Cell[1, OutputTable.RowCount] := 'Aggregate plot.';
     end;
+    result.LeftAxis.Title.Caption := 'Cummulative percent (%)';
     if (Parameters.VarbyName['P'] <> nil) then
     begin
       result.LeftAxis.Title.Caption := 'Z (Probit)';
