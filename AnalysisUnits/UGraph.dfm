@@ -1,6 +1,6 @@
 object GraphForm: TGraphForm
-  Left = 306
-  Top = 204
+  Left = 567
+  Top = 237
   Width = 694
   Height = 496
   Caption = 'GraphForm'

@@ -103,7 +103,8 @@ type
     // SIMPLE GRAPH FOR USE IN MORE COMPLEX GRAPH_OUTPUTS
     function DoBars(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
     function DoHistogram(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
-    function DoBoxPlot(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
+    function DoBoxPlot(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
+                       var OutputTable: TStatTable): TChart;
     function DoScatter(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
     function DoDotPlot(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
     function DoPie(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
@@ -283,7 +284,7 @@ begin
       opHistogram,
       opShortHistogram:      chart := DoHistogram(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList);
       opBar:                 chart := DoBars(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList);
-      opBox, opBoxPlot:      chart := DoBoxPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList);
+      opBox, opBoxPlot:      chart := DoBoxPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList, xtab);
       opLine,
       opScatter,
       opShortScatter:        chart := DoScatter(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList);
@@ -308,7 +309,7 @@ begin
       dm.Error('Command not in implemented in DoGraph', [], 113001);
     end;
     if (Chart = nil) then raise Exception.Create('TChart not initialized.');
-    if (xtab <> nil) and (cmd.ParamByName['Q'] = nil) then
+    if Assigned(xtab) and (not cmd.ParamExists['Q']) then
     begin
       xtab.TableType := sttNormal;
       dm.CodeMaker.OutputTable(xtab,footnote);
@@ -385,7 +386,6 @@ begin
     TabOrder := 0;
     AutoSize := True;
     BevelOuter := bvNone;
-
 
     // Backwall
     BackWall.Brush.Color := clWhite;
@@ -1145,42 +1145,63 @@ begin
   ODebug.DecIndent;
 end;
 
-function TGraph.DoBoxPlot(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
+function TGraph.DoBoxPlot(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
+                          var OutputTable: TStatTable): TChart;
 var
-  series: TCustomChartSeries;
-  vec, zvec: TEpiVector;
+  Series: TBoxSeries;
+  Vec, ByVec: TEpiVector;
   GroupVar: string;
-  i, k: integer;
-  df: TEpiDataframe;
+  i, j, k: integer;
+  agdf, df: TEpiDataframe;
   AggL: TAggrList;
-  ByVars : TStringList;
+  ByVars, LVars : TStrings;
 const
   procname = 'DoBoxPlot';
   procversion = '1.0.0.0';
 
-  procedure ToTable(dataframe: TEpiDataFrame);
-  var
-    df: TEpiDataFrame;
-    vlist: TStrings;
+  function CreateTable(df: TEpiDataframe; Caption: string): TStatTable;
   begin
-    vlist := nil;
-    df := Dataframe.PrepareDataframe(vlist, nil);
-    df.VectorByName['$MIN'].Name := 'Min';
-    df.VectorByName['$10'].Name := 'p10';
-    df.VectorByName['$25'].Name := 'p25';
-    df.VectorByName['$Med'].Name := 'Med';
-    df.VectorByName['$75'].Name := 'p75';
-    df.VectorByName['$90'].Name := 'p90';
-    df.VectorByName['$MAX'].Name := 'Max';
-    OAggregate.OutAggregate(df, TCommand.Create(opBar, Parameters));
-    FreeAndNil(df);
-    FreeAndNil(vlist);
+    Result := dm.CodeMaker.Output.NewTable(8,1);
+    REsult.TableType := sttNormal;
+    Result.Caption := 'Box Plot' + Caption;
+    Result.Cell[1,1] := '';
+    Result.Cell[2,1] := 'N';
+    Result.Cell[3,1] := 'Min';
+    Result.Cell[4,1] := 'P10';
+    Result.Cell[5,1] := 'P25';
+    Result.Cell[6,1] := 'Med';
+    Result.Cell[7,1] := 'P75';
+    Result.Cell[8,1] := 'P90';
+    Result.Cell[9,1] := 'Max';
   end;
 
 
-  procedure FinishBox(index: integer);
+  procedure AddToTable(dataframe: TEpiDataFrame; VariableName: string);
+  var
+    i,j: integer;
   begin
-    with TBoxSeries(series) do
+    OutputTable.AddRow;
+    OutputTable.Cell[1, OutputTable.RowCount] := VariableName;
+    if DataFrame.RowCount > 1 then
+      for j := 2 to OutputTable.ColCount do
+        OutputTable.Cell[j, OutputTable.RowCount] := '';
+    for i := 1 to dataframe.RowCount do
+    begin
+      if DataFrame.RowCount > 1 then
+      begin
+        OutputTable.AddRow;
+        OutputTable.Cell[1, OutputTable.RowCount] := dataframe.Vectors[0].GetValueLabel(dataframe.Vectors[0].AsString[i], Parameters);
+      end;
+      for j := 2 to dataframe.VectorCount do
+      begin
+        OutputTable.Cell[j, OutputTable.RowCount] := dataframe.Vectors[j-1].AsString[i];
+      end;
+    end;
+  end;
+
+  procedure FinishBox(df: TEpiDataFrame; BoxNo, index: integer);
+  begin
+    with Series do
     begin
       Color := 0;
       LinePen.Width := 3;
@@ -1191,9 +1212,9 @@ const
       MildOut.Visible := False;
       ExtrOut.Visible := False;
       UseCustomValues := False;
-      Box.Color:= GetGraphColour(index);
+      Box.Color:= GetGraphColour(BoxNo);
       //Box.HorizSize := 25;
-      Position := index;
+      Position := BoxNo;
       UseCustomValues := true;
 
       // always:
@@ -1237,12 +1258,120 @@ const
   end;
 
 begin
-  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  ODebug.IncIndent();
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
   df := nil;
+  ByVars := nil;
 
   // Create the graph and set customizable settings.
   result := CreateStandardChart();
   try
+    if (Parameters.VarByName['TI'] <> nil) then
+      result.Title.Text.Add(Parameters.VarByName['TI'].AsString);
+
+    result.BottomAxis.MinimumOffset := 10;
+    result.BottomAxis.MaximumOffset := 10;
+    result.BottomAxis.Ticks.Visible := false;
+    result.BottomAxis.Labels := true;
+//    result.BottomAxis.Visible := False;
+    result.MarginLeft := 10;
+    result.MarginRight := 5;
+
+    if Parameters.VarExists['BY'] then
+    begin
+      GroupVar := Parameters.VarbyName['BY'].AsString;
+      Varnames.Delete(Varnames.IndexOf(GroupVar));
+    end else begin
+      GroupVar := '$BY';
+      ByVec := TEpiIntVector.Create(GroupVar, Dataframe.RowCount);
+      for i := 1 to Dataframe.RowCount do
+        ByVec.AsInteger[i] := 1;
+      Dataframe.Vectors.Add(ByVec);
+    end;
+
+    OutputTable := CreateTable(Dataframe,'');
+    if Varnames.Count = 1 then
+      Result.Title.Caption := DataFrame.VectorByName[Varnames[0]].GetVariableLabel(Parameters);
+
+    ByVars := TStringList.Create;
+    LVars := TStringList.Create;
+    for i := 0 to Varnames.Count -1 do
+    begin
+      ByVars.Clear();
+      ByVars.Add(Varnames[i]);
+      ByVars.Add(GroupVar);
+      LVars.Clear();
+      LVars.Add(Varnames[i]);
+      df := dataframe.PrepareDataframe(ByVars, LVars);
+
+      ByVars.Delete(0);
+      AggL := TAggrList.Create();
+      Aggl.Add(TAggrCount.Create('$N', Varnames[i], acAll));
+      Aggl.Add(TAggrMinMax.Create('$MIN', Varnames[i], true));
+      Aggl.Add(TAggrPercentile.Create('$10', Varnames[i], ap10));
+      Aggl.Add(TAggrPercentile.Create('$25', Varnames[i], ap25));
+      Aggl.Add(TAggrPercentile.Create('$Med', Varnames[i], ap50));
+      Aggl.Add(TAggrPercentile.Create('$75', Varnames[i], ap75));
+      Aggl.Add(TAggrPercentile.Create('$90', Varnames[i], ap90));
+      Aggl.Add(TAggrMinMax.Create('$MAX', Varnames[i], false));
+
+      agdf := OAggregate.AggregateDataframe(df, TStringList(ByVars), AggL);
+      vec := df.VectorByName[Varnames[i]];
+      ByVec := df.VectorByName[GroupVar];
+
+      AddToTable(agdf, Vec.GetVariableLabel(Parameters));
+
+      if Parameters.VarExists['BY'] then
+      begin
+        if Varnames.Count = 1 then
+          result.BottomAxis.Title.Caption := ByVec.GetVariableLabel(Parameters)
+        else
+          result.BottomAxis.Title.Caption := result.BottomAxis.Title.Caption + Vec.GetVariableLabel(Parameters);
+        if i < Varnames.Count -1 then
+          result.BottomAxis.Title.Caption := result.BottomAxis.Title.Caption + ' | ';
+      end;
+
+      k := 0;
+      Series := TBoxSeries.Create(Result);
+      for j := 1 to df.RowCount-1 do
+      begin
+        Series.AddY(vec.AsFloat[j]);
+        if (ByVec.compare(j, j+1) <> 0) then
+        begin
+          Series.ParentChart := result;
+          Series.Title := vec.GetVariableLabel(Parameters);
+          Series.xLabel[(i*agdf.RowCount)+k] := ByVec.GetValueLabel(ByVec.AsString[j], Parameters);
+          FinishBox(agdf, (i*agdf.RowCount)+k, k);
+          inc(k);
+          Series := TBoxSeries.Create(Result);
+        end;
+      end;
+      Series.AddY(vec.AsFloat[j]);
+      Series.ParentChart := result;
+      Series.Title := vec.GetVariableLabel(Parameters);
+      if Parameters.VarExists['BY'] then
+        Series.xLabel[(i*agdf.RowCount)+k] := ByVec.GetValueLabel(ByVec.AsString[j], Parameters)
+      else
+        Series.xLabel[(i*agdf.RowCount)+k] := vec.GetVariableLabel(Parameters);
+      FinishBox(agdf, (i*agdf.RowCount)+k, k);
+      
+      FreeAndNil(df);
+      FreeAndNil(agdf);
+      FreeAndNil(AggL);
+    end;
+    if Result.SeriesList.Count = 2 then
+    begin
+      result.BottomAxis.MinimumOffset := 75;
+      result.BottomAxis.MaximumOffset := 75;
+    end;
+  finally
+    ODebug.DecIndent();
+    if Assigned(ByVars) then FreeAndNil(ByVars);
+    if Assigned(LVars) then FreeAndNil(LVars);
+  end;
+end;
+
+{  try
     if (Parameters.VarByName['TI'] <> nil) then
       result.Title.Text.Add(Parameters.VarByName['TI'].AsString)
     else
@@ -1276,7 +1405,7 @@ begin
     if not Assigned(Parameters.VarbyName['NT']) then
       ToTable(df);
 
-    if (Parameters.VarbyName['BY'] <> nil) then
+    if (Parameters.VarExists['BY']) then
     begin
       GroupVar := Parameters.VarbyName['BY'].AsString;
       result.Legend.Title.Text.Add(' ' + dataframe.VectorByName[GroupVar].GetVariableLabel(Parameters));
@@ -1328,11 +1457,11 @@ begin
     dm.info('Boxplot: Median and Inter Quartile Range (IQR=25-75%%). Whisker:  %s N=%d', [groupvar,Dataframe.RowCount], 213002);
 
   finally
+    ODebug.DecIndent();
     if Assigned(df) then FreeAndNil(df);
     if Assigned(AggL) then FreeAndNil(AggL);
     if Assigned(byvars) then FreeAndNil(byvars);
-  end;
-end;
+  end;   }
 
 procedure SetScatter(Series: TCustomSeries; index: integer);
 begin
@@ -3732,7 +3861,8 @@ const
   procname = 'MultiVarTitle';
   procversion = '1.0.0.0';
 begin
-  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  ODebug.IncIndent();
+  ODebug.Add(UnitName, Self.ClassName, procname, procversion, 1);
   if (Parameters.VarByName['TI'] <> nil) then
     s := Parameters.VarByName['TI'].AsString
   else begin
@@ -3747,6 +3877,7 @@ begin
     end;
   end;
   result := s;
+  ODebug.DecIndent();
 end;
 
 function TGraph.FindBreak(Parameters: TVarList; XVector: TEpiVector): TArrayVariant;

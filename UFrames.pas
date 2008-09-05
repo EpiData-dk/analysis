@@ -348,6 +348,7 @@ var
   n,pos1,pos2,antaldateseptegn:Integer;
   //  s2:string;
 begin
+//  DecodeDate(mibStrToDate(s, ftDate), y, m, d);
   try
     y:=0;
     m:=0;
@@ -390,11 +391,11 @@ begin
       end;
     encodedate(y,m,d);
   except
-   if (obs <> -1) then  dm.info('Date error: %s in %d', [s,obs], 220001);
+    if (obs <> -1) then  dm.info('Date error: %s in %d', [s,obs], 220001);
     result:=false;
     exit;
   end;
-end;  //case
+end;
 
 
 { TEpiDBFdataset }

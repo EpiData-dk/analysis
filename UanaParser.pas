@@ -247,7 +247,7 @@ begin
     opCDFPlot : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' AGG P ' + ' '  + Gnrl_options + GRAPH_OPTIONS );
     opCIPlot : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' NM O NL NOCI NOTOT NT ' + Gnrl_options + GRAPH_OPTIONS );
     opDotPlot : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' M DI C' + ' ' +  Gnrl_options + GRAPH_OPTIONS);
-    opBox,opboxplot: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + ' M OUT1 OUT2 OUT P1090 R NT ');
+    opBox,opboxplot: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + ' M NM OUT1 OUT2 OUT P1090 R NT ');
 
     opFreq :result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' M NM CI' + Gnrl_options + PCT_OPTIONS);
     opTables, opShortTables: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options + SORT_OPTIONS + STAT_OPTIONS +

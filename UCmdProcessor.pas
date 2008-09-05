@@ -2785,14 +2785,15 @@ begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   df := nil;
   try
-         if not dm.CheckDataOpen() then exit; //checkdataopen();
+    if not dm.CheckDataOpen() then exit;
     CheckVariableNo(Varnames,1);
     Missing := TStringList.Create();
-    Missing.Add(Varnames[0]);
-    if Cmd.ParamByName['BY'] <> nil then
+    if Cmd.ParamExists['NM'] then
+      Missing.AddStrings(Varnames);
+    if Cmd.ParamExists['BY'] then
     begin
       varnames.Add(Cmd.ParamByName['BY'].AsString);
-      if Cmd.ParamByName['M'] = nil then
+      if not Cmd.ParamExists['M'] then
         missing.Add(Cmd.ParamByName['BY'].AsString);
     end;
     df := dataframe.prepareDataframe(Varnames, missing);
