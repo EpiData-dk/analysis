@@ -3122,7 +3122,7 @@ end;
 
 procedure TaMainForm.AcRunKMPlotExecute(Sender: TObject);
 begin
-  DoGraphDlg('LIFETABLE varlist /G /NOLT', 1, 2, [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte], [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte],
+  DoGraphDlg('LIFETABLE varlist /NOLT', 1, 2, [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte], [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte],
              [GrpStdOpt], true, true, 'Outcome:', 'Start/Interval', 'End');
 end;
 

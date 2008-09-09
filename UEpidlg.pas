@@ -218,15 +218,17 @@ begin
          if (GetVar.State[i] = cbChecked) then cmd := cmd + GetVar.Items[i] + ' ';
       end;
 
+  if CmdName = 'LIFETABLE' then
+    cmd := cmd + ' /NG ';
+
   if LineClass.checked or BoxClass.Checked or ShadedClass.Checked or FilledClass.Checked then
-    begin    // run set command:
-      CmdName := 'Set table design=';
+  begin    // run set command:
+     CmdName := 'Set table design=';
      if BoxClass.Checked then CmdName:=CmdName + 'box'
        else if ShadedClass.Checked then CmdName:=CmdName + 'shaded'
        else if FilledClass.Checked then CmdName:=CmdName + 'filled'
        else CmdName:=CmdName + 'line';
     cmd := CmdName + ' ; ' + Cmd;
-
   end;  // end set design
 end;
 

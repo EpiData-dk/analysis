@@ -323,10 +323,10 @@ begin
     if Assigned(GraphCallBack) then
       GraphCallBack(Chart);
 
-    if (cmd.ParamByName['EDIT'] <> nil) then ShowChart(chart, cmd);
+    if (cmd.ParamExists['EDIT']) then ShowChart(chart, cmd);
 
     footnote := SaveChart(chart, cmd);
-    if (cmd.ParamByName['Q'] = nil) and
+    if (not (cmd.ParamExists['Q'] or Cmd.ParamExists['NG'])) and
        (AnsiCompareText(ExtractFileExt(footnote),'.png')=0) then
     begin
       xtab := dm.OutputList.NewTable(1,1);
@@ -337,7 +337,7 @@ begin
       else
         dm.CodeMaker.OutputTable(xtab,'');
 
-      if (Cmd.ParamByName['TAB'] <> nil) and (Cmd.CommandID in [opPchart,opIChart,opXChart,opRunChart]) then
+      if (Cmd.ParamExists['TAB']) and (Cmd.CommandID in [opPchart,opIChart,opXChart,opRunChart]) then
       begin
         vectors := TStringList.Create;
         vectors.Add(varnames[1]);
@@ -1368,100 +1368,9 @@ begin
     ODebug.DecIndent();
     if Assigned(ByVars) then FreeAndNil(ByVars);
     if Assigned(LVars) then FreeAndNil(LVars);
+    if Assigned(AggL) then FreeAndNil(AggL);
   end;
 end;
-
-{  try
-    if (Parameters.VarByName['TI'] <> nil) then
-      result.Title.Text.Add(Parameters.VarByName['TI'].AsString)
-    else
-      result.Title.Text.Add(Dataframe.VectorByName[varnames[0]].GetVariableLabel(Parameters));
-    vec := dataframe.VectorByName[Varnames[0]];
-    result.BottomAxis.MinimumOffset := 10;
-    result.BottomAxis.MaximumOffset := 10;
-    result.BottomAxis.Ticks.Visible := false;
-    result.BottomAxis.Labels := true;
-//    result.BottomAxis.Visible := False;
-    result.MarginLeft := 10;
-    result.MarginRight := 5;
-    k := 0;
-
-    AggL := TAggrList.Create();
-    Aggl.Add(TAggrMinMax.Create('$MIN', Varnames[0], true));
-    Aggl.Add(TAggrPercentile.Create('$10', Varnames[0], ap10));
-    Aggl.Add(TAggrPercentile.Create('$25', Varnames[0], ap25));
-    Aggl.Add(TAggrPercentile.Create('$Med', Varnames[0], ap50));
-    Aggl.Add(TAggrPercentile.Create('$75', Varnames[0], ap75));
-    Aggl.Add(TAggrPercentile.Create('$90', Varnames[0], ap90));
-    Aggl.Add(TAggrMinMax.Create('$MAX', Varnames[0], false));
-
-    if (Parameters.VarbyName['BY'] <> nil) then
-    begin
-      ByVars := TStringList.Create();
-      ByVars.Add(Parameters.VarbyName['BY'].AsString);
-    end else
-      ByVars := nil;
-    df := OAggregate.DoAggregate(Dataframe, ByVars, AggL);
-    if not Assigned(Parameters.VarbyName['NT']) then
-      ToTable(df);
-
-    if (Parameters.VarExists['BY']) then
-    begin
-      GroupVar := Parameters.VarbyName['BY'].AsString;
-      result.Legend.Title.Text.Add(' ' + dataframe.VectorByName[GroupVar].GetVariableLabel(Parameters));
-      zvec := Dataframe.VectorByName[GroupVar];
-      result.BottomAxis.Title.Caption := zvec.GetVariableLabel(Parameters);
-      dataframe.Sort(GroupVar + ',' + Varnames[0]);
-      series := TBoxSeries.Create(nil);
-      for i := 1 to Dataframe.RowCount-1 do
-      begin
-        TBoxSeries(series).AddY(vec.AsFloat[i]);
-        if (zvec.compare(i, i+1) <> 0) then
-        begin
-          TBoxSeries(series).ParentChart := result;
-          TBoxSeries(series).Title := zvec.GetValueLabel(zvec.AsString[i], Parameters);
-          TBoxSeries(series).Labels.Labels[k] := zvec.GetValueLabel(zvec.AsString[i], Parameters);
-          FinishBox(k);
-          inc(k);
-          series := TBoxSeries.Create(nil);
-        end;
-      end;
-      TBoxSeries(series).AddY(vec.AsFloat[Dataframe.RowCount]);
-      TBoxSeries(series).ParentChart := result;
-      TBoxSeries(series).Title := zvec.GetValueLabel(zvec.AsString[Dataframe.RowCount], Parameters);
-      TBoxSeries(series).Labels.Labels[k] := zvec.GetValueLabel(zvec.AsString[Dataframe.RowCount], Parameters);
-      FinishBox(k);
-      if k = 1 then
-      begin
-        result.BottomAxis.MinimumOffset := 75;
-        result.BottomAxis.MaximumOffset := 75;
-      end;
-    end else begin
-      // Create the box series.
-      dataframe.Sort(Varnames[0]);
-      series := BoxSeries(vec);
-      series.ParentChart := result;
-      series.Title := dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters);
-      Result.BottomAxis.Labels := false;
-      result.BottomAxis.Title.Caption := vec.GetVariableLabel(Parameters);
-      FinishBox(k);
-    end;
-    groupvar := '' ;
-    if (Parameters.VarbyName['R'] <> nil) then
-         groupvar := groupvar + ' Minimum and Maximum '
-    else if (Parameters.VarbyName['P1090'] <> nil) then
-         groupvar := groupvar + ' 10 90 percentile. '
-    else
-         groupvar := groupvar + ' Nearest to 1.5*IQR.';
-
-    dm.info('Boxplot: Median and Inter Quartile Range (IQR=25-75%%). Whisker:  %s N=%d', [groupvar,Dataframe.RowCount], 213002);
-
-  finally
-    ODebug.DecIndent();
-    if Assigned(df) then FreeAndNil(df);
-    if Assigned(AggL) then FreeAndNil(AggL);
-    if Assigned(byvars) then FreeAndNil(byvars);
-  end;   }
 
 procedure SetScatter(Series: TCustomSeries; index: integer);
 begin
@@ -1831,19 +1740,24 @@ begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   if varnames.Count > 1 then Exception.Create('Maximum 1 variables for DoPie!');
 
-  // Create the graph and set customizable settings.
-  result := CreateStandardChart();
-  result.Title.Text.Add(MultiVarTitle(Dataframe.GetVectorListByName(Varnames), Parameters));
+  try
+    // Create the graph and set customizable settings.
+    result := CreateStandardChart();
+    result.Title.Text.Add(MultiVarTitle(Dataframe.GetVectorListByName(Varnames), Parameters));
 
-  // Aggregate dataframe!
-  agglist := TAggrList.Create();
-  agglist.Add(TAggrCount.Create('N', Varnames[0], acAll));
-  df := OAggregate.AggregateDataframe(Dataframe, TStringList(varnames), agglist);
-  xvec := df.VectorByName['N'];
-  lvec := df.VectorByName[varnames[0]];
-  series := PieSeries(xvec, lvec);
-  series.ParentChart := result;
-  ODebug.DecIndent;
+    // Aggregate dataframe!
+    agglist := TAggrList.Create();
+    agglist.Add(TAggrCount.Create('N', Varnames[0], acAll));
+    df := OAggregate.AggregateDataframe(Dataframe, TStringList(varnames), agglist);
+    xvec := df.VectorByName['N'];
+    lvec := df.VectorByName[varnames[0]];
+    series := PieSeries(xvec, lvec);
+    series.ParentChart := result;
+  finally
+    if Assigned(df) then FreeAndNil(df);
+    if Assigned(agglist) then FreeAndNil(agglist);
+    ODebug.DecIndent;
+  end;
 end;
 
 procedure OutputYIncrease(const chart: TChart);
@@ -2249,6 +2163,8 @@ begin
   ODebug.IncIndent;
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   sumtab := nil;
+  df := nil;
+  agglist := nil;
 
   try
     result := CreateStandardChart();
@@ -2265,7 +2181,7 @@ begin
 
     c := 0;
     // There will always be at lease one table.
-    if (Parameters.VarByName['O'] <> nil) then
+    if (Parameters.VarExists['O']) then
     begin
       showvalue := Parameters.VarByName['O'].AsInteger;
       for j := 1 to sumtab[1].ColumnCount do
@@ -2308,19 +2224,16 @@ begin
       OutputTable.Footer := footnote;
     end;
 
+    result.bottomaxis.Title.Caption := '';
+    EpiProportionCI(Numerator, Sum, High, Low);
+    Mid := Numerator/ Sum;
     if not (Parameters.VarExists['NOTOT']) then
     begin
-      EpiProportionCI(Numerator, Sum, High, Low);
-      Mid := Numerator/ Sum;
       if ((100.0*mid+0.15) > 100.0) then
         Series.AddOHLC(c+0.5,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0))
       else
         Series.AddOHLC(c,(mid*100.0)-0.15, Low*100.0, High*100.0,(mid*100.0)+0.15);
       Series.xLabel[c]:= 'Total';
-
-      if Parameters.VarbyName['NT'] = Nil then
-        AddToTable(OutPutTable, dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters), 'Total',
-                   numerator, sum, mid*100, low*100, high*100, parameters);
 
       // add vertical lines ?
       if (Parameters.VarByName['NL'] = nil) then
@@ -2330,17 +2243,22 @@ begin
         result.BottomAxis.IStartPos := -10;
       end;
 
-      //add crude line CI
-      if (Parameters.VarByName['NOCI'] = nil) then
-      begin
-        addline(result, Low*100, 1);
-        addline(result, High*100, 1);
-      end;
+      result.bottomaxis.Title.Caption := df.VectorByName[Varnames[0]].name + ' | ';
+
+      if Parameters.VarbyName['NT'] = Nil then
+        AddToTable(OutPutTable, dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters), 'Total',
+                   numerator, sum, mid*100, low*100, high*100, parameters);
       inc(c);
     end;
 
+    //add crude line CI
+    if (Parameters.VarByName['NOCI'] = nil) then
+    begin
+      addline(result, Low*100, 1);
+      addline(result, High*100, 1);
+    end;
+
     result.LeftAxis.Title.Caption := 'Percents (%)';
-    result.bottomaxis.Title.Caption := df.VectorByName[Varnames[0]].name + ' |';
 
     for i := 1 to sumtab.TableCount do
     begin
@@ -2362,7 +2280,9 @@ begin
           AddToTable(OutPutTable, SumTab[i].RowHeader, Series.xLabel[c], numerator, sum, mid*100, low*100, high*100, parameters);
         inc(c);
       end;
-      result.bottomaxis.Title.Caption := result.bottomaxis.Title.Caption + ' ' + SumTab[i].RowHeader + ' |';
+      result.bottomaxis.Title.Caption := result.bottomaxis.Title.Caption + SumTab[i].RowHeader;
+      if i < sumtab.TableCount then
+        result.bottomaxis.Title.Caption := result.bottomaxis.Title.Caption  + ' | ';
       if (Parameters.VarByName['NL'] = nil) then addline(result,c-0.5);
     end;
     if Parameters.VarbyName['NT'] <> Nil then dm.info(footnote, [], 0);
@@ -3775,8 +3695,8 @@ begin
     if Assigned(df) then FreeAndNil(df);
     if Assigned(agglist) then FreeAndNil(agglist);
     if Assigned(PvarDesc) then FreeAndNil(PvarDesc);
+    ODebug.DecIndent;
   end;
-  ODebug.DecIndent;
 end;
 
 

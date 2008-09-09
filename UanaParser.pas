@@ -254,7 +254,7 @@ begin
                                           PCT_OPTIONS + ' NM FV M S F NT NC NCS ');
     opTableDialog: result:=ParseParamLessCommand(opTableDialog);
 
-    opShortLifeTable,opLifeTable: result := ParseTypicalCommand(Currenttoken.TokenSubType, [PCAllowVarList,PCAllowIf], Gnrl_options + PCT_OPTIONS + GRAPH_OPTIONS + ' BY W END G ADJ NOCI NOLT T I O CLOSE EXIT MT');
+    opShortLifeTable,opLifeTable: result := ParseTypicalCommand(Currenttoken.TokenSubType, [PCAllowVarList,PCAllowIf], Gnrl_options + PCT_OPTIONS + GRAPH_OPTIONS + ' BY W END NG ADJ NOCI NOLT T I O CLOSE EXIT MT');
 
     opDescribe, opShortDescribe :result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + 'NM');
     opMeans, opShortMeans: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + 'T E0 E1 E2 E3 BY M ');
@@ -701,8 +701,7 @@ begin
   RecodeList:=TStringList.create;
   tok := AnsiUppercase(lookaheadtoken.Token);
   if not (tok = 'TO') then
-            dm.info('Note: Recode without "TO" destroys data.', [], 201003);
-  //        error(Currenttoken,' TO missing, e.g. <br> Recode '+srcvar+' TO grp'+srcvar +' by 10');
+    dm.info('Note: Recode without "TO" destroys data.', [], 201003);
   if (tok='AS') or (tok='TO') then
   begin
     Nexttoken;
@@ -720,10 +719,10 @@ begin
     co:=0;
     while true do
     begin
-        vlow:= accept([opNumber,opidentifier,opPeriod,opEndofLine,opEndofFile],'Invalid recode options').token;
+        vlow:= accept([opNumber,opIdentifier,opPeriod,opEndofLine,opEndofFile,opDivide],'Invalid recode options').token;
         if CurrentToken.TokenSubType = opIf then
           Error(CurrentToken, 'If not allowed in RECODE command');
-        if Currenttoken.TokenType in [opEndofLine,opEndofFile] then
+        if Currenttoken.TokenType in [opEndofLine,opEndofFile,opDivide] then
           break;
         if Currenttoken.TokenType=opNumber then
         begin
@@ -764,10 +763,10 @@ begin
       while true do
       begin
           range:=false;equal:=false;comma:=false; isElse:=false; paren:=false;
-          vlow:= accept([opOpenParen,opNumber,opstring,opidentifier,opPeriod,opEndofLine,opEndofFile],'Invalid recode options').token;
+          vlow:= AnsiUpperCase(accept([opOpenParen,opNumber,opstring,opidentifier,opPeriod,opEndofLine,opEndofFile,opDivide],'Invalid recode options').token);
           if CurrentToken.TokenSubType = opIf then
             Error(CurrentToken, 'If not allowed in RECODE command');
-          if Currenttoken.TokenType in [opEndofLine,opEndofFile] then break;
+          if Currenttoken.TokenType in [opEndofLine,opEndofFile, opDivide] then break;
           // We are possibly dealing with a negative number...
           if Currenttoken.TokenType=opOpenParen then
           begin
@@ -785,7 +784,7 @@ begin
           tok := accept([opNumber,opEq,opComma,opMinus,opPeriod, opstring,opidentifier],'Invalid recode options').token;
           if range and (tok<>'-') then error(Currenttoken,'- sign expected');
           if tok='=' then equal:=true
-          else if tok='-' then range:=true
+          else if tok='-' then range:=true                                                                 
           else if tok=',' then comma:=true;
           if Iselse and not equal then error(Currenttoken,'= sign expected');
           if comma then
@@ -801,7 +800,7 @@ begin
              end;//while
              equal:=true;
            end;
-          vhigh := accept([opOpenParen,opNumber,opstring,opidentifier,opPeriod],'Invalid recode options').token;
+          vhigh := AnsiUpperCase(accept([opOpenParen,opNumber,opstring,opidentifier,opPeriod],'Invalid recode options').token);
           // We are possibly dealing with a negative number...
           if Currenttoken.TokenType=opOpenParen then
           begin
@@ -833,9 +832,13 @@ begin
       end;//whike
    end;//
   end;
+  Params :=TVarList.Create;
+  if Currenttoken.TokenType = opDivide then
+  begin
+      ParseOptions('','CLEAR',Params);
+  end;
   if co=0 then
        error(Currenttoken,'Recoding options are missing');
-  Params :=TVarList.Create;
   Params.AddVar(TVar.Create('OPERATION',op));
   Params.AddVar(TVar.Create('SRCVAR',srcvar));
   Params.AddVar(TVar.Create('DSTVAR',dstvar));
@@ -2593,7 +2596,7 @@ begin
            fn :=trim(Param.Value);
            Param :=cmd.ParamByName['DSTVAR'];
            fn1 :=trim(Param.Value);
-           dm.Recode(op,fn1,fn,GetVarList);
+           dm.Recode(Cmd, op,fn1,fn,GetVarList);
            dm.UpdateBrowse(opRecode);
         end;
         opErasePng:

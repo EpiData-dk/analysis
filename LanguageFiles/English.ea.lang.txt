@@ -243,6 +243,7 @@
 [UAggregate]
 100001=Unknown aggregate function: %s
 100002=Aggregate: Too many variables used.
+100003=Aggregate function already used for %s
 
 [UanaParser]
 101001=%s : Command not implemented yet

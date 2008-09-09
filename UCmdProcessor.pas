@@ -137,7 +137,7 @@ type
     function copyfile(const old,new:string; cmd: TCommand):boolean;
     function doDOSFileAction(fn: string; action: word): boolean;
     function doLogFileAction(fn:string; cmd: TCommand):boolean;
-    function recode(const op,dstvar, srcvar: string;  RecodeList: Tstrings): boolean;
+    function recode(Cmd: TCommand; const op,dstvar, srcvar: string;  RecodeList: Tstrings): boolean;
     function count(cmd: TCommand): boolean;
 //    function Browse: boolean;
     procedure UpdateBrowse(CmdID: word);
@@ -294,17 +294,17 @@ function TDM.CheckVariableNo(VarNames: TStrings; Min: word; Max: word = 0): bool
 var
  varco : integer;
 begin
- if Varnames=nil then
+  if Varnames=nil then
     varco:=0
- else
+  else
     varco :=Varnames.count;
- if (Min or Max) = 0 then
-   if varco> 0 then error('Variables are not allowed', [], 103001);
- if (Min = Max) then
-   if varco <> Min then error('%d variable(s) expected', [Min], 103002);
- if varco < Min then error('%d or more variables are expected',[Min], 103003);
- if Max <> 0 then
-   if varco > Max then error('Maximum %d variables are allowed',[max], 103004);
+  if (Min or Max) = 0 then
+    if varco> 0 then error('Variables are not allowed', [], 103001);
+  if (Min = Max) then
+    if varco <> Min then error('%d variable(s) expected', [Min], 103002);
+  if varco < Min then error('%d or more variables are expected',[Min], 103003);
+  if Max <> 0 then
+    if varco > Max then error('Maximum %d variables are allowed',[max], 103004);
 end;
 
 function TDM.AddResult(const pName: string;pDataType:integer; Val:Variant; pLength, pDecimals: integer):boolean;
@@ -1916,7 +1916,7 @@ begin
   result := true;
 end;
 
-function TDM.recode(const op,dstvar,srcvar:string;RecodeList:Tstrings): boolean;
+function TDM.recode(Cmd: TCommand; const op,dstvar,srcvar:string;RecodeList:Tstrings): boolean;
 var
  cmdline, labelline, sl,sh, intervaltxt:string;
  byval :integer;
@@ -1953,119 +1953,134 @@ begin
     error('No data', [], 103005);
   dstV := dataframe.VectorByName[dstvar];
   srcV := dataframe.VectorByName[srcvar];
-  if op='RND' then
-  begin
-    Info('RND not implemented', [], 203025);
-    // RND not implemented
-  end
-  else if op='BY'then
-  begin
-    if not (dstV.DataType in [EpiTyInteger, EpiTyFloat]) then
-      Error('%s <br> Must be Integer: Define %s ##', [dstV.Name, dstV.Name], 103025);
-    if GetOptionValue('RECODE INTERVAL TEXT', opt) then
-      intervaltxt := opt.Value
-    else
-      intervaltxt := '-';
-    rec := TAnaReCodeData(Recodelist.objects[0]);
-    byval := rec.vlow;
-    cmdline := format('%s = (%s DIV %d) * %d', [dstvar, srcvar, byval, byval]);
-    runcommandline(cmdline);
-    Byvars := TStringList.Create();
-    Byvars.Add(dstvar);
-    AggList := TAggrList.Create();
-    df := OAggregate.DoAggregate(dataframe, byvars, AggList);
-//    OAggregate.OutAggregate(df, TCommand.Create(oprecode, TVarList.Create()));
-    tmpV := df.FindVector(dstvar);
-    cmdline := 'labelvalue ' + dstvar + ' /CLEAR ';
-    for i := 1 to tmpV.Length do
-      if not tmpV.IsMissing[i] then
-        cmdline := cmdline + ' ' + format('/%d="%d - %d"',
-                                   [tmpV.AsInteger[i], tmpV.AsInteger[i], (tmpV.AsInteger[i]+byval-1)]);
-    runcommandline(cmdline);
 
-    // Now do some cleaning up since the output might be malformatted
-    // eg. missing values are formated as "-" since expression-parser doesn't handle
-    // this situation
-    co := dataframe.RowCount;
-    maxval := 0;
-    for i := 1 to co do
+  Df := nil;
+  ByVars := nil;
+  AggList := nil;
+
+  try
+    if op='RND' then
     begin
-      if not srcv.IsMissing[i] then
-        maxval := Max(abs(srcv.AsFloat[i]), maxval);
-      if srcv.IsMissing[i] then //TC: 22 sept. 2007
- //   if trim(dstv.AsString[i]) = intervaltxt then
-        dstv.IsMissing[i] := true;
-    end;
-    {len := length(inttostr(floor(maxval)));
-    for i := 1 to co do
-      if not dstv.IsMissing[i] then
-        dstv.AsString[i] := CleanUpVector(dstv.AsString[i]);}
-  end
-  else
-  begin
-    co:=RecodeList.count;
-    labelline := 'labelvalue ' + dstV.Name + ' /CLEAR ';
-    for i:=0 to co-1 do
+      Info('RND not implemented', [], 203025);
+      // RND not implemented
+    end
+    else if op='BY'then
     begin
-      rec:=TAnaReCodeData(Recodelist.objects[i]);
-      if rec.Operation='ELSE' then
+      if not (dstV.DataType in [EpiTyInteger, EpiTyFloat]) then
+        Error('%s <br> Must be Integer: Define %s ##', [dstV.Name, dstV.Name], 103025);
+      if GetOptionValue('RECODE INTERVAL TEXT', opt) then
+        intervaltxt := opt.Value
+      else
+        intervaltxt := '-';
+      rec := TAnaReCodeData(Recodelist.objects[0]);
+      byval := rec.vlow;
+      cmdline := format('%s = (%s DIV %d) * %d', [dstvar, srcvar, byval, byval]);
+      runcommandline(cmdline);
+      Byvars := TStringList.Create();
+      Byvars.Add(dstvar);
+      AggList := TAggrList.Create();
+      df := OAggregate.DoAggregate(dataframe, byvars, AggList);
+  //    OAggregate.OutAggregate(df, TCommand.Create(oprecode, TVarList.Create()));
+      tmpV := df.FindVector(dstvar);
+      cmdline := 'labelvalue ' + dstvar;
+      for i := 1 to tmpV.Length do
+        if not tmpV.IsMissing[i] then
+          cmdline := cmdline + ' ' + format('/%d="%d - %d"',
+                                     [tmpV.AsInteger[i], tmpV.AsInteger[i], (tmpV.AsInteger[i]+byval-1)]);
+      if Cmd.ParamExists['CLEAR'] then
+        cmdline := cmdline + ' /CLEAR';
+      runcommandline(cmdline);
+
+      // Now do some cleaning up since the output might be malformatted
+      // eg. missing values are formated as "-" since expression-parser doesn't handle
+      // this situation
+      co := dataframe.RowCount;
+      maxval := 0;
+      for i := 1 to co do
       begin
-        cmdline := format('%s=%s',[dstvar,rec.vcode]);
-        runcommandline(cmdline);
-        labelline := labelline + format(' /%s="Other"', [rec.vcode]);
-        break;
+        if not srcv.IsMissing[i] then
+          maxval := Max(abs(srcv.AsFloat[i]), maxval);
+        if srcv.IsMissing[i] then //TC: 22 sept. 2007
+   //   if trim(dstv.AsString[i]) = intervaltxt then
+          dstv.IsMissing[i] := true;
       end;
-    end;
-    for i:=0 to co-1 do
+      {len := length(inttostr(floor(maxval)));
+      for i := 1 to co do
+        if not dstv.IsMissing[i] then
+          dstv.AsString[i] := CleanUpVector(dstv.AsString[i]);}
+    end
+    else
     begin
-      rec:=TAnaReCodeData(Recodelist.objects[i]);
-      if rec.Operation='RANGE' then
+      co:=RecodeList.count;
+      labelline := 'labelvalue ' + dstV.Name;
+      for i:=0 to co-1 do
       begin
-        if (rec.vlow='LO') and (rec.vhigh='HI') then
-           cmdline := format('if 1=1 then %s=%s',[dstvar,rec.vcode])
-        else if (rec.vlow='LO') then
-           cmdline := format('if (%s<=%s) then %s=%s',[srcvar,rec.vhigh,dstvar,rec.vcode])
-        else if (rec.vhigh='HI') then
-           cmdline := format('if (%s>=%s) then %s=%s', [srcvar, rec.vlow,dstvar,rec.vcode])
-        else
-          cmdline := format('if (%s>=%s) and (%s<=%s) then %s=%s',
-                           [srcvar, rec.vlow, srcvar, rec.vhigh, dstvar, rec.vcode]);
-        runcommandline(cmdline);
-        labelline := labelline + format(' /%s="%s-%s"', [rec.vcode, rec.vlow, rec.vhigh]);
-      end
-      else if rec.Operation='EQUAL' then
-      begin
-        cmdline := format('if (%s=%s) then %s=%s',[srcvar, rec.vlow,dstvar,rec.vcode]);
-        runcommandline(cmdline);
-        labelline := labelline + format(' /%s="%s"', [rec.vcode, rec.vlow]);
-      end  else if rec.Operation='COMMA' then
-      begin
-        cmdline:='';
-        labelline := labelline + format(' /%s="', [rec.vcode]);
-        sl:=rec.vlow;
-        j:=pos(',',sl);
-        while j <> 0  do
+        rec:=TAnaReCodeData(Recodelist.objects[i]);
+        if rec.Operation='ELSE' then
         begin
-          sh:=copy(sl,1,j-1);
-          cmdline := cmdline + format(' OR (%s=%s) ',[srcvar, sh]);
-          labelline := labelline + sh + ',';
-          sl:=copy(sl,j+1,Maxint);
-          j:=pos(',',sl);
+          cmdline := format('%s=%s',[dstvar,rec.vcode]);
+          runcommandline(cmdline);
+          labelline := labelline + format(' /%s="Other"', [rec.vcode]);
+          break;
         end;
-        cmdline := cmdline + format(' OR (%s=%s) ',[srcvar, sl]);
-        labelline := labelline + sl + '"';
-        cmdline[pos('O',cmdline)]:='i';
-        cmdline[pos('R',cmdline)]:='f';
-        cmdline := cmdline + format(' then %s=%s',[dstvar,rec.vcode]);
-        runcommandline(cmdline);
+      end;
+      for i:=0 to co-1 do
+      begin
+        rec:=TAnaReCodeData(Recodelist.objects[i]);
+        if rec.Operation='RANGE' then
+        begin
+          if (rec.vlow='LO') and (rec.vhigh='HI') then
+             cmdline := format('if 1=1 then %s=%s',[dstvar,rec.vcode])
+          else if (rec.vlow='LO') then
+             cmdline := format('if (%s<=%s) then %s=%s',[srcvar,rec.vhigh,dstvar,rec.vcode])
+          else if (rec.vhigh='HI') then
+             cmdline := format('if (%s>=%s) then %s=%s', [srcvar, rec.vlow,dstvar,rec.vcode])
+          else
+            cmdline := format('if (%s>=%s) and (%s<=%s) then %s=%s',
+                             [srcvar, rec.vlow, srcvar, rec.vhigh, dstvar, rec.vcode]);
+          runcommandline(cmdline);
+          labelline := labelline + format(' /%s="%s-%s"', [rec.vcode, rec.vlow, rec.vhigh]);
+        end
+        else if rec.Operation='EQUAL' then
+        begin
+          cmdline := format('if (%s=%s) then %s=%s',[srcvar, rec.vlow,dstvar,rec.vcode]);
+          runcommandline(cmdline);
+          labelline := labelline + format(' /%s=".%s"', [rec.vcode, rec.vlow]);
+        end  else if rec.Operation='COMMA' then
+        begin
+          cmdline:='';
+          labelline := labelline + format(' /%s="', [rec.vcode]);
+          sl:=rec.vlow;
+          j:=pos(',',sl);
+          while j <> 0  do
+          begin
+            sh:=copy(sl,1,j-1);
+            cmdline := cmdline + format(' OR (%s=%s) ',[srcvar, sh]);
+            labelline := labelline + sh + ',';
+            sl:=copy(sl,j+1,Maxint);
+            j:=pos(',',sl);
+          end;
+          cmdline := cmdline + format(' OR (%s=%s) ',[srcvar, sl]);
+          labelline := labelline + sl + '"';
+          cmdline[pos('O',cmdline)]:='i';
+          cmdline[pos('R',cmdline)]:='f';
+          cmdline := cmdline + format(' then %s=%s',[dstvar,rec.vcode]);
+          runcommandline(cmdline);
+        end;
+      end;
+      if not (dstV.DataType in [EpiTyInteger, EpiTyFloat]) then
+      begin
+        dm.Info('Valuelabeling not posible. Destination %s must be of type integer.', [dstV.Name], 203026);
+      end else begin
+        if Cmd.ParamExists['CLEAR'] then
+          labelline := labelline + ' /CLEAR';
+        aMainForm.doCommand(labelline);
       end;
     end;
-    if not (dstV.DataType in [EpiTyInteger, EpiTyFloat]) then
-    begin
-      dm.Info('Valuelabeling not posible. Destination %s must be of type integer.', [dstV.Name], 203026);
-    end else begin
-      RunCommandLine(labelline);
-    end;
+  finally
+    if Assigned(Df) then FreeAndNil(Df);
+    if Assigned(agglist) then FreeAndNil(agglist);
+    if Assigned(byvars) then FreeAndNil(byvars);
   end;
 end;
 
@@ -2637,7 +2652,7 @@ end;
 
 function TDM.Aggregate(ByVars: TStringList; Cmd: TCommand): boolean;
 var
-  df, AggDF: TEpiDataframe;
+  Df, AggDF: TEpiDataframe;
   AggrList: TAggrList;
   Varnames: TStrings;
   dummy: boolean;
@@ -2648,22 +2663,27 @@ begin
   ODebug.IncIndent;
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   if not CheckDataOpen() then exit;
-//  CheckVariableNo(ByVars, -1); ,
-  AggrList := TAggrList.Create(Cmd);
-  Varnames := AggrList.GetVarList();
-  if byvars <> nil then
-    Varnames.AddStrings(ByVars);
-  if (cmd.ParamByName['M'] <> nil) then
-    df := dataframe.prepareDataframe(Varnames, nil)
-  else
-    df := dataframe.prepareDataframe(Varnames, ByVars);
-  AggDF := OAggregate.DoAggregate(df, ByVars, AggrList);
-  OAggregate.OutAggregate(AggDF, Cmd);
+  Df := nil;
+  AggDF := nil;
+  Varnames := nil;
+  AggrList := nil;
   try
+    CheckVariableNo(ByVars, 0, 600);
+    AggrList := TAggrList.Create(Cmd);
+    Varnames := AggrList.GetVarList();
+    if byvars <> nil then
+      Varnames.AddStrings(ByVars);
+    if (cmd.ParamByName['M'] <> nil) then
+      df := dataframe.prepareDataframe(Varnames, nil)
+    else
+      df := dataframe.prepareDataframe(Varnames, ByVars);
+    AggDF := OAggregate.DoAggregate(df, ByVars, AggrList);
+    OAggregate.OutAggregate(AggDF, Cmd);
+
     if cmd.ParamByName['CLOSE'] <> nil then
     begin
       dm.InternalCloseFile(fDataframe);
-      fdataframe := AggDF;
+      fDataframe := AggDF;
       initDataFrameVars(fDataframe);
       NotifyInterface(EpiVectorListChanged,integer(dataframe),0);
       NotifyInterface(EpiOpenFile,integer(dataframe),0);
@@ -2672,8 +2692,9 @@ begin
     end else
       FreeAndNil(AggDF);
   finally
-    if Assigned(df) then FreeAndNil(df);
+    if Assigned(Df) then FreeAndNil(Df);
     if Assigned(VarNames) then FreeAndNil(Varnames);
+    if Assigned(AggrList) then FreeAndNil(AggrList);
   end;
   ODebug.DecIndent;
 end;
@@ -2682,7 +2703,7 @@ function TDM.Stattables(ByVars: TStringList; Cmd: TCommand): boolean;
 var
   df, df2: TEpiDataframe;
   AggrList: TAggrList;
-  Varnames, OrgNames: TStrings;
+  Varnames: TStrings;
   dummy: boolean;
 const
   procname = 'Stattables';
@@ -2692,12 +2713,14 @@ begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   df := nil;
   df2 := nil;
-       if not dm.CheckDataOpen() then exit; //CheckDataOpen();
-  AggrList := TAggrList.Create(Cmd);
-  Varnames := AggrList.GetVarlist();
-  if byvars <> nil then
-    Varnames.AddStrings(ByVars);
+  AggrList := nil;
+  Varnames := nil;
+  if not dm.CheckDataOpen() then exit; //CheckDataOpen();
   try
+    AggrList := TAggrList.Create(Cmd);
+    Varnames := AggrList.GetVarlist();
+    if byvars <> nil then
+      Varnames.AddStrings(ByVars);
     if (cmd.ParamByName['M'] <> nil) then
       df := dataframe.prepareDataframe(Varnames, nil)
     else
@@ -2708,6 +2731,7 @@ begin
     if Assigned(df) then FreeAndNil(df);
     if Assigned(df2) then FreeAndNil(df2);
     if Assigned(VarNames) then FreeAndNil(Varnames);
+    if Assigned(AggrList) then FreeAndNil(AggrList);
   end;
   ODebug.DecIndent;
 end;
@@ -3214,7 +3238,7 @@ begin
 
     ltdf := OTables.DoLifeTables(df, varnames, cmd);
 
-    if Cmd.ParamExists['G'] then
+    if not Cmd.ParamExists['NG'] then
     begin
       Varnames.Add(df.VectorByName[Varnames[0]].GetVariableLabel(Cmd.ParameterList));
       OGraph.DoGraphs(ltdf, varnames, cmd);
@@ -3453,8 +3477,10 @@ end;
 
 procedure TDM.DMDestroy(Sender: TObject);
 begin
-  ana.free;
-  CodeMaker.free;
+  FreeAndNil(Ana);
+  FreeAndNil(CodeMaker);
+  FreeAndNil(fOptions);
+  FreeAndNil(fdataframe);
 end;
 
 procedure TDM.showExecoutput(const output: string);

@@ -333,7 +333,7 @@ begin
   if (((CmdName = 'PCHART') or (CmdName = 'RUNCHART') or (CmdName = 'ICHART'))
      and (spctest.checked)) then cmd := cmd + ' /T'; // as default do test for special causes
   if (CmdName = 'LIFETABLE') then
-    cmd := cmd + ' /G /NOLT';
+    cmd := cmd + ' /NOLT';
 end;
 
 procedure TGraphDlg.CancelBtnClick(Sender: TObject);

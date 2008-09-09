@@ -96,14 +96,17 @@ type
   TAggrList = class
   private
     fList: TList;
-    namecounter: integer;
+    NameCounter: integer;
     function VarnameIsAggrFunc(const Varname: string): boolean;
     function VarnameToAggrFuncType(const Varname: string): TAggrFuncType;
     function GetItem(const index: integer): TAggrFunc;
     function ResizeVarname(prefix, name: string): string;
+    function Unique(Func: TAggrFunc): boolean;
+    function Extract(Index: Integer): TAggrFunc;
   public
     constructor Create(); overload;
     constructor Create(Cmd: TCommand); overload;
+    destructor Destroy(); override;
     procedure Add(Func: TAggrFunc);
     function ExtractPercentiles(): TAggrList;
     procedure Insert(const Index: integer; Func: TAggrFunc);
@@ -409,6 +412,7 @@ begin
     end;
   finally
     if Assigned(sortlist) then FreeAndNil(sortlist);
+    if Assigned(PercList) then FreeAndNil(PercList);
   end;
   ODebug.DecIndent;
 end;
@@ -443,6 +447,12 @@ begin
   namecounter := 0;
 end;
 
+destructor TAggrList.Destroy();
+begin
+  if Assigned(fList) then FreeAndNil(fList);
+  inherited;
+end;
+
 constructor TAggrList.Create(Cmd: TCommand);
 var
   varname: string;
@@ -458,78 +468,82 @@ begin
   inherited create();
   namecounter := 0;
   fList := TList.Create();
-  VarNames := TStringList.Create;
-  AllVars := TStringList.Create;
-  for i := 0 to Cmd.ParameterList.Count -1 do
-  begin
-    val := Cmd.Param[i];
-    varname := Val.VarName;
-    if not VarnameIsAggrFunc(Varname) then continue;
-    varnames.CommaText := val.AsString;
-    for j := 0 to varnames.Count -1 do
+  try
+    VarNames := TStringList.Create;
+    AllVars := TStringList.Create;
+    for i := 0 to Cmd.ParameterList.Count -1 do
     begin
-      if AllVars.IndexOf(Varnames[j]) = -1 then
+      val := Cmd.Param[i];
+      varname := Val.VarName;
+      if not VarnameIsAggrFunc(Varname) then continue;
+      varnames.CommaText := val.AsString;
+      for j := 0 to varnames.Count -1 do
       begin
-        AllVars.Add(Varnames[j]);
-        fList.Add(TAggrCount.Create(ResizeVarname('N', varnames[j]), varnames[j], acNotMissing));
-      end;
-      Case VarnameToAggrFuncType(Varname) of
-         afSum:           fList.Add(TAggrSum.Create(ResizeVarname('SUM',Varnames[j]),Varnames[j]));
-         afMean:          fList.Add(TAggrMean.Create(ResizeVarname('MEA',Varnames[j]),Varnames[j], amMean));
-         afMinMax:        if Varname = 'MIN' then
-                            fList.Add(TAggrMinMax.Create(ResizeVarname('MIN', Varnames[j]), Varnames[j],true))
-                          else
-                            fList.Add(TAggrMinMax.Create(ResizeVarname('MAX', Varnames[j]), Varnames[j],false));
-         afPercentile:    begin
-                            case Varname[2] of
-                              '1':  if length(Varname) = 3 then
-                                      fList.Add(TAggrPercentile.Create(ResizeVarname('P10',Varnames[j]),Varnames[j], ap10))
-                                    else
-                                      fList.Add(TAggrPercentile.Create(ResizeVarname('P1',Varnames[j]),Varnames[j], ap1));
-                                      //fList.Add(TAggrPercentile.Create(ResizeVarname('P10',Varnames[j]),Varnames[j], ap10));
-                              '2':  fList.Add(TAggrPercentile.Create(ResizeVarname('P25',Varnames[j]),Varnames[j], ap25));
-                              'E':  fList.Add(TAggrPercentile.Create(ResizeVarname('MED',Varnames[j]),Varnames[j], ap50)); // mEdian... :)
-                              '5':  if length(Varname) = 3 then
-                                      fList.Add(TAggrPercentile.Create(ResizeVarname('MED',Varnames[j]),Varnames[j], ap50))
-                                    else
-                                      fList.Add(TAggrPercentile.Create(ResizeVarname('P5',Varnames[j]),Varnames[j], ap5));
-                              '7':  fList.Add(TAggrPercentile.Create(ResizeVarname('P75',Varnames[j]),Varnames[j], ap75));
-                              '9':  if Varname[3] = '0' then
-                                      fList.Add(TAggrPercentile.Create(ResizeVarname('P90',Varnames[j]),Varnames[j], ap90))
-                                    else if Varname[3] = '5' then
-                                      fList.Add(TAggrPercentile.Create(ResizeVarname('P95',Varnames[j]),Varnames[j], ap95))
-                                    else
-                                      fList.Add(TAggrPercentile.Create(ResizeVarname('P99',Varnames[j]),Varnames[j], ap99));
+        if AllVars.IndexOf(Varnames[j]) = -1 then
+        begin
+          AllVars.Add(Varnames[j]);
+          Add(TAggrCount.Create(ResizeVarname('N', varnames[j]), varnames[j], acNotMissing));
+        end;
+        Case VarnameToAggrFuncType(Varname) of
+           afSum:           Add(TAggrSum.Create(ResizeVarname('SUM',Varnames[j]),Varnames[j]));
+           afMean:          Add(TAggrMean.Create(ResizeVarname('MEA',Varnames[j]),Varnames[j], amMean));
+           afMinMax:        if Varname = 'MIN' then
+                              Add(TAggrMinMax.Create(ResizeVarname('MIN', Varnames[j]), Varnames[j],true))
+                            else
+                              Add(TAggrMinMax.Create(ResizeVarname('MAX', Varnames[j]), Varnames[j],false));
+           afPercentile:    begin
+                              case Varname[2] of
+                                '1':  if length(Varname) = 3 then
+                                        Add(TAggrPercentile.Create(ResizeVarname('P10',Varnames[j]),Varnames[j], ap10))
+                                      else
+                                        Add(TAggrPercentile.Create(ResizeVarname('P1',Varnames[j]),Varnames[j], ap1));
+                                '2':  Add(TAggrPercentile.Create(ResizeVarname('P25',Varnames[j]),Varnames[j], ap25));
+                                'E':  Add(TAggrPercentile.Create(ResizeVarname('MED',Varnames[j]),Varnames[j], ap50)); // mEdian... :)
+                                '5':  if length(Varname) = 3 then
+                                        Add(TAggrPercentile.Create(ResizeVarname('MED',Varnames[j]),Varnames[j], ap50))
+                                      else
+                                        Add(TAggrPercentile.Create(ResizeVarname('P5',Varnames[j]),Varnames[j], ap5));
+                                '7':  Add(TAggrPercentile.Create(ResizeVarname('P75',Varnames[j]),Varnames[j], ap75));
+                                '9':  if Varname[3] = '0' then
+                                        Add(TAggrPercentile.Create(ResizeVarname('P90',Varnames[j]),Varnames[j], ap90))
+                                      else if Varname[3] = '5' then
+                                        Add(TAggrPercentile.Create(ResizeVarname('P95',Varnames[j]),Varnames[j], ap95))
+                                      else
+                                        Add(TAggrPercentile.Create(ResizeVarname('P99',Varnames[j]),Varnames[j], ap99));
+                              end;
                             end;
-                          end;
-         afSD:            fList.Add(TAggrMean.Create(ResizeVarname('SD',Varnames[j]),Varnames[j], amStdDev));
-         afSV:            fList.Add(TAggrMean.Create(ResizeVarname('SV',Varnames[j]),Varnames[j], amStdVar));
-         afIQR:           begin
-                            fList.Add(TAggrPercentile.Create(ResizeVarname('P25',Varnames[j]),Varnames[j], ap25));
-                            fList.Add(TAggrPercentile.Create(ResizeVarname('P75',Varnames[j]),Varnames[j], ap75));
-                          end;
-         afIDR:           begin
-                            fList.Add(TAggrPercentile.Create(ResizeVarname('P10',Varnames[j]),Varnames[j], ap10));
-                            fList.Add(TAggrPercentile.Create(ResizeVarname('P90',Varnames[j]),Varnames[j], ap90));
-                          end;
-         afISR:           begin
-                            fList.Add(TAggrPercentile.Create(ResizeVarname('P5',Varnames[j]),Varnames[j], ap5));
-                            fList.Add(TAggrPercentile.Create(ResizeVarname('P95',Varnames[j]),Varnames[j], ap95));
-                          end;
-         afDES:           begin
-                            fList.Add(TAggrMinMax.Create(ResizeVarname('MIN',Varnames[j]),Varnames[j], true));
-                            fList.Add(TAggrPercentile.Create(ResizeVarname('MED',Varnames[j]),Varnames[j], ap50));
-                            fList.Add(TAggrMinMax.Create(ResizeVarname('MAX',Varnames[j]),Varnames[j], false));
-                          end;
-         afMV:            begin
-                            fList.Add(TAggrCount.Create(ResizeVarname('MIS',Varnames[j]),Varnames[j], acMissing));
-                            fList.Add(TAggrCount.Create(ResizeVarname('MVD',Varnames[j]),Varnames[j], acMissingValue));
-                          end;
-         afUNKNOWN:       dm.Error('Unknown aggregate function: %s', [Varname], 100001);
-      end;  // Case...
-    end;  // For j...
-    varnames.Clear;
-  end;  // For i...
+           afSD:            Add(TAggrMean.Create(ResizeVarname('SD',Varnames[j]),Varnames[j], amStdDev));
+           afSV:            Add(TAggrMean.Create(ResizeVarname('SV',Varnames[j]),Varnames[j], amStdVar));
+           afIQR:           begin
+                              Add(TAggrPercentile.Create(ResizeVarname('P25',Varnames[j]),Varnames[j], ap25));
+                              Add(TAggrPercentile.Create(ResizeVarname('P75',Varnames[j]),Varnames[j], ap75));
+                            end;
+           afIDR:           begin
+                              Add(TAggrPercentile.Create(ResizeVarname('P10',Varnames[j]),Varnames[j], ap10));
+                              Add(TAggrPercentile.Create(ResizeVarname('P90',Varnames[j]),Varnames[j], ap90));
+                            end;
+           afISR:           begin
+                              Add(TAggrPercentile.Create(ResizeVarname('P5',Varnames[j]),Varnames[j], ap5));
+                              Add(TAggrPercentile.Create(ResizeVarname('P95',Varnames[j]),Varnames[j], ap95));
+                            end;
+           afDES:           begin
+                              Add(TAggrMinMax.Create(ResizeVarname('MIN',Varnames[j]),Varnames[j], true));
+                              Add(TAggrPercentile.Create(ResizeVarname('MED',Varnames[j]),Varnames[j], ap50));
+                              Add(TAggrMinMax.Create(ResizeVarname('MAX',Varnames[j]),Varnames[j], false));
+                            end;
+           afMV:            begin
+                              Add(TAggrCount.Create(ResizeVarname('MIS',Varnames[j]),Varnames[j], acMissing));
+                              Add(TAggrCount.Create(ResizeVarname('MVD',Varnames[j]),Varnames[j], acMissingValue));
+                            end;
+           afUNKNOWN:       dm.Error('Unknown aggregate function: %s', [Varname], 100001);
+        end;  // Case...
+      end;  // For j...
+      varnames.Clear;
+    end;  // For i...
+  finally
+    if Assigned(Varnames) then FreeAndNil(Varnames);
+    if Assigned(AllVars) then FreeAndNil(AllVars);
+  end;
 end;
 
 function TAggrList.VarnameIsAggrFunc(const Varname: string): boolean;
@@ -592,12 +606,12 @@ const
 begin
   ODebug.IncIndent;
   ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
-  result := TStringList.Create;
-  for i:=0 to fList.Count-1 do
+  Result := TStringList.Create;
+  for i:=0 to Count-1 do
   begin
-    if TAggrFunc(fList[i]).AggregateVariable = '' then continue;
-    if result.IndexOf(TAggrFunc(fList[i]).AggregateVariable) = -1 then
-      result.Add(TAggrFunc(fList[i]).AggregateVariable);
+    if TAggrFunc(Items[i]).AggregateVariable = '' then continue;
+    if Result.IndexOf(TAggrFunc(Items[i]).AggregateVariable) = -1 then
+      Result.Add(TAggrFunc(Items[i]).AggregateVariable);
   end;
   ODebug.DecIndent;
 end;
@@ -620,15 +634,37 @@ begin
   ODebug.DecIndent;
 end;
 
-
-procedure TAggrList.Add(Func: TAggrFunc);
+function TAggrList.Unique(Func: TAggrFunc): boolean;
+var
+  i: integer;
 const
   procname = 'Add';
   procversion = '1.0.0.0';
 begin
   ODebug.IncIndent;
   ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
-  fList.Add(Func);
+  result := true;
+  for i := 0 to Count -1 do
+    if AnsiCompareStr(Items[i].ResultVariable, Func.ResultVariable) = 0 then
+      begin result := false; break; end;
+end;
+
+function TAggrList.Extract(Index: Integer): TAggrFunc;
+begin
+  Result := TAggrFunc(fList.Extract(fList.Items[Index]));
+end;
+
+procedure TAggrList.Add(Func: TAggrFunc);
+const
+  procname = 'Add';
+  procversion = '1.1.0.0';
+begin
+  ODebug.IncIndent;
+  ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
+  if Unique(Func) then
+    fList.Add(Func)
+  else
+    dm.Error('Aggregate function already used for %s', [Func.AggregateVariable], 100003);
   ODebug.DecIndent;
 end;
 
@@ -641,10 +677,10 @@ const
 begin
   ODebug.IncIndent;
   ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
-  result := TAggrList.Create;
-  for i := fList.Count-1 downto 0 do
-    if TAggrFunc(fList.Items[i]).FuncType = afPercentile then
-      result.Add(TAggrFunc(fList.Extract(fList.Items[i])));
+  Result := TAggrList.Create;
+  for i := Count - 1 downto 0 do
+    if Items[i].FuncType = afPercentile then
+      result.Add(Extract(i));
   ODebug.DecIndent;
 end;
 
@@ -655,7 +691,11 @@ const
 begin
   ODebug.IncIndent;
   ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
-  fList.Insert(index, func);
+
+  if Unique(Func) then
+    fList.Insert(index, Func)
+  else
+    dm.Error('Aggregate function already used for %s', [Func.AggregateVariable], 100003);
   ODebug.DecIndent;
 end;
 
