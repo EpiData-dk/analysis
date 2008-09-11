@@ -302,7 +302,7 @@ type
     function CreateStratTable(df: TEpiDataframe; Varnames: TStrings): TSumTable;
     function CreateFVTable(df: TEpiDataframe; Varnames: TStrings): TSumTable;
     function CreateLifeTable(df: TEpiDataFrame; Varnames: TStrings; var OutputTable: TStatTable): TEpiDataFrame;
-    // DoTables is commen entry for Dm (Datamodule).
+    // Do(Life)Tables are commen entries from Dm (Datamodule).
     function DoTables(dataframe: TEpiDataframe; varnames: TStrings; cmd: TCommand): boolean;
     function DoLifeTables(dataframe: TEpiDataframe; varnames: TStrings; cmd: TCommand): TEpiDataFrame;
   end;
@@ -312,7 +312,7 @@ var
 
 implementation
 
-uses UCmdProcessor, UAggregate, USKTables, SMUtils, Math, UFormats, UEpiDatatypes,
+uses UCmdProcessor, UAggregate, USKTables, {SMUtils}GeneralUtils, Math, UFormats, UEpiDatatypes,
   StrUtils, Forms, UTableStat, Ustatfunctions,EpiInfoStats, UDebug, EpiDataUtils, UCmdTypes,
   UDateUtils;
 

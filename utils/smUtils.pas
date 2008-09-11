@@ -7,7 +7,7 @@ uses SysUtils,Windows,Dialogs, forms,messages, {grids,} graphics,
 
 const
  NullDate :double =-999999999;
- nothing:string='nothing';
+ nothing: string='nothing';
 
  sDBF_DEC_SEP= '.';
 
@@ -45,7 +45,6 @@ Function PadRight (const S : String; const PadCh : Char; const Length : Integer;
          const Cut : Boolean = False) : String;
 
 
-procedure SplitString(const source: string; list:TStrings; const Splitters: Charset = [' ']);
 procedure SplitFirst(s:string; operators:charset;
 var s1,s2:string; var operator:char);
 
@@ -69,7 +68,7 @@ function GetOpenFileName(var pfilename: string; const pFilter:string):boolean;
 
 function ValidFileName(const FileName: string): Boolean;
 
-procedure FreeAndNil(var v);
+//procedure FreeAndNil(var v);
 
 implementation
 
@@ -214,35 +213,6 @@ if (p<=l) and (l>0) then operator:=s[p] else operator:=#0;
     s2:=copy(s,p+1,l);
 end;
 
-procedure SplitString(const source: string; list:TStrings; const Splitters: Charset = [' ']);
-var
-  P, P1: PChar;
-  S: string;
-begin
-  if list=nil then exit;
-  list.BeginUpdate;
-  try
-    list.Clear;
-    P := PChar(source);
-    while P^ in [#1..' '] do P := CharNext(P);
-    while P^ <> #0 do
-    begin
-      if P^ = '"' then
-        S := AnsiExtractQuotedStr(P, '"')
-      else
-      begin
-        P1 := P;
-//        while (P^ <> ' ') and (P^ <> #0) do P := CharNext(P);
-        while (not (P^ in Splitters)) and (P^ <> #0) do P := CharNext(P);
-        SetString(S, P1, P - P1);
-      end;
-      list.Add(S);
-      while P^ in Splitters do P := CharNext(P);
-    end;
-  finally
-    list.EndUpdate;
-  end;
-end;
 
 function GetLastErrorMsg:string;
 begin

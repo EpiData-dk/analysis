@@ -25,7 +25,7 @@ faAnyFile   = $0000003F;
 }
 
                   // ROW         // COLUMN
-SmallPercentileMatrix: Array[1..19] of Array[1..11] of Integer =
+  SmallPercentileMatrix: Array[1..19] of Array[1..11] of Integer =
 //   N =      P1, P2.5, P5, P10, P25, P50, P75, P90, P95, P97.5, P99
      {1}    ((1,  1,    1,  1,   1,   1,   1,   1,   1,   1,     1),
      {2}     (1,  1,    1,  1,   1,   1,   2,   2,   2,   2,     2),
@@ -79,6 +79,8 @@ type
   TOnOpenFile = procedure(const aFileName:string; CreateNew, ReadOnly: boolean) of object;
 
   TExprType = (ttObject, ttString, ttFloat, ttInteger, ttEnumerated, ttBoolean, ttMissing, ttDate);
+
+  TCharSet = Set of Char;
 
   IValue = interface(IUnknown)
     function GetObject: TObject;

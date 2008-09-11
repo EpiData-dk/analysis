@@ -174,8 +174,8 @@ type
     function DoLabelValue(Varnames: TStrings; cmd: TCommand): boolean;
     function DoLabel(Varname, Varlabel: String): boolean;
     function LabelData(LabelName: string): boolean;
-    function Aggregate(ByVars: TStringList;Cmd: TCommand): boolean;
-    function Stattables(ByVars: TStringList;Cmd: TCommand): boolean;
+    function Aggregate(ByVars: TStrings;Cmd: TCommand): boolean;
+    function Stattables(Varnames: TStrings;Cmd: TCommand): boolean;
     function PreTables(Varnames: TStrings; cmd : Tcommand): boolean;
     function ErasePng(cmd: TCommand): boolean;
     function Means(Varnames: TStrings; cmd: TCommand): boolean;
@@ -253,7 +253,7 @@ uses menus,SMUtils,{UFrameDS,{ubrowse,}ubrowse2,uDateUtils,UVectorVar,UFileDir,U
      // Seperated analysis units: (Added june 2004, Torsten Christiansen)
      UTables, UContinous, UAggregate, Umain, uabout, UVariables,
      Udocument, ULinearRegression, UDos, Math, StrUtils, Editor, UHelp,
-     DateUtils;
+     DateUtils, GeneralUtils;
 
 {$R *.DFM}
 
@@ -845,7 +845,7 @@ begin
   end;
 end;
 
-function tdm.Enable(const off: boolean): boolean;
+function TDM.Enable(const off: boolean): boolean;
 begin
   aMainForm.AcFileClose.Enabled := off;    // TODO : add all other related to file open here
   aMainForm.FileSaveItem.Enabled := off;
@@ -1101,6 +1101,8 @@ try
         if totdp <> 2000 then tab.cell[5,high(testrec)+3]:=trim(format('%5.0f',[totdp]));
         if (tote > 0) then
           tab.cell[7,high(testrec)+3] := '<b>Assert errors exists!</b>';
+        if (totp <> tota) then
+          tab.cell[7,high(testrec)+3] := tab.cell[7,high(testrec)+3] + '<br><b>Planned asserts differs from actual assert!</b>';
         dm.cls;
         dm.codemaker.OutputTable(tab,'<hr><small>Abs dif: difference btw. expected and calculated parameter (if &lt; 10<sup>-14</sup> = 0.0)'
                                       + '<br>Digits precision(max: 15)</small>');
@@ -1681,43 +1683,41 @@ function TDM.Writeln(const s: string;ForeColor:Tcolor=clyellow;align:THAlignment
 var
   para : TStatPara;
 begin
-try
-   Para:=nil;
-   para := outputList.newPara(s);
-   para.options.FFontColor:=forecolor;
-   para.options.FAlignment:=align;
-   Codemaker.outputPara(Para);
-   if loop > EmitGap then
-   begin
-      loop:=0;
-      Sendoutput;
-   end
-   else inc(loop);
-finally
-   Para.free;
+  try
+     Para:=nil;
+     para := outputList.newPara(s);
+     para.options.FFontColor:=forecolor;
+     para.options.FAlignment:=align;
+     Codemaker.outputPara(Para);
+     if loop > EmitGap then
+     begin
+        loop:=0;
+        Sendoutput;
+     end
+     else inc(loop);
+  finally
+     Para.free;
+  end;
 end;
-end;
-
-
 
 function TDM.Writeln2(const s: string;oClass:String=''): boolean;
 var
   para : TStatPara;
 begin
-try
-   Para:=nil;
-   para := outputList.newPara(s);
-   para.options.fOClass := oClass;
-   Codemaker.outputPara(Para);
-   if loop > EmitGap then
-   begin
-      loop:=0;
-      Sendoutput;
-   end
-   else inc(loop);
-finally
-   Para.free;
-end;
+  try
+     Para:=nil;
+     para := outputList.newPara(s);
+     para.options.fOClass := oClass;
+     Codemaker.outputPara(Para);
+     if loop > EmitGap then
+     begin
+        loop:=0;
+        Sendoutput;
+     end
+     else inc(loop);
+  finally
+     Para.free;
+  end;
 end;
 
 function TDM.WriteDirect(const s: string): boolean;
@@ -1725,8 +1725,6 @@ begin
   Codemaker.write(s + CRLF, s + CRLF);
   Sendoutput;
 end;
-
-
 
 function TDM.Sendoutput: boolean;
 var
@@ -1979,8 +1977,8 @@ begin
       Byvars := TStringList.Create();
       Byvars.Add(dstvar);
       AggList := TAggrList.Create();
-      df := OAggregate.DoAggregate(dataframe, byvars, AggList);
-  //    OAggregate.OutAggregate(df, TCommand.Create(oprecode, TVarList.Create()));
+      AggList.Add(TAggrCount.Create('$N', '', acAll));
+      df := OAggregate.AggregateDataframe(dataframe, byvars, AggList);
       tmpV := df.FindVector(dstvar);
       cmdline := 'labelvalue ' + dstvar;
       for i := 1 to tmpV.Length do
@@ -2650,7 +2648,7 @@ begin
 end;
 
 
-function TDM.Aggregate(ByVars: TStringList; Cmd: TCommand): boolean;
+function TDM.Aggregate(ByVars: TStrings; Cmd: TCommand): boolean;
 var
   Df, AggDF: TEpiDataframe;
   AggrList: TAggrList;
@@ -2669,16 +2667,13 @@ begin
   AggrList := nil;
   try
     CheckVariableNo(ByVars, 0, 600);
-    AggrList := TAggrList.Create(Cmd);
-    Varnames := AggrList.GetVarList();
-    if byvars <> nil then
-      Varnames.AddStrings(ByVars);
+//    if byvars <> nil then
+//      Varnames.AddStrings(ByVars);
     if (cmd.ParamByName['M'] <> nil) then
       df := dataframe.prepareDataframe(Varnames, nil)
     else
       df := dataframe.prepareDataframe(Varnames, ByVars);
-    AggDF := OAggregate.DoAggregate(df, ByVars, AggrList);
-    OAggregate.OutAggregate(AggDF, Cmd);
+    AggDF := OAggregate.DoAggregate(df, ByVars, Cmd);
 
     if cmd.ParamByName['CLOSE'] <> nil then
     begin
@@ -2699,39 +2694,60 @@ begin
   ODebug.DecIndent;
 end;
 
-function TDM.Stattables(ByVars: TStringList; Cmd: TCommand): boolean;
+function TDM.Stattables(Varnames: TStrings; Cmd: TCommand): boolean;
 var
-  df, df2: TEpiDataframe;
-  AggrList: TAggrList;
-  Varnames: TStrings;
-  dummy: boolean;
+  df, aggdf: TEpiDataframe;
+  AllVars, ByVars: TStrings;
 const
   procname = 'Stattables';
   procversion = '1.0.0.0';
 begin
   ODebug.IncIndent;
-  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  ODebug.Add(UnitName, Self.ClassName, procname, procversion, 1);
+
   df := nil;
-  df2 := nil;
-  AggrList := nil;
-  Varnames := nil;
-  if not dm.CheckDataOpen() then exit; //CheckDataOpen();
+  ByVars := nil;
+  AllVars := nil;
+  if not dm.CheckDataOpen() then exit;
   try
-    AggrList := TAggrList.Create(Cmd);
-    Varnames := AggrList.GetVarlist();
-    if byvars <> nil then
-      Varnames.AddStrings(ByVars);
-    if (cmd.ParamByName['M'] <> nil) then
-      df := dataframe.prepareDataframe(Varnames, nil)
+    CheckVariableNo(Varnames, 1);
+    ByVars := TStringList.Create;
+    AllVars := TStringList.Create;
+    AllVars.Assign(Varnames);
+    if Cmd.ParamExists['BY'] then
+    begin
+      SplitString(Cmd.ParamByName['BY'].AsString, ByVars, [' ', ',']);
+      AllVars.AddStrings(ByVars);
+    end;
+
+    if Cmd.ParamExists['STRATA'] then
+    begin
+      Allvars.Add(Cmd.ParamByName['STRATA'].AsString);
+      ByVars.Insert(0, Cmd.ParamByName['STRATA'].AsString);
+    end;
+
+    if (cmd.ParamExists['M']) then
+      df := dataframe.prepareDataframe(AllVars, nil)
     else
-      df := dataframe.prepareDataframe(Varnames, ByVars);
-    df2 := OAggregate.DoAggregate(df, ByVars, AggrList);
-    OAggregate.OutStattables(ByVars, AggrList, Df, Cmd);
+      df := dataframe.prepareDataframe(AllVars, ByVars);
+
+    aggdf := OAggregate.DoStattable(df, VarNames, ByVars, cmd);
+    
+    if cmd.ParamByName['CLOSE'] <> nil then
+    begin
+      dm.InternalCloseFile(fDataframe);
+      fDataframe := AggDF;
+      initDataFrameVars(fDataframe);
+      NotifyInterface(EpiVectorListChanged,integer(dataframe),0);
+      NotifyInterface(EpiOpenFile,integer(dataframe),0);
+      OBrowse.UpdateBrowseWindow(fdataframe);
+      OUpdate.UpdateBrowseWindow(fdataframe);
+    end else
+      FreeAndNil(AggDF);
   finally
     if Assigned(df) then FreeAndNil(df);
-    if Assigned(df2) then FreeAndNil(df2);
-    if Assigned(VarNames) then FreeAndNil(Varnames);
-    if Assigned(AggrList) then FreeAndNil(AggrList);
+    if Assigned(AllVars) then FreeAndNil(AllVars);
+    if Assigned(ByVars) then FreeAndNil(ByVars);
   end;
   ODebug.DecIndent;
 end;

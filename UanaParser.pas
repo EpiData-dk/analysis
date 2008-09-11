@@ -2,7 +2,7 @@ unit UanaParser;
 
 interface
 uses windows,sysutils,UEpidataTypes,classes,dialogs, prExpr,UVariables,AAPasTok,
- UAnaToken, UCommands, UVEctors,SMutils, ansDatatypes,UExpToken,variants;
+ UAnaToken, UCommands, UVEctors,SMutils,GeneralUtils, ansDatatypes,UExpToken,variants;
 
 //const
 //applies to all built-in commands
@@ -249,18 +249,21 @@ begin
     opDotPlot : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' M DI C' + ' ' +  Gnrl_options + GRAPH_OPTIONS);
     opBox,opboxplot: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + ' M NM OUT1 OUT2 OUT P1090 R NT ');
 
-    opFreq :result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' M NM CI' + Gnrl_options + PCT_OPTIONS);
+    opFreq :result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' M NM CI' + Gnrl_options + PCT_OPTIONS + FMT_OPTIONS);
     opTables, opShortTables: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options + SORT_OPTIONS + STAT_OPTIONS +
-                                          PCT_OPTIONS + ' NM FV M S F NT NC NCS ');
+                                          PCT_OPTIONS + FMT_OPTIONS + ' NM FV M S F NT NC NCS ');
     opTableDialog: result:=ParseParamLessCommand(opTableDialog);
 
-    opShortLifeTable,opLifeTable: result := ParseTypicalCommand(Currenttoken.TokenSubType, [PCAllowVarList,PCAllowIf], Gnrl_options + PCT_OPTIONS + GRAPH_OPTIONS + ' BY W END NG ADJ NOCI NOLT T I O CLOSE EXIT MT');
+    opShortLifeTable,opLifeTable: result := ParseTypicalCommand(Currenttoken.TokenSubType, [PCAllowVarList,PCAllowIf], Gnrl_options + PCT_OPTIONS + FMT_OPTIONS + GRAPH_OPTIONS + ' BY W END NG ADJ NOCI NOLT T I O CLOSE EXIT MT');
 
     opDescribe, opShortDescribe :result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + 'NM');
-    opMeans, opShortMeans: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + 'T E0 E1 E2 E3 BY M ');
+    opMeans, opShortMeans: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + FMT_OPTIONS + 'T BY M ');
 
-    opshortSTables, opStables,opShortAggregate, opAggregate: result := ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],
-         Gnrl_options + ' REPLACE SAVE CLOSE M MEAN SD SV MEDIAN SUM MIN MAX P5 P10 P25 P50 P75 P90 P95 P99 ISR IQR IDR DES MV D0 D1 D2');
+    opshortSTables,
+    opStables:  result := ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options + AGGR_STAT_OPTIONS + FMT_OPTIONS + ' STAT STRATA BY N NV PAGE HEADER REPLACE SAVE CLOSE M ');
+
+    opShortAggregate,
+    opAggregate: result := ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options + AGGR_STAT_OPTIONS + FMT_OPTIONS + ' REPLACE SAVE CLOSE M ');
 
     opKWallis: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_Options + ' BY M ');
 
@@ -2626,14 +2629,15 @@ begin
            dm.Doloop(param.AsObject);
         end;
         opAggregate, opShortAggregate
-        ,opStables,opShortStables:
+//        ,opStables,opShortStables
+        :
         begin
           dm.Aggregate(GetVarList, Cmd);
         end;
-    {    opStables,opShortStables:
+        opStables,opShortStables:
         begin
           dm.Stattables(GetVarList, Cmd);
-        end;  }
+        end;  
         opTableDialog: AMainForm.AcRunTableExecute(Self);
         opClose: dm.closefile;
         opQuit, opExit: dm.quit(cmd.CommandID);
