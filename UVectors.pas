@@ -3429,7 +3429,7 @@ begin
   if Fdata[index-1] = NA_Float then
     Result := FData[index-1]
   else
-    result:=R2(FData[index-1],-fFldDataDecimals);
+    result:=R2(FData[index-1], -fFldDataDecimals);
 end;
 
 function TEpiFloatVector.GetAsInteger(const index: Integer): EpiInt;
@@ -3443,9 +3443,9 @@ end;
 function TEpiFloatVector.GetAsString(const index: Integer): EpiString;
 begin
 if IsMissing[Index] then
-   result:= EpiMissingChar
+   result := EpiMissingChar
 else
-   result:=EpiFormat(asFloat[Index],FieldFormat)
+   result := EpiFormat(asFloat[Index],FieldFormat)
 //   format(FieldDataFormat,[asFloat[Index]]);
 end;
 

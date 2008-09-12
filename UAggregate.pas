@@ -21,10 +21,12 @@ type
     procedure SetOutput(Idx: integer); virtual; abstract;
     procedure Reset(); virtual; abstract;
     procedure CreateResultVector(Dataframe: TEpiDataframe); virtual; abstract;
+    function EFormat(Ints, DefDecimal: Integer): string;
     property ResultVariable: string read fResVariable;
     property AggregateVariable: string read fAggrVariable;
     property AggregateVector: TEpiVector read fAggregateVector write fAggregateVector;
     property FuncType: TAggrFuncType read fFuncType;
+
   end;
 
   TAggrSum = class(TAggrFunc)
@@ -130,7 +132,7 @@ type
     function DoStatTable(Dataframe: TEpiDataframe; Varnames, ByVars: TStrings; Cmd: TCommand): TEpiDataFrame;
     procedure OutAggregate(Df: TEpiDataframe);
     procedure OutStattables(Df: TEpiDataframe);
-    function AggregateDataframe(Dataframe: TEpiDataframe; AggrByVars: TStringList; AggrList: TAggrList): TEpiDataframe;
+    function AggregateDataframe(Dataframe: TEpiDataframe; AggrByVars: TStringList; AggrList: TAggrList; aCmd: TCommand): TEpiDataframe;
   end;
 
 
@@ -209,7 +211,7 @@ begin
       end;
     end;
 
-    result := AggregateDataframe(Dataframe, TStringList(ByVars), agl);
+    result := AggregateDataframe(Dataframe, TStringList(ByVars), agl, Cmd);
     if dummy then result.DropVectors(dropnames);
     v := result.FindVector('N');
     if v <> nil then
@@ -263,10 +265,10 @@ begin
       end;
     end;
 
-    result := AggregateDataframe(Dataframe, TStringList(ByVars), agl);
+    result := AggregateDataframe(Dataframe, TStringList(ByVars), agl, Cmd);
     v := result.FindVector('N');
     if Assigned(V) then
-      v.VariableLabel := '(N) Total observations used in aggregate';
+      v.VariableLabel := 'N';
     result.DataLabel := 'Aggregated: ' + dataframe.FileName + ' ' + dataframe.DataLabel;
 
     OutStattables(result);
@@ -284,7 +286,7 @@ var
   i, j: integer;
   xtab: TStatTable;
   val: IValue;
-  vns: TStringList;
+  vns: TStrings;
   fmt: string;
 const
   procname = 'OutAggregate';
@@ -335,8 +337,9 @@ procedure TAggregate.OutStattables(Df: TEpiDataFrame);
 var
   i, j, s: integer;
   xTab: TStatTable;
-  HeaderList: TStringList;
+  HeaderList, ByVars: TStrings;
   SVec: TEpiVector;
+
 const
   procname = 'OutStattables';
   procversion = '1.0.0.1';
@@ -345,27 +348,33 @@ begin
   ODebug.Add(UnitName, self.ClassName, ProcName, ProcVersion, 1);
 
   HeaderList := nil;
+  ByVars := nil;
+  s := 0;
   try
     HeaderList := TStringList.Create();
     if Cmd.ParamExists['HEADER'] then
       SplitString(Cmd.ParamByName['HEADER'].AsString, HeaderList, [',']);
 
-    s := 0;
+    ByVars := TStringList.Create();
+    if Cmd.ParamExists['BY'] then
+      SplitString(Cmd.ParamByName['BY'].AsString, ByVars, [' ', ',']);
+
     if Cmd.ParamExists['STRATA'] then
     begin
-      s := 1;
+      Inc(s);
       SVec := Df.VectorByName[Cmd.ParamByName['STRATA'].AsString];
     end else
       SVec := TEpiIntVector.Create('$S', Df.RowCount);
 
-    For i := 0 to Math.Min(HeaderList.Count-1, Df.VectorCount-1) do
+    For i := 0 to Math.Min(HeaderList.Count, Df.VectorCount) - (s+1) do
       Df.Vectors[i+s].VariableLabel := HeaderList[i];
 
     xTab := dm.CodeMaker.Output.NewTable(Df.VectorCount-s, 1);
     if s = 1 then
-      xTab.Caption := SVec.GetVariableLabel(Cmd.ParameterList) + ': ' +
+      xTab.Caption := SVec.GetVariableLabel(Cmd.ParameterList) +
                       SVec.GetValueLabel(SVec.AsString[1], Cmd.ParameterList);
     xTab.TableType := sttNormal;
+
     // Output Headers
     For i := 1 to xTab.ColCount do
       xTab.Cell[i, 1] := Df.Vectors[i-1+s].GetVariableLabel(Cmd.ParameterList);
@@ -373,12 +382,21 @@ begin
     for j := 1 to df.RowCount do
     begin
       xTab.AddRow;
-      // Output Content.
-      for i:= 0 to (df.VectorCount-1)-s do
-        if df.Vectors[i+s].DataType in [EpiTyFloat] then
-          xtab.Cell[i+1,XTab.RowCount] := Trim(Format('%8.2f', [df.Vectors[i+s].AsFloat[j]]))
+
+
+      for i := 0 to (ByVars.Count -1) do
+        if j = 1 then
+          xtab.Cell[i+1, XTab.RowCount] := trim(df.Vectors[i].GetValueLabel(Trim(df.Vectors[i].AsString[j]), Cmd.ParameterList))
         else
-          xtab.Cell[i+1,XTab.RowCount] := trim(df.Vectors[i+s].GetValueLabel(Trim(df.Vectors[i+s].AsString[j]), Cmd.ParameterList));
+          if (df.Vectors[i].compare(j-1, j) = 0) then
+            xtab.Cell[i+1, XTab.RowCount] := ''
+          else
+           xtab.Cell[i+1, XTab.RowCount] := trim(df.Vectors[i].GetValueLabel(Trim(df.Vectors[i].AsString[j]), Cmd.ParameterList));
+
+
+      // Output Content.
+      for i:= (s + ByVars.Count) to (df.VectorCount-1) do
+        xtab.Cell[i+1, XTab.RowCount] := trim(df.Vectors[i].GetValueLabel(Trim(df.Vectors[i].AsString[j]), Cmd.ParameterList));
 
       if (j<df.RowCount) and (SVec.compare(j, j+1) <> 0) then
       begin
@@ -404,7 +422,7 @@ begin
   end;
 end;
 
-function TAggregate.AggregateDataframe(Dataframe: TEpiDataframe; AggrByVars: TStringList; AggrList: TAggrList): TEpiDataframe;
+function TAggregate.AggregateDataframe(Dataframe: TEpiDataframe; AggrByVars: TStringList; AggrList: TAggrList; aCmd: TCommand): TEpiDataframe;
 var
   sortlist: TEpiVectors;
   vector: TEpiVector;
@@ -441,6 +459,11 @@ const
 begin
   ODebug.IncIndent;
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+
+  if aCmd = nil then
+    exit;
+  if aCmd <> Self.Cmd then
+    Self.Cmd := aCmd;
 
   try
     result := nil;
@@ -680,6 +703,25 @@ begin
   Reset();
 end;
 
+function TAggrFunc.EFormat(Ints, DefDecimal: Integer): string;
+begin
+  Result := '%' + Format('%d.', [Ints]);
+
+  if OAggregate.Cmd.ParamExists['E0'] then
+    result := result + '0'
+  else if OAggregate.Cmd.ParamExists['E1'] then
+    result := result + '1'
+  else if OAggregate.Cmd.ParamExists['E2'] then
+    result := result + '2'
+  else if OAggregate.Cmd.ParamExists['E3'] then
+    result := result + '3'
+  else if OAggregate.Cmd.ParamExists['E4'] then
+    result := result + '4'
+  else
+    result := result + Format('%d', [DefDecimal]);
+  result := result + 'f';
+end;
+
 {****************************
  * TAggrList implementation *
  ****************************}
@@ -911,7 +953,7 @@ begin
   Dataframe.NewVector(pVarDesc);
   fResultVector := Dataframe.VectorByName[fResVariable];
   if fAggregateVector <> nil then
-    fResultVector.VariableLabel := '(N) '+ fAggregateVector.GetVariableLabel;
+    fResultVector.VariableLabel := '(N) '+ fAggregateVector.GetVariableLabel
 end;
 
 {****************************
@@ -970,16 +1012,17 @@ var
   pVarDesc: TAnaVariableDescriptor;
 begin
   if (fAggregateVector is TEpiIntVector) then
-    pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat, 6, 4)
+    pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat, 6, 4, EFormat(6, 4))
   else
     pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat,
-                    fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals);
+                    fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals,
+                    EFormat(fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals));
   Dataframe.NewVector(pVarDesc);
   fResultVector := Dataframe.VectorByName[fResVariable];
   case MeanType of
-    amMean: fResultVector.VariableLabel := '(Mean) '+ fAggregateVector.GetVariableLabel;
-    amStdVar: fResultVector.VariableLabel := '(Variance) '+ fAggregateVector.GetVariableLabel;
-    amStdDev: fResultVector.VariableLabel := '(Deviance) '+ fAggregateVector.GetVariableLabel;
+    amMean: fResultVector.VariableLabel := '(Mean) ' + fAggregateVector.GetVariableLabel;
+    amStdVar: fResultVector.VariableLabel := '(Variance) ' + fAggregateVector.GetVariableLabel;
+    amStdDev: fResultVector.VariableLabel := '(Deviance) ' + fAggregateVector.GetVariableLabel;
   end;
 end;
 
@@ -1058,7 +1101,7 @@ begin
   offset := LastCount;
   d := 0;
   case PercentileType of
-    ap1 : d:=1;
+    ap1 : d := 1;
     ap5 : d := 5;
     ap10: d := 10;
     ap25: d := 25;
@@ -1074,6 +1117,7 @@ begin
     ix := fAggregateVector.Length - offset -1;
   if ((ix-offset+1) > (MissingCount -1)) then
     ix := MissingCount -2;
+  ix := Math.Max(Ix, 1);
   if w = ix then
     fResultVector.AsFloat[idx] := fAggregateVector.AsFloat[ix+offset]
   else
@@ -1092,11 +1136,9 @@ procedure TAggrPercentile.CreateResultVector(Dataframe: TEpiDataframe);
 var
   pVarDesc: TAnaVariableDescriptor;
 begin
-// Old method - should always be floating vector. TC 2007-11-08
-//  pVarDesc := TAnaVariableDescriptor.Create(fResVariable, fAggregateVector.DataType,
-//                  fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals);
   pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat,
-                                            fAggregateVector.FieldDataSize, 2);
+                                            fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals,
+                                            EFormat(fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals));
   Dataframe.NewVector(pVarDesc);
   fResultVector := Dataframe.VectorByName[fResVariable];
   case PercentileType of

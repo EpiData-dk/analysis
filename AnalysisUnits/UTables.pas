@@ -611,7 +611,7 @@ begin
       agl.Insert(0, TAggrSum.Create('$S', WeightName));
 
     // step 1c: Preparing dataframe.
-    df := OAggregate.AggregateDataframe(dataframe, TStringList(varnames), agl);
+    df := OAggregate.AggregateDataframe(dataframe, TStringList(varnames), agl, Cmd);
     // OAggregate.OutAggregate(df, TCommand.Create(opTables, Cmd.ParameterList));
 
     // Step 1d: Which table type?
@@ -1450,7 +1450,7 @@ begin
     else
       agl.Insert(0, TAggrSum.Create('$S', WeightName));
 
-    AggDF := OAggregate.AggregateDataframe(df, TStringList(LocalVarnames), agl);
+    AggDF := OAggregate.AggregateDataframe(df, TStringList(LocalVarnames), agl, Cmd);
 
     if Cmd.ParamExists['BY'] then
     begin

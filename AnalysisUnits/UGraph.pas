@@ -876,8 +876,8 @@ begin
         dm.Error('Cannot use /BY with string variables', [], 113004);
     end;
 
-    total := Dataframe.RowCount;
-    df := OAggregate.AggregateDataframe(Dataframe, TStringList(varnames), agglist);
+    total := Dataframe.RowCount;                                        // TODO : Change to real CMD.
+    df := OAggregate.AggregateDataframe(Dataframe, TStringList(varnames), agglist, TCommand.Create(0, Parameters));
     Expand := (Parameters.VarByName['XALL'] <> nil);
     if Grouped then
       Varnames.Delete(Varnames.IndexOf(GroupName));
@@ -1030,7 +1030,7 @@ begin
     // Aggregate dataframe!
     agglist := TAggrList.Create();
     agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
-    df := OAggregate.AggregateDataframe(Dataframe, TStringList(Varnames), agglist);
+    df := OAggregate.AggregateDataframe(Dataframe, TStringList(Varnames), agglist, TCommand.Create(0, Parameters));
 
     if Grouped then
       Varnames.Delete(Varnames.IndexOf(GroupName));
@@ -1315,7 +1315,7 @@ begin
       Aggl.Add(TAggrPercentile.Create('$90', Varnames[i], ap90));
       Aggl.Add(TAggrMinMax.Create('$MAX', Varnames[i], false));
 
-      agdf := OAggregate.AggregateDataframe(df, TStringList(ByVars), AggL);
+      agdf := OAggregate.AggregateDataframe(df, TStringList(ByVars), AggL, TCommand.Create(0, Parameters));
       vec := df.VectorByName[Varnames[i]];
       ByVec := df.VectorByName[GroupVar];
 
@@ -1748,7 +1748,7 @@ begin
     // Aggregate dataframe!
     agglist := TAggrList.Create();
     agglist.Add(TAggrCount.Create('N', Varnames[0], acAll));
-    df := OAggregate.AggregateDataframe(Dataframe, TStringList(varnames), agglist);
+    df := OAggregate.AggregateDataframe(Dataframe, TStringList(varnames), agglist, TCommand.Create(0, Parameters));
     xvec := df.VectorByName['N'];
     lvec := df.VectorByName[varnames[0]];
     series := PieSeries(xvec, lvec);
@@ -1858,7 +1858,7 @@ begin
     df := dataframe.prepareDataframe(varnames, nil);
     agglist := TAggrList.Create();
     agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
-    df := OAggregate.AggregateDataframe(df, TStringList(varnames), agglist);
+    df := OAggregate.AggregateDataframe(df, TStringList(varnames), agglist, TCommand.Create(0, Parameters));
     varlist := TStringList.Create();
     varlist.Add(varnames[0]);
     df2 := df.ExpandDataframe(varlist,aBegin-1,aEnd+1);
@@ -2171,7 +2171,7 @@ begin
 
     agglist := TAggrList.Create();
     agglist.Insert(0, TAggrCount.Create('$S', '', acAll));
-    df := OAggregate.AggregateDataframe(dataframe, TStringList(varnames), agglist);
+    df := OAggregate.AggregateDataframe(dataframe, TStringList(varnames), agglist, TCommand.Create(0, Parameters));
 
     if not (Parameters.VarExists['NM']) then
       Parameters.AddVar('M', '');
@@ -2322,7 +2322,7 @@ begin
     begin
       agglist := TAggrList.Create();
       agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
-      df := OAggregate.AggregateDataframe(dataframe, TStringList(varnames), agglist);
+      df := OAggregate.AggregateDataframe(dataframe, TStringList(varnames), agglist, TCommand.Create(0, Parameters));
       varnames.Move(varnames.Count-1, 0);
       df.Sort(Varnames.CommaText);
       PVarDesc := TAnaVariableDescriptor.CreateLocal('$T',EpiTyFloat,14,6);
@@ -3622,7 +3622,7 @@ begin
       agglist.Insert(0, TAggrSum.Create('$S', WeightName));
     if Weighted then
       varnames.Delete(varnames.IndexOf(WeightName));
-    df := OAggregate.AggregateDataframe(dataframe, TStringList(varnames), agglist);
+    df := OAggregate.AggregateDataframe(dataframe, TStringList(varnames), agglist, TCommand.Create(0, Parameters));
     RowNo := df.RowCount;
     xvec := df.VectorByName[varnames[0]];
     if Parameters.VarbyName['XLABEL'] <> nil then

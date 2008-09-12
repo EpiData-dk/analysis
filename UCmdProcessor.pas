@@ -1978,7 +1978,7 @@ begin
       Byvars.Add(dstvar);
       AggList := TAggrList.Create();
       AggList.Add(TAggrCount.Create('$N', '', acAll));
-      df := OAggregate.AggregateDataframe(dataframe, byvars, AggList);
+      df := OAggregate.AggregateDataframe(dataframe, byvars, AggList, Cmd);
       tmpV := df.FindVector(dstvar);
       cmdline := 'labelvalue ' + dstvar;
       for i := 1 to tmpV.Length do

@@ -5,10 +5,11 @@ uses classes,UVariables, UEpidataTypes, prEXpr;
 
 Type
 
-TCommandList =  class;
-TCommand =  class(TExpression)
-private
-  fCommandID :word;
+  TCommandList =  class;
+
+  TCommand =  class(TExpression)
+  private
+    fCommandID :word;
     FParameterList: TVarList;
     fOwner: TCommandList;
     fOutput: Boolean;
@@ -17,20 +18,21 @@ private
     function GetParamByname(const ParamName: string): IValue;
     function GetParamExists(const ParamName: string): Boolean;
     function GetNoEcho: Boolean;
-protected
-public
-  constructor Create(pCommandID : Word; aParameterList: TVarList;aOwner:TCommandList=nil);
-  destructor Destroy; override;
-  function ParameterCount: Integer;
-  property ParameterList: TVarList read GetParameterList;
-  property Param[n: Integer]: IValue read GetParam;
-  property ParamExists[const ParamName: string]: Boolean read GetParamExists;
-  property ParamByName[const ParamName: string]: IValue read GetParamByname;
-  property CommandID : Word read fCommandID write fCommandID;
-  property Owner :TCommandList read fOwner write fOwner;
-  property NoEcho: Boolean read GetNoEcho;
-  property Output: Boolean read fOutput write fOutput;
-end;
+  protected
+    //
+  public
+    constructor Create(pCommandID : Word; aParameterList: TVarList;aOwner:TCommandList=nil);
+    destructor Destroy; override;
+    function ParameterCount: Integer;
+    property ParameterList: TVarList read GetParameterList;
+    property Param[n: Integer]: IValue read GetParam;
+    property ParamExists[const ParamName: string]: Boolean read GetParamExists;
+    property ParamByName[const ParamName: string]: IValue read GetParamByname;
+    property CommandID : Word read fCommandID write fCommandID;
+    property Owner :TCommandList read fOwner write fOwner;
+    property NoEcho: Boolean read GetNoEcho;
+    property Output: Boolean read fOutput write fOutput;
+  end;
 
 
 TCommandList =  class
