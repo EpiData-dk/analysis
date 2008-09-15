@@ -21,6 +21,7 @@ type
     procedure SetOutput(Idx: integer); virtual; abstract;
     procedure Reset(); virtual; abstract;
     procedure CreateResultVector(Dataframe: TEpiDataframe); virtual; abstract;
+    function ContainVarname(const Varname: string): boolean; virtual;
     function EFormat(Ints, DefDecimal: Integer): string;
     property ResultVariable: string read fResVariable;
     property AggregateVariable: string read fAggrVariable;
@@ -54,17 +55,19 @@ type
     procedure CreateResultVector(Dataframe: TEpiDataframe); override;
   end;
 
-  TAggrMeanType = (amMean, amStdVar, amStdDev);
+  TAggrMeanType = (amMean, amMCI, amStdVar, amStdDev);
 
   TAggrMean = class(TAggrFunc)
   private
     Sum, Stdvar: EpiFloat;
     Count: EpiInt;
     MeanType: TAggrMeanType;
+    fLowerCI, fUpperCI: TEpiVector;
   public
     constructor Create(ResultVar, AggregateVar: string; AMeanType: TAggrMeanType);
     procedure Execute(Idx: integer); override;
     procedure SetOutput(Idx: integer); override;
+    function ContainVarname(const Varname: string): boolean; override;
     procedure Reset(); override;
     procedure CreateResultVector(Dataframe: TEpiDataframe); override;
   end;
@@ -106,6 +109,7 @@ type
     destructor Destroy(); override;
     procedure Add(Func: TAggrFunc);
     function ExtractPercentiles(): TAggrList;
+    function IndexOf(const Name: string): Integer;
     procedure Insert(const Index: integer; Func: TAggrFunc);
     procedure SetOutputs(Idx: integer);
     procedure ResetAll();
@@ -131,7 +135,7 @@ type
     function DoAggregate(Dataframe: TEpiDataframe; ByVars: TStrings; Cmd: TCommand): TEpiDataframe;
     function DoStatTable(Dataframe: TEpiDataframe; Varnames, ByVars: TStrings; Cmd: TCommand): TEpiDataFrame;
     procedure OutAggregate(Df: TEpiDataframe);
-    procedure OutStattables(Df: TEpiDataframe);
+    procedure OutStattables(Df, OrgDF: TEpiDataframe; AggList: TAggrList);
     function AggregateDataframe(Dataframe: TEpiDataframe; AggrByVars: TStringList; AggrList: TAggrList; aCmd: TCommand): TEpiDataframe;
   end;
 
@@ -141,7 +145,8 @@ var
 
 implementation
 
-uses Math, UFrames, UEpiDatatypes, UOutput, UCmdProcessor, UDebug, UAnaToken, GeneralUtils;
+uses Math, UFrames, UEpiDatatypes, UOutput, UCmdProcessor, UDebug, UAnaToken, GeneralUtils,
+     UStatFunctions;
 
 const
   UnitName = 'UAggregate';
@@ -261,7 +266,7 @@ begin
         Agl.Add(TAggrCount.Create(ResizeVarname('N', Varnames[i]), Varnames[i], acNotMissing));
       for j := 0 to FuncNames.Count -1 do
       begin
-        CreateAggrFunc(FuncNames[j], Varnames[i], Agl);
+        CreateAggrFunc(AnsiUpperCase(FuncNames[j]), Varnames[i], Agl);
       end;
     end;
 
@@ -271,7 +276,7 @@ begin
       v.VariableLabel := 'N';
     result.DataLabel := 'Aggregated: ' + dataframe.FileName + ' ' + dataframe.DataLabel;
 
-    OutStattables(result);
+    OutStattables(result, dataframe, agl);
   finally
     if Assigned(Agl) then FreeAndNil(Agl);
     if Assigned(FuncNames) then FreeAndNil(FuncNames);
@@ -333,12 +338,58 @@ begin
   ODebug.DecIndent;
 end;
 
-procedure TAggregate.OutStattables(Df: TEpiDataFrame);
+procedure TAggregate.OutStattables(Df, OrgDF: TEpiDataFrame; AggList: TAggrList);
 var
   i, j, s: integer;
   xTab: TStatTable;
   HeaderList, ByVars: TStrings;
   SVec: TEpiVector;
+
+  function AdjustHeader(Vec: TEpiVector): string;
+  var
+    idx: integer;
+    af: TAggrFunc;
+  begin
+    idx := AggList.IndexOf(Vec.Name);
+    if idx  > -1 then
+    begin
+      af := AggList.Items[idx];
+      result := af.AggregateVector.GetVariableLabel(Cmd.ParameterList);
+      case af.FuncType of
+        afCount       : result := result + '<br>Count';
+        afSum         : result := result + '<br>Sum';
+        afMean        : case TAggrMean(af).MeanType of
+                          amMean   : result := result + '<br>Mean';
+                          amMCI    : begin
+                                       if Vec = TAggrMean(af).fLowerCI then
+                                         result := result + '<br>Lower 95% CI'
+                                       else if Vec = TAggrMean(af).fUpperCI then
+                                         result := result + '<br>Upper 95% CI'
+                                       else
+                                         result := result + '<br>Mean';
+                                     end;
+                          amStdVar : result := result + '<br>Std. Variance';
+                          amStdDev : result := result + '<br>Std. Deviance';
+                        end;
+        afMinMax      : if TAggrMinMax(af).Minimum then
+                          result := result + '<br>Min'
+                        else
+                          result := result + '<br>Max';
+        afPercentile  : case TAggrPercentile(af).PercentileType of
+                          ap1   : result := result + '<br>P1';
+                          ap5   : result := result + '<br>P5';
+                          ap10  : result := result + '<br>P10';
+                          ap25  : result := result + '<br>P25';
+                          ap50  : result := result + '<br>Median';
+                          ap75  : result := result + '<br>P75';
+                          ap90  : result := result + '<br>P90';
+                          ap95  : result := result + '<br>P95';
+                          ap99  : result := result + '<br>P99';
+                        end;
+      end;
+    end else
+      result := Vec.GetVariableLabel(Cmd.ParameterList);
+  end;
 
 const
   procname = 'OutStattables';
@@ -377,7 +428,7 @@ begin
 
     // Output Headers
     For i := 1 to xTab.ColCount do
-      xTab.Cell[i, 1] := Df.Vectors[i-1+s].GetVariableLabel(Cmd.ParameterList);
+      xTab.Cell[i, 1] := AdjustHeader(Df.Vectors[i-1+s]); //Df.Vectors[i-1+s].GetVariableLabel(Cmd.ParameterList);
 
     for j := 1 to df.RowCount do
     begin
@@ -565,10 +616,11 @@ begin
                           i-1, level);
       TAggrFunc(PercList.Items[k]).SetOutput(level);
       TAggrFunc(PercList.Items[k]).Reset();
+      AggrList.Add(TAggrFunc(PercList.Items[k]));
     end;
   finally
     if Assigned(sortlist) then FreeAndNil(sortlist);
-    if Assigned(PercList) then FreeAndNil(PercList);
+//    if Assigned(PercList) then FreeAndNil(PercList);
   end;
   ODebug.DecIndent;
 end;
@@ -598,6 +650,7 @@ begin
   ODebug.Add(UnitName, self.ClassName, procname, procversion, 1);
   s := AnsiUppercase(varname);
   if s = 'MEAN' then result := afMean
+  else if s = 'MCI' then result := afMean
   else if s = 'SD' then result := afSD
   else if s = 'SV' then result := afSV
   else if s = 'MEDIAN' then result := afPercentile
@@ -617,7 +670,10 @@ function TAggregate.CreateAggrFunc(const AggFuncName, VarName: string; Dest: TAg
 begin
   Case VarnameToAggrFuncType(AggFuncName) of
     afSum:           Dest.Add(TAggrSum.Create(ResizeVarname('SUM',Varname),Varname));
-    afMean:          Dest.Add(TAggrMean.Create(ResizeVarname('MEA',VarName),VarName, amMean));
+    afMean:          if AggFuncName = 'MCI' then
+                       Dest.Add(TAggrMean.Create(ResizeVarname('MEA',VarName),VarName, amMCI))
+                     else
+                       Dest.Add(TAggrMean.Create(ResizeVarname('MEA',VarName),VarName, amMean));
     afMinMax:        if AggFuncName = 'MIN' then
                        Dest.Add(TAggrMinMax.Create(ResizeVarname('MIN', VarName), VarName, true))
                      else
@@ -701,6 +757,11 @@ begin
   fAggrVariable := AggregateVar;
   fResVariable := ResultVar;
   Reset();
+end;
+
+function TAggrFunc.ContainVarname(const Varname: string): boolean;
+begin
+  result := AnsiCompareStr(Varname, ResultVariable) = 0;
 end;
 
 function TAggrFunc.EFormat(Ints, DefDecimal: Integer): string;
@@ -820,6 +881,13 @@ begin
     if Items[i].FuncType = afPercentile then
       result.Add(Extract(i));
   ODebug.DecIndent;
+end;
+
+function TAggrList.IndexOf(const Name: string): integer;
+begin
+  for result := 0 to fList.Count -1 do
+    if Items[result].ContainVarname(Name) then exit;
+  result := -1;
 end;
 
 procedure TAggrList.Insert(const Index: integer; Func: TAggrFunc);
@@ -977,7 +1045,7 @@ end;
 
 procedure TAggrMean.SetOutput(Idx: integer);
 var
-  mean, stddev: EpiFloat;
+  mean, stddev, lci, uci, f: EpiFloat;
 begin
   if Count = 0 then
     fResultVector.AsFloat[idx] := NA_FLOAT
@@ -988,14 +1056,27 @@ begin
     begin
       stdvar := NA_FLOAT;
       stddev := NA_FLOAT;
+      lci    := NA_FLOAT;
+      uci    := NA_FLOAT;
     end else begin
       stdvar := (stdvar + (count * IntPower(Mean, 2) - 2 * Mean * Sum)) / (count-1);
       stddev := sqrt(stdvar);
+      f:=   PTDISTRINV((Count-1), 0.025) * System.Sqrt(stdvar/count);
+      lci    := Mean - f;
+      uci    := Mean + f;
+{      lci    := Mean - System.Sqrt(stdvar / count);
+      uci    := Mean + System.Sqrt(stdvar / count);}
     end;
     case MeanType of
+      amMCI,
       amMean: fResultVector.AsFloat[idx] := mean;
       amStdVar: fResultVector.AsFloat[idx] := stdvar;
       amStdDev: fResultVector.AsFloat[idx] := stddev;
+    end;
+    if MeanType = amMCI then
+    begin
+      fLowerCI.AsFloat[Idx] := lci;
+      fUpperCI.AsFloat[Idx] := uci;
     end;
   end;
 end;
@@ -1007,22 +1088,55 @@ begin
   StdVar := 0;
 end;
 
+function TAggrMean.ContainVarname(const Varname: string): boolean;
+begin
+  result := inherited ContainVarname(varname);
+
+  if MeanType = amMCI then
+  begin
+    if (AnsiCompareStr(Varname, fLowerCI.Name) = 0) or
+       (AnsiCompareStr(Varname, fUpperCI.Name) = 0) then
+       result := true;
+  end;
+end;
+
 procedure TAggrMean.CreateResultVector(Dataframe: TEpiDataframe);
 var
   pVarDesc: TAnaVariableDescriptor;
 begin
-  if (fAggregateVector is TEpiIntVector) then
-    pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat, 6, 4, EFormat(6, 4))
-  else
-    pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat,
-                    fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals,
-                    EFormat(fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals));
-  Dataframe.NewVector(pVarDesc);
-  fResultVector := Dataframe.VectorByName[fResVariable];
-  case MeanType of
-    amMean: fResultVector.VariableLabel := '(Mean) ' + fAggregateVector.GetVariableLabel;
-    amStdVar: fResultVector.VariableLabel := '(Variance) ' + fAggregateVector.GetVariableLabel;
-    amStdDev: fResultVector.VariableLabel := '(Deviance) ' + fAggregateVector.GetVariableLabel;
+  pVarDesc := nil;
+  try
+    if (fAggregateVector is TEpiIntVector) then
+      pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat, 6, 4, EFormat(6, 4))
+    else
+      pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat,
+                      fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals,
+                      EFormat(fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals));
+    Dataframe.NewVector(pVarDesc);
+    fResultVector := Dataframe.VectorByName[fResVariable];
+    case MeanType of
+      amMCI,
+      amMean: fResultVector.VariableLabel := '(Mean) ' + fAggregateVector.GetVariableLabel;
+      amStdVar: fResultVector.VariableLabel := '(Variance) ' + fAggregateVector.GetVariableLabel;
+      amStdDev: fResultVector.VariableLabel := '(Deviance) ' + fAggregateVector.GetVariableLabel;
+    end;
+    if MeanType = amMCI then
+    begin
+      FreeAndNil(pVarDesc);
+      pVarDesc := TAnaVariableDescriptor.Create(fResVariable+'LOCI', EpiTyFloat,
+                      6, 4, EFormat(6, 4));
+      Dataframe.NewVector(pVarDesc);
+      fLowerCI := Dataframe.VectorByName[fResVariable+'LOCI'];
+      fLowerCI.VariableLabel := '(Mean lower 95% CI) ' + fAggregateVector.GetVariableLabel;
+      FreeAndNil(pVarDesc);
+      pVarDesc := TAnaVariableDescriptor.Create(fResVariable+'HICI', EpiTyFloat,
+                      6, 4, EFormat(6, 4));
+      Dataframe.NewVector(pVarDesc);
+      fUpperCI := Dataframe.VectorByName[fResVariable+'HICI'];
+      fUpperCI.VariableLabel := '(Mean upper 95% CI) ' + fAggregateVector.GetVariableLabel;
+    end;
+  finally
+    if Assigned(pVarDesc) then FreeAndNil(pVarDesc);
   end;
 end;
 

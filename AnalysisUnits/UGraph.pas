@@ -1273,7 +1273,6 @@ begin
     result.BottomAxis.MaximumOffset := 10;
     result.BottomAxis.Ticks.Visible := false;
     result.BottomAxis.Labels := true;
-//    result.BottomAxis.Visible := False;
     result.MarginLeft := 10;
     result.MarginRight := 5;
 
@@ -1364,6 +1363,8 @@ begin
       result.BottomAxis.MinimumOffset := 75;
       result.BottomAxis.MaximumOffset := 75;
     end;
+    if Parameters.VarExists['NT'] then
+      FreeAndNil(OutputTable);
   finally
     ODebug.DecIndent();
     if Assigned(ByVars) then FreeAndNil(ByVars);
