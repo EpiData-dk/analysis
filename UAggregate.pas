@@ -362,14 +362,14 @@ var
                           amMean   : result := result + '<br>Mean';
                           amMCI    : begin
                                        if Vec = TAggrMean(af).fLowerCI then
-                                         result := result + '<br>Lower 95% CI'
+                                         result := result + '<br>(95%'
                                        else if Vec = TAggrMean(af).fUpperCI then
-                                         result := result + '<br>Upper 95% CI'
+                                         result := result + '<br> CI ) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
                                        else
                                          result := result + '<br>Mean';
                                      end;
                           amStdVar : result := result + '<br>Std. Variance';
-                          amStdDev : result := result + '<br>Std. Deviance';
+                          amStdDev : result := result + '<br>Std.Dev.';
                         end;
         afMinMax      : if TAggrMinMax(af).Minimum then
                           result := result + '<br>Min'
@@ -1127,13 +1127,13 @@ begin
                       6, 4, EFormat(6, 4));
       Dataframe.NewVector(pVarDesc);
       fLowerCI := Dataframe.VectorByName[fResVariable+'LOCI'];
-      fLowerCI.VariableLabel := '(Mean lower 95% CI) ' + fAggregateVector.GetVariableLabel;
+      fLowerCI.VariableLabel := '(Lower 95% CI - Mean) ' + fAggregateVector.GetVariableLabel;
       FreeAndNil(pVarDesc);
       pVarDesc := TAnaVariableDescriptor.Create(fResVariable+'HICI', EpiTyFloat,
                       6, 4, EFormat(6, 4));
       Dataframe.NewVector(pVarDesc);
       fUpperCI := Dataframe.VectorByName[fResVariable+'HICI'];
-      fUpperCI.VariableLabel := '(Mean upper 95% CI) ' + fAggregateVector.GetVariableLabel;
+      fUpperCI.VariableLabel := '(Upper 95% CI - Mean) ' + fAggregateVector.GetVariableLabel;
     end;
   finally
     if Assigned(pVarDesc) then FreeAndNil(pVarDesc);
@@ -1256,15 +1256,15 @@ begin
   Dataframe.NewVector(pVarDesc);
   fResultVector := Dataframe.VectorByName[fResVariable];
   case PercentileType of
-    ap1 : fResultVector.VariableLabel := '(1 Percentile) '+ fAggregateVector.GetVariableLabel;
-    ap5 : fResultVector.VariableLabel := '(5 Percentile) '+ fAggregateVector.GetVariableLabel;
-    ap10: fResultVector.VariableLabel := '(10 Percentile) '+ fAggregateVector.GetVariableLabel;
-    ap25: fResultVector.VariableLabel := '(25 Percentile) '+ fAggregateVector.GetVariableLabel;
-    ap50: fResultVector.VariableLabel := '(Median) '+ fAggregateVector.GetVariableLabel;
-    ap75: fResultVector.VariableLabel := '(75 Percentile) '+ fAggregateVector.GetVariableLabel;
-    ap90: fResultVector.VariableLabel := '(90 Percentile) '+ fAggregateVector.GetVariableLabel;
-    ap95: fResultVector.VariableLabel := '(95 Percentile) '+ fAggregateVector.GetVariableLabel;
-    ap99: fResultVector.VariableLabel := '(99 Percentile) '+ fAggregateVector.GetVariableLabel;
+    ap1 : fResultVector.VariableLabel := fAggregateVector.GetVariableLabel + '<br> 1% Percentile';
+    ap5 : fResultVector.VariableLabel := fAggregateVector.GetVariableLabel + '<br> 5% Percentile ';
+    ap10: fResultVector.VariableLabel := fAggregateVector.GetVariableLabel + '<br> 10% Percentile ';//+ fAggregateVector.GetVariableLabel;
+    ap25: fResultVector.VariableLabel := fAggregateVector.GetVariableLabel + '<br> 25% Percentile ';//+ fAggregateVector.GetVariableLabel;
+    ap50: fResultVector.VariableLabel := fAggregateVector.GetVariableLabel + 'Median) ';//+ fAggregateVector.GetVariableLabel;
+    ap75: fResultVector.VariableLabel := fAggregateVector.GetVariableLabel + '<br> 75% Percentile ';//+ fAggregateVector.GetVariableLabel;
+    ap90: fResultVector.VariableLabel := fAggregateVector.GetVariableLabel + '<br> 90% Percentile ';//+ fAggregateVector.GetVariableLabel;
+    ap95: fResultVector.VariableLabel :=fAggregateVector.GetVariableLabel +  '<br> 95% Percentile ';//+ fAggregateVector.GetVariableLabel;
+    ap99: fResultVector.VariableLabel := fAggregateVector.GetVariableLabel + '<br> 99% Percentile ';//+ fAggregateVector.GetVariableLabel;
   end;
 end;
 
