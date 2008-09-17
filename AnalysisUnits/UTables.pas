@@ -285,6 +285,7 @@ type
     procedure DoFreqTable(Dataframe: TEpiDataframe; Varnames: TStrings);        // Common procedure for aggregating, statistics and outputting frequency tables
     procedure DoStratifiedTable(Dataframe: TEpiDataframe; Varnames: TStrings);  // Common procedure for aggregating, statistics and outputting stratified tables
     procedure DoFV(Dataframe: TEpiDataframe; Varnames: TStrings);               // Common procedure for aggregating, statistics and outputting FV tables
+    procedure LTStats(dataframe: TEpiDataframe; xTab: TStatTable);
     function OutTwoWayTable(const TwoWayTable: TTwoWayTable): TStatTable;
     Function Get2x2statistics(Sumtable: TSumTable): Boolean;
   protected
@@ -302,7 +303,7 @@ type
     function CreateStratTable(df: TEpiDataframe; Varnames: TStrings): TSumTable;
     function CreateFVTable(df: TEpiDataframe; Varnames: TStrings): TSumTable;
     function CreateLifeTable(df: TEpiDataFrame; Varnames: TStrings; var OutputTable: TStatTable): TEpiDataFrame;
-    // Do(Life)Tables are commen entries from Dm (Datamodule).
+    // Do (Life)Tables are commen entries from Dm (Datamodule).
     function DoTables(dataframe: TEpiDataframe; varnames: TStrings; cmd: TCommand): boolean;
     function DoLifeTables(dataframe: TEpiDataframe; varnames: TStrings; cmd: TCommand): TEpiDataFrame;
   end;
@@ -568,15 +569,6 @@ begin
   if Assigned(OSKTableAnalysis) then FreeAndNil(OSKTableAnalysis);
 end;
 
- { Function TTables.GetConfidenceIntervalsOR(tab : TTwowaytable; WhichLim: integer; Var inexact : boolean): EpiFloat;
-  begin
-    //   LowerRR := GetCornfieldLimit(-1,inexact);
-    //   upperRR := GetCornfieldLimit(1,inexact);
-    if (tab.ColumnCount = 2) and (tab.RowCount = 2 ) then
-       Result:=CornfieldLimit(Tab.Cell[1,1].N ,Tab.Cell[1,2].n,Tab.Cell[2,1].n,Tab.Cell[2,2].n,WhichLim,inexact)
-       else  result := -1 ; //Dm.info('Subtable not 2x2 : ' + tab.fCaption);
-  end;
- }
 
 function TTables.DoTables(dataframe: TEpiDataframe; varnames: TStrings; cmd: TCommand): boolean;
 var
@@ -643,6 +635,8 @@ begin
   xtab := nil;
   try
     result := CreateLifeTable(dataframe, varnames, xtab);
+    if Cmd.ParamExists['T'] then
+      LTStats(result, xtab);
     if Assigned(xtab) and (not Cmd.ParamExists['NT']) then
       dm.CodeMaker.OutputTable(xtab, '');
     if (not Cmd.ParamExists['NOLT']) then
@@ -773,6 +767,71 @@ begin
     OutFVTable(Sumtab);
   finally
     if Assigned(sumtab) then FreeAndNil(sumtab);
+  end;
+end;
+
+procedure TTables.LTStats(dataframe: TEpiDataframe; xTab: TStatTable);
+var
+  df: TEpiDataframe;
+  i, j, st, en,
+  dths, counts: integer;
+  By, IntVal, Dth, Tot: TEpiVector;
+  Pd: EpiFloat;
+  EstTotal: Array of EpiFloat;
+  EstCounts: Array of Integer;
+  Varnames: TStrings;
+begin
+
+  if (not Cmd.ParamExists['BY']) then exit;
+
+  Varnames := nil;
+  df := Dataframe.PrepareDataframe(varnames, nil);
+  By := Df.VectorByName[Cmd.ParamByName['BY'].AsString];
+
+  st := By.AsInteger[1];
+  i := df.RowCount;
+  while By.IsMissing[i] do dec(i);
+  en := By.AsInteger[i];
+  if (i <> df.RowCount) then inc(en);
+
+  SetLength(EstTotal, (en - st)+1);
+  SetLength(EstCounts, (en - st)+1);
+
+  for i := 0 to Length(EstTotal)-1 do
+  begin
+    EstTotal[i] := NA_FLOAT;
+    EstCounts[i] := NA_INT;
+  end;
+
+  df.Sort('$INTERBEG,' + By.Name);
+  df.SendToOutput(nil);
+
+  IntVal := df.VectorByName['$INTERBEG'];
+  Dth  := df.VectorByName['$DEATHS'];
+  Tot := df.VectorByName['$NUMATSTRT'];
+  i := 2;
+  dths := dth.AsInteger[1];
+  counts := tot.AsInteger[1];
+  EstCounts[By.AsInteger[1]-st] := counts;
+  while (true) do
+  begin
+    while (IntVal.compare(i-1, i) = 0) do
+    begin
+      inc(dths, dth.AsInteger[i]);
+      EstCounts[By.AsInteger[i]-st] := tot.AsInteger[i];
+      inc(counts, tot.AsInteger[i]);
+      inc(i);
+      if i > df.RowCount then break;
+    end;
+
+    pd := (dths / counts);
+    for j := 0 to Length(EstTotal)-1 do
+      if EstCounts[j] <> NA_INT then
+        EstTotal[j] := EstTotal[j] + (pd * EstCounts[j]);
+
+    dths := 0;
+    counts := 0;
+    if i > df.RowCount then break;
   end;
 end;
 
@@ -2872,7 +2931,7 @@ procedure TTables.OutLifeTable(df: TEpiDataframe);
 var
   tf: TTableFormats;
   tab: TStatTable;
-  i, r: integer;
+  i, j, r: integer;
   V: TEpiVector;
 begin
   Getformats(Cmd, tf);

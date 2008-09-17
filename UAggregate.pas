@@ -350,10 +350,12 @@ var
     idx: integer;
     af: TAggrFunc;
   begin
+    result := Vec.GetVariableLabel(Cmd.ParameterList);
     idx := AggList.IndexOf(Vec.Name);
     if idx  > -1 then
     begin
       af := AggList.Items[idx];
+      if not Assigned(af.AggregateVector) then exit;
       result := af.AggregateVector.GetVariableLabel(Cmd.ParameterList);
       case af.FuncType of
         afCount       : result := result + '<br>Count';
@@ -387,8 +389,7 @@ var
                           ap99  : result := result + '<br>P99';
                         end;
       end;
-    end else
-      result := Vec.GetVariableLabel(Cmd.ParameterList);
+    end;  
   end;
 
 const
@@ -417,18 +418,21 @@ begin
     end else
       SVec := TEpiIntVector.Create('$S', Df.RowCount);
 
-    For i := 0 to Math.Min(HeaderList.Count, Df.VectorCount) - (s+1) do
+    For i := 0 to Math.Min(HeaderList.Count-1, Df.VectorCount-(s+1)) do
       Df.Vectors[i+s].VariableLabel := HeaderList[i];
+
+    For j := i to Df.VectorCount - (s+1) do
+      Df.Vectors[j+s].VariableLabel := AdjustHeader(Df.Vectors[j+s]);
 
     xTab := dm.CodeMaker.Output.NewTable(Df.VectorCount-s, 1);
     if s = 1 then
-      xTab.Caption := SVec.GetVariableLabel(Cmd.ParameterList) +
+      xTab.Caption := SVec.GetVariableLabel(Cmd.ParameterList) + ' ' +
                       SVec.GetValueLabel(SVec.AsString[1], Cmd.ParameterList);
     xTab.TableType := sttNormal;
 
     // Output Headers
     For i := 1 to xTab.ColCount do
-      xTab.Cell[i, 1] := AdjustHeader(Df.Vectors[i-1+s]); //Df.Vectors[i-1+s].GetVariableLabel(Cmd.ParameterList);
+      xTab.Cell[i, 1] := Df.Vectors[i-1+s].GetVariableLabel(Cmd.ParameterList);
 
     for j := 1 to df.RowCount do
     begin
@@ -437,17 +441,17 @@ begin
 
       for i := 0 to (ByVars.Count -1) do
         if j = 1 then
-          xtab.Cell[i+1, XTab.RowCount] := trim(df.Vectors[i].GetValueLabel(Trim(df.Vectors[i].AsString[j]), Cmd.ParameterList))
+          xtab.Cell[i+1, XTab.RowCount] := trim(df.Vectors[i+s].GetValueLabel(Trim(df.Vectors[i+s].AsString[j]), Cmd.ParameterList))
         else
-          if (df.Vectors[i].compare(j-1, j) = 0) then
+          if (df.Vectors[i+s].compare(j-1, j) = 0) then
             xtab.Cell[i+1, XTab.RowCount] := ''
           else
-           xtab.Cell[i+1, XTab.RowCount] := trim(df.Vectors[i].GetValueLabel(Trim(df.Vectors[i].AsString[j]), Cmd.ParameterList));
+           xtab.Cell[i+1, XTab.RowCount] := trim(df.Vectors[i+s].GetValueLabel(Trim(df.Vectors[i+s].AsString[j]), Cmd.ParameterList));
 
 
       // Output Content.
-      for i:= (s + ByVars.Count) to (df.VectorCount-1) do
-        xtab.Cell[i+1, XTab.RowCount] := trim(df.Vectors[i].GetValueLabel(Trim(df.Vectors[i].AsString[j]), Cmd.ParameterList));
+      for i:= (s + (ByVars.Count-1)) to (df.VectorCount-(s+1)) do
+        xtab.Cell[i+1, XTab.RowCount] := trim(df.Vectors[i+s].GetValueLabel(Trim(df.Vectors[i+s].AsString[j]), Cmd.ParameterList));
 
       if (j<df.RowCount) and (SVec.compare(j, j+1) <> 0) then
       begin
@@ -457,7 +461,7 @@ begin
           dm.WriteDirect('<p style="page-break-after : always ; visibility : hidden ">&nbsp;</p>');
 
         xTab := dm.CodeMaker.Output.NewTable(Df.VectorCount-s, 1);
-        xTab.Caption := SVec.GetVariableLabel(Cmd.ParameterList) + ': ' +
+        xTab.Caption := SVec.GetVariableLabel(Cmd.ParameterList) + ' ' +
                         SVec.GetValueLabel(SVec.AsString[j+1], Cmd.ParameterList);
         xTab.TableType := sttNormal;
         For i := 1 to xTab.ColCount do
@@ -780,6 +784,7 @@ begin
     result := result + '4'
   else
     result := result + Format('%d', [DefDecimal]);
+
   result := result + 'f';
 end;
 
@@ -1176,9 +1181,11 @@ end;
 procedure TAggrMinMax.CreateResultVector(Dataframe: TEpiDataframe);
 var
   pVarDesc: TAnaVariableDescriptor;
+  s: string;
 begin
-  pVarDesc := TAnaVariableDescriptor.Create(fResVariable, fAggregateVector.DataType,
-                  fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals);
+  pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat,
+                    fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals,
+                    EFormat(fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals));
   Dataframe.NewVector(pVarDesc);
   fResultVector := Dataframe.VectorByName[fResVariable];
   if Minimum then
