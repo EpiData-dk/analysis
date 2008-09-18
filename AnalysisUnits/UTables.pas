@@ -773,66 +773,182 @@ end;
 procedure TTables.LTStats(dataframe: TEpiDataframe; xTab: TStatTable);
 var
   df: TEpiDataframe;
-  i, j, st, en,
-  dths, counts: integer;
-  By, IntVal, Dth, Tot: TEpiVector;
+  i, j, st, en, idx,
+  Dths, WthD, STotal: integer;
+  ByVec, TimeVec, DthVec, WthDrwVec, NumVec: TEpiVector;
   Pd: EpiFloat;
-  EstTotal: Array of EpiFloat;
-  EstCounts: Array of Integer;
+  ESum: Array of EpiFloat;
+  ATotal, ADeath, AWithD, SDeath: Array of Integer;
   Varnames: TStrings;
+  Fmts: TTableFormats;
+
+  function SumTotal(): integer;
+  var
+    i: integer;
+  begin
+    result := 0;
+    for i := 0 to Length(ATotal)-1 do
+      if ATotal[i] <> NA_INT then
+        inc(Result, ATotal[i]);
+  end;
+
+  function SumDeath(): integer;
+  var
+    i: integer;
+  begin
+    result := 0;
+    for i := 0 to Length(ADeath)-1 do
+      if ADeath[i] <> NA_INT then
+        inc(Result, ADeath[i]);
+  end;
+
+  function SumWithD(): integer;
+  var
+    i: integer;
+  begin
+    result := 0;
+    for i := 0 to Length(AWithD)-1 do
+      if AWithD[i] <> NA_INT then
+        inc(Result, AWithD[i]);
+  end;
+
+  function GetIndex(Idx: integer): integer;
+  begin
+    if ByVec.IsMissing[idx] then
+      result := (en -st)
+    else
+      result := ByVec.AsInteger[idx] - st;
+  end;
+
 begin
 
   if (not Cmd.ParamExists['BY']) then exit;
 
+  Getformats(Cmd, Fmts);
+  
   Varnames := nil;
   df := Dataframe.PrepareDataframe(varnames, nil);
-  By := Df.VectorByName[Cmd.ParamByName['BY'].AsString];
+  ByVec := Df.VectorByName[Cmd.ParamByName['BY'].AsString];
 
-  st := By.AsInteger[1];
+  // Find stratification levels.
+  st := ByVec.AsInteger[1];
   i := df.RowCount;
-  while By.IsMissing[i] do dec(i);
-  en := By.AsInteger[i];
+  while ByVec.IsMissing[i] do dec(i);
+  en := ByVec.AsInteger[i];
   if (i <> df.RowCount) then inc(en);
 
-  SetLength(EstTotal, (en - st)+1);
-  SetLength(EstCounts, (en - st)+1);
-
-  for i := 0 to Length(EstTotal)-1 do
+  // Intialize arrays based on stratas
+  SetLength(ESum, (en - st)+1);
+  SetLength(ATotal, (en - st)+1);
+  SetLength(SDeath, (en - st)+1);
+  SetLength(ADeath, (en - st)+1);
+  SetLength(AWithD, (en - st)+1);
+  for i := 0 to (en - st) do
   begin
-    EstTotal[i] := NA_FLOAT;
-    EstCounts[i] := NA_INT;
+    ESum[i] := 0;
+    ATotal[i] := NA_INT;
+    SDeath[i] := 0;
+    ADeath[i] := NA_INT;
+    AWithD[i] := NA_INT;
   end;
 
-  df.Sort('$INTERBEG,' + By.Name);
-  df.SendToOutput(nil);
+  // Sort and prepare for counting.
+  df.Sort('$INTERBEG,' + ByVec.Name);
 
-  IntVal := df.VectorByName['$INTERBEG'];
-  Dth  := df.VectorByName['$DEATHS'];
-  Tot := df.VectorByName['$NUMATSTRT'];
+  TimeVec := df.VectorByName['$INTERBEG'];
+  DthVec  := df.VectorByName['$DEATHS'];
+  WthDrwVec := df.VectorByName['$WITHDRAWN'];
+  NumVec := df.VectorByName['$NUMATSTRT'];
+
+  // Find initial total
+  for i := 1 to df.RowCount do
+  begin
+    Idx := GetIndex(i);
+    if ATotal[idx] = NA_INT then
+      ATotal[idx] := NumVec.AsInteger[i];
+  end;
+
   i := 2;
-  dths := dth.AsInteger[1];
-  counts := tot.AsInteger[1];
-  EstCounts[By.AsInteger[1]-st] := counts;
+  Idx := GetIndex(1);
+  ADeath[Idx] := DthVec.AsInteger[1];
+  SDeath[Idx] := ADeath[Idx];
+  AWithD[Idx] := WthDrwVec.AsInteger[1];
   while (true) do
   begin
-    while (IntVal.compare(i-1, i) = 0) do
+    while (i<=df.RowCount) and (TimeVec.compare(i-1, i) = 0) do
     begin
-      inc(dths, dth.AsInteger[i]);
-      EstCounts[By.AsInteger[i]-st] := tot.AsInteger[i];
-      inc(counts, tot.AsInteger[i]);
+      Idx := GetIndex(i);
+      ADeath[idx] := DthVec.AsInteger[i];
+      SDeath[Idx] := SDeath[Idx] + ADeath[Idx];
+      AWithD[Idx] := WthDrwVec.AsInteger[i];
       inc(i);
-      if i > df.RowCount then break;
     end;
 
-    pd := (dths / counts);
-    for j := 0 to Length(EstTotal)-1 do
-      if EstCounts[j] <> NA_INT then
-        EstTotal[j] := EstTotal[j] + (pd * EstCounts[j]);
+    Pd := SumDeath() / SumTotal();
+    for j := 0 to Length(ESum)-1 do
+    begin
+      ESum[j] := ESum[j] + (Pd * ATotal[j]);
+      if ADeath[j] <> NA_INT then
+        ATotal[j] := ATotal[j] - ADeath[j];
+      if AWithD[j] <> NA_INT then
+        ATotal[j] := ATotal[j] - AWithD[j];
+      ADeath[j] := NA_INT;
+      AWithD[j] := NA_INT;
+    end;
 
-    dths := 0;
-    counts := 0;
     if i > df.RowCount then break;
+    Idx := GetIndex(i);
+    ADeath[idx] := DthVec.AsInteger[i];
+    SDeath[Idx] := SDeath[Idx] + ADeath[Idx];
+    AWithD[Idx] := WthDrwVec.AsInteger[i];
+    inc(i);
   end;
+  j := 2;
+  xtab.InsertColumn(3);
+  xtab.Cell[4,1] := 'Expected<br>Cases';
+  for i := 0 to Length(ESum)-1 do
+  begin
+    if ESum[i] <> 0 then
+    begin
+      xtab.Cell[4,j] := Format(Fmts.EFmt, [ESum[i]]);
+      inc(j);
+    end;
+  end;
+
+  // Chi2 test
+  Pd := 0; // Reuse of Pd for Chi2 result.
+  j := 0; // Count of groups.
+  for i := 0 to Length(SDeath)-1 do
+    if SDeath[i] > 0 then
+    begin
+      Pd := Pd + (IntPower(SDeath[i] - ESum[i], 2) / ESum[i]);
+      inc(j);
+    end;
+
+
+  xTab.Footer := Format('<br>Log Rank test of equality of survivor function: Chi<sup>2</sup>(%d)=' + Fmts.EFmt +
+                        '  P= ' + Fmts.EFmt, [j-1, Pd, PCHI2(j-1, Pd)]);
+
+  Dths := 0;
+  for i := 0 to Length(SDeath)-1 do
+    if SDeath[i] > 0 then
+      inc(Dths, SDeath[i]);
+  Pd := 0;
+  For i := 2 to xTab.RowCount do
+    Pd := Pd + StrToFLoat(xTab.Cell[xTab.ColCount, i]);
+  Pd := Dths * Math.Log10(Pd / Dths);
+
+{  for i := 0 to Length(SDeath)-1 do
+    if SDeath[i] > 0 then
+    begin
+      Pd := Pd + (IntPower(SDeath[i] - ESum[i], 2) / ESum[i]);
+      inc(j);
+    end;
+                 }
+
+  xTab.Footer :=  xTab.Footer +
+                  Format('<br>Lihelihood-ratio test statistic of homogeneity  among groups Chi<sup>2</sup>(%d)=' + Fmts.EFmt +
+                         ' P= y.yyyy', [j-1, Pd, PCHI2(j-1, Pd)]);
 end;
 
 function TTables.OutTwoWayTable(const TwoWayTable: TTwoWayTable): TStatTable;
@@ -2949,9 +3065,6 @@ begin
 
   if Cmd.ParamExists['ADJ'] then
     tab.Footer := '<br>Survival proportion adjustment not implemented';
-
-  if Cmd.ParamExists['T'] then
-    tab.Footer := tab.Footer + '<br>LogRank test not implemeted.';
 
   // Headers.
   tab.Cell[2,1] := tf.LTHdr.IntVal;
