@@ -637,9 +637,10 @@ begin
     result := CreateLifeTable(dataframe, varnames, xtab);
     if Cmd.ParamExists['T'] then
       LTStats(result, xtab);
-    if Assigned(xtab) and (not Cmd.ParamExists['NT']) then
+    if Assigned(xtab) and (not Cmd.ParamExists['NT']) and
+       (not (Cmd.ParamExists['Q'])) then
       dm.CodeMaker.OutputTable(xtab, '');
-    if (not Cmd.ParamExists['NOLT']) then
+    if (not Cmd.ParamExists['NOLT']) and (not (Cmd.ParamExists['Q'])) then
       OutLifeTable(result);
     dm.Sendoutput();
   finally
@@ -773,11 +774,11 @@ end;
 procedure TTables.LTStats(dataframe: TEpiDataframe; xTab: TStatTable);
 var
   df: TEpiDataframe;
-  i, j, st, en, idx,
+  i, j, st, en, idx, ref,
   Dths, WthD, STotal: integer;
   ByVec, TimeVec, DthVec, WthDrwVec, NumVec: TEpiVector;
-  Pd: EpiFloat;
-  ESum: Array of EpiFloat;
+  Pd, V, X, Y: EpiFloat;
+  ESum, VHaz: Array of EpiFloat;
   ATotal, ADeath, AWithD, SDeath: Array of Integer;
   Varnames: TStrings;
   Fmts: TTableFormats;
@@ -837,8 +838,20 @@ begin
   en := ByVec.AsInteger[i];
   if (i <> df.RowCount) then inc(en);
 
+  if (st - en) = 0 then
+  begin
+    dm.Info('To few groups for lifetable statistics');
+    exit;
+  end;
+
+  if Cmd.ParamExists['REF'] then
+    Ref := (Cmd.ParamByName['REF'].AsInteger - st)
+  else
+    Ref := 0;
+
   // Intialize arrays based on stratas
   SetLength(ESum, (en - st)+1);
+  SetLength(VHaz, (en - st)+1);
   SetLength(ATotal, (en - st)+1);
   SetLength(SDeath, (en - st)+1);
   SetLength(ADeath, (en - st)+1);
@@ -884,10 +897,22 @@ begin
       inc(i);
     end;
 
-    Pd := SumDeath() / SumTotal();
+    // Calculate estimated and hazard ratio.
+    Dths := SumDeath();
+    STotal := SumTotal();
+    Pd := Dths / STotal;
     for j := 0 to Length(ESum)-1 do
     begin
+      if ATotal[j] = NA_INT then continue;
       ESum[j] := ESum[j] + (Pd * ATotal[j]);
+      if STotal > 1 then
+        VHaz[j] := VHaz[j] + (ATotal[j] * ATotal[ref] * Dths * (STotal - Dths)) /
+                   (IntPower(STotal, 2) * (STotal - 1));
+    end;
+
+    //Reset
+    for j := 0 to Length(ESum)-1 do
+    begin
       if ADeath[j] <> NA_INT then
         ATotal[j] := ATotal[j] - ADeath[j];
       if AWithD[j] <> NA_INT then
@@ -911,44 +936,84 @@ begin
     if ESum[i] <> 0 then
     begin
       xtab.Cell[4,j] := Format(Fmts.EFmt, [ESum[i]]);
+      dm.AddResult('$ECASE' + IntToStr(i+st), EpiTyFloat, ESum[i], 8,4);
       inc(j);
     end;
   end;
 
-  // Chi2 test
+  // Log-Rank: Chi2 test.
   Pd := 0; // Reuse of Pd for Chi2 result.
-  j := 0; // Count of groups.
+  en := 0; // Count of groups.
   for i := 0 to Length(SDeath)-1 do
     if SDeath[i] > 0 then
     begin
       Pd := Pd + (IntPower(SDeath[i] - ESum[i], 2) / ESum[i]);
-      inc(j);
+      inc(en);
     end;
+  xTab.Footer := Format('<br>Log Rank test of equality of survivor function: Chi<sup>2</sup>(%d)=', [en-1]) +
+                 EpiFormat(Pd,'%7.3f ') + '  P= ' +
+                 EpiFormat(PCHI2(en-1, Pd),'%7.4f ');
+  Dm.AddResult('$LRANKCHI2', EpiTyFloat, Pd, 7, 3);
+  Dm.AddResult('$LRANKP', EpiTyFloat, PCHI2(en-1, Pd), 7, 3);
 
-
-  xTab.Footer := Format('<br>Log Rank test of equality of survivor function: Chi<sup>2</sup>(%d)=' + Fmts.EFmt +
-                        '  P= ' + Fmts.EFmt, [j-1, Pd, PCHI2(j-1, Pd)]);
-
+  // Log-likelihood: Chi2 test.                      
   Dths := 0;
   for i := 0 to Length(SDeath)-1 do
     if SDeath[i] > 0 then
-      inc(Dths, SDeath[i]);
+      inc(Dths, SDeath[i]);      // Sum of deaths
   Pd := 0;
   For i := 2 to xTab.RowCount do
-    Pd := Pd + StrToFLoat(xTab.Cell[xTab.ColCount, i]);
-  Pd := Dths * Math.Log10(Pd / Dths);
+    Pd := Pd + StrToFLoat(xTab.Cell[xTab.ColCount, i]);   // Sum of times
+  Pd := Dths * System.Ln(Pd / Dths);
 
-{  for i := 0 to Length(SDeath)-1 do
+  j := 2; // Index of first group.
+  for i := 0 to Length(SDeath)-1 do
     if SDeath[i] > 0 then
     begin
-      Pd := Pd + (IntPower(SDeath[i] - ESum[i], 2) / ESum[i]);
+      Pd := Pd - SDeath[i] * System.Ln(StrToFLoat(xTab.Cell[xTab.ColCount, j]) / SDeath[i]);
       inc(j);
     end;
-                 }
+  Pd := Pd * 2;
 
-  xTab.Footer :=  xTab.Footer +
-                  Format('<br>Lihelihood-ratio test statistic of homogeneity  among groups Chi<sup>2</sup>(%d)=' + Fmts.EFmt +
-                         ' P= y.yyyy', [j-1, Pd, PCHI2(j-1, Pd)]);
+  xTab.Footer := xTab.Footer +
+                 Format('<br>Likelihood-ratio test statistic of homogeneity  among groups Chi<sup>2</sup>(%d)=', [en-1]) +
+                 EpiFormat(Pd,'%7.3f ') + '  P= ' +
+                 EpiFormat(PCHI2(en-1, Pd),'%7.4f ');
+  Dm.AddResult('$LLIKECHI2', EpiTyFloat, Pd, 7, 3);
+  Dm.AddResult('$LLIKEP', EpiTyFloat, PCHI2(en-1, Pd), 7, 3);
+
+  j := 2;
+  if (Cmd.ParamExists['HAZ']) then
+  begin
+    xtab.AddColumn;
+    xtab.Cell[xTab.ColCount,1] := 'Hazard ratio';
+    idx := 0;
+    if not Cmd.ParamExists['NOCI'] then
+    begin
+      inc(idx);
+      xTab.AddColumn;
+      xtab.Cell[xTab.ColCount,1] := '<br>' + Fmts.CIHdr;
+    end;
+    for i := 0 to Length(ESum)-1 do
+    begin
+      if ESum[i] <> 0 then
+      begin
+        X := (SDeath[i] - ESum[i]) / VHaz[i];
+        Y := 1.96 / (Sqrt(VHaz[i]));
+        xtab.Cell[xTab.ColCount-idx,j] := Format(Fmts.EFmt, [Exp(X)]);
+        if not Cmd.ParamExists['NOCI'] then
+          xtab.Cell[xTab.ColCount,j] := EpiCIFormat(0, Exp(X-Y), Exp(X+Y), Fmts.EFmt, Fmts.CIFmt,'',0);
+        if i = ref then
+        begin
+          xtab.Cell[xTab.ColCount-idx,j] := 'Ref.';
+          if not Cmd.ParamExists['NOCI'] then
+            xtab.Cell[xTab.ColCount,j] := ' ';
+        end;
+        inc(j);
+      end;
+    end;
+  end;
+
 end;
 
 function TTables.OutTwoWayTable(const TwoWayTable: TTwoWayTable): TStatTable;
