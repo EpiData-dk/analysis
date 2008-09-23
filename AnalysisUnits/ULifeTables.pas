@@ -690,7 +690,7 @@ begin
   Dm.AddResult('$LRANKCHI2', EpiTyFloat, Pd, 7, 3);
   Dm.AddResult('$LRANKP', EpiTyFloat, PCHI2(en-1, Pd), 7, 3);
 
-  // Log-likelihood: Chi2 test.                      
+  // Log-likelihood: Chi2 test.
   Dths := 0;
   for i := 0 to Length(SDeath)-1 do
     if SDeath[i] > 0 then
@@ -710,8 +710,8 @@ begin
   Pd := Pd * 2;
 
   xTab.Footer := xTab.Footer +
-                 Format('<br>Likelihood-ratio test statistic of homogeneity  among groups Chi<sup>2</sup>(%d)=', [en-1]) +
-                 EpiFormat(Pd,'%7.3f ') + '  P= ' +
+                 Format('<br>LR test of homogeneity among groups Chi<sup>2</sup>(%d)=', [en-1]) +
+                 EpiFormat(Pd,'%7.3f ') + '  p= ' +
                  EpiFormat(PCHI2(en-1, Pd),'%7.4f ');
   Dm.AddResult('$LLIKECHI2', EpiTyFloat, Pd, 7, 3);
   Dm.AddResult('$LLIKEP', EpiTyFloat, PCHI2(en-1, Pd), 7, 3);
@@ -720,7 +720,7 @@ begin
   if (Cmd.ParamExists['HAZ']) then
   begin
     xtab.AddColumn;
-    xtab.Cell[xTab.ColCount,1] := 'Hazard ratio';
+    xtab.Cell[xTab.ColCount,1] := 'Hazard<br>Ratio';
     idx := 0;
     if not Cmd.ParamExists['NOCI'] then
     begin
@@ -804,7 +804,7 @@ begin
 
   s := 0;
   xTab.AddColumn;
-  xTab.Cell[xTab.ColCount, 1] := 'P' + IntToStr(Trunc(Percentile*100));
+  xTab.Cell[xTab.ColCount, 1] := 'Time<br>S=0.' + IntToStr(Trunc(Percentile*100));
 
   if Cmd.ParamExists['REF'] then
     Ref := (Cmd.ParamByName['REF'].AsInteger - st)
@@ -822,7 +822,7 @@ begin
   begin
     ByVec := Dataframe.VectorByName[Cmd.ParamByName['BY'].AsString];
     xTab.AddColumn;
-    xTab.Cell[xTAb.ColCount, 1] := 'Diff.<br>to ref.';
+    xTab.Cell[xTAb.ColCount, 1] := 'Time<br>Diff.';
     inc(s);
     if not Cmd.ParamExists['NOCI'] then
     begin
@@ -887,7 +887,7 @@ begin
     if Dummy < 0 then
     begin
       xTab.Cell[xTab.ColCount - S, j] := '';
-      xTab.Footer := xTab.Footer + '<br>No valid time for P' + IntToStr(Trunc(Percentile*100));
+      xTab.Footer := xTab.Footer + '<br>No valid time for S(time)=0.' + IntToStr(Trunc(Percentile*100));
       if Cmd.ParamExists['BY'] then
         xTab.Footer := xTab.Footer + ' with ' + ByVec.GetVariableLabel(Cmd.ParameterList) + '=' +
         ByVec.GetValueLabel(ByVec.AsString[idx-1], Cmd.ParameterList);
@@ -915,7 +915,8 @@ begin
         if dummy < 0 then
           xTab.Cell[xTab.ColCount, j] := ''
         else
-          xTab.Cell[xTab.ColCount, j] := EpiCIFormat(0, (M-MRef)-(1.95*StdErr), (M-MRef)+(1.95*StdErr), Fmts.EFmt, Fmts.CIFmt, '', 0);
+          if xTab.Cell[xTab.ColCount-1, j] <> 'Ref.' then
+            xTab.Cell[xTab.ColCount, j] := EpiCIFormat(0, (M-MRef)-(1.95*StdErr), (M-MRef)+(1.95*StdErr), Fmts.EFmt, Fmts.CIFmt, '', 0);
       end;
       inc(j);
     end;

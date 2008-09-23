@@ -1397,6 +1397,7 @@ begin
    od.FileName:='';
    od.Filter:= EpiDataFilter;
    od.FilterIndex := 1;
+   od.InitialDir := GetCurrentDir ;
    if not od.Execute then exit;
  end;
  if fn='' then
