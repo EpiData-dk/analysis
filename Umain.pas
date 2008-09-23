@@ -543,7 +543,7 @@ uses ubrowse2,{UFrameDS, }SMUtils,UcmdProcessor, uabout, {UToolWin, UVarWin,UCmd
 PreviewForm, uhtmlutils,Clipbrd, Editor, UEpiDlg, UtableDlg, UGraphDlg, cFileUtils, UCommands,
 UanaToken, OPConvert, UHelp, UGraph,
 // Units to initialize
-UIniFile, UDocument, ULinearRegression, UTables, UDos, UAggregate, UpdateBrowse;
+UIniFile, UDocument, ULinearRegression, UTables, UDos, UAggregate, UpdateBrowse, ULifeTables;
 
 var
   SearchOptions: TFrSearchOptions;
@@ -1001,6 +1001,7 @@ begin
   OInifile := TIniFile.Create();
   OLinearRegression := TLinearRegression.Create();
   OTables := TTables.Create();
+  OLifeTables := TLifeTables.Create();
   ODos := TDos.Create();
   OAggregate := TAggregate.Create();
   OBrowse := TBrowse.create();

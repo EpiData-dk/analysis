@@ -253,7 +253,7 @@ uses menus,SMUtils,{UFrameDS,{ubrowse,}ubrowse2,uDateUtils,UVectorVar,UFileDir,U
      // Seperated analysis units: (Added june 2004, Torsten Christiansen)
      UTables, UContinous, UAggregate, Umain, uabout, UVariables,
      Udocument, ULinearRegression, UDos, Math, StrUtils, Editor, UHelp,
-     DateUtils, GeneralUtils;
+     DateUtils, GeneralUtils, ULifeTables;
 
 {$R *.DFM}
 
@@ -442,7 +442,7 @@ var
 begin
   // Dataframe might NOT be initialized at this point. Just exit
   if dataframe = nil then exit;
-  if cmdid in [opSelect, opLet, opSort] then
+  if (cmdid in [opSelect, opLet, opSort]) then
     varnames := OUpdate.CurrentVarnames
   else begin
     varnames := TStringList.Create();
@@ -2863,7 +2863,7 @@ begin
     if not dm.CheckDataOpen() then exit; //checkdataopen();
     CheckVariableNo(Varnames,2);
     missing := TStringList.Create();
-    missing.Add(Varnames[0]);
+    Missing.AddStrings(Varnames);
 
   // Uncomment when XLAB needed in scatter!
 {    if (cmd.ParamByName['XLABEL'] <> nil) then
@@ -3252,7 +3252,7 @@ begin
 
     if df.SelectedRowCount = 0 then error('No Data', [], 103005);
 
-    ltdf := OTables.DoLifeTables(df, varnames, cmd);
+    ltdf := OLifeTables.DoLifeTables(df, varnames, cmd);
 
     if not Cmd.ParamExists['NG'] then
     begin

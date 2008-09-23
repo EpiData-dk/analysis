@@ -221,7 +221,6 @@ object UpdateForm: TUpdateForm
     Height = 592
     Align = alClient
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
-    PopupMenu = aMainForm.DESCRIBESUBMENU
     TabOrder = 1
     OnClick = DataGridClick
     OnDblClick = DataGridDblClick

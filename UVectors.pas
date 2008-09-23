@@ -3098,7 +3098,7 @@ begin
 end;
 function TEpiIntVector.compare(i, j: integer): integer;
 begin
-  result:= FData[i-1]- Fdata[J-1];
+  result:= FData[i-1] - Fdata[J-1];
 end;
 
 procedure TEpiIntVector.AssignData(source: TEPiVector);

@@ -386,7 +386,7 @@ procedure TStatTable.DeleteColumn(index:integer);
 var
   i:integer;
 begin
-  for i:=1 to RowCount do
+  for i:=RowCount downto 1 do
   begin
     fdata.Delete((i-1)*colcount+(index-1));
   end;

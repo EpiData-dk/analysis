@@ -163,9 +163,11 @@ end;
 function TUpdate.UpdateBrowseWindow(df: TEpiDataFrame): boolean;
 begin
   if not Assigned(OUpdateForm) then exit;
-  if not OUpdateForm.FBrowse then exit; 
+  if not OUpdateForm.FBrowse then exit;
+  if Assigned(fVarnames) then FreeAndNil(fVarnames);
+  fVarnames := df.GetVectorNames(nil);
   OUpdateForm.VectorList := df.Vectors;
-  result := true;  
+  result := true;
 end;
 
 function TUpdate.BrowseHasFocus(): boolean;

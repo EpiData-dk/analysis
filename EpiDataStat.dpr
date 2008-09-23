@@ -1,7 +1,6 @@
 program EpiDataStat;
 
 uses
-//  FastMM4,  // Memory leak manager.
   Forms,
   Windows,
   SysUtils,
@@ -33,7 +32,7 @@ uses
   Regcomp in 'analysisunits\regress\regcomp.pas' {regression},
   Ustatfunctions in 'AnalysisUnits\Ustatfunctions.pas',
   Udocument in 'AnalysisUnits\Udocument.pas',
-  StyleUn in 'Thtml\StyleUn.pas',              
+  StyleUn in 'Thtml\StyleUn.pas',
   URLSubs in 'Thtml\URLSubs.pas',
   vwPrint in 'Thtml\vwPrint.pas',
   DitherUnit in 'Thtml\DitherUnit.pas',
@@ -96,7 +95,8 @@ uses
   uhtmlutils in 'uhtmlutils.pas',
   Ubrowse2 in 'DataBrowser\Ubrowse2.pas' {FBrowse2},
   UEpiGrid in 'DataBrowser\UEpiGrid.pas',
-  UpdateBrowse in 'DataBrowser\UpdateBrowse.pas' {UpdateForm};
+  UpdateBrowse in 'DataBrowser\UpdateBrowse.pas' {UpdateForm},
+  ULifeTables in 'AnalysisUnits\ULifeTables.pas';
 
 {$R *.RES}
 
@@ -122,8 +122,8 @@ begin
 	  Application.Title := 'EpiData Analysis';
 	  Application.HelpFile := 'START.HTM';
 	  Application.CreateForm(TaMainForm, aMainForm);
-    Application.CreateForm(TPasswordForm, PasswordForm);
-    Application.Run;
+  Application.CreateForm(TPasswordForm, PasswordForm);
+  Application.Run;
   end;
 end.
 
