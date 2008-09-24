@@ -22,9 +22,8 @@ interface
 uses
   SysUtils,
   Classes
-  {$IFDEF HANDLEMISSING}
 ,ansDatatypes, UEpiDataTypes
-{$ENDIF};
+;
 
 
 
@@ -40,7 +39,7 @@ type
   end;
 
 
-  EpiDate = longint;
+//  EpiDate = longint;
   TEpiDOW = (EpiSunday, EpiMonday, EpiTuesday, EpiWednesday,
             EpiThursday, EpiFriday, EpiSaturday);
   TEpiDateFormat = (  {Date string formats..}

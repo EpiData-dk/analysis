@@ -478,7 +478,8 @@ public
    Destructor Destroy; override;
    function ToStattable(varnames: TStrings): TStatTable;
    procedure SendToOutput(Varnames: TStrings);
-   function PrepareDataframe(var CloneVectors: TStrings; MissingVectors: TStrings; Datatypes: TEpiDatatypes = []): TepiDataframe;
+   function PrepareDataframe(var CloneVectors: TStrings; MissingVectors: TStrings; Datatypes: TEpiDatatypes = []): TepiDataframe; overload;
+   function PrepareDataframe(MissingNames: String): TepiDataframe; overload;
    function ExpandDataframe(GroupVarnames: TStrings; aBegin: variant; aEnd: variant): TEpiDataframe;
    function ConvertVector(Name: string; DataType: word; Const txt: string): boolean;
    function DropVectors(varnames: Tstrings): boolean;
@@ -2254,6 +2255,19 @@ begin
   end;
 end;
 
+function TEpiDataFrame.PrepareDataframe(MissingNames: String): TEpiDataFrame;
+var
+  Varnames: TStrings;
+  Missing: TStrings;
+begin
+  Missing := TStringList.Create();
+  Missing.CommaText := MissingNames;
+  Varnames := nil;
+  result := PrepareDataframe(Varnames, Missing);
+  FreeAndNil(Varnames);
+  FreeAndNil(Missing);
+end;
+
 function TEpiDataframe.ExpandDataframe(GroupVarnames: TStrings; aBegin: variant; aEnd: variant): TEpiDataframe;
 var
   i, j, k, d, diff, adddiff, rc: integer;
@@ -3764,10 +3778,10 @@ end;
 
 procedure TEpiDateVector.SetAsInteger(const index: Integer; const Value: EpiInt);
 begin
- if EpiIsValidDate(value) then
-   AsDate[Index] := Value
- else
-   AsDate[Index] := NA_DATE
+  if EpiIsValidDate(value) then
+    AsDate[Index] := Value
+  else
+    AsDate[Index] := NA_DATE;
 end;
 
 procedure TEpiDateVector.SetAsString(const index: Integer;const Value: EpiString);

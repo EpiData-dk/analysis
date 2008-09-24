@@ -185,36 +185,49 @@ begin
     else
       DeadInd := 1;
 
+    // Define posible exit value.
+    ExitTime := -MaxInt;
+    if Cmd.ParamExists['EXIT'] then
+    begin
+      V1 := Df.FindVector(Cmd.ParamByName['$TVAR'].Value);
+      V2 := Df.FindVector(LocalVarnames[0]);
+      s := Cmd.ParamByName['EXIT'].AsString;
+      if Trim(s) = '' then
+      begin
+        dm.Info('EXIT value not specified - ignoring');
+        s := IntToStr(-MaxInt)
+      end;
+      if MibIsDate(s, ftInteger) then
+        ExitTime := EpiStrToDatefmt(s, '%DMY')
+      else
+        ExitTime := StrToFloat(s);
+      s := '';
+    end;
+
     // Correct timevar if needed by /MT
     if Cmd.ParamExists['MT'] then
     begin
-      V1 := Df.FindVector(Cmd.ParamByName['MT'].Value);
+      V1 := Df.FindVector(Cmd.ParamByName['$TVAR'].Value);
       V2 := Df.FindVector(LocalVarnames[0]);
-      if Cmd.ParamExists['EXIT'] then
-      begin
-        s := Cmd.ParamByName['EXIT'].AsString;
-        if MibIsDate(s, ftInteger) then
-          ExitTime := EpiStrToDatefmt(s, '%DMY')
-        else
-          ExitTime := Cmd.ParamByName['EXIT'].AsFloat;
-        s := '';
-      end else begin
-        ExitTime := -MaxInt;
+      if ExitTime = -MaxInt then
         for i := 1 to Df.RowCount do
           if not (V1.IsMissing[i] or V1.IsMissingValue[i]) then
             ExitTime := Math.Max(ExitTime, V1.AsFloat[i]);
-      end;
       for i := 1 to Df.RowCount do
       begin
         if (V1.IsMissing[i] or V1.IsMissingValue[i]) then
           V1.AsFloat[i] := ExitTime;
+      end;
+    end;
+
+    if ExitTime <> -MaxInt then
+      for i := 1 to Df.RowCount do
         if (V1.AsFloat[i] > ExitTime) then
         begin
           V1.AsFloat[i] := ExitTime;
           V2.AsInteger[i] := DeadInd +1;
         end;
-      end;
-    end;
+
 
     // Varnames Layout:     Range variable      |   Start/End variables
     //  ===========================================================
@@ -232,13 +245,40 @@ begin
       df.Vectors.Add(RangeBeg);
       V1 := df.VectorByName[LocalVarnames[1]];
       V2 := df.VectorByName[LocalVarnames[2]];
+      j := 0;
       for i := 1 to df.RowCount do
+      begin
+        if (V2.AsFloat[i] - V1.AsFloat[i]) < 0 then
+        begin
+          if j < 10 then
+            dm.Info('Warning: Negative interval %s=%s and %s=%s - observation excluded', [v1.Name, v1.AsString[i], v2.Name, v2.AsString[i]]);
+          inc(j);
+        end;
         RangeBeg.AsFloat[i] := V2.AsFloat[i] - V1.AsFloat[i];
+      end;
       LocalVarnames.Delete(2);
       LocalVarnames.Delete(1);
       LocalVarnames.Insert(1, RangeBeg.Name);
-    end else
+    end else begin
       RangeBeg := df.VectorByName[LocalVarnames[1]];
+      j := 0;
+      for i := 1 to df.RowCount do
+      begin
+        if (RangeBeg.AsFloat[i] < 0) then
+        begin
+          if (j < 10) then
+            dm.Info('Warning: Negative time = %s  - observation excluded', [RangeBeg.AsString[i]]);
+          inc(j);
+          RangeBeg.IsMissing[i] := true;
+        end;
+      end;
+    end;
+
+    if j > 0 then
+      dm.Info('%d obervations excluded due to negative time', [j]);
+
+    df := df.PrepareDataframe(RangeBeg.Name);
+    RangeBeg := df.VectorByName[LocalVarnames[1]];
 
     // =============================
     // = Find intervals.
@@ -264,6 +304,8 @@ begin
       begin
         IvBeg.AsInteger[i] := ((RangeBeg.AsInteger[i] div j) * j);
         IvEnd.AsInteger[i] := ((RangeBeg.AsInteger[i] div j) * j) + j;
+        if j > 1 then
+          IvEnd.AsInteger[i] := IvEnd.AsInteger[i] - 1;
       end;
     end else begin
       IntervalNums := TStringList.Create;
@@ -847,20 +889,29 @@ begin
     // Calculate Reference value.
     i := 1;
     st := 1;
-    while ByVec.AsInteger[st] <> Ref do inc(st);
-    for i := St+1 to Dataframe.RowCount do
-      if ByVec.compare(i-1,i) <> 0 then break;
-    En := i-1;
-    Dummy := 0;
-    if NEffVec.compare(St, En) = 0 then
-      Idx := PercentileIndex(NEffVec.Length, Percentile, Dummy) + St
-    else
-      Idx := FindCensIndex(Dummy);
-    if (Dummy > 0) and (Idx >= St) and (Idx+1 <= En) then
-      MRef := (TimeVec.AsInteger[idx]+TimeVec.AsInteger[idx+1])/2
-    else
-      MRef := TimeVec.AsInteger[idx];
-    StdErrRef := System.Sqrt((Percentile * (1 - Percentile)) / NEffVec.AsInteger[Idx]) * StdErrFactor();
+    MRef := 0;
+    dec(ref);
+    repeat
+      inc(ref);
+      while ByVec.AsInteger[st] <> Ref do inc(st);
+      for i := St+1 to Dataframe.RowCount do
+        if ByVec.compare(i-1,i) <> 0 then break;
+      En := i-1;
+      Dummy := 0;
+      if NEffVec.compare(St, En) = 0 then
+        Idx := PercentileIndex(NEffVec.Length, Percentile, Dummy) + St
+      else
+        Idx := FindCensIndex(Dummy);
+      if (Dummy > 0) and (Idx >= St) and (Idx+1 <= En) then
+        MRef := (TimeVec.AsInteger[idx]+TimeVec.AsInteger[idx+1])/2
+      else if Idx <= en then
+        MRef := TimeVec.AsInteger[idx];
+      if Idx <= en then
+       StdErrRef := System.Sqrt((Percentile * (1 - Percentile)) / NEffVec.AsInteger[Idx]) * StdErrFactor();
+      st := en + 1;
+      if Cmd.ParamExists['REF'] then
+        break
+    until (MRef > 0) or (st > Dataframe.RowCount);
   end;
 
   St := 1;
@@ -904,24 +955,43 @@ begin
 
     if cmd.ParamExists['BY'] then
     begin
-      if ByVec.AsInteger[idx] = Ref then
-        xTab.Cell[Xtab.ColCount - s + 2, j] := 'Ref.'
-      else
-        xTab.Cell[Xtab.ColCount - s + 2, j] := Epiformat(M - Mref, Fmts.EFmt);
-
-      if not Cmd.ParamExists['NOCI'] then
+      if Dummy >= 0 then
       begin
-        StdErr := System.Sqrt(StdErr*StdErr + StdErrRef*StdErrRef);
-        if dummy < 0 then
-          xTab.Cell[xTab.ColCount, j] := ''
-        else
-          if xTab.Cell[xTab.ColCount-1, j] <> 'Ref.' then
-            xTab.Cell[xTab.ColCount, j] := EpiCIFormat(0, (M-MRef)-(1.95*StdErr), (M-MRef)+(1.95*StdErr), Fmts.EFmt, Fmts.CIFmt, '', 0);
+        if Cmd.ParamExists['NOCI'] then
+        begin
+          if ByVec.AsInteger[idx] = Ref then
+            xTab.Cell[Xtab.ColCount - s + 1, j] := 'Ref.'
+          else
+            xTab.Cell[Xtab.ColCount - s + 1, j] := Epiformat(M - Mref, Fmts.EFmt);
+        end else begin
+          if ByVec.AsInteger[idx] = Ref then
+            xTab.Cell[Xtab.ColCount - s + 2, j] := 'Ref.'
+          else
+            xTab.Cell[Xtab.ColCount - s + 2, j] := Epiformat(M - Mref, Fmts.EFmt);
+        end;
+
+        if not Cmd.ParamExists['NOCI'] then
+        begin
+          StdErr := System.Sqrt(StdErr*StdErr + StdErrRef*StdErrRef);
+          if dummy < 0 then
+            xTab.Cell[xTab.ColCount, j] := ''
+          else
+            if xTab.Cell[xTab.ColCount-1, j] <> 'Ref.' then
+              xTab.Cell[xTab.ColCount, j] := EpiCIFormat(0, (M-MRef)-(1.95*StdErr), (M-MRef)+(1.95*StdErr), Fmts.EFmt, Fmts.CIFmt, '', 0);
+        end;
       end;
       inc(j);
     end;
     St := En + 1;
     if En >= Dataframe.RowCount then break;
+  end;
+  for i := 2 to xTab.RowCount do
+    if Trim(xTab.Cell[xTab.ColCount-S, i]) <> '' then break;
+  if i > xTab.RowCount then
+  begin
+    // There are no entrie in the table.
+    for i := 0 to s do
+      xtab.DeleteColumn(xTab.ColCount);
   end;
 end;
 

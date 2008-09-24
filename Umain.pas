@@ -1869,10 +1869,10 @@ procedure TaMainForm.AcViewhtmlFileExecute(Sender: TObject);
 var
  fn, oldcss : string;
 begin
- if GetOpenfilename(fn,EpiLogFileFilter) then
- begin
+  if GetOpenfilename(fn,EpiLogFileFilter) then
+  begin
     Viewer.LoadFromFile(fn)
- end;
+  end;
 end;
 
 procedure TaMainForm.EditCopyHTMLExecute(Sender: TObject);

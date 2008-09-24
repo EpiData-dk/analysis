@@ -258,25 +258,25 @@ function GetOpenFileName(var pfilename: string; const pFilter:string):boolean;
 var
 sd : TOpenDialog;
 begin
-result:=false;
-sd := TOpenDialog.Create(application) ;
-try
-{   if pExt='' then
-      SD.DefaultExt:='txt'
-   else
-      SD.DefaultExt:=pExt;}
-   sd.FileName:=pFilename;
-   sd.Filter:=pFilter;
-   if sd.Filter='' then SD.Filter:='Text files (*.txt)|*.TXT|All files|*.*'
-   else SD.Filter:=SD.Filter+'|All files|*.*';
-   SD.Options:=[ofHideReadOnly,ofNoChangeDir, ofPathMustExist, ofFileMustExist,ofEnableSizing];
-   SD.Title:='Open...';
-   result:= sd.execute;
-   if result then pfilename:=sd.Filename;
-finally
- sd.free;
-end;
-
+  result:=false;
+  sd := TOpenDialog.Create(application) ;
+  try
+  {   if pExt='' then
+        SD.DefaultExt:='txt'
+     else
+        SD.DefaultExt:=pExt;}
+     sd.FileName:=pFilename;
+     sd.Filter:=pFilter;
+     if sd.Filter='' then SD.Filter:='Text files (*.txt)|*.TXT|All files|*.*'
+     else SD.Filter:=SD.Filter+'|All files|*.*';
+     SD.Options:=[ofHideReadOnly,ofNoChangeDir, ofPathMustExist, ofFileMustExist,ofEnableSizing];
+     SD.Title:='Open...';
+     SD.InitialDir := GetCurrentDir;
+     result:= sd.execute;
+     if result then pfilename:=sd.Filename;
+  finally
+   sd.free;
+  end;
 end;
 
 

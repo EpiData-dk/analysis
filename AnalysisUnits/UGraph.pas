@@ -487,16 +487,16 @@ procedure Tgraph.OutputNCases(const chart: TChart; N : EpiInt);
 var
   tool: TAnnotationTool;
 begin
-tool := TAnnotationTool.Create(chart);
-    chart.Tools.Add(tool);
-    tool.Text := 'N=' + inttostr(N);
-    tool.Shape.CustomPosition := true;
-    tool.Shape.Left := 15;
-    tool.Shape.Top := 15;
-    tool.Shape.Shadow.VertSize := 0;
-    tool.Shape.Shadow.HorizSize := 0;
-    tool.Shape.Frame.Visible := false;
-    dm.AddResult('$Count', EpiTyInteger, n, 5, 0);
+  tool := TAnnotationTool.Create(chart);
+  chart.Tools.Add(tool);
+  tool.Text := 'N=' + inttostr(N);
+  tool.Shape.CustomPosition := true;
+  tool.Shape.Left := 15;
+  tool.Shape.Top := 15;
+  tool.Shape.Shadow.VertSize := 0;
+  tool.Shape.Shadow.HorizSize := 0;
+  tool.Shape.Frame.Visible := false;
+  dm.AddResult('$Count', EpiTyInteger, n, 5, 0);
 end;
 
 function TGRaph.GraphTable(XVar: TEpiVector; YVars: TEpiVectors): TStatTable;
@@ -3500,7 +3500,7 @@ var
     LineSeries.Title := ZVec.GetValueLabel(ZVec.AsString[i+1], Parameters);
     LineSeries.Stairs := true;
     LineSeries.Color := GetGraphColour(j);
-    LineSeries.AddXY(0, 100);
+    LineSeries.AddXY(0, 1);
     if (not Parameters.VarExists['NOCI']) then
     begin
       CandleSeries := TCandleSeries.Create(Result);
@@ -3518,6 +3518,9 @@ begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   try
     result := CreateStandardChart();
+    result.LeftAxis.Automatic := false;
+    result.LeftAxis.Minimum := 0;
+    result.LeftAxis.Maximum := 1;
 
     XVec := Dataframe.VectorByName['$INTERBEG'];
     TVec := DataFrame.VectorByName['$PRSURV'];
@@ -3535,7 +3538,7 @@ begin
     if Parameters.VarExists['BY'] then
       result.Title.Caption := Result.Title.Caption + ' by ' + ZVec.GetVariableLabel(Parameters);
 
-    Result.LeftAxis.Title.Caption := 'Survival (%)';
+    Result.LeftAxis.Title.Caption := 'Survival';
     Result.BottomAxis.Title.Caption := 'Time ' ; // TODO: XVec.GetVariableLabel(Parameters);
 
     if (not Parameters.VarExists['NOCI']) then
@@ -3553,23 +3556,24 @@ begin
 
       if TVec.AsFloat[i] < 1 then
       begin
-        LineSeries.AddXY(XVec.AsInteger[i], YVec.AsFloat[i]*100);
+        LineSeries.AddXY(XVec.AsInteger[i], YVec.AsFloat[i]);
         if (not Parameters.VarExists['NOCI']) then
-          CandleSeries.AddOHLC(XVec.AsInteger[i], (YVec.AsFloat[i]*100)-0.15, CIHI.AsFloat[i]*100, CILO.AsFloat[i]*100, (YVec.AsFloat[i]*100)+0.15)
+          CandleSeries.AddOHLC(XVec.AsInteger[i], (YVec.AsFloat[i])-0.015, CIHI.AsFloat[i], CILO.AsFloat[i], (YVec.AsFloat[i])+0.015)
       end;
 
       if (i < DataFrame.RowCount) and (ZVec.compare(i, i+1) <> 0) then
       begin
         LineSeries.ParentChart := result;
         // Extra point to end line as horisontal line, if last point is marked "censored"
-        LineSeries.AddXY(XVec.AsInteger[i], YVec.AsFloat[i]*100);
+        LineSeries.AddXY(XVec.AsInteger[i], YVec.AsFloat[i]);
         if (not Parameters.VarExists['NOCI']) then
           CandleSeries.ParentChart := result;
         NewSeries();
       end;
     end;
-        // Extra point to end line as horisontal line, if last point is marked "censored"
-    LineSeries.AddXY(XVec.AsInteger[i-1], YVec.AsFloat[i-1]*100);
+
+    // Extra point to end line as horisontal line, if last point is marked "censored"
+    LineSeries.AddXY(XVec.AsInteger[i-1], YVec.AsFloat[i-1]);
     LineSeries.ParentChart := result;
     if (not Parameters.VarExists['NOCI']) then
       CandleSeries.ParentChart := result;

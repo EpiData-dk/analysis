@@ -3216,19 +3216,33 @@ begin
     MaxList := TStringList.Create();
     MaxList.AddStrings(Varnames);
 
+    Cmd.ParameterList.AddVar('$TVAR', '');
+    if Cmd.ParamExists['EXIT'] then
+    begin
+      if Varnames.Count = 3 then
+        Cmd.ParamByName['$TVAR'].Value := MissingList[2]
+      else
+        Cmd.ParamByName['$TVAR'].Value := MissingList[1];
+    end;
+
     if Cmd.ParamExists['MT'] then
     begin
       // Always include Timevar1 if two timevars present. Hence delete var2
       if varnames.Count = 3 then
       begin
-        Cmd.ParamByName['MT'].Value := MissingList[2];
+        Cmd.ParamByName['$TVAR'].Value := MissingList[2];
         MissingList.Delete(2);
         MaxList.Delete(2);
       end else begin
-        Cmd.ParamByName['MT'].Value := MissingList[1];
+        Cmd.ParamByName['$TVAR'].Value := MissingList[1];
         MissingList.Delete(1);
         MaxList.Delete(1);
       end;
+    end;
+
+    if Cmd.ParamExists['EXIT'] then
+    begin
+
     end;
 
     if Cmd.ParamExists['BY'] then

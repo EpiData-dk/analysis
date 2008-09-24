@@ -41,6 +41,7 @@ type
  EpiString=string;
  EpiByte =byte;
 // EpiDate=Tdatetime; now defined in udateutils
+ EpiDate = integer;
 
  TTestRecord = record
    FileName: string;
