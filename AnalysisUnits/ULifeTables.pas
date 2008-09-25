@@ -57,6 +57,7 @@ begin
     if Cmd.ParamExists['T'] then
       Stats(result, xtab);
     Percentiles(result, xtab);
+    Times(result, xtab);
 
     if Assigned(xtab) and (not Cmd.ParamExists['NT']) and
        (not (Cmd.ParamExists['Q'])) then
@@ -373,6 +374,8 @@ begin
       ByV := AggDF.FindVector(Cmd.ParamByName['BY'].AsString);
     end else begin
       ByV := TEpiIntVector.Create('$BY', AggDF.RowCount);
+      For i := 1 to ByV.Length do
+        ByV.AsInteger[i] := 1;
     end;
 
     AggDF.Sort(s + LocalVarnames[1] + ',' + LocalVarnames[0]);
@@ -814,6 +817,7 @@ var
   Idx, i, j, s, St, En, Ref: Integer;
   Dummy, M, MRef, StdErr, StdErrRef: EpiFloat;
   Fmts: TTableFormats;
+  str: string;
 
   function FindCensIndex(var Factor: EpiFloat): integer;
   var
@@ -848,11 +852,6 @@ begin
   xTab.AddColumn;
   xTab.Cell[xTab.ColCount, 1] := 'Time<br>S=0.' + IntToStr(Trunc(Percentile*100));
 
-  if Cmd.ParamExists['REF'] then
-    Ref := (Cmd.ParamByName['REF'].AsInteger - st)
-  else
-    Ref := 0;
-
   if not Cmd.ParamExists['NOCI'] then
   begin
     xTab.AddColumn;
@@ -876,7 +875,7 @@ begin
     ByVec := TEpiIntVector.Create('$BY', Dataframe.RowCount);
 
   if Cmd.ParamExists['REF'] then
-    Ref := (Cmd.ParamByName['REF'].AsInteger - st)
+    Ref := (Cmd.ParamByName['REF'].AsInteger)
   else
     Ref := ByVec.AsInteger[1];
 
@@ -886,7 +885,7 @@ begin
 
   if Cmd.ParamExists['BY'] then
   begin
-    // Calculate Reference value.
+    // Find and calculate Reference value.
     i := 1;
     st := 1;
     MRef := 0;
@@ -914,6 +913,9 @@ begin
     until (MRef > 0) or (st > Dataframe.RowCount);
   end;
 
+  if Mref > 0 then
+    dm.AddResult('$P' + IntToStr(Trunc(Percentile*100)) + 'REF', EpiTyInteger, Ref, 2, 0);
+
   St := 1;
   j := 2;
   while (true) do
@@ -928,15 +930,19 @@ begin
     else
       Idx := FindCensIndex(Dummy);
 
-    if (Dummy > 0) and (Idx >= St) and (Idx+1 <= En) then
-      M := (TimeVec.AsInteger[idx]+TimeVec.AsInteger[idx+1])/2
-    else
-      M := TimeVec.AsInteger[idx];
-
-    xTab.Cell[xTab.ColCount - S, j] := Epiformat(M, Fmts.EFmt);
-
-    if Dummy < 0 then
+    if (Dummy >= 0) then
     begin
+      if (Dummy > 0) and (Idx+1 <= En) then
+        M := (TimeVec.AsInteger[idx]+TimeVec.AsInteger[idx+1])/2
+      else
+        M := TimeVec.AsInteger[idx];
+
+      xTab.Cell[xTab.ColCount - S, j] := Epiformat(M, Fmts.EFmt);
+      str := '';
+      if Cmd.ParamExists['BY'] then
+        str := 'G' + ByVec.AsString[idx];
+      dm.AddResult('$P' + IntToStr(Trunc(Percentile*100)) + str, EpiTyFloat, M, 6, 4);
+    end else begin
       xTab.Cell[xTab.ColCount - S, j] := '';
       xTab.Footer := xTab.Footer + '<br>No valid time for S(time)=0.' + IntToStr(Trunc(Percentile*100));
       if Cmd.ParamExists['BY'] then
@@ -957,6 +963,7 @@ begin
     begin
       if Dummy >= 0 then
       begin
+        dm.AddResult('$P'+ IntToStr(Trunc(Percentile*100)) + 'DIFF'+ByVec.AsString[idx], EpiTyFloat, M - MRef, 6, 4);
         if Cmd.ParamExists['NOCI'] then
         begin
           if ByVec.AsInteger[idx] = Ref then
@@ -996,13 +1003,183 @@ begin
 end;
 
 procedure TLifeTables.AddTime(dataframe: TEpiDataframe; xTab: TStatTable; const Time: Integer);
-begin
+var
+  ByVec, NEffVec, SurvVec, TimeVec, CIHIVec, CILOVec: TEpiVector;
+  Idx, i, j, s, St, En, Ref: Integer;
+  Dummy, P, PRef, StdErr, StdErrRef: EpiFloat;
+  Fmts: TTableFormats;
+  str: string;
 
+  function FindIndex(var Factor: EpiFloat): integer;
+  var
+    i: integer;
+  begin
+    Factor := 0;
+    for result := St to En do
+      if TimeVec.AsFloat[Result] >= Time then exit;
+    Factor := -1;
+  end;
+
+begin
+  OTables.Getformats(Cmd, Fmts);
+
+  s := 0;
+  xTab.AddColumn;
+  xTab.Cell[xTab.ColCount, 1] := 'Survival<br>T=' + IntToStr(Time);
+
+  if not Cmd.ParamExists['NOCI'] then
+  begin
+    xTab.AddColumn;
+    xTab.Cell[Xtab.ColCount, 1] := '<br>' + Fmts.CIHdr;
+    inc(s);
+  end;
+
+  if Cmd.ParamExists['BY'] then
+  begin
+    ByVec := Dataframe.VectorByName[Cmd.ParamByName['BY'].AsString];
+    xTab.AddColumn;
+    xTab.Cell[xTAb.ColCount, 1] := 'Survival<br>Diff.';
+    inc(s);
+    if not Cmd.ParamExists['NOCI'] then
+    begin
+      xTab.AddColumn;
+      xTab.Cell[Xtab.ColCount, 1] := '<br>' + Fmts.CIHdr;
+      inc(s);
+    end;
+  end else
+    ByVec := TEpiIntVector.Create('$BY', Dataframe.RowCount);
+
+  if Cmd.ParamExists['REF'] then
+    Ref := (Cmd.ParamByName['REF'].AsInteger)
+  else
+    Ref := ByVec.AsInteger[1];
+
+  SurvVec := Dataframe.VectorByName['$CMPRSURV'];
+  TimeVec := Dataframe.VectorByName['$INTERBEG'];
+  NEffVec := Dataframe.VectorByName['$NEFFECT'];
+  if not Cmd.ParamExists['NOCI'] then
+  begin
+    CIHIVec := Dataframe.VectorByName['$CIHI'];
+    CILOVec := Dataframe.VectorByName['$CILO'];
+  end;
+
+  if Cmd.ParamExists['BY'] then
+  begin
+    // Calculate Reference value.
+    i := 1;
+    St := 1;
+    PRef := 0;
+    dec(ref);
+    repeat
+      inc(ref);
+      while ByVec.AsInteger[st] <> Ref do inc(st);
+      for i := St+1 to Dataframe.RowCount do
+        if ByVec.compare(i-1,i) <> 0 then break;
+      En := i-1;
+      Dummy := 0;
+      Idx := FindIndex(Dummy);
+      if (Dummy >= 0) then
+      begin
+        PRef := SurvVec.AsFloat[idx];
+        StdErrRef := (PRef * (1 - PRef)) / NEffVec.AsInteger[idx];
+      end;
+      st := en + 1;
+      if Cmd.ParamExists['REF'] then
+        break;
+    until (PRef > 0) or (st > Dataframe.RowCount);
+  end;
+
+  if Pref > 0 then
+    dm.AddResult('$T' + IntToStr(Time) + 'REF', EpiTyInteger, Ref, 2, 0);
+
+  St := 1;
+  j := 2;
+  while (true) do
+  begin
+    for i := St+1 to Dataframe.RowCount do
+      if ByVec.compare(i-1,i) <> 0 then break;
+    En := i-1;
+
+    Dummy := 0;
+    Idx := FindIndex(Dummy);
+
+    if (Dummy >= 0) then
+      P := SurvVec.AsFloat[idx];
+
+
+    if Dummy >= 0 then
+    begin
+      xTab.Cell[xTab.ColCount - S, j] := Epiformat(P, Fmts.EFmt);
+      str := '';
+      if Cmd.ParamExists['BY'] then
+        str := 'G' + ByVec.AsString[idx];
+      dm.AddResult('$T' + IntToStr(Time) + str, EpiTyFloat, P, 6, 4);
+    end else begin
+      xTab.Cell[xTab.ColCount - S, j] := '';
+      xTab.Footer := xTab.Footer + '<br>No valid survival for T=' + IntToStr(Time);
+      if Cmd.ParamExists['BY'] then
+        xTab.Footer := xTab.Footer + ' with ' + ByVec.GetVariableLabel(Cmd.ParameterList) + '=' +
+        ByVec.GetValueLabel(ByVec.AsString[idx-1], Cmd.ParameterList);
+    end;
+
+    if not Cmd.ParamExists['NOCI'] then
+    begin
+      if dummy < 0 then
+        xTab.Cell[xTab.ColCount - S+1, j] := ''
+      else
+        xTab.Cell[xTab.ColCount - S+1, j] := EpiCIFormat(0, CILOVec.AsFloat[idx], CIHIVec.AsFloat[idx], Fmts.EFmt, Fmts.CIFmt, '', 0);
+    end;
+
+    if cmd.ParamExists['BY'] then
+    begin
+      if Dummy >= 0 then
+      begin
+        dm.AddResult('$T'+IntToStr(Time)+'DIFF'+ByVec.AsString[idx], EpiTyFloat, P - PRef, 6, 4);
+        if Cmd.ParamExists['NOCI'] then
+        begin
+          if ByVec.AsInteger[idx] = Ref then
+            xTab.Cell[Xtab.ColCount - s + 1, j] := 'Ref.'
+          else
+            xTab.Cell[Xtab.ColCount - s + 1, j] := Epiformat(P - Pref, Fmts.EFmt);
+        end else begin
+          if ByVec.AsInteger[idx] = Ref then
+            xTab.Cell[Xtab.ColCount - s + 2, j] := 'Ref.'
+          else
+            xTab.Cell[Xtab.ColCount - s + 2, j] := Epiformat(P - Pref, Fmts.EFmt);
+        end;
+
+        if not Cmd.ParamExists['NOCI'] then
+        begin
+          StdErr := System.Sqrt(((P * (1 - P)) / NEffVec.AsInteger[idx]) + StdErrRef);
+          if dummy < 0 then
+            xTab.Cell[xTab.ColCount, j] := ''
+          else
+            if xTab.Cell[xTab.ColCount-1, j] <> 'Ref.' then
+              xTab.Cell[xTab.ColCount, j] := EpiCIFormat(0, (P-PRef)-(1.95*StdErr), (P-PRef)+(1.95*StdErr), Fmts.EFmt, Fmts.CIFmt, '', 0);
+        end;
+      end;
+      inc(j);
+    end;
+    St := En + 1;
+    if En >= Dataframe.RowCount then break;
+  end;
+  for i := 2 to xTab.RowCount do
+    if Trim(xTab.Cell[xTab.ColCount-S, i]) <> '' then break;
+  if i > xTab.RowCount then
+  begin
+    // There are no entrie in the table.
+    for i := 0 to s do
+      xtab.DeleteColumn(xTab.ColCount);
+  end;
 end;
 
 procedure TLifeTables.Times(dataframe: TEpiDataframe; xTab: TStatTable);
+var
+  i: integer;
 begin
-
+  for i := 0 to Cmd.ParameterCount-1 do
+    if AnsiUpperCase(Cmd.Param[i].VarName) = 'TIME' then
+      AddTime(dataframe, xTab, Cmd.Param[i].AsInteger);
 end;
 
 end.

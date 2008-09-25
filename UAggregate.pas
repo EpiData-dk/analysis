@@ -438,7 +438,6 @@ begin
     begin
       xTab.AddRow;
 
-
       for i := 0 to (ByVars.Count -1) do
         if j = 1 then
           xtab.Cell[i+1, XTab.RowCount] := trim(df.Vectors[i+s].GetValueLabel(Trim(df.Vectors[i+s].AsString[j]), Cmd.ParameterList))
@@ -1258,7 +1257,7 @@ var
   pVarDesc: TAnaVariableDescriptor;
 begin
   pVarDesc := TAnaVariableDescriptor.Create(fResVariable, EpiTyFloat,
-                                            fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals,
+                                            12, 8,
                                             EFormat(fAggregateVector.FieldDataSize, fAggregateVector.FieldDataDecimals));
   Dataframe.NewVector(pVarDesc);
   fResultVector := Dataframe.VectorByName[fResVariable];

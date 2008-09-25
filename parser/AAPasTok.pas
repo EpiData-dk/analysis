@@ -131,7 +131,7 @@ type
       procedure Initialize; virtual;
       procedure GetTokenClass(var aToken: TSMToken);virtual;
       function IsOperator(aTokenType: TSMTokenType): boolean;virtual;
-      function GetTokenName(index:TSMTokenType): string;virtual;
+      function GetTokenName(index:TSMTokenType): string; virtual;
       procedure PutBackLastToken(aToken: TSMToken);
       function ReadToEOL :TSMToken;
       function ReadToChar(pTerminator: char): TSMToken;
@@ -146,7 +146,7 @@ type
       property InStream   : TaaInCharStream  read FInStrm;
       property Keywords : TaaHashTableLinear read FKeywords;
       property LineNumber:integer read fLineNumber;
-      property TokenName[index:TSMTokenType]: string read GetTokenName;
+      property TokenName[index: TSMTokenType]: string read GetTokenName;
       property dequoteStrings: boolean read fdequoteStrings write fdequoteStrings;
       property OnError :TOnParseError read fOnError write fOnError;
       property StringToParse: string read FStringToParse;// write SetStringToParse;
@@ -164,10 +164,10 @@ implementation
 const
 
 AxTokensList: array[opInvalidToken..opDoDos] of String =
-('InvalidToken','Exp','Mult','Divide','Plus','Minus','Eq','NEq','LT','GT','LTE',
-'GTE','Identifier','String','HexNumber','Number','Comment','Comma','Semicolon','Colon',
-'Period','Range','Assign','Open Parenthesis','Close parenthesis',  'Open Bracket',
-'CloseBracket','Caret','Hash','At','Query','Dos');
+  ('InvalidToken','Exp','Mult','Divide','Plus','Minus','Eq','NEq','LT','GT','LTE',
+  'GTE','Identifier','String','HexNumber','Number','Comment','Comma','Semicolon','Colon',
+  'Period','Range','Assign','Open Parenthesis','Close parenthesis',  'Open Bracket',
+  'CloseBracket','Caret','Hash','At','Query','Dos');
 
 constructor TSMBaseTokenizer.Create(aInStm : TaaInCharStream);
 begin
@@ -764,14 +764,15 @@ end;
 
 function TSMBaseTokenizer.GetTokenName(index:TSMTokenType): string;
 begin
+  result := '';
 //try and get it from the keywords list
-  result:=keywords.Strings[index];
+//  result:=keywords.Strings[index];
 // empty? try and get it directly from the tokenlist
  if result<>'' then exit;
  if (index>=low(TokensList)) and (index<=high(TokensList)) then
      result:= TokensList[index];
  if result<>'' then exit;
- if (index>=low(AxTokensList)) and (index<=high(AxTokensList)) then
+ if (index >= low(AxTokensList)) and (index <= high(AxTokensList)) then
     result:= AxTokensList[index];
 end;
 

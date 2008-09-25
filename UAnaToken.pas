@@ -205,8 +205,8 @@ end;
 
 procedure TSMAnaTokenizer.Initialize;
 begin
-inherited;
-DequoteStrings:=true;
+  inherited;
+  DequoteStrings := true;
 end;
 
 procedure TSMAnaTokenizer.ppInitKeywords;

@@ -2495,7 +2495,6 @@ begin
         Executor.DropVars(list, EpiVarlocal);
         dataframe.DropVectors(list);
         FreeAndNil(list);
-        FreeAndNil(v);
       end;
       raise;
       exit;

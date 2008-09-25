@@ -3538,6 +3538,9 @@ begin
     if Parameters.VarExists['BY'] then
       result.Title.Caption := Result.Title.Caption + ' by ' + ZVec.GetVariableLabel(Parameters);
 
+    if Parameters.VarExists['TI'] then
+      result.Title.Caption := Parameters.VarbyName['TI'].AsString;
+
     Result.LeftAxis.Title.Caption := 'Survival';
     Result.BottomAxis.Title.Caption := 'Time ' ; // TODO: XVec.GetVariableLabel(Parameters);
 
