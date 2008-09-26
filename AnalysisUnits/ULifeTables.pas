@@ -762,34 +762,32 @@ begin
   Dm.AddResult('$LLIKEP', EpiTyFloat, PCHI2(en-1, Pd), 7, 3);
 
   j := 2;
-  if (Cmd.ParamExists['HAZ']) then
+  // Hazard ratio
+  xtab.AddColumn;
+  xtab.Cell[xTab.ColCount,1] := 'Hazard<br>Ratio';
+  idx := 0;
+  if not Cmd.ParamExists['NOCI'] then
   begin
-    xtab.AddColumn;
-    xtab.Cell[xTab.ColCount,1] := 'Hazard<br>Ratio';
-    idx := 0;
-    if not Cmd.ParamExists['NOCI'] then
+    inc(idx);
+    xTab.AddColumn;
+    xtab.Cell[xTab.ColCount,1] := '<br>' + Fmts.CIHdr;
+  end;
+  for i := 0 to Length(ESum)-1 do
+  begin
+    if ESum[i] <> 0 then
     begin
-      inc(idx);
-      xTab.AddColumn;
-      xtab.Cell[xTab.ColCount,1] := '<br>' + Fmts.CIHdr;
-    end;
-    for i := 0 to Length(ESum)-1 do
-    begin
-      if ESum[i] <> 0 then
+      X := (SDeath[i] - ESum[i]) / VHaz[i];
+      Y := 1.96 / (Sqrt(VHaz[i]));
+      xtab.Cell[xTab.ColCount-idx,j] := Format(Fmts.EFmt, [Exp(X)]);
+      if not Cmd.ParamExists['NOCI'] then
+        xtab.Cell[xTab.ColCount,j] := EpiCIFormat(0, Exp(X-Y), Exp(X+Y), Fmts.EFmt, Fmts.CIFmt,'',0);
+      if i = ref then
       begin
-        X := (SDeath[i] - ESum[i]) / VHaz[i];
-        Y := 1.96 / (Sqrt(VHaz[i]));
-        xtab.Cell[xTab.ColCount-idx,j] := Format(Fmts.EFmt, [Exp(X)]);
+        xtab.Cell[xTab.ColCount-idx,j] := 'Ref.';
         if not Cmd.ParamExists['NOCI'] then
-          xtab.Cell[xTab.ColCount,j] := EpiCIFormat(0, Exp(X-Y), Exp(X+Y), Fmts.EFmt, Fmts.CIFmt,'',0);
-        if i = ref then
-        begin
-          xtab.Cell[xTab.ColCount-idx,j] := 'Ref.';
-          if not Cmd.ParamExists['NOCI'] then
-            xtab.Cell[xTab.ColCount,j] := ' ';
-        end;
-        inc(j);
+          xtab.Cell[xTab.ColCount,j] := ' ';
       end;
+      inc(j);
     end;
   end;
 end;

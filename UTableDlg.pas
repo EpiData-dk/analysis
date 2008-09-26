@@ -91,6 +91,8 @@ type
       Shift: TShiftState);
     procedure AdvTablePanelClick(Sender: TObject);
     procedure ExecBtnClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
  Private
     CmdName :string;
     CmdString : string;
@@ -110,7 +112,7 @@ type
 implementation
 
 uses
-  UCmdProcessor, GeneralUtils, UTranslation;
+  UCmdProcessor, GeneralUtils, UTranslation, UIniFile;
 
 {$R *.DFM}
 const
@@ -471,5 +473,20 @@ begin
 end;
 
 
+
+procedure TTableDlg.FormShow(Sender: TObject);
+const
+  def: TFormDefaults = (Section: 'TableDlg';
+                        Top: 60; Left: 300;
+                        Width: 407; Height: 325;
+                        Maximize: false);
+begin
+  OIniFile.LoadForm(self, def);
+end;
+
+procedure TTableDlg.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  OInifile.SaveCurrentForm(Self, 'TableDlg');
+end;
 
 end.

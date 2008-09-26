@@ -67,17 +67,17 @@ function PercentileIndex(const Size: integer; const Percentile: Double; var Fact
 
   function GetPercentileIndex(const Percentile: Double): Integer;
   begin
-    result := 10;
-    if Percentile < 0.99  then result := 9;
-    if Percentile < 0.975 then result := 8;
-    if Percentile < 0.95  then result := 7;
-    if Percentile < 0.90  then result := 6;
-    if Percentile < 0.75  then result := 5;
-    if Percentile < 0.50  then result := 4;
-    if Percentile < 0.25  then result := 3;
-    if Percentile < 0.10  then result := 2;
-    if Percentile < 0.05  then result := 1;
-    if Percentile < 0.025  then result := 0;
+    result := 1;
+    if Percentile >= 0.025 then result := 2;
+    if Percentile >= 0.05  then result := 3;
+    if Percentile >= 0.10  then result := 4;
+    if Percentile >= 0.25  then result := 5;
+    if Percentile >= 0.50  then result := 6;
+    if Percentile >= 0.75  then result := 7;
+    if Percentile >= 0.90  then result := 8;
+    if Percentile >= 0.95  then result := 9;
+    if Percentile >= 0.975 then result := 10;
+    if Percentile >= 0.99  then result := 11;
   end;
 var
   FPos: Extended;
@@ -90,8 +90,8 @@ begin
     Exit;
   end;
 
-  FPos := Math.min(Math.max((Size + 1) * (Percentile / 100), 1), Size);
-  IPos := Math.max(trunc((Size + 1) * (Percentile / 100)), 1);
+  FPos := Math.min(Math.max((Size + 1) * (Percentile), 1), Size);
+  IPos := Math.max(trunc((Size + 1) * (Percentile)), 1);
 
   Result := IPos;
   if FPos <> IPos then

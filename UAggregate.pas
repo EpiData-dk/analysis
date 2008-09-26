@@ -1203,7 +1203,7 @@ begin
   PercentileType := APercentileType;
   fFuncType := afPercentile;
   LastCount := 0;
-  MissingCount := 1;
+  MissingCount := 0;
 end;
 
 procedure TAggrPercentile.Execute(Idx: integer);
@@ -1219,7 +1219,6 @@ var
   w: EpiFloat;
 begin
   offset := LastCount;
-  d := 0;
   case PercentileType of
     ap1 : d := 1;
     ap5 : d := 5;
@@ -1230,25 +1229,22 @@ begin
     ap90: d := 90;
     ap95: d := 95;
     ap99: d := 99;
+  else
+    d := 0;
   end;
-  w := Math.min(Math.max(MissingCount*(d/100), 1), MissingCount-1);
-  ix := Math.max(trunc(MissingCount*(d/100)),1);
-  if ((ix+offset+1)>fAggregateVector.Length) then
-    ix := fAggregateVector.Length - offset -1;
-  if ((ix-offset+1) > (MissingCount -1)) then
-    ix := MissingCount -2;
-  ix := Math.Max(Ix, 1);
-  if w = ix then
+
+  ix := PercentileIndex(MissingCount, d/100, w);
+  if w = 0 then
     fResultVector.AsFloat[idx] := fAggregateVector.AsFloat[ix+offset]
   else
     fResultVector.AsFloat[idx] := fAggregateVector.AsFloat[ix+offset] +
-        (fAggregateVector.AsFloat[ix+offset+1]-fAggregateVector.AsFloat[ix+offset])*(w-ix);
+        (fAggregateVector.AsFloat[ix+offset+1]-fAggregateVector.AsFloat[ix+offset])*(w);
 end;
 
 procedure TAggrPercentile.Reset();
 begin
   LastCount := LastCount + Count;
-  MissingCount := 1;
+  MissingCount := 0;
   Count := 0;
 end;
 

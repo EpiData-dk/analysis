@@ -25,7 +25,7 @@ uses sysutils,classes,Math,Uvectors,ansDataTypes, UstatFunctions, RegComp, EpiIn
 
 implementation
 
-uses UVectorVar,Ucmdprocessor;
+uses UVectorVar,Ucmdprocessor, GeneralUtils;
 
 function EpiSum(pV:TObject):Epifloat;
 var
@@ -65,37 +65,12 @@ var
     w : extended;
     ix: integer;
   begin
-    if (max-min) > 10 then
-    begin
-      w:= Math.Min(Math.Max((max-min+1+1)*(d/100), 1), max-min);
-      ix := trunc(((max-min+1+1)*(d/100)));
-      if (ix+ min-1+1) > max then ix :=  max - min;// -1+1;
-      if (ix + min -1) > max then ix := max - min;// +1 ;
-      if  ix = 0 then ix := 1;
-      if w = trunc((max-min+1+1)*(d/100)) then
-        result:= V.AsFloat[ix+ min-1]
-      else
-        result := V.AsFloat[ix+ min-1] + (V.AsFloat[ix+ min-1+1]-V.AsFloat[ix+ min-1])*(w-ix);
-    end
+    // Try new method.
+    ix := PercentileIndex(max-min+1, d/100, w);
+    if w = 0 then
+      result:= V.AsFloat[ix + min-1]
     else
-    begin     // small samples.
-      if (max-min) < 4 then
-        case d of
-          5,10, 25 : ix := 1;
-          50:        ix := 2;
-          75,90,95:  ix := 3;
-        end // case
-      else  // 4-10
-        case d of
-          5,10 : ix := 1;
-          25 : ix := 2;
-          50:  ix := round(int((max-min)/2));
-          75:  ix := round(int((max-min)*0.75));
-          90,95:  ix := round(int((max-min)*0.9));
-        end ; // case
-
-      result:= V.AsFloat[ix];
-    end;
+      result := V.AsFloat[ix + min-1] + (V.AsFloat[ix+ min]-V.AsFloat[ix+ min-1])*w;
   end;
 
   procedure FillDescriptors();

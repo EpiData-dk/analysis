@@ -2119,8 +2119,8 @@ const
       Table.Caption := title;
       Table.Cell[1,1] := 'variable';
       Table.Cell[2,1] := 'stratum';
-      Table.Cell[3,1] := 'n<u><sub><small>' + variable +'=' + outcome + '</small></u></sub>';
-      Table.Cell[4,1] := 'Total N';
+      Table.Cell[3,1] := 'Total N';
+      Table.Cell[4,1] := 'n<u><sub><small>' + variable +'=' + outcome + '</small></u></sub>';
       Table.Cell[5,1] := '%';
       if dm.GetOptionValue('TABLE CI HEADER', Opt) then
         Table.Cell[6,1] := '<font class=ci>' + Opt.value  + '</font>'
@@ -2153,8 +2153,8 @@ const
     if found then  Table.Cell[1,Table.RowCount] := ' '
          else Table.Cell[1,Table.RowCount] := Varlabel;
     Table.Cell[2,Table.RowCount] := valuelabel;
-    Table.Cell[3,Table.RowCount] := inttostr(numerator);
-    Table.Cell[4,Table.RowCount] := inttostr(sum);
+    Table.Cell[3,Table.RowCount] := inttostr(sum);
+    Table.Cell[4,Table.RowCount] := inttostr(numerator);
     Table.Cell[5,Table.RowCount] := format(efmt,[100*(numerator/sum)]);
     Table.Cell[6,Table.RowCount] := format(efmt,[low]);
     Table.Cell[7,Table.RowCount] := format(efmt,[high]);
@@ -2206,7 +2206,11 @@ begin
     s := sumtab[1].ColHeaderLabel[Showvalue];
     footnote :='Proportion of ' + dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters) +
                ' = ' + s;
-    result.title.Text.Add(footnote);
+
+    if Parameters.VarExists['TI'] then
+      result.Title.Caption := Parameters.VarbyName['TI'].AsString
+    else
+      result.title.Caption := footnote;
 
     Series := TCandleSeries.Create(nil);
     Series.UpCloseColor := GetGraphColour(c);

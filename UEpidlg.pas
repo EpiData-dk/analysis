@@ -53,6 +53,7 @@ type
     procedure GetVarMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure ExecBtnClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     MinVars,MaxVars: integer;
     CmdName :string;
@@ -73,7 +74,7 @@ function ShowDlg(frm: TaMainForm;ParseString:string;var CmdString:string):intege
 implementation
 
 uses
-  UCmdProcessor, UTranslation;
+  UCmdProcessor, UTranslation, UIniFile;
 
 {$R *.DFM}
 
@@ -267,8 +268,14 @@ begin
 end;
 
 procedure TEpiDlg.FormShow(Sender: TObject);
+const
+  def: TFormDefaults = (Section: 'EpiDlg';
+                        Top: 60; Left: 300;
+                        Width: 456; Height: 372;
+                        Maximize: false);
 begin
-   GetVar.SetFocus;
+  OIniFile.LoadForm(self, def);
+  GetVar.SetFocus;
 end;
 
 procedure TEpiDlg.GetVarClick(Sender: TObject);
@@ -381,6 +388,11 @@ begin
       then aMainForm.doCommand(CmdString);
   DlgResult := DlgResCancel;
   CmdString := '';
+end;
+
+procedure TEpiDlg.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  OInifile.SaveCurrentForm(Self, 'EpiDlg');
 end;
 
 end.

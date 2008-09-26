@@ -93,6 +93,7 @@ type
     procedure ComboBoxSelect(Sender: TObject);
     procedure ExpandBtnClick(Sender: TObject);
     procedure ExecBtnClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
  Private
     CmdName :string;
     CmdString : string;
@@ -128,7 +129,7 @@ type
 implementation
 
 uses
-  UCmdProcessor, UTranslation;
+  UCmdProcessor, UTranslation, UInifile;
 
 {$R *.DFM}
 
@@ -153,8 +154,7 @@ begin
   GraphDlg.showmodal;
   Result:=GraphDlg.DlgResult;
   CmdString := GraphDlg.CmdString;
-  GraphDlg.Free;
-  GRaphDlg := nil;
+  FreeAndNil(GraphDlg);
 end;
 
 function TGraphDlg.LegalValue(testtype: integer; legalvalues: array of integer): boolean;
@@ -430,9 +430,15 @@ begin
 end;
 
 procedure TGraphDlg.FormShow(Sender: TObject);
+const
+  def: TFormDefaults = (Section: 'GraphDlg';
+                        Top: 60; Left: 300;
+                        Width: 400; Height: 210;
+                        Maximize: false);
 begin
 //   showadvopt(AdvOpt);
-   combobox1.SetFocus;
+  OIniFile.LoadForm(self, def);
+  combobox1.SetFocus;
 end;
 
 procedure TGraphDlg.ComboBoxSelect(Sender: TObject);
@@ -522,6 +528,11 @@ begin
   aMainForm.doCommand(CmdString);
   DlgResult := DlgResCancel;
   CmdString := '';
+end;
+
+procedure TGraphDlg.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  OInifile.SaveCurrentForm(Self, 'GraphDlg');
 end;
 
 end.
