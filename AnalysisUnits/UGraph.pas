@@ -81,7 +81,7 @@ type
     procedure SPCTest(dataframe: TEpiDataframe; Const CountName: String;CmdID: Word;
                       Parameters: TVarlist; LowIndex, HighIndex: integer;
                       idx: integer; var output: TStatTable);
-    procedure CalcXInc(Chart: TChart);
+    procedure CalcAxisInc(Axis: TChartAxis; CalcLabel: Boolean = false);
     procedure OutputNCases(const chart: TChart; N : EpiInt);
 
     function GraphTable(XVar: TEpiVector; YVars: TEpiVectors): TStatTable;
@@ -438,17 +438,15 @@ begin
       LabelText := EpiDateToStr(StrToInt(LabelText), dfDMY);
 end;
 
-procedure TGraph.CalcXInc(Chart: TChart);
+procedure TGraph.CalcAxisInc(Axis: TChartAxis; CalcLabel: Boolean = false);
 var
   increment, min, max: double;
-  factor: integer;
-  Axis: TChartAxis;
+  factor, w: integer;
 begin
-  Axis := Chart.BottomAxis;
+  Axis.AdjustMaxMin;
   if Axis.Automatic then
   begin
     // Force calculation of min and max!
-    Axis.AdjustMaxMin;
     min := Axis.Minimum;
     max := Axis.Maximum;
     Axis.Automatic := false;
@@ -480,6 +478,16 @@ begin
     Axis.Increment := 2 * IntPower(10, factor)
   else
     Axis.Increment := 5 * IntPower(10, factor);
+
+  if CalcLabel then
+  begin
+    w := Axis.LabelWidth(RoundTo(Axis.Minimum, -2));
+    w := Math.Max(Axis.LabelWidth(RoundTo(Axis.Maximum, -2)), w);
+    if (Axis.Minimum >= 0) and (Axis.Maximum <= 9) then
+      w := Math.Max(Axis.LabelWidth(0.9), w);
+    Inc(w, 5);
+    Axis.LabelsSize := w;
+  end;
 end;
 
 
@@ -1141,7 +1149,7 @@ begin
     if Assigned(agglist) then FreeAndNil(agglist);
     if Assigned(tvec) then FreeAndNil(tvec);
   end;
-  CalcXInc(Result);
+  CalcAxisInc(Result.BottomAxis);
   ODebug.DecIndent;
 end;
 
@@ -1718,7 +1726,7 @@ begin
     end;
   end;
   
-  CalcXInc(Result);
+  CalcAxisInc(Result.BottomAxis);
   // Since CalcXInc always set LabelStyle to talValue!
   if (xvec.DataType = EpiTyDate) then
   begin
@@ -2447,7 +2455,7 @@ begin
     if Assigned(agglist) then FreeAndNil(agglist);
     if Assigned(PvarDesc) then FreeAndNil(PvarDesc);
   end;
-  CalcXInc(result);
+  CalcAxisInc(Result.BottomAxis);
   ODebug.DecIndent;
 end;
 
@@ -3496,7 +3504,6 @@ var
   LineSeries: TLineSeries;
   CandleSeries: TCandleSeries;
 
-
   procedure NewSeries();
   begin
     inc(j);
@@ -3525,6 +3532,7 @@ begin
     result.LeftAxis.Automatic := false;
     result.LeftAxis.Minimum := 0;
     result.LeftAxis.Maximum := 1;
+    result.LeftAxis.Increment := 0.1; 
 
     XVec := Dataframe.VectorByName['$INTERBEG'];
     TVec := DataFrame.VectorByName['$PRSURV'];
@@ -3560,7 +3568,6 @@ begin
 
     for i := 1 to DataFrame.RowCount do
     begin
-
       if TVec.AsFloat[i] < 1 then
       begin
         LineSeries.AddXY(XVec.AsInteger[i], YVec.AsFloat[i]);
@@ -3951,12 +3958,20 @@ procedure TGraph.CommonChartOptions(Chart: TChart; Cmd: TCommand);
 var
   opt: TEpiOption;
   s : string;
+  Dummy: Double;
+  w: integer;
+
 const
   procname = 'CommonChartOptions';
   procversion = '1.0.0.0';
 begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   if chart = nil then exit;
+
+  CalcAxisInc(Chart.LeftAxis, true);
+
+  if Cmd.ParamExists['POSYTEXT'] then
+    Chart.LeftAxis.LabelsSize := Cmd.ParamByName['POSYTEXT'].AsInteger;
 
   // Set-options applied to graph before showing.
   dm.GetOptionValue('GRAPH FONT SIZE', opt);
