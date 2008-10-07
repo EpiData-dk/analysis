@@ -260,6 +260,7 @@ type
     // - Outbreak Analysis functions.
     procedure AddOA(Tab: TstatTable; Sumtable: TSumTable; Col:integer; Fmts: TTableFormats);
     Procedure AddAR(Tab: TStatTable; Sumtable: Tsumtable; Col:integer; Fmts: TTableFormats; AddCI: Boolean);
+    // - relative risk functions.
     Procedure AddRR(Tab: TStatTable; Sumtable: Tsumtable; Fmts: TTableFormats);
     // - Case Control functions
     procedure AddCC(var tab: TstatTable;Sumtable: TSumTable;col:integer; Fmts: TTableFormats);
@@ -808,7 +809,6 @@ begin
   ShowRowPct := ((Cmd.ParamByName['RP'] <> nil) or (Cmd.ParamByName['R'] <> nil));
   ShowColPct := ((Cmd.ParamByName['CP'] <> nil) or (Cmd.ParamByName['C'] <> nil));
   ShowTotalPct := ((Cmd.ParamByName['TP'] <> nil));
-
   if not (ShowRowPct or ShowColPct or ShowTotalPct) then
     exit;
 
@@ -1652,7 +1652,7 @@ begin
     end;
 
     //Cumulative Percentage
-    if (cmd.ParamByName['CP'] <> nil) then
+    if (cmd.ParamByName['CUM'] <> nil) then
     begin           // add cumulative percent
       tab.AddColumn;
       tab.Cell[tab.ColCount,1] := 'Cum %';
@@ -1893,6 +1893,7 @@ begin
   ShowColPct := ((Cmd.ParamByName['CP'] <> nil) or (Cmd.ParamByName['C'] <> nil)) and  not (SumTable.TableType in [1,2]);
   ShowTotalPct := ((Cmd.ParamByName['TP'] <> nil)) or (SumTable.TableType in [1,2]);
 
+
   GetFormats(Cmd, Fmts);
 
   MultiPct := (Cmd.ParamByName['PCT'] <> nil) and not (SumTable.TableType in [1,2]);
@@ -1931,7 +1932,7 @@ begin
     //          cols + cell %'s   label + total    total %
     tabcols := (factor*cols)      + 2              + (factor - 1);
     if (SumTable.TableType in [1,2]) then dec(tabcols);
-    if (SumTable.TableType in [1,2]) and (Cmd.ParamByName['CP'] = nil) then Dec(tabcols);
+    if (SumTable.TableType in [1,2]) and (Cmd.ParamByName['CUM'] = nil) then Dec(tabcols);
     tabrows := rows + 2;
     tab := dm.OutputList.NewTable(tabcols, tabrows);
     if factor > 1 then
@@ -2416,7 +2417,7 @@ begin
     AddOA(tab, sumtable, 1, Fmts);
     if Cmd.ParamExists['AR'] then AddAR(Tab, Sumtable, 1, Fmts, cmd.ParamExists['CI']);
       // Unexposed
-    AddOA(tab, sumtable, 1, Fmts);
+    AddOA(tab, sumtable, 2, Fmts);
     if Cmd.ParamExists['AR'] then AddAR(Tab, Sumtable, 2, Fmts, cmd.ParamExists['CI']);
     small := False;
     // add columns for estimates:
@@ -2426,6 +2427,7 @@ begin
     AddCC(tab, Sumtable, 2, Fmts);
     AddOR(Tab, Sumtable, Cmd, True, Fmts);
   end;
+
   AddChi2test(Tab,Sumtable,Cmd,Small);
   AddGam(Tab,Sumtable,Cmd,Fmts);
   AddExact(Tab,Sumtable,Cmd);
