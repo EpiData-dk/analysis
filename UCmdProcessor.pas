@@ -2726,7 +2726,7 @@ begin
       ByVars.Insert(0, Cmd.ParamByName['STRATA'].AsString);
     end;
 
-    if (cmd.ParamExists['M']) then
+    if IsMissingOption(cmd) then
       df := dataframe.prepareDataframe(AllVars, nil)
     else
       df := dataframe.prepareDataframe(AllVars, ByVars);

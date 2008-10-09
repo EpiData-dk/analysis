@@ -258,11 +258,13 @@ begin
     FuncNames := TStringList.Create;
 
     if Cmd.ParamExists['STAT'] then
-      SplitString(Cmd.ParamByName['STAT'].AsString, FuncNames, [' ', ',']);
+      SplitString(Cmd.ParamByName['STAT'].AsString, FuncNames, [' ', ','])
+    else if (not Cmd.ParamExists['N']) then
+      Agl.Add(TAggrCount.Create('N', '', acAll));
 
     for i := 0 to Varnames.Count -1 do
     begin
-      if CMd.ParamExists['NV'] then
+      if Cmd.ParamExists['NV'] then
         Agl.Add(TAggrCount.Create(ResizeVarname('N', Varnames[i]), Varnames[i], acNotMissing));
       for j := 0 to FuncNames.Count -1 do
       begin
@@ -449,15 +451,17 @@ begin
 
 
       // Output Content.
-      for i:= (s + (ByVars.Count-1)) to (df.VectorCount-(s+1)) do
+      for i:= Math.Max(s + (ByVars.Count-1), 0) to (df.VectorCount-(s+1)) do
         xtab.Cell[i+1, XTab.RowCount] := trim(df.Vectors[i+s].GetValueLabel(Trim(df.Vectors[i+s].AsString[j]), Cmd.ParameterList));
 
       if (j<df.RowCount) and (SVec.compare(j, j+1) <> 0) then
       begin
-        dm.CodeMaker.OutputTable(xTab);
-
-        if Cmd.ParamExists['PAGE'] then
-          dm.WriteDirect('<p style="page-break-after : always ; visibility : hidden ">&nbsp;</p>');
+        if not Cmd.ParamExists['Q'] then
+        begin
+          dm.CodeMaker.OutputTable(xTab);
+          if Cmd.ParamExists['PAGE'] then
+            dm.WriteDirect('<p style="page-break-after : always ; visibility : hidden ">&nbsp;</p>');
+        end;
 
         xTab := dm.CodeMaker.Output.NewTable(Df.VectorCount-s, 1);
         xTab.Caption := SVec.GetVariableLabel(Cmd.ParameterList) + ' ' +
@@ -467,8 +471,15 @@ begin
           xTab.Cell[i, 1] := Df.Vectors[i-1+s].GetVariableLabel(Cmd.ParameterList);
       end;
     end;
-    dm.CodeMaker.OutputTable(xTab);
-    dm.Sendoutput();
+
+    if not Cmd.ParamExists['Q'] then
+    begin
+      dm.CodeMaker.OutputTable(xTab);
+      dm.Sendoutput();
+    end;
+
+    if (Cmd.ParamExists['SAVE']) then
+      dm.SaveDataFile(Cmd.ParamByName['SAVE'].AsString, nil, df, Cmd);
   finally
     if Assigned(xTab) then FreeAndNil(xTab);
     if Assigned(HeaderList) then FreeAndNil(HeaderList);
