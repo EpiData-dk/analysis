@@ -1169,17 +1169,17 @@ const
 
   function CreateTable(df: TEpiDataframe; Caption: string): TStatTable;
   begin
-    Result := dm.CodeMaker.Output.NewTable(8,1);
+    Result := dm.CodeMaker.Output.NewTable(9,1);
     REsult.TableType := sttNormal;
     Result.Caption := 'Box Plot' + Caption;
     Result.Cell[1,1] := '';
     Result.Cell[2,1] := 'N';
     Result.Cell[3,1] := 'Min';
-    Result.Cell[4,1] := 'P10';
-    Result.Cell[5,1] := 'P25';
-    Result.Cell[6,1] := 'Med';
-    Result.Cell[7,1] := 'P75';
-    Result.Cell[8,1] := 'P90';
+    Result.Cell[4,1] := 'P<sub>10</sub>';
+    Result.Cell[5,1] := 'P<sub>25</sub>';
+    Result.Cell[6,1] := 'Median';
+    Result.Cell[7,1] := 'P<sub>75</sub>';
+    Result.Cell[8,1] := 'P<sub>90</sub>';
     Result.Cell[9,1] := 'Max';
   end;
 
@@ -1238,6 +1238,7 @@ const
         AdjacentPoint1 := df.VectorByName['$10'].AsFloat[index+1];
         AdjacentPoint3 := df.VectorByName['$90'].AsFloat[index+1];
         InnerFence3 := df.VectorByName['$90'].AsFloat[index+1];
+        if BoxNo = 1 then dm.info('Whiskers at 10-90 percentile');
       end
       else if Assigned(Parameters.VarByName['R']) then
       begin  // use complete range
@@ -1245,6 +1246,7 @@ const
         AdjacentPoint1 := df.VectorByName['$MIN'].AsFloat[index+1];
         AdjacentPoint3 := df.VectorByName['$MAX'].AsFloat[index+1];
         InnerFence3 := df.VectorByName['$MAX'].AsFloat[index+1];
+        if BoxNo = 1 then dm.info('Whiskers at Range');
       end
       else
       begin   // default  values, should be:
@@ -1252,6 +1254,7 @@ const
                  // from EQUAL to or next observation above (p25 - 1.5*(p75-p25))
                  // to EQUAL to or observation before value (p75 + 1.5*(p75-p25))
                 // find the adjacentpoints from sample values, built in function:
+        if BoxNo = 1 then dm.info('Whiskers at 1.5*InterQuartile Range');
         ReCalcStats;
         InnerFence1 := AdjacentPoint1;
         InnerFence3 := AdjacentPoint3;
@@ -1322,7 +1325,7 @@ begin
       Aggl.Add(TAggrPercentile.Create('$90', Varnames[i], ap90));
       Aggl.Add(TAggrMinMax.Create('$MAX', Varnames[i], false));
 
-      agdf := OAggregate.AggregateDataframe(df, TStringList(ByVars), AggL, TCommand.Create(0, Parameters));
+      agdf := OAggregate.AggregateDataframe(df, TStringList(ByVars), AggL,  TCommand.Create(0, Parameters));
       vec := df.VectorByName[Varnames[i]];
       ByVec := df.VectorByName[GroupVar];
 
@@ -1620,7 +1623,7 @@ begin
 
   // Create the graph and set customizable settings.
   result := CreateStandardChart();
-  
+
 
   xvec := Dataframe.VectorByName[varnames[0]];
 
@@ -2208,7 +2211,7 @@ begin
       if Sumtab[i].Total > Sum then
       begin
         Sum := Sumtab[i].Total;
-        Numerator := Sumtab[i].ColTotal[ShowValue]; 
+        Numerator := Sumtab[i].ColTotal[ShowValue];
       end;
     end;
     s := sumtab[1].ColHeaderLabel[Showvalue];
@@ -2441,7 +2444,7 @@ begin
       OutputTable.AddRow();
       OutputTable.Cell[1, OutputTable.RowCount] := 'Aggregate plot.';
     end;
-    result.LeftAxis.Title.Caption := 'Cummulative percent (%)';
+    result.LeftAxis.Title.Caption := 'Cumulative percent (%)';
     if (Parameters.VarbyName['P'] <> nil) then
     begin
       result.LeftAxis.Title.Caption := 'Z (Probit)';
