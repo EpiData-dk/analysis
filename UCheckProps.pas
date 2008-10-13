@@ -177,6 +177,8 @@ TYPE
 
 implementation
 
+uses StrUtils;
+
 procedure CloneCommandList(source,dest: TList);
 var
   sourceCmd,destCmd: PCmds;
@@ -521,6 +523,14 @@ begin
     begin
       // Case 1: Just create the valuelabelset in the destination DfChkProp.
       ValueLabelSet.Clone(destination.FValueLabelSet);
+      if Pos('FROM', AnsiUppercase(ValueLabelSet.LabelName)) > -1 then
+      begin
+        // The original value labels was read from an external file - this cannot be replicated, so
+        // instead drop reference to external file and use cached value labels instead.
+        // Invent new label name.
+        destination.ValueLabelSet.LabelName := AnsiReplaceStr(ValueLabelSet.LabelName, 'from', '');
+        destination.ValueLabelSet.LabelName := AnsiReplaceStr(destination.ValueLabelSet.LabelName, ' ', '_');
+      end;
       if n <> -1 then
       repeat
         // Case 2: Labelname exists, invent a new one ;)

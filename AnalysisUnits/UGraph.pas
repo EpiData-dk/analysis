@@ -1853,7 +1853,7 @@ begin
     for i := 1 to dataframe.RowCount do
       if yvec.Value[i] <> maxval then
         dataframe.Selected[i] := false;
-    if dataframe.SelectedRowCount = 0 then Exception.Create('No Data');
+    if dataframe.SelectedRowCount = 0 then dm.Error('No Data', [], 61000);
 
     if varnames.count < 3 then
       title := 'EpiCurve: ' + yvec.GetVariableLabel(Parameters)
@@ -1868,6 +1868,9 @@ begin
 
     Varnames.Delete(0);
     df := dataframe.prepareDataframe(varnames, nil);
+
+    if df.RowCount = 0 then dm.Error('No Data', [], 61000);
+    
     agglist := TAggrList.Create();
     agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
     df := OAggregate.AggregateDataframe(df, TStringList(varnames), agglist, TCommand.Create(0, Parameters));
@@ -3665,6 +3668,7 @@ begin
 
     // Create the graph and set customizable settings.
     result := CreateStandardChart();
+    result.LeftAxis.Title.Caption := 'Count';
 
     // add data to the graph:
     barseries := TBarSeries.Create(nil);
