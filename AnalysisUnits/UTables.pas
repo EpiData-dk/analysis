@@ -970,13 +970,6 @@ begin
         // TODO: add tabletypes for "mrtable"
         if Weighted then inc(sumtable.fTableType);
 
-        //TODO Torsten: se efter om denne kontrol skal være her:
-        // test for conditions on all subtables here:
-        if  (cmd.ParamExists['CT']) {or (cmd.ParamByName['OA'] <> nil)}  and
-          (sumtable.fTableType in [1,2,3,4,5,6,9,10,11,12]) then
-          dm.error('Table not 2x2 for: %s', [Dataframe.VectorByName[vlist[vlist.Count-1]].Name], 117003);
-        //TODO Torsten: se efter om denne kontrol skal være ovenfor
-
         colheader := Dataframe.VectorByName[vlist[vlist.Count-2]].GetVariableLabel(Cmd.ParameterList);
         rowheader := Dataframe.VectorByName[vlist[vlist.Count-1]].GetVariableLabel(Cmd.ParameterList);
 
@@ -1066,8 +1059,15 @@ begin
 
           subtable.fDF := (subtable.RowCount-1)*(subtable.ColumnCount-1);
 
+          // test for conditions on all subtables here:
+          if  (cmd.ParamExists['CT']) {or (cmd.ParamByName['OA'] <> nil)}  and
+            (sumtable.fTableType in [1,2,3,4,5,6,9,10,11,12]) then
+          begin
+            dm.CodeMaker.OutputTable(OutTwoWayTable(subtable));
+            dm.error('Table not 2x2 for: %s', [Dataframe.VectorByName[vlist[vlist.Count-1]].Name], 117003);
+          end;
+
           // now consider sort order: - notice default for with /O /RR and /OA where /SD is default:
-//          if (Sumtable.TableType in [3,4]) and (cmd.ParamByName['O'] <> nil) or (cmd.ParamByName['OA'] <> nil) or (cmd.ParamByName['CC'] <> nil) or ( cmd.ParamByName['RR'] <> nil) then
           if (Sumtable.TableType in [3,4]) and (cmd.ParamExists['O']) or (cmd.ParamExists['RR']) or (cmd.ParamExists['CT']) then
           begin
             if Dataframe.VectorByName[vlist[vlist.Count-2]].FieldDataType = EpiTyBoolean then
@@ -1114,8 +1114,6 @@ begin
 
     // Primary sort options, may be chosen otherwise by user!
     // now consider other sort order:
-
-//    if (Sumtable.TableType in [3,4]) and (cmd.ParamByName['O'] <> nil) or (cmd.ParamByName['OA'] <> nil) or (cmd.ParamByName['CC'] <> nil) or ( cmd.ParamByName['RR'] <> nil) then
     if (Sumtable.TableType in [3,4]) and (cmd.ParamExists['O']) or (cmd.ParamExists['RR']) or (cmd.ParamExists['CT']) then
     begin
       if Dataframe.VectorByName[vlist[vlist.Count-2]].FieldDataType = EpiTyBoolean

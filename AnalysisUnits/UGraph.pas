@@ -1898,6 +1898,8 @@ begin
     result.BottomAxis.Title.Caption := xvec.GetVariableLabel(parameters);
     result.LeftAxis.Title.Caption := 'Count';
 
+    result.Legend.Title.Caption := zvec.GetVariableLabel(Parameters);
+
     if Parameters.VarbyName['YINC'] = nil then
        Parameters.AddVar('YINC', 1);
 
@@ -2045,7 +2047,7 @@ begin
         if assigned(series[j]) then
         begin
           OutputTable.AddRow;
-          OutputTable.Cell[1,OutputTable.RowCount] := zvec.GetValueLabel(inttostr(j), Parameters);
+          OutputTable.Cell[1,OutputTable.RowCount] := zvec.GetValueLabel(IntToStr(j), Parameters);
           OutputTable.Cell[2,OutputTable.RowCount] := inttostr(cases[j]+missings[j]);
           OutputTable.Cell[3,OutputTable.RowCount] := inttostr(cases[j]);
           OutputTable.Cell[4,OutputTable.RowCount] := inttostr(missings[j]);
