@@ -2038,7 +2038,7 @@ begin
       OutputTable.Cell[1,1] := '  ';
       OutputTable.Cell[2,1] := 'Total<br>N';
       OutputTable.Cell[3,1] := 'Cases<br>n';
-      OutputTable.Cell[4,1] := '<u>'+YVec.GetVariableLabel(Parameters) + '</u>'+ '<br><small>Missing</small>';
+      OutputTable.Cell[4,1] := '<u>'+YVec.GetVariableLabel(Nil {Parameters}) + '</u>'+ '<br><small>Missing</small>';
       OutputTable.Cell[5,1] := ' <br>Min';
       OutputTable.Cell[6,1] := ' <br>Max';
 

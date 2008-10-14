@@ -1003,11 +1003,12 @@ try
     if fn='' then
     begin
       od.FileName :='';
+      od.InitialDir :=  GetCurrentDir;
       od.Filter:= 'Program file|*.pgm|All|*.*';
       od.FilterIndex := 1;
       if not od.Execute then exit;
       fn := od.filename;
-      SetCurrentDir(ExtractFileDir(fn)); //added build 118 - when remowing agopendialog      
+      SetCurrentDir(ExtractFileDir(fn)); //added build 118 - when remowing agopendialog
     end;
     if fn='' then
      error('Missing file name', [], 101004);
@@ -1116,7 +1117,7 @@ end;  //case
 
 except
   on E: Exception do
-    error('PGM Error:<br>%s', [E.message], 103010);
+    error('PGM Error: &nbsp; %s', [E.message], 103010);
 end;
 end;
 
