@@ -1804,11 +1804,8 @@ var
   varlist: TStringList;
   title, mints,maxts: string;
 
-
   function CreateBarSeries(parent: TChart): TBarSeries;
   begin
-    //series := TAreaSeries.Create(nil);
-    //Series.Stairs := True;
     result := TBarSeries.Create(nil);
     result.StackGroup := 0;
     result.MultiBar := mbStacked;
@@ -1900,8 +1897,8 @@ begin
 
     result.Legend.Title.Caption := zvec.GetVariableLabel(Parameters);
 
-    if Parameters.VarbyName['YINC'] = nil then
-       Parameters.AddVar('YINC', 1);
+{    if Parameters.VarbyName['YINC'] = nil then
+       Parameters.AddVar('YINC', 1);  }
 
     if Parameters.VarbyName['I'] <> Nil then GraphCallBack := OutputYIncrease;
 
@@ -1934,8 +1931,7 @@ begin
         if not Assigned(series[zvec.AsInteger[i]]) then
         begin
           series[zvec.AsInteger[i]] := CreateBarSeries(result);
-          series[zvec.AsInteger[i]].Title :=
-          zvec.GetValueLabel(zvec.AsString[i]);
+          series[zvec.AsInteger[i]].Title := zvec.GetValueLabel(zvec.AsString[i]);
           vals[zvec.AsInteger[i]] := NA_FLOAT;
           cases[zvec.AsInteger[i]] := 0;
           missings[zvec.AsInteger[i]] := 0;
@@ -1959,7 +1955,7 @@ begin
     // Insert the data!
     i := 1;
     while (i <= df2.RowCount) do
-    begin
+    begin                            // Why not .Compare(i, i+1)??
       while (i <= df2.RowCount) and (xvec.AsInteger[i] = xvec.AsInteger[i+1]) do
       begin
         if not yvec.IsMissing[i] then

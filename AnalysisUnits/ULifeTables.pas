@@ -834,12 +834,12 @@ var
   begin
     for i := En downto St do
       if SurvVec.AsFloat[i] > (Percentile - 0.05) then break;
-    t := TimeVec.AsFloat[i+1];
-    p := SurvVec.AsFloat[i+1];
+    t := TimeVec.AsFloat[Math.Min(i+1, En)];
+    p := SurvVec.AsFloat[Math.Min(i+1, En)];
     for i := St to En do
       if SurvVec.AsFloat[i] < (Percentile + 0.05) then break;
-    t := t - TimeVec.AsFloat[i-1];
-    p := SurvVec.AsFloat[i-1] - p;
+    t := t - TimeVec.AsFloat[Math.Max(i-1, St)];
+    p := SurvVec.AsFloat[Math.Max(i-1, St)] - p;
     result := t / p;
   end;
 
@@ -950,11 +950,12 @@ begin
 
     if not Cmd.ParamExists['NOCI'] then
     begin
-      StdErr := System.Sqrt((Percentile * (1 - Percentile)) / NEffVec.AsInteger[Idx]) * StdErrFactor();
       if dummy < 0 then
         xTab.Cell[xTab.ColCount - S+1, j] := ''
-      else
+      else begin
+        StdErr := System.Sqrt((Percentile * (1 - Percentile)) / NEffVec.AsInteger[Idx]) * StdErrFactor();
         xTab.Cell[xTab.ColCount - S+1, j] := EpiCIFormat(0, M-(1.95*StdErr), M+(1.95*StdErr), Fmts.EFmt, Fmts.CIFmt, '', 0);
+      end;
     end;
 
     if cmd.ParamExists['BY'] then

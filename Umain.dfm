@@ -5057,7 +5057,7 @@ object aMainForm: TaMainForm
     end
     object AcRunKMPlot: TAction
       Category = 'Graphs'
-      Caption = 'K-M Plot'
+      Caption = 'Survival Curve'
       OnExecute = AcRunKMPlotExecute
     end
     object AcRunLifeTable: TAction

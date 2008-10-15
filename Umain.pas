@@ -1537,17 +1537,17 @@ begin
   with cmdTree.Items do
   begin
     BeginUpdate;
-   GrpNode:=Add(nil,'Read & start');
+    GrpNode:=Add(nil,'Read & start');
     AddChild(GrpNode,'Read');
     AddChild(GrpNode,'Select');
     AddChild(GrpNode,'Run');
     AddChild(GrpNode,'Close');
 
-       GrpNode:=Add(nil,'View Data');
+    GrpNode:=Add(nil,'View Data');
     AddChild(GrpNode,'Browse');
     AddChild(GrpNode,'List');
 
-      GrpNode:=Add(nil,'Analysis');
+    GrpNode:=Add(nil,'Analysis');
     AddChild(GrpNode,'Describe');
     AddChild(GrpNode,'Freq');
     AddChild(GrpNode,'Tables');
@@ -1556,9 +1556,9 @@ begin
     AddChild(GrpNode,'Kwallis');
     AddChild(GrpNode,'Correlate');
     AddChild(GrpNode,'StatTables');
+    AddChild(GrpNode,'Lifetable');
 
-
-  GrpNode:=Add(nil,'Graphs');
+    GrpNode:=Add(nil,'Graphs');
     AddChild(GrpNode,'Bar');
     AddChild(GrpNode,'Histogram');
     AddChild(GrpNode,'BoxPlot');
@@ -1570,13 +1570,13 @@ begin
     AddChild(GrpNode,'EpiCurve');
     AddChild(GrpNode,'Pie');
 
-   GrpNode:=Add(nil,'Save Output, Clear Screen');
+    GrpNode:=Add(nil,'Save Output, Clear Screen');
     AddChild(GrpNode,'Logopen');
     AddChild(GrpNode,'Logclose');
     AddChild(GrpNode,'Cls');
     AddChild(GrpNode,'View');
 
-   GrpNode:=Add(nil,'Generate/Change Variables');
+    GrpNode:=Add(nil,'Generate/Change Variables');
     AddChild(GrpNode,'Define');
     AddChild(GrpNode,'Let');
     AddChild(GrpNode,'Gen');
@@ -1588,20 +1588,20 @@ begin
  //  GrpNode:=Add(nil,'Further Analysis');
 //    AddChild(GrpNode,'Match');
 
-   GrpNode:=Add(nil,'SPC graphs');
+    GrpNode:=Add(nil,'SPC graphs');
     AddChild(GrpNode,'PChart');
     AddChild(GrpNode,'Ichart');
     AddChild(GrpNode,'RunChart');
     AddChild(GrpNode,'Pareto');
 
-   GrpNode:=Add(nil,'Save-Sort-Edit Data');
+    GrpNode:=Add(nil,'Save-Sort-Edit Data');
     AddChild(GrpNode,'Sort');
     AddChild(GrpNode,'Merge');
     AddChild(GrpNode,'SaveData');
     AddChild(GrpNode,'Aggregate');
     AddChild(GrpNode,'Update/Edit Data');
 
-   GrpNode:=Add(nil,'Clean Up and Stop');
+    GrpNode:=Add(nil,'Clean Up and Stop');
     AddChild(GrpNode,'Close');
     AddChild(GrpNode,'SavePgm ');
     AddChild(GrpNode,'Clh');
@@ -1627,10 +1627,7 @@ begin
     AddChild(GrpNode,'Erase');
     EndUpdate;
   end;
-  //cmdTree.Items[0].Expand(True);
-//  panel1.Visible := True;
-//  Cmdtree.Visible := True;
-  end;
+end;
 
 procedure TaMainForm.CmdTreeDblClick(Sender: TObject);
 var
