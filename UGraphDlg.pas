@@ -512,7 +512,7 @@ begin
     expanded := true;
     MinimizeBtn.BringToFront;
     RESETbtn.Visible := True;
-    // PASTEbtn.Visible := True;
+    PASTEbtn.Visible := True;
   end else begin
     self.Width := 400;
     self.Height := 210;

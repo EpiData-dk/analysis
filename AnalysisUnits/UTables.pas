@@ -1038,7 +1038,9 @@ begin
               begin
                 N := dataframe.VectorByName['$S'].AsInteger[dfoffset];
                 inc(subtable.fCells[j,k].fN, N);
-                inc(margtable.fCells[j,k].fN, N);
+                // This test because we wish to print the table if it is not 2x2 later on... 
+                if (j < margtable.ColumnCount) and (k < margtable.RowCount) then
+                  inc(margtable.fCells[j,k].fN, N);
                 inc(dfoffset);
               end;
             end;

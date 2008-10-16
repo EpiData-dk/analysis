@@ -105,9 +105,9 @@ object GraphDlg: TGraphDlg
     object PasteBtn: TButton
       Tag = 2
       Left = 280
-      Top = 8
+      Top = 13
       Width = 45
-      Height = 29
+      Height = 20
       Anchors = [akLeft, akTop, akBottom]
       Caption = '&Paste'
       ModalResult = 6

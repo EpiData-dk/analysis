@@ -192,40 +192,44 @@ begin
   clear := (Cmd.ParamByName['CLEAR'] <> nil) or
            (cmd.ParamByName['C'] <> nil);
 
-  for i := 0 to varnames.Count -1 do
-  begin
-    CheckProperties := Df.VectorByName[Varnames[i]].CheckProperties;
-
-    if not Assigned(CheckProperties) then
-      dm.Error('Cannot create Missing values: CheckProperties does not exist!', [], 111001);
-
-    count := 0;
-    for j:=0 to MAXDEFINEDMISSINGVALUES do
-      if CheckProperties.MissingValues[j]<>'' then
-        if clear then
-          CheckProperties.MissingValues[j] := ''
-        else
-          inc(count);
-    if clear then
+  try
+    for i := 0 to varnames.Count -1 do
     begin
+      CheckProperties := Df.VectorByName[Varnames[i]].CheckProperties;
+
+      if not Assigned(CheckProperties) then
+        dm.Error('Cannot create Missing values: CheckProperties does not exist!', [], 111001);
+
       count := 0;
-      df.Modified := true;
-    end;
-    for j := 0 to Cmd.ParameterCount -1 do
-    begin
-      Param := Cmd.ParameterList.Items[j];
-      if (AnsiUpperCase(Param.VarName) = 'VARLIST') or
-         (AnsiUpperCase(Param.VarName) = 'CLEAR') then continue;
-      cont := false;
-      for k := 0 to MAXDEFINEDMISSINGVALUES do
-        if CheckProperties.MissingValues[k] = Param.VarName then cont := true;
-      if cont then continue;
-      if count = MAXDEFINEDMISSINGVALUES+1 then dm.Error('max 3 missing values, add [/c  or /clear]', [], 111002);
-      CheckProperties.MissingValues[count] := Param.VarName;
-      inc(count);
-      df.Modified := true;
-    end;
-  end; // for i
+      for j:=0 to MAXDEFINEDMISSINGVALUES do
+        if CheckProperties.MissingValues[j]<>'' then
+          if clear then
+            CheckProperties.MissingValues[j] := ''
+          else
+            inc(count);
+      if clear then
+      begin
+        count := 0;
+        df.Modified := true;
+      end;
+      for j := 0 to Cmd.ParameterCount -1 do
+      begin
+        Param := Cmd.ParameterList.Items[j];
+        if (AnsiUpperCase(Param.VarName) = 'VARLIST') or
+           (AnsiUpperCase(Param.VarName) = 'CLEAR') then continue;
+        cont := false;
+        for k := 0 to MAXDEFINEDMISSINGVALUES do
+          if CheckProperties.MissingValues[k] = Param.VarName then cont := true;
+        if cont then continue;
+        if count = MAXDEFINEDMISSINGVALUES+1 then dm.Error('max 3 missing values, add [/c  or /clear]', [], 111002);
+        CheckProperties.MissingValues[count] := Param.VarName;
+        inc(count);
+        df.Modified := true;
+      end;
+    end; // for i
+  finally
+    //
+  end;
 end;
 
 

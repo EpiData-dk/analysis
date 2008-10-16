@@ -987,6 +987,7 @@ try
       sd.Filter := 'Program file|*.pgm|All|*.*';
       sd.FilterIndex := 1;
       sd.DefaultExt :='.pgm';
+      sd.InitialDir := GetCurrentDir ;
       if not sd.Execute then exit;
     end;
     if fn='' then
@@ -1548,6 +1549,7 @@ begin
       sd.FileName:='';
       sd.Filter:= EpiDataFilter;
       sd.FilterIndex := 1;
+      sd.InitialDir := GetCurrentDir ;
       if not sd.Execute then Error('Missing file name', [], 101004);
     end;
     if fn='' then
@@ -3302,8 +3304,8 @@ const
 begin
   ODebug.IncIndent;
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
-       if not dm.CheckDataOpen() then exit; //CheckDataOpen();
-  CheckVariableNo(VarNames, 1, 1);
+  if not dm.CheckDataOpen() then exit; //CheckDataOpen();
+  CheckVariableNo(VarNames, 1);
   if cmd.CommandID = opLabelValue then
     result := ODocument.DoValueLabel(Dataframe, Dataframe.GetVectorNames(Varnames), Cmd)
   else
