@@ -24,7 +24,7 @@ object aMainForm: TaMainForm
     Left = 633
     Top = 54
     Width = 2
-    Height = 443
+    Height = 433
     Align = alRight
     AutoSnap = False
     MinSize = 20
@@ -32,7 +32,7 @@ object aMainForm: TaMainForm
   end
   object StatusBar: TSMStatusBar
     Left = 0
-    Top = 497
+    Top = 487
     Width = 844
     Height = 19
     Anchors = [akRight, akBottom]
@@ -191,7 +191,7 @@ object aMainForm: TaMainForm
     Left = 0
     Top = 54
     Width = 633
-    Height = 443
+    Height = 433
     Align = alClient
     Alignment = taLeftJustify
     BorderStyle = bsSingle
@@ -199,7 +199,7 @@ object aMainForm: TaMainForm
     OnMouseMove = ToolBar1MouseMove
     object Splitter1: TSplitter
       Left = 1
-      Top = 414
+      Top = 404
       Width = 627
       Height = 2
       Cursor = crVSplit
@@ -209,7 +209,7 @@ object aMainForm: TaMainForm
     end
     object CmdPanel: TPanel
       Left = 1
-      Top = 416
+      Top = 406
       Width = 627
       Height = 22
       Align = alBottom
@@ -223,7 +223,7 @@ object aMainForm: TaMainForm
     Left = 635
     Top = 54
     Width = 209
-    Height = 443
+    Height = 433
     Align = alRight
     TabOrder = 2
     OnResize = Panel1Resize
@@ -231,7 +231,7 @@ object aMainForm: TaMainForm
       Left = 1
       Top = 99
       Width = 207
-      Height = 230
+      Height = 220
       Hint = 'Close: press F3'
       Align = alClient
       BevelInner = bvNone
@@ -280,7 +280,7 @@ object aMainForm: TaMainForm
     end
     object Historylist: TListBox
       Left = 1
-      Top = 329
+      Top = 319
       Width = 207
       Height = 113
       Hint = 'Close: press F7'
@@ -5293,12 +5293,19 @@ object aMainForm: TaMainForm
       Caption = 'Cumulative Plot'
       OnClick = CumulativePlot1Click
     end
+    object CumulativePlot2: TMenuItem
+      Caption = 'Probit Plot'
+      OnClick = CumulativePlot2Click
+    end
+    object N38: TMenuItem
+      Caption = '-'
+    end
     object Ciplot1: TMenuItem
-      Caption = 'CIplot'
+      Caption = 'Proportion (CI) plot'
       OnClick = Ciplot1Click
     end
     object EpiCurve1: TMenuItem
-      Caption = 'EpiCurve'
+      Caption = 'Epidemic Curve'
       OnClick = EpiCurve1Click
     end
     object KMPlot1: TMenuItem

@@ -1,6 +1,6 @@
 object GraphDlg: TGraphDlg
-  Left = 581
-  Top = 268
+  Left = 350
+  Top = 151
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'h'

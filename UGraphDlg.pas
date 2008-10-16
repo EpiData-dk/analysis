@@ -334,6 +334,8 @@ begin
      and (spctest.checked)) then cmd := cmd + ' /T'; // as default do test for special causes
   if (CmdName = 'LIFETABLE') then
     cmd := cmd + ' /NOLT';
+  if (CmdName = 'PROBITPLOT') then
+     Cmd :='Cdfplot ' + copy(Cmd,12,length(CmdString)-11) + ' /p';
 end;
 
 procedure TGraphDlg.CancelBtnClick(Sender: TObject);

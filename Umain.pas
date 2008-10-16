@@ -312,6 +312,8 @@ type
     AcRunLifeTable: TAction;
     KMPlot1: TMenuItem;
     LifeTable1: TMenuItem;
+    CumulativePlot2: TMenuItem;
+    N38: TMenuItem;
 
     procedure FormCreate(Sender: TObject);
     procedure CmdEditCommand(Sender: TObject);
@@ -460,6 +462,7 @@ type
     procedure AcImportFromClipboardExecute(Sender: TObject);
     procedure AcRunKMPlotExecute(Sender: TObject);
     procedure AcRunLifeTableExecute(Sender: TObject);
+    procedure CumulativePlot2Click(Sender: TObject);
     //JL add end
   private
     dbfdata: TEpiDBFdataset;
@@ -3127,6 +3130,12 @@ end;
 procedure TaMainForm.AcRunLifeTableExecute(Sender: TObject);
 begin
   DoDlg('lifetable varlist');
+end;
+
+procedure TaMainForm.CumulativePlot2Click(Sender: TObject);
+begin
+  DoGraphDlg('ProbitPlot varlist',1,0, [EpiTyFloat,EpiTyInteger],
+             [], [GrpStdOpt],True);
 end;
 
 end.
