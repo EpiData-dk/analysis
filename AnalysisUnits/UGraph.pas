@@ -1772,7 +1772,7 @@ begin
   end;
 end;
 
-procedure OutputYIncrease(const chart: TChart);
+{procedure OutputYIncrease(const chart: TChart);
 var
   ttool: TAnnotationTool;
 begin
@@ -1782,10 +1782,13 @@ begin
     ttool.Text := FloatToStr(chart.LeftAxis.increment) + ' cases/box';
     ttool.ParentChart := chart;
     ttool.Shape.CustomPosition := true;
-    ttool.Shape.Left :=10 ; // (chart.Width - ttool.Width) div 2;
-    ttool.Shape.Top := 15;
-  end
+    ttool.Shape.Left :=5 ; // (chart.Width - ttool.Width) div 2;
+    ttool.Shape.Top := 10;
+    ttool.Shape.Frame.Visible := false;
+    ttool.Shape.Shadow.Size :=0;
+  // end
 end;
+}
 
 function TGraph.DoEpiCurve(Dataframe: TEpiDataframe; Varnames: TStrings;
                            CmdID: Word; Parameters: TVarList;
@@ -1897,10 +1900,9 @@ begin
 
     result.Legend.Title.Caption := zvec.GetVariableLabel(Parameters);
 
-{    if Parameters.VarbyName['YINC'] = nil then
-       Parameters.AddVar('YINC', 1);  }
+    //if Parameters.VarbyName['YBOX'] <> Nil then GraphCallBack := OutputYIncrease;
 
-    if Parameters.VarbyName['I'] <> Nil then GraphCallBack := OutputYIncrease;
+    if Parameters.VarbyName['YINC'] = Nil  then Parameters.AddVar('YINC', 1);
 
     // This loop resets all missing data made by expanding the dataframe
     // and ONLY creates the appropriate number of barseries for the graph.

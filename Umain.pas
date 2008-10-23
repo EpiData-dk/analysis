@@ -3017,7 +3017,7 @@ end;
 procedure TaMainForm.EpiCurve1Click(Sender: TObject);
 begin
  DoGraphDlg('EpiCurve varlist',1,1, [EpiTyFloat,EpiTyInteger,EpiTyDate,EpiTyByte],
-             [EpiTyFloat,EpiTyInteger,EpiTyBoolean,EpiTyByte], [GrpStdOpt],True);
+             [EpiTyFloat,EpiTyInteger,EpiTyBoolean,EpiTyDate,EpiTyByte], [GrpStdOpt],True);
 end;
 
 procedure TaMainForm.Pareto1Click(Sender: TObject);
