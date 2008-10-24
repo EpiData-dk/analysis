@@ -1406,7 +1406,7 @@ begin
   result:=nil;
   VarName :=NextToken.Token;
   if not IsValidEpiIdent(VarName) then
-          error(Currenttoken,' invalid variable name '+Varname);
+     error(Currenttoken,' invalid variable name '+Varname);
   if Tokenizer.Keywords.Find(AnsiUpperCase(VarName), DummyObj) then
     ErrorFmt(CurrentToken, 'Cannot use a reserved word as variable identifier: %s', [VarName]);
   VarType:= AnsiUppercase(Trim(ReadToChar));
