@@ -887,7 +887,9 @@ var
      if FileExists(path) then exit;
        Output.Text := EpiDataStat + #13
         + '* Viewer font and size: (plus editor and help windows)' + #13
-        + 'set viewer font size =' + size + #13
+        + 'set browser font size =' + size + #13
+        + 'set graph font size =' + size + #13
+        + 'set window font size =' + size + #13
         + 'set window font size =' + size + #13
         + 'set editor font size =' + size + #13
         + 'set language=' +  OTranslator.Translate(100,'en') + #13;
