@@ -138,8 +138,9 @@ implementation
 {$R *.dfm}
 uses
   UAggregate, SMUtils, UCmdProcessor, Math, UAnaToken, UDebug, pngimage,
-  cFileUtils,  uDateUtils, UTables,UStatFunctions, TeCanvas, CandleCh, UTranslation;
-
+  cFileUtils,  uDateUtils, UTables,UStatFunctions, TeCanvas, CandleCh, UTranslation, EpiDataUtils,
+  UCmdTypes;
+  
 var
   GraphForm: TGraphForm;
 
@@ -453,7 +454,7 @@ begin
     Axis.SetMinMax(min, max);
   end;
   Axis.LabelStyle := talValue;
-  Axis.LabelsSeparation := 1;
+  Axis.LabelsSeparation := 10;
   increment := Axis.CalcIncrement;
   factor := 1;
   if (increment < 1) then
@@ -1043,13 +1044,13 @@ begin
     if Grouped then
       Varnames.Delete(Varnames.IndexOf(GroupName));
 
-    if df.VectorByName[Varnames[0]].DataType <> EpiTyDate then
-    begin
+//    if df.VectorByName[Varnames[0]].DataType <> EpiTyDate then
+//    begin
       for i := df.RowCount downto 1 do
         if (not df.VectorByName[Varnames[0]].IsMissing[i]) then break;
-      df := df.ExpandDataframe(varnames, df.VectorByName[Varnames[0]].Value[1],
-                             df.VectorByName[Varnames[0]].Value[i]);
-    end;
+      df := df.ExpandDataframe(varnames, df.VectorByName[Varnames[0]].AsFloat[1],
+                             df.VectorByName[Varnames[0]].AsFloat[i]);
+//    end;
 
     if Grouped then
     begin
@@ -1080,7 +1081,7 @@ begin
     else
       result.Title.Text.Add(vec.GetVariableLabel(Parameters));
     result.BottomAxis.Title.Caption := ' ' + vec.GetVariableLabel(Parameters);
-    result.BottomAxis.LabelStyle := talAuto;
+
 
     // Create the histogram series.
     // series := Thistogramseries.create(nil);
@@ -1144,13 +1145,14 @@ begin
       result.LeftAxis.Title.Caption := 'Percent'
     else
       result.LeftAxis.Title.Caption := 'Count';
+    CalcAxisInc(Result.BottomAxis);
+    result.BottomAxis.LabelStyle := talAuto;
   finally
     if assigned(df) then FreeAndNil(df);
     if Assigned(agglist) then FreeAndNil(agglist);
     if Assigned(tvec) then FreeAndNil(tvec);
+    ODebug.DecIndent;
   end;
-  CalcAxisInc(Result.BottomAxis);
-  ODebug.DecIndent;
 end;
 
 function TGraph.DoBoxPlot(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
@@ -1849,6 +1851,9 @@ begin
         aEnd := xvec.AsInteger[i];
     end;
 
+    if Parameters.VarExists['O'] then
+      maxval := Parameters.VarbyName['O'].AsInteger;
+
     // Only records with maxvalue
     for i := 1 to dataframe.RowCount do
       if yvec.Value[i] <> maxval then
@@ -2036,7 +2041,7 @@ begin
       OutputTable.Cell[1,1] := '  ';
       OutputTable.Cell[2,1] := 'Total<br>N';
       OutputTable.Cell[3,1] := 'Cases<br>n';
-      OutputTable.Cell[4,1] := '<u>'+YVec.GetVariableLabel(Nil {Parameters}) + '</u>'+ '<br><small>Missing</small>';
+      OutputTable.Cell[4,1] := '<u>'+YVec.GetVariableLabel(Parameters) + '</u>'+ '<br><small>Missing</small>';
       OutputTable.Cell[5,1] := ' <br>Min';
       OutputTable.Cell[6,1] := ' <br>Max';
 
@@ -2054,14 +2059,17 @@ begin
         end;
     end; // show table
 
-    // add line of totals:
-    OutputTable.AddRow;
-    OutputTable.Cell[1,OutputTable.RowCount] := 'Total';
-    OutputTable.Cell[2,OutputTable.RowCount] := inttostr(total+casemis);
-    OutputTable.Cell[3,OutputTable.RowCount] := inttostr(total);
-    OutputTable.Cell[4,OutputTable.RowCount] := inttostr(casemis);
-    OutputTable.Cell[5,OutputTable.RowCount] := mints;
-    OutputTable.Cell[6,OutputTable.RowCount] := maxts;
+    if Parameters.VarbyName['NT'] = Nil then
+    begin
+      // add line of totals:
+      OutputTable.AddRow;
+      OutputTable.Cell[1,OutputTable.RowCount] := 'Total';
+      OutputTable.Cell[2,OutputTable.RowCount] := inttostr(total+casemis);
+      OutputTable.Cell[3,OutputTable.RowCount] := inttostr(total);
+      OutputTable.Cell[4,OutputTable.RowCount] := inttostr(casemis);
+      OutputTable.Cell[5,OutputTable.RowCount] := mints;
+      OutputTable.Cell[6,OutputTable.RowCount] := maxts;
+    end;
 
     footnote :=  'Outcome: ' + footnote + '<br>N<sub>non-case</sub>= ' + inttostr(noncase-total-casemis)
        {     +' .<br>' + Varnames[0] + ' : Valid N<sub>case</sub>= ' + inttostr(total) + '    Missing N<sub>case</sub>= ' + inttostr(casemis)};
@@ -3732,6 +3740,7 @@ end;
 function TGraph.AxisValue(Axis: TChartAxis; Imin, Imax: IValue; IsX: boolean): boolean;
 var
   min, max: extended;
+  s: string;
 const
   procname = 'AxisValue';
   procversion = '1.0.0.0';
@@ -3746,8 +3755,16 @@ begin
   min := Axis.Minimum;
   max := Axis.Maximum;
   try
-    min := strtofloat(Imin.AsString);
-    max := strtofloat(Imax.AsString);
+    s := Imin.AsString;
+    if MibIsDate(s, ftInteger) then
+      min := EpiStrToDatefmt(s, '%MDY')
+    else
+      min := strtofloat(s);
+    s := Imax.AsString;
+    if MibIsDate(s, ftInteger) then
+      max := EpiStrToDatefmt(s, '%MDY')
+    else
+      max := strtofloat(s);
     Axis.SetMinMax(min, max);
     Axis.LabelStyle := talValue;
   except

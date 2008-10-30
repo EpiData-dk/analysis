@@ -378,15 +378,13 @@ function TDM.PostCommand(Exp: IValue): boolean;
 begin
  if (dataframe<>nil) then
  begin
-  dataFrame.RestoreSelector;
- // browse takes away name of file.
+   dataFrame.RestoreSelector;
+   // browse takes away name of file.
  end;
   sysutils.DecimalSeparator := EpiDecSeparator;
   sysutils.DateSeparator  := EpiDateSeparator;
 
-//  ShowResult:=oldShowResult;
   SaveOuput:=false;
-// cancelled :=false;
 end;
 
 function TDM.count(cmd: TCommand): boolean;
@@ -987,7 +985,10 @@ try
       sd.Filter := 'Program file|*.pgm|All|*.*';
       sd.FilterIndex := 1;
       sd.DefaultExt :='.pgm';
-      sd.InitialDir := GetCurrentDir ;
+      if Dm.GetOptionValue('DEFAULT CURRENT DIR', opt) and (AnsiUpperCase(opt.Value) = 'ON') then
+        sd.InitialDir := GetCurrentDir
+      else
+        sd.InitialDir := '';
       if not sd.Execute then exit;
     end;
     if fn='' then
@@ -1001,18 +1002,21 @@ try
  opshow: ShowTextFile(fn, cmd);
  opRun,opRunTest:
    begin
-    if fn='' then
-    begin
+     if fn='' then
+     begin
       od.FileName :='';
-      od.InitialDir :=  GetCurrentDir;
+       if Dm.GetOptionValue('DEFAULT CURRENT DIR', opt) and (AnsiUpperCase(opt.Value) = 'ON') then
+         od.InitialDir := GetCurrentDir
+       else
+         od.InitialDir := '';
       od.Filter:= 'Program file|*.pgm|All|*.*';
       od.FilterIndex := 1;
       if not od.Execute then exit;
       fn := od.filename;
       SetCurrentDir(ExtractFileDir(fn)); //added build 118 - when remowing agopendialog
-    end;
-    if fn='' then
-     error('Missing file name', [], 101004);
+     end;
+     if fn='' then
+       error('Missing file name', [], 101004);
     case action of
     opRun:
       begin
@@ -1399,7 +1403,11 @@ begin
    od.FileName:='';
    od.Filter:= EpiDataFilter;
    od.FilterIndex := 1;
-   od.InitialDir := GetCurrentDir ;
+   if Dm.GetOptionValue('DEFAULT CURRENT DIR', opt) and (AnsiUpperCase(opt.Value) = 'ON') then
+     od.InitialDir := GetCurrentDir
+   else
+     od.InitialDir := '';
+
    if not od.Execute then exit;
  end;
  if fn='' then
@@ -1549,7 +1557,10 @@ begin
       sd.FileName:='';
       sd.Filter:= EpiDataFilter;
       sd.FilterIndex := 1;
-      sd.InitialDir := GetCurrentDir ;
+      if Dm.GetOptionValue('DEFAULT CURRENT DIR', opt) and (AnsiUpperCase(opt.Value) = 'ON') then
+        sd.InitialDir := GetCurrentDir
+      else
+        sd.InitialDir := '';
       if not sd.Execute then Error('Missing file name', [], 101004);
     end;
     if fn='' then
@@ -3029,15 +3040,15 @@ const
 begin
   ODebug.IncIndent;
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
-       if not dm.CheckDataOpen() then exit; //CheckDataOpen();
-  if Varnames.Count > 2 then
-    Error('Use: EpiCurve %s %s /by=%s', [varnames[0], varnames[1], varnames[2]], 103042);
   df := nil;
   vectorlist := nil;
   Missing := nil;
   try
     CheckVariableNo(Varnames, 2, 2);
-    
+    if not dm.CheckDataOpen() then exit; //CheckDataOpen();
+    if Varnames.Count > 2 then
+      Error('Use: EpiCurve %s %s /by=%s', [varnames[0], varnames[1], varnames[2]], 103042);
+
     Missing := TStringList.Create();
     Missing.Add(Varnames[0]);
     
@@ -3582,6 +3593,7 @@ begin
   foptions.AddObject('DEBUG LEVEL', TEpiOption.Create('DEBUG LEVEL', '0', EpiTyInteger));
   foptions.AddObject('DEBUG FILENAME', TEpiOption.Create('DEBUG FILENAME', 'moduletest.log', EpiTyString));
   foptions.AddObject('LANGUAGE',TEpiOption.Create('LANGUAGE','English',EpiTyString));
+  foptions.AddObject('DEFAULT CURRENT DIR',TEpiOption.Create('DEFAULT CURRECT DIR','ON',EpiTyBoolean));
 
   //lifetable settings
   foptions.AddObject('LIFETABLE INTERVAL',TEpiOption.Create('LIFETABLE INTERVAL', '0,7,15,30,60,90,180,360,540,720,3600,7200,15000', EpiTyString));

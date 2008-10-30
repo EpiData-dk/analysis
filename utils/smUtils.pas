@@ -68,26 +68,14 @@ function GetOpenFileName(var pfilename: string; const pFilter:string):boolean;
 
 function ValidFileName(const FileName: string): Boolean;
 
-//procedure FreeAndNil(var v);
-
 implementation
 
-//uses Uwaiting;
+uses UCmdProcessor, AnsDatatypes;
 
 type
   TTextLayout = (tlTop, tlCenter, tlBottom);
 const
   BoolChars: array[Boolean] of Char = ('F', 'T');
-
-
-procedure FreeAndNil(var v);
-begin
-  try
-    TObject(v).Free;
-  finally
-    TObject(v):=nil;
-  end;
-end;
 
 
 function smif(condition:boolean; exp1, exp2:string):string;
@@ -256,24 +244,26 @@ end;
 
 function GetOpenFileName(var pfilename: string; const pFilter:string):boolean;
 var
-sd : TOpenDialog;
+  sd : TOpenDialog;
+  opt: TEpiOption;
 begin
   result:=false;
   sd := TOpenDialog.Create(application) ;
   try
-  {   if pExt='' then
-        SD.DefaultExt:='txt'
-     else
-        SD.DefaultExt:=pExt;}
-     sd.FileName:=pFilename;
-     sd.Filter:=pFilter;
-     if sd.Filter='' then SD.Filter:='Text files (*.txt)|*.TXT|All files|*.*'
-     else SD.Filter:=SD.Filter+'|All files|*.*';
-     SD.Options:=[ofHideReadOnly,ofNoChangeDir, ofPathMustExist, ofFileMustExist,ofEnableSizing];
-     SD.Title:='Open...';
-     SD.InitialDir := GetCurrentDir;
-     result:= sd.execute;
-     if result then pfilename:=sd.Filename;
+    sd.FileName:=pFilename;
+    sd.Filter:=pFilter;
+    if sd.Filter='' then
+      SD.Filter:='Text files (*.txt)|*.TXT|All files|*.*'
+    else
+      SD.Filter:=SD.Filter+'|All files|*.*';
+    SD.Options:=[ofHideReadOnly,ofNoChangeDir, ofPathMustExist, ofFileMustExist,ofEnableSizing];
+    SD.Title:='Open...';
+    if Dm.GetOptionValue('DEFAULT CURRENT DIR', opt) and (AnsiUpperCase(opt.Value) = 'ON') then
+      sd.InitialDir := GetCurrentDir
+    else
+      sd.InitialDir := '';
+    result:= sd.execute;
+    if result then pfilename:=sd.Filename;
   finally
    sd.free;
   end;

@@ -2378,9 +2378,6 @@ begin
                  dm.PostCommand(cmd);
                  dm.UpdateBrowse(opLet);
                end;
-    //           dm.Let(fn, Param.AsIValue) ;
-    //           dm.PostCommand(cmd);
-    //           dm.UpdateBrowse(opLet);
            end;
          end;
          opGen:
