@@ -1914,10 +1914,16 @@ begin
     //clear old selection on select ''
     if exp = nil then
      Dataframe.ApplySelection(nil,true)
-    else
-    //or apply new selection as well:
-     Dataframe.ApplySelection(Exp,true);
+    else begin
+      //or apply new selection as well:
 
+      // Selector must be backed up or things will fuck up when indexing a vector.
+      Dataframe.BackupSelector;
+      Dataframe.ApplySelection(Exp,true);
+
+      // The backed up select vector mus be destroyed - it is no longer needed.
+      Dataframe.DestroyBackupSelector;
+    end;
     dataframe.RebuildRecnumber();
     if Dataframe.SelectedRowCount=0 then
      info('No records available', [], 203024);

@@ -503,8 +503,9 @@ public
    function Sort(const varname: string): boolean; overload;
    function RebuildRecnumber():boolean;
    function Clone(varnames: Tstrings):TEpiDataFrame; deprecated;
-   function BackupSelector:boolean;
-   function RestoreSelector:boolean;
+   function BackupSelector: boolean;
+   function DestroyBackupSelector: boolean;
+   function RestoreSelector: boolean;
    function GetValueBlockPointer(const labname:string): TLabelValueList;
 //   function RowSelectToRowNoselect(aRowNo: integer): integer;
    function RowNoselectToRowSelect(aRowNo: integer): integer;
@@ -698,12 +699,18 @@ begin
   fBackupSelector := fSelectVector.Clone(self);
 end;
 
+function TEpiDataFrame.DestroyBackupSelector: boolean;
+begin
+  if Assigned(fBackupSelector) then
+    FreeAndNil(fBackupSelector);
+end;
+
 function TEpiDataFrame.RestoreSelector: boolean;
 begin
   if assigned(fBackupSelector) then
   begin
-      fSelectVector.AssignData(fBackupSelector);
-     FreeAndNil(fBackupSelector);
+    fSelectVector.AssignData(fBackupSelector);
+    FreeAndNil(fBackupSelector);
   end;
 end;
 
