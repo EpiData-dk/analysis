@@ -2499,7 +2499,6 @@ begin
         IF Sender=ReadDataBtn THEN internalruncommand('read');
         IF Sender=GraphBtn THEN GraphSubMenu.PopUp(p.x,p.y);
         IF Sender=BrowseDataBtn THEN internalRunCommand('browse');
-        IF Sender=GraphBtn THEN GraphSubMenu.PopUp(p.x,p.y);
         IF Sender=DescribeBtn THEN DescribeSubMenu.PopUp(p.x,p.y);
         IF Sender=EditorBtn THEN AcEditorExecute(Self);
         {  IF Sender=ExportDataBtn THEN ExportDataPopUp.PopUp(p.x,p.y);   }
