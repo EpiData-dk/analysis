@@ -1175,8 +1175,8 @@ begin
         MatrixIn[i,j]:= MatrixIn [i,j] / dDiver;
         MatrixOut[i,j]:= MatrixOut[i,j] / dDiver;
       except
+        dm.error('Error div by 0 inverting matrices.', [], 43001);
         Raise Exception.Create('Error div by 0 inverting matrices.');
-        dm.error('Error div by 0 inverting matrices.', [], 119001);
       end;
     end;
 
@@ -1223,8 +1223,8 @@ begin
         MatrixIn[i,j]:= MatrixIn[i,j] / dDiver;
         MatrixOut[i,j]:= MatrixOut[i,j] / dDiver;
       except
+        dm.error('Error div by 0 inverting matrices.', [], 43001);
         Raise Exception.Create('Error div by 0 inverting matrices.');
-        dm.error('Error div by 0 inverting matrices.', [], 119001);
       end;
     end;
 
@@ -2393,7 +2393,7 @@ begin
         Beta0 := YMean - ( Beta1 * XMean );    // Intercept(b0)
       except
 //        Raise Exception.Create('Divide by zero calculating r, B1 or B0');
-        DM.ERROR('Correlation undefined: Divide by zero calculating r, B1 or B0', [], 119002);
+        DM.ERROR('Correlation undefined: Divide by zero calculating r, B1 or B0', [], 43002);
 
       end;
       z:= 0.5 * ln ( ( ( 1.0 + r ) + dTINY ) / ( ( 1.0 - r ) + dTINY ) );

@@ -79,7 +79,7 @@ begin
         FCurLanguage:='ENGLISH';
         dm.SetOptionValue('LANGUAGE', 'ENGLISH', true);
         FLanStr.Clear;
-        dm.error('Could not open languagefile %s',[s], 118001,-1);
+        dm.error('Could not open languagefile %s',[s], 42001,-1);
         //Next line did not send message, therefore the former line (JL 28dec 2007)
         exception.Create(Format('Could not open languagefile %s',[s]));
 
@@ -122,7 +122,7 @@ BEGIN
     END
   ELSE
     BEGIN
-      Result:=FLanStr.Values[IntToStr(code)];
+      Result:=UTF8toAnsi(FLanStr.Values[IntToStr(code)]);
       IF Result='' THEN
         begin
           if {not} FReturnOrigText then result:=origtext else Result:='**'+IntToStr(code)+'**';
@@ -147,7 +147,7 @@ BEGIN
   FOR n:=0 TO AForm.ComponentCount-1 DO
     BEGIN
       aTag:=AForm.Components[n].Tag;
-      IF aTag=0 then CONTINUE;
+      IF aTag=-1 then CONTINUE;
 
       // Try if local text available first and use as original text.
       if LoadString(hInstance,aTag,a,SizeOf(a)) <> 0 then

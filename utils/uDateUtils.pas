@@ -661,9 +661,9 @@ var
 begin
   if not EpiIsValidYMD(Y, M, D) then
         if obs = -1 then
-          dm.Info('Invalid year %d, month %d, day %d', [Y, M, D], 221001)
+          dm.Info('Invalid year %d, month %d, day %d', [Y, M, D], 45001)
         else
-          dm.Info('Obs. %d Invalid year %d, month %d, day %d', [obs,Y, M, D], 221002);
+          dm.Info('Obs. %d Invalid year %d, month %d, day %d', [obs, Y, M, D], 45002);
   //  raise EEpiDateException.Create(Format('invalid year %d, month %d, day %d',[Y, M, D]));
 
   IsLeap := ((Y mod 4) = 0) and
@@ -680,19 +680,6 @@ var
   typ :TEpiDateFormat;
 //  typ: TFeltTyper;
 begin
-{  sf :=AnsiUppercase(trim(fmt));
-  if sf= '' then typ :=dfdmy
-  else if sf='DMY' then typ :=dfdmy
-  else if sf='MDY' then typ:=dfmdy
-  else if sf='YMD' then typ :=dfymd
-  else if sf='V' then typ := dfdmy
-  else if sf='MDYV' then typ:=dfmdy
-  else if sf='YMDV' then typ :=dfymd
-  else raise EEpiDateException.createfmt('Invalid format: %s',[fmt]);
-  EpiStrToDate(s,Result,typ);
-  if (result = NA_Date) and (pos('V',sf) > 0) then
-     result :=EpiStrToDatefmt('01/01/1800','DMY');  }
-
   sf := AnsiUppercase(trim(fmt));
   ns := s;
   if sf= '' then typ :=dfdmy

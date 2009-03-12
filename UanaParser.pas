@@ -77,7 +77,7 @@ TAnaExecutor=class
     function ExecuteImIF(Exp: IValue): boolean;
     function ParseCommandLine(cmdline: string;DoQuery: boolean=true): TCommandList;
     function GetVariableListByName(varnames: Tstrings; VarScope: integer=-1): TVarList;
-public
+  public
     constructor Create(pOwner:TObject);
     Destructor Destroy;override;
     function FindVar(const vname: string): IValue;
@@ -93,6 +93,7 @@ public
     function RunScriptAsString(const Script: string): integer;
 //    function CloseMenuScript(const FileName:string=''):boolean;
     function ExpandMacros(const code:string):string;
+    function ExpandOptions(const code:string):string;
     procedure RunTimeError(const msg:string='Unknown Run time error');
     function Expandlist(items, expandeditems: TStringlist): boolean;
     function FindVector(const vname:string):TEpiVector;
@@ -172,7 +173,8 @@ end;
 
 implementation
 
-uses UparserErrors,UCmdProcessor,UVectorVar,Ustack,SGrep, CStrings, Umain, uDateUtils, UDebug;
+uses UparserErrors,UCmdProcessor,UVectorVar,Ustack,SGrep, CStrings, Umain, uDateUtils, UDebug,
+     UTranslation;
 
 const
   UnitName = 'UAnaParser';
@@ -232,17 +234,20 @@ begin
 
     opErasePng: result:=ParseTypicalCommand(Currenttoken.TokenSubType, [], 'NOCONFIRM ALL D ');
     opPie : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options +  GRAPH_OPTIONS);
-    opBar : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options +  GRAPH_OPTIONS +' PCT XALL SORT M ');
-    opHistogram, opShortHistogram: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' XONLY  SORT M PCT ' + Gnrl_options + GRAPH_OPTIONS);
+    opBar : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options +  GRAPH_OPTIONS + ' PCT XALL M ');
+    opHistogram, opShortHistogram: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' XONLY SORT M PCT ' + Gnrl_options + GRAPH_OPTIONS);
     opLine: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + ' M BYC BYS ');
     opScatter, opShortScatter: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + ' M BYC BYS ');
-    opPchart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options +  GRAPH_OPTIONS + SPC_OPTIONS + ' TAB NCVI ');
-    opIchart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB NCVI ');
-    opRunChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB NCVI ');
+    opPchart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options +  GRAPH_OPTIONS + SPC_OPTIONS + ' TAB ');
+    opIchart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB MR ');
+    opRunChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB ');
     opPareto: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS);
-    opXChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB NCVI ');
+    opXBar: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' SIGMA RANGE ');
+    opGChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS);
+    opCChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' PER ');
+    opUChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' PER ');
 
-    opEpiCurve : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' NT '+ ' '  + Gnrl_options + GRAPH_OPTIONS );
+    opEpiCurve : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' NT O '+ ' '  + Gnrl_options + GRAPH_OPTIONS );
 
     opCDFPlot : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' AGG P ' + ' '  + Gnrl_options + GRAPH_OPTIONS );
     opCIPlot : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' NM O NL NOCI NOTOT NT ' + Gnrl_options + GRAPH_OPTIONS );
@@ -252,9 +257,10 @@ begin
     opFreq :result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' M NM CI ' + Gnrl_options + PCT_OPTIONS + FMT_OPTIONS);
     opTables, opShortTables: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options + SORT_OPTIONS + STAT_OPTIONS +
                                           PCT_OPTIONS + FMT_OPTIONS + ' NM FV M S F NT NC NCS ');
-    opTableDialog: result:=ParseParamLessCommand(opTableDialog);
+    opTableDialog: result := ParseParamLessCommand(opTableDialog);
+    opGraphDialog: result := ParseParamLessCommand(opGraphDialog);
 
-    opShortLifeTable,opLifeTable: result := ParseTypicalCommand(Currenttoken.TokenSubType, [PCAllowVarList,PCAllowIf], Gnrl_options + PCT_OPTIONS + FMT_OPTIONS + GRAPH_OPTIONS + ' BY W END NG ADJ M REF NOCI NOLT T I O CLOSE EXIT MT P25 P50 P75 TIME');
+    opShortLifeTable,opLifeTable: result := ParseTypicalCommand(Currenttoken.TokenSubType, [PCAllowVarList,PCAllowIf], Gnrl_options + PCT_OPTIONS + FMT_OPTIONS + GRAPH_OPTIONS + ' BY W NG ADJ M REF NOCI NOLT T I O CLOSE EXIT MT P25 P50 P75 TIME');
 
     opDescribe, opShortDescribe :result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + 'NM');
     opMeans, opShortMeans: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + FMT_OPTIONS + 'T BY M ');
@@ -267,7 +273,7 @@ begin
 
     opKWallis: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_Options + ' BY M ');
 
-    opRegress,opCorrelate,opShortCorrelate : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf]);
+    opRegress,opCorrelate,opShortCorrelate : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], 'Q');
 
     opSort   :result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList]);
     opLet,opAssign: Result:=ParseLetCommand(Currenttoken.TokenSubType);
@@ -306,7 +312,7 @@ begin
       opMkDir: result:=ParseRestOfLine(Currenttoken.TokenSubType);
     opCopyFile: result:=Parse2FileDOSCommand(Currenttoken.TokenSubType, ' REPLACE ');
 
-    opLogOpen:result:=ParseFilenameWithOptionsCommand(Currenttoken.TokenSubType, 'REPLACE CLOSE APPEND CONTINUE C');
+    opLogOpen:result:=ParseFilenameWithOptionsCommand(Currenttoken.TokenSubType, 'REPLACE CLOSE APPEND');
     opLOGCLOSE:result:=ParseParamLessCommand(opLogClose);
 
     opIMMEDIATE: ParseandIgnore(Currenttoken.TokenSubType);
@@ -318,7 +324,7 @@ begin
     opLabelValue, opMissingValue: result := ParseValueLabelCommand(CurrentToken.TokenSubType)
   else
       //error(Currenttoken,'Command not implemented yet');
-    dm.error('%s : Command not implemented yet', [Currenttoken.Token], 101001);
+    dm.error('%s : Command not implemented yet', [Currenttoken.Token], 21001);
   end;//case
   end else if Currenttoken.TokenGroup = opIdentifier then
   begin
@@ -326,12 +332,12 @@ begin
        Result:=ParseLetCommand(opLet,Currenttoken.token)
      else
        //error(Currenttoken,'Unknown Command');
-       dm.error('%s : Unknown Command', [Currenttoken.Token], 101002);
+       dm.error('%s : Unknown Command', [Currenttoken.Token], 21002);
 //      dm.error(Currenttoken.Token + ' : Command not implemented yet');
   end
   else
      //error(Currenttoken,'Unknown Command ');
-     dm.error('%s : Unknown Command', [Currenttoken.Token], 101002);
+     dm.error('%s : Unknown Command', [Currenttoken.Token], 21002);
 end;
 
 
@@ -482,7 +488,7 @@ begin
   Params.AddVar(TVar.Create('VARLABEL', text));
   text := trim(ReadToEOL());
   if text <> '' then
-    dm.Info('add " "', [], 201001);
+    dm.Info('Add " "', [], 21005);
   result:=TCommand.Create(pCommandID,Params);
 end;
 
@@ -663,7 +669,7 @@ begin
       if val = '?' then         // show the value of that one option
       begin
         dm.GetOptionValue(tok,option);
-        dm.info('%s = %s', [tok, option.value], 201002);
+        dm.info('%s = %s', [tok, option.value], 21006);
         FreeAndNil(setlist);
         exit;
       end else begin
@@ -704,7 +710,7 @@ begin
   RecodeList:=TStringList.create;
   tok := AnsiUppercase(lookaheadtoken.Token);
   if not (tok = 'TO') then
-    dm.info('Note: Recode without "TO" destroys data.', [], 201003);
+    dm.info('Note: Recode without "TO" destroys data.', [], 21007);
   if (tok='AS') or (tok='TO') then
   begin
     Nexttoken;
@@ -1040,7 +1046,7 @@ begin
       expStr := copy(expStr,1,pos('//',expstr)-1);
 
     iPos := pos('/Q', AnsiUppercase(expStr));
-    if iPos > 0  then              // cannot find '/Q'  Why ??
+    if iPos > 0  then              
     begin
       quiet := true;
       expStr := Copy(expStr, 1, iPos-1) +
@@ -1741,18 +1747,17 @@ Var
   I,len  : integer;
   S: string;
 Begin
- len :=Length(output);
- If len > 0 Then
+  len :=Length(output);
+  If len > 0 Then
     For I:=1 To len Do
-       Case output[I] Of
-          '&': S := S + '&amp;';
-          '<': S := S + '&lt;';
-          '>': S := S + '&gt;';
-          #9,#32: S := S + '&nbsp;';
-//          VK_SPACE
-       Else
-          S := S + output[I];
-       End;{Case}
+      Case output[I] Of
+        '&': S := S + '&amp;';
+        '<': S := S + '&lt;';
+        '>': S := S + '&gt;';
+        #9,#32: S := S + '&nbsp;';
+      Else
+        S := S + output[I];
+      End;{Case}
   if assigned(OnShowOutput) then
       OnShowOutput(S);
 end;
@@ -1854,38 +1859,37 @@ var
  i,j,co : integer;
  cmd,s,s1 :string;
 begin
- result:=cmdline;
- s:=trim(cmdline);
- if length(s)=0 then exit;
- i :=pos('?',s);
- if i=0 then exit;
- s :=copy(s,i+1,maxInt);
- j :=pos('?',s);
- if j=0 then exit;
- s1:=trim(copy(s,1,j-1));
- if s1<>'' then
- begin
-   if Ansiuppercase(s1)='<OPENDATAFILE>' then
-   begin
-    if not GetOpenFileName(cmd,EpiDataFilter) then cmd:='';
-    if cmd='' then RunTimeError('Missing file name');
-    result:= copy(cmdline,1,i-1) +' "' + cmd + '" '+ copy(s1,j+1,MaxInt);
-    exit;
-   end
-   else
-   if Ansiuppercase(s1)='<SAVEDATAFILE>' then
-   begin
-    if not GetSaveFileName(cmd,EpiDataFilter,'.REC') then cmd:='';
-    if cmd='' then RunTimeError('Missing file name');
-     result:= copy(cmdline,1,i-1)  +' "' + cmd + '" '+ copy(s1,j+1,MaxInt);
-    exit;
-   end
- end;
- if inputQuery('',s1,cmd) then
- begin
-    result:= copy(cmdline,1,i-1) +' ' + cmd +
-     ' '+ copy(s,j+1,MaxInt);
- end;
+  result := cmdline;
+  s := trim(cmdline);
+  if length(s) = 0 then exit;
+  i := pos('?', s);
+  if i = 0 then exit;
+  s := copy(s, i+1, maxInt);
+  j := pos('?', s);
+  if j = 0 then exit;
+  s1 := trim(copy(s, 1, j-1));
+  if s1 <> '' then
+  begin
+    if Ansiuppercase(s1)='<OPENDATAFILE>' then
+    begin
+      if not GetOpenFileName(cmd,EpiDataFilter) then cmd:='';
+      if cmd='' then RunTimeError('Missing file name');
+      result:= copy(cmdline,1,i-1) +' "' + cmd + '" '+ copy(s1,j+1,MaxInt);
+      exit;
+    end
+    else
+    if Ansiuppercase(s1)='<SAVEDATAFILE>' then
+    begin
+      if not GetSaveFileName(cmd,EpiDataFilter,'.REC') then cmd:='';
+      if cmd='' then RunTimeError('Missing file name');
+       result:= copy(cmdline,1,i-1)  +' "' + cmd + '" '+ copy(s1,j+1,MaxInt);
+      exit;
+    end
+  end;
+  if inputQuery('', s1, cmd) then
+  begin
+    result:= copy(cmdline,1,i-1) +' ' + cmd + ' ' + copy(s,j+1,MaxInt);
+  end;
 end;
 
 Type
@@ -2122,6 +2126,61 @@ begin
    raise EAnaExecutor.Create(format('%s' + #13#10+ 'At line %d',[Msg,Token.line]));
 end;
 
+function TAnaExecutor.ExpandOptions(const code: string): string;
+var
+  addopt, cmd, vname: string;
+  opt: TEpiOption;
+  i: integer;
+  SPCList, GraphList: TStrings;
+  InCaption: boolean;
+
+const
+  SPC_COMMANDS    = 'XBAR,UCHART,CCHART,GCHART,ICHART,PCHART,RUNCHART,PARETO';
+  GRAPH_COMMANDS  = 'BOX,BOXPLOT,SCA,SCATTER,LINE,PIE,HIS,HISTOGRAM,BAR,DOTPLOT,CDFPLOT,' +
+                    ',CIPLOT,EPICURVE,' + SPC_COMMANDS;
+begin
+  cmd := AnsiUpperCase(GetVarName(code, 1));
+  addopt := '';
+  opt := nil;
+  InCaption := false;
+
+  SPCList := TStringList.Create();
+  SplitString(SPC_COMMANDS, SPCList, [',']);
+  GraphList := TStringList.Create();
+  SplitString(GRAPH_COMMANDS, GraphList, [',']);
+
+  if Dm.Options.Find('OPTION ' + Cmd, i) then
+    addopt := TEpiOption(Dm.Options.Objects[i]).Value;
+
+  if SpcList.IndexOf(cmd) > -1 then
+    dm.GetOptionValue('OPTION SPC', opt)
+  else if GraphList.IndexOf(cmd) > -1 then
+    dm.GetOptionValue('OPTION GRAPH', opt);
+
+  if Assigned(opt) then
+    addopt := addopt + ' ' + opt.Value;
+
+  result := code;
+  if Addopt = '' then exit;
+
+  // FixMe:
+  // Idea - search backwards through the command string - if and "IF" is encountered,
+  // this might be the place to put the additional options. However - be aware
+  // that the word "if" may also be part of some arbitrary option value.
+  for i := Length(code) downto Length(cmd) do
+  begin
+    if (AnsiUpperCase(code[i]) = '"') then InCaption := not InCaption;
+    if InCaption then Continue;
+    if (AnsiUpperCase(code[i]) = 'I') and (AnsiUpperCase(code[i+1]) = 'F') then
+      break;
+  end;
+
+  if i = Length(cmd)-1 then
+    result := Code + ' ' + Addopt
+  else
+    result := CopyLeft(Trim(code), i-1) + addopt + ' ' + CopyRight(Trim(Code), (Length(code) - i) + 1);
+end;
+
 //TODO optimize this code freq run
 function TAnaExecutor.ExpandMacros(const code: string): string;
 var
@@ -2134,57 +2193,55 @@ begin
   i:=1;
   while i <= len do
   begin
-      if (code[i]='@') {and (i<len-1) and (upcase(code[i+1])='G')} then
-      begin
+    if (code[i]='@') then
+    begin
       if (i<len-1) and (code[i+1]='@') then
-       begin
-         result:=result+'@';
-         inc(i,2);
-       end
-       else
-       begin
-         idstr:='';
-         inc(i);
-         while (i<=len) and (code[i] in ['A'..'Z', 'a'..'z', '0'..'9', '_', '$' ])  do
-         begin
-           idstr := idstr + code[i];
-           inc(i);
-         end;
-         macval:='';
-         if (code[i]='(') then
-         begin
-           macval := macval+code[i];
-           inc(i);
-           while (i<=len) and (code[i] in [',', '0'..'9']) do
-           begin
-             macval := macval+code[i];
-             inc(i);
-             moreparameters := true;
-           end;
-         end;
-         if moreparameters then
-           if not (code[i] = ')') then
-             RunTimeError('Incorrectly formed paramters!')
-           else 
-             inc(i);
-         idstr:=trim(idstr);
-         if idstr='' then
-           runtimeerror('Invalid use of @, missing variable name');
-         gvar := Findvar(idstr);
-         if gvar <> nil then
-           if moreparameters then
-             result:=result + IntToStr(gvar.Value[strtoint(macval[2]), strtoint(macval[4])])
-           else
-             result:=result + gvar.AsString
-         else
-          runtimeerror(format('Variable %s not found',[idstr]))
-        end;
-      end
-      else
       begin
-         result:=result+code[i];
-         inc(i);
-      end;                          
+        result:=result+'@';
+        inc(i,2);
+      end else begin
+        idstr:='';
+        inc(i);
+        while (i<=len) and (code[i] in ['A'..'Z', 'a'..'z', '0'..'9', '_', '$' ])  do
+        begin
+          idstr := idstr + code[i];
+          inc(i);
+        end;
+        macval:='';
+        if (code[i]='(') then
+        begin
+          macval := macval+code[i];
+          inc(i);
+          while (i<=len) and (code[i] in [',', '0'..'9']) do
+          begin
+            macval := macval+code[i];
+            inc(i);
+            moreparameters := true;
+          end;
+        end;
+        if moreparameters then
+          if not (code[i] = ')') then
+            RunTimeError('Incorrectly formed paramters!')
+          else
+            inc(i);
+        idstr:=trim(idstr);
+        if idstr='' then
+          runtimeerror('Invalid use of @, missing variable name');
+        gvar := Findvar(idstr);
+        if gvar <> nil then
+          if moreparameters then
+            result:=result + IntToStr(gvar.Value[strtoint(macval[2]), strtoint(macval[4])])
+          else
+            result:=result + gvar.AsString
+        else
+          runtimeerror(format('Variable %s not found',[idstr]))
+      end;
+    end
+    else
+    begin
+      result:=result+code[i];
+      inc(i);
+    end;                          
   end;
 end;
 
@@ -2221,16 +2278,20 @@ begin
   cmdlst :=nil;
   try
     if DoQuery then
-      cmdline:=ExpandMAcros(ProcessQuery(cmdline));
+      cmdline := ExpandMacros(ProcessQuery(cmdline));
+
+    // Insert specific global set options.
+    cmdline := ExpandOptions(cmdLine);
+
     Dm.Sendoutput;
     DoShowOutput(cmdline);
     //this is CMD call
     if IsValidIdent(trim(cmdline)) then
     begin
-      cmdblk:=Globalcmdlist.Find(trim(cmdline));
+      cmdblk := GlobalCmdList.Find(trim(cmdline));
       if cmdblk <> nil then
       begin
-        result:=RunBlock(cmdblk.CommandLines,nil,Globalcmdlist)=1;
+        result := RunBlock(cmdblk.CommandLines, nil, Globalcmdlist) = 1;
         exit;
       end;
     end;
@@ -2239,8 +2300,8 @@ begin
     fAnaparser := TAnaParser.CreateString(self,cmdLine);
     fAnaParser.onError :=self.ParserErrHandler;
     cmdlst:=fAnaParser.ParseFile;
-if cmdlst<> nil then
-        result:=ExecuteCommandList(cmdLst);
+    if cmdlst<> nil then
+      result:=ExecuteCommandList(cmdLst);
   finally
     cmdlst.free;
     ODebug.DecIndent;
@@ -2349,7 +2410,7 @@ begin
              dm.Merge(GetFileName, GetVarList, Cmd);
            end;
          opRelate:
-           dm.error('RELATE replaced by MERGE command - see help file', [], 101003);
+           dm.error('RELATE replaced by MERGE command - see help file', [], 21003);
          opImIf:
            begin
               Param :=cmd.ParamByName['BOOLEXP'];
@@ -2447,8 +2508,14 @@ begin
          begin
                 dm.Scatter(GetVarList, cmd);
          end;
-         opXChart:
-                dm.XChart(GetVarList, cmd);
+         opCChart:
+                dm.CChart(GetVarList, cmd);
+         opUChart:
+                dm.UChart(GetVarList, cmd);
+         opGChart:
+                dm.GChart(GetVarList, cmd);
+         opXBar:
+                dm.XBar(GetVarList, cmd);
          OpIChart, opRunChart:
          begin
                 dm.IChart(GetVarList, cmd);
@@ -2521,7 +2588,7 @@ begin
          opList :
          begin
                 dm.list(GetVarList,Cmd);
-                dm.Info('Note browse is faster than list', [], 201004);
+                dm.Info('Note browse is faster than list', [], 21008);
          end;
          opMeans, opShortMeans:
          begin
@@ -2529,11 +2596,11 @@ begin
          end;
          opRegress:
          begin
-              dm.Regress(GetVarList);
+              dm.Regress(GetVarList, cmd);
          end;
          opCorrelate, opShortCorrelate:
          begin
-              dm.Correlate(GetVarList);
+              dm.Correlate(GetVarList, Cmd);
          end;
          opKWallis:
          begin
@@ -2625,9 +2692,7 @@ begin
            Param :=cmd.ParamByName['LOOPOBJ'];
            dm.Doloop(param.AsObject);
         end;
-        opAggregate, opShortAggregate
-//        ,opStables,opShortStables
-        :
+        opAggregate, opShortAggregate:
         begin
           dm.Aggregate(GetVarList, Cmd);
         end;
@@ -2636,6 +2701,7 @@ begin
           dm.Stattables(GetVarList, Cmd);
         end;  
         opTableDialog: AMainForm.AcRunTableExecute(Self);
+        opGraphDialog: dm.ShowGraphDialog(cmd);
         opClose: dm.closefile;
         opQuit, opExit: dm.quit(cmd.CommandID);
         end;//case
@@ -2693,7 +2759,7 @@ begin
       raise EExpression.CreateFmt('Identifier %s does not require parameters', [Identifier]);
 //add checkdataopen(attmept:boolean)
     if (dm=nil) then
-      dm.error('Missing file name', [] , 101004, 0);
+      dm.error('Missing file name', [] , 21004, 0);
       if not dm.CheckDataOpen(False) then exit;  // dm.CheckDataOpen(false);
     Result:= TFrameVar.Create(dm.dataframe,varname);
    end;
@@ -2855,6 +2921,8 @@ begin
   begin
     TVar(SystemVariables.VarbyName['SYSTEMDATE'].GetObject).SetValue(EpiDateToStr(EpiToday,dfDMY,10));
     TVar(SystemVariables.VarbyName['SYSTEMTIME'].GetObject).SetValue(timetostr(Now));
+    TVar(SystemVariables.VarbyName['LANG'].GetObject).SetValue(OTranslator.LanguageAbbriv);
+    TVar(SystemVariables.VarbyName['CURRENTDIR'].GetObject).SetValue(GetCurrentDir);
   end;
   // RunTimeError('Clearing Systemvariables not allowed');
   end;//case

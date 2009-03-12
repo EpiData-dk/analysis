@@ -194,7 +194,7 @@ begin
   Viewer.LoadFromFile(loadfile);
   Self.Caption := Viewer.DocumentTitle;
   Found:= Viewer.Find(HelpText, false);
-  if (not found) then dm.info('Not found: %s', [helptext], 205001);
+  if (not found) then dm.info('Not found: %s', [helptext], 25001);
       OldHelpText := HelpText;
 end;
 

@@ -199,8 +199,8 @@ begin
           if meanvar.caption = '' then
             begin
               if CmdName = 'MEANS' then
-                dm.info('Select at least one variable', [], 104001)
-              else dm.error('Select two variables', [], 104002);
+                dm.info('Select at least one variable', [], 24000)
+              else dm.error('Select two variables', [], 24001);
               exit;
             end;
 
@@ -318,11 +318,11 @@ begin
           if (cmdname = 'REGRESS') or (cmdname = 'CORRELATE' ) then
             ByVar.Caption := ByVar.Caption + ' ' + GetVar.Items[GetVar.ItemIndex]
           else if (cmdname = 'MEANS' ) then
-            dm.error('Max two variables', [], 104003, -1)
+            dm.error('Max %d variables', [2], 24002, -1)
           else if (cmdname = 'LIFETABLE') and (j = 3) then
             TimeVar.Caption := GetVar.Items[GetVar.ItemIndex]
           else
-            dm.error('Max three variables', [], 104003, -1);
+            dm.error('Max %d variables', [3], 24002, -1);
 end;
 
 

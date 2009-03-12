@@ -109,7 +109,7 @@ implementation
 {$R *.dfm}
 uses
   UEpiDataTypes, ansDatatypes, UCmdProcessor, UMain, UDocument, ClipBrd, UIniFile, EpiDataUtils,
-  UTranslation;
+  UTranslation, Math;
 
 resourcestring
   SelectString = 'Select %s as ID';
@@ -141,7 +141,7 @@ begin
 
   if Assigned(OUpdateForm) then FreeAndNil(OUpdateForm);
   OUpdateForm := TUpdateForm.Create(Application, df.Vectors, '', true);
-  OUpdateForm.Caption := OTranslator.Translate(0, 'Browse');
+  OUpdateForm.Caption := 'Browse';
   OUpdateForm.UpdateMenu.Items[0].Enabled := false;
   OUpdateForm.Show;
   Browsing := true;
@@ -152,7 +152,7 @@ begin
   try
     if Assigned(OUpdateForm) then FreeAndNil(OUpdateForm);
     OUpdateForm := TUpdateForm.Create(Application, vectorlist, VectorID, false);
-    OUpdateForm.Caption := OTranslator.Translate(0, 'Update');
+    OUpdateForm.Caption := 'Update';
     OUpdateForm.Button2.Visible := false;
     OUpdateForm.ShowModal;
   finally
@@ -162,11 +162,12 @@ end;
 
 function TUpdate.UpdateBrowseWindow(df: TEpiDataFrame): boolean;
 begin
+  result := false;
   if not Assigned(OUpdateForm) then exit;
   if not OUpdateForm.FBrowse then exit;
   if Assigned(fVarnames) then FreeAndNil(fVarnames);
   fVarnames := df.GetVectorNames(nil);
-  OUpdateForm.VectorList := df.Vectors;
+  OUpdateForm.VectorList := df.GetVectorListByName(nil);
   result := true;
 end;
 
@@ -178,6 +179,7 @@ end;
 procedure TUpdate.CloseBrowse();
 begin
   if Assigned(OUpdateForm) then FreeAndNil(OUpdateForm);
+  if Assigned(fVarNames) then fVarNames.Clear;
 end;
 
 function TUpdate.CurrentVarnames(): TStrings;
@@ -252,14 +254,16 @@ begin
   begin
     dw := Round(DataGrid.canvas.TextWidth(FVectorList[i-1].name)*1.3);
     if dw < DataGrid.Canvas.TextWidth('WWW') then dw := DataGrid.Canvas.TextWidth('WWW');
-    rc := 5;
+    rc := 25;
     if rc > FVectorList.DataFrame.RowCount then rc := FVectorList.DataFrame.RowCount;
+    if FVectorList[i-1].DataType = EpiTyDate then
+      dw := Math.Max(dw, Round(DataGrid.Canvas.TextWidth('00/00/0000')*1.3));
     for j:= 1 to rc do
     begin
        rw := Round(DataGrid.Canvas.TextWidth(FVectorList[i-1].AsString[j])*1.3);
-       if dw < rw then dw:= rw;
+       rw := Math.Max(rw, Round(DataGrid.Canvas.TextWidth(FVectorList[i-1].GetValueLabel(FVectorList[i-1].AsString[j]))*1.3));
     end;
-    DataGrid.ColWidths[i] := dw;
+    DataGrid.ColWidths[i] := Math.Max(dw, rw);
   end;
 end;
 
@@ -381,14 +385,11 @@ end;
 procedure TUpdateForm.DataGridSetEditText(Sender: TObject; ACol,
   ARow: Integer; const Value: String);
 begin
-//  FVectorList[ACol-1].AsString[ARow] := Value;
   FEditText := Value;
 end;
 
 procedure TUpdateForm.DataGridKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
-var
-  t: TGridRect;
 begin
   if DataGrid.EditorMode then
   begin
@@ -490,7 +491,8 @@ end;
 
 procedure TUpdateForm.DataGridDblClick(Sender: TObject);
 begin
-  DataGrid.EditorMode := true;
+  if not FBrowse then
+    DataGrid.EditorMode := true;
 end;
 
 procedure TUpdateForm.FormShow(Sender: TObject);

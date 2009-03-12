@@ -144,8 +144,7 @@ var
 begin
   co := count;
   for Result := 0 to Co - 1 do
-//    showmsg(TVar(Items[Result]).ParamName);
-    if AnsiCompareText(IValue(Items[Result]).VarName,VarName) = 0 then Exit;
+    if AnsiCompareText(IValue(Items[Result]).VarName, VarName) = 0 then Exit;
   Result := -1;
 end;
 

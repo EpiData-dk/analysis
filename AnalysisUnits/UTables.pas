@@ -535,7 +535,7 @@ begin   // do the actual work here:
           Sumtable.pSumCHI := 0;
           end;
     except
-      dm.error('2x2 table stats error %d', [i], 117001);
+      dm.error('2x2 table stats error %d', [i], 41001);
     end;
     // rr estimation:
     CalculateRRMH(Sumtable);
@@ -581,8 +581,8 @@ begin
     // step 1a: test combination of options:
     if (cmd.ParamExists['CT']) then
     begin
-      if (cmd.ParamExists['O']) and (cmd.ParamExists['AR']) then dm.error('Use either %s or %s', ['/O', '/AR'], 117002);
-      if (cmd.ParamExists['O']) and (cmd.ParamExists['RR']) then dm.error('Use either %s or %s', ['/O', '/RR'], 117002);
+      if (cmd.ParamExists['O']) and (cmd.ParamExists['AR']) then dm.error('Use either %s or %s', ['/O', '/AR'], 41002);
+      if (cmd.ParamExists['O']) and (cmd.ParamExists['RR']) then dm.error('Use either %s or %s', ['/O', '/RR'], 41002);
     end;
 
     // step 1b: Weighted option
@@ -601,7 +601,7 @@ begin
 
     // step 1c: Preparing dataframe.
     df := OAggregate.AggregateDataframe(dataframe, TStringList(varnames), agl, Cmd);
-    // OAggregate.OutAggregate(df, TCommand.Create(opTables, Cmd.ParameterList));
+//    OAggregate.OutAggregate(df);
 
     // Step 1d: Which table type?
     if (varnames.Count = 1) or (cmd.ParamByName['F'] <> nil) or (cmd.CommandID = opFreq) then
@@ -705,7 +705,7 @@ var
   S, T: string;
   i: integer;
 begin
-  dm.Info('Option ''FV'' not fully implemented in tables command. e.g. <br> /t could give <font style="color: red">internal error</font>', [], 217001);
+  dm.Info('Option ''FV'' not fully implemented in tables command. e.g. <br> /t could give <font style="color: red">internal error</font>', [], 41007);
   try
     // Step 2a: Create sumtable.
     SumTab := CreateFVTable(Dataframe, varnames);  // frequency tables
@@ -888,6 +888,18 @@ var
   colheader, rowheader: string;
   opt:                  TEpiOption;
   dataframe:            TEpiDataFrame;
+  Cont:                 Boolean;
+
+  function LevelChange(Index: integer): boolean;
+  var
+    i: integer;
+  begin
+    result := true;
+    if Index > Dataframe.RowCount then exit;
+    for i := 0 to vlist.Count-3 do
+      if Dataframe.VectorByName[vlist[i]].compare(Index, Index -1) <> 0 then exit;
+    result := false;
+  end;
 
 begin
   try
@@ -997,6 +1009,7 @@ begin
         while dfoffset<=dataframe.RowCount do
         begin
           subtable := TTwoWayTable.Create(cols,rows);
+          cont := true;
 
           for j:=0 to vlist.Count-3 do
           begin
@@ -1033,7 +1046,7 @@ begin
               if (tabcount=0) and (j=0) then
                 margtable.fRowLabel.Add(yvec.GetValueLabel(s2, Cmd.ParameterList),
                                         hasharray[high(hasharray)].GetValue(k));
-              while (dfoffset<=dataframe.RowCount) and
+              while (dfoffset<=dataframe.RowCount) and Cont and
                     (trim(xvec.AsString[dfoffset]) = s1) and (trim(yvec.AsString[dfoffset]) = s2) do
               begin
                 N := dataframe.VectorByName['$S'].AsInteger[dfoffset];
@@ -1042,6 +1055,7 @@ begin
                 if (j < margtable.ColumnCount) and (k < margtable.RowCount) then
                   inc(margtable.fCells[j,k].fN, N);
                 inc(dfoffset);
+                Cont := not LevelChange(dfoffset);
               end;
             end;
           end;
@@ -1066,7 +1080,7 @@ begin
             (sumtable.fTableType in [1,2,3,4,5,6,9,10,11,12]) then
           begin
             dm.CodeMaker.OutputTable(OutTwoWayTable(subtable));
-            dm.error('Table not 2x2 for: %s', [Dataframe.VectorByName[vlist[vlist.Count-1]].Name], 117003);
+            dm.error('Table not 2x2 for: %s', [Dataframe.VectorByName[vlist[vlist.Count-1]].Name], 41003);
           end;
 
           // now consider sort order: - notice default for with /O /RR and /OA where /SD is default:
@@ -1294,7 +1308,7 @@ begin
       if Assigned(NewVars) then FreeAndNil(NewVars);
       if Assigned(StrArray) then FreeAndNil(StrArray);
       if Assigned(Dataframe) then FreeAndNil(Dataframe);
-      dm.error('Variable %s contains no data', [varnames[k]], 117004, -1);
+      dm.error('Variable %s contains no data', [varnames[k]], 41004, -1);
       continue;
     end;
 
@@ -2464,6 +2478,8 @@ var
   i, j, k : integer;
   footer: string;
 begin
+  if (Cmd.ParamExists['Q']) then exit;
+
   tab := dm.OutputList.NewTable(2, SumTable.TableCount + 1);
   tab.TableType := sttStat;
 
@@ -2501,7 +2517,7 @@ begin
   List := TStringList.Create;
   SplitString(s, List, [',']);
   if List.Count <> 6 then
-    dm.Error('Incorrect number of headers for %s header', ['CT OR'], 117006);
+    dm.Error('Incorrect number of headers for %s header', ['CT OR'], 41006);
 
   With ORHeaders do
   begin
@@ -2526,7 +2542,7 @@ begin
   List := TStringList.Create;
   SplitString(s, List, [',']);
   if List.Count <> 8 then
-    dm.Error('Incorrect number of headers for %s header', ['CT RR'], 117006);
+    dm.Error('Incorrect number of headers for %s header', ['CT RR'], 41006);
 
   With RRHeaders do
   begin
@@ -2553,7 +2569,7 @@ begin
   List := TStringList.Create;
   SplitString(s, List, [',']);
   if List.Count <> 6 then
-    dm.Error('Incorrect number of headers for %s header', ['LifeTable'], 117006);
+    dm.Error('Incorrect number of headers for %s header', ['LifeTable'], 41006);
 
   With LTHeaders do
   begin
@@ -3052,13 +3068,13 @@ end;
 
 procedure TTwoWayTable.SortByColumn(const index: integer; Desc: boolean);
 begin
-  if (index < 1) or (index > ColumnCount) then dm.Error('Sorting index out of bounds', [], 117005);
+  if (index < 1) or (index > ColumnCount) then dm.Error('Sorting index out of bounds', [], 41005);
   InternalSortGeneric(CompareCols, ExchangeRows, 1, fRowLabel.Count, index, desc);
 end;
 
 procedure TTwoWayTable.SortByRow(const index: integer; Desc: boolean);
 begin
-  if (index < 1) or (index > ColumnCount) then dm.Error('Sorting index out of bounds', [], 117005);
+  if (index < 1) or (index > ColumnCount) then dm.Error('Sorting index out of bounds', [], 41005);
   InternalSortGeneric(CompareRows, ExchangeColumns, 1, fColLabel.Count, index, desc);
 end;
 

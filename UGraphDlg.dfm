@@ -1,11 +1,10 @@
 object GraphDlg: TGraphDlg
-  Left = 350
-  Top = 151
+  Left = 415
+  Top = 247
+  Width = 718
+  Height = 323
   BorderIcons = [biSystemMenu]
-  BorderStyle = bsDialog
   Caption = 'h'
-  ClientHeight = 296
-  ClientWidth = 710
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,11 +13,11 @@ object GraphDlg: TGraphDlg
   Font.Style = []
   OldCreateOrder = False
   OnClose = FormClose
-  OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object Label8: TLabel
+    Tag = -1
     Left = 200
     Top = 17
     Width = 20
@@ -26,6 +25,7 @@ object GraphDlg: TGraphDlg
     Caption = 'Min:'
   end
   object Label11: TLabel
+    Tag = -1
     Left = 200
     Top = 41
     Width = 23
@@ -33,8 +33,9 @@ object GraphDlg: TGraphDlg
     Caption = 'Max:'
   end
   object CmdPanel: TPanel
+    Tag = -1
     Left = 0
-    Top = 254
+    Top = 247
     Width = 710
     Height = 42
     Align = alBottom
@@ -44,6 +45,7 @@ object GraphDlg: TGraphDlg
       710
       42)
     object MinimizeBtn: TBitBtn
+      Tag = 8002
       Left = 168
       Top = 13
       Width = 57
@@ -67,6 +69,7 @@ object GraphDlg: TGraphDlg
       NumGlyphs = 2
     end
     object CancelBtn: TButton
+      Tag = 3003
       Left = 104
       Top = 13
       Width = 45
@@ -91,7 +94,7 @@ object GraphDlg: TGraphDlg
       OnClick = CancelBtnClick
     end
     object ResetBtn: TButton
-      Tag = 1
+      Tag = 3004
       Left = 232
       Top = 13
       Width = 45
@@ -103,7 +106,7 @@ object GraphDlg: TGraphDlg
       OnClick = ResetBtnClick
     end
     object PasteBtn: TButton
-      Tag = 2
+      Tag = 3005
       Left = 280
       Top = 13
       Width = 45
@@ -116,6 +119,7 @@ object GraphDlg: TGraphDlg
       OnClick = CancelBtnClick
     end
     object ExpandBtn: TBitBtn
+      Tag = 8001
       Left = 168
       Top = 13
       Width = 57
@@ -150,6 +154,7 @@ object GraphDlg: TGraphDlg
       OnClick = ExecBtnClick
     end
     object SpcGrpBox: TPanel
+      Tag = -1
       Left = 400
       Top = 4
       Width = 297
@@ -159,6 +164,7 @@ object GraphDlg: TGraphDlg
       Caption = 'SpcGrpBox'
       TabOrder = 7
       object Label7: TLabel
+        Tag = -1
         Left = 76
         Top = 8
         Width = 36
@@ -166,6 +172,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Breaks:'
       end
       object Label21: TLabel
+        Tag = -1
         Left = 9
         Top = 8
         Width = 21
@@ -173,6 +180,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Test'
       end
       object Break1: TMaskEdit
+        Tag = -1
         Left = 120
         Top = 4
         Width = 73
@@ -180,6 +188,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 0
       end
       object Break2: TMaskEdit
+        Tag = -1
         Left = 208
         Top = 4
         Width = 72
@@ -187,6 +196,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 1
       end
       object SPCTest: TCheckBox
+        Tag = -1
         Left = 39
         Top = 6
         Width = 14
@@ -200,15 +210,16 @@ object GraphDlg: TGraphDlg
     end
   end
   object Panel1: TPanel
+    Tag = -1
     Left = 0
     Top = 0
     Width = 710
-    Height = 254
+    Height = 247
     Align = alClient
     TabOrder = 1
     TabStop = True
     object Label1: TLabel
-      Tag = 5
+      Tag = -1
       Left = 176
       Top = 16
       Width = 6
@@ -217,7 +228,7 @@ object GraphDlg: TGraphDlg
       Transparent = False
     end
     object Label2: TLabel
-      Tag = 6
+      Tag = -1
       Left = 176
       Top = 42
       Width = 6
@@ -225,7 +236,7 @@ object GraphDlg: TGraphDlg
       Caption = '_'
     end
     object Label3: TLabel
-      Tag = 6
+      Tag = -1
       Left = 176
       Top = 68
       Width = 6
@@ -233,7 +244,7 @@ object GraphDlg: TGraphDlg
       Caption = '_'
     end
     object Label4: TLabel
-      Tag = 6
+      Tag = -1
       Left = 176
       Top = 94
       Width = 6
@@ -241,7 +252,7 @@ object GraphDlg: TGraphDlg
       Caption = '_'
     end
     object Label24: TLabel
-      Tag = 6
+      Tag = -1
       Left = 176
       Top = 118
       Width = 6
@@ -249,7 +260,7 @@ object GraphDlg: TGraphDlg
       Caption = '_'
     end
     object ComboBox1: TComboBox
-      Tag = 1
+      Tag = -1
       Left = 10
       Top = 9
       Width = 150
@@ -260,7 +271,7 @@ object GraphDlg: TGraphDlg
       OnSelect = ComboBoxSelect
     end
     object ComboBox2: TComboBox
-      Tag = 2
+      Tag = -1
       Left = 10
       Top = 35
       Width = 150
@@ -271,7 +282,7 @@ object GraphDlg: TGraphDlg
       OnSelect = ComboBoxSelect
     end
     object ComboBox3: TComboBox
-      Tag = 3
+      Tag = -1
       Left = 10
       Top = 61
       Width = 150
@@ -283,7 +294,7 @@ object GraphDlg: TGraphDlg
       OnSelect = ComboBoxSelect
     end
     object ComboBox4: TComboBox
-      Tag = 4
+      Tag = -1
       Left = 10
       Top = 88
       Width = 150
@@ -294,6 +305,7 @@ object GraphDlg: TGraphDlg
       OnSelect = ComboBoxSelect
     end
     object Edit1: TEdit
+      Tag = -1
       Left = 8
       Top = 172
       Width = 377
@@ -302,6 +314,7 @@ object GraphDlg: TGraphDlg
       Text = 'Title'
     end
     object Edit2: TEdit
+      Tag = -1
       Left = 8
       Top = 196
       Width = 377
@@ -310,6 +323,7 @@ object GraphDlg: TGraphDlg
       Text = 'Subtitle'
     end
     object Edit6: TEdit
+      Tag = -1
       Left = 8
       Top = 227
       Width = 329
@@ -318,6 +332,7 @@ object GraphDlg: TGraphDlg
       Text = 'Save File As'
     end
     object TxtGRpBox: TGroupBox
+      Tag = -1
       Left = 396
       Top = 149
       Width = 309
@@ -328,6 +343,7 @@ object GraphDlg: TGraphDlg
       ShowHint = True
       TabOrder = 7
       object Label12: TLabel
+        Tag = -1
         Left = 24
         Top = 14
         Width = 10
@@ -335,6 +351,7 @@ object GraphDlg: TGraphDlg
         Caption = 'X:'
       end
       object Label13: TLabel
+        Tag = -1
         Left = 64
         Top = 14
         Width = 10
@@ -342,6 +359,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Y:'
       end
       object Label14: TLabel
+        Tag = -1
         Left = 96
         Top = 14
         Width = 24
@@ -349,6 +367,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Text:'
       end
       object Label15: TLabel
+        Tag = -1
         Left = 282
         Top = 14
         Width = 21
@@ -356,6 +375,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Box:'
       end
       object xpos1: TMaskEdit
+        Tag = -1
         Left = 16
         Top = 28
         Width = 26
@@ -363,6 +383,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 0
       end
       object ypos1: TMaskEdit
+        Tag = -1
         Left = 56
         Top = 28
         Width = 30
@@ -370,6 +391,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 1
       end
       object Edit3: TEdit
+        Tag = -1
         Left = 96
         Top = 28
         Width = 177
@@ -377,6 +399,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 2
       end
       object btyp1: TCheckBox
+        Tag = -1
         Left = 284
         Top = 32
         Width = 17
@@ -385,6 +408,7 @@ object GraphDlg: TGraphDlg
       end
     end
     object AxisGrpBox: TGroupBox
+      Tag = -1
       Left = 396
       Top = 69
       Width = 309
@@ -392,6 +416,7 @@ object GraphDlg: TGraphDlg
       Caption = 'Axis:'
       TabOrder = 8
       object Label9: TLabel
+        Tag = -1
         Left = 16
         Top = 25
         Width = 10
@@ -399,6 +424,7 @@ object GraphDlg: TGraphDlg
         Caption = 'X:'
       end
       object Label10: TLabel
+        Tag = -1
         Left = 16
         Top = 57
         Width = 10
@@ -406,6 +432,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Y:'
       end
       object Label5: TLabel
+        Tag = -1
         Left = 173
         Top = 9
         Width = 20
@@ -413,6 +440,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Min:'
       end
       object Label6: TLabel
+        Tag = -1
         Left = 221
         Top = 9
         Width = 23
@@ -420,6 +448,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Max:'
       end
       object Label16: TLabel
+        Tag = -1
         Left = 37
         Top = 9
         Width = 27
@@ -427,6 +456,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Show'
       end
       object Label17: TLabel
+        Tag = -1
         Left = 141
         Top = 9
         Width = 21
@@ -434,6 +464,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Tick'
       end
       object Label18: TLabel
+        Tag = -1
         Left = 109
         Top = 9
         Width = 18
@@ -441,6 +472,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Log'
       end
       object Label19: TLabel
+        Tag = -1
         Left = 69
         Top = 9
         Width = 27
@@ -448,6 +480,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Invert'
       end
       object Label20: TLabel
+        Tag = -1
         Left = 256
         Top = 9
         Width = 50
@@ -455,6 +488,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Increment:'
       end
       object XHideChk: TCheckBox
+        Tag = -1
         Left = 40
         Top = 25
         Width = 17
@@ -463,6 +497,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 5
       end
       object YHideChk: TCheckBox
+        Tag = -1
         Left = 45
         Top = 56
         Width = 13
@@ -471,6 +506,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 2
       end
       object XInvChk: TCheckBox
+        Tag = -1
         Left = 80
         Top = 25
         Width = 13
@@ -479,6 +515,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 4
       end
       object XLogChk: TCheckBox
+        Tag = -1
         Left = 112
         Top = 25
         Width = 12
@@ -487,6 +524,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 3
       end
       object YInvChk: TCheckBox
+        Tag = -1
         Left = 78
         Top = 56
         Width = 15
@@ -495,6 +533,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 1
       end
       object YLogChk: TCheckBox
+        Tag = -1
         Left = 111
         Top = 56
         Width = 14
@@ -503,6 +542,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 0
       end
       object xtickchk: TCheckBox
+        Tag = -1
         Left = 142
         Top = 25
         Width = 17
@@ -516,6 +556,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 6
       end
       object YtickChk: TCheckBox
+        Tag = -1
         Left = 146
         Top = 56
         Width = 14
@@ -529,6 +570,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 7
       end
       object xmin: TMaskEdit
+        Tag = -1
         Left = 168
         Top = 23
         Width = 41
@@ -539,6 +581,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 8
       end
       object xmax: TMaskEdit
+        Tag = -1
         Left = 216
         Top = 23
         Width = 41
@@ -549,6 +592,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 9
       end
       object ymax: TMaskEdit
+        Tag = -1
         Left = 216
         Top = 54
         Width = 41
@@ -559,6 +603,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 10
       end
       object ymin: TMaskEdit
+        Tag = -1
         Left = 168
         Top = 54
         Width = 41
@@ -569,6 +614,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 11
       end
       object xinc: TMaskEdit
+        Tag = -1
         Left = 264
         Top = 23
         Width = 41
@@ -579,6 +625,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 12
       end
       object YINC: TMaskEdit
+        Tag = -1
         Left = 263
         Top = 53
         Width = 41
@@ -590,6 +637,7 @@ object GraphDlg: TGraphDlg
       end
     end
     object GenGrpBox: TGroupBox
+      Tag = -1
       Left = 396
       Top = 7
       Width = 190
@@ -597,6 +645,7 @@ object GraphDlg: TGraphDlg
       Caption = 'Show'
       TabOrder = 9
       object LegendChk: TCheckBox
+        Tag = -1
         Left = 8
         Top = 16
         Width = 56
@@ -606,6 +655,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 2
       end
       object FrameChk: TCheckBox
+        Tag = -1
         Left = 83
         Top = 16
         Width = 51
@@ -615,6 +665,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 3
       end
       object HGridChk: TCheckBox
+        Tag = -1
         Left = 8
         Top = 40
         Width = 92
@@ -624,6 +675,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 0
       end
       object VGridChk: TCheckBox
+        Tag = -1
         Left = 106
         Top = 39
         Width = 57
@@ -633,6 +685,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 1
       end
       object NChk: TCheckBox
+        Tag = -1
         Left = 154
         Top = 16
         Width = 30
@@ -643,6 +696,7 @@ object GraphDlg: TGraphDlg
       end
     end
     object EditChk: TCheckBox
+      Tag = -1
       Left = 344
       Top = 231
       Width = 41
@@ -652,7 +706,7 @@ object GraphDlg: TGraphDlg
       TabOrder = 10
     end
     object ComboBox5: TComboBox
-      Tag = 5
+      Tag = -1
       Left = 10
       Top = 113
       Width = 150
@@ -663,6 +717,7 @@ object GraphDlg: TGraphDlg
       OnSelect = ComboBoxSelect
     end
     object GroupBox1: TGroupBox
+      Tag = -1
       Left = 592
       Top = 7
       Width = 108
@@ -670,6 +725,7 @@ object GraphDlg: TGraphDlg
       Caption = 'Graph Size'
       TabOrder = 12
       object Label22: TLabel
+        Tag = -1
         Left = 12
         Top = 17
         Width = 33
@@ -677,6 +733,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Length'
       end
       object Label23: TLabel
+        Tag = -1
         Left = 11
         Top = 43
         Width = 31
@@ -684,6 +741,7 @@ object GraphDlg: TGraphDlg
         Caption = 'Height'
       end
       object SizeX: TMaskEdit
+        Tag = -1
         Left = 60
         Top = 12
         Width = 40
@@ -691,6 +749,7 @@ object GraphDlg: TGraphDlg
         TabOrder = 0
       end
       object SizeY: TMaskEdit
+        Tag = -1
         Left = 60
         Top = 35
         Width = 39
@@ -699,6 +758,7 @@ object GraphDlg: TGraphDlg
       end
     end
     object WeigthBox: TGroupBox
+      Tag = -1
       Left = 396
       Top = 210
       Width = 309
@@ -706,6 +766,7 @@ object GraphDlg: TGraphDlg
       Caption = 'Weigth'
       TabOrder = 13
       object ComboBox6: TComboBox
+        Tag = -1
         Left = 72
         Top = 12
         Width = 153

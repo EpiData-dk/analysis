@@ -221,25 +221,24 @@ function GetSaveFileName(var pfilename: string; const pFilter,pExt:string):boole
 var
 sd : TSaveDialog;
 begin
-result:=false;
-sd := TSaveDialog.Create(application) ;
-try
-   if pExt='' then
-      SD.DefaultExt:='txt'
-   else
-      SD.DefaultExt:=pExt;
-   sd.FileName:=pFilename;
-   sd.Filter:=pFilter;
-   if sd.Filter='' then SD.Filter:='Text files (*.txt)|*.TXT';
-//   InitialDir:=
-   SD.Options:=[{ofOverwritePrompt,}ofNoChangeDir	, ofHideReadOnly, ofPathMustExist, ofEnableSizing];
-   SD.Title:='Save as...';
-   result:= sd.execute;
-   if result then pfilename:=sd.Filename;
-finally
- sd.free;
-end;
-
+  result:=false;
+  sd := TSaveDialog.Create(application) ;
+  try
+     if pExt='' then
+        SD.DefaultExt:='txt'
+     else
+        SD.DefaultExt:=pExt;
+     sd.FileName:=pFilename;
+     sd.Filter:=pFilter;
+     if sd.Filter='' then SD.Filter:='Text files (*.txt)|*.TXT';
+  //   InitialDir:=
+     SD.Options:=[{ofOverwritePrompt,}ofNoChangeDir	, ofHideReadOnly, ofPathMustExist, ofEnableSizing];
+     SD.Title:='Save as...';
+     result:= sd.execute;
+     if result then pfilename:=sd.Filename;
+  finally
+    sd.free;
+  end;
 end;
 
 function GetOpenFileName(var pfilename: string; const pFilter:string):boolean;
@@ -265,7 +264,7 @@ begin
     result:= sd.execute;
     if result then pfilename:=sd.Filename;
   finally
-   sd.free;
+    sd.free;
   end;
 end;
 

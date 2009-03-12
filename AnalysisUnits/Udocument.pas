@@ -150,8 +150,10 @@ begin
         if (not assigned(df.CheckProperties.ValueLabels)) then df.CheckProperties.ValueLabels:=TLabelBlocksList.Create;
         ValueLabelSet := TLabelValueList.Create();
         ValueLabelSet.LabelName := AnsiLowerCase(Vector.Name) + 'lbl';
+        while (df.CheckProperties.ValueLabels.IndexOf(ValueLabelSet.LabelName) > -1) do
+          ValueLabelSet.LabelName := '_' + ValueLabelSet.LabelName;
         Vector.CheckProperties.ValueLabelSet:=ValueLabelSet;
-        df.CheckProperties.ValueLabels.AddObject(ValueLabelSet.LabelName,ValueLabelSet);
+        df.CheckProperties.ValueLabels.AddObject(ValueLabelSet.LabelName, ValueLabelSet);
       end;
       if Clear then
         ValueLabelSet.clear();
@@ -198,7 +200,7 @@ begin
       CheckProperties := Df.VectorByName[Varnames[i]].CheckProperties;
 
       if not Assigned(CheckProperties) then
-        dm.Error('Cannot create Missing values: CheckProperties does not exist!', [], 111001);
+        dm.Error('Cannot create Missing values: CheckProperties does not exist!', [], 31001);
 
       count := 0;
       for j:=0 to MAXDEFINEDMISSINGVALUES do
@@ -221,7 +223,7 @@ begin
         for k := 0 to MAXDEFINEDMISSINGVALUES do
           if CheckProperties.MissingValues[k] = Param.VarName then cont := true;
         if cont then continue;
-        if count = MAXDEFINEDMISSINGVALUES+1 then dm.Error('max 3 missing values, add [/c  or /clear]', [], 111002);
+        if count = MAXDEFINEDMISSINGVALUES+1 then dm.Error('max 3 missing values, add [/c  or /clear]', [], 31002);
         CheckProperties.MissingValues[count] := Param.VarName;
         inc(count);
         df.Modified := true;
@@ -266,7 +268,7 @@ begin
       if {(not Vectorlist[i].Internal) and} (not included(Vectorlist[i].Name, List)) then
         Result.Add(Vectorlist[i].Name);
   except
-    dm.Info('Invalid variable name(s)', [], 211001);
+    dm.Info('Invalid variable name(s)', [], 31004);
     result := nil;
   end;
 end;
@@ -348,7 +350,7 @@ var
 
 begin
   k := 0;
-       if not dm.CheckDataOpen() then exit; //dm.CheckDataOpen();
+  if not dm.CheckDataOpen() then exit;
   co := dm.dataframe.VectorCount;
   tab1 := dm.OutputList.NewTable(7{8},co+1);
   tab1.TableType := sttSystem;
@@ -405,7 +407,7 @@ begin
   dm.dataframe.DropVectors(list);
   if dm.dataframe.VectorCount = 0 then
   begin
-    dm.info('No variables left - closing dataframe', [], 211002);
+    dm.info('No variables left - closing dataframe', [], 31005);
     dm.CloseFile;
     result := false;
     exit;
@@ -435,10 +437,13 @@ var
 
 begin
   list := TStringList.Create;
+  dm.Executor.ClearVars(EpiVarResult);
+  dm.Executor.ClearVars(EpiVarGlobal);
+  {
   dm.Executor.GlobalVariables.GetVarNames(list);
   dm.Executor.DropVars(list,EpiVarGlobal);
   dm.Executor.ResultVariables.GetVarNames(list);
-  dm.Executor.DropVars(list,EpiVarResult);
+  dm.Executor.DropVars(list,EpiVarResult); }
 end;
 
 function TDocument.DoRename(Cmd: TCommand): boolean;
@@ -450,11 +455,11 @@ begin
   vec := dm.dataframe.VectorByName[oldname];
   newname := cmd.ParamByName['NEWVARNAME'].AsString;
   if dm.dataframe.FindVector(newname) <> nil then
-    dm.Error('Cannot rename: Variable exists: %s', [newname],  111003);
+    dm.Error('Cannot rename: Variable exists: %s', [newname],  31003);
   vec.Name := newname;
   dm.NotifyInterface(EpiVectorListChanged,integer(dm.dataframe),0);
   dm.UpdateBrowse(opRename);
-  dm.Info('Variable %s renamed to: %s', [oldname,newname], 211003);
+  dm.Info('Variable %s renamed to: %s', [oldname,newname], 31006);
 end;
 
 end.

@@ -73,13 +73,12 @@ var  NewFile: TFileStream;
     opt: TEpiOption;
 begin
   if new = old then
-          dm.Error('New file must have new name', [], 112001);
+    dm.Error('New file must have new name', [], 32001);
   if not FileExists(old) then
-    dm.Error('File: %s does not exist!', [old], 112002);
-  if FileExists(new) and (cmd.ParamByName['REPLACE'] = nil) {and
-     (dm.GetOptionValue('REPLACE DATAFILE', Opt) and (ansiuppercase(Opt.Value) = 'OFF'))} THEN
-    dm.Error('Destination file exists - to replace: use option /replace or erase %s', [new], 112003);
-  dm.Info('Copying from %s to %s', [old,new],  212001);
+    dm.Error('File: %s does not exist!', [old], 32002);
+  if FileExists(new) and (cmd.ParamByName['REPLACE'] = nil) THEN
+    dm.Error('Destination file exists - to replace: use option /replace or erase %s', [new], 32003);
+  dm.Info('Copying from %s to %s', [old,new],  32006);
   try
     OldFile := TFileStream.Create(old, fmOpenRead or fmShareDenyWrite);
     NewFile := TFileStream.Create(New, fmCreate or fmShareDenyRead);
@@ -113,7 +112,6 @@ begin
   end;
   dm.CurrentDir := GetCurrentDir;
   dm.NotifyInterface(EpiRefreshDir,integer(pchar(dm.CurrentDir)),0);
-//  dm.Info('To view graphs, please close logfile and open a new after change of folder - logopen');
 end;
 
 // ============================================================================
@@ -128,7 +126,7 @@ begin
   d := 0;
   if fn='' then
   begin
-    dm.Error('Invald path', [], 112004);
+    dm.Error('Invald path', [], 32004);
     exit;
   end
   else
@@ -140,7 +138,7 @@ begin
     path := PathCanonical(path);
     if not ForceDirectories(Path) then
     begin
-      dm.Error('Unable to create directory: %s', [path], 112005);
+      dm.Error('Unable to create directory: %s', [path], 32005);
       d := 2;
     end
     else
@@ -193,7 +191,7 @@ var
 begin
   if dm.Cancelled then
   begin
-   dm.info('Command cancelled by user', [], 212002);
+   dm.info('Command cancelled by user', [], 32007);
    stop := dm.Cancelled;
    exit;
   end;
@@ -226,7 +224,7 @@ begin
   s := StrRemoveSurroundingQuotes(fn);
   Result := SysUtils.DeleteFile(s);
   if not result then
-    dm.info('File not found or could not be deleted: %s', [fn], 212003)
+    dm.info('File not found or could not be deleted: %s', [fn], 32008)
   else
     dm.Sendoutput;
 end;
@@ -247,7 +245,7 @@ begin
     opDos: ExecSySCommand('command.com /c ' + fn2, output);
     opDoDos: ExecSySCommand('cmd.exe ' + param + fn2, output);
   end;
-  dm.info('Result <br> %s',  [output], 212004);
+  dm.info('Result <br> %s',  [output], 32009);
 end;
 
 end.

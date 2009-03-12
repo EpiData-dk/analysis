@@ -571,12 +571,12 @@ begin
 try
     varco := Varnames.Count;
     if varco < 2 then
-       dm.error('Minimum of two variables allowed', [], 108001, 0);
+       dm.error('Minimum of two variables allowed', [], 28001, 0);
     Vectorlist:= Dataframe.GetVectorListByName(varnames);
 //check for data types
    for i := 0 to varco-1 do
       if Vectorlist[i].datatype in  [EpiTyDate,EpiTyUppercase,EpiTyString] then
-           dm.error('Only numeric variables are allowed', [], 108002, 0);
+           dm.error('Only numeric variables are allowed', [], 28002, 0);
 try
   RegObj := TRegComp.create(nil);
   co := Dataframe.SelectedRowCount;

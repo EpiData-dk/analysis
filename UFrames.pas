@@ -391,7 +391,7 @@ begin
       end;
     encodedate(y,m,d);
   except
-    if (obs <> -1) then  dm.info('Date error: %s in %d', [s,obs], 220001);
+    if (obs <> -1) then  dm.info('Date error: %s in %d', [s,obs], 44003);
     result:=false;
     exit;
   end;
@@ -1424,7 +1424,7 @@ begin
     FErrorText := 'Clipboard empty';
     raise Exception.Create('Clipboard empty');
   end else
-    dm.Info('First line (clipboard): %s', [FFile[0]], 220002);
+    dm.Info('First line (clipboard): %s', [FFile[0]], 44004);
 end;
 
 
@@ -1831,7 +1831,7 @@ BEGIN
                 end;  //case
                 if (not ok) then
                   begin
-                    dm.Error('Data in field %s, record %d exceed maximum length',[fld.Fieldname,Curlin+1], 120001);
+                    dm.Error('Data in field %s, record %d exceed maximum length',[fld.Fieldname,Curlin+1], 44001);
                     exit;
                   end;
               END; //for curfelt
@@ -2027,7 +2027,7 @@ try
     ftDate,ftToday,ftEuroDate,ftEuroToday,ftYMDDate,ftYMDToday:
       begin
         if not getDate(obs,fieldtext,fld.FFieldFormat,year,month,day) then blank:=true;
-        if blank then dm.info('# %d date error: %s',[obs,fieldtext], 120002);
+        if blank then dm.info('# %d date error: %s',[obs,fieldtext], 44002);
         EpiDate(dst^):=EpiYMDToDate(FCurrentRec,year,month,day);
       end;
   END;  //case

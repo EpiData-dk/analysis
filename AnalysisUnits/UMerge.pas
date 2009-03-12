@@ -53,6 +53,7 @@ begin
   ODebug.IncIndent;
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   try
+    Dm.Info('Merging...', 23098);
     InternalMerge(Dataframe, Relateframe, Dataframe.GetVectorNames(Varnames), Cmd);
   finally
     ODebug.DecIndent;
@@ -67,6 +68,7 @@ begin
   ODebug.IncIndent;
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   try
+    Dm.Info('Appending...', 23099);
     InternalAppend(Dataframe, Relateframe, Dataframe.GetVectorNames(Varnames), Cmd);
     dm.AddResult('$appendfilename', EpiTyString, Relateframe.FileName, 0, 0);
   finally
@@ -107,14 +109,14 @@ begin
     OrgVec := Dataframe.VectorByName[varnames[i]];
     RelVec := Relateframe.FindVector(Varnames[i]);
     if not Assigned(RelVec) then
-      Dm.Error('%s not found in %s', [Varnames[i], Relateframe.FileName] , 115001);
+      Dm.Error('%s not found in %s', [Varnames[i], Relateframe.FileName] , 39001);
     if (OrgVec.DataType <> RelVec.DataType)
          and (not((OrgVec.DataType = 6 ) and (RelVec.DataType = 5)))
          and (not((OrgVec.DataType = 5 ) and (RelVec.DataType = 6)))
       then
       Dm.Error('Incompatible key variables.<br>Current file: %s of type %s<br> Merge file: %s of type %s',
 			   [OrgVec.Name, GetFieldTypeName(OrgVec.DataType), RelVec.Name, GetFieldTypeName(RelVec.DataType)],
-			   115002);
+			   39002);
   end;
   OrgList := Dataframe.GetVectorListByName(Varnames);
   RelList := Relateframe.GetVectorListByName(Varnames);
@@ -124,10 +126,10 @@ begin
   if (Cmd.ParamByName['TABLE'] = nil) then
     for i := 2 to Dataframe.RowCount do
      if not LevelChanged(OrgList, i) then
-       dm.Error('Non-unique key in: %s', [Dataframe.FileName], 115003);
+       dm.Error('Non-unique key in: %s', [Dataframe.FileName], 39003);
   for i := 2 to Relateframe.RowCount do
    if not LevelChanged(RelList, i) then
-     dm.Error('Non-unique key in: %s', [Relateframe.FileName], 115003);
+     dm.Error('Non-unique key in: %s', [Relateframe.FileName], 39003);
   // Done checking.
 
   dm.AddResult('$mergedfilename', EpiTyString, Relateframe.FileName, 0, 0);

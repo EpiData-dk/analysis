@@ -3,10 +3,11 @@ unit UGraph;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, Messages, SysUtils, Variants, Classes, USPCBase, Graphics, Controls, Forms,
   Dialogs, TeeEdit, TeeProcs, TeEngine, Chart, ComCtrls, StdCtrls, ExtCtrls,
   UVectors, TeeBoxplot, TeePng, TeeTools, TeeShape, StatChar, Series, UCommands,
-  UEpiDatatypes, UOutput, UVariables, ansDatatypes, ActnList;
+  UEpiDatatypes, UOutput, UVariables, ansDatatypes, ActnList, UChartArray,
+  UBaseChart;
 
 type
   TSeriesColorFunction = function(index: integer): TColor;
@@ -55,32 +56,29 @@ type
     { Public declarations }
   end;
 
-  TArrayVariant = array of variant;
-  TExcludeFunction = function(index: integer; df: TEpiDataframe): EpiFloat;
   TGraphCallback = procedure(const chart: TChart);
 
   TGraph = class(TObject)
   private
     dummyform: TForm;
     GraphCallBack: TGraphCallback;
+    fCmd: TCommand;
 
     // Axis labeling procedure...
     procedure BottomDateLabeling(Sender: TChartAxis; Series: TChartSeries; ValueIndex: Integer; Var LabelText: String);
 
+    procedure InitializeBaseUnit(var AUnit: TCustomChart; AUnitClass: TCustomChartClass); overload;
+    procedure InitializeBaseUnit(var AUnit: TCustomSPCChart; AUnitClass: TCustomSPCChartClass); overload;
     function CreateStandardChart(): TChart;
-    procedure CommonChartOptions(Chart: TChart; Cmd: TCommand);
+    function CreateChartArray(): TChartArray;
+    procedure CommonChartOptions(Chart: TChart);
     procedure BlackAndWhiteChart(Chart: TChart);
     function AxisValue(Axis: TChartAxis; Imin, Imax: IValue; IsX: boolean): boolean;
     procedure AxisIncrement(Axis: TChartAxis; Value: extended);
     procedure AxisLines(Chart: TChart; Axis: string; Cmd: TCommand);
     function TextBox(Chart: TChart; cmd: TCommand): boolean;
-    procedure ShowChart(Chart: TChart; Cmd: TCommand);
+    procedure ShowChart(Chart: TChart);
     function MultiVarTitle(Varlist: TEpiVectors; Parameters: TVarList): string;
-    function FindBreak(Parameters: TVarList; XVector: TEpiVector): TArrayVariant;
-    function ExcludeInDataframe(var dF: TEpiDataframe; Parameters: TVarList; ExcludeFunc: TExcludeFunction): boolean;
-    procedure SPCTest(dataframe: TEpiDataframe; Const CountName: String;CmdID: Word;
-                      Parameters: TVarlist; LowIndex, HighIndex: integer;
-                      idx: integer; var output: TStatTable);
     procedure CalcAxisInc(Axis: TChartAxis; CalcLabel: Boolean = false);
     procedure OutputNCases(const chart: TChart; N : EpiInt);
 
@@ -91,14 +89,20 @@ type
     //function HistogramSeries(DataVector, LabelVector: TEpiVector; ColorFunc: TSeriesColorFunction): TChartSeries;
     function HistogramSeries(XDataVector, YDataVector, LabelVector: TEpiVector; ColorFunc: TSeriesColorFunction): TChartSeries;
 
+    function LineSeries(XVector, YVector, LabelVector: TEpiVector): TLineSeries;
     function BoxSeries(DataVector: TEpiVector): TBoxSeries;
     function ScatterSeries(XVector, YVector, LabelVector: TEpiVector): TPointSeries;
-    function PointSeries(XVector, YVector, LabelVector: TEpiVector): TPointSeries;
-    function LineSeries(XVector, YVector, LabelVector: TEpiVector): TLineSeries;
     function PieSeries(XVector, LabelVector: TEpiVector): TPieSeries;
 
+    procedure ShowCharts(Charts: TChartArray);
+    function SaveCharts(Charts: TChartArray): TStrings;
   public
     destructor Destroy(); override;
+    constructor Create();
+
+    function PointSeries(XVector, YVector, LabelVector: TEpiVector): TPointSeries;
+    function LineSeries2(XVector, YVector, LabelVector: TEpiVector): TLineSeries;
+    procedure AddLine(Axis: TChartAxis; Val: Epifloat; Color: TColor);
 
     // SIMPLE GRAPH FOR USE IN MORE COMPLEX GRAPH_OUTPUTS
     function DoBars(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
@@ -114,20 +118,12 @@ type
                        var OutputTable: TStatTable): TChart;
     function DoCIPlot(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
                         var OutputTable: TStatTable): TChart;
-    function DoIchart(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
-                      var SPCDataframe: TEpiDataframe; var OutputTable: TStatTable; var footnote:string): TChart;
-    function DoPchart(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
-                      var SPCDataframe: TEpiDataframe; var OutputTable: TStatTable; var footnote:string): TChart;
     function DoPareto(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
     function DoLifeTable(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
 
-    // COMPLEX/MULTI GRAPHS - SHOULD PREFERABLY USE SIMPLE GRAPHS FOR CONSTRUCTION.
-    function DoXChart(Dataframe: TEpiDataframe; Varnames: TStrings; Cmd: TCommand): boolean;
-
     // EXTRA FUNCTIONALITY.
-    procedure ShowCharts(Charts: array of TChart; Cmd: TCommand);
-    function SaveChart(Chart: TChart; Cmd: TCommand): string;
     procedure DoGraphs(Dataframe: TEpiDataFrame; Varnames: TStrings; Cmd: TCommand);
+    property Cmd: TCommand read fCmd;
   end;
 
 var
@@ -137,120 +133,25 @@ implementation
 
 {$R *.dfm}
 uses
-  UAggregate, SMUtils, UCmdProcessor, Math, UAnaToken, UDebug, pngimage,
-  cFileUtils,  uDateUtils, UTables,UStatFunctions, TeCanvas, CandleCh, UTranslation, EpiDataUtils,
-  UCmdTypes;
-  
+  UAggregate, SMUtils, UCmdProcessor, Math, UAnaToken, UDebug, pngimage, UFormats,
+  cFileUtils,  uDateUtils, UTables, UStatFunctions, TeCanvas, CandleCh, UTranslation,
+  UXBarS, UXBarR, USPCUtils, GeneralUtils, UIChart, UPChart, URunChart, UGChart, UUChart,
+  UCChart, EpiDataUtils, UCmdTypes, UGraphUtils;
+
 var
   GraphForm: TGraphForm;
+  OXBarR: TXBarS;
+  OXBarS: TXBarS;
+  OIChart: TIChart;
+  OPChart: TPChart;
+  OGChart: TGChart;
+  OUChart: TUChart;
+  OCChart: TCChart;
+  ORunChart: TRunChart;
+
 
 const
   UnitName = 'UGraph';
-
-{****************************
-*  TSeriesColorFunctions    *
-*****************************}
-
-function GetGraphColour(index: integer): TColor;
-var
-  opt: TEpiOption;
-const
-  colorlist: array[0..9] of TColor =
-  (clRed, clBlue, clBlack,clGreen, clYellow, clWhite, clSkyBlue, clFuchsia,  clGray , clAqua);
-  //Red,  Blue,   Black,   Green,  Yellow,    White,   SkyBlue,  Fuchsia,    Gray ,   Aqua;
-begin
-  result := colorlist[0];
-  if dm.GetOptionValue('GRAPH COLOUR',opt) then
-  try
-    if length(opt.Value) < 20 then
-      dm.SetOptionValue('GRAPH COLOUR', opt.value + copy('01234567890123456789',1,20-length(opt.value)));
-    index := StrToInt(opt.Value[(index mod 20)+1]);
-    result := colorlist[index];
-  except
-    result := colorlist[1];
-  end;
-end;
-
-function GetGraphPointerStyle(index: integer): TSeriesPointerStyle;
-var
-  opt: TEpiOption;
-const
-  stylelist: array[0..9] of TSeriesPointerStyle =
-  (psCircle, psTriangle, psDownTriangle, psLeftTriangle, psRightTriangle, psRectangle, psSmallDot,
-  psDiagCross, psStar,psCross);
-
-begin
-  result := stylelist[0];
-  if dm.GetOptionValue('GRAPH SYMBOL',opt) then
-  begin
-      try
-        if length(opt.Value) < 20 then
-           dm.SetOptionValue('GRAPH SYMBOL', opt.value + copy('01234567890123456789',1,20-length(opt.value)));
-        index := StrToInt(opt.Value[(index mod 20)+1]);
-        result := stylelist[index];
-      except
-        result := stylelist[1];
-      end;
-  end;
-end;
-
-function GetGraphBrushStyle(index: integer): TBrushStyle;
-var
-  opt: TEpiOption;
-const
-  brushlist: array[0..1] of TBrushStyle =
-    (bsClear, bsSolid);
-begin
-  result := brushlist[0];
-  if dm.GetOptionValue('GRAPH SYMBOL FILLED',opt) then
-  begin
-      try
-        if length(opt.Value) < 20 then
-           dm.SetOptionValue('GRAPH SYMBOL FILLED', opt.value + copy('01010101010101010101',1,20-length(opt.value)));
-        index := StrToInt(opt.Value[(index mod 20)+1]);
-        result := brushlist[Min(1, index)];
-      except
-        result := bsSolid;
-      end;
-  end;
-end;
-
-function GetGraphTextColour(index: integer): TColor;
-var
-  opt: TEpiOption;
-  val: integer;
-const
-  colorlist: array[0..9] of TColor =
-  (clRed, clBlue, clBlack, clGreen, clWhite, clYellow, clSkyBlue, clFuchsia,  clGray , clAqua);
-begin
-  result := colorlist[0];
-  if dm.GetOptionValue('GRAPH COLOUR TEXT',opt) then
-  try
-    if length(opt.Value) < 9 then
-      dm.SetOptionValue('GRAPH COLOUR TEXT', '213333333');
-    val := StrToInt(opt.Value[index])-1;
-    result := colorlist[val];
-  except
-    result := 3; //black
-  end;
-end;
-
-function GetHisColor(index: integer): TColor;
-begin
-  result := clTeeColor;
-end;
-
-function R2(const AValue : extended ; const ADigit : TRoundToRange):extended ;
-var
-  X : extended;
-  i : integer ;
-begin
-  X := 1.0 ;
-  for i := 1 to Abs(ADigit) do X := X * 10 ;
-  if ADigit<0
-    then Result := Round(AValue * X) / X
-    else Result := Round(AValue / X) * X;
-end;
 
 {********************
 *      TGraph       *
@@ -258,18 +159,42 @@ end;
 
 destructor TGraph.Destroy();
 begin
+  if Assigned(ORunChart) then FreeAndNil(ORunChart);
+  if Assigned(OCChart) then FreeAndNil(OCChart);
+  if Assigned(OUChart) then FreeAndNil(OUChart);
+  if Assigned(OGChart) then FreeAndNil(OGChart);
+  if Assigned(OPChart) then FreeAndNil(OPChart);
+  if Assigned(OIChart) then FreeAndNil(OIChart);
+  if Assigned(OXBarS) then FreeAndNil(OXBarS);
+  if Assigned(OXBarR) then FreeAndNil(OXBarR);
+  if Assigned(OSPCUtils) then FreeAndNil(OSPCUtils);
   if Assigned(dummyform) then FreeAndNil(dummyform);
+end;
+
+constructor TGraph.Create();
+begin
+  OSPCUtils := TSPCUtils.Create();
+  InitializeBaseUnit(TCustomSPCChart(OXBarR), TXBarR);
+  InitializeBaseUnit(TCustomSPCChart(OXBarS), TXBarS);
+  InitializeBaseUnit(TCustomSPCChart(OIChart), TIChart);
+  InitializeBaseUnit(TCustomSPCChart(OPChart), TPChart);
+  InitializeBaseUnit(TCustomSPCChart(OGChart), TGChart);
+  InitializeBaseUnit(TCustomSPCChart(OUChart), TUChart);
+  InitializeBaseUnit(TCustomSPCChart(OCChart), TCChart);
+  InitializeBaseUnit(TCustomSPCChart(ORunChart), TRunChart);
 end;
 
 procedure TGraph.DoGraphs(Dataframe: TEpiDataFrame; Varnames: TStrings; Cmd: TCommand);
 var
-  Chart: TChart;
+  Charts: TChartArray;
   Opt:   TEpiOption;
   footnote:  string;
   xtab: TStatTable;
   vectorlist: TEpiVectors;
   vectors: TStringList;
   DummyFrame: TEpiDataframe;
+  FileNames: TStrings;
+  i: integer;
 const
   procname = 'DoGraphs';
   procversion = '1.0.0.0';
@@ -277,68 +202,83 @@ begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   GraphCallBack := nil;
   dummyform := nil;
-  Chart := nil;
+  Charts := nil;
   footnote := '';
+  fCmd := Cmd;
 
   try
+    Charts := TChartArray.Create();
     case cmd.CommandID of
+      // Single graphs
       opHistogram,
-      opShortHistogram:      chart := DoHistogram(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList);
-      opBar:                 chart := DoBars(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList);
-      opBox, opBoxPlot:      chart := DoBoxPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList, xtab);
+      opShortHistogram:      Charts.Add(DoHistogram(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList), 'Histogram');
+      opBar:                 Charts.Add(DoBars(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList), 'Bar');
+      opBox, opBoxPlot:      Charts.Add(DoBoxPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList, xtab), 'BoxPlot');
       opLine,
       opScatter,
-      opShortScatter:        chart := DoScatter(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList);
-      opPie:                 chart := DoPie(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList);
-      opEpiCurve:            chart := DoEpiCurve(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList,
-                                                 xtab,footnote);
-      opCDFPlot:             chart := DoCDFPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList, xtab);
-      opCIPlot:              chart := DoCIPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList, xtab);
-      opDotPlot:             chart := DoDotPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList);
-
-      // TODO : Graph table works, but not optimized. Think of a better generic solution for graphtables.
-      opIChart,
-      opRunChart:            chart := DoIChart(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList,
-                                               DummyFrame, xtab, footnote);
-      opPChart:              chart := DoPchart(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList,
-                                               DummyFrame, xtab, footnote);
-      opPareto:              chart := DoPareto(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList);
+      opShortScatter:        Charts.Add(DoScatter(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList));
+      opPie:                 Charts.Add(DoPie(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList), 'Pie');
+      opEpiCurve:            Charts.Add(DoEpiCurve(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList, xtab, footnote), 'EpiCurve');
+      opCDFPlot:             Charts.Add(DoCDFPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList, xtab), 'CDFPlot');
+      opCIPlot:              Charts.Add(DoCIPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList, xtab), 'CIPlot');
+      opDotPlot:             Charts.Add(DoDotPlot(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList), 'Dot Plot');
+      opPChart:              Charts := OPChart.DoSPCChart(Dataframe, Varnames, xTab);
+      opPareto:              Charts.Add(DoPareto(Dataframe, Varnames, Cmd.CommandID, Cmd.ParameterList), 'Pareto');
       opLifeTable,
-      opShortLifeTable:      chart := DoLifeTable(DataFrame, Varnames, Cmd.CommandID, Cmd.ParameterList);
+      opShortLifeTable:      Charts.Add(DoLifeTable(DataFrame, Varnames, Cmd.CommandID, Cmd.ParameterList), 'Survival Curve');
 
+      opGChart:              Charts := OGChart.DoSPCChart(Dataframe, Varnames, xTab);
+      opCChart:              Charts := OCChart.DoSPCChart(Dataframe, Varnames, xTab);
+      opUChart:              Charts := OUChart.DoSPCChart(DataFrame, Varnames, xTab);
+      opXBar:                begin
+                               if cmd.ParamExists['RANGE'] then
+                                 Charts := OXBarR.DoSPCChart(Dataframe, Varnames, xTab)
+                               else
+                                 Charts := OXBarS.DoSPCChart(Dataframe, Varnames, xTab);
+                             end;  
+      opIChart:              Charts := OIChart.DoSPCChart(Dataframe, Varnames, xTab);
+      opRunChart:            Charts := ORunChart.DoSPCChart(Dataframe, Varnames, xTab);
     else
-      dm.Error('Command not in implemented in DoGraph', [], 113001);
+      dm.Error('Command not in implemented in DoGraph', [], 33001);
     end;
-    if (Chart = nil) then raise Exception.Create('TChart not initialized.');
-    if Assigned(xtab) and (not cmd.ParamExists['Q']) then
+    if (Charts = nil) then raise Exception.Create('TChartArray not initialized.');
+    if (Charts.Count = 0) then raise Exception.Create('No charts initialized.');
+    if Assigned(xtab) and (not cmd.ParamExists['Q']) and (not Cmd.ParamExists['NT']) then
     begin
       xtab.TableType := sttNormal;
       dm.CodeMaker.OutputTable(xtab,footnote);
       dm.Sendoutput;
     end;
-    CommonChartOptions(Chart, Cmd);
+
+    for i := 0 to Charts.Count -1 do                           
+      CommonChartOptions(Charts[i]);
 
     if (Cmd.ParambyName['N'] <> nil) then
-      OutputNCases(Chart, dataframe.RowCount);  // add n= at this level CommonChartOptions no access to dataframe
+      OutputNCases(Charts[0], dataframe.RowCount);  // add n= at this level CommonChartOptions no access to dataframe
 
     if Assigned(GraphCallBack) then
-      GraphCallBack(Chart);
+      GraphCallBack(Charts[0]);
 
-    if (cmd.ParamExists['EDIT']) then ShowChart(chart, cmd);
+    if (cmd.ParamExists['EDIT']) then
+      ShowCharts(Charts);
 
-    footnote := SaveChart(chart, cmd);
+    FileNames := SaveCharts(Charts);
+
     if (not (cmd.ParamExists['Q'] or Cmd.ParamExists['NG'])) and
-       (AnsiCompareText(ExtractFileExt(footnote),'.png')=0) then
+       (AnsiCompareText(ExtractFileExt(FileNames[0]),'.png')=0) then
     begin
-      xtab := dm.OutputList.NewTable(1,1);
+      xtab := dm.OutputList.NewTable(1, Charts.Count);
       xtab.TableType := sttGraph;
-      xtab.Cell[1,1] := '<img src="'+ footnote +'" ALT="' + footnote + '">';
-      if ((dm.GetOptionValue('GRAPH FILENAME SHOW', Opt) and (Opt.Value = 'ON'))) then
-        dm.CodeMaker.OutputTable(xtab,footnote)
-      else
-        dm.CodeMaker.OutputTable(xtab,'');
+      for i := 0 to Charts.Count - 1 do
+      begin
+        xtab.Cell[1,i+1] := '<img src="'+ FileNames[i] +'" ALT="' + FileNames[i] + '">';
+        if ((dm.GetOptionValue('GRAPH FILENAME SHOW', Opt) and (Opt.Value = 'ON'))) then
+          xtab.Footer := xtab.Footer + FileNames[i]
+      end;
 
-      if (Cmd.ParamExists['TAB']) and (Cmd.CommandID in [opPchart,opIChart,opXChart,opRunChart]) then
+      dm.CodeMaker.OutputTable(xtab,'');
+
+      if (Cmd.ParamExists['TAB']) and (Cmd.CommandID in [opPchart,opIChart,opRunChart]) then
       begin
         vectors := TStringList.Create;
         vectors.Add(varnames[1]);
@@ -352,8 +292,26 @@ begin
   finally
     if Assigned(DummyForm) then FreeAndNil(DummyForm);
     if Assigned(DummyFrame) then FreeAndNil(DummyFrame);
+    if Assigned(FileNames) then FreeAndNil(FileNames);
+    fCmd := nil;
   end;
 end;
+
+procedure TGraph.AddLine(Axis: TChartAxis; Val: Epifloat; Color: TColor);
+var
+  ColorLine: TColorLineTool;
+begin
+  try
+    colorline := TColorLineTool.Create(Axis.ParentChart);
+    colorLine.Value := Val;
+    colorLine.Axis  := Axis;
+    colorline.Pen.Color := Color;
+    if Axis.ParentChart.BottomAxis = Axis then
+      ColorLine.Pen.Style := psDot;
+  except
+  end;
+end;
+
 
 function TGraph.CreateStandardChart: TChart;
 var
@@ -363,19 +321,19 @@ const
   procversion = '1.0.0.0';
 begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
-  if assigned(dummyform) then FreeAndNil(dummyform);
+//  if assigned(dummyform) then FreeAndNil(dummyform);
   if dummyform = nil then
   begin
     Dummyform := TForm.CreateNew(Application);
-    dm.GetOptionValue('GRAPH SIZE Y', opt);
-    Dummyform.Height := StrToInt(opt.Value);
-    dm.GetOptionValue('GRAPH SIZE X', opt);
-    Dummyform.Width := StrToInt(opt.Value);
+//    dm.GetOptionValue('GRAPH SIZE Y', opt);
+    Dummyform.Height := 300; //StrToInt(opt.Value);
+//    dm.GetOptionValue('GRAPH SIZE X', opt);
+    Dummyform.Width := 400; //StrToInt(opt.Value);
     dummyform.Name := 'Dummyform';
   end;
   result := TChart.Create(dummyform);
   result.Parent := dummyform;
-  result.Name := 'StandardChart';
+  result.Name := 'StandardChart' + IntToStr(Dummyform.ComponentCount);
   with result do
   begin
     // General for the form
@@ -407,6 +365,9 @@ begin
     // Titles, footers, etc.
     SubFoot.Visible := False;
     Title.Font.Height := -16;
+    dm.GetOptionValue('GRAPH FOOTNOTE', Opt);
+    Foot.Text.Add(Opt.Value);
+    Foot.Alignment := taRightJustify;
 
     Frame.Visible := False;
 
@@ -428,6 +389,25 @@ begin
     Rightaxis.MaximumOffset := 5;         // add a small fraction at top of left axis (to see e.g. top of bars)
   end;
   result.Draw;
+end;
+
+function TGraph.CreateChartArray(): TChartArray;
+begin
+  result := TChartArray.Create();
+end;
+
+procedure TGraph.InitializeBaseUnit(var AUnit: TCustomSPCChart; AUnitClass: TCustomSPCChartClass);
+begin
+  AUnit := AUnitClass.Create();
+  AUnit.OnCreateStandardChart := CreateStandardChart;
+  AUnit.OnCreateChartArray := CreateChartArray;
+end;
+
+procedure TGraph.InitializeBaseUnit(var AUnit: TCustomChart; AUnitClass: TCustomChartClass);
+begin
+  AUnit := AUnitClass.Create();
+  AUnit.OnCreateStandardChart := CreateStandardChart;
+  AUnit.OnCreateChartArray := CreateChartArray;
 end;
 
 procedure TGraph.BottomDateLabeling(Sender: TChartAxis; Series: TChartSeries; ValueIndex: Integer; Var LabelText: String);
@@ -659,6 +639,19 @@ begin
       result.AddXY(XVector.AsFloat[i], YVector.AsFloat[i], LabelVector.AsString[i]);
 end;
 
+// TODO -o Torsten : Redesign...
+function TGraph.LineSeries2(XVector, YVector, LabelVector: TEpiVector): TLineSeries;
+var
+  i: cardinal;
+  dummy: Double;
+begin
+  result := TLineSeries.Create(nil);
+
+  for i := 1 to XVector.Length do
+    if not YVector.IsMissing[i] then
+      result.AddXY(XVector.AsFloat[i], YVector.AsFloat[i], LabelVector.AsString[i]);
+end;
+
 function TGraph.LineSeries(XVector, YVector, LabelVector: TEpiVector): TLineSeries;
 var
   i: cardinal;
@@ -708,7 +701,7 @@ end;
 
 
 
-procedure TGraph.ShowCharts(Charts: array of TChart; Cmd: TCommand);
+procedure TGraph.ShowCharts(Charts: TChartArray);
 var
   Chart: TChart;
   Page:  TTabSheet;
@@ -719,38 +712,42 @@ const
 begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
 
-  // TODO : Show multiple charts on form
-  if System.Length(Charts) = 0 then exit;
+  if Charts.Count = 0 then exit;
   GraphForm := TGraphForm.Create(nil);
   OTranslator.TranslateForm(GraphForm);
 
-  for i := 0 to high(charts) do
+  for i := 0 to Charts.Count - 1 do
   begin
     Page := TTabSheet.Create(GraphForm.GraphPG);
     Page.PageControl := GraphForm.GraphPG;
-    Page.Caption := 'Graph ' + inttostr(i+1);
+    Page.Caption := Charts.FormTitle[i];
     Chart := Charts[i];
     Chart.Parent := Page;
     Chart.Align := alClient;  
   end;
   // Show the graph...
   GraphForm.ShowModal;
-  for i := 0 to high(charts) do
+  for i := 0 to Charts.Count - 1 do
     Charts[i].Parent := dummyform;   
   FreeAndNil(GraphForm);
 end;
 
-procedure TGraph.ShowChart(Chart: TChart; Cmd: TCommand);
+procedure TGraph.ShowChart(Chart: TChart);
 var
-  Charts: array of TChart;
+  Charts: TChartArray;
 const
   procname = 'ShowCharts';
   procversion = '1.0.0.0';
 begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
-  SetLength(Charts, 1);
-  Charts[0] := Chart;
-  ShowCharts(Charts, cmd);
+  Charts := nil;
+  try
+    Charts := TChartArray.Create();
+    Charts.Add(Chart);
+    ShowCharts(Charts);
+  finally
+    if Assigned(Charts) then FreeAndNil(Charts);
+  end;
 end;
 
 
@@ -758,13 +755,13 @@ end;
  SaveChart saves the chart given conditions specified in cmd.
  It returns a string with the full pathname for the file.
 }
-function TGraph.SaveChart(Chart: TChart; Cmd: TCommand): string;
+function TGraph.SaveCharts(Charts: TChartArray): TStrings;
 var
   s, ext: string;
   // save: boolean;
   opt: TEpiOption;
   day,month,year,hh,mm,ss,ms: Word;
-  xsize, ysize: integer;
+  xsize, ysize, i: integer;
   rect: TRect;
   bitmap: TBitmap;
   pngobj: TPNGObject;
@@ -772,64 +769,79 @@ const
   procname = 'SaveChart';
   procversion = '1.0.0.0';
 begin
+  ODebug.IncIndent();
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  result := nil;
+  try
+    Result := TStringList.Create;
+    if (dm.GetOptionValue('GRAPH SAVETYPE', Opt)) then ext := '.' + AnsiUpperCase(Opt.Value);
 
-  if (dm.GetOptionValue('GRAPH SAVETYPE', Opt)) then ext := '.' + AnsiUpperCase(Opt.Value);
-  DecodeTime(Time, hh, mm, ss, ms);
-  DecodeDate(date,year,month,day);
-  s := 'Graph' + IntToStr(year);
+    for i := 0 to Charts.Count - 1 do
+    begin
+      DecodeTime(Time, hh, mm, ss, ms);
+      DecodeDate(date,year,month,day);
+      s := 'Graph' + IntToStr(year);
 
-  // if graphs are not saved in current folder or logfile folder is different from
-  // current folder then graphs will not be visible
-  if dm.CodeMaker.LogFileName <> '' then
-    if AnsiUppercase(ExtractFilePath(dm.CodeMaker.LogFileName)) <> AnsiUppercase(dm.CurrentDir) then
-      dm.sysinfo('Graphs saved in: ' + dm.currentdir + '<br> Logfile saved in ' + ExtractFilePath(dm.CodeMaker.LogFileName));
+      // if graphs are not saved in current folder or logfile folder is different from
+      // current folder then graphs will not be visible
+      if dm.CodeMaker.LogFileName <> '' then
+        if AnsiUppercase(ExtractFilePath(dm.CodeMaker.LogFileName)) <> AnsiUppercase(dm.CurrentDir) then
+          dm.sysinfo('Graphs saved in: ' + dm.currentdir + '<br> Logfile saved in ' + ExtractFilePath(dm.CodeMaker.LogFileName));
 
-  if month < 10 then s := s+ '0' + IntToStr(month) else s := s + IntToStr(month);
-  if day < 10 then s := s+ '0' + IntToStr(day) else s := s + IntToStr(day);
-  if hh < 10 then s := s+ '0' + IntToStr(hh) else s := s + IntToStr(hh);
-  if mm < 10 then s := s+ '0' + IntToStr(mm) else s := s + IntToStr(mm);
-  if ss < 10 then s := s+ '0' + IntToStr(ss) else s := s + IntToStr(ss);
-  if ms < 10 then s := s+ '0' + IntToStr(ms) else s := s + IntToStr(ms);
-  s := s + ext;
-  if (Cmd.ParamByName['SAVE'] <> nil) then
-  begin
-    s := Cmd.ParamByName['SAVE'].AsString;
-    if ExtractFileExt(Cmd.ParamByName['SAVE'].AsString) <> '' then
-      ext := AnsiUppercase(ExtractFileExt(Cmd.ParamByName['SAVE'].AsString))
-    else
+      if month < 10 then s := s+ '0' + IntToStr(month) else s := s + IntToStr(month);
+      if day < 10 then s := s+ '0' + IntToStr(day) else s := s + IntToStr(day);
+      if hh < 10 then s := s+ '0' + IntToStr(hh) else s := s + IntToStr(hh);
+      if mm < 10 then s := s+ '0' + IntToStr(mm) else s := s + IntToStr(mm);
+      if ss < 10 then s := s+ '0' + IntToStr(ss) else s := s + IntToStr(ss);
+      if ms < 10 then s := s+ '0' + IntToStr(ms) else s := s + IntToStr(ms);
       s := s + ext;
-  end;
-  s := ExpandFileName(s);
-  if not((ext='.BMP') or (ext='.WMF') or (ext='.PNG')) then
-    dm.Error('Unable to save using file format: %s', [ext], 113002);
-  if (FileExists(s)) and (Cmd.ParamByName['REPLACE'] = nil) then
-    dm.Error('File %s exist. Erase file or <br>use option /Replace', [s], 113003);
-  if (dm.GetOptionValue('GRAPH SIZE X', Opt)) then xsize := StrToInt(Opt.Value);
-  if (dm.GetOptionValue('GRAPH SIZE Y', Opt)) then ysize := StrToInt(Opt.Value);
-  // Size Options override globally defined values. 
-  if Assigned(Cmd.ParamByName['SIZEX']) then xsize := StrToInt(Cmd.ParamByName['SIZEX'].AsString);
-  if Assigned(Cmd.ParamByName['SIZEY']) then ysize := StrToInt(Cmd.ParamByName['SIZEY'].AsString);
-  Rect.Left := 0;
-  Rect.Right := xsize;
-  Rect.Bottom := ysize;
-  Rect.Top := 0;
-  if ext = '.PNG' then
-  begin
-    bitmap := Chart.TeeCreateBitmap(Chart.BackColor, Rect);
-    pngobj := TPNGObject.Create;
-    pngobj.Assign(BitMap);
-    pngobj.SaveToFile(s);
-    FreeAndNil(BitMap);
-    FreeAndNil(PngObj);
-  end;
-  if ext = '.BMP' then Chart.SaveToBitmapFile(s);
-  if ext = '.WMF' then Chart.SaveToMetafile(s);
+      if (Cmd.ParamByName['SAVE'] <> nil) then
+      begin
+        s := ExtractFileNameNoExt(Cmd.ParamByName['SAVE'].AsString);
+        if i > 0 then
+          s := s + '_' + IntToStr(i);
+        if ExtractFileExt(Cmd.ParamByName['SAVE'].AsString) <> '' then
+          ext := AnsiUppercase(ExtractFileExt(Cmd.ParamByName['SAVE'].AsString));
+        s := s + ext;
+      end;
+      s := ExpandFileName(s);
+      if not((ext='.BMP') or (ext='.WMF') or (ext='.PNG')) then
+        dm.Error('Unable to save using file format: %s', [ext], 33002);
+      if (FileExists(s)) and (Cmd.ParamByName['REPLACE'] = nil) then
+        dm.Error('File %s exist. Erase file or <br>use option /Replace', [s], 33003);
+      // Size Options override globally defined values. 
+      if Assigned(Cmd.ParamByName['SIZEX']) then
+        xsize := StrToInt(Cmd.ParamByName['SIZEX'].AsString)
+      else
+        xsize := 400;
+      if Assigned(Cmd.ParamByName['SIZEY']) then
+        ysize := StrToInt(Cmd.ParamByName['SIZEY'].AsString)
+      else
+        ysize := 300;
+      Rect.Left := 0;
+      Rect.Right := xsize;
+      Rect.Bottom := ysize;
+      Rect.Top := 0;
+      if ext = '.PNG' then
+      begin
+        bitmap := Charts[i].TeeCreateBitmap(Charts[i].BackColor, Rect);
+        pngobj := TPNGObject.Create;
+        pngobj.Assign(BitMap);
+        pngobj.SaveToFile(s);
+        FreeAndNil(BitMap);
+        FreeAndNil(PngObj);
+      end;
+      if ext = '.BMP' then Charts[i].SaveToBitmapFile(s);
+      if ext = '.WMF' then Charts[i].SaveToMetafile(s);
 
-  if (dm.GetOptionValue('GRAPH CLIPBOARD', Opt) and (Opt.Value = 'ON')) then
-    Chart.CopyToClipboardMetafile(true, Rect);
+      if (dm.GetOptionValue('GRAPH CLIPBOARD', Opt) and (Opt.Value = 'ON')) then
+        Charts[i].CopyToClipboardMetafile(true, Rect);
 
-  result := s;
+      result.Add(s);
+    end;
+  finally
+    ODebug.DecIndent();
+  end;
 end;
 
 function TGraph.DoBars(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
@@ -849,9 +861,9 @@ const
   function GetColour(index: integer): TColor;
   begin
     if Grouped then
-      result := GetGraphColour(k)
+      result := TGraphUtils.GetGraphColour(k)
     else
-      result := GetGraphColour(index);
+      result := TGraphUtils.GetGraphColour(index);
   end;
 
 begin
@@ -882,11 +894,11 @@ begin
       GroupName := (Parameters.VarByName['BY'].AsString);
       Grouped := true;
       if (Dataframe.VectorByName[Varnames[0]].DataType = EpiTyString) then
-        dm.Error('Cannot use /BY with string variables', [], 113004);
+        dm.Error('Cannot use /BY with string variables', [], 33004);
     end;
 
-    total := Dataframe.RowCount;                                        // TODO : Change to real CMD.
-    df := OAggregate.AggregateDataframe(Dataframe, TStringList(varnames), agglist, TCommand.Create(0, Parameters));
+    total := Dataframe.RowCount;                                  
+    df := OAggregate.AggregateDataframe(Dataframe, TStringList(varnames), agglist, Cmd);
     Expand := (Parameters.VarByName['XALL'] <> nil);
     if Grouped then
       Varnames.Delete(Varnames.IndexOf(GroupName));
@@ -923,10 +935,7 @@ begin
 
     // Create the graph and set customizable settings.
     result := CreateStandardChart();
-    if (Parameters.VarByName['TI'] <> nil) then
-      result.Title.Text.Add(Parameters.VarByName['TI'].AsString)
-    else
-      result.Title.Text.Add(vec.GetVariableLabel(Parameters));
+    result.Title.Text.Add(vec.GetVariableLabel(Parameters));
     if Grouped then
       result.Legend.Title.Text.Add(' ' + df.VectorByName[GroupName].GetVariableLabel(Parameters))
     else
@@ -1017,9 +1026,9 @@ const
   function GetColour(index: integer): TColor;
   begin
     if Grouped then
-      result := GetGraphColour(k)
+      result := TGraphUtils.GetGraphColour(k)
     else
-      result := GetGraphColour(index);
+      result := TGraphUtils.GetGraphColour(index);
   end;
 
 begin
@@ -1076,12 +1085,8 @@ begin
 
     // Create the graph and set customizable settings.
     result := CreateStandardChart();
-    if (Parameters.VarByName['TI'] <> nil) then
-      result.Title.Text.Add(Parameters.VarByName['TI'].AsString)
-    else
-      result.Title.Text.Add(vec.GetVariableLabel(Parameters));
+    result.Title.Text.Add(vec.GetVariableLabel(Parameters));
     result.BottomAxis.Title.Caption := ' ' + vec.GetVariableLabel(Parameters);
-
 
     // Create the histogram series.
     // series := Thistogramseries.create(nil);
@@ -1093,11 +1098,11 @@ begin
       if (vec.IsMissing[i]) then
         series.AddXY(vec.AsFloat[i-1]+1, nvec.AsFloat[i],
                      vec.GetValueLabel(vec.AsString[i], Parameters),
-                     GetHisColor(i-1))
+                     TGraphUtils.GetHisColor(i-1))
       else
         series.AddXY(vec.AsFloat[i], nvec.AsFloat[i],
                      vec.GetValueLabel(vec.AsString[i], Parameters),
-                     GetHisColor(i-1));
+                     TGraphUtils.GetHisColor(i-1));
       if Grouped and (i<vec.length) and (zvec.compare(i, i+1)<>0) then
       begin
         Series.Stairs := True;
@@ -1121,9 +1126,9 @@ begin
       dec(i);
       if (not vec.IsMissing[i]) and (i>1) then
         series.AddXY(vec.AsFloat[i] + (vec.AsFloat[i]-vec.asfloat[i-1]), nvec.AsFloat[i],'',
-                     GetHisColor(i-1));
+                     TGraphUtils.GetHisColor(i-1));
     except
-      dm.info('report problem with histogram (drawing last bar): %d', [i], 213001);
+      dm.info('report problem with histogram (drawing last bar): %d', [i], 33009);
     end;
     Series.Stairs := True;
     Series.Marks.Visible := False;
@@ -1222,7 +1227,7 @@ const
       MildOut.Visible := False;
       ExtrOut.Visible := False;
       UseCustomValues := False;
-      Box.Color:= GetGraphColour(BoxNo);
+      Box.Color:= TGraphUtils.GetGraphColour(BoxNo);
       //Box.HorizSize := 25;
       Position := BoxNo;
       UseCustomValues := true;
@@ -1279,11 +1284,8 @@ begin
   // Create the graph and set customizable settings.
   result := CreateStandardChart();
   try
-    if (Parameters.VarByName['TI'] <> nil) then
-      result.Title.Text.Add(Parameters.VarByName['TI'].AsString);
-
-    result.BottomAxis.MinimumOffset := 10;
-    result.BottomAxis.MaximumOffset := 10;
+    result.LeftAxis.MinimumOffset := 10;
+    result.LeftAxis.MaximumOffset := 10;
     result.BottomAxis.Ticks.Visible := false;
     result.BottomAxis.Labels := true;
     result.MarginLeft := 10;
@@ -1327,7 +1329,7 @@ begin
       Aggl.Add(TAggrPercentile.Create('$90', Varnames[i], ap90));
       Aggl.Add(TAggrMinMax.Create('$MAX', Varnames[i], false));
 
-      agdf := OAggregate.AggregateDataframe(df, TStringList(ByVars), AggL,  TCommand.Create(0, Parameters));
+      agdf := OAggregate.AggregateDataframe(df, TStringList(ByVars), AggL, TCommand.Create(0, Parameters));
       vec := df.VectorByName[Varnames[i]];
       ByVec := df.VectorByName[GroupVar];
 
@@ -1396,9 +1398,9 @@ begin
     Stairs := false;
     Linepen.Visible:= True;
     Linepen.Width := 2;
-    Color := GetGraphColour(index);
-    Pointer.Brush.Color := GetGraphColour(index);
-    pointer.Style := GetGraphPointerStyle(index);
+    Color := TGraphUtils.GetGraphColour(index);
+    Pointer.Brush.Color := TGraphUtils.GetGraphColour(index);
+    pointer.Style := TGraphUtils.GetGraphPointerStyle(index);
     pointer.Brush.Style := bsSolid;
   end;
 end;
@@ -1410,8 +1412,8 @@ begin
     pointer.VertSize := 2;
     pointer.HorizSize := 2;
     Stairs := false;
-    Color := GetGraphColour(index);
-    Pointer.Brush.Color := GetGraphColour(index);
+    Color := TGraphUtils.GetGraphColour(index);
+    Pointer.Brush.Color := TGraphUtils.GetGraphColour(index);
     case (index mod 6) of
       0: pointer.Style := psCircle;
       1: begin
@@ -1446,7 +1448,7 @@ const
   procversion = '1.0.0.0';
 begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
-  if varnames.Count < 1 then dm.Error('Minimum 1 variables for %s!', ['DoDotPlot'], 113005);
+  if varnames.Count < 1 then dm.Error('Minimum 1 variables for %s!', ['DoDotPlot'], 33005);
 
   if Parameters.VarbyName['DI'] <> nil then di := (Parameters.VarbyName['DI'].AsFloat)
     else di := 0.015;
@@ -1612,20 +1614,20 @@ const
     with series do
     begin
       //dm.info(format(' index: %d farve: %d pointer: %d ',[index,pcolor,pstyle]));
-      Color := GetGraphColour(pColor);
-      Pointer.Brush.Color := GetGraphColour(pColor);
-      pointer.Style := GetGraphPointerStyle(pStyle);
-      pointer.Brush.Style := GetGraphBrushStyle(pBrush);
+      Color := TGraphUtils.GetGraphColour(pColor);
+      Pointer.Brush.Color := TGraphUtils.GetGraphColour(pColor);
+      pointer.Style := TGraphUtils.GetGraphPointerStyle(pStyle);
+      pointer.Brush.Style := TGraphUtils.GetGraphBrushStyle(pBrush);
     end;
   end;
 
 begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
-  if varnames.Count < 2 then dm.Error('Minimum 2 variables for %s!', ['DoScatter'], 113006);
+  if varnames.Count < 2 then dm.Error('Minimum 2 variables for %s!', ['DoScatter'], 33006);
 
   // Create the graph and set customizable settings.
   result := CreateStandardChart();
-
+  
 
   xvec := Dataframe.VectorByName[varnames[0]];
 
@@ -1774,7 +1776,7 @@ begin
   end;
 end;
 
-{procedure OutputYIncrease(const chart: TChart);
+procedure OutputYIncrease(const chart: TChart);
 var
   ttool: TAnnotationTool;
 begin
@@ -1784,13 +1786,10 @@ begin
     ttool.Text := FloatToStr(chart.LeftAxis.increment) + ' cases/box';
     ttool.ParentChart := chart;
     ttool.Shape.CustomPosition := true;
-    ttool.Shape.Left :=5 ; // (chart.Width - ttool.Width) div 2;
-    ttool.Shape.Top := 10;
-    ttool.Shape.Frame.Visible := false;
-    ttool.Shape.Shadow.Size :=0;
-  // end
+    ttool.Shape.Left :=10 ; // (chart.Width - ttool.Width) div 2;
+    ttool.Shape.Top := 15;
+  end
 end;
-}
 
 function TGraph.DoEpiCurve(Dataframe: TEpiDataframe; Varnames: TStrings;
                            CmdID: Word; Parameters: TVarList;
@@ -1809,8 +1808,11 @@ var
   varlist: TStringList;
   title, mints,maxts: string;
 
+
   function CreateBarSeries(parent: TChart): TBarSeries;
   begin
+    //series := TAreaSeries.Create(nil);
+    //Series.Stairs := True;
     result := TBarSeries.Create(nil);
     result.StackGroup := 0;
     result.MultiBar := mbStacked;
@@ -1851,14 +1853,14 @@ begin
         aEnd := xvec.AsInteger[i];
     end;
 
-    if Parameters.VarExists['O'] then
-      maxval := Parameters.VarbyName['O'].AsInteger;
+    if Cmd.ParamExists['O'] then
+      maxval := StrToInt(Cmd.ParamByName['O'].AsString);
 
     // Only records with maxvalue
     for i := 1 to dataframe.RowCount do
       if yvec.Value[i] <> maxval then
         dataframe.Selected[i] := false;
-    if dataframe.SelectedRowCount = 0 then dm.Error('No Data', [], 61000);
+    if dataframe.SelectedRowCount = 0 then dm.Error('No Data', [], 10000);
 
     if varnames.count < 3 then
       title := 'EpiCurve: ' + yvec.GetVariableLabel(Parameters)
@@ -1866,19 +1868,16 @@ begin
       title := 'EpiCurve: ' + yvec.GetVariableLabel(Parameters) +
                ' by ' + dataframe.VectorByName[varnames[2]].GetVariableLabel(Parameters);
 
-    if Parameters.VarbyName['TI'] <> nil then
-      title := Parameters.VarbyName['TI'].Value;
-
     footnote := yvec.GetVariableLabel(Parameters) + ' = ' + yvec.GetValueLabel(VarToStr(maxval), Parameters);
 
     Varnames.Delete(0);
     df := dataframe.prepareDataframe(varnames, nil);
-
-    if df.RowCount = 0 then dm.Error('No Data', [], 61000);
+    if df.RowCount = 0 then dm.Error('No Data', [], 10000);
     
     agglist := TAggrList.Create();
     agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
     df := OAggregate.AggregateDataframe(df, TStringList(varnames), agglist, TCommand.Create(0, Parameters));
+//    df.SendToOutput(nil);
     varlist := TStringList.Create();
     varlist.Add(varnames[0]);
     df2 := df.ExpandDataframe(varlist,aBegin-1,aEnd+1);
@@ -1889,7 +1888,7 @@ begin
       zvec := df2.VectorByName[varnames[1]];
       for i := 0 to zvec.Length do
         if zvec.AsInteger[i] < 0 then
-          dm.Error('By variable cannot contain negative values', [], 113007);
+          dm.Error('By variable cannot contain negative values', [], 33007);
     end else begin
       zvec := TEpiIntVector.Create('$T', df2.RowCount);
       for i := 1 to df2.RowCount do
@@ -1903,11 +1902,11 @@ begin
     result.BottomAxis.Title.Caption := xvec.GetVariableLabel(parameters);
     result.LeftAxis.Title.Caption := 'Count';
 
-    result.Legend.Title.Caption := zvec.GetVariableLabel(Parameters);
-
-    //if Parameters.VarbyName['YBOX'] <> Nil then GraphCallBack := OutputYIncrease;
-
-    if Parameters.VarbyName['YINC'] = Nil  then Parameters.AddVar('YINC', 1);
+    if Parameters.VarbyName['YINC'] = nil then
+      Parameters.AddVar('YINC', 1);
+    
+	  result.Legend.Title.Caption := zvec.GetVariableLabel(Parameters);
+    if Parameters.VarbyName['I'] <> Nil then GraphCallBack := OutputYIncrease;
 
     // This loop resets all missing data made by expanding the dataframe
     // and ONLY creates the appropriate number of barseries for the graph.
@@ -1954,7 +1953,7 @@ begin
     for i:=0 to scount-1 do
       if assigned(series[i]) then
       begin
-        series[i].Color := GetGraphColour(j);
+        series[i].Color := TGraphUtils.GetGraphColour(j);
         series[i].ParentChart := result;
         inc(j);
       end;
@@ -1962,7 +1961,7 @@ begin
     // Insert the data!
     i := 1;
     while (i <= df2.RowCount) do
-    begin                            // Why not .Compare(i, i+1)??
+    begin								// Why not .Compare(i, i+1)??
       while (i <= df2.RowCount) and (xvec.AsInteger[i] = xvec.AsInteger[i+1]) do
       begin
         if not yvec.IsMissing[i] then
@@ -2035,41 +2034,35 @@ begin
     dm.AddResult('$NonCases', EpiTyInteger, (noncase-total-casemis), 5, 0);
 
     // output table
-    if Parameters.VarbyName['NT'] = Nil then
-    begin
-      OutputTable := dm.CodeMaker.Output.NewTable(6);  // extend to number of groups in var3
-      OutputTable.Cell[1,1] := '  ';
-      OutputTable.Cell[2,1] := 'Total<br>N';
-      OutputTable.Cell[3,1] := 'Cases<br>n';
-      OutputTable.Cell[4,1] := '<u>'+YVec.GetVariableLabel(Parameters) + '</u>'+ '<br><small>Missing</small>';
-      OutputTable.Cell[5,1] := ' <br>Min';
-      OutputTable.Cell[6,1] := ' <br>Max';
+    OutputTable := dm.CodeMaker.Output.NewTable(6);  // extend to number of groups in var3
+    OutputTable.Cell[1,1] := '  ';
+    OutputTable.Cell[2,1] := 'Total<br>N';
+    OutputTable.Cell[3,1] := 'Cases<br>n';
+    OutputTable.Cell[4,1] := '<u>'+YVec.GetVariableLabel(Parameters) + '</u>'+ '<br><small>Missing</small>';
+    OutputTable.Cell[5,1] := ' <br>Min';
+    OutputTable.Cell[6,1] := ' <br>Max';
 
-      OutputTable.Caption := title;
-      for j:=0 to scount-1 do
-        if assigned(series[j]) then
-        begin
-          OutputTable.AddRow;
-          OutputTable.Cell[1,OutputTable.RowCount] := zvec.GetValueLabel(IntToStr(j), Parameters);
-          OutputTable.Cell[2,OutputTable.RowCount] := inttostr(cases[j]+missings[j]);
-          OutputTable.Cell[3,OutputTable.RowCount] := inttostr(cases[j]);
-          OutputTable.Cell[4,OutputTable.RowCount] := inttostr(missings[j]);
-          OutputTable.Cell[5,OutputTable.RowCount] := mins[j];
-          OutputTable.Cell[6,OutputTable.RowCount] := maxs[j];
-        end;
-    end; // show table
+    OutputTable.Caption := title;
+    for j:=0 to scount-1 do
+      if assigned(series[j]) then
+      begin
+        OutputTable.AddRow;
+        OutputTable.Cell[1,OutputTable.RowCount] := zvec.GetValueLabel(inttostr(j), Parameters);
+        OutputTable.Cell[2,OutputTable.RowCount] := inttostr(cases[j]+missings[j]);
+        OutputTable.Cell[3,OutputTable.RowCount] := inttostr(cases[j]);
+        OutputTable.Cell[4,OutputTable.RowCount] := inttostr(missings[j]);
+        OutputTable.Cell[5,OutputTable.RowCount] := mins[j];
+        OutputTable.Cell[6,OutputTable.RowCount] := maxs[j];
+      end;
 
-    if Parameters.VarbyName['NT'] = Nil then
-    begin
-      // add line of totals:
-      OutputTable.AddRow;
-      OutputTable.Cell[1,OutputTable.RowCount] := 'Total';
-      OutputTable.Cell[2,OutputTable.RowCount] := inttostr(total+casemis);
-      OutputTable.Cell[3,OutputTable.RowCount] := inttostr(total);
-      OutputTable.Cell[4,OutputTable.RowCount] := inttostr(casemis);
-      OutputTable.Cell[5,OutputTable.RowCount] := mints;
-      OutputTable.Cell[6,OutputTable.RowCount] := maxts;
-    end;
+    // add line of totals:
+    OutputTable.AddRow;
+    OutputTable.Cell[1,OutputTable.RowCount] := 'Total';
+    OutputTable.Cell[2,OutputTable.RowCount] := inttostr(total+casemis);
+    OutputTable.Cell[3,OutputTable.RowCount] := inttostr(total);
+    OutputTable.Cell[4,OutputTable.RowCount] := inttostr(casemis);
+    OutputTable.Cell[5,OutputTable.RowCount] := mints;
+    OutputTable.Cell[6,OutputTable.RowCount] := maxts;
 
     footnote :=  'Outcome: ' + footnote + '<br>N<sub>non-case</sub>= ' + inttostr(noncase-total-casemis)
        {     +' .<br>' + Varnames[0] + ' : Valid N<sub>case</sub>= ' + inttostr(total) + '    Missing N<sub>case</sub>= ' + inttostr(casemis)};
@@ -2105,7 +2098,6 @@ function TGraph.DoCIPlot(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Wo
   i, j, c, sum, numerator, showvalue: integer;
   Low, High, Mid: EpiFloat;
   Series: TCandleSeries;
-  ColorLine: TColorLineTool;
   sumtab: TSumTable;
   footnote, s: string;
 
@@ -2113,31 +2105,11 @@ const
   procname = 'DoCIPlot';
   procversion = '1.0.0.0';
 
-  function addline(Chart: TChart; X: Epifloat; axis : integer = 0):Boolean;
-  begin
-    try
-      colorline := TColorLineTool.Create(Chart);
-      colorLine.Value := x;
-      if axis = 1 then
-      begin
-          colorLine.Axis := Chart.LeftAxis;
-          colorline.Pen.Color :=  GetGraphColour(0);
-      end else
-      begin
-          ColorLine.Pen.Style := psDot;
-          colorLine.Axis := Chart.BottomAxis;
-      end;
-      result := True;
-    except
-      result := False;
-    end;
-  end;
-
   function CreateTable(var Table : TStatTable; title, variable, Outcome : string): Boolean;
   var
     opt : TEpiOption;
   begin
-      Table := dm.CodeMaker.Output.NewTable(7);  // extend to number of groups in var3
+      Table := dm.CodeMaker.Output.NewTable(6);
       Table.Caption := title;
       Table.Cell[1,1] := 'variable';
       Table.Cell[2,1] := 'stratum';
@@ -2178,8 +2150,8 @@ const
     Table.Cell[3,Table.RowCount] := inttostr(sum);
     Table.Cell[4,Table.RowCount] := inttostr(numerator);
     Table.Cell[5,Table.RowCount] := format(efmt,[100*(numerator/sum)]);
-    Table.Cell[6,Table.RowCount] := format(efmt,[low]);
-    Table.Cell[7,Table.RowCount] := format(efmt,[high]);
+    Table.Cell[6,Table.RowCount] := EpiCIFormat(0, low, high, efmt, cifmt, '', 0);
+//    Table.Cell[7,Table.RowCount] := format(efmt,[high]);
   end;
 
 begin
@@ -2191,6 +2163,9 @@ begin
 
   try
     result := CreateStandardChart();
+    result.LeftAxis.MinimumOffset := 10;
+    result.LeftAxis.MaximumOffset := 10;
+
 
     agglist := TAggrList.Create();
     agglist.Insert(0, TAggrCount.Create('$S', '', acAll));
@@ -2215,29 +2190,25 @@ begin
       Showvalue := sumtab[1].ColumnCount;
 
     if showvalue > sumtab[1].ColumnCount then
-      dm.Error('Observation value not in data set', [], 113013);
+      dm.Error('Observation value not in data set', [], 33008);
     Sum := 0;
     for i := 1 to Sumtab.TableCount do
     begin
       if Sumtab[i].Total > Sum then
       begin
         Sum := Sumtab[i].Total;
-        Numerator := Sumtab[i].ColTotal[ShowValue];
+        Numerator := Sumtab[i].ColTotal[ShowValue]; 
       end;
     end;
     s := sumtab[1].ColHeaderLabel[Showvalue];
-    footnote :='Proportion of ' + dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters) +
-               ' = ' + s;
 
-    if Parameters.VarExists['TI'] then
-      result.Title.Caption := Parameters.VarbyName['TI'].AsString
-    else
-      result.title.Caption := footnote;
+    result.title.Caption := 'Proportion of ' + dataframe.VectorByName[Varnames[0]].GetVariableLabel(Parameters) +
+                            ' = ' + s;
 
     Series := TCandleSeries.Create(nil);
-    Series.UpCloseColor := GetGraphColour(c);
-    Series.DownCloseColor := GetGraphColour(c);
-    Series.Color := GetGraphColour(c);
+    Series.UpCloseColor := TGraphUtils.GetGraphColour(c);
+    Series.DownCloseColor := TGraphUtils.GetGraphColour(c);
+    Series.Color := TGraphUtils.GetGraphColour(c);
     Series.ParentChart := result;
     Series.Title := 'Proportion';
 
@@ -2265,8 +2236,8 @@ begin
       // add vertical lines ?
       if (Parameters.VarByName['NL'] = nil) then
       begin
-        addline(result,0.75);
-        addline(result,-0.75);
+        addline(result.BottomAxis, c+0.50, clBlack);
+        addline(result.BottomAxis, c-0.50, clBlack);
         result.BottomAxis.IStartPos := -10;
       end;
 
@@ -2281,8 +2252,8 @@ begin
     //add crude line CI
     if (Parameters.VarByName['NOCI'] = nil) then
     begin
-      addline(result, Low*100, 1);
-      addline(result, High*100, 1);
+      addline(result.LeftAxis, Low*100, TGraphUtils.GetGraphColour(0));
+      addline(result.LeftAxis, High*100, TGraphUtils.GetGraphColour(0));
     end;
 
     result.LeftAxis.Title.Caption := 'Percents (%)';
@@ -2310,9 +2281,12 @@ begin
       result.bottomaxis.Title.Caption := result.bottomaxis.Title.Caption + SumTab[i].RowHeader;
       if i < sumtab.TableCount then
         result.bottomaxis.Title.Caption := result.bottomaxis.Title.Caption  + ' | ';
-      if (Parameters.VarByName['NL'] = nil) then addline(result,c-0.5);
+      if (Parameters.VarByName['NL'] = nil) then addline(result.BottomAxis, c-0.5, clBlack);
     end;
     if Parameters.VarbyName['NT'] <> Nil then dm.info(footnote, [], 0);
+    Series.DateValues.DateTime := false;
+    Result.BottomAxis.Labels := true;
+    Result.BottomAxis.LabelStyle := talText;
   finally
     if Assigned(sumtab) then FreeAndNil(sumtab);
     if assigned(agglist) then FreeAndNil(agglist);
@@ -2342,7 +2316,7 @@ begin
   try
     if (Parameters.VarbyName['AGG'] <> nil) and
        (not (dataframe.VectorByName[varnames[0]].DataType in [EpiTyInteger, EpiTyDate])) then
-      dm.info('%s: is not integer/date, cannot aggregate', [varnames[0]], 213003);
+      dm.info('%s: is not integer/date, cannot aggregate', [varnames[0]], 33010);
 
     if (Parameters.VarbyName['AGG'] <> nil) and
        (dataframe.VectorByName[varnames[0]].DataType in [EpiTyInteger, EpiTyDate]) then
@@ -2473,1043 +2447,6 @@ begin
   ODebug.DecIndent;
 end;
 
-
-function TGraph.ExcludeInDataframe(var dF: TEpiDataframe; Parameters: TVarList; ExcludeFunc: TExcludeFunction): boolean;
-var
-  ExclVector: TEpiVector;
-  ExclVar: TAnaVariableDescriptor;
-  ExpParams: array of integer;
-  ExvValue: EpiFloat;
-  ExvZero : Boolean;
-  i: integer;
-
-
-  function InExpList(no: integer; Params: array of integer): boolean;
-  var
-    i: integer;
-  begin
-    result := false;
-    for i := 0 to high(params) do
-      if params[i] = no then
-        result := true;
-  end;
-
-begin
-  result := false;
-
-  // Checking for EXP option(s).
-  SetLength(ExpParams, 0);
-  i := 0;
-  while (Parameters.VarByName['EXP'] <> nil) do
-  begin
-    SetLength(ExpParams, i+1);
-    ExpParams[i] := Parameters.VarByName['EXP'].AsInteger;
-    Parameters.RemoveVar(Parameters.VarByName['EXP']);
-    inc(i);
-  end;
-
-  // Checking for EXV option(s).
-  ExvValue := MaxExtended;
-  if (Parameters.VarByName['EXV'] <> nil) then
-    ExvValue := Parameters.VarByName['EXV'].AsFloat;
-
-  if (Parameters.VarByName['EXZ'] <> nil) then
-    ExvZero := True else ExvZero := False;
-
-  ExclVar := TAnaVariableDescriptor.CreateLocal('Excluded', df.Vectors[1].DataType, 0, df.Vectors[1].FieldDataDecimals);
-  df.NewVector(ExclVar);
-  ExclVector := df.VectorByName[ExclVar.Name];
-
-  for i := 1 to df.RowCount do
-  begin
-    begin
-      case df.Vectors[1].DataType of
-        EpiTyInteger: begin
-                        ExclVector.AsInteger[i] := Floor(R2(ExcludeFunc(i, df),0));
-                        if (ExcludeFunc(i, df) >= ExvValue) or
-                           //(df.Vectors[2].AsFloat[i] >= ExvValue) or
-                           (InExpList(i, ExpParams) or ((ExvZero) and (df.Vectors[1].AsInteger[i] = 0 )) ) then
-                        begin
-                          df.Vectors[1].AsInteger[i] := NA_INT;
-                          result := true;
-                        end;
-                      end;
-        EpiTyFloat:   begin
-                        ExclVector.AsFloat[i] := ExcludeFunc(i, df); //df.Vectors[2].AsFloat[i];
-                        if (ExcludeFunc(i, df) >= ExvValue) or
-                           //(df.Vectors[2].AsFloat[i] >= ExvValue) or
-                           (InExpList(i, ExpParams) or ((ExvZero) and (df.Vectors[1].AsFloat[i] = 0.0 )) ) then
-                        begin
-                          df.Vectors[1].AsFloat[i] := NA_FLOAT;
-                          result := true;
-                        end;
-                      end;
-        EpiTyDate:    begin
-                        ExclVector.AsDate[i] := Floor(R2(ExcludeFunc(i, df),0)); //(df.Vectors[2].AsDate[i]);
-                        if (ExcludeFunc(i, df) >= ExvValue) or
-                           //(df.Vectors[2].AsFloat[i] >= ExvValue) or
-                           (InExpList(i, ExpParams)) then
-                        begin
-                          df.Vectors[1].AsDate[i] := NA_DATE;
-                          result := true;
-                        end;
-                      end;
-        EpiTyString, EpiTyUppercase,
-        EpiTyByte:    dm.Error('Cannot exclude on a string or byte field', [], 113008);
-      end; // case
-    end;
-  end;
-end;
-
-procedure TGraph.SPCTest(dataframe: TEpiDataframe; Const CountName: String; CmdID: Word;
-                         Parameters: TVarlist; LowIndex, HighIndex: integer;
-                         idx: integer; var output: TStatTable);
-var
-  i, j, z, CountT2, CountT3,
-  T1err, T2err, T3err,
-  Test3Limit: integer;
-  Test2Limit: Integer;
-  CtrlVec, V: TEpiVector;
-  Last: EpiFloat;
-  Trend: Boolean;
-  s, t, Mtext: string;
-
-const
-  RunArLow: array[0..16] of integer = (4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8, 9, 9, 9,10,10,10);
-  RunArHi: array[0..16] of integer = (11,12,12,13,13,14,15,15,16,16,17,17,18,19,19,20,21);
-
-
-  // The SPC Test runs through the dataset applied and performs 3 seperate tests.
-  // In case a situation is recognized, we insert the anomaly found into its own
-  // seperately created vector.
-begin
-  if (Parameters.VarByName['MTEXT'] <> nil) then Mtext := Parameters.VarByName['MTEXT'].AsString;
-
-  Test2Limit := 8;
-  Test3Limit := 6;
-
-  if (Parameters.VarByName['XLABEL'] <> nil) then
-    V := dataframe.VectorByName[Parameters.VarByName['XLABEL'].AsString]
-  else
-    V := dataframe.Vectors[1];
-
-  if (Parameters.VarbyName['NT'] =  nil) and (Parameters.VarbyName['Q'] = nil) then
-    output.Cell[1,idx+2] := format('%s - %s', [V.AsString[LowIndex], V.AsString[HighIndex]]);
-
-  V := dataframe.VectorByName[CountName];
-
-  T1err :=0; T2err :=0; T3err :=0; CountT2 :=1; CountT3 :=0;
-
-  if (cmdID = opIChart) then
-    z := 5
-  else
-    z := 4;
-
-  // Test1: (PChart and IChart)
-  // Test for values in the Count vector to be outside the limits of
-  // to other vectors - here 'UCL' and 'LCL'
-  Last := V.AsFloat[1];
-  if (cmdID <> opRunChart) then
-  begin
-    CtrlVec := Dataframe.FindVector('TEST1');
-    if CtrlVec = nil then
-    begin
-      CtrlVec := TEpiFloatVector.Create('TEST1', Dataframe.RowCount);
-      dataframe.Vectors.Add(CtrlVec);
-    end;
-    for i:=LowIndex to HighIndex do
-    begin
-      if ((not V.IsMissing[i]) and
-         (((V.AsFloat[i] < dataframe.VectorByName['LCL'].AsFloat[i]) and (not dataframe.VectorByName['LCL'].IsMissing[i]))
-         or
-         ((V.AsFloat[i] > dataframe.VectorByName['UCL'].AsFloat[i]) and (not dataframe.VectorByName['UCL'].IsMissing[i])))) then
-      begin
-        //situation;
-        CtrlVec.AsFloat[i] := V.AsFloat[i];
-        inc(T1err);
-      end;
-    end;
-  end else
-  // Test1: (RunChart)
-  // Count the number of runs in the graph. A Run is defined as the
-  // number of series of points consecutive on the same side of the
-  // median. Extension dec. 5th JL: values on the median are ignored
-  begin
-    inc(T1Err);
-    // avoid points starting on the median:
-    j := LowIndex;
-    while V.AsFloat[j] = dataframe.VectorByName[Mtext].AsFloat[1] do inc(j);
-    last := V.AsFloat[j] ;
-    // now start counting runs from point j:
-    for i:=j to HighIndex do
-    begin
-      if (V.IsMissing[i]) then continue;
-      if (V.AsFloat[i] = dataframe.VectorByName[Mtext].AsFloat[i]) then continue;  //point on median line
-      if (V.AsFloat[i] < dataframe.VectorByName[Mtext].AsFloat[i]) and
-         (Last < dataframe.VectorByName[Mtext].AsFloat[i]) then continue
-      else
-      if (V.AsFloat[i] > dataframe.VectorByName[Mtext].AsFloat[i]) and
-         (Last > dataframe.VectorByName[Mtext].AsFloat[i]) then continue;
-      if (V.AsFloat[i] = dataframe.VectorByName[Mtext].AsFloat[i]) then
-      begin
-        last := dataframe.VectorByName[Mtext].AsFloat[i];
-        continue;
-      end;
-      Inc(T1err);
-      Last := V.AsFloat[i];
-    end;
-  end;
-  if (Parameters.VarbyName['NT'] =  nil) and (Parameters.VarbyName['Q'] = nil) then
-       output.Cell[z-1,idx+2] := inttostr(T1err);
-
-  if CmdID = opRunChart then
-  begin
-    if ((HighIndex-LowIndex)+1<14) or ((HighIndex-LowIndex)+1>30) then t:= 'na'
-    else t := IntToStr(RunArLow[(HighIndex-LowIndex)+1-14]);
-    dm.AddResult('$SPC'+ inttostr(idx+1) + 'Runs', EpiTyInteger, t1err, 0, 0);
-    dm.AddResult('$SPC'+ inttostr(idx+1) + 'RunEL', EpiTyInteger, t, 0, 0);
-    s := t;
-    if ((HighIndex-LowIndex)+1<14) or ((HighIndex-LowIndex)+1>30) then t:= 'na'
-       else t := IntToStr(RunArHi[(HighIndex-LowIndex)+1-14]);
-    if (s <> 'na') then s := '('+ s + '-' + t + ')';
-    dm.AddResult('$SPC'+ inttostr(idx+1) + 'RunEH', EpiTyInteger, t, 0, 0);
-    if (Parameters.VarbyName['NT'] =  nil) and (Parameters.VarbyName['Q'] = nil) then
-      Output.Cell[z,idx+2] := s;
-    // Test fail or not ?
-    if (HighIndex-LowIndex>13) and (HighIndex-LowIndex<31) then
-      if (T1err > RunArHi[(HighIndex-LowIndex)+1-14]) or (T1err < RunArLow[(HighIndex-LowIndex)+1-14]) then
-        T1Err := 1
-      else
-        T1Err := 0;
-    if (s <> 'na') and (Parameters.VarbyName['NT'] =  nil) and (Parameters.VarbyName['Q'] = nil) then
-      output.Cell[z+1,idx+2] := IntToStr(T1Err);
-    inc(z,2);
-  end;
-
-  // Test2:
-  // Test for consecusive values, from the Count vector, on the same side
-  // of a line. Usually either Mean or Median!
-  CtrlVec := Dataframe.FindVector('TEST2');
-  if CtrlVec = nil then
-  begin
-    CtrlVec := TEpiFloatVector.Create('TEST2', Dataframe.RowCount);
-    dataframe.Vectors.Add(CtrlVec);
-  end;
-  Last := dataframe.VectorByName[Mtext].AsFloat[LowIndex];
-  j := LowIndex; //1;
-  for i:=LowIndex to HighIndex do
-  begin
-    if (V.IsMissing[i]) then continue;
-    if (V.AsFloat[i] < dataframe.VectorByName[Mtext].AsFloat[i]) and
-       (Last < dataframe.VectorByName[Mtext].AsFloat[i]) then inc(CountT2)
-    else
-    if (V.AsFloat[i] > dataframe.VectorByName[Mtext].AsFloat[i]) and
-       (Last > dataframe.VectorByName[Mtext].AsFloat[i]) then inc(CountT2)
-    else
-    if (V.AsFloat[i] = dataframe.VectorByName[MText].AsFloat[i]) then
-      continue
-    else
-    begin
-      // Now we are no longer on the same side of median/mean... maybe we have
-      // a situation.
-      if CountT2 >= Test2Limit then
-      begin
-        //Situation;
-        while j <= i-1 do
-        begin
-          if not (V.AsFloat[j] = dataframe.VectorByName[MText].AsFloat[i-1]) then
-            CtrlVec.AsFloat[j] := V.AsFloat[j];
-          inc(j);
-        end;
-        inc(T2Err);
-      end;
-      CountT2 := 1;
-      j := i;
-    end;
-    Last := V.AsFloat[i];
-  end;
-  // It might have been that this series was the last in the dataset.
-  if CountT2 >= Test2Limit then
-  begin
-    while j <= i-1 do
-    begin
-      if not (V.AsFloat[j] = dataframe.VectorByName[MText].AsFloat[i-1]) then
-        CtrlVec.AsFloat[j] := V.AsFloat[j];
-      inc(j);
-    end;
-    inc(T2Err);
-  end;
-
-  if (Parameters.VarbyName['NT'] =  nil) and (Parameters.VarbyName['Q'] = nil) then
-    Output.Cell[z, idx+2] := inttostr(T2err);
-
-  // Test3:
-  // A trend test, to see if the Count Vector has a series of either rising
-  // or falling values.
-  CtrlVec := Dataframe.FindVector('TEST3');
-  if CtrlVec = nil then
-  begin
-    CtrlVec := TEpiFloatVector.Create('TEST3', Dataframe.RowCount);
-    dataframe.Vectors.Add(CtrlVec);
-  end;
-  Last := V.AsFloat[LowIndex];
-  Trend := (V.AsFloat[LowIndex] < V.AsFloat[LowIndex+1]);
-  j := LowIndex-1; //0;
-  for i:=LowIndex+1 to HighIndex do
-  begin
-    if (V.IsMissing[i]) then continue;
-    if (Last > V.AsFloat[i]) and Trend then dec(CountT3)
-    else
-    if (Last < V.AsFloat[i]) and (not Trend) then inc(CountT3)
-    else
-    if (V.AsFloat[i] = Last) then continue
-    else begin
-      if abs(CountT3) >= Test3Limit then
-      begin
-        //Situation;
-        while (j<=i-1) do
-        begin
-          CtrlVec.AsFloat[j] := V.AsFloat[j];
-          inc(j);
-        end;
-        inc(T3Err);
-      end;
-      if (Last > V.AsFloat[i]) then CountT3 := -2 else CountT3 := 2;
-      j := i-1;
-    end;
-    Trend := (Last > V.AsFloat[i]);
-    Last := V.AsFloat[i];
-  end;
-  // It might have been that this series was the last in the dataset.
-  if abs(CountT3) >= Test3Limit then
-  begin
-    //Situation;
-    while (j<=i-1) do
-    begin
-      CtrlVec.AsFloat[j] := V.AsFloat[j];
-      inc(j);
-    end;
-    inc(T3Err);
-  end;
-
-  if (Parameters.VarbyName['NT'] =  nil) and (Parameters.VarbyName['Q'] = nil) then
-    Output.Cell[z+1, idx+2] := inttostr(T3err);
-
-  s := '$spc'+inttostr(idx+1);
-  dm.AddResult(s+'test1', EpiTyInteger, T1err, 0, 0);
-  dm.AddResult(s+'test2', EpiTyInteger, T2err, 0, 0);
-  dm.AddResult(s+'test3', EpiTyInteger, T3err, 0, 0);
-end;
-
-function ExcludeFuncIChart(index: integer; df: TEpiDataframe): EpiFloat;
-begin
-  result := df.Vectors[1].AsFloat[index];
-end;
-
-function TGraph.DoIchart(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
-                  var SPCDataframe: TEpiDataframe; var OutputTable: TStatTable; var footnote:string): TChart;
-var
-  Breaks: TArrayVariant;
-  excluded: boolean;
-  mtext, s, t: string;
-  xvec, yvec, lvec,
-  tvec1, tvec2: TEpiVector;
-  i, j, k, l, rc,
-  ix, offset: integer;
-  indexlow, indexhigh: cardinal;
-  mean, sum, E, w: EpiFloat;
-  lowval, highval: variant;
-
-  SExclude, SMean, SUcl, SLcl, SYvec: TLineSeries;
-  STest1, STest2, STest3: TPointSeries;
-
-const
-  procname = 'DoIchart';
-  procversion = '1.0.0.0';
-begin
-// THIS IS HOW THE CALCULATION WORKS:
-(*
-means lege
-gen mean = $mean1
-
-sort tid
-* nu beregnes moving ranges
-gen mr = abs(lege - lege(recnumber-1))
-if recnumber = 1 then mr = 0
-
-* find summen af mr
-means mr
-define E ####.##### global
-e = 2.66*($total1/($obs1-1))
-gen ucl = mean+e
-gen lcl= mean-e
-set echo=on
-*echo Mean = @mean Upper Control Limit = @ucl  Lower Control limit = @lcl
-ichart tid lege mean ucl
-*)
-  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
-
-  if ((varnames.count <> 3) and (Parameters.VarByName['XLABEL'] <> nil)) or
-     ((varnames.count <> 2) and (Parameters.VarByName['XLABEL'] = nil)) then
-    dm.Error('Always %d variables for %s!', [2,'DoIchart'], 113009);
-
-  // Create the graph and set customizable settings.
-  result := CreateStandardChart();
-  SPCDataframe := dataframe.prepareDataframe(varnames, nil);
-  Breaks := FindBreak(Parameters, SPCDataframe.VectorByName[varnames[0]]);
-  SPCDataframe.Sort(Varnames[0]);
-
-  mtext := 'Mean';
-  if cmdID = opRunChart then mtext := 'Median';
-  Parameters.AddVar('MTEXT', mtext);
-
-  if cmdID = opIChart then
-    dm.AddResult('$spctype', EpiTyString, 'IChart', 0, 0)
-  else
-    dm.AddResult('$spctype', EpiTyString, 'RunChart', 0, 0);
-  dm.AddResult('$spccenter', EpiTyString, mtext, 0, 0);
-  dm.AddResult('$spcbreak', EpiTyInteger, high(breaks)+1, 0, 0);
-
-  xvec := SPCDataframe.VectorByName[varnames[0]];
-  yvec := SPCDataframe.VectorByName[varnames[1]];
-  excluded := ExcludeInDataframe(SPCDataframe, Parameters, ExcludeFuncIChart);
-
-  if (Parameters.VarByName['XLABEL'] <> nil) then
-    lvec := SPCDataframe.VectorByName[Parameters.VarByName['XLABEL'].AsString]
-  else
-    lvec := xvec;
-
-  if CmdID = opRunChart then
-  begin
-    result.Title.Text.Add('RunChart - ' + yvec.GetVariableLabel(Parameters));
-    if (Parameters.VarbyName['NT'] = nil) and (Parameters.VarbyName['T'] <> nil) and (Parameters.VarbyName['Q'] = nil) then
-      OutputTable := dm.OutputList.NewTable(7,Length(breaks)+2);
-  end else begin
-    result.Title.Text.Add('IChart - ' + yvec.GetVariableLabel(Parameters));
-    if  (Parameters.VarbyName['NT'] = nil) and (Parameters.VarbyName['T'] <> nil) and (Parameters.VarbyName['Q'] = nil) then
-      OutputTable := dm.OutputList.NewTable(6,Length(breaks)+2)
-  end;
-  if (Parameters.VarByName['TI'] <> nil) then
-  begin
-    result.Title.Text.Clear;
-    result.Title.Text.Add(Parameters.VarByName['TI'].AsString)
-  end;
-
-  if  (Parameters.VarbyName['NT'] = nil) and (Parameters.VarbyName['T'] <> nil ) and (Parameters.VarbyName['Q'] = nil) then
-  begin
-    OutputTable.TableType := sttNormal;
-    i := 5;
-    OutputTable.Cell[1,1] := 'Period:';
-    OutputTable.Cell[2,1] := 'Centervalue:';
-    if CmdID = opIchart then
-    begin
-      OutputTable.Cell[3,1] :=  'Limits:';
-      OutputTable.Cell[4,1] :=  'Test 1:'
-    end else begin {opRunChart}
-      OutputTable.Cell[3,1] := 'Runs:';
-      OutputTable.Cell[4,1] := 'Limit:';
-      OutputTable.Cell[5,1] := 'Test 1:';
-      i := 6;
-    end;
-    OutputTable.Cell[i,1] := 'Test 2:';
-    OutputTable.Cell[i+1,1] :=  'Test 3:';
-  end;
-
-  if excluded then
-  begin
-    SExclude := TLineSeries.Create(result);
-    SExclude.Title := 'Excluded';
-    SExclude.LinePen.Width := 2;
-    SExclude.Color := clBlue;
-    SExclude.LinePen.Style := psDot;
-    SExclude.Pointer.Visible := true;
-    SExclude.Pointer.Style := psCircle;
-    SExclude.Pointer.Color := clWhite;
-    SExclude.Pointer.Brush.Style := bsClear;
-    SExclude.ParentChart := result;
-  end;
-  SMean := TLineSeries.Create(result);
-  SMean.Title := mtext;
-  SMean.LinePen.Width := 2;
-  SMean.Color := clGreen;
-  SMean.ParentChart := result;
-  SUcl := TLineSeries.Create(result);
-  SUcl.Title := 'UCL';
-  SUcl.LinePen.Width := 2;
-  SUcl.Color := clRed;
-  SUcl.ParentChart := result;
-  SLcl := TLineSeries.Create(result);
-  SLcl.Title := 'LCL';
-  SLcl.LinePen.Width := 2;
-  SLcl.Color := clRed;
-
-  SYvec := TLineSeries.Create(result);
-  SYvec.Title := yvec.GetVariableLabel(Parameters);
-  SYvec.LinePen.Width := 2;
-  SYvec.Color := clBlue;
-  SYvec.Pointer.Visible := true;
-  SYvec.Pointer.Style := psCircle;
-  SYvec.Pointer.Brush.Style := bsSolid;
-  if (Parameters.VarbyName['YVALUE'] <> nil) then
-  with SYvec do begin
-    Marks.Visible := true;
-    Marks.Style := smsValue;
-    Marks.Color := clWhite;
-  end;
-
-  // Create vectors:
-  SPCDataframe.Vectors.Add(TEpiFloatVector.Create(mtext, dataframe.RowCount));
-  // add limits for ichart:
-  if CmdID <> opRunChart then
-  begin
-    SPCDataframe.Vectors.Add(TEpiFloatVector.Create('LCL', dataframe.RowCount));
-    SPCDataframe.Vectors.Add(TEpiFloatVector.Create('UCL', dataframe.RowCount));
-  end;
-
-  t := '';
-  for i := 0 to high(breaks)+1 do
-  begin
-
-    // Find current period.
-    if i=0 then lowval := xvec.AsInteger[1] -1 else lowval := breaks[i-1];
-    if i=high(breaks)+1 then highval := xvec.AsInteger[xvec.length]+1 else highval := breaks[i];
-
-    // deselect all records:
-    for j := 1 to SPCDataframe.RowCount do
-      SPCDataframe.Selected[j] := false;
-
-    // now select all in current breakperiod:
-    for j := 1 to SPCDataframe.RowCount do
-      if (xvec.AsInteger[j] >= lowval) and (xvec.AsInteger[j] < highval) then
-        SPCDataframe.Selected[j] := true;
-
-    // Not enough data for calculating LCL, UCL, etc.
-    rc := SPCDataframe.SelectedRowCount;
-    if rc<2 then
-      dm.Error('Period too short: %d <br> (see breaks ? - Date as time variable ?)', [rc], 113010);
-
-    SPCDataframe.Sort(xvec.Name);
-
-    for j := 1 to dataframe.RowCount do
-      if SPCDataframe.Selected[j] then break;
-    indexlow := j;
-    for j := dataframe.RowCount downto 1 do
-      if SPCDataframe.Selected[j] then break;
-    indexhigh := j;
-
-    // Means (of the second variable)
-    mean := 0;
-    k := 0;
-    for j := indexlow to indexhigh do
-      if not yvec.IsMissing[j] then
-      begin
-        mean := mean + yvec.AsFloat[j];
-        inc(k);
-      end;
-    mean := mean / k;
-    if cmdID = opRunChart then
-    begin
-      // Sort by 2nd var to find median.
-      // This must be done only on selected data!
-      SPCDataframe.Sort(yvec.Name);
-
-      {dm.info(format('sorted: %d',[i]));
-      for j := indexlow to indexhigh do
-            dm.info(yvec.Asstring[j]);
-      }
-
-      w:= (k+1)/2;
-      ix := max(trunc((k+1)/2),1);
-      offset := 0;
-      j := 0;
-      while (j < ix) do
-      begin
-        if not yvec.IsMissing[offset+indexlow] then
-          inc(j);
-        inc(offset);
-      end;
-      if w = ix then
-        mean := yvec.AsFloat[offset+indexlow-1]
-      else
-        mean := yvec.AsFloat[offset+indexlow-1] +
-          (yvec.AsFloat[offset+indexlow]-yvec.AsFloat[offset+indexlow-1])*(w-ix);  // Bland Medical Statistics p 55
-    end;
-    SPCDataframe.Sort(xvec.Name);
-    tvec1 := SPCDataframe.VectorByName[mtext];
-    for j := indexlow to indexhigh do
-      tvec1.AsFloat[j] := mean;
-    dm.AddResult('$spc'+inttostr(i+1)+'center', EpiTyFloat, mean, 0, 15);
-    if (Assigned(OutputTable)) then
-      OutputTable.Cell[2,i+2] := format('%.2f', [Mean]);
-
-    sum := 0;
-    offset := 1;
-    for j := indexlow+1 to indexhigh do
-      if (not yvec.IsMissing[j]) then
-      begin
-        if (not yvec.IsMissing[offset]) then
-        begin
-          sum := sum + Abs(yvec.AsFloat[j] - yvec.AsFloat[offset]);
-        end;
-        offset := j;
-      end;
-
-    // Gen ucl, lcl (generate ucl, lcl)
-    if CmdID <> opRunChart then
-    begin
-      E := 2.66 * (sum / (k - 1));
-      tvec1 := SPCDataframe.VectorByName['UCL'];
-      tvec1.FieldDataDecimals := 3;
-      tvec2 := SPCDataframe.VectorByName['LCL'];
-      tvec2.FieldDataDecimals := 3;
-      for j := indexlow to indexhigh do
-      begin
-        tvec1.AsFloat[j] := mean + E;
-        tvec2.AsFloat[j] := mean - E;
-        if ((mean - E) < 0) and
-           (Parameters.VarByName['NEGLCL'] = nil) then
-           tvec2.AsFloat[j] := NA_FLOAT;
-      end;
-    end; // end excl. runchart
-
-      // Only for IChart.
-    if cmdID = opIChart then
-    begin
-      s := '$spc' + inttostr(i+1);
-      dm.AddResult(s+'UCL', EpiTyFloat,(mean + E) , 0, 15);
-      if (tvec2.AsFloat[indexlow] <> NA_FLOAT) then dm.AddResult(s+'LCL', EpiTyFloat, (mean - E), 0, 15);
-      if (Assigned(OutputTable)) then
-      begin
-        s := 'UCL: ' + format('%.2f', [Mean+E]);
-        if (tvec2.AsFloat[indexlow] <> NA_FLOAT) then
-          s := 'LCL: ' + format('%.2f', [Mean-E]) + ' ' + s;
-        OutputTable.Cell[3,i+2] := s;
-      end;
-    end;
-
-    if i > 0 then t := t + ' | ';
-    t := t + format(Mtext + ': %.2f', [Mean]);
-    if (cmdID = opIChart) then
-    begin
-      t := t + format(' UCL: %.2f', [tvec1.AsFloat[indexlow]]);
-      if not (tvec2.IsMissing[indexlow]) then t := t + format(' LCL: %.2f', [tvec2.AsFloat[indexlow]]);
-    end;
-
-    for j := indexlow to indexhigh do
-    begin
-      if excluded then SExclude.AddXY(xvec.AsFloat[j], SPCDataframe.VectorByName['Excluded'].AsFloat[j], lvec.AsString[j]);
-      if not yvec.IsMissing[j] then SYvec.AddXY(xvec.AsFloat[j], yvec.AsFloat[j], lvec.AsString[j]);
-      SMean.AddXY(xvec.AsFloat[j], mean, lvec.AsString[j]);
-
-      if (cmdID <> opRunChart) then
-        begin
-          SUcl.AddXY(xvec.AsFloat[j], tvec1.AsFloat[j], lvec.AsString[j]);
-          if not tvec2.IsMissing[j] then SLcl.AddXY(xvec.AsFloat[j], tvec2.AsFloat[j], lvec.AsString[j]);
-        end;
-    end;
-    dec(j);
-    if excluded then SExclude.AddNullXY(xvec.AsFloat[j], mean, lvec.AsString[j]);
-    SYvec.AddNullXY(xvec.AsFloat[j], mean, lvec.AsString[j]);
-    SMean.AddNullXY(xvec.AsFloat[j], mean, lvec.AsString[j]);
-    if (cmdID <> opRunChart) then
-      begin
-      SUcl.AddNullXY(xvec.AsFloat[j], mean, lvec.AsString[j]);
-      if not tvec2.IsMissing[j] then SLcl.AddNullXY(xvec.AsFloat[j], mean, lvec.AsString[j]);
-    end;
-    if Assigned(Parameters.VarbyName['T']) then
-      SPCTest(SPCDataframe, Varnames[1], CmdID, Parameters, indexlow, indexhigh, i, OutputTable);
-  end;     // end breakpoint
-
-  if (Parameters.VarbyName['T'] <> nil) then
-  begin
-    if CmdID = opIchart then
-    begin
-      STest1 := PointSeries(xvec, SPCDataframe.VectorByName['TEST1'], xvec );
-      STest1.Pointer.Visible :=  true;
-      STest1.Pointer.HorizSize := 7;
-      STest1.Pointer.VertSize := 7;
-      STest1.Pointer.Brush.Style := bsClear;
-      STest1.Pointer.Style := psCircle;
-      STest1.Color := clWhite;
-      STest1.ShowInLegend := false;
-      STest1.ParentChart := result;
-    end;
-    STest2 :=  PointSeries(xvec, SPCDataframe.VectorByName['TEST2'], xvec );
-    STest2.Pointer.Visible :=  true;
-    STest2.Pointer.HorizSize := 6;
-    STest2.Pointer.VertSize := 6;
-    STest2.Pointer.Brush.Style := bsClear;
-    STest2.Pointer.Style := psRectangle;
-    STest2.Color := clWhite;
-    STest2.ShowInLegend := false;
-    STest2.ParentChart := result;
-    STest3 :=  PointSeries(xvec, SPCDataframe.VectorByName['TEST3'], xvec );
-    STest3.Pointer.Visible :=  true;
-    STest3.Pointer.HorizSize := 8;
-    STest3.Pointer.VertSize := 8;
-    STest3.Pointer.Brush.Style := bsClear;
-    STest3.Pointer.Style := psDiamond;
-    STest3.Color := clWhite;
-    STest3.ShowInLegend := false;
-    STest3.ParentChart := result;
-  end;
-
-  if (cmdID <> opRunChart) then
-      if not tvec2.IsMissing[1] then SLcl.ParentChart := result;
-  SYvec.ParentChart := result;
-
-  if not Assigned(Parameters.VarByName['NOCI']) then
-  begin
-    Result.SubFoot.Text.Add(t);
-    Result.SubFoot.Visible := true;
-  end;
-  result.BottomAxis.Title.Caption := xvec.GetVariableLabel(Parameters);
-end;
-
-function ExcludeFuncPChart (index: integer; df: TEpiDataframe): EpiFloat;
-begin
-  result := (df.Vectors[1].AsFloat[index] / df.Vectors[2].AsFloat[index]) * 100;
-end;
-
-function TGraph.DoPchart(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList;
-                  var SPCDataframe: TEpiDataframe; var OutputTable: TStatTable; var footnote:string): TChart;
-var
-  Breaks: TArrayVariant;
-  excluded: boolean;
-  mtext, s, t: string;
-  xvec, yvec, zvec, lvec,
-  tvec1, tvec2, tvec3: TEpiVector;
-  i, j, k, l, rc,
-  ix, offset: integer;
-  indexlow, indexhigh: cardinal;
-  mean, sum, E, w, T1, T2: EpiFloat;
-  lowval, highval: variant;
-
-  SExclude, SMean, SUcl, SLcl, Sp: TLineSeries;
-  STest1, STest2, STest3: TPointSeries;
-
-const
-  procname = 'DoPchart';
-  procversion = '1.0.0.0';
-begin
-// THIS IS HOW THE CALCULATION WORKS:
-// Varnames:                  0    1     2
-// The call will be: PChart time count total
-// Example:          PChart tid  lege  dagtotal
-(*
-define p ####.#####
-p=lege/dagtotal
-means lege
-gen lege1 = $total1
-
-means dagtotal
-gen pbar=lege1/$total1
-
-
-*gen mean = $mean1
-define ucl #####.#####
-define lcl #####.#####
-ucl = pbar + 3*(sqrt((pbar*(1-pbar))/dagtotal))
-lcl = pbar - 3*(sqrt((pbar*(1-pbar))/dagtotal))
-
-lcl = lcl*100
-ucl = ucl * 100
-p = p*100
-pbar = pbar*100
-
-pchart tid p pbar ucl lcl
-*)
-  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
-
-  if ((varnames.count <> 4) and (Parameters.VarByName['XLABEL'] <> nil)) or
-     ((varnames.Count <> 3) and (Parameters.VarByName['XLABEL'] = nil)) then
-    dm.Error('Always %d variables for %s!', [3, 'DoPChart'], 113009);
-
-  // Create the graph and set customizable settings.
-  result := CreateStandardChart();
-  SPCDataframe := dataframe.prepareDataframe(varnames, nil);
-  Breaks := FindBreak(Parameters, SPCDataframe.VectorByName[varnames[0]]);
-  SPCDataframe.Sort(Varnames[0]);
-
-  mtext := 'Mean';
-  Parameters.AddVar('MTEXT', mtext);
-  dm.AddResult('$spctype', EpiTyString, 'PChart', 0, 0);
-  dm.AddResult('$spccenter', EpiTyString, mtext, 0, 0);
-  dm.AddResult('$spcbreak', EpiTyInteger, high(breaks)+1, 0, 0);
-
-  xvec := SPCDataframe.VectorByName[varnames[0]];
-  yvec := SPCDataframe.VectorByName[varnames[1]];
-  zvec := SPCDataframe.VectorByName[varnames[2]];
-  excluded := ExcludeInDataframe(SPCDataframe, Parameters, ExcludeFuncPChart);
-
-  if (Parameters.VarByName['XLABEL'] <> nil) then
-    lvec := SPCDataframe.VectorByName[Parameters.VarByName['XLABEL'].AsString]
-  else
-    lvec := xvec;
-
-  if (Parameters.VarByName['TI'] <> nil) then
-    result.Title.Text.Add(Parameters.VarByName['TI'].AsString)
-  else
-    result.Title.Text.Add('PChart - ' + yvec.GetVariableLabel(Parameters) +
-                          ' / ' + zvec.GetVariableLabel(Parameters));
-
-  if (Parameters.VarbyName['T'] <> nil) and (Parameters.VarbyName['NT'] = nil) and (Parameters.VarbyName['Q'] = nil) then
-  begin
-    OutputTable := dm.OutputList.NewTable(5, Length(breaks)+2);
-    OutputTable.TableType := sttNormal;
-    OutputTable.Cell[1,1] := 'Period:';
-    OutputTable.Cell[2,1] := 'Centervalue:';
-    OutputTable.Cell[3,1] := 'Test 1:';
-    OutputTable.Cell[4,1] := 'Test 2:';
-    OutputTable.Cell[5,1] := 'Test 3:';
-  end;
-
-  if excluded then
-  begin
-    SExclude := TLineSeries.Create(result);
-    SExclude.Title := 'Excluded';
-    SExclude.LinePen.Width := 2;
-    SExclude.Color := clBlue;
-    SExclude.LinePen.Style := psDot;
-    SExclude.Pointer.Visible := true;
-    SExclude.Pointer.Style := psCircle;
-    SExclude.Pointer.Color := clWhite;
-    SExclude.Pointer.Brush.Style := bsClear;
-    SExclude.ParentChart := result;
-  end;
-  SMean := TLineSeries.Create(result);
-  SMean.Title := mtext;
-  SMean.LinePen.Width := 2;
-  SMean.Color := clGreen;
-  SMean.ParentChart := result;
-  SUcl := TLineSeries.Create(result);
-  SUcl.Title := 'UCL';
-  SUcl.LinePen.Width := 2;
-  SUcl.Color := clRed;
-  SUcl.Stairs := true;
-  SUcl.ParentChart := result;
-  SLcl := TLineSeries.Create(result);
-  SLcl.Title := 'LCL';
-  SLcl.LinePen.Width := 2;
-  SLcl.Stairs := true;
-  SLcl.Color := clRed;
-
-  SP := TLineSeries.Create(result);
-  SP.Title := 'P';
-  SP.LinePen.Width := 2;
-  SP.Color := clBlue;
-  SP.Pointer.Visible := true;
-  SP.Pointer.Style := psCircle;
-  SP.Pointer.Brush.Style := bsSolid;
-  if (Parameters.VarbyName['YVALUE'] <> nil) then
-  with SP do begin
-    Marks.Visible := true;
-    Marks.Style := smsValue;
-    Marks.Color := clWhite;
-  end;
-
-  // Create vectors:
-  SPCDataframe.Vectors.Add(TEpiFloatVector.Create(mtext, dataframe.RowCount));
-  SPCDataframe.Vectors.Add(TEpiFloatVector.Create('P', dataframe.RowCount));
-  SPCDataframe.Vectors.Add(TEpiFloatVector.Create('LCL', dataframe.RowCount));
-  SPCDataframe.Vectors.Add(TEpiFloatVector.Create('UCL', dataframe.RowCount));
-
-  t := '';
-  for i := 0 to high(breaks)+1 do
-  begin
-    // Find current period.
-    if i=0 then lowval := xvec.AsInteger[1] -1 else lowval := breaks[i-1];
-    if i=high(breaks)+1 then highval := xvec.AsInteger[xvec.length]+1 else highval := breaks[i];
-    for j := 1 to SPCDataframe.RowCount do
-      if (xvec.AsInteger[j] >= lowval) and (xvec.AsInteger[j] < highval) then
-        SPCDataframe.Selected[j] := true
-      else
-        SPCDataframe.Selected[j] := false;
-
-    // Not enough data for calculating LCL, UCL, etc.
-    rc := SPCDataframe.SelectedRowCount;
-    if rc<2 then
-      dm.Error('SPC Period too short (breaks ?)', [], 113011 );
-
-    SPCDataframe.Sort(xvec.Name);
-
-    for j := 1 to dataframe.RowCount do
-      if SPCDataframe.Selected[j] then break;
-    indexlow := j;
-    for j := dataframe.RowCount downto 1 do
-      if SPCDataframe.Selected[j] then break;
-    indexhigh := j;
-
-    yvec := SPCDataframe.VectorByName[varnames[1]];
-
-    // Generate P
-    tvec1 := SPCDataframe.VectorByName['P'];
-    tvec2 := SPCDataframe.VectorByName['excluded'];
-    for j := indexlow to indexhigh do
-    begin
-      if yvec.IsMissing[j] then
-      begin
-        tvec1.AsFloat[j] := NA_FLOAT;
-        continue;
-      end else
-        tvec1.AsFloat[j] := (yvec.AsFloat[j] / zvec.AsFloat[j]) * 100;
-      if yvec.AsFloat[j] > zvec.AsFloat[j] then
-        dm.Error('Record no. %d has a ''count'' value greater than ''total''', [j], 113012);
-    end;
-
-    // Generate mean, ucl, lcl
-    // Notice this is NOT the same as mean(sum(Pi)/n), where Pi= CountVec.AsFloat[i]/TotalVec.AsFloat[i]
-    // PBar is assumed as the overall percentage taken as sum of outcome divided by all observations
-     // Means (of the percentages)
-    mean := 0;
-    k := 0;
-    for j := indexlow to indexhigh do
-      begin
-        if ((yvec.IsMissing[j]) or (zvec.Ismissing[j])) then Continue;
-        mean := mean + yvec.AsFloat[j]/zvec.AsFloat[j];
-        inc(k);
-      end;
-    mean := mean / k;
-    tvec1 := SPCDataframe.VectorByName['UCL'];
-    tvec2 := SPCDataframe.VectorByName['LCL'];
-    tvec3 := SPCDataframe.VectorByName[mtext];
-    for j := indexlow to indexhigh do
-    begin
-      if yvec.IsMissing[j] then continue;
-      tvec3.AsFloat[j] := mean * 100;
-      if zvec.AsFloat[j] > 0 then
-       begin
-         tvec1.AsFloat[j] := (mean + 3*(sqrt((mean * (1 - mean)) / zvec.AsFloat[j]))) * 100;
-         tvec2.AsFloat[j] := (mean - 3*(sqrt((mean * (1 - mean)) / zvec.AsFloat[j]))) * 100;
-       end;
-      if (tvec2.AsFloat[j] < 0) and (Parameters.VarbyName['NEGLCL'] = nil)
-        then tvec2.AsFloat[j] := NA_FLOAT;
-    end;
-
-    s := '$spc' + inttostr(i+1);
-    dm.AddResult(s+'center', EpiTyFloat,(mean*100), 0, 15);
-    if (Assigned(OutputTable)) then
-      OutputTable.Cell[2,i+2] := format('%.2f', [(mean*100)]);
-
-    if i > 0 then t := t + ' | ';
-      t := t + format(Mtext + ': %.2f', [(mean*100)]);
-
-    yvec := SPCDataframe.VectorByName['P'];
-    for j := indexlow to indexhigh do
-    begin
-      if excluded then SExclude.AddXY(xvec.AsFloat[j], SPCDataframe.VectorByName['Excluded'].AsFloat[j], lvec.AsString[j]);
-      if not yvec.IsMissing[j] then SP.AddXY(xvec.AsFloat[j], yvec.AsFloat[j], lvec.AsString[j]);
-      SMean.AddXY(xvec.AsFloat[j], (mean*100), lvec.AsString[j]);
-      if not tvec1.IsMissing[j] then SUcl.AddXY(xvec.AsFloat[j]-0.5, tvec1.AsFloat[j], lvec.AsString[j]);
-      if not tvec2.IsMissing[j] then SLcl.AddXY(xvec.AsFloat[j]-0.5, tvec2.AsFloat[j], lvec.AsString[j]);
-    end;
-    dec(j);
-    if excluded then SExclude.AddNullXY(xvec.AsFloat[j], (mean*100), lvec.AsString[j]);
-
-    // add last ucl + lcl once more to get the level correct
-    if not tvec1.IsMissing[j] then SUcl.AddXY(xvec.AsFloat[j]+0.5, tvec1.AsFloat[j], ' ');
-    if not tvec2.IsMissing[j] then SLcl.AddXY(xvec.AsFloat[j]+0.5, tvec2.AsFloat[j], ' ');
-    SMean.AddXY(xvec.AsFloat[j]+0.5, (mean*100), ' ' );
-
-    SP.AddNullXY(xvec.AsFloat[j]+0.5, (mean*100), lvec.AsString[j]);
-    SMean.AddNullXY(xvec.AsFloat[j]+0.5, (mean*100), lvec.AsString[j]);
-    SUcl.AddNullXY(xvec.AsFloat[j]+0.5, (mean*100), lvec.AsString[j]);
-    SLcl.AddNullXY(xvec.AsFloat[j]+0.5, (mean*100), lvec.AsString[j]);
-
-    if (Parameters.VarbyName['T'] <> nil) then
-      SPCTest(SPCDataframe, 'P', CmdID, Parameters, indexlow, indexhigh, i, OutputTable);
-  end;
-
-  if (Parameters.VarbyName['T'] <> nil) then
-  begin
-    STest1 := PointSeries(xvec, SPCDataframe.VectorByName['TEST1'], xvec );
-    STest1.Pointer.Visible :=  true;
-    STest1.Pointer.HorizSize := 7;
-    STest1.Pointer.VertSize := 7;
-    STest1.Pointer.Brush.Style := bsClear;
-    STest1.Pointer.Style := psCircle;
-    STest1.Color := clWhite;
-    STest1.ShowInLegend := false;
-    STest1.ParentChart := result;
-    STest2 :=  PointSeries(xvec, SPCDataframe.VectorByName['TEST2'], xvec );
-    STest2.Pointer.Visible :=  true;
-    STest2.Pointer.HorizSize := 6;
-    STest2.Pointer.VertSize := 6;
-    STest2.Pointer.Brush.Style := bsClear;
-    STest2.Pointer.Style := psRectangle;
-    STest2.Color := clWhite;
-    STest2.ShowInLegend := false;
-    STest2.ParentChart := result;
-    STest3 :=  PointSeries(xvec, SPCDataframe.VectorByName['TEST3'], xvec );
-    STest3.Pointer.Visible :=  true;
-    STest3.Pointer.HorizSize := 8;
-    STest3.Pointer.VertSize := 8;
-    STest3.Pointer.Brush.Style := bsClear;
-    STest3.Pointer.Style := psDiamond;
-    STest3.Color := clWhite;
-    STest3.ShowInLegend := false;
-    STest3.ParentChart := result;
-  end;
-  if not tvec2.IsMissing[1] then SLcl.ParentChart := result;
-  SP.ParentChart := result;
-
-  if not Assigned(Parameters.VarByName['NCVI']) then
-  begin
-    Result.SubFoot.Text.Add(t);
-    Result.SubFoot.Visible := true;
-  end;
-  result.BottomAxis.Title.Caption := xvec.GetVariableLabel(Parameters);
-end;
-
-function TGraph.DoXChart(Dataframe: TEpiDataframe; Varnames: TStrings; Cmd: TCommand): boolean;
-var
-  IDf: TEpiDataframe;
-  Tab: TStatTable;
-  Chart: TChart;
-  Charts: Array of TChart;
-  path1,path2 : string;
-  opt: TEpiOption;
-  footnote: string;
-begin
-  SetLength(Charts, 2);
-  Chart := DoIchart(Dataframe, varnames, opIChart, cmd.ParameterList, IDf, Tab,footnote);
-  CommonChartOptions(Chart, cmd);
-
-  // testing xchart specific options: top graph
-  chart.BottomAxis.Visible:=false;
-  //chart.Title.Caption := 'Experimenting with double graphs - ichart top - runchart bottom';
-  chart.Foot.Visible := false;
-  path1 := SaveChart(chart, cmd);
-  Charts[0] := chart;
-  Chart := DoIchart(Dataframe, varnames, opRunChart, cmd.ParameterList, IDf, Tab, footnote);
-  CommonChartOptions(Chart, cmd);
-  // testing xchart specific options: bottoma graph
-  chart.Title.Visible:=false;
-
-  path2 := SaveChart(chart, cmd);
-  Charts[1] := chart;
-  if {(dm.GetOptionValue('GRAPH EDIT', Opt) and (Opt.Value = 'ON')) or}
-     (cmd.ParamByName['EDIT'] <> nil) then ShowCharts(charts, cmd);
-
-  if {(dm.GetOptionValue('GRAPH SHOW', Opt) and (Opt.Value = 'ON')) and}
-      (cmd.ParamByName['Q'] = nil) and
-     (AnsiCompareText(ExtractFileExt(path1),'.png')=0) then
-  begin
-    tab := dm.OutputList.NewTable(1,2);
-    tab.TableType := sttGraph;
-    tab.Cell[1,1] := '<img src="'+ path1 +'" ALT="' +path1 + '">';
-    tab.Cell[1,2] := '<img src="'+ path2 +'" ALT="' +path2 + '">';
-    if ((dm.GetOptionValue('GRAPH FILENAME SHOW', Opt) and (Opt.Value = 'ON'))) then
-      dm.CodeMaker.OutputTable(tab,path1 + '<br>' + path2)
-    else
-      dm.CodeMaker.OutputTable(tab,'');
-  end;
-
-   dm.Sendoutput;
-
-  if Dummyform <> nil then FreeAndNil(DummyForm);
-end;
-
 function TGraph.DoLifeTable(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
 var
   XVec, TVec, YVec, ZVec,
@@ -3524,13 +2461,13 @@ var
     LineSeries := TLineSeries.Create(Result);
     LineSeries.Title := ZVec.GetValueLabel(ZVec.AsString[i+1], Parameters);
     LineSeries.Stairs := true;
-    LineSeries.Color := GetGraphColour(j);
+    LineSeries.Color := TGraphUtils.GetGraphColour(j);
     LineSeries.AddXY(0, 1);
     if (not Parameters.VarExists['NOCI']) then
     begin
       CandleSeries := TCandleSeries.Create(Result);
       CandleSeries.Title := 'CI for ' + ZVec.GetValueLabel(ZVec.AsString[i+1], Parameters);
-      CandleSeries.HighLowPen.Color := GetGraphColour(j);
+      CandleSeries.HighLowPen.Color := TGraphUtils.GetGraphColour(j);
       CandleSeries.ShowInLegend := false;
     end;
   end;
@@ -3563,9 +2500,6 @@ begin
     result.Title.Caption := 'KM-Plot: ' + Varnames[Varnames.Count-1];
     if Parameters.VarExists['BY'] then
       result.Title.Caption := Result.Title.Caption + ' by ' + ZVec.GetVariableLabel(Parameters);
-
-    if Parameters.VarExists['TI'] then
-      result.Title.Caption := Parameters.VarbyName['TI'].AsString;
 
     Result.LeftAxis.Title.Caption := 'Survival';
     Result.BottomAxis.Title.Caption := 'Time ' ; // TODO: XVec.GetVariableLabel(Parameters);
@@ -3638,7 +2572,7 @@ begin
     total := 0;
 
     if (not dataframe.VectorByName[varnames[0]].DataType in [EpiTyInteger]) then
-      dm.info('%s: illegal, must be integer variable', [varnames[0]], 213004);
+      dm.info('%s: illegal, must be integer variable', [varnames[0]], 33011);
 
     title := xvec.GetVariableLabel(Parameters);
 
@@ -3676,7 +2610,7 @@ begin
 
     // Create the graph and set customizable settings.
     result := CreateStandardChart();
-    result.LeftAxis.Title.Caption := 'Count';
+	result.LeftAxis.Title.Caption := 'Count';
 
     // add data to the graph:
     barseries := TBarSeries.Create(nil);
@@ -3691,14 +2625,14 @@ begin
       rsum := rsum + yvec.AsInteger[j];
       if (xvec.IsMissing[i]) then
         barseries.AddXY(j{xvec.AsFloat[i-1]}+1, yvec.AsFloat[i],
-                        labelvec.AsString[i],
-//                        labelvec.GetValueLabel(xvec.AsString[i], Parameters),
-                        GetGraphColour(i-1))
+//                        labelvec.AsString[i],
+                        labelvec.GetValueLabel(xvec.AsString[i], Parameters),
+                        TGraphUtils.GetGraphColour(i-1))
       else
         barseries.AddXY(j{xvec.AsFloat[i]}, yvec.AsFloat[i],
-                        labelvec.AsString[i],
-//                        labelvec.GetValueLabel(xvec.AsString[i], Parameters),
-                        GetGraphColour(i-1));
+//                        labelvec.AsString[i],
+                        labelvec.GetValueLabel(xvec.AsString[i], Parameters),
+                        TGraphUtils.GetGraphColour(i-1));
       // add cumulative series with correct percentage:
       series.AddXY(i,(rsum/total)*100,'');
     end;
@@ -3721,10 +2655,7 @@ begin
 
 
     //titles
-    if (Parameters.VarByName['TI'] <> nil) then
-      result.Title.Text.Add(Parameters.VarByName['TI'].AsString)
-    else
-      result.Title.Text.Add('Pareto Chart: ' + title);
+    result.Title.Text.Add('Pareto Chart: ' + title);
   finally
     if Assigned(df) then FreeAndNil(df);
     if Assigned(agglist) then FreeAndNil(agglist);
@@ -3732,10 +2663,6 @@ begin
     ODebug.DecIndent;
   end;
 end;
-
-
-
-
 
 function TGraph.AxisValue(Axis: TChartAxis; Imin, Imax: IValue; IsX: boolean): boolean;
 var
@@ -3766,7 +2693,7 @@ begin
     else
       max := strtofloat(s);
     Axis.SetMinMax(min, max);
-    Axis.LabelStyle := talValue;
+//    Axis.LabelStyle := talValue;
   except
     on E: exception do
     begin
@@ -3818,7 +2745,6 @@ end;
 
 function TGraph.MultiVarTitle(Varlist: TEpiVectors; Parameters: TVarList): string;
 var
-  s: string;
   i: integer;
 const
   procname = 'MultiVarTitle';
@@ -3826,96 +2752,16 @@ const
 begin
   ODebug.IncIndent();
   ODebug.Add(UnitName, Self.ClassName, procname, procversion, 1);
-  if (Parameters.VarByName['TI'] <> nil) then
-    s := Parameters.VarByName['TI'].AsString
-  else begin
-    s := Varlist[0].GetVariableLabel(Parameters);
-    for i := 1 to Varlist.Count - 1 do
-    begin
-      if (i = 1) then
-        s := s + ' vs. ';
-      if (i <> 1) then
-        s := s + ' and ';
-      s := s + Varlist[i].GetVariableLabel(Parameters);
-    end;
+  result := Varlist[0].GetVariableLabel(Parameters);
+  for i := 1 to Varlist.Count - 1 do
+  begin
+    if (i = 1) then
+      result := result + ' vs. '
+    else
+      result := result + ' and ';
+    result := result + Varlist[i].GetVariableLabel(Parameters);
   end;
-  result := s;
   ODebug.DecIndent();
-end;
-
-function TGraph.FindBreak(Parameters: TVarList; XVector: TEpiVector): TArrayVariant;
-var
-  Params: TArrayVariant;
-  i,j : integer;
-  dfFormat: TEpiDateFormat;
-
-  procedure ArraySort(var List: array of variant; L, R: Integer);
-  var
-     I, J, P: Integer;
-     Temp: Variant;
-  begin
-     I:=L;
-     J:=R;
-     P:=(L + R) shr 1;
-     repeat
-       while List[I] < List[P] do Inc(I);
-       while List[J] > List[P] do Dec(J);
-       if I <= J then
-       begin
-         // Swapping values
-          Temp := List[I];
-          List[I] := List[J];
-          List[J] := Temp;
-          if P=I then P:=J
-          else if P=J then P:=I;
-          Inc(I);
-          Dec(J);
-       end;
-     until I>J;
-     if L<J then ArraySort(List, L,J);
-     if I < R then ArraySort(List, I, R);
-  end;
-
-begin
-  i := 0;
-  while (Parameters.VarbyName['BREAK'] <> nil) do
-  begin
-    SetLength(Params, i+1);
-    case XVector.DataType of
-      EpiTyDate:
-          begin
-            dfFormat := DateFmtToEpiDateFmt(XVector.FieldDataFormat);
-            EpiStrToDate(Parameters.VarbyName['BREAK'].AsString, j, dfFormat);
-            Params[i] := j;
-          end;
-      EpiTyInteger:
-          Params[i] := StrToInt(Parameters.VarbyName['BREAK'].Value);
-    else
-          Params[i] := Parameters.VarbyName['BREAK'].Value;
-    end;
-    Parameters.RemoveVar(Parameters.VarbyName['BREAK']);
-    inc(i);
-  end;
-  while (Parameters.VarbyName['B'] <> nil) do
-  begin
-    SetLength(Params, i+1);
-    case XVector.DataType of
-      EpiTyDate:
-          begin
-            dfFormat := DateFmtToEpiDateFmt(XVector.FieldDataFormat);
-            EpiStrToDate(Parameters.VarbyName['B'].AsString, j, dfFormat);
-            Params[i] := j;
-          end;
-      EpiTyInteger:
-          Params[i] := StrToInt(Parameters.VarbyName['B'].Value);
-    else
-          Params[i] := Parameters.VarbyName['B'].Value;
-    end;
-    Parameters.RemoveVar(Parameters.VarbyName['B']);
-    inc(i);
-  end;
-  if i>0 then ArraySort(Params, 0, i-1);
-  result := params;
 end;
 
 function TGraph.TextBox(Chart: TChart; cmd: TCommand): boolean;
@@ -3964,7 +2810,7 @@ begin
       tool.Shape.Frame.Visible := false;
       if btyp>0 then
         tool.Shape.Frame.Visible := true;
-      tool.Shape.Font.Color := GetGraphTextColour(9);
+      tool.Shape.Font.Color := TGraphUtils.GetGraphTextColour(9);
       //Delete the current box-info.
       Cmd.ParameterList.RemoveVar(Cmd.ParamByName['TEXT']);
     end;
@@ -3978,12 +2824,19 @@ begin
 end;
 
 
-procedure TGraph.CommonChartOptions(Chart: TChart; Cmd: TCommand);
+procedure TGraph.CommonChartOptions(Chart: TChart);
 var
   opt: TEpiOption;
   s : string;
   Dummy: Double;
   w: integer;
+  OptList: TStrings;
+
+  procedure RemoveOption(OptName: string);
+  begin
+    if cmd.ParamExists[OptName] then
+      Cmd.ParameterList.RemoveVar(Cmd.ParamByName[OptName]);
+  end;
 
 const
   procname = 'CommonChartOptions';
@@ -3996,46 +2849,68 @@ begin
 
   if Cmd.ParamExists['POSYTEXT'] then
     Chart.LeftAxis.LabelsSize := Cmd.ParamByName['POSYTEXT'].AsInteger;
+  RemoveOption('POSYTEXT');
 
   // Set-options applied to graph before showing.
   dm.GetOptionValue('GRAPH FONT SIZE', opt);
+  // TODO -o Torsten : Implement font size option.
   Chart.Title.Font.Size := Round(1.25 * StrToInt(opt.value));
-  Chart.Title.Font.Color := GetGraphTextColour(1);
+  Chart.Title.Font.Color := TGraphUtils.GetGraphTextColour(1);
   Chart.SubTitle.Font.Size := Round(1.1 * StrToInt(opt.value));
   Chart.SubFoot.Font.Size := Round(0.80 * StrToInt(opt.value));
   Chart.Foot.Font.Size := Round(0.70 * StrToInt(opt.value));
-  Chart.Foot.Font.Color := GetGraphTextColour(2);
+  Chart.Foot.Font.Color := TGraphUtils.GetGraphTextColour(2);
 
-  if (Cmd.ParamByName['SUB'] <> nil) then
+  for w := 0 to Chart.AxesList.Count -1 do
+  begin
+    Chart.Axes[w].LabelsFont.Size := Max(Round(0.60 * StrToInt(opt.value)), 8);
+    Chart.Axes[w].Title.Font.Size := Max(Round(0.70 * StrToInt(opt.value)), 8);
+  end;
+
+  if (Cmd.ParamExists['NOXLABEL']) then
+    Chart.BottomAxis.Labels := false;
+  RemoveOption('NOXLABEL');
+
+  if (Cmd.ParamExists['NOYLABEL']) then
+    Chart.LeftAxis.Labels := false;
+  RemoveOption('NOYLABEL');
+
+  if (Cmd.ParamExists['TI']) then
+    Chart.Title.Caption := Cmd.ParamByName['TI'].AsString;
+  RemoveOption('TI');
+
+  if (Cmd.ParamExists['SUB']) then
     Chart.SubTitle.Text.Add(Cmd.ParamByName['SUB'].AsString)
   else
     Chart.SubTitle.Visible := false;
+  RemoveOption('SUB');
 
   //footnote
   dm.GetOptionValue('GRAPH FOOTNOTE', Opt);
-  if (Cmd.ParamByName['FN'] <> nil) then s := cmd.ParamByName['FN'].AsString
-      else s:= opt.value;
+  if (Cmd.ParamExists['FN']) then
+  begin
+    Chart.Foot.Text.Clear;
+    Chart.Foot.Text.Add(cmd.ParamByName['FN'].AsString);
+  end;
+  RemoveOption('FN');
 
-  if s <> '' then
-    begin
-    Chart.Foot.Text.Add(s);
-    Chart.Foot.Alignment := taRightJustify;
-    end
-    else Chart.Foot.Visible := false;
+  // subfoot
+  // TODO -o Torsten : Implement subfootnote
 
   // Colouring options for axis, tickmarks, axis labels and axis text.
 
-  Chart.BottomAxis.Axis.Color := GetGraphTextColour(3);
+  Chart.BottomAxis.Axis.Color := TGraphUtils.GetGraphTextColour(3);
   if cmd.CommandID <> opDotPlot then
-    Chart.BottomAxis.Ticks.Color := GetGraphTextColour(4)
-    else Chart.BottomAxis.Ticks.Color := ClWhite;
-  Chart.BottomAxis.LabelsFont.Color := GetGraphTextColour(5);
-  Chart.BottomAxis.Title.Font.Color := GetGraphTextColour(5);
+    Chart.BottomAxis.Ticks.Color := TGraphUtils.GetGraphTextColour(4)
+  else
+    Chart.BottomAxis.Ticks.Color := ClWhite;
+  Chart.BottomAxis.LabelsFont.Color := TGraphUtils.GetGraphTextColour(5);
+  Chart.BottomAxis.Title.Font.Color := TGraphUtils.GetGraphTextColour(5);
 
-  Chart.LeftAxis.Axis.Color := GetGraphTextColour(6);
-  Chart.LeftAxis.Ticks.Color := GetGraphTextColour(7);
-  Chart.LeftAxis.LabelsFont.Color := GetGraphTextColour(8);
-  Chart.LeftAxis.Title.Font.Color := GetGraphTextColour(8);
+  Chart.LeftAxis.Axis.Color := TGraphUtils.GetGraphTextColour(6);
+  Chart.LeftAxis.Ticks.Color := TGraphUtils.GetGraphTextColour(7);
+  Chart.LeftAxis.LabelsFont.Color := TGraphUtils.GetGraphTextColour(8);
+  Chart.LeftAxis.Title.Font.Color := TGraphUtils.GetGraphTextColour(8);
 
   // Options applied to the graph before showing.
   if (Cmd.ParamByName['TEXT'] <> nil) then TextBox(Chart, Cmd);
@@ -4065,17 +2940,23 @@ begin
     else Chart.Axes.Left.Ticks.Visible := true;
   if (Cmd.ParamByName['YMAX'] <> nil) or (cmd.ParamByName['YMIN'] <> nil) then
     if not AxisValue(Chart.Axes.Left, Cmd.ParamByName['YMIN'], Cmd.ParamByName['YMAX'], false)
-      then dm.info('Specify both Max and Min for %s axis', ['Y'], 213005);
+      then dm.info('Specify both Max and Min for %s axis', ['Y'], 33012);
+  RemoveOption('YMAX');
+  RemoveOption('YMIN');
 
   if (Cmd.ParamByName['XMAX'] <> nil) or (cmd.ParamByName['XMIN'] <> nil) then
     if not AxisValue(Chart.Axes.Bottom, Cmd.ParamByName['XMIN'], Cmd.ParamByName['XMAX'], true)
-      then dm.info('Specify both Max and Min for %s axis', ['X'], 213005);
+      then dm.info('Specify both Max and Min for %s axis', ['X'], 33012);
+  RemoveOption('XMAX');
+  RemoveOption('XMIN');
 
   if (Cmd.ParamByName['XINC'] <> nil) then
     AxisIncrement(Chart.Axes.Bottom, Cmd.ParamByName['XINC'].AsFloat);
+  RemoveOption('XINC');
 
   if (Cmd.ParamByName['YINC'] <> nil) then
     AxisIncrement(Chart.Axes.Left, Cmd.ParamByName['YINC'].AsFloat);
+  RemoveOption('YINC');
 
   AxisLines(Chart, 'XLINE', Cmd);
   AxisLines(Chart, 'YLINE', Cmd);
@@ -4083,7 +2964,15 @@ begin
   AxisLines(Chart, 'YLINED', Cmd);
 
   if Cmd.ParamByName['XTEXT'] <> nil then
-    Chart.BottomAxis.Title.Caption := CMd.ParamByName['XTEXT'].AsString;
+  begin
+    if Cmd.ParamByName['XTEXT'].AsString = '' then
+      Chart.BottomAxis.Title.Visible := false
+    else begin
+      Chart.BottomAxis.Title.Caption := Cmd.ParamByName['XTEXT'].AsString;
+      Chart.BottomAxis.Title.Visible := true
+    end;
+  end;
+  RemoveOption('XTEXT');
 
   if Cmd.ParamByName['X90'] <> nil then
     Chart.BottomAxis.LabelsAngle := 90;
@@ -4099,16 +2988,14 @@ begin
 
   if Cmd.ParamByName['YTEXT'] <> nil then
   begin
-    if CMd.ParamByName['YTEXT'].AsString = '' then
+    if Cmd.ParamByName['YTEXT'].AsString = '' then
       Chart.LeftAxis.Title.Visible := false
     else begin
       Chart.LeftAxis.Title.Caption := Cmd.ParamByName['YTEXT'].AsString;
       Chart.LeftAxis.Title.Angle := 90;
-      // Chart.LeftAxis.LabelsSize := 18;
-      //if (StrLen(PChar(Chart.LeftAxis.Title.Caption))*4)>Chart.LeftAxis.LabelsSize then
-      //  Chart.LeftAxis.LabelsSize := StrLen(PChar(Chart.LeftAxis.Title.Font.Height))*4;    //        Chart.LeftAxis.LabelsSize := 20;
     end;
   end;
+  RemoveOption('YTEXT');
 
   if Assigned(Cmd.ParamByName['BW']) then
     BlackAndWhiteChart(Chart);
@@ -4300,8 +3187,10 @@ begin
   begin
     Rect.Left := 0;
     Rect.Top := 0;
-    if (dm.GetOptionValue('GRAPH SIZE X', Opt)) then Rect.Right := StrToInt(Opt.Value);
-    if (dm.GetOptionValue('GRAPH SIZE Y', Opt)) then Rect.Bottom := StrToInt(Opt.Value);
+//    if (dm.GetOptionValue('GRAPH SIZE X', Opt)) then Rect.Right := StrToInt(Opt.Value);
+//    if (dm.GetOptionValue('GRAPH SIZE Y', Opt)) then Rect.Bottom := StrToInt(Opt.Value);
+    Rect.Right := 400;
+    Rect.Bottom := 300;
     bitmap := GetActiveChart.TeeCreateBitmap(GetActiveChart.BackColor, Rect);
     pngobj := TPNGObject.Create;
     pngobj.Assign(BitMap);

@@ -246,7 +246,7 @@ begin
       if (GetVar.State[i] = cbChecked) then
         cmd := cmd + GetVar.Items[i] + ' ';
     // options
-    addoption(CumPct,' /CP');
+    addoption(CumPct,' /CUM');
     addoption(RowFPct,' /R');
     addoption(CIChk,' /CI');
 
@@ -324,7 +324,7 @@ end;
 
 procedure TTableDlg.ExpandBtnClick(Sender: TObject);
 begin
-  if not expanded then
+  // if not expanded then
   begin
     self.Width := DialogExpandWidth;
     self.Height := DialogExpandHeight;
@@ -334,7 +334,8 @@ begin
     PASTEbtn.Visible := True;
     if pos('FRE',TableDlg.Caption) = 0 then
      AdvTablePanel.Visible := True;
-  end else begin
+  end {else
+  begin
     self.Width := DialogWidth;
     self.Height := DialogHeight;
     expanded := false;
@@ -342,6 +343,7 @@ begin
     RESETbtn.Visible := True;
     PASTEbtn.Visible := False;
   end;
+  }
 end;
 
 

@@ -533,12 +533,13 @@ end;
 
 
 implementation
-uses Ucmdprocessor, Math, StrUtils, UVariables, UDebug, UAggregate, Ucommands, Forms, EpiDataFile,CheckObjUnit, UCmdTypes;
+uses Ucmdprocessor, Math, StrUtils, UVariables, UDebug, UAggregate, Ucommands,
+     Forms, EpiDataFile, CheckObjUnit, UCmdTypes, GeneralUtils;
 
 const
   UnitName = 'UVectors';
 
-function R2(const AValue : extended ; const ADigit : TRoundToRange) :extended ;
+{function R2(const AValue : extended ; const ADigit : TRoundToRange) :extended ;
 var X : extended ; i : integer ;
 begin
   X := 1.0 ;
@@ -546,7 +547,7 @@ begin
   if ADigit<0
     then Result := Round(AValue * X) / X
     else Result := Round(AValue / X) * X ;
-end {R2} ;
+end ;}
 
 procedure error(const msg:string);
 begin
@@ -734,9 +735,9 @@ var
   aLabelRec,prevLabelRec,firstLabel  : PLabelRec;
   val :TLabelValueList;
 begin
-   Result:=nil;
-   epdFile:=NIL;
-try
+  Result:=nil;
+  epdFile:=NIL;
+  try
    if varnames<>nil then
       TStringList(Varnames).sorted :=true;
 
@@ -783,16 +784,15 @@ try
        if q>-1 then aField.FCommentLegalRec:=PLabelRec(epdFile.ValueLabels.Objects[q]);
        epdFile.AddField(aField);
 
-       // dm.info(v.name + format('%d',[v.fielddatatype]));
    end;
-      //Saves rec-file and checkfile with header but no data:
-      Result:=EpiDataSetClass.GetNewDataSet(fn,epdFile,fCheckProperties,pw);
-finally
-  epdFile.Free;
+    //Saves rec-file and checkfile with header but no data:
+    Result:=EpiDataSetClass.GetNewDataSet(fn,epdFile,fCheckProperties,pw);
+  finally
+    epdFile.Free;
 
-  //List.free;
-  //chkWriter.Free;
-end;
+    //List.free;
+    //chkWriter.Free;
+  end;
 end;
 
 function TEpiDataFrame.AppendNewRows(af: TEpiDataFrame; VAR ExcludedFields,LackingFields, InCompatibleFields:string):Boolean;
@@ -1113,13 +1113,13 @@ try
       begin
         if (dm.GetOptionValue('READ DELETED', Opt)) and (ansiuppercase(Opt.Value) = 'ON') then
           begin
-            dm.info('Included: %d records marked for deletion',[delcount], 209001);
+            dm.info('Included: %d records marked for deletion',[delcount], 29002);
           end
         Else
           begin
             //vectors.Capacity:=j-delcount;
             frowcount:=ADataset.RecordCount-delcount;
-            dm.info('Excluded: %d records marked for deletion',[delcount],209002);
+            dm.info('Excluded: %d records marked for deletion',[delcount],29003);
           end;
       end;
 finally
@@ -2280,7 +2280,7 @@ var
   i, j, k, d, diff, adddiff, rc: integer;
   maxval: variant;
   minvalues, maxvalues: array of variant;
-  vec, orgvec: TEpiVector;
+  avec, vec, orgvec: TEpiVector;
   df, adddf: TEpiDataframe;
   dummy: string;
   List: TStrings;
@@ -2395,40 +2395,40 @@ begin
     // Find difference between two consecutive rows in the dataframe.
     // In the following it is assumed that if vec contains missing data, then
     //   it is sorted last in the vector.
-    vec := df.VectorByName[GroupVarnames[0]];
+    avec := df.VectorByName[GroupVarnames[0]];
     if i=0 then
-      case vec.DataType of
+      case avec.DataType of
         EpiTyInteger,
-        EpiTyDate:  Diff := vec.AsInteger[i+1] - integer(aBegin);
+        EpiTyDate:  Diff := avec.AsInteger[i+1] - integer(aBegin);
         EpiTyFloat: begin
-                      d := vec.FieldDataDecimals;
+                      d := avec.FieldDataDecimals;
                       if d > 1 then d := 1;  // TODO : check if 2 decimals as TC did in first v.
-                      Diff := Round((R2(vec.AsFloat[i+1], -d) -
+                      Diff := Round((R2(avec.AsFloat[i+1], -d) -
                                      R2(EpiFloat(aBegin), -d))*
                                      IntPower(10,d));
                     end;
       end
-    else if (i=df.RowCount) or (vec.IsMissing[i+1]) then
-      case vec.DataType of
+    else if (i=df.RowCount) or (avec.IsMissing[i+1]) then
+      case avec.DataType of
         EpiTyInteger,
-        EpiTyDate:  Diff := integer(aEnd) - vec.AsInteger[i];
+        EpiTyDate:  Diff := integer(aEnd) - avec.AsInteger[i];
         EpiTyFloat: begin
-                      d := vec.FieldDataDecimals;
+                      d := avec.FieldDataDecimals;
                       if d > 1 then d := 1;
                       Diff := Round((R2(EpiFloat(aEnd), -d) -
-                                     R2(vec.AsFloat[i], -d))*
+                                     R2(avec.AsFloat[i], -d))*
                                      IntPower(10,d));
                     end;
       end
     else //Default case!
-      case vec.DataType of
+      case avec.DataType of
         EpiTyInteger,
-        EpiTyDate:  Diff := vec.AsInteger[i+1] - vec.AsInteger[i];
+        EpiTyDate:  Diff := avec.AsInteger[i+1] - avec.AsInteger[i];
         EpiTyFloat: begin
-                      d := vec.FieldDataDecimals;
+                      d := avec.FieldDataDecimals;
                       if d > 1 then d := 1;
-                      Diff := Round((R2(vec.AsFloat[i+1], -d) -
-                                     R2(vec.AsFloat[i], -d))*
+                      Diff := Round((R2(avec.AsFloat[i+1], -d) -
+                                     R2(avec.AsFloat[i], -d))*
                                      IntPower(10,d));
                     end;
       end;
@@ -2445,7 +2445,7 @@ begin
     end;
 
     if Diff > 100 then
-      dm.Info('Warning: Large gaps. To cancel process press ESC or click stop button.', [], 209003);
+      dm.Info('Warning: Large gaps. To cancel process press ESC or click stop button.', [], 29004);
     if Diff > 1 then
     begin
       // Create the DF to be inserted.
@@ -2464,7 +2464,7 @@ begin
       for k := 1 to diff -1 do
       begin
         if (k mod 100) = 0 then application.ProcessMessages;
-        if dm.Cancelled then dm.Error('Cancelled', [], 109002);
+        if dm.Cancelled then dm.Error('Cancelled', [], 29001);
 
         for j := GroupVarnames.Count-1 downto 0 do
         begin
@@ -2489,7 +2489,7 @@ begin
         begin
           vec.IsMissing[k] := true;
           if (k mod 100) = 0 then application.ProcessMessages;
-          if dm.Cancelled then dm.Error('Cancelled', [], 109002);
+          if dm.Cancelled then dm.Error('Cancelled', [], 29001);
         end;
       end;
       // TODO : Switch to own append procedure!
@@ -2497,7 +2497,7 @@ begin
       df.Sort(GroupVarnames.CommaText);
       inc(i, diff-1)
     end;
-    if (i<df.rowcount) and vec.IsMissing[i+1] then
+    if (i<df.rowcount) and avec.IsMissing[i+1] then
       i := df.RowCount;
     inc(i);
   end;
@@ -3674,7 +3674,7 @@ begin
 //  move(TEpiFloatVector(source).fdata[0],fdata[0],length*sizeof(EpiFloatStorage));
  co :=Length;
  for i := 0 to co-1 do
-    fdata[i]:= TEpiFloatVector(source).fdata[i]
+    fdata[i] := TEpiFloatVector(source).fdata[i]
 end;
 
 function TEpiFloatVector.GetFieldDataFormat: Epistring;

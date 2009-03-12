@@ -61,7 +61,7 @@ begin
       if (i>1) and (group > categ.AsInteger[i-1]) then
         grp_diff := group - categ.AsInteger[i-1];
       if (grp_diff_pre > 0) and (grp_diff_pre <> grp_diff) then
-        dm.Error('Group codes must be positive sequential numbers like 1, 2, 3...', [], 110001);
+        dm.Error('Group codes must be positive sequential numbers like 1, 2, 3...', [], 30001);
       if (grp_diff > 0) then
         grp_diff_pre := grp_diff;
       if (group < min_grp) then min_grp := group;
@@ -79,7 +79,7 @@ begin
       group := categ.AsInteger[i];
       group := (group - min_grp) div grp_diff + 1;
       if (group > grpcount) or (group< 1) then
-        dm.Error('Group codes must be positive sequential numbers like 1, 2, 3...', [], 110001);
+        dm.Error('Group codes must be positive sequential numbers like 1, 2, 3...', [], 30001);
       group_counts[group] := group_counts[group] + 1;
     end;
 
@@ -224,42 +224,48 @@ begin
         ANOVA(Descriptors, AnovaRec);
         tab :=nil;
         try
-        if (cmd.ParamByName['T']<>nil) then
+          if (cmd.ParamByName['T']<>nil) then
           begin
-          tab := dm.Outputlist.NewTable(6,4);
-          tab.Caption := ' ';
-          tab.TableType := sttNormal;
+            tab := dm.Outputlist.NewTable(6,4);
+            tab.Caption := ' ';
+            tab.TableType := sttNormal;
 
-          tab.cell[1,1]:='Source';
-          tab.cell[2,1]:='SS';
-          tab.cell[3,1]:='df';
-          tab.cell[4,1]:='MS';
-          tab.cell[5,1]:='F';
-          tab.cell[6,1]:='p Value';
+            tab.cell[1,1]:='Source';
+            tab.cell[2,1]:='SS';
+            tab.cell[3,1]:='df';
+            tab.cell[4,1]:='MS';
+            tab.cell[5,1]:='F';
+            tab.cell[6,1]:='p Value';
 
-          tab.cell[1,2]:='Between';
-          tab.cell[2,2]:=Epiformat(AnovaRec.SSB );
-          tab.cell[3,2]:=Epiformat(AnovaRec.dfb,'%6.0f');
-          tab.cell[4,2]:=Epiformat(AnovaRec.MSB);
-          tab.cell[5,2]:=Epiformat(AnovaRec.f);
-          tab.cell[6,2]:=Epiformat(AnovaRec.prob, dm.outfmt(AnovaRec.prob));
+            tab.cell[1,2]:='Between';
+            tab.cell[2,2]:=Epiformat(AnovaRec.SSB );
+            Dm.AddResult('$SSB', EpiTyFloat, AnovaRec.SSB, 14, 14);
+            tab.cell[3,2]:=Epiformat(AnovaRec.dfb,'%6.0f');
+            Dm.AddResult('$DFB', EpiTyFloat, AnovaRec.DFB, 14, 14);
+            tab.cell[4,2]:=Epiformat(AnovaRec.MSB);
+            Dm.AddResult('$MSB', EpiTyFloat, AnovaRec.MSB, 14, 14);
+            tab.cell[5,2]:=Epiformat(AnovaRec.f);
+            Dm.AddResult('$F', EpiTyFloat, AnovaRec.F, 14, 14);
+            tab.cell[6,2]:=Epiformat(AnovaRec.prob, dm.outfmt(AnovaRec.prob));
 
-          tab.cell[1,3]:='Within';
-          tab.cell[2,3]:=Epiformat(AnovaRec.SSW);
-          tab.cell[3,3]:=Epiformat(AnovaRec.dfw,'%6.0f');
-          tab.cell[4,3]:=Epiformat(AnovaRec.MSW);
-          tab.cell[5,3]:='';
-          tab.cell[6,3]:='';
+            tab.cell[1,3]:='Within';
+            tab.cell[2,3]:=Epiformat(AnovaRec.SSW);
+            Dm.AddResult('$SSW', EpiTyFloat, AnovaRec.SSW, 14, 14);
+            tab.cell[3,3]:=Epiformat(AnovaRec.dfw,'%6.0f');
+            Dm.AddResult('$DFW', EpiTyFloat, AnovaRec.dfw, 14, 14);
+            tab.cell[4,3]:=Epiformat(AnovaRec.MSW);
+            Dm.AddResult('$MSW', EpiTyFloat, AnovaRec.MSW, 14, 14);
+            tab.cell[5,3]:='';
+            tab.cell[6,3]:='';
 
-          tab.cell[1,4]:='Total';
-          tab.cell[2,4]:=Epiformat(AnovaRec.SST);
-          tab.cell[3,4]:=Epiformat(AnovaRec.dft,'%6.0f');
-          tab.cell[4,4]:=Epiformat(AnovaRec.MST);
-          tab.cell[5,4]:='';
-          tab.cell[6,4]:='';
+            tab.cell[1,4]:='Total';
+            tab.cell[2,4]:=Epiformat(AnovaRec.SST);
+            tab.cell[3,4]:=Epiformat(AnovaRec.dft,'%6.0f');
+            tab.cell[4,4]:=Epiformat(AnovaRec.MST);
+            tab.cell[5,4]:='';
+            tab.cell[6,4]:='';
 
-//          if (dm.GetOptionValue('STATISTICS', Opt) and (Opt.Value = 'ON')) then
-         s := '';
+            s := '';
 
             Bartlett(Descriptors,AnovaRec, diff,p);
             s := 'Bartlett''s test for homogeneity of variance <br>' + 'Chi<sup>2</sup>='+ dm.FloatFormat+ ' df(%d) p= '+ dm.FloatFormat;

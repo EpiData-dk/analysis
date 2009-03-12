@@ -97,7 +97,6 @@ BEGIN
 END;  //function FirstWord
 
 Function mibIsDate(VAR s:String; Style:TFeltTyper):Boolean;
-
 VAR
   tmpS,eMonthStr,eDayStr,eYearStr:String[10];
   day,month,year,tmpDay:Word;

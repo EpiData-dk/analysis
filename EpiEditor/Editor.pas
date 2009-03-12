@@ -277,7 +277,6 @@ begin
   begin
     Child.Show;
     try
-      // Child.CheckFileSave;
       if not Child.CheckFileSave then exit;
     except
       Exit;

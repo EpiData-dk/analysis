@@ -1,8 +1,8 @@
 object aMainForm: TaMainForm
-  Left = 420
-  Top = 258
+  Left = 306
+  Top = 234
   Width = 852
-  Height = 562
+  Height = 565
   Caption = 'aMainForm'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -24,7 +24,7 @@ object aMainForm: TaMainForm
     Left = 633
     Top = 54
     Width = 2
-    Height = 443
+    Height = 446
     Align = alRight
     AutoSnap = False
     MinSize = 20
@@ -32,7 +32,7 @@ object aMainForm: TaMainForm
   end
   object StatusBar: TSMStatusBar
     Left = 0
-    Top = 497
+    Top = 500
     Width = 844
     Height = 19
     Anchors = [akRight, akBottom]
@@ -191,7 +191,7 @@ object aMainForm: TaMainForm
     Left = 0
     Top = 54
     Width = 633
-    Height = 443
+    Height = 446
     Align = alClient
     Alignment = taLeftJustify
     BorderStyle = bsSingle
@@ -199,7 +199,7 @@ object aMainForm: TaMainForm
     OnMouseMove = ToolBar1MouseMove
     object Splitter1: TSplitter
       Left = 1
-      Top = 414
+      Top = 417
       Width = 627
       Height = 2
       Cursor = crVSplit
@@ -209,7 +209,7 @@ object aMainForm: TaMainForm
     end
     object CmdPanel: TPanel
       Left = 1
-      Top = 416
+      Top = 419
       Width = 627
       Height = 22
       Align = alBottom
@@ -223,7 +223,7 @@ object aMainForm: TaMainForm
     Left = 635
     Top = 54
     Width = 209
-    Height = 443
+    Height = 446
     Align = alRight
     TabOrder = 2
     OnResize = Panel1Resize
@@ -231,7 +231,7 @@ object aMainForm: TaMainForm
       Left = 1
       Top = 99
       Width = 207
-      Height = 230
+      Height = 233
       Hint = 'Close: press F3'
       Align = alClient
       BevelInner = bvNone
@@ -280,7 +280,7 @@ object aMainForm: TaMainForm
     end
     object Historylist: TListBox
       Left = 1
-      Top = 329
+      Top = 332
       Width = 207
       Height = 113
       Hint = 'Close: press F7'
@@ -4564,6 +4564,11 @@ object aMainForm: TaMainForm
     Images = ImageList1
     Left = 80
     Top = 112
+    object AcRunXbarChart: TAction
+      Category = 'SPC'
+      Caption = '&Xbar-S Chart'
+      OnExecute = AcRunXbarChartExecute
+    end
     object AcFileClose: TWindowClose
       Category = 'File'
       Caption = '&Close'
@@ -4605,7 +4610,7 @@ object aMainForm: TaMainForm
     end
     object AcExit: TAction
       Category = 'File'
-      Caption = 'E&xit'
+      Caption = '&Quit'
       Hint = 'Exit|Exit application'
       ImageIndex = 8
       ShortCut = 121
@@ -4884,18 +4889,18 @@ object aMainForm: TaMainForm
       OnExecute = AcWindowEditExecute
     end
     object AcRunIChart: TAction
-      Category = 'Graphs'
-      Caption = 'AcRunIChart'
+      Category = 'SPC'
+      Caption = '&I Chart (xmr)'
       OnExecute = AcRunIChartExecute
     end
     object AcRunPChart: TAction
-      Category = 'Graphs'
-      Caption = 'AcRunPChart'
+      Category = 'SPC'
+      Caption = '&P Chart'
       OnExecute = AcRunPChartExecute
     end
     object AcRunRunChart: TAction
-      Category = 'Graphs'
-      Caption = 'AcRunRunChart'
+      Category = 'SPC'
+      Caption = '&Run Chart'
       OnExecute = AcRunRunChartExecute
     end
     object AcRunPie: TAction
@@ -5065,6 +5070,56 @@ object aMainForm: TaMainForm
       Caption = 'LifeTable'
       OnExecute = AcRunLifeTableExecute
     end
+    object AcRunCChart: TAction
+      Category = 'SPC'
+      Caption = '&C Chart'
+      OnExecute = AcRunCChartExecute
+    end
+    object AcRunUChart: TAction
+      Category = 'SPC'
+      Caption = '&U Chart'
+      OnExecute = AcRunUChartExecute
+    end
+    object AcRunGChart: TAction
+      Category = 'SPC'
+      Caption = '&G Chart'
+      OnExecute = AcRunGChartExecute
+    end
+    object AcShowSPCMenu: TAction
+      Category = 'SPC'
+      Caption = '&SPC Menu'
+      OnExecute = AcShowSPCMenuExecute
+    end
+    object AcRunPareto: TAction
+      Category = 'SPC'
+      Caption = 'P&areto'
+      OnExecute = AcRunParetoExecute
+    end
+    object AcRunProbitPlot: TAction
+      Category = 'Graphs'
+      Caption = 'Probit Plot'
+      OnExecute = AcRunProbitPlotExecute
+    end
+    object AcRunCumulativePlot: TAction
+      Category = 'Graphs'
+      Caption = 'Cumulative Plot'
+      OnExecute = AcRunCumulativePlotExecute
+    end
+    object AcRunDotPlot: TAction
+      Category = 'Graphs'
+      Caption = 'Dot Plot'
+      OnExecute = AcRunDotPlotExecute
+    end
+    object AcRunCIPlot: TAction
+      Category = 'Graphs'
+      Caption = 'Proportion (CI) plot'
+      OnExecute = AcRunCIPlotExecute
+    end
+    object AcRunEpicurve: TAction
+      Category = 'Graphs'
+      Caption = 'Epidemic Curve'
+      OnExecute = AcRunEpicurveExecute
+    end
   end
   object Viewerpopup: TPopupMenu
     Images = ImageList1
@@ -5083,6 +5138,7 @@ object aMainForm: TaMainForm
       Action = AcSelectAll
     end
     object N2: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object Reload1: TMenuItem
@@ -5098,6 +5154,7 @@ object aMainForm: TaMainForm
       Action = AcWebBack
     end
     object N7: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object ScreenFont1: TMenuItem
@@ -5105,6 +5162,7 @@ object aMainForm: TaMainForm
       Action = AcFontSelect
     end
     object N37: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object StartSavingOutput4: TMenuItem
@@ -5116,6 +5174,7 @@ object aMainForm: TaMainForm
       Action = AcViewHTMLSource
     end
     object N29: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object ClearCommandHistory1: TMenuItem
@@ -5124,6 +5183,7 @@ object aMainForm: TaMainForm
       OnClick = ClearCommandHistory1Click
     end
     object N10: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object Togglemenu1: TMenuItem
@@ -5172,6 +5232,7 @@ object aMainForm: TaMainForm
       Action = AcFontSelect
     end
     object N9: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object logclose2: TMenuItem
@@ -5183,6 +5244,7 @@ object aMainForm: TaMainForm
       Action = Aclogopen
     end
     object N17: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object Showstartpage1: TMenuItem
@@ -5194,6 +5256,7 @@ object aMainForm: TaMainForm
       Action = AcViewhtmlFile
     end
     object N20: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object ReloadShownFile2: TMenuItem
@@ -5214,43 +5277,54 @@ object aMainForm: TaMainForm
     AutoPopup = False
     TrackButton = tbLeftButton
     Left = 377
-    Top = 62
+    Top = 70
     object DescribeData1: TMenuItem
+      Tag = -1
       Action = AcRunDescribe
       AutoHotkeys = maManual
       Caption = '&Describe'
       RadioItem = True
     end
     object Means2: TMenuItem
+      Tag = -1
       Action = AcRunMeans
     end
     object N34: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object tables: TMenuItem
+      Tag = -1
       Action = AcRunTable
       Caption = '&Tables'
     end
     object MenuItem1: TMenuItem
+      Tag = -1
       Action = AcRunFreq
       Caption = '&Frequency'
     end
     object LifeTable1: TMenuItem
+      Tag = -1
       Action = AcRunLifeTable
     end
     object N35: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object Regress: TMenuItem
+      Tag = -1
       Action = AcRunRegress
     end
     object Correlate1: TMenuItem
+      Tag = -1
       Action = AcRunCorrelate
     end
     object N36: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object Kwallis1: TMenuItem
+      Tag = -1
       Action = AcRunKwallis
     end
   end
@@ -5263,77 +5337,131 @@ object aMainForm: TaMainForm
     AutoPopup = False
     TrackButton = tbLeftButton
     Left = 313
-    Top = 64
+    Top = 72
     object AcRunScatter1: TMenuItem
+      Tag = -1
       Action = AcRunScatter
     end
     object AcRunLine1: TMenuItem
+      Tag = -1
       Action = AcRunLine
     end
     object N22: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object AcRunHistogram1: TMenuItem
+      Tag = -1
       Action = AcRunHistogram
     end
     object Bar2: TMenuItem
+      Tag = -1
       Action = AcRunBar
     end
     object N21: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object BoxPlot2: TMenuItem
+      Tag = -1
       Action = AcRunBox
     end
     object Dotplot1: TMenuItem
-      Caption = 'Dotplot'
-      OnClick = Dotplot1Click
+      Tag = -1
+      Action = AcRunDotPlot
     end
     object CumulativePlot1: TMenuItem
-      Caption = 'Cumulative Plot'
-      OnClick = CumulativePlot1Click
+      Tag = -1
+      Action = AcRunCumulativePlot
     end
     object CumulativePlot2: TMenuItem
-      Caption = 'Probit Plot'
-      OnClick = CumulativePlot2Click
+      Tag = -1
+      Action = AcRunProbitPlot
     end
     object N38: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object Ciplot1: TMenuItem
-      Caption = 'Proportion (CI) plot'
-      OnClick = Ciplot1Click
+      Tag = -1
+      Action = AcRunCIPlot
     end
     object EpiCurve1: TMenuItem
-      Caption = 'Epidemic Curve'
-      OnClick = EpiCurve1Click
+      Tag = -1
+      Action = AcRunEpicurve
     end
     object KMPlot1: TMenuItem
+      Tag = -1
       Action = AcRunKMPlot
     end
     object N23: TMenuItem
+      Tag = -1
       Caption = '-'
     end
-    object IChart4: TMenuItem
-      Action = AcRunIChart
-      Caption = '&I-Chart'
-    end
-    object PChart4: TMenuItem
-      Action = AcRunPChart
-      Caption = '&P-Chart'
-    end
-    object RunChart4: TMenuItem
-      Action = AcRunRunChart
-      Caption = '&RunChart'
-    end
-    object Pareto1: TMenuItem
-      Caption = 'Pareto'
-      OnClick = Pareto1Click
+    object SPCCharts1: TMenuItem
+      Caption = 'SPC Charts'
+      object SPCMenu1: TMenuItem
+        Action = AcShowSPCMenu
+      end
+      object N41: TMenuItem
+        Tag = -1
+        Caption = '-'
+      end
+      object RunChart4: TMenuItem
+        Tag = -1
+        Action = AcRunRunChart
+      end
+      object N32: TMenuItem
+        Tag = -1
+        Caption = '-'
+      end
+      object IChart1: TMenuItem
+        Tag = -1
+        Action = AcRunIChart
+      end
+      object IChart4: TMenuItem
+        Tag = -1
+        Action = AcRunXbarChart
+      end
+      object N44: TMenuItem
+        Tag = -1
+        Caption = '-'
+      end
+      object CChart1: TMenuItem
+        Tag = -1
+        Action = AcRunCChart
+      end
+      object UChart1: TMenuItem
+        Tag = -1
+        Action = AcRunUChart
+      end
+      object PChart4: TMenuItem
+        Tag = -1
+        Action = AcRunPChart
+      end
+      object N39: TMenuItem
+        Tag = -1
+        Caption = '-'
+      end
+      object GChart1: TMenuItem
+        Tag = -1
+        Action = AcRunGChart
+      end
+      object N42: TMenuItem
+        Tag = -1
+        Caption = '-'
+      end
+      object Pareto1: TMenuItem
+        Tag = -1
+        Action = AcRunPareto
+      end
     end
     object N24: TMenuItem
+      Tag = -1
       Caption = '-'
     end
     object BoxPlot4: TMenuItem
+      Tag = -1
       Action = AcRunPie
       Caption = 'Pi&e'
     end
@@ -5402,6 +5530,7 @@ object aMainForm: TaMainForm
         Action = AcCd
       end
       object N40: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object FileOpenItem: TMenuItem
@@ -5417,12 +5546,15 @@ object aMainForm: TaMainForm
         Action = AcFileClose
       end
       object N31: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object ImpClipBrd: TMenuItem
+        Tag = 1008
         Action = AcImportFromClipboard
       end
       object N5: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object Printpreview1: TMenuItem
@@ -5434,6 +5566,7 @@ object aMainForm: TaMainForm
         Action = AcPrintViewer
       end
       object N3: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object FileSaveItem: TMenuItem
@@ -5441,6 +5574,7 @@ object aMainForm: TaMainForm
         Action = AcFileSave
       end
       object N6: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object StartSavingOutput1: TMenuItem
@@ -5454,6 +5588,7 @@ object aMainForm: TaMainForm
         Visible = False
       end
       object N1: TMenuItem
+        Tag = -1
         Caption = '-'
         Visible = False
       end
@@ -5466,6 +5601,7 @@ object aMainForm: TaMainForm
         Action = Acoptions
       end
       object N19: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object FileExitItem: TMenuItem
@@ -5483,6 +5619,7 @@ object aMainForm: TaMainForm
         Action = HistAcEdit
       end
       object N27: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object Redo1: TMenuItem
@@ -5498,6 +5635,7 @@ object aMainForm: TaMainForm
         Action = AcSelectAll
       end
       object N28: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object F1: TMenuItem
@@ -5509,6 +5647,7 @@ object aMainForm: TaMainForm
         Action = EditRepeatFind
       end
       object N26: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object EditSetupEpiDatastatini1: TMenuItem
@@ -5530,6 +5669,7 @@ object aMainForm: TaMainForm
         Caption = 'file structure'
       end
       object N14: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object Browsefields1: TMenuItem
@@ -5541,6 +5681,7 @@ object aMainForm: TaMainForm
         Action = AcList
       end
       object N8: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object Closedatafile1: TMenuItem
@@ -5548,6 +5689,7 @@ object aMainForm: TaMainForm
         Action = AcFileClose
       end
       object N16: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object ResultVariables1: TMenuItem
@@ -5560,57 +5702,12 @@ object aMainForm: TaMainForm
         Caption = 'clear results'
       end
       object N13: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object Update1: TMenuItem
         Tag = 1220
         Action = AcRunUpDate
-      end
-    end
-    object MmenuViewer: TMenuItem
-      Tag = 1300
-      Caption = '&Viewer'
-      SubMenuImages = ImageList1
-      object Clearscreen2: TMenuItem
-        Tag = 1301
-        Action = EditClearScreen
-      end
-      object N4: TMenuItem
-        Caption = '-'
-      end
-      object logclose1: TMenuItem
-        Tag = 1305
-        Action = Aclogclose
-      end
-      object StartSavingOutput2: TMenuItem
-        Tag = 1306
-        Action = Aclogopen
-      end
-      object N43: TMenuItem
-        Caption = '-'
-      end
-      object Showstartpage3: TMenuItem
-        Tag = 1310
-        Action = AcShowStartPage
-      end
-      object Viewlogfile1: TMenuItem
-        Tag = 1311
-        Action = AcViewhtmlFile
-      end
-      object N18: TMenuItem
-        Caption = '-'
-      end
-      object ReloadShownFile1: TMenuItem
-        Tag = 1320
-        Action = AcWebReload
-      end
-      object NextOutputWindow1: TMenuItem
-        Tag = 1321
-        Action = AcWebforward
-      end
-      object PreviousOutputWindow1: TMenuItem
-        Tag = 1322
-        Action = AcWebBack
       end
     end
     object Windows2: TMenuItem
@@ -5649,10 +5746,11 @@ object aMainForm: TaMainForm
         Action = Acshowhist
       end
       object N15: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object ScreenFont2: TMenuItem
-        Tag = 1302
+        Tag = 1429
         Action = AcFontSelect
       end
       object DefaultWindowPosition1: TMenuItem
@@ -5665,6 +5763,7 @@ object aMainForm: TaMainForm
         OnClick = SaveWindowsPosition1Click
       end
       object N12: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object ProcessToolbaronoff1: TMenuItem
@@ -5679,7 +5778,57 @@ object aMainForm: TaMainForm
         SubMenuImages = ImageList1
       end
       object N25: TMenuItem
+        Tag = -1
         Caption = '-'
+      end
+    end
+    object MmenuViewer: TMenuItem
+      Tag = 1300
+      Caption = '&Results'
+      SubMenuImages = ImageList1
+      object Clearscreen2: TMenuItem
+        Tag = 1301
+        Action = EditClearScreen
+      end
+      object N4: TMenuItem
+        Tag = -1
+        Caption = '-'
+      end
+      object logclose1: TMenuItem
+        Tag = 1305
+        Action = Aclogclose
+      end
+      object StartSavingOutput2: TMenuItem
+        Tag = 1306
+        Action = Aclogopen
+      end
+      object N43: TMenuItem
+        Tag = -1
+        Caption = '-'
+      end
+      object Showstartpage3: TMenuItem
+        Tag = 1310
+        Action = AcShowStartPage
+      end
+      object Viewlogfile1: TMenuItem
+        Tag = 1311
+        Action = AcViewhtmlFile
+      end
+      object N18: TMenuItem
+        Tag = -1
+        Caption = '-'
+      end
+      object ReloadShownFile1: TMenuItem
+        Tag = 1320
+        Action = AcWebReload
+      end
+      object NextOutputWindow1: TMenuItem
+        Tag = 1321
+        Action = AcWebforward
+      end
+      object PreviousOutputWindow1: TMenuItem
+        Tag = 1322
+        Action = AcWebBack
       end
     end
     object MmenuHelp: TMenuItem
@@ -5694,6 +5843,7 @@ object aMainForm: TaMainForm
         ImageIndex = 11
       end
       object N33: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object quickguide1: TMenuItem
@@ -5707,6 +5857,7 @@ object aMainForm: TaMainForm
         OnClick = PDFintroductionClick
       end
       object N11: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object SearchEpiDataList1: TMenuItem
@@ -5718,6 +5869,7 @@ object aMainForm: TaMainForm
         Action = AcGetVersion
       end
       object N30: TMenuItem
+        Tag = -1
         Caption = '-'
       end
       object HelpAboutItem: TMenuItem

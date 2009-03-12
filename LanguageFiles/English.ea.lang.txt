@@ -22,7 +22,6 @@
 136=Choose text font size
 137=Save changes and Start
 
-
 [Analysis main menu]
 1000=&File
 1100=&Edit
@@ -36,6 +35,7 @@
 1005=&Read Data
 1006=Prop&erties
 1007=&Close
+1008=&Import From Clipboard
 
 1010=Page &Setup
 1011=Print Preview
@@ -93,7 +93,7 @@
 1425=Command Prompt 
 1426=Main Menu 
 
-1429=Change Screen Font
+1429=Screen Font
 1430=Default Position
 1431=Save Current Position
 1435=Process Toolbar 
@@ -118,7 +118,7 @@
 2500=&Output
 2600=Edi&tor
 2700=&Close
-2800=E&xit
+2800=&Quit
 
 [2100-2700 used for submenus to work process toolbar]
 
@@ -136,7 +136,7 @@
 2912=Edit history
 2913=Clear History
 
-[3001 : Dialog buttons]
+[3000 : Dialog buttons]
 3001=&Run
 3002=&Execute
 3003=&Cancel
@@ -160,7 +160,7 @@
 3113=Design
 3114=Labels
 
-[4001 : Browse form]
+[4000 : Browse form]
 4001=&Close
 4002=&Show Values
 4003=&Show Labels
@@ -176,15 +176,50 @@
 5008=&WMF
 5009=&Png
 5010=Edit &All
-5011=E&xit
+5011=&Quit
 
 [6000 Editor]
-6000=&File
-6001=&Edit
-6005=&Insert History
-6010=&Run
-6015=&Window
-6020=H&elp
+6001=&File
+6002=&Edit
+6003=&Insert History
+6004=&Run
+6005=&Window
+6006=H&elp
+
+#File sub menu
+6010=&New
+6011=&Open
+6012=&Save
+6013=Save &As...
+6014=&Print
+6015=&Close
+6016=&Quit
+
+#Edit sub menu
+6020=&Undo
+6021=&Redo
+6022=Cu&t
+6023=&Copy
+6024=&Paste
+6025=&Select all
+6026=&Find...
+6027=F&ind again...
+6028=&Replace...
+6029=&Go to line...
+6030=&Insert History
+
+#Run sub menu
+6040=Run selected
+6041=Run all
+
+#Window sub menu
+6050=Save Window Position
+
+#Help sub menu
+6060=&Help...
+6061=&Commands
+6062=&Variables
+
 
 [7000 Table dialog]
 7001=&Run
@@ -228,251 +263,250 @@
 7131=Valuelabel+value
 7132=Variable Names
 7133=&More
-
+7134=&Less
 
 [8000 Graph dialog]
+8001=More
+8002=Less
 
 
-[10000 messages read and write data]
- 10000=No data
+[10000 Common]
+10000=No Data
+10001=Exception occured: %s
+21004=Missing file name
 
-61000=No Data
-61001=Read data or generate
+[20000 UAggregate]
+20000=Unknown aggregate function: %s
+20001=Aggregate: Too many variables used.
+20002=Aggregate function already used for %s
 
+[21000 UanaParser]
+21001=%s : Command not implemented yet
+21002=%s : Unknown Command
+21003=RELATE replaced by MERGE command - see help file
+21005=add " "
+21006=%s = %s
+21007=Note: Recode without "TO" destroys data
+21008=Note browse is faster than list
 
-[UAggregate]
-100001=Unknown aggregate function: %s
-100002=Aggregate: Too many variables used.
-100003=Aggregate function already used for %s
+[22000 UCheckParser]
+22001=Missingvalue NOT supported yet
 
-[UanaParser]
-101001=%s : Command not implemented yet
-101002=%s : Unknown Command
-101003=RELATE replaced by MERGE command - see help file
-101004=Missing file name
+[23000 UCmdProcessor]
+23001=Variables are not allowed
+23002=%d variable(s) expected
+23003=%d or more variables are expected
+23004=Maximum %d variables are allowed
+23005=%s not supported
+23006=Invalid option value %s
+23007=Complete html pages not allowed with show. Remove HTML header or : <font class=info>view %s </font>
+23008=PGM Error:<br>%s
+23009=script resulted in errors
+23010=Directory %s not found
+23011=File %s not found
+23012=Failed in file: %s
+23013=No, data will be lost: Close first
+23014=Rows count must be at least 1
+23015=Unknown file extension %s
+23016=Data modified - Close first
+23017=SaveDataFile: No dataframe!
+23018=Must be .REC file
+23019=DataFile and/or Chk file exists. <br> Add /REPLACE or erase<br> %s <br>%s
+23020=Failed to save data to %s
+23021=Click on close icon (X) to inforce quit
+23022=%s <br> Must be Integer: Define %s ##
+23023=No expression
+23024=No Boolean expression found in ASSERT command
+23025=Missing loop data
+23026=Loop variable is missing
+23027=Data field %s cannot be used as loop variable
+23028=Variable not found: %s
+23029=There are no loop choices
+23030=Item %d is invalid loop choice
+23031=Result variables are read-only
+23032=Defining systemvariables not allowed
+23033=Unknown default value for VAR GENERATE TYPE
+23034=Weight variable must be of type Integer
+23035=First variable (%s) must be of type Integer or Date
+23036=Second variable (%s) must be of type Integer or Float
+23037=First variable (%s) must be of type Integer, Float or Date
+23038=Third variable (%s) must be of type Integer or Float
+23039=Use: EpiCurve %s %s /by=%s
+23040=Cannot use string variable: %s
+23041=Log open - Add /close
+23042=File %s exists. <br> Use /Replace or /Append to replace or append logfile.
+23043=Max records for %s: %d N was: %d
+23044=A date/string variable cannot be processed using this command
+23045=Syntax: Kwallis %s /BY="variable-name"
+23046=Category variable must be numerical<br>create numerical variable'
+23047=Failed to write %s
+23048=Select/If not allowed with update
+23049=Savedata to keep changes.
+23050=Recnumber depends on sorting
+23051=Cancelled by user
+23052=Closing data - Save history to recreate data with changes
+23053=File closed
+23054=File name: %s saved
+23055=Script interrupted by user
+23056=Loading data %s, please wait...
+23057=Errors reading data
+23058=File name :
+23059=Fields: %d   Total records: %d   Included: %d
+23060=Appended file:  Fields: %d   Total records: %d   Valid records: %d
+23061=No of deselected records: %d
+23062=Unknown fields excluded from append file: %s
+23063=Incompatible fields excluded: %s
+23064=Fields not found in append file: %s
+23065=Combined file:  Fields: %d   Total records: %d
+23066=Filename %s is similar to a variable name
+23067=Saving data to: %s
+23068=%d Fields %d Records
+23069=Writing to file: %s, please wait...
+23070=Saving data in DBF format is not possible, data will be saved in REC format
+23071=File name : %s
+23072=No records available
+23073=RND not implemented
+23074=Valuelabeling not posible. Destination %s must be of type integer.
+23075=%d %% of memory is used <br> Physical memory %d MB <br> Free physical memory %d MB <br> Total Virtual memory %d MB <br> Free Virtual memory %d MB
+23076=Var Name %s of type %s
+23077=Var length: %d
+23078=decimals %d
+23079=Var Name %s of type %s and length: %d  decimals %d
+23080=<br>Notice integers > 1000 are saved as float variables with 0 decimals
+23081=Small N, Warning: Check Percentiles
+23082=Option %s not implemented yet
+23083=Syntax: Means %s /BY= %s
+23084=Warning: Percentiles imprecise
+23085=Sorting please wait...
+23086=Sorting complete
+23087=To avoid confirmation: erasepng /noconfirm
+23088=%d files deleted
+23089=Logopen %s <br> %s %s %s
+23090=Log file not open
+23091=Log file %s closed
+23092=Syntax: Kwallis %s /BY=%s
+23093=Field %s not found. Using "recnumber" as ID label.
+23094=Current select - %s
+23095=%s variable (%s) must be of type(s) %s
+23096=Option(s) %s must be specified
+23097=%s not defined
+23098=Mergeing...
+23099=Appending...
 
-201001=add " "
-201002=%s = %s
-201003=Note: Recode without "TO" destroys data
-201004=Note browse is faster than list
+[24000 UEpiDlg]
+24000=Select at least one variable
+24001=Select two variables
+24002=Max %d variables
 
-[UCheckParser]
-202001=Missingvalue NOT supported yet
+[25000 UHelp]
+25001=Not found: %s
 
-[UCmdProcessor]
-103001=Variables are not allowed
-103002=%d variable(s) expected
-103003=%d or more variables are expected
-103004=Maximum %d variables are allowed
-103005=No Data
-103006=Update disabled due to reliability problems <br> Use EpiData Entry to change the data <br>Update will be rewritten soon
-103007=%s not supported
-103008=Invalid option value %s
-103009=Complete html pages not allowed with show. Remove HTML header or : <font class=info>view %s </font>
-103010=PGM Error:<br>%s
-103011=script resulted in errors
-103012=Directory %s not found
-103013=File %s not found
-103014=Failed in file: %s
-103015=No, data will be lost: Close first
-103016=Rows count must be at least 1
-103017=Exception occured: %s
-103018=Unknown file extension %s
-103019=Data modified - Close first
-103020=SaveDataFile: No dataframe!
-103021=Must be .REC file
-103022=DataFile and/or Chk file exists. <br> Add /REPLACE or erase<br> %s <br>%s
-103023=Failed to save data to %s
-103024=Click on close icon (X) to inforce quit
-103025=%s <br> Must be Integer: Define %s ##
-103026=No expression
-103027=No Boolean expression found in ASSERT command
-103028=Missing loop data
-103029=Loop variable is missing
-103030=Data field %s cannot be used as loop variable
-103031=Variable not found: %s
-103032=There are no loop choices
-103033=Item %d is invalid loop choice
-103034=Result variables are read-only
-103035=Defining systemvariables not allowed
-103036=Unknown default value for VAR GENERATE TYPE
-103037=Weight variable must be of type Integer
-103038=First variable (%s) must be of type Integer or Date
-103039=Second variable (%s) must be of type Integer or Float
-103040=First variable (%s) must be of type Integer, Float or Date
-103041=Third variable (%s) must be of type Integer or Float
-103042=Use: EpiCurve %s %s /by=%s
-103043=Cannot use string variable: %s
-103044=/BY=<byvar> cannot be missing
-103045=Log open - Add /close
-103046=File %s exists. <br> Use /Replace or /Append to replace or append logfile.
-103047=Max records for %s: %d N was: %d
-103048=A date/string variable cannot be processed using this command
-103049=Syntax: Kwallis %s /BY="variable-name"
-103050=Category variable must be numerical<br>create numerical variable'
-103051=Failed to write %s
-103052=Select not allowed with update
+[26000 UMain]
+26001=Exceeded maximum selection size
+26002=Cannot yet open rec files directly
+26003="Search EpiData-list" attempts to open Internet Connection to EpiData-list Archives
+26004=Introduction files not found for language: %s
+26005=Data Browser will be shown when you read data
 
-203001=Savedata to keep changes.
-203002=Recnumber depends on sorting
-203003=Cancelled by user
-203004=Closing data - Save history to recreate data with changes
-203005=File closed
-203006=File name: %s saved
-203007=Script interrupted by user
-203008=Loading data %s, please wait...
-203009=Errors reading data
-203010=File name :
-203011=Fields: %d   Total records: %d   Included: %d
-203012=Appended file:  Fields: %d   Total records: %d   Valid records: %d
-203013=No of deselected records: %d
-203014=Unknown fields excluded from append file: %s
-203015=Incompatible fields excluded: %s
-203016=Fields not found in append file: %s
-203017=<br>Combined file:  Fields: %d   Total records: %d
-203018=Filename %s is similar to a variable name
-203019=Saving data to: %s
-203020=%d Fields %d Records
-203021=Writing to file: %s, please wait...
-203022=Saving data in DBF format is not possible, data will be saved in REC format
-203023=File name : %s
-203024=No records available
-203025=RND not implemented
-203026=Valuelabeling not posible. Destination %s must be of type integer.
-203027=%d %% of memory is used <br> Physical memory %d MB <br> Free physical memory %d MB <br> Total Virtual memory %d MB <br> Free Virtual memory %d MB
-203028=Var Name %s of type %s
-203029=Var length: %d
-203030=decimals %d
-203031=Var Name %s of type %s and length: %d  decimals %d
-203032=<br>Notice integers > 1000 are saved as float variables with 0 decimals
-203033=Small N, Warning: Check Percentiles
-203034=Option %s not implemented yet
-203035=Syntax: Means %s /BY= %s
-203036=Warning: Percentiles imprecise
-203037=Sorting please wait...
-203038=Sorting complete
-203039=To avoid confirmation: erasepng /noconfirm
-203040=%d files deleted
-203041=Logopen %s <br> %s %s %s
-203042=Log file not open
-203043=Log file %s closed
-203044=Syntax: Kwallis %s /BY=%s
-203045=Field %s not found. Using "recnumber" as ID label.
-203046=NOTE: Current select - %s
-203047=NOTE: IF applied - (%s)
+[27000 Uoutput]
+27001=Style sheet file not found
 
-[UEpiDlg]
-104001=Select at least one variable
-104002=Select two variables
-104003=Max two variables
+[28000 UVectorOp]
+28001=Minimum of two variables allowed
+28002=Only numeric variables are allowed
 
-[UHelp]
-205001=Not found: %s
+[29000 UVectors]
+29001=Cancelled
+29002=Included: %d records marked for deletion
+29003=Excluded: %d records marked for deletion
+29004=Warning: Large gaps. To cancel process press ESC or click stop button.
 
-[UMain]
-106001=Exceeded maximum selection size
+[30000 UContinous]
+30001=Group codes must be positive sequential numbers like 1, 2, 3...
 
-206001=Cannot yet open rec files directly
-206002="Search EpiData-list" attempts to open Internet Connection to EpiData-list Archives
-206003=Introduction files not found for language: %s
-206004=Data Browser will be shown when you read data
+[31000 Udocument]
+31001=Cannot create Missing values: CheckProperties does not exist!
+31002=max 3 missing values, add [/c  or /clear]
+31003=Cannot rename: Variable exists: %s
+31004=Invalid variable name(s)
+31005=No variables left - closing dataframe
+31006=Variable %s renamed to: %s
 
-[Uoutput]
-107001=Style sheet file not found
+[32000 UDos]
+32001=New file must have new name
+32002=File: %s does not exist!
+32003=Destination file exists - to replace: use option /replace or erase %s 
+32004=Invald path
+32005=Unable to create directory: %s
+32006=Copying from %s to %s
+32007=Command cancelled by user
+32008=File not found or could not be deleted: %s
+32009=Result <br> %s
 
-[UVectorOp]
-108001=Minimum of two variables allowed
-108002=Only numeric variables are allowed
+[33000 UGraph]
+33001=Command not in implemented in DoGraph
+33002=Unable to save using file format: %s
+33003=File %s exist. Erase file or <br>use option /Replace
+33004=Cannot use /BY with string variables
+33005=Minimum 1 variables for %s!
+33006=Minimum 2 variables for %s!
+33007=By variable cannot contain negative values
+33008=Observation value not in data set
+33009=report problem with histogram (drawing last bar): %d
+33010=%s: is not integer/date, cannot aggregate
+33011=%s: illegal, must be integer variable
+33012=Specify both Max and Min for %s axis
 
-[UVectors]
-109001=...check data file - cannot open...
-109002=Cancelled
+[34000 SPCCommon]
+34001=Always %d variables for %s!
+34002=SPC Period too short (breaks ?)
 
-209001=Included: %d records marked for deletion
-209002=Excluded: %d records marked for deletion
-209003=Warning: Large gaps. To cancel process press ESC or click stop button.
+[35000 UGChart]
+35001=Exlude option %s not implemented for %s
 
-[UContinous]
-110001=Group codes must be positive sequential numbers like 1, 2, 3...
+[36000 UPChart
+36001=Record no. %d has a ''count'' value greater than ''total''
 
-[Udocument]
-111001=Cannot create Missing values: CheckProperties does not exist!
-111002=max 3 missing values, add [/c  or /clear]
-111003=Cannot rename: Variable exists: %s
+[37000 UXBar]
+37001=Values in %s do not correspond 1-1 to values in %s
+37002=%s accepts only between %d and %d values in each subgroup.
 
-211001=Invalid variable name(s)
-211002=No variables left - closing dataframe
-211003=Variable %s renamed to: %s
+[38000 ULinearRegression]
+38001=Only numeric variables are allowed
 
-[UDos]
-112001=New file must have new name
-112002=File: %s does not exist!
-112003=Destination file exists - to replace: use option /replace or erase %s 
-112004=Invald path
-112005=Unable to create directory: %s
+[39000 UMerge]
+39001=%s not found in %s
+39002=Incompatible key variables.<br>Current file: %s of type %s<br> Merge file: %s of type %s
+39003=Non-unique key in: %s
 
-212001=Copying from %s to %s
-212002=Command cancelled by user
-212003=File not found or could not be deleted: %s
-212004=Result <br> %s
+[40000 USKTables]
+40001=%s The table appears to be empty!
 
-[UGraph]
-113001=Command not in implemented in DoGraph
-113002=Unable to save using file format: %s
-113003=File %s exist. Erase file or <br>use option /Replace
-113004=Cannot use /BY with string variables
-113005=Minimum 1 variables for %s!
-113006=Minimum 2 variables for %s!
-113007=By variable cannot contain negative values
-113008=Cannot exclude on a string or byte field
-113009=Always %d variables for %s!
-113010=Period too short: %d <br> (see breaks ? - Date as time variable ?)
-113011=SPC Period too short (breaks ?)
-113012=Record no. %d has a ''count'' value greater than ''total''
-113013=Observation value not in data set
+[41000 UTables]
+41001=2x2 table stats error %d
+41002=Use either %s or %s
+41003=Table not 2x2 for: %s
+41004=Variable %s contains no data
+41005=Sorting index out of bounds
+41006=Incorrect number of headers for %s header
+41007=Option ''FV'' not fully implemented in tables command. e.g. <br> /t could give <font style="color: red">internal error</font>
 
-213001=report problem with histogram (drawing last bar): %d
-213002=Boxplot: Median and Inter Quartile Range (IQR=25-75%). Whisker:  %s N=%d
-213003=%s: is not integer/date, cannot aggregate
-213004=%s: illegal, must be integer variable
-213005=Specify both Max and Min for %s axis
+[42000 UTranslation]
+42001=Could not open languagefile %s
 
-[ULinearRegression]
-114001=Only numeric variables are allowed
+[43000 regcomp]
+43001=Error div by 0 inverting matrices.
+43002=Correlation undefined: Divide by zero calculating r, B1 or B0
 
-[UMerge]
-115001=%s not found in %s
-115002=Incompatible key variables.<br>Current file: %s of type %s<br> Merge file: %s of type %s
-115003=Non-unique key in: %s
+[44000 UFrames]
+44001=Data in field %s, record %d exceed maximum length
+44002=# %d date error: %s
+44003=Date error: %s in %d
+44004=First line: (clipboard) %s
 
-[USKTables]
-116001=%s The table appears to be empty!
+[45000 uDateUtil]
+45001=Invalid year %d, month %d, day %d
+45002=Obs. %d Invalid year %d, month %d, day %d
 
-[UTables]
-117001=2x2 table stats error %d
-117002=Use either %s or %s
-117003=Table not 2x2 for: %s
-117004=Variable %s contains no data
-117005=Sorting index out of bounds
-117006=Incorrect number of headers for %s header
-
-217001=Option ''FV'' not fully implemented in tables command. e.g. <br> /t could give <font style="color: red">internal error</font>
-
-[UTranslation]
-118001=Could not open languagefile %s
-
-[regcomp]
-119001=Error div by 0 inverting matrices.
-119002=Correlation undefined: Divide by zero calculating r, B1 or B0
-
-[UFrames]
-120001=Data in field %s, record %d exceed maximum length
-120002=# %d date error: %s
-
-220001=Date error: %s in %d
-220002=First line: (clipboard) %s
-
-[uDateUtil]
-
-221001=Invalid year %d, month %d, day %d
-221002=Obs. %d Invalid year %d, month %d, day %d
+[46000 UUChart]
+46000=Total must not be null (0)

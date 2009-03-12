@@ -302,25 +302,31 @@ end;
 
 
 function EpiLog10 (const X: Extended): Extended;
-   function FLog10 (X: Extended): Extended;
-   asm      fldlg2         // St(0) <- Log10 of 2
-   fld      [X]      // St(0) <- X, St(1) <- Log10 of 2
-   fyl2x         // St(0) <- log10 (2) * Log2 (X)
-   fwait
-   end;
 
-   function AltFLog10 (X: Extended): Extended;
-      asm      fldlg2         // St(0) <- Log10 of 2
-      fld      [X]      // St(0) <- X, St(1) <- Log10 of 2
-      fyl2xp1         // St(0) <- log10 (2) * Log2 (X+1)
-      fwait   end;
-  begin
+  function FLog10 (X: Extended): Extended;
+  asm
+    fldlg2         // St(0) <- Log10 of 2
+    fld      [X]      // St(0) <- X, St(1) <- Log10 of 2
+    fyl2x         // St(0) <- log10 (2) * Log2 (X)
+    fwait
+  end;
+
+  function AltFLog10 (X: Extended): Extended;
+  asm
+    fldlg2         // St(0) <- Log10 of 2
+    fld      [X]      // St(0) <- X, St(1) <- Log10 of 2
+    fyl2xp1         // St(0) <- log10 (2) * Log2 (X+1)
+    fwait
+  end;
+
+begin
   if not (X >= EpiTolerance) then // must be Positive
-       raise Exception.Create ('Value must be > 0')
+    raise Exception.Create ('Value must be > 0')
   else if abs (X - 1) < 0.1 then
-        Result := AltFLog10 (X - 1)
-   else      Result := FLog10 (X);
-  End;
+    Result := AltFLog10 (X - 1)
+  else
+    Result := FLog10 (X);
+End;
 
 (*
  This function is used to report the log relative errors from NIST accuracy comparsion

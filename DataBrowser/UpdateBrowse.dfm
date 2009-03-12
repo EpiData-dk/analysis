@@ -1,6 +1,6 @@
 object UpdateForm: TUpdateForm
-  Left = 494
-  Top = 210
+  Left = 705
+  Top = 225
   Width = 574
   Height = 660
   Caption = 'Update'
@@ -18,6 +18,7 @@ object UpdateForm: TUpdateForm
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
+    Tag = -1
     Left = 0
     Top = 0
     Width = 566
@@ -25,7 +26,7 @@ object UpdateForm: TUpdateForm
     Align = alTop
     TabOrder = 0
     object Button1: TButton
-      Tag = 2699
+      Tag = 4001
       Left = 16
       Top = 8
       Width = 75
@@ -34,6 +35,7 @@ object UpdateForm: TUpdateForm
       TabOrder = 0
     end
     object BitBtn1: TBitBtn
+      Tag = -1
       Left = 100
       Top = 8
       Width = 25
@@ -77,6 +79,7 @@ object UpdateForm: TUpdateForm
         FF0000FF0000FF00FF0000FF0000FF00FF0000FF0000FF00FF00}
     end
     object BitBtn2: TBitBtn
+      Tag = -1
       Left = 124
       Top = 8
       Width = 25
@@ -120,6 +123,7 @@ object UpdateForm: TUpdateForm
         FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
     end
     object BitBtn3: TBitBtn
+      Tag = -1
       Left = 148
       Top = 8
       Width = 25
@@ -163,6 +167,7 @@ object UpdateForm: TUpdateForm
         FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
     end
     object BitBtn4: TBitBtn
+      Tag = -1
       Left = 172
       Top = 8
       Width = 25
@@ -206,6 +211,7 @@ object UpdateForm: TUpdateForm
         FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
     end
     object Button2: TButton
+      Tag = -1
       Left = 208
       Top = 8
       Width = 89
@@ -220,7 +226,7 @@ object UpdateForm: TUpdateForm
     Width = 566
     Height = 592
     Align = alClient
-    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goEditing]
     TabOrder = 1
     OnClick = DataGridClick
     OnDblClick = DataGridDblClick
@@ -232,6 +238,12 @@ object UpdateForm: TUpdateForm
     OnKeyUp = DataGridKeyUp
     OnMouseDown = DataGridMouseDown
     OnSetEditText = DataGridSetEditText
+    ColWidths = (
+      64
+      73
+      64
+      64
+      64)
   end
   object UpdateMenu: TPopupMenu
     AutoPopup = False

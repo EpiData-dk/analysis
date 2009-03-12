@@ -350,7 +350,7 @@ begin
   inc(fRowCount);
   for i:=1 to colcount do
   begin
-    fdata.Insert(colcount*x,'.');
+    fdata.Insert(colcount*x, ' ');
   end;
 end;
 
@@ -423,31 +423,25 @@ end;
 
 function TStatTable.Getcell(Acol, Arow: integer): string;
 begin
- if ((Acol>0) and (Acol<=colcount)) and ((Arow>0) and (Arow<=rowcount)) then
- begin
-   result:=fdata[(Arow-1)*colcount+Acol-1];
- end;
+  if ((Acol>0) and (Acol<=colcount)) and ((Arow>0) and (Arow<=rowcount)) then
+  begin
+    result:=fdata[(Arow-1)*colcount+Acol-1];
+  end;
 end;
 
 
 procedure TStatTable.SetCell(Acol, Arow: integer; const Value: string);
 begin
- if ((Acol>0) and (Acol<=colcount)) and ((Arow>0) and (Arow<=rowcount)) then
- begin
-   fdata[(Arow-1)*colcount+Acol-1]:=value;
- end;
+  if ((Acol>0) and (Acol<=colcount)) and ((Arow>0) and (Arow<=rowcount)) then
+  begin
+    fdata[(Arow-1)*colcount+Acol-1]:=value;
+  end;
 end;
 
 procedure TStatTable.SetCaption(const Value: string);
 begin
   fCaption := Value;
 end;
-{
-function TStatTable.GetTableOptions: TTableOptions;
-begin
-  result:=fTableOptions;
-end;
-}
 
 function TStatTable.GetObjectType: integer;
 begin
@@ -925,7 +919,7 @@ Begin
       s := s + '-->' + #13 + '</STYLE>' + #13;
     except
       if assigned(dm) then
-        dm.error('Style sheet file not found', [], 107001)
+        dm.error('Style sheet file not found', [], 27001)
       else
         raise Exception.Create('Style sheet file not found');
     end;

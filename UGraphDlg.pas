@@ -86,7 +86,6 @@ type
     Label24: TLabel;
     WeigthBox: TGroupBox;
     ComboBox6: TComboBox;
-    procedure FormCreate(Sender: TObject);
     procedure CancelBtnClick(Sender: TObject);
     procedure ResetBtnClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -143,7 +142,7 @@ function ShowGraphDlg(frm: TaMainForm; ParseString: string; var CmdString: strin
                       t3:string='Y Variable 2';t4:string='Y Variable 3';
                       tb:string='Y Variable 4'):integer;
 begin
-  if not assigned( GraphDlg) then
+  if not assigned(GraphDlg) then
   begin
     GraphDlg:= TGraphDlg.Create(application);
     GraphDlg.MAinform :=frm;
@@ -151,7 +150,7 @@ begin
   end;
   GraphDlg.InitializeDlg(ParseString, Xvars, Yvars, legalxtype, legalytype, AdvType, By, Weigth,
                          t1,t2,t3,t4,tb);
-  GraphDlg.showmodal;
+  GraphDlg.ShowModal;
   Result:=GraphDlg.DlgResult;
   CmdString := GraphDlg.CmdString;
   FreeAndNil(GraphDlg);
@@ -165,14 +164,6 @@ begin
   for i := 0 to high(legalvalues) do
     if testtype = legalvalues[i] then exit;
   result := false;
-end;
-
-procedure TGraphDlg.FormCreate(Sender: TObject);
-begin
-  CancelBtn.tag:=DlgResCancel;
-  ResetBtn.tag:= DlgResReset;
-  PasteBtn.tag:=  DlgResPaste;
-  RunBtn.tag:=  DlgResRun;
 end;
 
 procedure TGraphDlg.InitializeDlg(const ps: string; xvars, yvars: integer; legalxtype, legalytype: array of integer;
@@ -215,8 +206,6 @@ begin
   co := dm.dataframe.VectorCount;
   for i:= 0 to co-1 do
   begin
-    // Skip std. vectors
-    //if (dm.dataframe.Vectors[i].Internal) then continue;
     if LegalValue(dm.dataframe.Vectors[i].DataType, legalxtype) then
        combobox1.Items.Add(dm.dataframe.Vectors[i].Name);
     if LegalValue(dm.dataframe.Vectors[i].DataType, legalytype) then
@@ -269,10 +258,18 @@ const
 
 begin
   result := true;
-  Cmd:=CmdName;
+  Cmd := CmdName;
   if Combobox1.ItemIndex <> -1 then Cmd := cmd + ' ' + Combobox1.Text;
-  if Combobox2.ItemIndex <> -1 then Cmd := cmd + ' ' + Combobox2.Text;
-  if Combobox3.ItemIndex <> -1 then Cmd := cmd + ' ' + Combobox3.Text;
+  if Combobox2.ItemIndex <> -1 then
+    if (pos(CmdName, 'RUNCHART ICHART CCHART') > 0) and (dm.Dataframe.VectorByName[Combobox2.Text].DataType = EpiTyString) then
+      Cmd := cmd + ' /XLABEL=' + Combobox2.Text
+    else
+      Cmd := cmd + ' ' + Combobox2.Text;
+  if Combobox3.ItemIndex <> -1 then
+    if (pos(CmdName, 'PCHART UCHART XBAR') > 0) and (dm.Dataframe.VectorByName[Combobox3.Text].DataType = EpiTyString) then
+      Cmd := cmd + ' /XLABEL=' + Combobox3.Text
+    else
+      Cmd := cmd + ' ' + Combobox3.Text;
   if Combobox4.ItemIndex <> -1 then Cmd := cmd + ' ' + Combobox4.Text;
   if Combobox5.ItemIndex <> -1 then
      if not (CmdName = 'CIPLOT') then
@@ -354,7 +351,6 @@ begin
   close;
 end;
 
-
 procedure TGraphDlg.ResetBtnClick(Sender: TObject);
 var
   i: integer;
@@ -379,11 +375,35 @@ begin
 
   SPCtest.checked := False;
 
-  if pos(CmdName,'PCHART RUNCHART ICHART XCHART') > 0 then
+   if pos(CmdName,'GCHART') > 0 then
         begin
-          Combobox1.text := 'Time variable';
-          Combobox2.text := 'Count';
-          Combobox3.text := 'Total';
+          Combobox1.text := 'Date/Sequence #';
+          SPCtest.checked := True;
+        end
+   else  if pos(CmdName,'RUNCHART ICHART') > 0 then
+        begin
+          Combobox2.text := 'X axis (optional)';
+          Combobox1.text := 'Measurement';
+          SPCtest.checked := True;
+        end
+   else  if pos(CmdName,'CCHART') > 0 then
+        begin
+          Combobox2.text := 'X axis (optional)';
+          Combobox1.text := 'Count';
+          SPCtest.checked := True;
+        end
+   else if pos(CmdName,'UCHART PCHART') > 0 then
+        begin
+          Combobox3.text := 'X axis (optional)';
+          Combobox1.text := 'Count';
+          Combobox2.text := 'Volume/Total';
+          SPCtest.checked := True;
+        end
+   else if pos(CmdName,'XBAR') > 0 then
+        begin
+          Combobox3.text := 'X axis (optional)';
+          Combobox1.text := 'Measurement';
+          Combobox2.text := 'Time/Sequence';
           SPCtest.checked := True;
         end
     else if CmdName = 'EPICURVE' then

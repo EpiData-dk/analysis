@@ -261,7 +261,7 @@ function SetGlobalParserError(pOnError: TOnParseError):boolean;
 
 implementation
 
-uses uDateUtils, Uformats, cStrings, UVectorVar, Udos;
+uses uDateUtils, Uformats, cStrings, UVectorVar, Udos, GeneralUtils;
 
 
 var
@@ -1519,7 +1519,7 @@ begin
   Operator:= aOperator
 end;
 
-function TMathExpression.AsFloat: extended;
+function TMathExpression.AsFloat: EpiFloat;
 begin
 {$IFDEF HANDLEMISSING}
   if MissingParam then
@@ -1530,7 +1530,12 @@ begin
   {$ENDIF }
   try
     case Operator of
-      opAbs: Result:= Abs(Param[0].AsFloat);
+      opRound:
+        if ParameterCount = 2 then
+          Result := R2(Param[0].AsFloat, -(Abs(Param[1].AsInteger)))
+        else
+          Result := R2(Param[0].AsFloat, 0);
+      opAbs: Result:= Abs(Param[0].AsFloat);                                         
       opArcTan: Result:= ArcTan(Param[0].AsFloat);
       opCos: Result:= Cos(Param[0].AsFloat);
       opExpf: Result:= Exp(Param[0].AsFloat);
@@ -1580,7 +1585,6 @@ begin
 try
   case Operator of
     opTrunc: Result:= Trunc(Param[0].AsFloat);
-    opRound: Result:= Round(Param[0].AsFloat);
     opAbs: Result:= Abs(Param[0].AsInteger);
     opRAN :Result:= EpiRAN(Param[0].AsInteger);
     opDay : result:=DatePart(Param[0].AsInteger,1);
@@ -1642,13 +1646,8 @@ begin
      begin
       Result:= (ParameterCount = 1);
     end;
-    opTrunc, opRound, opArcTan, opCos, opExp, opFrac, opInt,
-    opLn, opSin, opSqr, opSqrt, opAbs,opLog:
-    begin
-      Result:= (ParameterCount = 1) and
-           Param[0].CanReadAs(ttFloat);
-    end;
-    opRAN,opRND:
+    opTrunc, {opRound,} opArcTan, opCos, opExp, opFrac, opInt,
+    opLn, opSin, opSqr, opSqrt, opAbs, opLog, opRAN,opRND:
     begin
       Result:= (ParameterCount = 1) and
            Param[0].CanReadAs(ttFloat);
@@ -1681,7 +1680,7 @@ begin
       if ParameterCount=3 then
          result:=result and Param[2].CanReadAs(ttFloat);
     end;
-    opPower, opRanG:
+    opPower, opRanG, oplre:
     begin
       Result:= (ParameterCount = 2) and
            Param[0].CanReadAs(ttFloat) and
@@ -1694,11 +1693,12 @@ begin
            Param[1].CanReadAs(ttFloat)and
            Param[2].CanReadAs(ttFloat);
     end;
-    oplre:
+    opRound:
     begin
-      Result:= (ParameterCount = 2) and
-           Param[0].CanReadAs(ttFloat) and
-           Param[1].CanReadAs(ttFloat);
+      Result:= (ParameterCount in [1,2]) and
+           Param[0].CanReadAs(ttFloat);
+      if ParameterCount = 2 then
+        result := result and Param[1].CanReadAs(ttInteger);
     end;
     opMV:
     begin
@@ -1720,7 +1720,7 @@ end;
 function TMathExpression.ExprType: TExprType;
 begin
   case Operator of
-    opTrunc, opRound,opRAN,opDay,opMonth,opYear,OpWeekNum,opDayWeek,opSpan,opMv: Result:= ttInteger;
+    opTrunc, {opRound,}opRAN,opDay,opMonth,opYear,OpWeekNum,opDayWeek,opSpan,opMv: Result:= ttInteger;
     opDate, opDMY,opToday: Result:= ttDate;
     opSameNumber: Result:=ttBoolean;
   else

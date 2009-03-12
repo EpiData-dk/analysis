@@ -101,7 +101,7 @@ opCloseHelp=opUserDefined	+91;
 opPrintViewer=opUserDefined	+92;
 opLabelValue=opUserDefined	+93;
 opMissingValue=opUserDefined	+94;
-opXChart=opUserDefined		+95;
+opGChart=opUserDefined		+95;     
 opEval = opUserDefined 		+96;
 opEpiCurve = opUserDefined 	+97;
 opCDFPlot = opUserDefined 	+98;
@@ -114,49 +114,54 @@ opHelpView = opUserDefined + 104;
 opCIPlot =  opUserDefined + 105;
 opLifeTable =  opUserDefined + 106;
 opShortLifeTable =  opUserDefined + 107;
+opXBar = opUserDefined + 108;
+opUChart = opUserDefined + 109;
+opCChart = opUserDefined + 110;
+opGraphDialog = opUserDefined + 111;
 
  // last command always for token list below to go from opRead..OpClose:
-opCLOSE = opUserDefined		+108;
+opCLOSE = opUserDefined		+112;
 
  const
- EpiGraphicCmd=[opPie, opBar, opHistogram, opLine, opScatter, opPchart, opIchart, opBox, opBoxPlot, opPareto, opEpiCurve,
-                opXchart, opCDFPlot,opdotplot, opCIplot];
+  EpiGraphicCmd=[opPie, opBar, opHistogram, opLine, opScatter, opPchart, opIchart, opBox, opBoxPlot, opPareto, opEpiCurve,
+                 opCDFPlot,opdotplot, opCIplot, opXBar];
 
- EpiClearResultCmds= [{opRead,opEXECUTE,opRETURN,opCLOSE,}opFREQ,opTABLES,
-                     opMEANS,opDescribe, opREGRESS,opShortSTABLES,opSTABLES, opCorrelate{,opCount},
-                     opShortMeans, opShortCorrelate, opShortDescribe,
-                     opKWallis ,opShortTables, opdir, opIchart, opPchart, opRunchart,
-                     opEpiCurve,opCDFPlot,opDotPlot,opTableDialog, opLifeTable, opShortLifeTable];
+  EpiClearResultCmds= [opFREQ,opTABLES,
+                       opMEANS,opDescribe, opREGRESS,opShortSTABLES,opSTABLES, opCorrelate{,opCount},
+                       opShortMeans, opShortCorrelate, opShortDescribe,
+                       opKWallis ,opShortTables, opdir, opIchart, opPchart, opRunchart, opXBar,
+                       opEpiCurve,opCDFPlot,opDotPlot,opTableDialog, opLifeTable, opShortLifeTable];
 
- EpiShowSelectCmds= [opDESCRIBE, opSORT, opFREQ, opTABLES, opMEANS, opREGRESS, opShortSTABles, opSTABLES, opList,
-                    opCount, opPie, opBar, opHistogram, opLine, opGenerate, opCorrelate, opKWallis, opShortTABLES, opScatter, opPCHART,
-                    opIchart, opBox, opBoxPlot, opRunChart, opSaveData, opShortDescribe, opShortHistogram, opShortMeans, opShortScatter, opShortCorrelate,
-                    opAggregate, opShortAggregate, opXChart, opEpiCurve, opCDFPlot, opDotPlot, opPareto, opCIPlot, opLifeTable, opShortLifeTable];
+  EpiShowSelectCmds= [opDESCRIBE, opSORT, opFREQ, opTABLES, opMEANS, opREGRESS, opShortSTABles, opSTABLES, opList, opXBar,
+                      opCount, opPie, opBar, opHistogram, opLine, opGenerate, opCorrelate, opKWallis, opShortTABLES, opScatter, opPCHART,
+                      opIchart, opBox, opBoxPlot, opRunChart, opSaveData, opShortDescribe, opShortHistogram, opShortMeans, opShortScatter, opShortCorrelate,
+                      opAggregate, opShortAggregate, opEpiCurve, opCDFPlot, opDotPlot, opPareto, opCIPlot, opLifeTable, opShortLifeTable];
 
- GlobaloptSyntax='NOECHO';
- MaxStringSize=80;
- SPC_OPTIONS =   ' B T NEGLCL EXP EXV EXZ NT ';
- GRAPH_OPTIONS = ' BW BY TEXT EDIT XLABEL N TI SUB SAVE LEGEND NOLEGEND FRAME HGRID VGRID XHIDE YHIDE' +
+  GlobaloptSyntax='NOECHO';
+  MaxStringSize=  80;
+  SPC_OPTIONS =   ' F B SL SZ TLIMIT T T1 T2 T3 T4 T5 NEGLCL EXP EXV EXZ NT NOINF NOL POINT ';
+  GRAPH_OPTIONS = ' BW BY TEXT EDIT XLABEL N TI SUB SAVE LEGEND NOLEGEND FRAME HGRID VGRID XHIDE YHIDE' +
                  ' XINV YINV XLOG YLOG NOXTICK NOYTICK XMIN XMAX YMIN YMAX XTEXT YTEXT XLINE YLINE' +
-                 ' XLINED YLINED YVALUE XINC YINC X90 X45 XA NT FN REPLACE SIZEX SIZEY NG POSYTEXT';
- SORT_OPTIONS =  ' SA SR SC SD SLA SLD SRAT SCAT SRDT SCDT SRD SCD SRA SCA ';
- STAT_OPTIONS =  ' T GAM EX CI CT O RR AR OA OBS ADV EXP ';
- PCT_OPTIONS =   ' PCT R TP C RP CP CUM ';
- FMT_OPTIONS =   ' E0 E1 E2 E3 E4 D0 D1 D2 D3 ';
- Gnrl_Options =  ' Q W V VL VN VNL ';
- AGGR_STAT_OPTIONS =  ' MEAN MCI SD SV MEDIAN SUM MIN MAX P5 P10 P25 P50 P75 P90 P95 P99 ISR IQR IDR DES MV ';
+                 ' XLINED YLINED YVALUE XINC YINC X90 X45 XA NT FN REPLACE SIZEX SIZEY NG POSYTEXT' +
+                 ' NOXLABEL NOYLABEL';
+  SORT_OPTIONS =  ' SA SR SC SD SLA SLD SRAT SCAT SRDT SCDT SRD SCD SRA SCA ';
+  STAT_OPTIONS =  ' T GAM EX CI CT O RR AR OA OBS ADV EXP ';
+  PCT_OPTIONS =   ' PCT R TP C RP CP CUM ';
+  FMT_OPTIONS =   ' E0 E1 E2 E3 E4 D0 D1 D2 D3 ';
+  Gnrl_Options =  ' Q W V VL VN VNL ';
+  AGGR_STAT_OPTIONS =  ' MEAN MCI SD SV MEDIAN SUM MIN MAX P5 P10 P25 P50 P75 P90 P95 P99 ISR IQR IDR DES MV ';
 
- Type
+  Type
 
-TSMAnaTokenizer=class(TSMExpTokenizer)
-  private
-    procedure GetTokenClass(var aToken: TSMToken);override;
-protected
-   procedure ppInitKeywords;override;
-public
-   function GetTokenName(index:TSMTokenType): string;override;
-   procedure Initialize; override;
-end;
+  TSMAnaTokenizer=class(TSMExpTokenizer)
+    private
+      procedure GetTokenClass(var aToken: TSMToken);override;
+  protected
+     procedure ppInitKeywords;override;
+  public
+     function GetTokenName(index:TSMTokenType): string;override;
+     procedure Initialize; override;
+  end;
 
 implementation
 //modify the following array to add more keyword
@@ -179,8 +184,9 @@ TokensList: array[opRead..opClose] of String =(
 {83-87}         'EXIT', 'SHOW', 'CLH', 'VERSION', 'MKDIR',
 {88-90}         'AGGREGATE', 'AGG', 'LABEL',
 {91-95}         'LABELDATA', 'CLOSEHELP', 'PRINTVIEWER', 'LABELVALUE', 'MISSINGVALUE',
-{96-100}        'XCHART', 'EVAL', 'EPICURVE', 'CDFPLOT','DOTPLOT','PARETO','TABDIALOG',
-                'MERGE','SAVEINISCREEN','HELPVIEW', 'CIPLOT', 'LIFETABLE', 'LTAB',
+{96-100}        'GCHART', 'EVAL', 'EPICURVE', 'CDFPLOT','DOTPLOT','PARETO','TABDIALOG',
+                'MERGE','SAVEINISCREEN','HELPVIEW', 'CIPLOT', 'LIFETABLE', 'LTAB', 'XBAR',
+                'UCHART', 'CCHART', 'GRAPHDIALOG',
 
                 // last command always for token list below to go from opRead..OpClose:
                 'CLOSE');

@@ -3,7 +3,7 @@ unit GeneralUtils;
 interface
 
 uses
-  SysUtils, Windows, Classes, UEpiDataTypes, AnsDatatypes;
+  SysUtils, Windows, Classes, UEpiDataTypes, AnsDatatypes, Math;
 
 type
   TString = class(TObject)
@@ -16,11 +16,12 @@ type
 
   procedure SplitString(const source: string; List: TStrings; const Splitters: TCharset = [' ']);
   function PercentileIndex(const Size: integer; const Percentile: Double; var Factor: EpiFloat): Integer;
+  function R2(const AValue : extended ; const ADigit : TRoundToRange):extended ;
+  function PreInc(var i: integer): integer;
+  function PostInc(var i: integer): integer; 
 
 implementation
 
-Uses
-  Math;
 
 {******************************
  *   TString
@@ -30,6 +31,18 @@ constructor TString.Create(const AStr: String) ;
 begin
    inherited Create;
    FStr := AStr;
+end;
+
+function R2(const AValue : extended ; const ADigit : TRoundToRange):extended ;
+var
+  X : extended;
+  i : integer ;
+begin
+  X := 1.0 ;
+  for i := 1 to Abs(ADigit) do X := X * 10 ;
+  if ADigit<0
+    then Result := Round(AValue * X) / X
+    else Result := Round(AValue / X) * X;
 end;
 
 procedure SplitString(const source: string; list: TStrings; const Splitters: TCharset = [' ']);
@@ -96,6 +109,18 @@ begin
   Result := IPos;
   if FPos <> IPos then
     Factor := (FPos - IPos);
+end;
+
+function PreInc(var i: integer): integer;
+begin
+  inc(i);
+  result := i;
+end;
+
+function PostInc(var i: integer): integer;
+begin
+  result := i;
+  inc(i);
 end;
 
 end.

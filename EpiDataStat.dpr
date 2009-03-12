@@ -71,7 +71,7 @@ uses
   UTables in 'AnalysisUnits\UTables.pas',
   UDebug in 'UDebug.pas',
   UTableStat in 'AnalysisUnits\UTableStat.pas',
-  UGraph in 'AnalysisUnits\UGraph.pas' {GraphForm},
+  UGraph in 'Graph\UGraph.pas' {GraphForm},
   pngimage in 'png\pngimage.pas',
   EpiInfoSTATS in 'analysisunits\EpiInfoSTATS.PAS',
   EpiDataFile in 'fileIO\EpiDataFile.pas',
@@ -93,10 +93,22 @@ uses
   UMerge in 'AnalysisUnits\UMerge.pas',
   MRUCombo in 'Package\MRUCombo.pas',
   uhtmlutils in 'uhtmlutils.pas',
-  Ubrowse2 in 'DataBrowser\Ubrowse2.pas' {FBrowse2},
-  UEpiGrid in 'DataBrowser\UEpiGrid.pas',
   UpdateBrowse in 'DataBrowser\UpdateBrowse.pas' {UpdateForm},
-  ULifeTables in 'AnalysisUnits\ULifeTables.pas';
+  ULifeTables in 'AnalysisUnits\ULifeTables.pas',
+  UChartArray in 'Graph\UChartArray.pas',
+  USPCUtils in 'Graph\SPC\USPCUtils.pas',
+  UIChart in 'Graph\SPC\UIChart.pas',
+  UPChart in 'Graph\SPC\UPChart.pas',
+  UBaseChart in 'Graph\UBaseChart.pas',
+  UGChart in 'Graph\SPC\UGChart.pas',
+  UUChart in 'Graph\SPC\UUChart.pas',
+  UGraphDialog in 'Dialogs\UGraphDialog.pas' {GraphDialog},
+  USPCBase in 'Graph\SPC\USPCBase.pas',
+  UGraphUtils in 'Graph\UGraphUtils.pas',
+  UCChart in 'Graph\SPC\UCChart.pas',
+  URunChart in 'Graph\SPC\URunChart.pas',
+  UXBarS in 'Graph\SPC\UXBarS.pas',
+  UXBarR in 'Graph\SPC\UXBarR.pas';
 
 {$R *.RES}
 
@@ -114,17 +126,15 @@ begin
              +#13+  extractfilepath(application.exename) + 'preventdouble.ea'
              +#13 +#13 + ' Unfortunately it might be necessary to reboot - if the computer hangs'
              ,mtError,[mbOk], 0);
-    exit;
-  end
-  else
-  begin
-	  Application.Initialize;
-	  Application.Title := 'EpiData Analysis';
-	  Application.HelpFile := 'START.HTM';
-	  Application.CreateForm(TaMainForm, aMainForm);
+    SetForegroundWindow(MainWindow);
+    Exit;
+  end;
+  Application.Initialize;
+  Application.Title := 'EpiData Analysis';
+  Application.HelpFile := 'START.HTM';
+  Application.CreateForm(TaMainForm, aMainForm);
   Application.CreateForm(TPasswordForm, PasswordForm);
   Application.Run;
-  end;
 end.
 
 

@@ -109,7 +109,7 @@ type
     function NotifyInterface(pMsg: cardinal; pWparam, pLParam: integer): integer;
     function AddResult(const pName: string; pDataType: integer; Val: Variant; pLength, pDecimals: integer): boolean;
     function Sendoutput: boolean;
-    function SetOptionValue(const op, val: string; Updating: boolean = false): string;
+    function SetOptionValue(op, val: string; Updating: boolean = false): string;
     function GetOptionValue(const op: string;  var opt: TEpiOption): boolean;
     function CheckDataOpen(attempt:boolean=true;cmdid : integer=1): boolean;
     function runInitFile(const fn: string=''): boolean;
@@ -117,6 +117,7 @@ type
     function AddshortCut(const key, cmd: string): boolean;
     function ExecShortCut(sc: TShortCut): boolean;
     function Quit(CommandID: Cardinal): boolean;
+    procedure HandleShutdown();
     function OpenFile(fn: string; cmd: TCommand): boolean;
     function WriteFile(fn: string;Varnames: TStrings): boolean;
     function SaveDataFile(fn: string; VarNames: Tstrings; df: TEpiDataframe;cmd: TCommand): boolean;
@@ -130,6 +131,7 @@ type
     function RunCommndsList(const script: string): boolean;
     function RunPGMFile(const fn: string): boolean;
     procedure RunCommandLine(const cmd: string);
+    function ShowGraphDialog(cmd: TCommand): boolean;
     function AppendFile(fn:string; cmd: TCommand): boolean;
     function Merge(Filename: string; Varnames: TStrings; Cmd: TCommand): boolean;
     function ShowTextFile(const fn: string; cmd: TCommand): boolean;
@@ -162,9 +164,15 @@ type
     function Pie(VarNames: TStrings; cmd: TCommand): boolean;
     function BoxPlot(VarNames: TStrings; Cmd: TCommand): boolean;
     function Scatter(VarNames: TStrings; cmd: TCommand): boolean;
+    { SPC Graphs and Functionality }
+    procedure SPCCommon(var df: TEpiDataFrame; var Varnames: TStrings; cmd: TCommand; VarCount: Integer);
+    function CChart(Varnames: TStrings; cmd: TCommand): boolean;
+    function UChart(Varnames: TStrings; cmd: TCommand): boolean;
+    function GChart(Varnames: TStrings; cmd: TCommand): boolean;
+    function XBar(Varnames: TStrings; cmd: TCommand): boolean;
     function IChart(Varnames: TStrings; cmd: TCommand): boolean;
-    function XChart(Varnames: TStrings; cmd: TCommand): boolean;
     function PChart(Varnames: TStrings; cmd: TCommand): boolean;
+    { End of SPC }
     function EpiCurve(Varnames: TStrings; cmd: TCommand): boolean;
     function CIPlot(Varnames: TStrings; cmd: TCommand): boolean;
     function CumDistPlot(Varnames: TStrings; cmd: TCommand): boolean;
@@ -179,8 +187,8 @@ type
     function PreTables(Varnames: TStrings; cmd : Tcommand): boolean;
     function ErasePng(cmd: TCommand): boolean;
     function Means(Varnames: TStrings; cmd: TCommand): boolean;
-    function regress(Varnames: TStrings): boolean;
-    function Correlate(Varnames: TStrings): boolean;
+    function regress(Varnames: TStrings; cmd: TCommand): boolean;
+    function Correlate(Varnames: TStrings; cmd: TCommand): boolean;
     function KWallis(Varnames: TStrings; cmd: TCommand): boolean;
     function Sort(VarNames : TStrings):boolean;
     procedure Memory;
@@ -247,9 +255,9 @@ var
 
 implementation
 
-uses menus,SMUtils,{UFrameDS,{ubrowse,}ubrowse2,uDateUtils,UVectorVar,UFileDir,UOSUtils,UStatfunctions,
+uses menus,SMUtils,uDateUtils,UVectorVar,UFileDir,UOSUtils,UStatfunctions,
      EpiInfoSTATS, Cstrings, cFileUtils, EpdServices, InvokeRegistry, Rio,
-     SOAPHTTPClient, UDebug, UGraph, UpdateBrowse,
+     SOAPHTTPClient, UDebug, UGraph, UpdateBrowse, UGraphDialog,
      // Seperated analysis units: (Added june 2004, Torsten Christiansen)
      UTables, UContinous, UAggregate, Umain, uabout, UVariables,
      Udocument, ULinearRegression, UDos, Math, StrUtils, Editor, UHelp,
@@ -268,7 +276,6 @@ function StartEngine:TDM;
 begin
   if dm = nil then
      dm:= TDM.Create(application);
-//  dm.Translator:=NIL;
   result:=dm;
 end;
 
@@ -285,7 +292,7 @@ begin
         else aMainForm.CmdEdit.History.Insert(aMainForm.CmdEdit.History.Count-1,'Read "' + dataframe.FileName + '"');
   end;
   if not Assigned(dataframe) then
-    dm.info('No data', [], 103005)
+    dm.info('No data', [], 10000)
   else
     result:=True
 end;
@@ -299,12 +306,12 @@ begin
   else
     varco :=Varnames.count;
   if (Min or Max) = 0 then
-    if varco> 0 then error('Variables are not allowed', [], 103001);
+    if varco> 0 then error('Variables are not allowed', [], 23001);
   if (Min = Max) then
-    if varco <> Min then error('%d variable(s) expected', [Min], 103002);
-  if varco < Min then error('%d or more variables are expected',[Min], 103003);
+    if varco <> Min then error('%d variable(s) expected', [Min], 23002);
+  if varco < Min then error('%d or more variables are expected',[Min], 23003);
   if Max <> 0 then
-    if varco > Max then error('Maximum %d variables are allowed',[max], 103004);
+    if varco > Max then error('Maximum %d variables are allowed',[max], 23004);
 end;
 
 function TDM.AddResult(const pName: string;pDataType:integer; Val:Variant; pLength, pDecimals: integer):boolean;
@@ -365,12 +372,12 @@ begin
          if (cmd.CommandId in EpiShowSelectCmds) then
            begin
              if length(s) > 0 then s := s + ' and ';
-             s := s + '(' + Executor.LastSelect + ')'; // {Info('IF applied (%s)', [Executor.LastSelect], 203047);}
+             s := s + '(' + Executor.LastSelect + ')';
            end
        end;
      end;
      If ((cmd.CommandId in EpiShowSelectCmds) and (length(s) > 0)) then
-       Info('Select: %s', [s], 203046);
+       Info('Select: %s', [s], 23094);
    end;
 end;
 
@@ -383,7 +390,6 @@ begin
  end;
   sysutils.DecimalSeparator := EpiDecSeparator;
   sysutils.DateSeparator  := EpiDateSeparator;
-
   SaveOuput:=false;
 end;
 
@@ -392,12 +398,10 @@ var
   df: TEpiDataFrame;
   s: Tstrings;
 begin
-//  s := TStringList.Create;	{ construct the list object }
   s := nil;
   try    { use the string list }
-       if not CheckDataOpen() then exit; //CheckDataOpen();
+    if not CheckDataOpen() then exit; //CheckDataOpen();
     df := dataframe.prepareDataframe(s, nil);
-//    FreeAndNil(df);
     if cmd.ParamByName['Q'] = nil then
       PrintResult('Count :  '+ inttostr(df.SelectedRowCount));
     AddResult('$count',EpiTyInteger,df.SelectedRowCount,0,0);
@@ -406,25 +410,6 @@ begin
     FreeAndNil(df);
   end;
 end;
-
-{function TDM.Browse: boolean;
-var
-  ds : TSMFrameDataSet;
-begin
-  checkdataopen();
-  ds :=nil;
-try
-  ds := TSMFrameDataSet.create(nil);
-  ds.DataFrame  := dataframe;
-  ds.readonly:=true;
-  ds.Active :=true;
- // showBrowse(ds);
-    dataFrame.RestoreSelector;
-finally
-  ds.free;
-end;
-end;
-}
 
 {**************************************
   Should only be called when refreshing
@@ -467,7 +452,7 @@ begin
     if (dataframe.SelectedRowCount = 0) then
     begin
       OUpdate.CloseBrowse();
-      dm.error('No data', [], 103005);
+      dm.error('No data', [], 10000);
     end;
     df := dataframe.prepareDataframe(varnames, nil);
     Vectorlist:= df.GetVectorListByName(varnames);
@@ -502,24 +487,24 @@ begin
   try
     VectorList := nil;
     if (DataFrame.SelectorBacked) or (DataFrame.RowCount <> DataFrame.SelectedRowCount) then
-      dm.Error('Select/If not allowed with update', [], 103052);
+      dm.Error('Select/If not allowed with update', [], 23048);
     if Assigned(Cmd.ParamByName['ID']) then
     begin
       VectorID := Cmd.ParamByName['ID'].AsString;
       if not Assigned(Dataframe.FindVector(VectorID)) then
       begin
-        dm.info('Field %s not found. Using "recnumber" as ID label.', [VectorID], 203045);
+        dm.info('Field %s not found. Using "recnumber" as ID label.', [VectorID], 23093);
         VectorID := 'recnumber';
       end;
     end else
       VectorID := 'recnumber';
     if VectorID = 'recnumber' then
-      dm.Info('Recnumber depends on sorting', [], 203002);
+      dm.Info('Recnumber depends on sorting', [], 23050);
     Vectorlist := dataframe.GetVectorListByName(varnames);
     // Release the form if showing as browse window.
 
     OUpdate.CreateUpdate(dataframe, vectorlist, vectorid);
-    dm.Info('Savedata to keep changes.', [], 203001);
+    dm.Info('Savedata to keep changes.', [], 23049);
   finally
     if Assigned(VectorList) then FreeAndNil(VectorList);
   end;
@@ -563,22 +548,26 @@ begin
   begin
     result := foptions.Find(op, idx);
     if not result then
-       error('%s not supported', [op], 103007);
+    begin
+      if GetVarName(AnsiUpperCase(op), 1) = 'OPTION' then
+        error('%s not defined', [op], 23097)
+      else
+        error('%s not supported', [op], 23005);
+    end;
     opt := TEpioption(options.objects[idx]);
   end;
 end;
 
-
 function TDM.handleSetKey(const op,val:string): boolean;
 var
- cmd : string;
+  cmd : string;
 begin
- result:=false;
- cmd := Sysutils.AnsiUpperCase(getvarname(op,1));
- if cmd <> 'KEY' then exit;
- cmd:= Sysutils.AnsiUpperCase(Sysutils.trim(copy(op,4,Maxint)));
- AddShortcut(cmd,val);
- result:=true;
+  result:=false;
+  cmd := Sysutils.AnsiUpperCase(getvarname(op,1));
+  if cmd <> 'KEY' then exit;
+  cmd:= Sysutils.AnsiUpperCase(Sysutils.trim(copy(op,4,Maxint)));
+  AddShortcut(cmd,val);
+  result:=true;
 end;
 
 function TDM.SetAllEchoSwitches(value:boolean): boolean;
@@ -679,7 +668,7 @@ begin
 end;
 
 
-function TDM.SetOptionValue(const op,val:string; Updating: boolean = false): string;
+function TDM.SetOptionValue(op,val:string; Updating: boolean = false): string;
 var
  idx,cod : integer;
  nval: EpiFloat;
@@ -688,6 +677,16 @@ var
 begin
   result:='';
   if handleSetKey(op,val) then exit;
+
+  op := AnsiUpperCase(op);
+
+  // Handle special "SET OPTION <COMMAND>" type set option.
+  if AnsiUpperCase(GetVarName(op, 1)) = 'OPTION' then
+  begin
+    if not fOptions.Find(op, idx) then
+      fOptions.AddObject(op, TEpiOption.Create(op, '', EpiTyString));
+  end;
+
   if not GetOptionValue(op,opt) then exit;
   case opt.oType of
   EpiTyBoolean:
@@ -696,13 +695,13 @@ begin
        (Sysutils.AnsiUpperCase(val)='ON') then
        opt.Value :=val
     else
-       error ('Invalid option value %s', [val], 103008);
+       error ('Invalid option value %s', [val], 23006);
   end;
   EpiTyInteger, EpiTyFloat:
   begin
     system.val(val,nval,cod);
     if cod> 0 then
-       error ('Invalid option value %s', [val], 103008);
+       error ('Invalid option value %s', [val], 23006);
     opt.value:=val;
   end;
   EpiTyString,EpiTyUppercase:
@@ -714,7 +713,7 @@ begin
   if not updating then
   begin
     UpdateSettings(op,val);
-    info('%s = %s', [op,val], 201002);
+    info('%s = %s', [op,val], 21006);
   end;
 end;
 
@@ -800,7 +799,7 @@ begin
       if cancelled then
       begin
         cancelled :=false;
-        info('Cancelled by user', [], 203003);
+        info('Cancelled by user', [], 23051);
         break;
       end;
       if (not df.Selected[i]) then continue;
@@ -857,10 +856,8 @@ end;
 function TDM.CloseFile: boolean;
 begin
   if (Assigned(fdataframe)) and (fdataframe.Modified) then
-   dm.info('Closing data - Save history to recreate data with changes', [], 203004);
+   dm.info('Closing data - Save history to recreate data with changes', [], 23052);
   Result:= InternalCloseFile(fDataFrame);
-  OBrowse.CloseBrowse();
-  OUpdate.CloseBrowse();
   // TODO : should remove resultvariable with name of file created on read of file:
   //  dm.AddResult()
 end;
@@ -869,15 +866,21 @@ function TDM.InternalCloseFile(var aDataFrame: TepiDataframe): boolean;
 var
   msg : TMessage;
 begin
+  // Disable buttons on main form.
   Enable(not true);
+
+  // Shut down browseform.
+  OUpdate.CloseBrowse();
+
   Result:=true;
-  if adataframe=nil then
-    aDataframe:=dataframe;
-  if adataframe=nil then exit;
+  if adataframe = nil then
+    aDataframe := dataframe;
+  if adataframe = nil then
+    exit;
   DeinitDataFrameVars(adataframe);
   FreeAndNil(aDataFrame);
   NotifyInterface(EpiCloseFile,0,0);
-  info('File closed', [], 203005);
+  info('File closed', [], 23053);
 end;
 
 
@@ -897,14 +900,14 @@ var
  s,outs    : string;
 begin
   if not fileexists(fn)
-    then dm.info('File %s not found', [fn], 103013)
+    then dm.info('File %s not found', [fn], 23011)
   else
   begin
     AssignFile( f, fn );
     Reset(f);
     readln( f, outs);        (*EpiData *)
     if (pos('<html',outs) > 0) or (pos('<!DOCTYPE',AnsiUppercase(copy(outs,1,20))) > 0) or (pos('<head>',outs) > 0)  then
-     error('Complete html pages not allowed with show. Remove HTML header or : <font class=info>view %s </font>', [fn], 103009);
+     error('Complete html pages not allowed with show. Remove HTML header or : <font class=info>view %s </font>', [fn], 23007);
     while not eof(f) do
     begin
       readln( f, s);        (*EpiData *)
@@ -962,168 +965,173 @@ end;
 
 function TDM.doPGMFileAction(fn:string; cmd: TCommand):boolean;
 var
- i,d, co, totp, tota, tote, totl: integer;
- f : TEpiInfoDataset;
- t: DWord;
- currdir : string;
- testrec: TTestRecordArray;
- tab : TStatTable;
- totdp: EpiFloat;
- opt: TEpiOption;
- action: word;
-begin
-try
- if cmd = nil then
-   action := opSavePgm
- else
-   action := cmd.CommandID;
- case action of
- opSavePgm:
-   begin
-    if fn='' then
-    begin
-      sd.Filter := 'Program file|*.pgm|All|*.*';
-      sd.FilterIndex := 1;
-      sd.DefaultExt :='.pgm';
-      if Dm.GetOptionValue('DEFAULT CURRENT DIR', opt) and (AnsiUpperCase(opt.Value) = 'ON') then
-        sd.InitialDir := GetCurrentDir
-      else
-        sd.InitialDir := '';
-      if not sd.Execute then exit;
-    end;
-    if fn='' then
-      fn := sd.filename;
-    if fn='' then
-     error('Missing file name', [], 101004);
-    fn:=AdjustFileExt(fn,'.pgm');
-    NotifyInterface(EpiSavePGM,integer(pchar(fn)),0);
-    info('File name: %s saved', [fn], 203006);
-   end;
- opshow: ShowTextFile(fn, cmd);
- opRun,opRunTest:
-   begin
-     if fn='' then
-     begin
-      od.FileName :='';
-       if Dm.GetOptionValue('DEFAULT CURRENT DIR', opt) and (AnsiUpperCase(opt.Value) = 'ON') then
-         od.InitialDir := GetCurrentDir
-       else
-         od.InitialDir := '';
-      od.Filter:= 'Program file|*.pgm|All|*.*';
-      od.FilterIndex := 1;
-      if not od.Execute then exit;
-      fn := od.filename;
-      SetCurrentDir(ExtractFileDir(fn)); //added build 118 - when remowing agopendialog
-     end;
-     if fn='' then
-       error('Missing file name', [], 101004);
-    case action of
-    opRun:
-      begin
-        RunPGMFile(fn);
-  //      if GetOptionValue('OUTPUT FOLDER',opt) then
-  //        SetCurrentDir(opt.Value);          // removed again due to problems  Oct 3rd 05 JL
-      end;
-    opRunTest:
-      begin
-        dm.cls;
-        dm.UpdateSettings('ECHO', 'OFF');
-        tota := 0;
-        totp := 0;
-        tote := 0;
-        totdp := 2000;
-        dm.AddResult('$assert_error', epityinteger, 0, 3, 0);
-        dm.AddResult('$assert', epityinteger, 0, 3, 0);
-        dm.AddResult('$dp', EpiTyFloat, 2000, 3, 9);
-        dm.AddResult('$dpdif', epityfloat,1E-15, 3, 9);
-        //locate curr dir
-        CurrDir := getCurrentDir();
-        try
-          RunTestPGMFile(fn, testrec, cmd);
-        finally
-          ODos.CD(CurrDir);
-        end;
-        //return to previous curr dir
-        tab:=OutputList.NewTable(7,high(testrec)+4);
-        tab.TableType := sttSystem;
-        tab.Caption := '<h3>' + GetBuildInfoAsString + ' ' + DateToStr(Date) + ' ' + TimeTostr(Time) +
-                       '</h3><b>Summary table of pgm files:</b> ' + DateToStr(Date) + ' ' + TimeTostr(Time) + '<hr>';
-        tab.cell[1,1]:='File' ;
-        tab.cell[2,1]:='Asserts<br>Planned';
-        tab.cell[3,1]:='<br>Found';
-        tab.cell[4,1]:='<br>Errors';
-        tab.Cell[5,1]:='Precision<br>digits';
-        tab.cell[6,1]:='<br>abs.&nbsp;diff';
-        tab.cell[7,1]:='Comments' ;
-        for i := 0 to high(testrec) do
-        begin
-          tab.cell[1,i+2]:= testrec[i].FileName;
-          tab.cell[2,i+2]:= trim(format('%d',[testrec[i].Planned]));
-          tab.cell[3,i+2]:= trim(format('%d',[testrec[i].Asserts]));
-          tab.cell[4,i+2]:= trim(format('%d',[testrec[i].Errors]));
-          if (testrec[i].DigitPrecision > 0) and (testrec[i].DigitPrecision < 2000) and (dm.Executor.FindVar('$dp') <> nil)   then
-          begin
-            if testrec[i].DigitPrecision = 15 then
-              begin
-                tab.Cell[5,i+2] := '15';
-                tab.cell[6,i+2] := '0.0';
-              end
-            else
-              begin
-              d := 14;
-              while d > -5 do  // find precision
-              begin
-              if (testrec[i].dif < power(10,-d)) then
-                  begin
-                    if d > 0
-                      then tab.Cell[5,i+2] := format('&lt; 10<sup>-%d</sup>',[d])
-                      else tab.Cell[5,i+2] := format('%6.0f',[testrec[i].dif]);
-                  d := -6;
-                  end
-              else
-                  dec(d);
-              end;
-              tab.cell[6,i+2] := tab.Cell[5,i+2];
-              tab.Cell[5,i+2] := trim(format('%5.0f',[testrec[i].DigitPrecision]));
-             end;
-          end else begin
-            tab.Cell[5,i+2]:= '';
-            tab.Cell[6,i+2]:= '';
-          end;
-          tab.cell[7,i+2]:=trim(format('%s',[testrec[i].Comment]));
-          totp := totp + testrec[i].Planned;
-          tota := tota + testrec[i].Asserts;
-          if ((testrec[i].Planned - testrec[i].Asserts) <> 0) then
-            tab.cell[7,i+2] := tab.cell[7,i+2] + '<br> <b>Failure: Count of asserts</b>';
-          tote := tote + testrec[i].Errors;
-          if (testrec[i].DigitPrecision <> 0) and (testrec[i].DigitPrecision < totdp) then totdp := testrec[i].DigitPrecision;
-          if Testrec[i].Comment = '<b>Exception occurred!</b>' then
-            for d := 3 to 6 do tab.cell[d,i+2] := '';
-        end; // this pgm
-        tab.cell[1,high(testrec)+3]:='Total' ;
-        tab.cell[2,high(testrec)+3]:=trim(format('%d',[totp]));
-        tab.cell[3,high(testrec)+3]:=trim(format('%d',[tota]));
-        tab.cell[4,high(testrec)+3]:=trim(format('%d',[tote]));
-        if totdp <> 2000 then tab.cell[5,high(testrec)+3]:=trim(format('%5.0f',[totdp]));
-        if (tote > 0) then
-          tab.cell[7,high(testrec)+3] := '<b>Assert errors exists!</b>';
-        if (totp <> tota) then
-          tab.cell[7,high(testrec)+3] := tab.cell[7,high(testrec)+3] + '<br><b>Planned asserts differs from actual assert!</b>';
-        dm.cls;
-        dm.codemaker.OutputTable(tab,'<hr><small>Abs dif: difference btw. expected and calculated parameter (if &lt; 10<sup>-14</sup> = 0.0)'
-                                      + '<br>Digits precision(max: 15)</small>');
-        dm.Sendoutput;
-        dm.UpdateSettings('ECHO', 'ON');
-        dm.UpdateSettings('SHOW SYSTEMINFO', 'OFF');
-      end;
-   end;
-end;
-end;  //case
+  i,d, co, totp, tota, tote, totl: integer;
+  f : TEpiInfoDataset;
+  t: DWord;
+  currdir : string;
+  testrec: TTestRecordArray;
+  tab : TStatTable;
+  totdp: EpiFloat;
+  opt: TEpiOption;
+  action: word;
 
-except
-  on E: Exception do
-    error('PGM Error: &nbsp; %s', [E.message], 103010);
-end;
+begin
+  try
+    if cmd = nil then
+      action := opSavePgm
+    else
+      action := cmd.CommandID;
+    case action of
+      opSavePgm:
+        begin
+          if fn='' then
+          begin
+            sd.Filter := 'Program file|*.pgm|All|*.*';
+            sd.FilterIndex := 1;
+            sd.DefaultExt :='.pgm';
+            if Dm.GetOptionValue('DEFAULT CURRENT DIR', opt) and (AnsiUpperCase(opt.Value) = 'ON') then
+              sd.InitialDir := GetCurrentDir
+            else
+              sd.InitialDir := '';
+            if not sd.Execute then exit;
+            SetCurrentDir(ExtractFileDir(fn));
+            dm.CurrentDir := ExtractFileDir(fn);
+            NotifyInterface(EpiRefreshDir, integer(pchar(dm.CurrentDir)), 0);
+          end;
+          if fn='' then
+            fn := sd.filename;
+          if fn='' then
+            error('Missing file name', [], 21004);
+          fn:=AdjustFileExt(fn,'.pgm');
+          NotifyInterface(EpiSavePGM,integer(pchar(fn)),0);
+          info('File name: %s saved', [fn], 23054);
+        end;
+      opshow:
+        ShowTextFile(fn, cmd);
+      opRun,opRunTest:
+        begin
+          if fn='' then
+          begin
+            od.FileName :='';
+            if Dm.GetOptionValue('DEFAULT CURRENT DIR', opt) and (AnsiUpperCase(opt.Value) = 'ON') then
+              od.InitialDir := GetCurrentDir
+            else
+              od.InitialDir := '';
+            od.Filter:= 'Program file|*.pgm|All|*.*';
+            od.FilterIndex := 1;
+            if not od.Execute then exit;
+            fn := od.filename;
+            SetCurrentDir(ExtractFileDir(fn)); //added build 118 - when remowing agopendialog
+            dm.CurrentDir := ExtractFileDir(fn);
+            NotifyInterface(EpiRefreshDir, integer(pchar(dm.CurrentDir)), 0);
+          end;
+          if fn='' then
+            error('Missing file name', [], 21004);
+          case action of
+            opRun:
+              begin
+                RunPGMFile(fn);
+              end;
+            opRunTest:
+              begin
+                dm.cls;
+                dm.UpdateSettings('ECHO', 'OFF');
+                tota := 0;
+                totp := 0;
+                tote := 0;
+                totdp := 2000;
+                dm.AddResult('$assert_error', epityinteger, 0, 3, 0);
+                dm.AddResult('$assert', epityinteger, 0, 3, 0);
+                dm.AddResult('$dp', EpiTyFloat, 2000, 3, 9);
+                dm.AddResult('$dpdif', epityfloat,1E-15, 3, 9);
+                //locate curr dir
+                CurrDir := getCurrentDir();
+                try
+                  RunTestPGMFile(fn, testrec, cmd);
+                finally
+                  ODos.CD(CurrDir);
+                end;
+                //return to previous curr dir
+                tab:=OutputList.NewTable(7,high(testrec)+4);
+                tab.TableType := sttSystem;
+                tab.Caption := '<h3>' + GetBuildInfoAsString + ' ' + DateToStr(Date) + ' ' + TimeTostr(Time) +
+                '</h3><b>Summary table of pgm files:</b> ' + DateToStr(Date) + ' ' + TimeTostr(Time) + '<hr>';
+                tab.cell[1,1]:='File' ;
+                tab.cell[2,1]:='Asserts<br>Planned';
+                tab.cell[3,1]:='<br>Found';
+                tab.cell[4,1]:='<br>Errors';
+                tab.Cell[5,1]:='Precision<br>digits';
+                tab.cell[6,1]:='<br>abs.&nbsp;diff';
+                tab.cell[7,1]:='Comments' ;
+                for i := 0 to high(testrec) do
+                begin
+                  tab.cell[1,i+2]:= testrec[i].FileName;
+                  tab.cell[2,i+2]:= trim(format('%d',[testrec[i].Planned]));
+                  tab.cell[3,i+2]:= trim(format('%d',[testrec[i].Asserts]));
+                  tab.cell[4,i+2]:= trim(format('%d',[testrec[i].Errors]));
+                  if (testrec[i].DigitPrecision > 0) and (testrec[i].DigitPrecision < 2000) and (dm.Executor.FindVar('$dp') <> nil)   then
+                  begin
+                    if testrec[i].DigitPrecision = 15 then
+                    begin
+                      tab.Cell[5,i+2] := '15';
+                      tab.cell[6,i+2] := '0.0';
+                    end else begin
+                      d := 14;
+                      while d > -5 do  // find precision
+                      begin
+                        if (testrec[i].dif < power(10,-d)) then
+                        begin
+                          if d > 0
+                          then tab.Cell[5,i+2] := format('&lt; 10<sup>-%d</sup>',[d])
+                          else tab.Cell[5,i+2] := format('%6.0f',[testrec[i].dif]);
+                          d := -6;
+                        end else
+                          dec(d);
+                      end;
+                      tab.cell[6,i+2] := tab.Cell[5,i+2];
+                      tab.Cell[5,i+2] := trim(format('%5.0f',[testrec[i].DigitPrecision]));
+                    end;
+                  end else begin
+                    tab.Cell[5,i+2]:= '';
+                    tab.Cell[6,i+2]:= '';
+                  end;
+                  tab.cell[7,i+2]:=trim(format('%s',[testrec[i].Comment]));
+                  totp := totp + testrec[i].Planned;
+                  tota := tota + testrec[i].Asserts;
+                  if ((testrec[i].Planned - testrec[i].Asserts) <> 0) then
+                    tab.cell[7,i+2] := tab.cell[7,i+2] + '<br> <b>Failure: Count of asserts</b>';
+                  tote := tote + testrec[i].Errors;
+                  if (testrec[i].DigitPrecision <> 0) and (testrec[i].DigitPrecision < totdp) then
+                    totdp := testrec[i].DigitPrecision;
+                  if Testrec[i].Comment = '<b>Exception occurred!</b>' then
+                    for d := 3 to 6 do
+                      tab.cell[d,i+2] := '';
+                end; // for i := 0 to high(testrec) do
+                tab.cell[1,high(testrec)+3]:='Total' ;
+                tab.cell[2,high(testrec)+3]:=trim(format('%d',[totp]));
+                tab.cell[3,high(testrec)+3]:=trim(format('%d',[tota]));
+                tab.cell[4,high(testrec)+3]:=trim(format('%d',[tote]));
+                if totdp <> 2000 then
+                  tab.cell[5,high(testrec)+3]:=trim(format('%5.0f',[totdp]));
+                if (tote > 0) then
+                  tab.cell[7,high(testrec)+3] := '<b>Assert errors exists!</b>';
+                if (totp <> tota) then
+                  tab.cell[7,high(testrec)+3] := tab.cell[7,high(testrec)+3] + '<br><b>Planned asserts differs from actual assert!</b>';
+                dm.cls;
+                dm.codemaker.OutputTable(tab,'<hr><small>Abs dif: difference btw. expected and calculated parameter (if &lt; 10<sup>-14</sup> = 0.0)'
+                                           + '<br>Digits precision(max: 15)</small>');
+                dm.Sendoutput;
+                dm.UpdateSettings('ECHO', 'ON');
+                dm.UpdateSettings('SHOW SYSTEMINFO', 'OFF');
+              end; // opRunTest
+          end; // Case action... 
+        end; // opRuntest, opRun
+    end;  //case
+
+  except
+    on E: Exception do
+      error('PGM Error: &nbsp; %s', [E.message], 23008);
+  end;
 end;
 
 function TDM.RunPGMFile(const fn:string):boolean;
@@ -1144,8 +1152,8 @@ begin
   rc:=Executor.RunScript(fn1);
   case rc of
   //1: info('Script run successfully');
-  0: error('script resulted in errors', [], 103011);
-  2: info('Script interrupted by user', 203007);
+  0: error('script resulted in errors', [], 23009);
+  2: info('Script interrupted by user', 23055);
   end;
   //restore echo setting:
 
@@ -1164,7 +1172,7 @@ begin
   if (FileGetAttr(fn) and faDirectory = faDirectory) then
   begin
    if not directoryexists(fn) then
-        error('Directory %s not found', [fn], 103012);
+        error('Directory %s not found', [fn], 23010);
    try
      try
        FileScan:= TmFileScan.Create(self) ;
@@ -1190,7 +1198,7 @@ begin
   else   // run a single pgm file
   begin
     if not fileexists(fn) then
-        error('File %s not found', [fn], 103013);
+        error('File %s not found', [fn], 23011);
     if AnsiupperCase(extractfileext(fn))<>'.PGM' then exit;
     CurrDir := GetCurrentDir();
     SetCurrentDir(CurrDir + PathDelim + ExtractFilePath(fn));
@@ -1225,7 +1233,7 @@ begin
       Testrec[t].Comment := '<b>Exception occurred!</b>';
       if Assigned(cmd.ParamByName['HALT']) then
       begin
-        Error('Failed in file: %s', [fn], 103014, -1);
+        Error('Failed in file: %s', [fn], 23012, -1);
         raise;
       end;
     end;
@@ -1251,8 +1259,8 @@ if script='' then exit;
 rc:=Executor.RunScriptAsString(script);
 case rc of
 // 1: info('Script run successfully');
-0: error('script resulted in errors', [], 103011);
-2: info('Script interrupted by user', [], 203007);
+0: error('script resulted in errors', [], 23009);
+2: info('Script interrupted by user', [], 23055);
 end;
 Result:=rc=1;
 end;
@@ -1261,19 +1269,20 @@ end;
 function TDM.generate(rows: integer): boolean;
 begin
   if OpenFileCount> 0 then
-    error('No, data will be lost: Close first', [], 103015);
+    error('No, data will be lost: Close first', [], 23013);
   try
     result := false;
     if rows<1 then
-      error('Rows count must be at least 1', [], 103016);
+      error('Rows count must be at least 1', [], 23014);
     if dataframe <> nil then dataFrame.free;
     fdataframe := TEpiDataFrame.CreateTemp(rows);
     initDataFrameVars(fdataframe);
     dataframe.FileName := 'Generated dataset';
     result := true;
-    except
-      on E: Exception do
-        error('Exception occured: %s', [E.message], 103017);
+    Enable(true);
+  except
+    on E: Exception do
+      error('Exception occured: %s', [E.message], 10001);
   end;
 end;
 
@@ -1327,7 +1336,7 @@ var
  ext : string;
 begin
   if fn='' then
-    error('Missing file name', [], 101004);
+    error('Missing file name', [], 21004);
   fn:= GetFullFilename(fn);
   ext :=Sysutils.trim(AnsiUpperCase(ExtractFileExt(fn)));
   if ext='' then
@@ -1338,14 +1347,14 @@ begin
   if not (fn = '$CB.txt') then
   begin
     if not fileexists(fn) then
-      Error('File %s not found', [fn], 103013)
+      Error('File %s not found', [fn], 23011)
     else
       fn:=Expandfilename(fn);
   end else begin
     fn := 'from clipboard';
   end;
   try
-    info('Loading data %s, please wait...', [fn], 203008);
+    info('Loading data %s, please wait...', [fn], 23056);
     if ext ='.REC' then
       dataframe := TEpiDataFrame.Create(TEpiInfoDataset,fn,0,pw)
     else if ext ='.DBF' then
@@ -1353,15 +1362,15 @@ begin
     else if ((ext ='.TXT') or (ext ='.CSV')) then
       dataframe := TEpiDataFrame.Create(TEpiTXTdataset,fn,0)
     else
-      error('Unknown file extension %s', [ext], 103018);
+      error('Unknown file extension %s', [ext], 23015);
     if dataframe.Errorcount> 0 then
-      info('Errors reading data', [], 203009);
+      info('Errors reading data', [], 23057);
     SetVarFormatToDefault(dataframe,false);
     enable(True);
     result:=true;
   except
 //    on E: Exception do
-//      error('Exception occured: %s', [E.message], 103017);
+//      error('Exception occured: %s', [E.message], 10001);
   end;
 end;
 
@@ -1394,7 +1403,7 @@ begin
    if cmd.ParamByName['KEY'] <> nil then pw:=cmd.ParamByName['KEY'].AsString;
 
  if OpenFileCount> 0 then
-   error('Data modified - Close first', [], 103019);
+   error('Data modified - Close first', [], 23016);
  if Assigned(cmd) then
    if Assigned(Cmd.ParamByName['CB']) then
      fn := '$CB.txt';
@@ -1426,20 +1435,43 @@ begin
     initDataFrameVars(fdataframe);
     NotifyInterface(EpiVectorListChanged,integer(dataframe),0);
     NotifyInterface(EpiOpenFile,integer(dataframe),0);
-    s := lang(203010, 'File name :') + fn ;
+    s := lang(23058, 'File name :') + fn ;
     if dataframe.DataLAbel<> '' then
          s:= s + '<br>' + dataframe.DataLAbel;
     filename:=fn;
-    s:= s + '<br>' + format(lang(203011,'Fields: %d   Total records: %d   Included: %d'),
+    s:= s + '<br>' + format(lang(23059,'Fields: %d   Total records: %d   Included: %d'),
          [dataframe.vectorcount,dataframe.RowCount,dataframe.SelectedRowCount]);
-    info(s, [], 0);
+    info(s, -1);
     result := true;
   except
 //    on E: Exception do
-//      error('Exception occured: %s', [E.message], 103017);
+//      error('Exception occured: %s', [E.message], 10001);
   end;
 end;
 
+function TDM.ShowGraphDialog(Cmd: TCommand): boolean;
+var
+  GraphDialog: TGraphDialog;
+  gphopt: TGraphDlgOptions;
+  CmdLine: string;
+  Res: integer;
+begin
+  if not dm.CheckDataOpen() then exit;
+  GraphDialog := TGraphDialog.Create(self);
+  gphopt := TGraphDlgOptions.Create();
+  gphopt.Cmd := 'scatter';
+  gphopt.Title := 'Scatter';
+  gphopt.Defaults := [goSPC, goBy, goWeight, goLegend];
+  gphopt.BoxTypes[0] := [EpiTyString, EpiTyInteger, EpiTyDate, EpiTyFloat];
+  gphopt.BoxTypes[1] := [EpiTyString, EpiTyInteger, EpiTyDate, EpiTyFloat];
+  gphopt.ByTypes     := [EpiTyString, EpiTyInteger, EpiTyDate, EpiTyFloat];
+  gphopt.WeightTypes := [EpiTyString, EpiTyInteger, EpiTyDate, EpiTyFloat];
+  gphopt.VarNames[0] := 'sex';
+  GraphDialog.Initialize(gphopt);
+  res := GraphDialog.ShowModal;
+  if Res = mrOK then
+    aMainForm.doCommand(GraphDialog.CmdString);
+end;
 
 function TDM.AppendFile(fn:string; cmd: TCommand): boolean;
 VAR
@@ -1451,7 +1483,7 @@ VAR
   s,PW : string;
 begin
  if (OpenFileCount=0) or (dataframe=NIL) then
-   error('No data', [], 103005);
+   error('No data', [], 10000);
  if fn='' then
  begin
    od.FileName:='';
@@ -1475,17 +1507,17 @@ begin
 
    co:=dataframe.RowCount;
    dataframe.AppendNewRows(AppendFrame,ExcludedFields,LackingFields,InCompatibleFields);
-   s:= format(lang(203012,'Appended file:  Fields: %d   Total records: %d   Valid records: %d'),
+   s:= format(lang(23060,'Appended file:  Fields: %d   Total records: %d   Valid records: %d'),
        [AppendFrame.VectorCount,AppendFrame.RowCount,AppendFrame.SelectedRowCount]);
    if Appendframe.RowCount <> Appendframe.SelectedRowCount then
-       s:= s + '<br>' + format(lang(203013, 'No of deselected records: %d'),[Appendframe.RowCount - Appendframe.SelectedRowCount]);
+       s:= s + '<br>' + format(lang(23061, 'No of deselected records: %d'),[Appendframe.RowCount - Appendframe.SelectedRowCount]);
    if ExcludedFields<>'' THEN
-       s:= s + '<br>' + format(lang(203014, 'Unknown fields excluded from append file: %s'),[ExcludedFields]);
+       s:= s + '<br>' + format(lang(23062, 'Unknown fields excluded from append file: %s'),[ExcludedFields]);
    if InCompatibleFields<>'' THEN
-       s:= s + '<br>' + format(lang(203015, 'Incompatible fields excluded: %s'),[InCompatibleFields]);
+       s:= s + '<br>' + format(lang(23063, 'Incompatible fields excluded: %s'),[InCompatibleFields]);
    if LackingFields<>'' THEN
-       s:= s + '<br>' + format(lang(203016, 'Fields not found in append file: %s'),[LackingFields]);
-     info(s + '<br>' + format(lang(203017, '<br>Combined file:  Fields: %d   Total records: %d'),[dataframe.VectorCount,dataframe.SelectedRowCount]), [], 0);
+       s:= s + '<br>' + format(lang(23064, 'Fields not found in append file: %s'),[LackingFields]);
+   info(s + '<br>' + format(lang(23065, 'Combined file:  Fields: %d   Total records: %d'),[dataframe.VectorCount,dataframe.SelectedRowCount]), [], 0);
   finally
     AppendFrame.Free;
     IF GetOptionValue('READ DELETED', opt) THEN
@@ -1499,22 +1531,36 @@ end;
 function TDM.Merge(Filename: string; Varnames: TStrings; Cmd: TCommand): boolean;
 var
   RelateFrame: TEpiDataframe;
-  Pw: string;
+  s, pw: string;
   opt: TEpiOption;
 begin
-   if not dm.CheckDataOpen() then exit; // CheckDataOpen();
+  if not dm.CheckDataOpen() then exit; // CheckDataOpen();
   if Cmd.CommandID = opMerge then
     CheckVariableNo(Varnames, 1);
   Relateframe := nil;
   try
     if Trim(Filename) = '' then
-      if not OD.Execute then exit
-      else Filename := OD.FileName;
-    InternalOpenFile(Filename, RelateFrame);
+      if not OD.Execute then
+        exit
+      else
+        Filename := OD.FileName;
+
+    pw := '';
+    if Cmd.ParamExists['KEY'] then
+      pw := Cmd.ParamByName['KEY'].AsString;
+    InternalOpenFile(Filename, RelateFrame, pw);
+
+    s := lang(23058, 'File name :') + Filename ;
+    if RelateFrame.DataLabel<> '' then
+      s:= s + '<br>' + RelateFrame.DataLAbel;
+    s:= s + '<br>' + format(lang(23059,'Fields: %d   Total records: %d   Included: %d'),
+         [RelateFrame.vectorcount, RelateFrame.RowCount, RelateFrame.SelectedRowCount]);
+    dm.Info(s, -1);
     if Cmd.CommandID = opMerge then
       OMerge.DoMerge(Dataframe, RelateFrame, Varnames, Cmd)
     else
       OMerge.DoAppend(Dataframe, RelateFrame, Varnames, Cmd);
+    dm.info('Combined file:  Fields: %d   Total records: %d', [dataframe.VectorCount, dataframe.SelectedRowCount], 23065);
     initDataFrameVars(fdataframe);
     NotifyInterface(EpiVectorListChanged, integer(Dataframe),0);
     NotifyInterface(EpiOpenFile, integer(Dataframe),0);
@@ -1526,19 +1572,30 @@ end;
 function TDM.DoSaveDataFile(fn: string; VarNames: Tstrings; cmd: TCommand): boolean;
 var
   df: TEpiDataframe;
+  i: integer;
+  reset: boolean;
 begin
   df := nil;
   if OpenFileCount= 0 then
-    error('No data', [], 103005); //***
+    error('No data', [], 10000); //***
   try
+    reset := Assigned(Varnames);
     df := dataframe.prepareDataframe(Varnames, nil);
+//    if reset then
+      for i := 0 to df.VectorCount -1 do
+      begin
+        df.Vectors[i].CheckProperties.QuestX := 0;
+        df.Vectors[i].CheckProperties.QuestY := 0;
+        df.Vectors[i].CheckProperties.FieldX := 0;
+        df.Vectors[i].CheckProperties.FieldY := 0;
+      end;
     result := SaveDataFile(fn, varnames, df, cmd);
   finally
     FreeAndNil(df);
   end;
 end;
 
-function TDM.SaveDataFile(fn: string;VarNames: Tstrings; df: TEpiDataframe; cmd: TCommand): boolean;
+function TDM.SaveDataFile(fn: string; VarNames: Tstrings; df: TEpiDataframe; cmd: TCommand): boolean;
 var
    s,pw    : string;
    co   : integer;
@@ -1551,7 +1608,7 @@ begin
   Result:=false;
   try
     if df = nil then
-      error('SaveDataFile: No dataframe!', [], 103020);
+      error('SaveDataFile: No dataframe!', [], 23017);
     if fn='' then
     begin
       sd.FileName:='';
@@ -1561,7 +1618,7 @@ begin
         sd.InitialDir := GetCurrentDir
       else
         sd.InitialDir := '';
-      if not sd.Execute then Error('Missing file name', [], 101004);
+      if not sd.Execute then Error('Missing file name', [], 21004);
     end;
     if fn='' then
     begin
@@ -1569,33 +1626,33 @@ begin
       aMainForm.CmdEdit.HackHistory('Savedata', 'Savedata "' + fn + '"');
     end;
     if df.FindVector(fn)<> nil then
-      info('Filename %s is similar to a variable name',  [fn], 203018);
+      info('Filename %s is similar to a variable name',  [fn], 23066);
     fn:=Expandfilename(GetFullFilename(fn));
     fn:=AdjustFileExt(fn,'.rec');
     if Ansiuppercase(extractfileext(fn)) <>'.REC' then
-      error('Must be .REC file', [], 103021);
+      error('Must be .REC file', [], 23018);
     s := ChangeFileExt(fn,'.chk');
     if (FileExists(fn) or  FileExists(s)) and (cmd.ParamByName['REPLACE'] = nil) then
-      error('DataFile and/or Chk file exists. <br> Add /REPLACE or erase<br> %s <br>%s', [fn,s], 103022);
+      error('DataFile and/or Chk file exists. <br> Add /REPLACE or erase<br> %s <br>%s', [fn,s], 23019);
     pw := '';
     if cmd<>nil then
     if cmd.ParamByName['KEY'] <> nil then pw:=cmd.ParamByName['KEY'].AsString;
 
-    Info('Saving data to: %s', [fn], 203019);
+    Info('Saving data to: %s', [fn], 23067);
     // t := GetTickcount;
     Adataset := Df.CreateNewDataSet(TEpiInfoDataset,fn,Varnames,pw);
     //Adataset := df.CreateNewDataSet(TEpiInfoDataset,fn,Varnames);
     Result := Df.SaveToDataSet(Adataset{,Varnames},{pw})=0;
     //  t := GetTickCount-t;
-    info('%d Fields %d Records', [df.VectorCount,df.RowCount], 203020);  // was VectorCount-1
+    info('%d Fields %d Records', [df.VectorCount,df.RowCount], 23068);  // was VectorCount-1
     //  sysinfo('Saved in : '+ floattostr(t/1000)+' seconds');
     Adataset.free;
     filename:=fn;
   except
     On E : Exception do
     begin
-     Error('Exception occured: %s', [E.Message], 103017,-1);
-     Error('Failed to save data to %s', [fn], 103023,-1);
+     Error('Exception occured: %s', [E.Message], 10001,-1);
+     Error('Failed to save data to %s', [fn], 23020,-1);
      Adataset.free;
     end;
   end;
@@ -1612,17 +1669,17 @@ begin
  Adataset:=nil;
  Result:=false;
  if OpenFileCount= 0 then
-   error('No data', [], 103005); //***
+   error('No data', [], 10000); //***
  if fn='' then
-   error('Missing file name', [], 101004);
+   error('Missing file name', [], 21004);
  fn:=Expandfilename(GetFullFilename(fn));
  fn:=AdjustFileExt(fn,'.rec');
- info('Writing to file: %s, please wait...', [fn], 2030211);
+ info('Writing to file: %s, please wait...', [fn], 23069);
  t := GetTickcount;
 try
   if Ansiuppercase(extractfileext(fn))='.DBF' then
   begin
-    info('Saving data in DBF format is not possible, data will be saved in REC format', [], 203022);
+    info('Saving data in DBF format is not possible, data will be saved in REC format', [], 23070);
   end;
   Adataset:= dataframe.CreateNewDataSet(TEpiInfoDataset,fn,Varnames);
   Result:=dataframe.SaveToDataSet(Adataset{,Varnames})=0;
@@ -1630,13 +1687,13 @@ try
   Adataset:=nil;
   filename:=fn;
   t := GetTickCount-t;
-  info('File name : %s', [fn], 203023);
+  info('File name : %s', [fn], 23071);
 //  sysinfo('Saved in : '+ floattostr(t/1000)+' seconds');
 except
   On E : Exception do
   begin
-   Error('Exception occured: %s', [E.Message], 103017,-1);
-   Error('Failed to save data to %s', [fn], 103023,-1);
+   Error('Exception occured: %s', [E.Message], 10001,-1);
+   Error('Failed to save data to %s', [fn], 23020,-1);
    Adataset.free;
   end;
 end;
@@ -1809,32 +1866,28 @@ begin
     info(s, [], 0);
 end;
 
-function TDM.Quit(CommandID: Cardinal): boolean;
+procedure TDM.HandleShutdown();
 var
   fn: string;
   opt: TEpiOption;
-  save: boolean;
 begin
-  save := false;
-  if CodeMaker.LogFileName <> '' then
-    CloseOut;
-  fn := 'temp';
-  if GetOptionValue('HISTORY NAME', opt) then
-    fn := opt.Value;
-  if GetOptionValue('OUTPUT FOLDER', opt) then
-    fn := opt.Value + '\' + fn;
   try
+    if CodeMaker.LogFileName <> '' then CloseOut;
+    fn := 'temp';
+    if GetOptionValue('HISTORY NAME', opt) then
+      fn := opt.Value;
+    if GetOptionValue('OUTPUT FOLDER', opt) then
+      fn := opt.Value + '\' + fn;
     BackupFile(fn, 'pgm', 1);
-  except
-  end;
-  aMainform.CmdEdit.History.Insert(0, '// ' + GetBuildInfoAsString + ' ' + DateToStr(Date) + ' ' + TimeTostr(Time));
-  aMainform.CmdEdit.History.Delete(aMainform.CmdEdit.History.Count - 1); // This should delete the last entry, which would be the "QUIT" command.
-  try
     doPGMFileAction(fn, nil);
-    NotifyInterface(EpiQuit,0,0);
   except
-    error('Click on close icon (X) to inforce quit', [], 103024,-1);
   end;
+end;
+
+function TDM.Quit(CommandID: Cardinal): boolean;
+begin
+  if CommandID = opExit then aMainform.forcequit := true;
+  aMainForm.AcExitExecute(nil);
 end;
 
 
@@ -1843,8 +1896,6 @@ begin
   result:=0;
   if dataframe<> nil then inc(result);
 end;
-
-
 
 function TDM.Doif(Exp: IValue;const tstr,fstr:string): boolean;
 
@@ -1870,7 +1921,7 @@ function TDM.Doif(Exp: IValue;const tstr,fstr:string): boolean;
 
 begin
   if dataframe=nil then
-     error('No data', [], 103005);
+     error('No data', [], 10000);
   try
     try
       Dataframe.backupSelector;
@@ -1909,7 +1960,7 @@ function TDM.select(Exp: IValue): boolean;
 begin
   result := false;
   if dataframe=nil then
-     error('No data', [], 103005);
+     error('No data', [], 10000);
   try
     //clear old selection on select ''
     if exp = nil then
@@ -1926,7 +1977,7 @@ begin
     end;
     dataframe.RebuildRecnumber();
     if Dataframe.SelectedRowCount=0 then
-     info('No records available', [], 203024);
+     info('No records available', [], 23072);
   except
     Executor.LastSelect:='';
     raise;
@@ -1969,7 +2020,7 @@ var
 
 begin
   if dataframe=nil then
-    error('No data', [], 103005);
+    error('No data', [], 10000);
   dstV := dataframe.VectorByName[dstvar];
   srcV := dataframe.VectorByName[srcvar];
 
@@ -1980,13 +2031,13 @@ begin
   try
     if op='RND' then
     begin
-      Info('RND not implemented', [], 203025);
+      Info('RND not implemented', [], 23073);
       // RND not implemented
     end
     else if op='BY'then
     begin
       if not (dstV.DataType in [EpiTyInteger, EpiTyFloat]) then
-        Error('%s <br> Must be Integer: Define %s ##', [dstV.Name, dstV.Name], 103025);
+        Error('%s <br> Must be Integer: Define %s ##', [dstV.Name, dstV.Name], 23022);
       if GetOptionValue('RECODE INTERVAL TEXT', opt) then
         intervaltxt := opt.Value
       else
@@ -2089,7 +2140,7 @@ begin
       end;
       if not (dstV.DataType in [EpiTyInteger, EpiTyFloat]) then
       begin
-        dm.Info('Valuelabeling not posible. Destination %s must be of type integer.', [dstV.Name], 203026);
+        dm.Info('Valuelabeling not posible. Destination %s must be of type integer.', [dstV.Name], 23074);
       end else begin
         if Cmd.ParamExists['CLEAR'] then
           labelline := labelline + ' /CLEAR';
@@ -2118,7 +2169,7 @@ begin
   //t := getTickCount;
   if exp=nil then
   begin
-    error('No expression', [], 103026);
+    error('No expression', [], 23023);
   end
   else
   begin
@@ -2164,7 +2215,7 @@ begin
   err := dm.ana.FindVar('$assert_error').AsInteger;
   if exp=nil then exit;
   if not exp.CanReadAs(ttBoolean) then
-   error('No Boolean expression found in ASSERT command', [], 103027);
+   error('No Boolean expression found in ASSERT command', [], 23024);
   if not Exp.AsBoolean then
   begin
     PrintResult('Assertion failed' + formatAssert);
@@ -2198,56 +2249,56 @@ var
  s   : string;
  fexpandlist : TStringList;
 begin
-fexpandlist :=nil;
-done:=false;
-if ploopObj=nil then  error('Missing loop data', [], 103028);
-loopobj:=TLoopCommand(ploopObj);
-if loopobj.loopvarname='' then
-   Error('Loop variable is missing', [], 103029);
-{#TODO1: design function to return variable and type}
-if dataframe <> nil then
-begin
-  v := DataFrame.FindVector(loopobj.loopvarname);
-  if v<> nil then
-        error('Data field %s cannot be used as loop variable', [loopobj.loopvarname], 103030);
-end;
-if not done then
-begin
-  gv :=Executor.globalvariables.VarbyName[loopobj.loopvarname];
-  if gv <> nil then done:=true;
-end;
-if not done then
-   error('Variable not found: %s', [loopobj.loopvarname], 103031);
-co :=loopobj.Items.count;
-case co of
-0 :  error('There are no loop choices', [], 103032);
-1 :
-begin
-   try
-    fexpandlist := TStringList.create;
-    if not Executor.Expandlist(loopobj.Items,fexpandlist) then
-            Expandlist(loopobj.Items, fexpandlist);
-    co := fexpandlist.count;
-    for i:= 0 to co-1 do
+  fexpandlist := nil;
+  done := false;
+  if ploopObj = nil then
+    error('Missing loop data', [], 23025);
+  loopobj := TLoopCommand(ploopObj);
+  if loopobj.loopvarname =' ' then
+    Error('Loop variable is missing', [], 23026);
+  {#TODO1: design function to return variable and type}
+  if dataframe <> nil then
+  begin
+    v := DataFrame.FindVector(loopobj.loopvarname);
+    if v <> nil then
+      error('Data field %s cannot be used as loop variable', [loopobj.loopvarname], 23027);
+  end;
+  if not done then
+  begin
+    gv := Executor.globalvariables.VarbyName[loopobj.loopvarname];
+    if gv <> nil then done := true;
+  end;
+  if not done then
+     error('Variable not found: %s', [loopobj.loopvarname], 23028);
+  co := loopobj.Items.count;
+  case co of
+    0 : error('There are no loop choices', [], 23029);
+    1 : begin
+           try
+            fexpandlist := TStringList.create;
+            if not Executor.Expandlist(loopobj.Items,fexpandlist) then
+              Expandlist(loopobj.Items, fexpandlist);
+            co := fexpandlist.count;
+            for i := 0 to co-1 do
+            begin
+              gv.Value := fexpandlist[i] ;
+              if gv.AsString = '' then error('Item %d is invalid loop choice',[i], 23030);
+              Executor.RunBlock(loopobj.CommandLines, nil, nil);
+            end;
+           finally
+              fexpandlist.free;
+           end;
+        end
+  else
     begin
-        gv.Value :=fexpandlist[i] ;
-        if gv.AsString='' then error('Item %d is invalid loop choice',[i], 103033);
+      for i:= 0 to co-1 do
+      begin
+        gv.Value :=loopobj.Items[i] ;
+        if gv.AsString = '' then error('Item %d is invalid loop choice',[i],23030);
         Executor.RunBlock(loopobj.CommandLines, nil, nil);
+      end;
     end;
-   finally
-      fexpandlist.free;
-   end;
-end
-else
-begin
-for i:= 0 to co-1 do
-begin
-    gv.Value :=loopobj.Items[i] ;
-    if gv.AsString='' then error('Item %d is invalid loop choice',[i],103033);
-    Executor.RunBlock(loopobj.CommandLines, nil, nil);
-end;
-end;
-end;//case
+  end;//case
 end;
 
 function TDM.Expandlist(items,expandeditems: TStringlist):boolean;
@@ -2279,7 +2330,7 @@ var
 begin
 result := false;
 done:=false;
-if exp=nil then  error('No expression', [], 103026);
+if exp=nil then  error('No expression', [], 23023);
 if dataframe <> nil then
 begin
   v := DataFrame.FindVector(pVarName);
@@ -2296,13 +2347,13 @@ begin
   begin
      case gv.tag of
      EpiVarGlobal: gv.value:= Exp.Value;
-     EpiVarResult, EpiVarSystem: error('Result variables are read-only', [], 103034);
+     EpiVarResult, EpiVarSystem: error('Result variables are read-only', [], 23031);
      end;
      done:=true;
   end;
 end;
 if not done then
-   error('Variable not found: %s', [pVarName], 103031);
+   error('Variable not found: %s', [pVarName], 23028);
 result := true;
 end;
 
@@ -2330,7 +2381,10 @@ procedure TDM.Info(const msg: string; translate: Integer = 0);
 var
   nmsg: string;
 begin
-  nmsg := OTranslator.Translate(translate, msg);
+  if translate < 0 then
+    nmsg := msg
+  else
+    nmsg := OTranslator.Translate(translate, msg);
   InternalInfo(nmsg);
 end;
 
@@ -2338,7 +2392,10 @@ procedure TDM.Info(const msg: string; const Args: array of const; translate: Int
 var
   nmsg: string;
 begin
-  nmsg := format(OTranslator.Translate(translate, msg), args);
+  if translate < 0 then
+    nmsg := format(msg, args)
+  else
+    nmsg := format(OTranslator.Translate(translate, msg), args);
   InternalInfo(nmsg);
 end;
 
@@ -2391,7 +2448,7 @@ begin
   + '<br> Total Virtual memory %d MB'
   + '<br> Free Virtual memory %d MB',
   [ms.dwMemoryLoad,ms.dwTotalPhys div 1048576,ms.dwAvailPhys div 1048576,
-  ms.dwTotalPageFile div 1048576,ms.dwAvailPageFile div 1048576], 203027);
+  ms.dwTotalPageFile div 1048576,ms.dwAvailPageFile div 1048576], 23075);
 
 end;
 
@@ -2447,12 +2504,12 @@ begin
        Executor.NewVar(pVarDesc);
        s := GetFieldTypeName(pVarDesc.dataType);
      end;
-     EpiVarSystem: Error('Defining systemvariables not allowed', [], 103035);
+     EpiVarSystem: Error('Defining systemvariables not allowed', [], 23032);
      end;//case
-   s := format(lang(203028,'Var Name %s of type %s'), [pVarDesc.Name,s]);
-   s := s + '<br>' + format(lang(203029,'Var length: %d'),[pVarDesc.length]);
+   s := format(lang(23076,'Var Name %s of type %s'), [pVarDesc.Name,s]);
+   s := s + '<br>' + format(lang(23077,'Var length: %d'),[pVarDesc.length]);
    if not (pVarDesc.DataType in [EpiTyString,EpiTyUppercase]) then
-     s := s + format(lang(203030,'decimals %d'), [pVarDesc.Decimals]);
+     s := s + format(lang(23078,'decimals %d'), [pVarDesc.Decimals]);
    info(s, [], 0);
 end;
 
@@ -2468,7 +2525,7 @@ begin
   result := false;
   v := nil;
   if getOpenFileCount = 0 then
-    error('No data', [], 103005)
+    error('No data', [], 10000)
   else
   begin
     //  if exp=nil then  error('No expression');
@@ -2481,7 +2538,7 @@ begin
           if vtype = EpiTyUnknown then
             vtype := ShortStringToEpiType(opt.Value);
           if vtype = EpiTyUnknown then
-            Error('Unknown default value for VAR GENERATE TYPE', [], 103036);
+            Error('Unknown default value for VAR GENERATE TYPE', [], 23033);
           pVarDesc.DataType := vtype;
           case vType of
              EpiTyBoolean: pVarDesc.Length :=1;
@@ -2522,7 +2579,7 @@ begin
     NotifyInterface(EpiVectorListChanged,integer(dataframe),0);
     info('Var Name %s of type %s and length: %d  decimals %d',
          [pVarDesc.Name,ODocument.AppendDateType(v, GetFieldTypeName(pVarDesc.dataType)),
-         pVarDesc.length,pVarDesc.Decimals], 203031);
+         pVarDesc.length,pVarDesc.Decimals], 23079);
     result := true;
   end;
 end;
@@ -2541,9 +2598,9 @@ begin
   begin
      v.value:= Exp.Value;
   end;
-  s:= format(lang(203031,'Var Name %s of type %s and length: %d  decimals %d'),[pVarDesc.Name,GetFieldTypeName(pVarDesc.dataType),pVarDesc.length,pVarDesc.Decimals]);
+  s:= format(lang(23079,'Var Name %s of type %s and length: %d  decimals %d'),[pVarDesc.Name,GetFieldTypeName(pVarDesc.dataType),pVarDesc.length,pVarDesc.Decimals]);
   if GetFieldTypeName(PVarDesc.DataType) = 'Integer' then
-    s := s + lang(203032, '<br>Notice integers > 1000 are saved as float variables with 0 decimals');
+    s := s + lang(23080, '<br>Notice integers > 1000 are saved as float variables with 0 decimals');
   info(s, [], 0);
 end;
 
@@ -2569,8 +2626,8 @@ begin
     else
       df := dataframe.prepareDataframe(Varnames, Nil);
 
-    if df.SelectedRowCount = 0 then error('No Data', [], 103005);
-    if df.SelectedRowCount < 20 then info('Small N, Warning: Check Percentiles', [], 203033);
+    if df.SelectedRowCount = 0 then error('No Data', [], 10000);
+    if df.SelectedRowCount < 20 then info('Small N, Warning: Check Percentiles', [], 23081);
     DoDescribe(df, varnames, cmd);
 
   finally
@@ -2588,10 +2645,10 @@ begin
     checkdataopen();
     CheckVariableNo(Varnames, 1, 2);
 
-    if (Cmd.ParamByName['M'] <> nil) then dm.info('Option %s not implemented yet', ['/M'], 203034);
+    if (Cmd.ParamByName['M'] <> nil) then dm.info('Option %s not implemented yet', ['/M'], 23082);
 
     if  (Cmd.ParamByName['BY'] = nil) and (Varnames.Count = 2) then
-            dm.Info('Syntax: Means %s /BY= %s', [dataframe.VectorByName[Varnames[0]].Name,dataframe.VectorByName[Varnames[1]].Name], 203035);
+            dm.Info('Syntax: Means %s /BY= %s', [dataframe.VectorByName[Varnames[0]].Name,dataframe.VectorByName[Varnames[1]].Name], 23083);
 
     if (Cmd.ParamByName['BY'] <> nil) then
       Varnames.Add(Cmd.ParamByName['BY'].AsString);
@@ -2601,8 +2658,8 @@ begin
     // Rewritten by Torsten Christiansen 2004-01-07
 
     df := dataframe.prepareDataframe(Varnames, Varnames);
-    if df.SelectedRowCount = 0 then error('No Data', [], 103005);
-    if df.SelectedRowCount < 10 then info('Warning: Percentiles imprecise', [], 203036);
+    if df.SelectedRowCount = 0 then error('No Data', [], 10000);
+    if df.SelectedRowCount < 10 then info('Warning: Percentiles imprecise', [], 23084);
     DoMeans(df, varnames, cmd);
 
   finally
@@ -2621,9 +2678,9 @@ begin
      if not dm.CheckDataOpen() then exit; //CheckDataOpen();
     Vectorlist:= Dataframe.GetVectorListByName(varnames);
     co := Vectorlist.Count;
-    info('Sorting please wait...', [], 203037);
+    info('Sorting please wait...', [], 23085);
     dataFrame.Sort(Vectorlist);
-    info('Sorting complete', [], 203038);
+    info('Sorting complete', [], 23086);
   finally
     Vectorlist.free;
   end;
@@ -2660,7 +2717,7 @@ begin
 
 
     if df.SelectedRowCount = 0 then
-      dm.Error('No Data', [], 103005);
+      dm.Error('No Data', [], 10000);
     result := OTables.DoTables(df, varnames, cmd);
   finally
     if Assigned(df) then FreeAndNil(df);
@@ -2687,12 +2744,14 @@ begin
   AggrList := nil;
   try
     CheckVariableNo(ByVars, 0, 600);
-//    if byvars <> nil then
-//      Varnames.AddStrings(ByVars);
     if (cmd.ParamByName['M'] <> nil) then
       df := dataframe.prepareDataframe(Varnames, nil)
     else
       df := dataframe.prepareDataframe(Varnames, ByVars);
+
+    if Df.SelectedRowCount = 0 then
+      Error('No data', [], 10000);
+
     AggDF := OAggregate.DoAggregate(df, ByVars, Cmd);
 
     if cmd.ParamByName['CLOSE'] <> nil then
@@ -2702,7 +2761,6 @@ begin
       initDataFrameVars(fDataframe);
       NotifyInterface(EpiVectorListChanged,integer(dataframe),0);
       NotifyInterface(EpiOpenFile,integer(dataframe),0);
-      OBrowse.UpdateBrowseWindow(fdataframe);
       OUpdate.UpdateBrowseWindow(fdataframe);
     end else
       FreeAndNil(AggDF);
@@ -2760,7 +2818,7 @@ begin
       initDataFrameVars(fDataframe);
       NotifyInterface(EpiVectorListChanged,integer(dataframe),0);
       NotifyInterface(EpiOpenFile,integer(dataframe),0);
-      OBrowse.UpdateBrowseWindow(fdataframe);
+      //OBrowse.UpdateBrowseWindow(fdataframe);
       OUpdate.UpdateBrowseWindow(fdataframe);
     end else
       FreeAndNil(AggDF);
@@ -2782,7 +2840,7 @@ begin
   try
     if (cmd.ParamByName['W'] <> nil) then
       if not (dataframe.VectorByName[cmd.ParamByName['W'].AsString] is TEpiIntVector) then
-        Error('Weight variable must be of type Integer', [], 103037)
+        Error('Weight variable must be of type Integer', [], 23034)
       else
         Varnames.Add(cmd.ParamByName['W'].AsString);
     if (cmd.ParamByName['BY'] <> nil) then
@@ -2794,6 +2852,9 @@ begin
       df := dataframe.prepareDataframe(Varnames, nil)
     else
       df := dataframe.prepareDataframe(Varnames, Varnames);
+
+    if df.SelectedRowCount = 0 then error('No Data', [], 10000);
+
     if df <> nil then OGraph.DoGraphs(df, varnames, cmd);
   finally
     if df <> nil then FreeAndNil(df);
@@ -2827,7 +2888,7 @@ begin
          if not dm.CheckDataOpen() then exit; //checkdataopen();
     CheckVariableNo(Varnames,1);
     df := dataframe.prepareDataframe(Varnames, varnames);
-    if df.SelectedRowCount = 0 then error('No Data', [], 103005);
+    if df.SelectedRowCount = 0 then error('No Data', [], 10000);
     OGraph.DoGraphs(df, varnames, cmd);
   finally
     if Assigned(df) then FreeAndNil(df);
@@ -2857,15 +2918,13 @@ begin
         missing.Add(Cmd.ParamByName['BY'].AsString);
     end;
     df := dataframe.prepareDataframe(Varnames, missing);
-    if df.SelectedRowCount = 0 then error('No Data', [], 103005);
-    if df.SelectedRowCount < 20 then info('Small N, Warning: Check Percentiles', [], 203033);
+    if df.SelectedRowCount = 0 then error('No Data', [], 10000);
+    if df.SelectedRowCount < 20 then info('Small N, Warning: Check Percentiles', [], 23081);
     OGraph.DoGraphs(df, varnames, cmd);
   finally
     if Assigned(df) then FreeAndNil(df);
   end;
 end;
-
-
 
 function TDM.Scatter(VarNames: TStrings; cmd: TCommand): boolean;
 var
@@ -2896,7 +2955,7 @@ begin
     end;
     df := dataframe.prepareDataframe(Varnames, missing);
 
-    if df.SelectedRowCount = 0 then error('No Data', [], 103005);
+    if df.SelectedRowCount = 0 then error('No Data', [], 10000);
     OGraph.DoGraphs(df, varnames, cmd);
   finally
     if Assigned(df) then FreeAndNil(df);
@@ -2904,86 +2963,181 @@ begin
   end;
 end;
 
-function TDM.XChart(Varnames: TStrings; cmd: TCommand): boolean;
+function TDM.XBar(Varnames: TStrings; cmd: TCommand): boolean;
 var
   df: TEpiDataFrame;
   Vectorlist: TEpiVectors;
   i : integer;
 const
-  procname = 'XChart';
+  procname = 'XBar';
   procversion = '1.0.0.0';
 begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   df := nil;
   Vectorlist := nil;
   try
-         if not dm.CheckDataOpen() then exit; //checkdataopen();
-    CheckVariableNo(Varnames, 2, 2);
+    if not dm.CheckDataOpen() then exit;
 
+     SPCCommon(df, Varnames, Cmd, 2);
+
+{    //CheckVariableNo(Varnames, 2, 3);
     // Do check that first var is countable (integer, datetime)
     // and likewise with sec. var is integer.
     VectorList := dataframe.GetVectorListByName(Varnames);
-    if not (VectorList[0].DataType in [EpiTyInteger, EpiTyDate, EpiTyFloat]) then
-      error('First variable (%s) must be of type Integer or Date', [varnames[0]], 103038);
-    if not (VectorList[1].DataType in [EpiTyInteger, EpiTyFloat]) then
-      error('Second variable (%s) must be of type Integer or Float', [varnames[1]], 103039);
+    if not (VectorList[0].DataType in [EpiTyInteger, EpiTyFloat]) then
+      error('%s variable (%s) must be of type(s) %s', ['First', varnames[0], 'Integer, Float'], 23095);
+    if not (VectorList[1].DataType in [EpiTyInteger, EpiTyDate, EpiTyFloat]) then
+      error('%s variable (%s) must be of type(s) %s', ['Second', varnames[1], 'Integer, Float, Date'], 23095);
     if (cmd.ParamByName['XLABEL'] <> nil) then
       Varnames.Add(cmd.ParamByName['XLABEL'].AsString);
     df := dataframe.prepareDataframe(Varnames, Varnames);
 
-    For i := 0 to 1 do
-      if VectorList[i].DataType in [EpiTyFloat] then
-        df.ConvertVector(varnames[i], EpiTyInteger,' read as ');
-
-    if df.SelectedRowCount = 0 then error('No Data', [], 103005);
-
-    if cmd.ParamByName['YTEXT'] = nil then
-      cmd.ParameterList.AddVar('YTEXT', 'Count');
-
-    OGraph.DoXChart(df, varnames, cmd)
+    if df.SelectedRowCount = 0 then error('No Data', [], 10000);
+   }
+    OGraph.DoGraphs(df, varnames, cmd);
 
   finally
-    if df <> nil then df.Free;
-    if Vectorlist <> nil then Vectorlist.Free;
+    if Assigned(df) then FreeAndNil(df);
+    if Assigned(Vectorlist) then FreeAndNil(Vectorlist);
   end;
 end;
 
+procedure TDM.SPCCommon(var df: TEpiDataFrame; var Varnames: TStrings; cmd: TCommand; VarCount: Integer);
+var
+  Vec: TEpiVector;
+  i: integer;
+begin
+  CheckVariableNo(Varnames, VarCount, VarCount+1);
+
+  if (Varnames.Count = Varcount+1) and (Dataframe.VectorByName[VarNames[VarCount]].DataType = EpiTyString)
+     and (not Cmd.ParamExists['XLABEL'])then
+  begin
+    Cmd.ParameterList.AddVar('XLABEL', Varnames[VarCount]);
+    Varnames.Delete(Varnames.Count-1);
+  end;
+
+  if not (dataframe.VectorByName[Varnames[0]].DataType in [EpiTyInteger, EpiTyFloat, EpiTyDate]) then
+    error('%s variable (%s) must be of type(s) %s', ['First', varnames[0], 'Interger, Float, Date'], 23095);
+
+  if VarCount = 1 then
+  begin
+    if (VarNames.Count = VarCount+1) and not (dataframe.VectorByName[Varnames[1]].DataType in [EpiTyInteger, EpiTyDate, EpiTyFloat]) then
+      error('%s variable (%s) must be of type(s) %s', ['Second', varnames[1], 'Integer, Float'], 23095);
+  end else begin
+    if not (dataframe.VectorByName[Varnames[1]].DataType in [EpiTyInteger, EpiTyFloat]) then
+      error('%s variable (%s) must be of type(s) %s', ['Second', varnames[1], 'Integer, Float'], 23095);
+    if (VarNames.Count = VarCount+1) and not (dataframe.VectorByName[Varnames[2]].DataType in [EpiTyInteger, EpiTyDate, EpiTyFloat]) then
+      error('%s variable (%s) must be of type(s) %s', ['Third', varnames[2], 'Integer, Float'], 23095);
+  end;
+
+  if (cmd.ParamExists['XLABEL']) then
+  begin
+    Varnames.Add(cmd.ParamByName['XLABEL'].AsString);
+    dm.Info('%s used for labels only', [cmd.ParamByName['XLABEL'].AsString]);
+  end;
+
+  df := dataframe.prepareDataframe(Varnames, Varnames);
+
+  if (varnames.count = VarCount) or (Cmd.ParamExists['XLABEL'] and (varnames.Count = VarCount+1)) then
+  begin
+    varnames.Insert(VarCount, '$COUNT');
+    vec := TEpiIntVector.Create('$COUNT', df.RowCount);
+    for i := 1 to df.RowCount do
+      vec.AsInteger[i] := i;
+    df.Vectors.Add(vec, VarCount);
+  end;
+
+  if df.SelectedRowCount = 0 then error('No Data', [], 10000);
+end;
+
+function TDM.GChart(Varnames: TStrings; cmd: TCommand): boolean;
+var
+  df: TEpiDataFrame;
+const
+  procname = 'XBar';
+  procversion = '1.0.0.0';
+begin
+  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  df := nil;
+  try
+    if not dm.CheckDataOpen() then exit;
+
+    SPCCommon(df, Varnames, Cmd, 1);
+
+    {
+    CheckVariableNo(Varnames, 1, 1);
+
+    // Do check that first var is countable (integer, datetime)
+    // and likewise with sec. var is integer.
+    if not (dataframe.VectorByName[Varnames[0]].DataType in [EpiTyInteger, EpiTyDate, EpiTyFloat]) then
+      error('First variable (%s) must be of type Integer or Date', [varnames[0]], 23035);
+    if (cmd.ParamByName['XLABEL'] <> nil) then
+      Varnames.Add(cmd.ParamByName['XLABEL'].AsString);
+    df := dataframe.prepareDataframe(Varnames, Varnames);
+
+    if df.SelectedRowCount = 0 then error('No Data', [], 10000);  }
+
+    OGraph.DoGraphs(df, varnames, cmd)
+  finally
+    if Assigned(df) then FreeAndNil(df);
+  end;
+end;
+
+function TDM.UChart(Varnames: TStrings; cmd: TCommand): boolean;
+var
+  df: TEpiDataFrame;
+const
+  procname = 'UChart';
+  procversion = '1.0.0.0';
+begin
+  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  df := nil;
+  try
+    if not dm.CheckDataOpen() then exit;
+
+    SPCCommon(df, Varnames, Cmd, 2);
+
+    OGraph.DoGraphs(df, varnames, cmd)
+  finally
+    if Assigned(df) then FreeAndNil(df);
+  end;
+end;
+
+function TDM.CChart(Varnames: TStrings; cmd: TCommand): boolean;
+var
+  df: TEpiDataFrame;
+const
+  procname = 'CChart';
+  procversion = '1.0.0.0';
+begin
+  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  df := nil;
+  try
+    if not dm.CheckDataOpen() then exit;
+
+    SPCCommon(df, varnames, cmd, 1);
+
+    OGraph.DoGraphs(df, varnames, cmd)
+  finally
+    if Assigned(df) then FreeAndNil(df);
+  end;
+end;
 
 function TDM.IChart(Varnames: TStrings; cmd: TCommand): boolean;
 var
   df: TEpiDataFrame;
   Vectorlist: TEpiVectors;
+  vec: tepivector;
   i : integer;
 begin
   df := nil;
   Vectorlist := nil;
   try
-         if not dm.CheckDataOpen() then exit; //checkdataopen();
-    CheckVariableNo(Varnames, 2, 2);
+    if not dm.CheckDataOpen() then exit;
 
-    // Do check that first var is countable (integer, datetime)
-    // and likewise with sec. var is integer.
-    VectorList := dataframe.GetVectorListByName(Varnames);
-    if not (VectorList[0].DataType in [EpiTyInteger, EpiTyDate, EpiTyFloat]) then
-      error('First variable (%s) must be of type Integer or Date', [varnames[0]], 103038);
-    if not (VectorList[1].DataType in [EpiTyInteger, EpiTyFloat]) then
-      error('Second variable (%s) must be of type Integer or Float', [varnames[1]], 103039);
-    if (cmd.ParamByName['XLABEL'] <> nil) then
-      Varnames.Add(cmd.ParamByName['XLABEL'].AsString);
-    df := dataframe.prepareDataframe(Varnames, Varnames);
+    SPCCommon(df, varnames, cmd, 1);
 
-    For i := 0 to 0 do
-         if VectorList[i].DataType in [EpiTyFloat] then
-              df.ConvertVector(varnames[i], EpiTyInteger,' read as ');
-
-    if df.SelectedRowCount = 0 then error('No Data', [], 103005);
-
-    if cmd.ParamByName['YTEXT'] = nil then
-      cmd.ParameterList.AddVar('YTEXT', 'Count');
-
-    OGraph.DoGraphs(df, varnames, cmd)
-//    DoIChart(df, varnames, cmd);
-
+    OGraph.DoGraphs(df, varnames, cmd);
   finally
     if Assigned(df) then FreeAndNil(df);
     if Vectorlist <> nil then Vectorlist.Free;
@@ -2995,39 +3149,17 @@ var
   df: TEpiDataFrame;
   Vectorlist: TEpiVectors;
   i : integer;
-
+  vec: TEpiVector;
 begin
   df := nil;
   Vectorlist := nil;
 
   try
-         if not dm.CheckDataOpen() then exit; //checkdataopen();
-    CheckVariableNo(Varnames, 3,3);
+    if not dm.CheckDataOpen() then exit;
 
-    VectorList := dataframe.GetVectorListByName(Varnames);
-    if not (VectorList[0].DataType in [EpiTyInteger, EpiTyDate, EpiTyFloat]) then
-      error('First variable (%s) must be of type Integer, Float or Date', [varnames[0]], 103040);
-    if not (VectorList[1].DataType in [EpiTyInteger, EpiTyFloat]) then
-      error('Second variable (%s) must be of type Integer or Float', [varnames[1]], 103039);
-    if not (VectorList[2].DataType in [EpiTyInteger, EpiTyFloat]) then
-      error('Third variable (%s) must be of type Integer or Float', [varnames[2]], 103041);
-
-    if (cmd.ParamByName['XLABEL'] <> nil) then
-      Varnames.Add(cmd.ParamByName['XLABEL'].AsString);
-
-    df := dataframe.prepareDataframe(Varnames, nil);
-
-    For i := 0 to 0 do
-         if VectorList[i].DataType in [EpiTyFloat] then
-              df.ConvertVector(varnames[i], EpiTyInteger, ' read as ');
-
-    if df.SelectedRowCount = 0 then error('No Data', [], 103005);
-
-    if cmd.ParamByName['YTEXT'] = nil then
-      cmd.ParameterList.AddVar('YTEXT', 'Percentage');
+    SPCCommon(df, varnames, cmd, 2);
 
     OGraph.DoGraphs(df, varnames, cmd);
-
   finally
     if Assigned(df) then FreeAndNil(df);
     if Vectorlist <> nil then Vectorlist.Free;
@@ -3046,27 +3178,28 @@ const
 begin
   ODebug.IncIndent;
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  if not dm.CheckDataOpen() then exit; //CheckDataOpen();
   df := nil;
   vectorlist := nil;
   Missing := nil;
   try
     CheckVariableNo(Varnames, 2, 2);
-    if not dm.CheckDataOpen() then exit; //CheckDataOpen();
     if Varnames.Count > 2 then
-      Error('Use: EpiCurve %s %s /by=%s', [varnames[0], varnames[1], varnames[2]], 103042);
+      Error('Use: EpiCurve %s %s /by=%s', [varnames[0], varnames[1], varnames[2]], 23039);
 
     Missing := TStringList.Create();
     Missing.Add(Varnames[0]);
-    
+//    Missing.Add(Varnames[1]);
+
     if Cmd.ParamByName['BY'] <> nil then
       varnames.Add(Cmd.ParamByName['BY'].AsString);
-      
+
     VectorList := dataframe.GetVectorListByName(Varnames);
     df := dataframe.prepareDataframe(Varnames, Missing);
     for i := 0 to Varnames.count-1 do
     begin
       if (VectorList[i].DataType = EpiTyString) then
-        Error('Cannot use string variable: %s', [Vectorlist[i].Name], 103043);
+        Error('Cannot use string variable: %s', [Vectorlist[i].Name], 23040);
       if not (VectorList[i].DataType in [EpiTyInteger, EpiTyDate]) then
         df.ConvertVector(VectorList[i].Name, EpiTyInteger, ' read as ');
     end;
@@ -3135,18 +3268,13 @@ begin
     CheckVariableNo(Varnames, 2);
     S := TStringList.Create;
     if cmd.ParamByName['BY'] <> Nil then
-      dm.info('Option %s not implemented yet', ['/BY'], 203034);
-{    begin
-      varnames.Add(Cmd.ParamByName['BY'].AsString);
-      S.Add(Cmd.ParamByName['BY'].AsString);
-    end else
-      dm.Error('/BY=<byvar> cannot be missing', [], 103044);  }
+      dm.info('Option %s not implemented yet', ['/BY'], 23082);
 
     // Outcome may never contain missing.
     S.Add(Varnames[0]);
     if (cmd.ParamExists['NM']) then
       S.AddStrings(Varnames);
-//      dm.info('Option %s not implemented yet', ['/NM'], 203034);
+//      dm.info('Option %s not implemented yet', ['/NM'], 23082);
 
 //    S.AddStrings(Varnames);
     df := dataframe.prepareDataframe(Varnames, S);
@@ -3284,7 +3412,7 @@ begin
     else
       df := Dataframe.PrepareDataframe(Varnames, Varnames);
 
-    if df.SelectedRowCount = 0 then error('No Data', [], 103005);
+    if df.SelectedRowCount = 0 then error('No Data', [], 10000);
 
     ltdf := OLifeTables.DoLifeTables(df, varnames, cmd);
 
@@ -3302,7 +3430,7 @@ begin
       initDataFrameVars(fDataframe);
       NotifyInterface(EpiVectorListChanged, integer(dataframe), 0);
       NotifyInterface(EpiOpenFile, integer(dataframe), 0);
-      OBrowse.UpdateBrowseWindow(fdataframe);
+      //OBrowse.UpdateBrowseWindow(fdataframe);
       OUpdate.UpdateBrowseWindow(fdataframe);
     end else
       FreeAndNil(ltdf);
@@ -3332,7 +3460,7 @@ end;
 
 function TDM.DoLabel(Varname, Varlabel: string): boolean;
 begin
-       if not dm.CheckDataOpen() then exit; //CheckDataOpen();
+  if not dm.CheckDataOpen() then exit;
   result := ODocument.DoLabel(Dataframe, Varname, Varlabel);
 end;
 
@@ -3393,7 +3521,7 @@ begin
     if Cmd.ParamByName['NOCONFIRM'] = nil then
     begin
       Del := False;
-      info('To avoid confirmation: erasepng /noconfirm', [], 203039);
+      info('To avoid confirmation: erasepng /noconfirm', [], 23087);
       if MessageDlg('Erase '+searchname +' ? (Files: ' + trim(format('%8d',[j]))+')',mtConfirmation,[mbNo,mbYes],0) = mrYes then
         if MessageDlg('Confirm erase ? (Files: ' + trim(format('%8d',[j])) + ')',mtConfirmation,[mbNo,mbYes],0) = mrYes then
           Del := True;
@@ -3410,7 +3538,7 @@ begin
       FindClose(sr);
     end;
   end;
-  info('%d files deleted', [k], 203040);
+  info('%d files deleted', [k], 23088);
 end;
 
 function TDM.runInitFile(const fn:string): boolean;
@@ -3502,22 +3630,20 @@ begin
   srem:=cmd;
   while true do
   try
-     if srem='' then break;
-     p:= pos(';', srem);
-     if p> 0 then
-     begin
-        scmd:=Sysutils.trim(copy(srem,1,p-1));
-        srem:=Sysutils.trim(copy(srem,p+1,Maxint));
-     end
-     else
-     begin
-       scmd:=srem;
-       srem:='';
-     end;
-     if scmd='' then break;
+    if srem='' then break;
+    p:= pos(';', srem);
+    if p> 0 then
+    begin
+      scmd:=Sysutils.trim(copy(srem,1,p-1));
+      srem:=Sysutils.trim(copy(srem,p+1,Maxint));
+    end else begin
+      scmd:=srem;
+      srem:='';
+    end;
+    if scmd = '' then break;
   //   writeln('. '+scmd,clwhite);
   //   CommandReset;
-     ana.RunCommandLine(scmd);
+    ana.RunCommandLine(scmd);
   finally
     ODebug.DecIndent;
   end;
@@ -3599,7 +3725,7 @@ begin
   foptions.AddObject('DEBUG LEVEL', TEpiOption.Create('DEBUG LEVEL', '0', EpiTyInteger));
   foptions.AddObject('DEBUG FILENAME', TEpiOption.Create('DEBUG FILENAME', 'moduletest.log', EpiTyString));
   foptions.AddObject('LANGUAGE',TEpiOption.Create('LANGUAGE','English',EpiTyString));
-  foptions.AddObject('DEFAULT CURRENT DIR',TEpiOption.Create('DEFAULT CURRECT DIR','ON',EpiTyBoolean));
+  foptions.AddObject('DEFAULT CURRENT DIR',TEpiOption.Create('DEFAULT CURRECT DIR','OFF',EpiTyBoolean));
 
   //lifetable settings
   foptions.AddObject('LIFETABLE INTERVAL',TEpiOption.Create('LIFETABLE INTERVAL', '0,7,15,30,60,90,180,360,540,720,3600,7200,15000', EpiTyString));
@@ -3628,6 +3754,10 @@ begin
   foptions.AddObject('TABLE CT RR HEADER',TEpiOption.Create('TABLE CT RR HEADER','Outcome:,Exposed,Not Exposed,N,n,Ill,RR,AR (%)',EpiTyString));
   foptions.AddObject('TABLE CI HEADER',TEpiOption.Create('TABLE CI HEADER','(95% CI)',EpiTyString));
   foptions.AddObject('TABLE CI FORMAT',TEpiOption.Create('TABLE CI FORMAT','()-',EpiTyString));
+
+  // Command group options:
+  foptions.AddObject('OPTION GRAPH',TEpiOption.Create('OPTION GRAPH', '/SizeX=400 /SizeY=300 ',EpiTyString));
+  foptions.AddObject('OPTION SPC',   TEpiOption.Create('OPTION SPC',    '/SizeX=600 /SizeY=200 ',EpiTyString));
 
   foptions.AddObject('SHOW SYSTEMINFO',TEpiOption.Create('SHOW SYSTEMINFO','OFF',EpiTyBoolean));
   foptions.AddObject('ECHO',TEpiOption.Create('ECHO','ON',EpiTyBoolean));
@@ -3669,13 +3799,15 @@ begin
   foptions.AddObject('GRAPH FILENAME SHOW', TEpiOption.Create('GRAPH FILENAME SHOW','OFF',EpiTyBoolean));
   foptions.AddObject('GRAPH FILENAME FOLDER', TEpiOption.Create('GRAPH FILENAME FOLDER','OFF',EpiTyBoolean));
   foptions.AddObject('GRAPH CLIPBOARD', TEpiOption.Create('GRAPH CLIPBOARD','ON',EpiTyBoolean));
-  foptions.AddObject('GRAPH SIZE X', TEpiOption.Create('GRAPH SIZE X', '400', EpiTyInteger));
-  foptions.AddObject('GRAPH SIZE Y', TEpiOption.Create('GRAPH SIZE Y', '300', EpiTyInteger));
+//  foptions.AddObject('GRAPH SIZE X', TEpiOption.Create('GRAPH SIZE X', '400', EpiTyInteger));
+//  foptions.AddObject('GRAPH SIZE Y', TEpiOption.Create('GRAPH SIZE Y', '300', EpiTyInteger));
   foptions.AddObject('GRAPH FONT SIZE',TEpiOption.Create('GRAPH FONT SIZE','10',EpiTyInteger));
   foptions.AddObject('GRAPH COLOUR',TEpiOption.Create('GRAPH COLOUR','01234567890123456789',EpiTyString));
-  foptions.AddObject('GRAPH COLOUR TEXT',TEpiOption.Create('GRAPH COLOUR','213333333',EpiTyString));
+  foptions.AddObject('GRAPH COLOUR TEXT',TEpiOption.Create('GRAPH COLOUR TEXT','102222222',EpiTyString));
+  foptions.AddObject('GRAPH COLOUR SPC',TEpiOption.Create('GRAPH COLOUR SPC','1307946',EpiTyString));
   foptions.AddObject('GRAPH SYMBOL',TEpiOption.Create('GRAPH SYMBOL', '01234567890123456789',EpiTyString));
   foptions.AddObject('GRAPH SYMBOL FILLED',TEpiOption.Create('GRAPH SYMBOL FILLED', '01010101010101010101',EpiTyString));
+
 
   foptions.AddObject('VAR GENERATE TYPE',TEpiOption.Create('VAR GENERATE TYPE','f',EpiTyString));
   foptions.AddObject('RECODE INTERVAL TEXT',TEpiOption.Create('RECODE INTERVAL TEXT','-',EpiTyString));
@@ -3704,13 +3836,6 @@ begin
   foptions.AddObject('VIEWER FONT SIZE',TEpiOption.Create('VIEWER FONT SIZE','10',EpiTyInteger));
   foptions.AddObject('STYLE SHEET',TEpiOption.Create('STYLE SHEET','"'+ extractfilepath(application.exename)+'epiout.css'+'"',EpiTyString));
   foptions.AddObject('STYLE SHEET EXTERNAL',TEpiOption.Create('STYLE SHEET EXTERNAL','OFF',EpiTyBoolean));
-
-//obsolete
-{  foptions.AddObject('PRINTER',TEpiOption.Create('PRINTER','""',EpiTyString));
-  foptions.AddObject('PORT',TEpiOption.Create('PORT','ON',EpiTyString));
-  foptions.AddObject('PMODE',TEpiOption.Create('PMODE','0',EpiTyInteger));
-  foptions.AddObject('PLINES',TEpiOption.Create('PLINES','0',EpiTyInteger));
-  foptions.AddObject('PAGE',TEpiOption.Create('PAGE','""',EpiTyString)); }
 end;
 
 function TDM.initGlobalSysVar: boolean;
@@ -3738,6 +3863,21 @@ begin
   finally
     pvar.free;
   end;
+  try
+    pvar:= TAnaVariableDescriptor.CreateSystem('CURRENTDIR',EpiTyString,12,0);
+    pvar.DefaultValue := GetCurrentDir;
+    Executor.NewVar(pvar);
+  finally
+    pvar.free;
+  end;
+  try
+    pvar:= TAnaVariableDescriptor.CreateSystem('LANG',EpiTyString,12,0);
+    pvar.DefaultValue := OTranslator.LanguageAbbriv;
+    Executor.NewVar(pvar);
+  finally
+    pvar.free;
+  end;
+
 end;
 
 
@@ -3802,7 +3942,7 @@ try
 end;  //case
 except
   on E: Exception do
-    error('Exception occured: %s', [E.message], 103017);
+    error('Exception occured: %s', [E.message], 10001);
 end;
 end;
 
@@ -3815,15 +3955,18 @@ var
 begin
   fn1:=Sysutils.trim(fn);
   if fn1='' then
+  begin
     if not GetOpenfilename(fn1,EpiLogFileFilter) then exit;
+    dm.CurrentDir := ExtractFilePath(fn1);
+    SetCurrentDir(dm.CurrentDir);
+    NotifyInterface(EpiRefreshDir, integer(pchar(dm.CurrentDir)), 0);
+  end;
   try
     NotifyInterface(epiLoadHTMLfile,integer(pchar(fn1)),0);
   except
-  on E: Exception do
-    error('Exception occured: %s', [E.message], 103017);
+    on E: Exception do
+      error('Exception occured: %s', [E.message], 10001);
   end;
-  //if GetOptionValue('OUTPUT FOLDER', opt) then
-  //  SetCurrentDir(opt.Value);      //removed again due to problems   Oct 3rd JL
 end;
 
 
@@ -3840,7 +3983,7 @@ begin
     ViewHelpForm(trim(fn1));
   except
   on E: Exception do
-    error('Exception occured: %s', [E.message], 103017);
+    error('Exception occured: %s', [E.message], 10001);
   end;
 end;
 
@@ -3855,7 +3998,7 @@ begin
     NotifyInterface(epiEditfile,integer(pchar(fn1)),0);
   except
   on E: Exception do
-    error('Exception occured: %s', [E.message], 103017);
+    error('Exception occured: %s', [E.message], 10001);
   end;
 end;
 
@@ -3874,7 +4017,7 @@ begin
     if Cmd.ParamByName['CLOSE'] <> nil then
       closeout();
   if Codemaker.LogFileName <> '' then
-    Error('Log open - Add /close', [], 103045);
+    Error('Log open - Add /close', [], 23041);
   nofn := false;
   fn1:=Sysutils.trim(fn);
   if fn1='' then
@@ -3906,7 +4049,7 @@ begin
         else
           CodeMaker.FileMode := fmCreate;
       end else
-        error('File %s exists. <br> Use /Replace or /Append to replace or append logfile.', [fn1], 103046);
+        error('File %s exists. <br> Use /Replace or /Append to replace or append logfile.', [fn1], 23042);
     end else
       CodeMaker.FileMode := fmCreate;
   except
@@ -3921,11 +4064,11 @@ begin
      CodeMaker.StartOutput;
      // Only applicable during start of program.
      if cmd <> nil then
-       info('Logopen %s <br> %s %s %s', [fn1, GetBuildInfoAsString, DateToStr(Date), copy(TimeTostr(Time),1,5)], 203041);
+       info('Logopen %s <br> %s %s %s', [fn1, GetBuildInfoAsString, DateToStr(Date), copy(TimeTostr(Time),1,5)], 23089);
      Umain.aMainForm.StatusBar.Panels[4].text:= ExtractFileNameNoPath(fn1);
   except
   on E: Exception do
-      error('Exception occured: %s', [E.message], 103017);
+      error('Exception occured: %s', [E.message], 10001);
   end;
   //if GetOptionValue('OUTPUT FOLDER', opt) then
   //  SetCurrentDir(opt.Value);  //removed again due to problems   Oct 3rd JL
@@ -3940,16 +4083,16 @@ begin
   try
     fn1 :=CodeMaker.LogFileName;
     if fn1 = '' then
-        info('Log file not open', [], 203042)
+        info('Log file not open', [], 23090)
     else
     begin
      CodeMaker.LogFileName :='';
-     info('Log file %s closed', [fn1], 203043);
+     info('Log file %s closed', [fn1], 23091);
      Umain.aMainForm.StatusBar.Panels[4].text:= '';
     end;
   except
   on E: Exception do
-    error('Exception occured: %s', [E.message], 103017);
+    error('Exception occured: %s', [E.message], 10001);
   end;
     aMainForm.Aclogopen.Enabled := true;
    aMainForm.Aclogclose.Enabled := false;
@@ -3974,41 +4117,44 @@ begin
   fFloatFormat:=s;
 end;
 
-function TDM.Correlate(Varnames: TStrings): boolean;
+function TDM.Correlate(Varnames: TStrings; cmd: TCommand): boolean;
 var
    CorMatrix : XMatrix;
    df: TEpiDataFrame;
    checknames: TStringList;
 begin
   try
-         if not dm.CheckDataOpen() then exit; //checkdataopen();
+    if not dm.CheckDataOpen() then exit; //checkdataopen();
     CheckNames := TStringList.Create();
     dataframe.GetVectorListByName(VarNames).GetVectorNames(CheckNames);
     CheckVariableNo(CheckNames, 2);
     df := dataframe.prepareDataframe(Varnames, Varnames);
     if df.selectedRowCount > MAXOBSERVATIONS THEN
-      error('Max records for %s: %d N was: %d', ['Correlate',MAXOBSERVATIONS,df.selectedrowcount], 103047);
+      error('Max records for %s: %d N was: %d', ['Correlate',MAXOBSERVATIONS,df.selectedrowcount], 23043);
     EpiCorrelate(Varnames,df,CorMatrix);
-    OutCorrelate(Varnames,df,CorMatrix);
+    if not Cmd.ParamExists['Q'] then
+      OutCorrelate(Varnames,df,CorMatrix);
   finally
     CheckNames.Free;
     if assigned(df) then df.free;
   end;
 end;
 
-function TDM.regress(Varnames: TStrings): boolean;
+function TDM.regress(Varnames: TStrings; cmd: TCommand): boolean;
 var
    RegRec: TMultStatRec;
    df: TEpiDataFrame;
 begin
+  df := nil;
   try
-         if not dm.CheckDataOpen() then exit; //checkdataopen();
+    if not dm.CheckDataOpen() then exit; //checkdataopen();
     CheckVariableNo(Varnames, 2);
     df := dataframe.prepareDataframe(Varnames, Varnames);
     if df.selectedRowCount > MAXOBSERVATIONS THEN
-      error('Max records for %s: %d N was: %d', ['Regression',MAXOBSERVATIONS,df.selectedrowcount], 103047);
+      error('Max records for %s: %d N was: %d', ['Regression',MAXOBSERVATIONS,df.selectedrowcount], 23043);
     OLinearRegression.EpiRegress(Varnames,df,RegRec);
-    OLinearRegression.OutRegress(Varnames,df,RegRec,inttostr(dataframe.selectedRowCount));
+    if not Cmd.ParamExists['Q'] then
+      OLinearRegression.OutRegress(Varnames,df,RegRec,inttostr(dataframe.selectedRowCount));
   finally
     if assigned(df) then df.free;
   end;
@@ -4024,25 +4170,25 @@ var
 begin
   varco := varnames.count;
   tab :=nil;
-try
-  tab:=Outputlist.NewTable(varco+1,varco+1);
-  tab.TableType := sttNormal;
-  for i:= 0 to varco-1 do
-  begin
-    tab.Cell[i+2,1]:=varnames[i];
-    tab.Cell[1,i+2]:=varnames[i];
+  try
+    tab:=Outputlist.NewTable(varco+1,varco+1);
+    tab.TableType := sttNormal;
+    for i:= 0 to varco-1 do
+    begin
+      tab.Cell[i+2,1]:=varnames[i];
+      tab.Cell[1,i+2]:=varnames[i];
+    end;
+     for i:= 1 to varco do
+        for j:= 1 to varco do
+             if i <= j then                    //col,row
+               tab.Cell[i+1,j+1]:= Epiformat(CorMatrix[i,j],'%4.3f')
+             else
+               tab.Cell[i+1,j+1]:='';
+    codemaker.outputtable(tab,'Total N = ' + Inttostr(dataframe.selectedRowCount) + ' Included: N= ' + Inttostr(df.selectedrowcount));
+    Sendoutput;
+  finally
+   tab.free;
   end;
-   for i:= 1 to varco do
-      for j:= 1 to varco do
-           if i <= j then                    //col,row
-             tab.Cell[i+1,j+1]:= Epiformat(CorMatrix[i,j],'%4.3f')
-           else
-             tab.Cell[i+1,j+1]:='';
-  codemaker.outputtable(tab,'Total N = ' + Inttostr(dataframe.selectedRowCount) + ' Included: N= ' + Inttostr(df.selectedrowcount));
-  Sendoutput;
-finally
- tab.free;
-end;
 end;
 
 
@@ -4058,13 +4204,13 @@ begin
    // if (Cmd.ParamByName['M'] <> nil) then dm.info('Option /M not implemented yet');
 
     if (Cmd.ParamByName['BY'] = nil) and (Varnames.Count = 2) then
-             dm.Info('Syntax: Kwallis %s /BY=%s', [Varnames[0],Varnames[1]], 203044);
+             dm.Info('Syntax: Kwallis %s /BY=%s', [Varnames[0],Varnames[1]], 23092);
 
     CheckVariableNo(Varnames, 1, 2);
 
     //check for data types
     if dataframe.VectorByName[Varnames[0]].DataType in [EpiTyDate,EpiTyUppercase,EpiTyString] then
-         dm.error('A date/string variable cannot be processed using this command', [], 103048);
+         dm.error('A date/string variable cannot be processed using this command', [], 23044);
 
     if Varnames.Count = 1 then
       if Assigned(Cmd.ParamByName['BY']) then
@@ -4074,7 +4220,7 @@ begin
 
 
     if dataframe.VectorByName[Varnames[1]].DataType in [EpiTyString,EpiTyUppercase] then
-          dm.error('Category variable must be numerical<br>create numerical variable', [], 103050);
+          dm.error('Category variable must be numerical<br>create numerical variable', [], 23046);
 
     Byvar := TStringList.Create();
     Byvar.Add(Varnames[0]);
@@ -4238,7 +4384,7 @@ var
  t: DWord;
 begin
  Result:=false;
- if fn='' then error('Missing file name', [], 101004);
+ if fn='' then error('Missing file name', [], 21004);
  t := GetTickcount;
 try
    CreateNewDataSetFromResults(fn,varnames);
@@ -4246,8 +4392,8 @@ try
 except
   On E : Exception do
   begin
-   Error('Exception occured: %s', [E.Message], 103017, -1);
-   Error('Failed to write %s', [fn], 103051, -1);
+   Error('Exception occured: %s', [E.Message], 10001, -1);
+   Error('Failed to write %s', [fn], 23047, -1);
   end;
 end;
 end;

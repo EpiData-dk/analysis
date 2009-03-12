@@ -241,7 +241,7 @@ var Vectorlist : TEpiVectors;
 
        if tab2(.c+1,r+1.)=0 then
        begin
-           dm.error('%s The table appears to be empty!', [s], 116001);
+           dm.error('%s The table appears to be empty!', [s], 40001);
            goto slut;
        end;
 

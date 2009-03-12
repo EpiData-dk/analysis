@@ -1,11 +1,10 @@
 object TableDlg: TTableDlg
-  Left = 484
-  Top = 275
+  Left = 556
+  Top = 302
+  Width = 666
+  Height = 349
   BorderIcons = [biSystemMenu]
-  BorderStyle = bsDialog
   Caption = 'Table Dialog'
-  ClientHeight = 296
-  ClientWidth = 660
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,23 +18,26 @@ object TableDlg: TTableDlg
   PixelsPerInch = 96
   TextHeight = 13
   object CmdPanel: TPanel
+    Tag = -1
     Left = 0
-    Top = 263
-    Width = 660
+    Top = 282
+    Width = 658
     Height = 33
     Align = alBottom
     TabOrder = 0
     TabStop = True
     DesignSize = (
-      660
+      658
       33)
     object MinimizeBtn: TBitBtn
+      Tag = 7134
       Left = 171
       Top = 8
       Width = 56
       Height = 20
       Hint = 'Hide options'
       TabOrder = 1
+      Visible = False
       OnClick = ExpandBtnClick
       Glyph.Data = {
         76010000424D7601000000000000760000002800000020000000100000000100
@@ -54,7 +56,7 @@ object TableDlg: TTableDlg
     end
     object ExpandBtn: TBitBtn
       Tag = 7133
-      Left = 172
+      Left = 188
       Top = 8
       Width = 54
       Height = 20
@@ -63,6 +65,7 @@ object TableDlg: TTableDlg
       ParentShowHint = False
       ShowHint = True
       TabOrder = 3
+      Visible = False
       OnClick = ExpandBtnClick
       Glyph.Data = {
         76010000424D7601000000000000760000002800000020000000100000000100
@@ -130,6 +133,7 @@ object TableDlg: TTableDlg
       OnClick = CancelBtnClick
     end
     object HelpBtn: TButton
+      Tag = -1
       Left = 147
       Top = 8
       Width = 20
@@ -154,15 +158,17 @@ object TableDlg: TTableDlg
     end
   end
   object Panel1: TPanel
+    Tag = -1
     Left = 0
     Top = 0
-    Width = 660
-    Height = 263
+    Width = 658
+    Height = 282
     Align = alClient
     Alignment = taLeftJustify
     TabOrder = 1
     TabStop = True
     object FreqPanel: TPanel
+      Tag = -1
       Left = 176
       Top = 5
       Width = 217
@@ -266,16 +272,17 @@ object TableDlg: TTableDlg
       end
     end
     object FieldsGroup: TGroupBox
-      Tag = 7100
-      Left = -1
+      Tag = -1
+      Left = 7
       Top = 7
       Width = 162
-      Height = 250
+      Height = 266
       Caption = '&Select Variables'
       TabOrder = 2
       object VarLabel: TLabel
-        Left = 12
-        Top = 226
+        Tag = -1
+        Left = 11
+        Top = 238
         Width = 137
         Height = 13
         AutoSize = False
@@ -289,10 +296,10 @@ object TableDlg: TTableDlg
         Visible = False
       end
       object GetVar: TCheckListBox
-        Left = 35
+        Left = 11
         Top = 15
-        Width = 125
-        Height = 233
+        Width = 142
+        Height = 210
         ItemHeight = 13
         TabOrder = 0
         OnClick = GetVarClick
@@ -301,6 +308,7 @@ object TableDlg: TTableDlg
       end
     end
     object AdvTablePanel: TPanel
+      Tag = -1
       Left = 398
       Top = 10
       Width = 239
@@ -457,12 +465,14 @@ object TableDlg: TTableDlg
       end
     end
     object TablePanel: TPanel
+      Tag = -1
       Left = 173
       Top = 9
       Width = 217
       Height = 185
       TabOrder = 3
       object ColumnVar: TLabel
+        Tag = -1
         Left = 54
         Top = 16
         Width = 3
@@ -476,6 +486,7 @@ object TableDlg: TTableDlg
         ParentFont = False
       end
       object RowVar: TLabel
+        Tag = -1
         Left = 38
         Top = 38
         Width = 3
@@ -489,6 +500,7 @@ object TableDlg: TTableDlg
         ParentFont = False
       end
       object Variables: TLabel
+        Tag = -1
         Left = 13
         Top = 61
         Width = 3
@@ -677,8 +689,9 @@ object TableDlg: TTableDlg
       end
     end
     object HelpPanel: TPanel
-      Left = 48
-      Top = 32
+      Tag = -1
+      Left = 32
+      Top = 64
       Width = 241
       Height = 113
       Hint = 'Short Instruction'

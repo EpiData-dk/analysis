@@ -26,7 +26,7 @@ type
   public
     Cmd: TCommand;
     // For Externaly available methods.
-    procedure OutLifeTable(df: TEpiDataframe);
+    procedure OutLifeTable(df: TEpiDataframe; KMPrinciple: boolean = True);
     function CreateLifeTable(df: TEpiDataFrame; Varnames: TStrings; var OutputTable: TStatTable): TEpiDataFrame;
     function DoLifeTables(dataframe: TEpiDataframe; varnames: TStrings; cmd: TCommand): TEpiDataFrame;
   end;
@@ -63,7 +63,7 @@ begin
        (not (Cmd.ParamExists['Q'])) then
       dm.CodeMaker.OutputTable(xtab, '');
     if (not Cmd.ParamExists['NOLT']) and (not (Cmd.ParamExists['Q'])) then
-      OutLifeTable(result);
+      OutLifeTable(result, not (Dataframe.VectorByName[varnames[1]].DataType = EpiTyFloat));
     dm.Sendoutput();
   finally
     if Assigned(xTab) then FreeAndNil(xTab);
@@ -73,7 +73,7 @@ begin
   end;
 end;
 
-procedure TLifeTables.OutLifeTable(df: TEpiDataframe);
+procedure TLifeTables.OutLifeTable(df: TEpiDataframe; KMPrinciple: boolean = True);
 var
   tf: TTableFormats;
   tab: TStatTable;
@@ -93,8 +93,13 @@ begin
   else
     tab.Footer := 'Recorded time used for all observations (Kaplan-Meier principle)';
 
+  if not KMPrinciple then
+    tab.Footer := 'Warning: Time variable has type float, interval=1 assumed';
+
+  tab.Footer := tab.Footer +  '<br><font class=small>Time intervals from left number up to right number</font>';
+
   if Cmd.ParamExists['ADJ'] then
-    tab.Footer := '<br>Survival proportion adjustment not implemented';
+    tab.Footer := '<br>Censored observation contribute half of final period (Adjusment).';
 
   // Headers.
   tab.Cell[2,1] := tf.LTHdr.IntVal;
@@ -729,7 +734,8 @@ begin
       Pd := Pd + (IntPower(SDeath[i] - ESum[i], 2) / ESum[i]);
       inc(en);
     end;
-  xTab.Footer := Format('<br>Log Rank test of equality of survivor function: Chi<sup>2</sup>(%d)=', [en-1]) +
+  xTab.Footer := xTab.Footer +
+                 Format('<br>Log Rank test of equality of survivor function: Chi<sup>2</sup>(%d)=', [en-1]) +
                  EpiFormat(Pd,'%7.3f ') + '  P= ' +
                  EpiFormat(PCHI2(en-1, Pd),'%7.4f ');
   Dm.AddResult('$LRANKCHI2', EpiTyFloat, Pd, 7, 3);

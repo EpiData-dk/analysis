@@ -422,7 +422,7 @@ StartHTM: string =  '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://w
     'Copyright 2002-2008  Epidata Association <A HREF="HTTP:\\www.epidata.dk">www.epidata.dk</A></font></h3>' + #13;
 
 
- StartFontHtm1: string =     '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">' + #13 +
+ StartFontHtml: string =     '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">' + #13 +
 '<head>' + #13 +
 '<meta name="copyright" content="EpiData Association">' + #13 +
 '<meta name="description" content="Setup for EpiData Analysis">' + #13 +
@@ -437,4 +437,156 @@ StartHTM: string =  '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://w
  font20: string =  '  <A HREF=''epi:cls;set echo=off;define fn __________________________ glob;fn= "@sysdir";cd "@fn";copyfile "epidatastat.ini" "epidatastat.old" /replace;copyfile "epidatastat.20" "epidatastat.ini" /replace;'+'set browser font size=20; set graph  font size=20; set viewer font size=20;  set window font size=20; set editor font size= 20; set echo=on;';
  final : string = '<A HREF=''epi:cls;set echo=off;define fn __________________________ glob;fn= "@sysdir/docs/en/";cd "@fn";copyfile "start0.htm" "start.htm" /replace;cd "@sysdir";closehelp;set style sheet="@sysdir/epiout.css";cls;set echo=on;';
 
+SpcHTML: string =
+  ' <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"   "http://www.w3.org/TR/html4/loose.dtd"> ' +
+  '<html> ' +
+  '<head> ' +
+  '<meta name="Get_Latest_From" content="Http://www.epidata.dk"> ' +
+  '<meta name="author" content="Specification: JM.Lauritsen."> ' +
+  '<meta name="Copyright" content="EpiData Association, Denmark"> ' +
+  '<meta name="No_Payment" content="EpiData Analysis is freeware, but check license principles"> ' +
+  '<meta name="Update_from:" content="Http://www.epidata.dk"> ' +
+  '<meta name="Disclaimer" content="Http://www.epidata.dk/disclaim.htm"> ' +
+  '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"> ' +
+  '<title>SPC tutorial guide</title> ' +
+  '<STYLE type="text/css"> ' +
+  '<!-- ' +
+  'P { color: #000000; font-family: serif,sanserif,monospace ; font-size: 1.0em; ALIGN=JUSTIFY} ' +
+  'H1 {  font-size: 1.1em; margin-top: 1cm;  color: #000000; widows: 2; orphans: 2; color : Blue } ' +
+  'H2 { font-size: 1.05em;  margin-top: 0.5cm; direction: ltr; color: #000000; text-align: left; ; color : Blue} ' +
+  'H3 { font-size: 1.025em; margin-top: 0.5cm;  direction: ltr; color: #000000; text-align: left; ; color : Blue } ' +
+  'H4 { font-size: 1.0em; margin-top: 0.5cm;  direction: ltr; color: #000000; text-align: left; ; color : Blue } ' +
+  'ul { margin-left: 2px; margin-top: 0.2em ;padding: 0 1em 1em 1em;} ' +
+  'li { text-indent: 1px; margin-top: 0.0cm ; padding: 0.2em 0 0.2em 0.5em;} ' +
+  '.heading { color: blue; font-weight: bold; font-size: 1.05em; ALIGN=JUSTIFY}               ' +
+  '.cmdgroup {color: blue; font-weight: normal; background-color: yellow}  ' +
+  '.bodywhite  {color: black; background-color:white; } ' +
+  '.body    {color: white ; background-color: white ; font-size: 1.0em ; font-weight: normal } ' +
+  '.cmd      {color: green; font-weight: normal; } ' +
+  '.cmdgroup {color: blue; font-weight: normal; background-color: yellow}  ' +
+  '.limit    {font-weight: normal; color: red; }  ' +
+  '.indent   {margin-left: 30px;} ' +
+  '.small {font-size: 0.85em;} ' +
+  'table {empty-cells: show; 	vertical-align: baseline; border-spacing: 0; font-family: serif,sanserif,monospace ; font-size: 1.0em; } ' +
+  'table { color: #000000;	background-color: white;	empty-cells: show;} ' +
+  'table tr,td { border: solid blue 1px; 	background-color: white; Text-align: left;	padding-left: .3em;	padding-right: .3em; font-size: 1.0em} ' +
+  'table .firstcol { Text-align: left ; font-weight: bold; color: red}    ' +
+  '--> ' +
+  '</STYLE> ' +
+  '</head> ' +
+  '<body class=bodywhite> ' +
+  '<h3>Instruction - how to create an SPC chart in EpiData Analysis</h3> ' +
+  '<p style="font-size:0,9em"> <a href="Epi:set echo=off;tabdialog;set start page=spc.htm;view spc">Click here to Start</a> ' +
+  '<br><b>Where is your data now ?</b> ' +
+  '<ul ><li><b>Already stored</b>: Select: Read <u>File</u> or <u>Clipboard</u>  ' +
+  '<li><b>On paper</b>: Select "Create Data"  ' +
+  '</ul></p> ' +
+  '<table border=1 cellspacing=0 cellpadding=0 border=single width=600> ' +
+  '<tr> ' +
+  '<td><b>1</b></td> ' +
+  '<td colspan=7> ' +
+  '<p align=left font style="font-size:1.2em"> ' +
+  '<b>Which type of data did you record ? A, B or C</b></font></p> ' +
+  '</td> ' +
+  '</tr> ' +
+  '<tr> ' +
+  '<td><b>2</b></td> ' +
+  '<td colspan=3> ' +
+  '<p style="text-align:center"><b>A Measurement data</b></p> ' +
+  '</td> ' +
+  '<td colspan=3> ' +
+  '<p style="text-align:center"><b>B Count data</b></p> ' +
+  '</td> ' +
+  '<td valign=top > ' +
+  '<p align=center style="text-align:center"><b>C Rare occurrences</b></p> ' +
+  '</td> ' +
+  '</tr> ' +
+  '<tr><td><b>3</b></td> ' +
+  '<td colspan=3 valign=top > ' +
+  '<p>Number&nbsp;of&nbsp;measurements&nbsp;per&nbsp;time&nbsp;point</p> ' +
+  '</td> ' +
+  '<td colspan=2 valign=top > ' +
+  '<p>Errors or defects ' +
+  '</p> ' +
+  '</td> ' +
+  '<td valign=top > ' +
+  '<p>Proportion</p> ' +
+  '</td> ' +
+  '<td valign=top >&nbsp;</p> ' +
+  '</td> ' +
+  '</tr> ' +
+  '<tr><td><b>4</b></td> ' +
+  '<td  valign=top >Only one</p> ' +
+  '</td> ' +
+  '<td  valign=top >2-10</p> ' +
+  '</td> ' +
+  '<td  valign=top >&gt;10</p> ' +
+  '</td> ' +
+  '<td colspan=2 valign=top > ' +
+  '<p>Sample&nbsp;size&nbsp;per&nbsp;time&nbsp;point</p> ' +
+  '</td> ' +
+  '<td valign=top > ' +
+  '<p>Sample&nbsp;size&nbsp;per&nbsp;time&nbsp;point</p> ' +
+  '</td> ' +
+  '<td valign=top > ' +
+  '<p>Dates are  recorded</p> ' +
+  '</td> ' +
+  '</tr> ' +
+  '<tr><td><b>5</b></td> ' +
+  '<td  valign=bottom><b>RunChart&nbsp;&nbsp;&nbsp;&nbsp;Ichart</b></p> ' +
+  '</td> ' +
+  '<td  valign=bottom ><b>Xbar /range</b></p> ' +
+  '</td> ' +
+  '<td  valign=bottom><b>Xbar /sigma</b></p> ' +
+  '</td> ' +
+  '<td  valign=bottom >Constant <br><b>Cchart</b></p> ' +
+  '</td> ' +
+  '<td  valign=bottom >Varies<br><b>Uchart</b></p> ' +
+  '</td> ' +
+  '<td  valign=bottom ><b>Pchart</b></p> ' +
+  '</td> ' +
+  '<td  valign=bottom><b>Gchart</b></p> ' +
+  '</td> ' +
+  '</tr> ' +
+  '<!-- Add here the actual commands defining the charts --> ' +
+  '<tr><td><b>6</b><br>data</td> ' +
+  '<td valign=top><p  align=center > ' +
+  '<a href="Epi:set echo=off;*type "Answer the following questions one by one" /h3; view spc;close;set echo=off;generate ?How many data points?;  ' +
+  'labeldata "? describe contents: title is ?"; gen ?is the sequence by date(d) or number(i): write d or i ? time;gen i number;update; ' +
+  'savedata "?Save data as (name)?";view spc;">Enter Data</a></p> ' +
+  '</td> ' +
+  '<td><p>Enter&nbsp;data<br><small>And&nbsp;Close</small></p></td> ' +
+  '<td><p>Enter&nbsp;data<br><small>And&nbsp;Close</small></p></td> ' +
+  '<td><p>Enter&nbsp;data<br><small>And&nbsp;Close</small></p></td> ' +
+  '<td><p>Enter&nbsp;data<br><small>And&nbsp;Close</small></p></td> ' +
+  '<td><p>Enter&nbsp;data<br><small>And&nbsp;Close</small></p></td> ' +
+  '<td> ' +
+  '<a href="Epi:set echo=off;type "Answer the following questions one by one" /h3; view spc;close;set echo=off;generate ?How many data points?;  ' +
+  'labeldata "? describe contents: title is ?"; gen ?is the sequence by date(d) or number(i): write d or i ? time;update; ' +
+  'savedata "?Save data as (name)?";view spc;">Enter Data</a> ' +
+  '</td> ' +
+  '</tr> ' +
+  '<tr><td><b>7</b><br>Charts</td> ' +
+  '<td  valign=top><p align=center>Show<br><a href="Epi:set echo=off;ichart time number;type "To start spc table again press F8" /h3;">RunChart</a>&nbsp;&nbsp; ' +
+  '<a href="Epi:set echo=off;ichart time number;type "To start spc table again press F8" /h3;">Ichart</a> ' +
+  '</td> ' +
+  '<td><p>Enter&nbsp;data<br><small>And&nbsp;Close</small></p></td> ' +
+  '<td><p>Enter&nbsp;data<br><small>And&nbsp;Close</small></p></td> ' +
+  '<!--  <td><p>Enter&nbsp;data<br><small>And&nbsp;Close</small></p></td> --> ' +
+  '<td><p>Enter&nbsp;data<br><small>And&nbsp;Close</small></p></td> ' +
+  '<td><p>Enter&nbsp;data<br><small>And&nbsp;Close</small></p></td> ' +
+  '<td><p>Enter&nbsp;data<br><small>And&nbsp;Close</small></p></td> ' +
+  '<td> ' +
+  '<a href="Epi:set echo=off;cls;type "To start spc table again press F8" /h3;gchart time;"> ' +
+  'Show&nbsp;Gchart</a></td> ' +
+  '</td> ' +
+  '</tr> ' +
+  '</table> ' +
+  '<p>Use the links at the bottom line to define an appropriate data structure, enter data and show the graph ' +
+  '<font style="color : red; font-size: 0.9em">(close other data first !!)</font> ' +
+  '<br>To see the SPC table again  ' +
+  '<font style="font-size:0,9em"><a href="Epi:set echo=off;set start page=spc.htm;view spc">view spc</a></font> ' +
+  'or press F8 <small>(if you clicked start above)</small></p> ' +
+  '</body> ' +
+  '</html> ';
 

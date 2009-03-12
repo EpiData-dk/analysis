@@ -123,7 +123,7 @@ Begin
     else if PrevToken.Token='REPEAT' then
        fld.Repeated  := true
     else if PrevToken.Token='MISSINGVALUE' then
-       dm.info('Missingvalue NOT supported yet', [], 202001)
+       dm.info('Missingvalue NOT supported yet', [], 22001)
     else
       while not(NextToken.TokenType in [opEndofLine,opEndofFile]) do;
   end//opidentifier

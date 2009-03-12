@@ -9,10 +9,8 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, UVectors, UvectorOp, ansDataTypes,Uframes,  ExtCtrls, ComCtrls ,
   ActnList,UcmdlineEdit, StdActns, Menus, ImgList, Htmlview, ToolWin,SMStatusbar,
-  Tbuttonled, shellapi, Math, UDebug, UEpiDatatypes,
+  Tbuttonled, shellapi, Math, UDebug, UEpiDatatypes, UGraphDialog,
   Buttons, XPMan, UFRGODlg, HTMLSubs, UTranslation, UMerge;
-
-{#todo2 : remove TSMToken to ansDataTypes}
 
 type
   TaMainForm = class(TForm)
@@ -314,6 +312,28 @@ type
     LifeTable1: TMenuItem;
     CumulativePlot2: TMenuItem;
     N38: TMenuItem;
+    SPCCharts1: TMenuItem;
+    SPCMenu1: TMenuItem;
+    N32: TMenuItem;
+    AcRunCChart: TAction;
+    AcRunUChart: TAction;
+    AcRunGChart: TAction;
+    UChart1: TMenuItem;
+    CChart1: TMenuItem;
+    GChart1: TMenuItem;
+    AcShowSPCMenu: TAction;
+    AcRunPareto: TAction;
+    AcRunProbitPlot: TAction;
+    AcRunCumulativePlot: TAction;
+    AcRunDotPlot: TAction;
+    AcRunCIPlot: TAction;
+    AcRunEpicurve: TAction;
+    IChart1: TMenuItem;
+    AcRunXbarChart: TAction;
+    N41: TMenuItem;
+    N42: TMenuItem;
+    N44: TMenuItem;
+    N39: TMenuItem;
 
     procedure FormCreate(Sender: TObject);
     procedure CmdEditCommand(Sender: TObject);
@@ -442,10 +462,6 @@ type
     procedure AcTableDlgExecute(Sender: TObject);
     procedure CopyImageToClipboardClick(Sender: TObject);
     procedure CopyTableToClipboardClick(Sender: TObject);
-    procedure Dotplot1Click(Sender: TObject);
-    procedure CumulativePlot1Click(Sender: TObject);
-    procedure EpiCurve1Click(Sender: TObject);
-    procedure Pareto1Click(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure AcShowresultvariablesExecute(Sender: TObject);
     procedure AcOptionExecute(Sender: TObject);
@@ -458,11 +474,20 @@ type
     procedure HistorylistMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure HistorylistExit(Sender: TObject);
-    procedure Ciplot1Click(Sender: TObject);
     procedure AcImportFromClipboardExecute(Sender: TObject);
     procedure AcRunKMPlotExecute(Sender: TObject);
     procedure AcRunLifeTableExecute(Sender: TObject);
-    procedure CumulativePlot2Click(Sender: TObject);
+    procedure AcRunCChartExecute(Sender: TObject);
+    procedure AcRunUChartExecute(Sender: TObject);
+    procedure AcRunGChartExecute(Sender: TObject);
+    procedure AcShowSPCMenuExecute(Sender: TObject);
+    procedure AcRunParetoExecute(Sender: TObject);
+    procedure AcRunProbitPlotExecute(Sender: TObject);
+    procedure AcRunCumulativePlotExecute(Sender: TObject);
+    procedure AcRunDotPlotExecute(Sender: TObject);
+    procedure AcRunCIPlotExecute(Sender: TObject);
+    procedure AcRunEpicurveExecute(Sender: TObject);
+    procedure AcRunXbarChartExecute(Sender: TObject);
     //JL add end
   private
     dbfdata: TEpiDBFdataset;
@@ -471,7 +496,6 @@ type
     SelectedHTML : string;
     CmdBuffer: string;
     FCurrentErrorLine: integer;
-    Quitting: boolean;
     oldPrecisionMode: TFPUPrecisionMode;
 //    FTranslator: TTranslator;
     procedure ShowVarByRightClick(x, y: Integer);
@@ -514,21 +538,22 @@ type
            t2:string='Y Variable 1';
            t3:string='Y Variable 2';
            t4:string='Y Variable 3';
-           tb:string='Y Variable 4');
-
+           tb:string='Y Variable 4'); overload;
+    procedure DoGraphDlg(const DialogOptions: TGraphDlgOptions); overload;
     procedure DoTableDlg(const cmdstring: string);
     procedure LVarsInsert(delete: boolean = true);
     procedure HistoryInsert(delete: boolean = true);
-
+    procedure HandleShutdown();
   public
     CmdEdit:TCommandLineEditor;
     booUMainEditorFocused: Boolean;
+    forcequit: boolean;
     MaxVarLength: Integer;
     procedure doCommand(const cmd: string);
     property  CurrentErrorLine: integer read GetCurrentErrorLine write SetCurrentErrorLine;
     procedure AddCommand(const s:string; const eg:string);       // TODO when do we use this ??
 
-    procedure s(mess: string); //FB: help procedure.
+//    procedure s(mess: string); //FB: help procedure.
     procedure UpdateWindowFont(fontsize: EpiInt);
     procedure PrintViewer();
 //    property  Translator: TTranslator read FTranslator write FTranslator;
@@ -542,7 +567,7 @@ var
 implementation
 
 {$R *.DFM}
-uses ubrowse2,{UFrameDS, }SMUtils,UcmdProcessor, uabout, {UToolWin, UVarWin,UCmdLine,} ShellBrowser,
+uses SMUtils,UcmdProcessor, uabout, {UToolWin, UVarWin,UCmdLine,} ShellBrowser,
 PreviewForm, uhtmlutils,Clipbrd, Editor, UEpiDlg, UtableDlg, UGraphDlg, cFileUtils, UCommands,
 UanaToken, OPConvert, UHelp, UGraph,
 // Units to initialize
@@ -566,7 +591,7 @@ var
   msg: TMessage;
 begin
   oldPrecisionMode := SetPrecisionMode(pmExtended);
-  Quitting := false;
+  forcequit := false;
   CmdEdit:=TCommandLineEditor.create(self);
   CmdEdit.Parent:=CmdPanel;
   CmdEdit.Width:=553;
@@ -585,8 +610,7 @@ begin
   SetupOutput;
   UpdateCommandTree;
   closefile(msg);
-//  lversion.caption:=GetBuildInfoAsString + ' Confirm Results with other software.';
-  caption:=GetBuildInfoAsString  {+ ' (Version is Candidate for relase as v1.0 r1)'};
+  caption:=GetBuildInfoAsString;
   booUMainEditorFocused:=True; //FB 21st of April 2004: flag to show whether UMain or Editor is focused.
   Statusbar.Panels[0].Text:=GetCurrentdir;
   OInifile.Initialize(extractfilepath(application.exename)+'epidatastatsetup.ini');
@@ -594,7 +618,6 @@ begin
   Panel1.Width := OInifile.LoadSplitter();
   SearchOptions := [];
   OTranslator.TranslateForm(self);
-//  showmessage(paramstr(1));
 end;
 
 function GetSysErrorString(E: TObject):string;
@@ -677,11 +700,7 @@ begin
   begin
     if (cmd[1] = '*') then
       dm.Info(cmd)
-    {else if Pos('\', cmd) > 0 then
-    begin
-      delete(cmd, length(cmd), 1);
-      CmdBuffer := CmdBuffer + cmd;
-    end} else begin
+    else begin
       CmdBuffer := CmdBuffer + cmd;
       try
         InternalRunCommand(CmdBuffer, false);
@@ -721,7 +740,6 @@ var
   // cmd: TCommand;
 begin
   dm := StartEngine;
-//  dm.Translator:=FTranslator;
   Dm.InterfaceHook:=EngineHook;
   Splitter2.Visible := false;
   aMainform.Panel1.Visible  := false;
@@ -732,8 +750,6 @@ begin
       AcShowHistory(Self);
   if (DM.GetOptionValue('DISPLAY COMMANDTREE', Opt) and (Opt.Value = 'ON')) then
       AcShowWindowCommandsLeft(Self);
-  //if (DM.GetOptionValue('DISPLAY TOOLBAR', Opt) and (Opt.Value = 'OFF')) then
-  //      toolbar1.Visible := False;
   if (DM.GetOptionValue('DISPLAY WORKTOOLBAR', Opt) and (Opt.Value = 'OFF')) then
       begin
         wktoolbar.Visible := False;
@@ -757,7 +773,7 @@ begin
   begin
     ODos.CD(ExtractFilePath(ParamStr(1)));
     if ExtractFileExt(ParamStr(1)) = 'REC'
-      then dm.info('Cannot yet open rec files directly', 206001) // TODO : OpenFile.OpenFile(ParamStr(1),'READ');
+      then dm.info('Cannot yet open rec files directly', 26002) // TODO : OpenFile.OpenFile(ParamStr(1),'READ');
       else dm.RunPGMFile(ParamStr(1));
   end
   else
@@ -803,15 +819,9 @@ begin
         ProcessToolbaronoff1.ImageIndex := -1
         else ProcessToolbaronoff1.ImageIndex := 109;
 
-{  if ((DM.GetOptionValue('DISPLAY COMMAND PROMPT', Opt)) and (Opt.Value = 'OFF')) then
-        CommandPromptOnOff2.ImageIndex := -1
-        else CommandPromptOnOff2.ImageIndex := 109;
-}
-
  if ((dm.GetOptionValue('DISPLAY DATABROWSER', opt)) and (opt.VALUE = 'OFF')) then
         browserhide.ImageIndex := -1
         else browserhide.ImageIndex := 109;
-
 
   if dm.GetOptionValue('DEBUG FILENAME', opt) then
   begin
@@ -823,7 +833,6 @@ begin
 
   //enable and disable various parts of the mainform:
   dm.enable(false);
-
 end;
 
 procedure TaMainForm.Output(const s :string);
@@ -875,6 +884,7 @@ var
   sysdir, startfont: string;
   FHandle: HWND;
   Output: TStringList;
+
   function WriteToFile(path, content: string):Boolean;
   begin
      if FileExists(path) then exit;
@@ -931,66 +941,68 @@ begin
   end;
 
     // standard font and start files in docs/{language}/
-   WriteToFile(sysdir + 'epiout.css',EpiOutCSS);
+  WriteToFile(sysdir + 'epiout.css',EpiOutCSS);
 
    // default start file:
-   WriteToFile(sysdir +  'start0.htm',
-     StartHTM + '<p><ul>'
-     + '<li>' + OTranslator.Translate(125,'Introduction to EpiData Analysis, see Help menu') + #13
-     + '<li>' + OTranslator.Translate(126,'Check regularly for updated versions and documentation')
-     + ' : <a href="' + OTranslator.Translate(120,'Http://www.epidata.dk')+'">' + OTranslator.Translate(120,'Http://www.epidata.dk') + '</a>' + #13
-     + '</ul></p></body><html>');
+  WriteToFile(sysdir +  'start0.htm',
+    StartHTM + '<p><ul>'
+    + '<li>' + OTranslator.Translate(125,'Introduction to EpiData Analysis, see Help menu') + #13
+    + '<li>' + OTranslator.Translate(126,'Check regularly for updated versions and documentation')
+    + ' : <a href="' + OTranslator.Translate(120,'Http://www.epidata.dk')+'">' + OTranslator.Translate(120,'Http://www.epidata.dk') + '</a>' + #13
+    + '</ul></p></body><html>');
 
    // setup start file:
-   startfont := startfonthtm1
-     + '<h3>'+ OTranslator.Translate(130,'Basic setup of the EpiData Analysis programme:') +'</h3>' + #13
-     + '<ol>' + #13 + '<li>'
-     + OTranslator.Translate(131,'Change Position and size of EpiData Analysis') + #13
-     + '<ul><li> <A HREF=''epi:set echo=off;cls;saveiniscreen;set echo=on;' + StartView()
-     + '''>' + OTranslator.Translate(132,'Save Screen Position') +'</a></ul><br>' + #13
-     + '<li>' + OTranslator.Translate(133,'Select background and text colour') + #13
-     + '<ul><li><A HREF=''epi:cls;set echo=off;define fn __________________________ glob;fn= "@sysdir"; '
-     + 'cd "@fn";copyfile "epiout_w.css" "epiout.css" /replace;'
-     + 'copyfile "epiout.css" "docs/'+ OTranslator.Translate(105,'en') + '/epiout.css" /replace;' + StartView() + '''>'
-     + OTranslator.Translate(134,'White background') + '</a></li>' + #13
-     + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<A HREF=''epi:cls;set echo=off;define fn __________________________ glob;fn= "@sysdir"; '
-     + 'cd "@fn";copyfile "epiout_b.css" "epiout.css"  /replace;'
-     + 'copyfile "epiout.css" "docs/'+ OTranslator.Translate(105,'en') + '/epiout.css" /replace;' + StartView() + '''>'
-     + OTranslator.Translate(135,'Black background')+ '</a></li></ul><br>' + #13
-     + '<li>' + OTranslator.Translate(136,'Choose text font size') + '<ul>' + #13
-     + '<li>&nbsp;&nbsp;' + font10 + StartView() +  '''><font style="Font-size=14px ; font-weight : bold; color: blue">10</font></a>&nbsp;&nbsp;&nbsp;&nbsp;'
-     +  font12 + StartView() +  '''><font style="Font-size=17px ; font-weight : bold;color: blue">12</font></a>&nbsp;&nbsp;&nbsp;&nbsp;'
-     +  font15 + StartView() +  '''><font style="Font-size=21px ; font-weight : bold;color: blue">15</font></a>&nbsp;&nbsp;&nbsp;&nbsp;'
-     +  font20 + StartView() +  '''><font style="Font-size=30px ; font-weight : bold;color: blue">20</font></a>' + #13
-     + '</ul><br>' + #13
-     + '<li> ' + final + StartView() + '''>' + Otranslator.translate(137,'Save changes and Start') + '</a>' + #13
-     + '</ol>' + #13 + '<hr>' + #13 + '</body></html>' + #13 ;
+  startfont := startfonthtml
+    + '<h3>'+ OTranslator.Translate(130,'Basic setup of the EpiData Analysis programme:') +'</h3>' + #13
+    + '<ol>' + #13 + '<li>'
+    + OTranslator.Translate(131,'Change Position and size of EpiData Analysis') + #13
+    + '<ul><li> <A HREF=''epi:set echo=off;cls;saveiniscreen;set echo=on;' + StartView()
+    + '''>' + OTranslator.Translate(132,'Save Screen Position') +'</a></ul><br>' + #13
+    + '<li>' + OTranslator.Translate(133,'Select background and text colour') + #13
+    + '<ul><li><A HREF=''epi:cls;set echo=off;define fn __________________________ glob;fn= "@sysdir"; '
+    + 'cd "@fn";copyfile "epiout_w.css" "epiout.css" /replace;'
+    + 'copyfile "epiout.css" "docs/'+ OTranslator.Translate(105,'en') + '/epiout.css" /replace;' + StartView() + '''>'
+    + OTranslator.Translate(134,'White background') + '</a></li>' + #13
+    + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<A HREF=''epi:cls;set echo=off;define fn __________________________ glob;fn= "@sysdir"; '
+    + 'cd "@fn";copyfile "epiout_b.css" "epiout.css"  /replace;'
+    + 'copyfile "epiout.css" "docs/'+ OTranslator.Translate(105,'en') + '/epiout.css" /replace;' + StartView() + '''>'
+    + OTranslator.Translate(135,'Black background')+ '</a></li></ul><br>' + #13
+    + '<li>' + OTranslator.Translate(136,'Choose text font size') + '<ul>' + #13
+    + '<li>&nbsp;&nbsp;' + font10 + StartView() +  '''><font style="Font-size=14px ; font-weight : bold; color: blue">10</font></a>&nbsp;&nbsp;&nbsp;&nbsp;'
+    +  font12 + StartView() +  '''><font style="Font-size=17px ; font-weight : bold;color: blue">12</font></a>&nbsp;&nbsp;&nbsp;&nbsp;'
+    +  font15 + StartView() +  '''><font style="Font-size=21px ; font-weight : bold;color: blue">15</font></a>&nbsp;&nbsp;&nbsp;&nbsp;'
+    +  font20 + StartView() +  '''><font style="Font-size=30px ; font-weight : bold;color: blue">20</font></a>' + #13
+    + '</ul><br>' + #13
+    + '<li> ' + final + StartView() + '''>' + Otranslator.translate(137,'Save changes and Start') + '</a>' + #13
+    + '</ol>' + #13 + '<hr>' + #13 + '</body></html>' + #13 ;
 
-   // modify to accomplish translation:
-   WriteToFile(sysdir + 'epidatahelp.css',EpiOutCSS);
-   WriteToFile(sysdir + 'startfont.htm',Startfont);
-   WriteToFile(sysdir +  'start.htm',StartFont);
+  // modify to accomplish translation:
+  WriteToFile(sysdir + 'epidatahelp.css',EpiOutCSS);
+  WriteToFile(sysdir + 'startfont.htm',Startfont);
+  WriteToFile(sysdir + 'start.htm',StartFont);
+{  WriteToFile(sysdir + 'docs' + PathSeperator +
+              OTranslator.Translate(105,'en') + PathSeperator + 'SPC.htm', SpcHTML);}
 
    // redo if commands.htm was not found, then we should make simplified startfiles:
-   if not FileExists(sysdir + 'commands.htm') then
-   begin
-   WriteToFile(sysdir + 'commands.htm',
-       StartHTM + '<p><ul>'
-       + '<li><b>' + OTranslator.Translate(127,'Documentation files missing - see ')
-       + '<a href="' + OTranslator.Translate(120,'Http://www.epidata.dk')+'">' + OTranslator.Translate(120,'Http://www.epidata.dk') + '</a>' + #13
-       + '</b><br></ul>' + #13 + '</p></body><html>');
+  if not FileExists(sysdir + 'commands.htm') then
+  begin
+    WriteToFile(sysdir + 'commands.htm',
+        StartHTM + '<p><ul>'
+        + '<li><b>' + OTranslator.Translate(127,'Documentation files missing - see ')
+        + '<a href="' + OTranslator.Translate(120,'Http://www.epidata.dk')+'">' + OTranslator.Translate(120,'Http://www.epidata.dk') + '</a>' + #13
+        + '</b><br></ul>' + #13 + '</p></body><html>');
 
-   WriteToFile(sysdir + 'start.htm',
-       StartHTM + '<p><ul>'
-       + '<li><b>' + OTranslator.Translate(127,'Documentation files missing - see ')
-       + '<a href="' + OTranslator.Translate(120,'Http://www.epidata.dk')+'">' + OTranslator.Translate(120,'Http://www.epidata.dk') + '</a>' + #13
-       + '</b><br></ul>' + #13 + '</p></body><html>');
-   {WriteToFile(sysdir + 'startfont.htm',
-       StartHTM + '<p><ul>'
-       + '<li><b>' + OTranslator.Translate(127,'Documentation files missing - see ')
-       + '<a href="' + OTranslator.Translate(120,'Http://www.epidata.dk')+'">' + OTranslator.Translate(120,'Http://www.epidata.dk') + '</a>' + #13
-       + '</b><br></ul>' + #13 + '</p></body><html>');}
-   end;
+    WriteToFile(sysdir + 'start.htm',
+        StartHTM + '<p><ul>'
+        + '<li><b>' + OTranslator.Translate(127,'Documentation files missing - see ')
+        + '<a href="' + OTranslator.Translate(120,'Http://www.epidata.dk')+'">' + OTranslator.Translate(120,'Http://www.epidata.dk') + '</a>' + #13
+        + '</b><br></ul>' + #13 + '</p></body><html>');
+    {WriteToFile(sysdir + 'startfont.htm',
+        StartHTM + '<p><ul>'
+        + '<li><b>' + OTranslator.Translate(127,'Documentation files missing - see ')
+        + '<a href="' + OTranslator.Translate(120,'Http://www.epidata.dk')+'">' + OTranslator.Translate(120,'Http://www.epidata.dk') + '</a>' + #13
+        + '</b><br></ul>' + #13 + '</p></body><html>');}
+  end;
   sysdir := ExtractFilePath(Application.ExeName);
   FreeAndNil(Output);
 end;
@@ -1009,7 +1021,7 @@ begin
   OLifeTables := TLifeTables.Create();
   ODos := TDos.Create();
   OAggregate := TAggregate.Create();
-  OBrowse := TBrowse.create();
+  //OBrowse := TBrowse.create();
   OUpdate := TUpdate.Create();
   ODebug := TDebug.Create(0);
   OGraph := TGraph.Create;
@@ -1021,7 +1033,7 @@ begin
   if Assigned(OMerge) then FreeAndNil(OMerge);
   if Assigned(OGraph) then FreeAndNil(OGraph);
   if Assigned(ODebug) then FreeAndNil(ODebug);
-  if Assigned(OBrowse) then FreeAndNil(OBrowse);
+//  if Assigned(OBrowse) then FreeAndNil(OBrowse);
   if Assigned(OAggregate) then FreeAndNil(OAggregate);
   if Assigned(ODos) then FreeAndNil(ODos);
   if Assigned(OTables) then FreeAndNil(OTables);
@@ -1146,10 +1158,9 @@ begin
 end;
 
 procedure TaMainForm.AcExitExecute(Sender: TObject);
-var
-  CanClose: boolean;
 begin
-  FormCloseQuery(nil, CanClose);
+  Close();
+//  FormCloseQuery(nil, CanClose);
   {if MessageDlg('Quit ?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
     cmdedit.doCommand('quit');}
 end;
@@ -1198,12 +1209,11 @@ end;
 
 procedure TaMainForm.RefreshOuput(MSg: TMessage);
 var
- //fn :string;
- Stream :TMemoryStream;
+  Stream :TMemoryStream;
 begin
- Stream :=TMemoryStream(Msg.wParam);
- Viewer.LoadFromStream(Stream);
- Viewer.VScrollBarPosition := Viewer.MaxVertical;
+  Stream :=TMemoryStream(Msg.wParam);
+  Viewer.LoadFromStream(Stream);
+  Viewer.VScrollBarPosition := Viewer.MaxVertical;
 end;
 
 procedure TaMainForm.InternalRunCommand(cmd: string; AddToHist: boolean = true);
@@ -1229,7 +1239,6 @@ begin
       raise;
     end;
   finally
-//    if (not EditorHasFocus) and (not HelpWindowHasFocus) and (not OBrowse.BrowseHasFocus) then
     if (not EditorHasFocus) and (not HelpWindowHasFocus) and (not OUpdate.BrowseHasFocus) then
       FindFocus(cmdedit);
     indicator.State :=false;
@@ -1256,9 +1265,9 @@ begin
   if Assigned(GetEditorHandle()) then
     OTranslator.TranslateForm(GetEditorHandle());
 
-  // Translate Browse form.
+{  // Translate Browse form.
   if Assigned(OBrowse.GetBrowserHandle()) then
-    OTranslator.TranslateForm(OBrowse.GetBrowserHandle());
+    OTranslator.TranslateForm(OBrowse.GetBrowserHandle());    }
 
   // Translate Browse form.
   if Assigned(OUpdate.GetBrowserHandle()) then
@@ -1288,12 +1297,6 @@ begin
   msg.Result := 0;
   if cmd = 'DATABROWSER' then
   begin
-    {if val = 'OFF' then
-      OBrowse.CloseBrowse()
-    else begin
-      if dm.dataframe <> nil then
-        OBrowse.CreateBrowse(dm.dataframe, nil, 'recnumber', false);
-    end; }
     if val = 'OFF' then
       OUpdate.CloseBrowse()
     else begin
@@ -1319,8 +1322,8 @@ begin
       OTranslator.TranslateForm(GetEditorHandle());
     if Assigned(GetHelpformHandle()) then
       OTranslator.TranslateForm(GetHelpformHandle());
-    if Assigned(OBrowse.GetBrowserHandle()) then
-      OTranslator.TranslateForm(OBrowse.GetBrowserHandle());
+{    if Assigned(OBrowse.GetBrowserHandle()) then
+      OTranslator.TranslateForm(OBrowse.GetBrowserHandle());  }
     if Assigned(OUpdate.GetBrowserHandle()) then
       OTranslator.TranslateForm(OUpdate.GetBrowserHandle());
   end;
@@ -1449,12 +1452,6 @@ case Msg.Msg of
                   ReloadLanguage(Msg);
                   setupbasicfiles;
                 end;
-   EpiQuit: if ShutdownEditor() then
-            begin
-              Quitting := true;
-              Close();
-              SetPrecisionMode(oldPrecisionMode);
-            end;
   end;//case
 end;
 
@@ -1924,7 +1921,7 @@ begin
    if VSelLength > BUFSIZE then
    begin
      dm.Sendoutput;
-     dm.Error('Exceeded maximum selection size', [], 106001);
+     dm.Error('Exceeded maximum selection size', [], 26001);
    end;
    st.read(buf,VSelLength-1);
    SelectedHTML:=buf;
@@ -2008,18 +2005,30 @@ begin
 end;
 
 procedure TaMainForm.FormCloseQuery(Sender: TObject;  var CanClose: Boolean);
+begin
+  CanClose := false;
+  if not forcequit then
+  begin
+    if MessageDlg(#13#13 + 'Quit ?', mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+      exit;
+    if not ShutdownEditor then
+      exit;
+  end;
+  // Shutdown must be in the order - Mainform, then dm. Else history will be corrupted.
+  HandleShutdown();
+  dm.HandleShutdown();
+  CanClose := True;
+end;
+
+procedure TaMainForm.HandleShutdown();
 var
   s: string;
-  opt: TEpiOption;
 begin
-  if not Quitting then
-  begin
-    CanClose := false;
-    s := '';
-    if MessageDlg(s + #13#13 + 'Quit ?', mtConfirmation, [mbYes, mbNo], 0) = mrNo then exit;
-    dm.Quit(OpQUIT);
-    CanClose := true;
-  end;
+  CmdEdit.History.Insert(0, '// ' + GetBuildInfoAsString + ' ' + DateToStr(Date) + ' ' + TimeTostr(Time));
+  S := AnsiUpperCase(Trim(CmdEdit.History[CmdEdit.History.Count-1]));
+  if (s = 'QUIT') or (s = 'EXIT') then
+    CmdEdit.History.Delete(CmdEdit.History.Count - 1);
+  SetPrecisionMode(oldPrecisionMode);
 end;
 
 procedure TaMainForm.AcFilePageSetupExecute(Sender: TObject);
@@ -2293,7 +2302,7 @@ var
  cmd: string;
  Res: integer;
 begin
-  Res:= showGraphdlg(self, CmdString, cmd, Xvars,Yvars,xlegal,ylegal, AdvType, By, Weigth,
+  Res:= showGraphdlg(self, CmdString, cmd, Xvars, Yvars,xlegal,ylegal, AdvType, By, Weigth,
             t1,t2,t3,t4,tb);
   if Res <> DlgResCancel then cmdedit.Clear;
   case Res of
@@ -2302,6 +2311,19 @@ begin
   end;
 end;
 
+procedure TaMainForm.DoGraphDlg(const DialogOptions: TGraphDlgOptions);
+var
+  GraphDlg: TGraphDialog;
+  Res: integer;
+begin
+  if not dm.CheckDataOpen() then exit;
+  GraphDlg := TGraphDialog.Create(self);
+  GraphDlg.Initialize(DialogOptions);
+  Res := GraphDlg.ShowModal;
+  if Res = mrOk then
+    InternalRunCommand(GraphDlg.CmdString);
+  FreeAndNil(GraphDlg);
+end;
 
 procedure TaMainForm.DoTableDlg(const cmdstring: string);
 var
@@ -2427,11 +2449,11 @@ begin
        addcommand('kwallis','age sex')
 end;
 
-procedure TaMainForm.s(mess: string); //FB: help procedure.
+{procedure TaMainForm.s(mess: string); //FB: help procedure.
 begin
   MessageDlg(mess,mtInformation,[mbOK],0);
 end;
-
+}
 procedure TaMainForm.UpdateWindowFont(fontsize: EpiInt);
 var
   opt: TEpiOption;
@@ -2469,13 +2491,6 @@ procedure TaMainForm.AcRunFreqExecute(Sender: TObject);
 begin
   DoTableDlg('freq varlist');
 end;
-
-procedure TaMainForm.AcRunScatterExecute(Sender: TObject);
-begin
-  DoGraphDlg('Scatter varlist',1,10, [EpiTyFloat,EpiTyInteger,EpiTyDate],
-             [EpiTyFloat,EpiTyInteger,EpiTyDate], [GrpStdOpt],True);
-end;
-
 
 procedure TaMainForm.WKTOOOLBARClick(Sender: TObject);
 VAR
@@ -2565,67 +2580,10 @@ end;
 
 procedure TaMainForm.Togglemenu1Click(Sender: TObject);
 begin
-   if self.Menu <> NIL
-  THEN self.Menu:=NIL
-  ELSE self.Menu:=OrgMainMenu;
-
-  {if self.Menu <> Nil then
-    ogglemenushowhide1.ImageIndex := 109
-    else   ogglemenushowhide1.ImageIndex := -1;
-  }
-end;
-
-procedure TaMainForm.AcRunIChartExecute(Sender: TObject);
-begin
-  DoGraphDlg('IChart varlist', 1, 1, [EpiTyInteger, EpiTyDate, EpiTyFloat],
-              [EpiTyInteger, EpiTyFloat], [GrpSpcOpt, GrpStdOpt]);
-end;
-
-procedure TaMainForm.AcRunPChartExecute(Sender: TObject);
-begin
-  DoGraphDlg('PChart varlist', 1, 2, [EpiTyInteger, EpiTyDate, EpiTyFloat],
-              [EpiTyInteger, EpiTyFloat], [GrpSpcOpt, GrpStdOpt]);
-end;
-
-procedure TaMainForm.AcRunRunChartExecute(Sender: TObject);
-begin
-  DoGraphDlg('RunChart varlist', 1, 1, [EpiTyInteger, EpiTyDate, EpiTyFloat],
-              [EpiTyInteger, EpiTyFloat], [GrpSpcOpt, GrpStdOpt]);
-end;
-
-procedure TaMainForm.AcRunBarExecute(Sender: TObject);
-begin
-  DoGraphDlg('Bar varlist', 1, 0, [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyString, EpiTyByte],
-              [],
-              [GrpStdOpt],True);
-end;
-
-procedure TaMainForm.AcRunBoxExecute(Sender: TObject);
-begin
-  DoGraphDlg('Box varlist', 1, 0, [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyString, EpiTyByte],
-              [],
-              [GrpStdOpt],true);
-end;
-
-procedure TaMainForm.AcRunPieExecute(Sender: TObject);
-begin
-  DoGraphDlg('Pie varlist', 1, 0, [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyString, EpiTyByte],
-              [],
-              [GrpStdOpt]);
-end;
-
-procedure TaMainForm.AcRunLineExecute(Sender: TObject);
-begin
-  DoGraphDlg('Line varlist', 1, 10, [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyString, EpiTyByte],
-              [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyString, EpiTyByte],
-              [GrpStdOpt],true);
-end;
-
-procedure TaMainForm.AcRunHistogramExecute(Sender: TObject);
-begin
-  DoGraphDlg('Histogram varlist', 1, 0, [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyUppercase, EpiTyString, EpiTyByte],
-              [],
-              [GrpStdOpt],True);
+  if self.Menu <> NIL THEN
+    self.Menu:=NIL
+  ELSE
+    self.Menu:=OrgMainMenu;
 end;
 
 procedure TaMainForm.AcFileSaveExecute(Sender: TObject);
@@ -2645,7 +2603,6 @@ procedure TaMainForm.SaveWindowsPosition1Click(Sender: TObject);
 begin
   OIniFile.SaveCurrentForm(Self, 'Main');
 end;
-
 
 procedure TaMainForm.Splitter2Moved(Sender: TObject);
 begin
@@ -2925,7 +2882,7 @@ end;
 
 procedure TaMainForm.AcSearchEpiDataListExecute(Sender: TObject);
 begin
-  dm.info('"Search EpiData-list" attempts to open Internet Connection to EpiData-list Archives', [], 206002);
+  dm.info('"Search EpiData-list" attempts to open Internet Connection to EpiData-list Archives', [], 26003);
   ShellExecute(0, nil, pchar('http://lists.umanitoba.ca/pipermail/epidata-list/'), nil, nil, SW_SHOWNORMAL);
 end;
 
@@ -2946,7 +2903,7 @@ begin
         OTranslator.Translate(105,'en') + '.pdf' ;
 
   if not FileExists(fn) then
-    dm.Info('Introduction files not found for language: %s', [lang], 206003)
+    dm.Info('Introduction files not found for language: %s', [lang], 26004)
     else error := ShellExecute(0, 'open', pchar(fn), nil, nil, SW_SHOWNORMAL);
 end;
 
@@ -2992,39 +2949,12 @@ end;
 
 procedure TaMainForm.CopyImageToClipboardClick(Sender: TObject);
 begin
-  //Clipboard.Assign(TPersistent(FoundObject))  ; TC
-  //       clipboard.Assign(TImageObj(Obj).Bitmap); JL
   clipboard.Assign(TImageobj(FoundObject).Bitmap);
-
 end;
 
 procedure TaMainForm.CopyTableToClipboardClick(Sender: TObject);
 begin
   CopyHTMLToClipBoard(string(FoundObject));
-end;
-
-procedure TaMainForm.Dotplot1Click(Sender: TObject);
-begin
-  DoGraphDlg('Dotplot varlist',1,0, [EpiTyFloat,EpiTyInteger],
-             [], [GrpStdOpt],True);
-end;
-
-procedure TaMainForm.CumulativePlot1Click(Sender: TObject);
-begin
-      DoGraphDlg('CdfPlot varlist',1,0, [EpiTyFloat,EpiTyInteger],
-             [], [GrpStdOpt],True);
-end;
-
-procedure TaMainForm.EpiCurve1Click(Sender: TObject);
-begin
- DoGraphDlg('EpiCurve varlist',1,1, [EpiTyFloat,EpiTyInteger,EpiTyDate,EpiTyByte],
-             [EpiTyFloat,EpiTyInteger,EpiTyBoolean,EpiTyDate,EpiTyByte], [GrpStdOpt],True);
-end;
-
-procedure TaMainForm.Pareto1Click(Sender: TObject);
-begin
-  DoGraphDlg('Pareto varlist',1,0, [EpiTyString,EpiTyFloat,EpiTyInteger],
-             [EpiTyFloat,EpiTyInteger], [GrpStdOpt], False, True);
 end;
 
 procedure TaMainForm.FormDestroy(Sender: TObject);
@@ -3051,10 +2981,10 @@ procedure TaMainForm.AcDefaultWindowingExecute(Sender: TObject);
 const
   def: TFormDefaults = (Section: 'Main';
                         Top: 1; Left: 1;
-                        Width: 600; Height: 600;
+                        Width: 700; Height: 600;
                         Maximize: false);
 begin
-  OInifile.SaveForm('Main',1,1,600,600,False);
+  OInifile.SaveForm('Main',1,1,700,600,False);
   OInifile.SaveForm('Editor',20,300,500,500,False);
   OInifile.SaveForm('Browse',100,430,500,600,False);
   OInifile.SaveForm('Help',25,430,500,600,False);
@@ -3084,7 +3014,7 @@ begin
       else
       begin
         dm.SetOptionValue('DISPLAY DATABROWSER', 'ON');
-        if dm.dataframe = Nil then dm.Info('Data Browser will be shown when you read data', [], 206004);
+        if dm.dataframe = Nil then dm.Info('Data Browser will be shown when you read data', [], 26005);
         browserhide.ImageIndex := 109;
       end;
 end;
@@ -3109,23 +3039,9 @@ begin
     Historylist.Selected[i] := false;
 end;
 
-procedure TaMainForm.Ciplot1Click(Sender: TObject);
-begin
-  DoGraphDlg('CIplot varlist',1,4, [EpiTyFloat,EpiTyInteger,EpiTyDate,EpiTyByte],
-             [EpiTyFloat,EpiTyInteger,EpiTyBoolean,EpiTyByte], [GrpStdOpt],
-             false,False,'Choose Variable','Choose Variable (optional)','Choose Variable (optional)','Choose Variable (optional)',
-             'Outcome (Not optional)');
-end;
-
 procedure TaMainForm.AcImportFromClipboardExecute(Sender: TObject);
 begin
   doCommand('Read /CB');
-end;
-
-procedure TaMainForm.AcRunKMPlotExecute(Sender: TObject);
-begin
-  DoGraphDlg('LIFETABLE varlist /NOLT', 1, 2, [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte], [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte],
-             [GrpStdOpt], true, true, 'Outcome:', 'Start/Interval', 'End');
 end;
 
 procedure TaMainForm.AcRunLifeTableExecute(Sender: TObject);
@@ -3133,11 +3049,578 @@ begin
   DoDlg('lifetable varlist');
 end;
 
-procedure TaMainForm.CumulativePlot2Click(Sender: TObject);
+procedure TaMainForm.AcShowSPCMenuExecute(Sender: TObject);
+var
+  sysdir, loadfile, lang: string;
+  opt: TEpiOption;
+
+  function test(path: string): boolean;
+  begin
+    result := false;
+    if (loadfile = '') and fileexists(path) then
+      result := true;
+  end;
+
 begin
-  DoGraphDlg('ProbitPlot varlist',1,0, [EpiTyFloat,EpiTyInteger],
-             [], [GrpStdOpt],True);
+  sysdir := ExtractFilePath(Application.ExeName) + 'docs' + PathDelim;
+  if dm.GetOptionValue('LANGUAGE', opt) then
+    if AnsiUpperCase(opt.Value) = 'ENGLISH' then
+      lang := 'en'
+    else
+      lang := OTranslator.Translate(105,'en');
+
+  loadfile := '';
+
+  // notice that as soon as loadfile is <> '', then the test(      )   will fail.
+  // 1. search in {sysdir}\docs\{language}\xxxx.htm[l] for the language specific extended file: (e.g. read.htm og read.html)
+  if test(sysdir + lang + PathDelim + 'spc.htm') then
+    loadfile := sysdir + lang + PathDelim + 'spc.htm';
+
+  if test(sysdir + lang + PathDelim + 'spc.htm') then
+    loadfile := sysdir + lang + PathDelim + 'spc.html';
+
+  // 2.search in {sysdir}\docs\en\ xxxx.htm[l]  for the file.
+  if test(sysdir + 'en' + PathDelim + 'spc.htm') then
+    loadfile := sysdir + 'en' + PathDelim + 'spc.htm';
+  if test(sysdir + 'en' + PathDelim + 'spc.htm') then
+    loadfile := sysdir + 'en' + PathDelim + 'spc.htm';
+
+  ViewHelpForm(Loadfile);
 end;
+
+procedure TaMainForm.AcRunScatterExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'SCATTER';
+    Opts.Title := 'Scatter';
+    Opts.VarCount := 4;
+    Opts.Defaults := [goBY];
+    Opts.BoxTypes[0] := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    Opts.BoxTypes[1] := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    Opts.BoxLabels[2] := 'Y Variable (optional)';
+    Opts.BoxTypes[2] := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    Opts.BoxLabels[3] := 'Y Variable (optional)';
+    Opts.BoxTypes[3] := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    Opts.ByTypes := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('Scatter varlist',1,10, [EpiTyFloat,EpiTyInteger,EpiTyDate],
+//             [EpiTyFloat,EpiTyInteger,EpiTyDate], [GrpStdOpt],True);
+end;
+
+procedure TaMainForm.AcRunLineExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'LINE';
+    Opts.Title := 'Line';
+    Opts.VarCount := 4;
+    Opts.Defaults := [goBY];
+    Opts.BoxTypes[0] := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    Opts.BoxTypes[1] := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    Opts.BoxLabels[2] := 'Y Variable (optional)';
+    Opts.BoxTypes[2] := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    Opts.BoxLabels[3] := 'Y Variable (optional)';
+    Opts.BoxTypes[3] := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    Opts.ByTypes := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+{  DoGraphDlg('Line varlist', 1, 10, [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyString, EpiTyByte],
+              [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyString, EpiTyByte],
+              [GrpStdOpt],true);}
+end;
+
+procedure TaMainForm.AcRunHistogramExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'HISTOGRAM';
+    Opts.Title := 'Histogram';
+    Opts.VarCount := 1;
+    Opts.Defaults := [goBY];
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyUppercase, EpiTyString, EpiTyByte];
+    Opts.ByTypes := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+{  DoGraphDlg('Histogram varlist', 1, 0,
+              [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyUppercase, EpiTyString, EpiTyByte],
+              [],
+              [GrpStdOpt],True);   }
+end;
+
+procedure TaMainForm.AcRunBarExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'BAR';
+    Opts.Title := 'Bar';
+    Opts.VarCount := 1;
+    Opts.Defaults := [goBY];
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyUppercase, EpiTyString, EpiTyByte];
+    Opts.ByTypes := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+{  DoGraphDlg('Bar varlist', 1, 0, [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyString, EpiTyByte],
+              [],
+              [GrpStdOpt],True);    }
+end;
+
+procedure TaMainForm.AcRunBoxExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'BOXPLOT';
+    Opts.Title := 'Box Plot';
+    Opts.VarCount := 1;
+    Opts.Defaults := [goBY];
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat];
+    Opts.ByTypes := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+{  DoGraphDlg('Box varlist', 1, 0, [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyString, EpiTyByte],
+              [],
+              [GrpStdOpt],true); }
+end;
+
+procedure TaMainForm.AcRunDotPlotExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'DOTPLOT';
+    Opts.Title := 'Dot Plot';
+    Opts.VarCount := 1;
+    Opts.Defaults := [goBY];
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat];
+    Opts.ByTypes := [EpiTyDate,EpiTyFloat,EpiTyInteger];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('Dotplot varlist',1,0, [EpiTyFloat,EpiTyInteger],
+//             [], [GrpStdOpt],True);
+end;
+
+procedure TaMainForm.AcRunCumulativePlotExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'CDFPLOT';
+    Opts.Title := 'Cumulative Plot';
+    Opts.VarCount := 1;
+    Opts.Defaults := [goBY];
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat];
+    Opts.ByTypes := [EpiTyInteger, EpiTyFloat];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//      DoGraphDlg('CdfPlot varlist',1,0, [EpiTyFloat,EpiTyInteger],
+//             [], [GrpStdOpt],True);
+end;
+
+procedure TaMainForm.AcRunProbitPlotExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'CDFPLOT';
+    OPts.CmdOptions := '/P';
+    Opts.Title := 'Probit Plot';
+    Opts.VarCount := 1;
+    Opts.Defaults := [goBY];
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat];
+    Opts.ByTypes := [EpiTyInteger, EpiTyFloat];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('ProbitPlot varlist',1,0, [EpiTyFloat,EpiTyInteger],
+//             [], [GrpStdOpt],True);
+end;
+
+procedure TaMainForm.AcRunCIPlotExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'CIPLOT';
+    Opts.Title := 'Proportional Plot (CI Plot)';
+    Opts.VarCount := 4;
+    Opts.BoxLabels[0] := 'Outcome';
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat];
+    Opts.BoxLabels[1] := 'Variable';
+    Opts.BoxTypes[1] := [EpiTyInteger, EpiTyFloat];
+    Opts.BoxLabels[2] := 'Variable (optional)';
+    Opts.BoxTypes[2] := [EpiTyInteger, EpiTyFloat];
+    Opts.BoxLabels[3] := 'Variable (optional)';
+    Opts.BoxTypes[3] := [EpiTyInteger, EpiTyFloat];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+{  DoGraphDlg('CIplot varlist',1,4, [EpiTyFloat,EpiTyInteger,EpiTyDate,EpiTyByte],
+             [EpiTyFloat,EpiTyInteger,EpiTyBoolean,EpiTyByte], [GrpStdOpt],
+             false,False,'Choose Variable','Choose Variable (optional)','Choose Variable (optional)','Choose Variable (optional)',
+             'Outcome (Not optional)');}
+end;
+
+procedure TaMainForm.AcRunEpicurveExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'EPICURVE';
+    Opts.Title := 'Epidemic Curve';
+    Opts.VarCount := 2;
+    Opts.Defaults := [goBY];
+    Opts.BoxLabels[0] := 'Outcome';
+    Opts.BoxTypes[0] := [EpiTyFloat,EpiTyInteger,EpiTyBoolean,EpiTyByte];
+    Opts.BoxLabels[1] := 'Time variable';
+    Opts.BoxTypes[1] := [EpiTyDate,EpiTyFloat,EpiTyInteger,EpiTyBoolean,EpiTyByte];
+    Opts.ByTypes := [EpiTyFloat,EpiTyInteger];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('EpiCurve varlist',1,1, [EpiTyFloat,EpiTyInteger,EpiTyDate,EpiTyByte],
+//             [EpiTyFloat,EpiTyInteger,EpiTyBoolean,EpiTyDate,EpiTyByte], [GrpStdOpt],True);
+end;
+
+procedure TaMainForm.AcRunKMPlotExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'LIFETABLE';
+    Opts.CmdOptions := '/NOLT';
+    Opts.Title := 'Kaplan-Meier Plot';
+    Opts.VarCount := 3;
+    Opts.Defaults := [goBY, goWeight];
+    Opts.BoxLabels[0] := 'Outcome';
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte, EpiTyBoolean];
+    Opts.BoxLabels[1] := 'Time total (or time start)';
+    Opts.BoxTypes[1] := [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte];
+    Opts.BoxLabels[2] := 'Time end (optional)';
+    Opts.BoxTypes[2] := [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte];
+    Opts.ByTypes := [EpiTyFloat, EpiTyInteger, EpiTyByte, EpiTyBoolean];
+    Opts.WeightTypes := [EpiTyFloat, EpiTyInteger, EpiTyByte, EpiTyBoolean];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('LIFETABLE varlist /NOLT', 1, 2, [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte], [EpiTyInteger, EpiTyFloat, EpiTyDate, EpiTyByte],
+//             [GrpStdOpt], true, true);
+end;
+
+procedure TaMainForm.AcRunPieExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'PIE';
+    Opts.Title := 'Pie';
+    Opts.VarCount := 1;
+    Opts.Defaults := [];
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyString, EpiTyByte];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('Pie varlist', 1, 0, [EpiTyInteger, EpiTyDate, EpiTyFloat, EpiTyBoolean, EpiTyUppercase, EpiTyString, EpiTyByte],
+//              [],
+//              [GrpStdOpt]);
+end;
+
+procedure TaMainForm.AcRunIChartExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'ICHART';
+    Opts.Title := 'IChart';
+    Opts.VarCount := 2;
+    Opts.Defaults := [goSPC, goTest];
+    Opts.BoxLabels[0] := 'Measurement';
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat];
+    Opts.BoxLabels[1] := 'X axis (optional)';
+    Opts.BoxTypes[1] := [EpiTyInteger, EpiTyFloat, EpiTyString, EpiTyDate];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('IChart varlist', 1, 1, [EpiTyInteger, EpiTyFloat],
+//              [EpiTyInteger, EpiTyString, EpiTyDate, EpiTyFloat], [GrpSpcOpt, GrpStdOpt]);
+end;
+
+procedure TaMainForm.AcRunPChartExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'PCHART';
+    Opts.Title := 'PChart';
+    Opts.VarCount := 3;
+    Opts.Defaults := [goSPC, goTest];
+    Opts.BoxLabels[0] := 'Count';
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat];
+    Opts.BoxLabels[1] := 'Total';
+    Opts.BoxTypes[1] := [EpiTyInteger, EpiTyFloat];
+    Opts.BoxLabels[2] := 'X axis (optional)';
+    Opts.BoxTypes[2] := [EpiTyInteger, EpiTyFloat, EpiTyString, EpiTyDate];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('PChart varlist', 1, 2, [EpiTyInteger, EpiTyFloat],
+//             [EpiTyInteger, EpiTyString, EpiTyDate, EpiTyFloat], [GrpSpcOpt, GrpStdOpt]);
+end;
+
+procedure TaMainForm.AcRunRunChartExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'RUNCHART';
+    Opts.Title := 'RunChart';
+    Opts.VarCount := 2;
+    Opts.Defaults := [goSPC, goTest];
+    Opts.BoxLabels[0] := 'Measurement';
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat];
+    Opts.BoxLabels[1] := 'X axis (optional)';
+    Opts.BoxTypes[1] := [EpiTyInteger, EpiTyFloat, EpiTyString, EpiTyDate];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('RunChart varlist', 1, 1, [EpiTyInteger, EpiTyFloat],
+//             [EpiTyInteger, EpiTyString, EpiTyDate, EpiTyFloat], [GrpSpcOpt, GrpStdOpt]);
+end;
+
+procedure TaMainForm.AcRunUChartExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'UCHART';
+    Opts.Title := 'UChart';
+    Opts.VarCount := 3;
+    Opts.Defaults := [goSPC, goTest];
+    Opts.BoxLabels[0] := 'Count';
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat];
+    Opts.BoxLabels[1] := 'Volume/Total';
+    Opts.BoxTypes[1] := [EpiTyInteger, EpiTyFloat];
+    Opts.BoxLabels[2] := 'X axis (optional)';
+    Opts.BoxTypes[2] := [EpiTyInteger, EpiTyFloat, EpiTyString, EpiTyDate];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('UChart varlist', 1, 2, [EpiTyInteger, EpiTyFloat],
+//              [EpiTyInteger, EpiTyString, EpiTyDate, EpiTyFloat], [GrpSpcOpt, GrpStdOpt]);
+end;
+
+procedure TaMainForm.AcRunCChartExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'CCHART';
+    Opts.Title := 'CChart';
+    Opts.VarCount := 2;
+    Opts.Defaults := [goSPC, goTest];
+    Opts.BoxLabels[0] := 'Count';
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat];
+    Opts.BoxLabels[1] := 'X axis (optional)';
+    Opts.BoxTypes[1] := [EpiTyInteger, EpiTyFloat, EpiTyString, EpiTyDate];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('CChart varlist', 1, 1, [EpiTyInteger, EpiTyFloat],
+//              [EpiTyInteger, EpiTyString, EpiTyDate, EpiTyFloat], [GrpSpcOpt, GrpStdOpt]);
+end;
+
+procedure TaMainForm.AcRunGChartExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'GCHART';
+    Opts.Title := 'GChart';
+    Opts.VarCount := 1;
+    Opts.Defaults := [goSPC];
+    Opts.BoxLabels[0] := 'Date/Sequence #';
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat, EpiTyDate];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('GChart varlist', 1, 0, [EpiTyInteger, EpiTyFloat],
+//              [], [GrpSpcOpt, GrpStdOpt]);
+end;
+
+procedure TaMainForm.AcRunParetoExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'PARETO';
+    Opts.Title := 'Pareto';
+    Opts.VarCount := 1;
+    Opts.Defaults := [goWeight];
+    Opts.BoxLabels[0] := 'Category';
+    Opts.BoxTypes[0] := [EpiTyString,EpiTyFloat,EpiTyInteger];
+    Opts.WeightTypes := [EpiTyFloat,EpiTyInteger];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//DoGraphDlg('Pareto varlist',1,0, [EpiTyString,EpiTyFloat,EpiTyInteger],
+//           [EpiTyFloat,EpiTyInteger], [GrpStdOpt], False, True);
+end;
+
+procedure TaMainForm.AcRunXbarChartExecute(Sender: TObject);
+var
+  Opts: TGraphDlgOptions;
+begin
+  Opts := nil;
+  try
+    if Sender is TGraphDlgOptions then
+      Opts := TGraphDlgOptions(Sender)
+    else
+      Opts := TGraphDlgOptions.Create();
+    Opts.Cmd := 'Xbar';
+    Opts.Title := 'Xbar Chart';
+    Opts.VarCount := 3;
+    Opts.Defaults := [goSPC, goTest];
+    Opts.BoxLabels[0] := 'Measurement';
+    Opts.BoxTypes[0] := [EpiTyInteger, EpiTyFloat];
+    Opts.BoxLabels[1] := 'Time/Sequence';
+    Opts.BoxTypes[1] := [EpiTyInteger, EpiTyFloat];
+    Opts.BoxLabels[2] := 'X axis (optional)';
+    Opts.BoxTypes[2] := [EpiTyFloat, EpiTyInteger, EpiTyString, EpiTyDate];
+    DoGraphDlg(Opts);
+  finally
+    if Assigned(Opts) then FreeAndNil(Opts);
+  end;
+//  DoGraphDlg('UChart varlist', 1, 2, [EpiTyInteger, EpiTyFloat],
+//              [EpiTyInteger, EpiTyString, EpiTyDate, EpiTyFloat], [GrpSpcOpt, GrpStdOpt]);
+end;
+
+
 
 end.
 
