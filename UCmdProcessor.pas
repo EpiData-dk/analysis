@@ -3024,10 +3024,10 @@ begin
     if (VarNames.Count = VarCount+1) and not (dataframe.VectorByName[Varnames[1]].DataType in [EpiTyInteger, EpiTyDate, EpiTyFloat]) then
       error('%s variable (%s) must be of type(s) %s', ['Second', varnames[1], 'Integer, Float'], 23095);
   end else begin
-    if not (dataframe.VectorByName[Varnames[1]].DataType in [EpiTyInteger, EpiTyFloat]) then
-      error('%s variable (%s) must be of type(s) %s', ['Second', varnames[1], 'Integer, Float'], 23095);
+    if not (dataframe.VectorByName[Varnames[1]].DataType in [EpiTyInteger, EpiTyFloat, EpiTyDate]) then
+      error('%s variable (%s) must be of type(s) %s', ['Second', varnames[1], 'Integer, Float, Date'], 23095);
     if (VarNames.Count = VarCount+1) and not (dataframe.VectorByName[Varnames[2]].DataType in [EpiTyInteger, EpiTyDate, EpiTyFloat]) then
-      error('%s variable (%s) must be of type(s) %s', ['Third', varnames[2], 'Integer, Float'], 23095);
+      error('%s variable (%s) must be of type(s) %s', ['Third', varnames[2], 'Integer, Float, Date'], 23095);
   end;
 
   if (cmd.ParamExists['XLABEL']) then

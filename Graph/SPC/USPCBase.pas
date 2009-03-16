@@ -8,12 +8,14 @@ uses
 type
 
   TCustomSPCChartClass = class of TCustomSPCChart;
+  TSPCLine = (slNormal, slExcluded, slCenter, slSigma);
 
   TCustomSPCChart = class(TCustomChart)
   private
     fLVec: TEpiVector;
     fVarNames: TStrings;
     fExcluded: Boolean;
+    fFrozen: Boolean;
     // Values used if calculating global sigma lvl's (using the "freeze" options)
     CenterVal,
     Sigma1LCLVal, Sigma1UCLVal,
@@ -33,7 +35,8 @@ type
     procedure AddNull(Line: TCustomSeries; YVal: EpiFloat; Index: Integer;
       XPosOffset: Extended = 0.0); overload;
     procedure AddTestResult(ChartNo, TestNo, BreakIndex: Integer; Value: EpiFloat);
-    procedure SetVectorValue(Vec: TEpiVector; Index: Integer; FreezeVal, NormalVal: EpiFloat);
+    procedure SetVectorValue(Vec: TEpiVector; Index: Integer;
+      FreezeVal, NormalVal: EpiFloat; SpcLine: TSPCLine);
     procedure NilVectorArrays(ArraySize: integer);
     procedure CommonSeriesCreate(Series: TCustomSeries;
       Title: string; LineCode: integer; ParentChart: TChart);
@@ -45,7 +48,7 @@ type
       LineCode: integer): TLineSeries;
     procedure ReAssignToLengend(Series: TCustomSeries);
     function CreateVector(VectorName: string; Size: Integer): TEpiVector;
-    function DoAllowFreeze(): boolean;
+    function DoAllowFreeze(SpcLine: TSPCLine): boolean;
     function LimitValue(OptionName: string; Default: Integer): Integer;
   protected
     df: TEpiDataFrame;
@@ -57,8 +60,8 @@ type
     function PreAggregate(const Dataframe: TEpiDataframe): TEpiDataframe; virtual;
     // Vector to set missing on excluding. Default to Varnames[0] - override if needed;
     function GetExclusionVector(const Dataframe: TEpiDataframe): TEpiVector; virtual; 
-    // Allow SPC to calculate freeze values - defaults is yes!
-    function AllowFreeze(): Boolean; virtual;
+    // Allow SPC to calculate freeze values for line - defaults is yes!
+    function AllowFreeze(SpcLine: TSPCLine): Boolean; virtual;
     // Checks if number of recieved varnames is correct. Abort if not!
     procedure CheckVarnames(); virtual; abstract;
     // Create required charts for the graph, insert into ChartArray.
@@ -128,6 +131,7 @@ type
     property ChartTypeText[ChartNo: integer]: string read GetChartTypeText;
     property VarNames: TStrings read fVarNames;
     property Excluded: Boolean read fExcluded;
+    property Frozen: Boolean read fFrozen;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -290,6 +294,7 @@ begin
   ODebug.Add(UnitName, ClassName, procname, procversion, 1);
 
   fVarNames := aVarNames;
+  fFrozen := false;
 
   try
     CheckVarnames();
@@ -439,7 +444,7 @@ begin
     SetLength(Sigma3UCLVal, Result.Count);
 
     // Calculate Sigma lvl's based on Freeze option.
-    if DoAllowFreeze then
+    if DoAllowFreeze(slCenter) then
     begin
       // Documentation information.
       OutputTable.Footer := OutputTable.Footer +
@@ -522,19 +527,19 @@ begin
         ReAssignToLengend(ExcludeLine[k]);
         ReAssignToLengend(CtrlLine[k]);
 
-
-        // Calculate values;
-        CenterVal[k] := Center[1,k];
-        Sigma1LCLVal[k] := CenterVal[k] - SigmaFactor(1, Df.RowCount) * Sigma[1,k];
-        Sigma1UCLVal[k] := CenterVal[k] + SigmaFactor(1, Df.RowCount) * Sigma[1,k];
-        Sigma2LCLVal[k] := CenterVal[k] - SigmaFactor(2, Df.RowCount) * Sigma[1,k];
-        Sigma2UCLVal[k] := CenterVal[k] + SigmaFactor(2, Df.RowCount) * Sigma[1,k];
-        Sigma3LCLVal[k] := CenterVal[k] - SigmaFactor(3, Df.RowCount) * Sigma[1,k];
-        Sigma3UCLVal[k] := CenterVal[k] + SigmaFactor(3, Df.RowCount) * Sigma[1,k];
-
-        // Add value to fully drawn lines (within the freeze period)
+        // This is not optimal, but work with SPC charts with floating Sigma lines.
         for j := 1 to Df.RowCount do
         begin
+          // Calculate values;
+          CenterVal[k] := Center[j,k];
+          Sigma1LCLVal[k] := CenterVal[k] - SigmaFactor(1, Df.RowCount) * Sigma[j,k];
+          Sigma1UCLVal[k] := CenterVal[k] + SigmaFactor(1, Df.RowCount) * Sigma[j,k];
+          Sigma2LCLVal[k] := CenterVal[k] - SigmaFactor(2, Df.RowCount) * Sigma[j,k];
+          Sigma2UCLVal[k] := CenterVal[k] + SigmaFactor(2, Df.RowCount) * Sigma[j,k];
+          Sigma3LCLVal[k] := CenterVal[k] - SigmaFactor(3, Df.RowCount) * Sigma[j,k];
+          Sigma3UCLVal[k] := CenterVal[k] + SigmaFactor(3, Df.RowCount) * Sigma[j,k];
+
+        // Add value to fully drawn lines (within the freeze period)
           AddToLine(CenterGlobLine[k], CenterVal[k], j, -0.5);
           AddToSigmaLine(Sigma1GlobLCLLine[k], Sigma1LCLVal[k], j, ShowSigma1[k], -0.5);
           AddToSigmaLine(Sigma1GlobUCLLine[k], Sigma1UCLVal[k], j, Dummy, -0.5);
@@ -565,6 +570,7 @@ begin
         AddNull(Sigma3GlobUCLLine[k], Sigma3UCLVal[k], j, 0.5);
       end;
       if Assigned(df) then FreeAndNil(df);
+      fFrozen := true;
     end;   // end freeze...
 
     for i := 0 to Length(Breaks) do
@@ -635,13 +641,13 @@ begin
           // Calculate values;
           CtrlVec[k].AsFloat[j] := CtrlVal[j,k];
           ExcludeVec[k].AsFloat[j] := ExclVal[j, k];
-          SetVectorValue(CenterVec[k], j, CenterVal[k], Center[j,k]);
-          SetVectorValue(Sigma1LCLVec[k], j, Sigma1LCLVal[k], CenterVec[k].AsFloat[j] - SigmaFactor(1, Df.RowCount) * Sigma[j,k]);
-          SetVectorValue(Sigma1UCLVec[k], j, Sigma1UCLVal[k], CenterVec[k].AsFloat[j] + SigmaFactor(1, Df.RowCount) * Sigma[j,k]);
-          SetVectorValue(Sigma2LCLVec[k], j, Sigma2LCLVal[k], CenterVec[k].AsFloat[j] - SigmaFactor(2, Df.RowCount) * Sigma[j,k]);
-          SetVectorValue(Sigma2UCLVec[k], j, Sigma2UCLVal[k], CenterVec[k].AsFloat[j] + SigmaFactor(2, Df.RowCount) * Sigma[j,k]);
-          SetVectorValue(Sigma3LCLVec[k], j, Sigma3LCLVal[k], CenterVec[k].AsFloat[j] - SigmaFactor(3, Df.RowCount) * Sigma[j,k]);
-          SetVectorValue(Sigma3UCLVec[k], j, Sigma3UCLVal[k], CenterVec[k].AsFloat[j] + SigmaFactor(3, Df.RowCount) * Sigma[j,k]);
+          SetVectorValue(CenterVec[k], j, CenterVal[k], Center[j,k], slCenter);
+          SetVectorValue(Sigma1LCLVec[k], j, Sigma1LCLVal[k], CenterVec[k].AsFloat[j] - SigmaFactor(1, Df.RowCount) * Sigma[j,k], slSigma);
+          SetVectorValue(Sigma1UCLVec[k], j, Sigma1UCLVal[k], CenterVec[k].AsFloat[j] + SigmaFactor(1, Df.RowCount) * Sigma[j,k], slSigma);
+          SetVectorValue(Sigma2LCLVec[k], j, Sigma2LCLVal[k], CenterVec[k].AsFloat[j] - SigmaFactor(2, Df.RowCount) * Sigma[j,k], slSigma);
+          SetVectorValue(Sigma2UCLVec[k], j, Sigma2UCLVal[k], CenterVec[k].AsFloat[j] + SigmaFactor(2, Df.RowCount) * Sigma[j,k], slSigma);
+          SetVectorValue(Sigma3LCLVec[k], j, Sigma3LCLVal[k], CenterVec[k].AsFloat[j] - SigmaFactor(3, Df.RowCount) * Sigma[j,k], slSigma);
+          SetVectorValue(Sigma3UCLVec[k], j, Sigma3UCLVal[k], CenterVec[k].AsFloat[j] + SigmaFactor(3, Df.RowCount) * Sigma[j,k], slSigma);
 
           if not ExcludeVec[k].IsMissing[j] then
             AddToLine(ExcludeLine[k], ExcludeVec[k], j);
@@ -799,19 +805,19 @@ begin
       if not ShowSigma1[i] then
       begin
         Sigma1LCLLine[i].ParentChart := nil;
-        if DoAllowFreeze then
+        if DoAllowFreeze(slSigma) then
           Sigma1GlobLCLLine[i].ParentChart := nil;
       end;
       if not ShowSigma2[i] then
       begin
         Sigma2LCLLine[i].ParentChart := nil;
-        if DoAllowFreeze then
+        if DoAllowFreeze(slSigma) then
           Sigma2GlobLCLLine[i].ParentChart := nil;
       end;
       if not ShowSigma3[i] then
       begin
         Sigma3LCLLine[i].ParentChart := nil;
-        if DoAllowFreeze then
+        if DoAllowFreeze(slSigma) then
           Sigma3GlobLCLLine[i].ParentChart := nil;
       end;
     end;
@@ -890,9 +896,9 @@ begin
 end;
 
 procedure TCustomSPCChart.SetVectorValue(Vec: TEpiVector; Index: Integer;
-  FreezeVal, NormalVal: EpiFloat);
+  FreezeVal, NormalVal: EpiFloat; SpcLine: TSPCLine);
 begin
-  if DoAllowFreeze then
+  if DoAllowFreeze(SpcLine) then
     Vec.AsFloat[Index] := FreezeVal
   else
     Vec.AsFloat[Index] := NormalVal;
@@ -985,14 +991,14 @@ begin
   result.FieldDataDecimals := 15;
 end;
 
-function TCustomSPCChart.AllowFreeze: Boolean;
+function TCustomSPCChart.AllowFreeze(SpcLine: TSPCLine): Boolean;
 begin
   result := true;
 end;
 
-function TCustomSPCChart.DoAllowFreeze: boolean;
+function TCustomSPCChart.DoAllowFreeze(SpcLine: TSPCLine): boolean;
 begin
-  result := Cmd.ParamExists['F'] and AllowFreeze;
+  result := Cmd.ParamExists['F'] and AllowFreeze(SpcLine);
 end;
 
 procedure TCustomSPCChart.ReAssignToLengend(Series: TCustomSeries);

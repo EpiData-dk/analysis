@@ -40,7 +40,7 @@ type
     function GetUCLInfoTxt(ChartNo: Integer): String; override;
     procedure SigmaResults(ChartNo: Integer; SigmaNo: Integer;
       BreakIndex: Integer); override;
-    function AllowFreeze: Boolean; override;
+    function AllowFreeze(SpcLine: TSPCLine): Boolean; override;
   public
     // For Externaly available methods.
     constructor Create(); override;
@@ -73,6 +73,7 @@ end;
 
 procedure TPChart.CalcMean;
 begin
+  if Frozen then exit;
   Mean := Mean / Count; 
 end;
 
@@ -130,8 +131,11 @@ procedure TPChart.ExecuteMeanSuccess(LoopIdx, LastIdx: Integer);
 begin
   if ZVec.AsFloat[LoopIdx] = 0 then
     dm.Error('Total must not be null (0)', [], 46000);
-  CtrlVec[0].AsFloat[LoopIdx] := YVec.AsFloat[LoopIdx] / ZVec.AsFloat[LoopIdx];
-  Mean := Mean + CtrlVec[0].AsFloat[LoopIdx];
+  if Assigned(CtrlVec[0]) then
+    CtrlVec[0].AsFloat[LoopIdx] := YVec.AsFloat[LoopIdx] / ZVec.AsFloat[LoopIdx];
+
+  if Frozen then exit;
+  Mean := Mean + YVec.AsFloat[LoopIdx] / ZVec.AsFloat[LoopIdx];
   Inc(Count);
 end;
 
@@ -165,6 +169,8 @@ begin
 end;
 
 function TPChart.GetSigma(LoopIndex, ChartNo: integer): Extended;
+var
+  CentVal: EpiFloat;
 begin
   result := Sqrt((Mean * (1 - Mean)) / ZVec.AsFloat[LoopIndex]) * 100;
 end;
@@ -213,6 +219,7 @@ end;
 
 procedure TPChart.ResetMean;
 begin
+  if Frozen then exit;
   Mean := 0;
   Count := 0;
 end;
@@ -232,9 +239,10 @@ begin
   // Do nothing... not even inherited.
 end;
 
-function TPChart.AllowFreeze: Boolean;
+function TPChart.AllowFreeze(SpcLine: TSPCLine): Boolean;
 begin
   result := false;
+  if SpcLine = slCenter then result := true;
 end;
 
 end.

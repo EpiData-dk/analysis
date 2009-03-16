@@ -39,7 +39,7 @@ type
     function GetUCLInfoTxt(ChartNo: Integer): String; override;
     procedure SigmaResults(ChartNo: Integer; SigmaNo: Integer;
       BreakIndex: Integer); override;
-    function AllowFreeze: Boolean; override;
+    function AllowFreeze(SpcLine: TSPCLine): Boolean; override;
   public
     constructor Create(); override;
     destructor Destroy(); override;
@@ -55,13 +55,15 @@ const
 
 { TUChart }
 
-function TUChart.AllowFreeze: Boolean;
+function TUChart.AllowFreeze(SpcLine: TSPCLine): Boolean;
 begin
   result := false;
+  if SpcLine = slCenter then result := true;
 end;
 
 procedure TUChart.CalcMean;
 begin
+  if Frozen then exit;
   Mean := Mean / Total;
 end;
 
@@ -134,8 +136,12 @@ procedure TUChart.ExecuteMeanSuccess(LoopIdx, LastIdx: Integer);
 begin
   if ZVec.AsFloat[LoopIdx] = 0 then
     dm.Error('Total must not be null (0)', [], 46000);
-  CtrlVec[0].AsFloat[LoopIdx] :=
-    YVec.AsFloat[LoopIdx] / ZVec.AsFloat[LoopIdx];
+  if Assigned(CtrlVec[0]) then
+    CtrlVec[0].AsFloat[LoopIdx] :=
+      YVec.AsFloat[LoopIdx] / ZVec.AsFloat[LoopIdx];
+
+  if Frozen then exit;
+
   Mean := Mean + YVec.AsFloat[LoopIdx];
   Total := Total + ZVec.AsFloat[LoopIdx];
 end;
@@ -228,6 +234,8 @@ end;
 
 procedure TUChart.ResetMean;
 begin
+  if Frozen then exit;
+
   Mean := 0;
   Total := 0;
 end;

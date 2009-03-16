@@ -17,7 +17,7 @@ type
     Mean: EpiFloat;
     Count: Integer;
   protected
-    function AllowFreeze: Boolean; override;
+    function AllowFreeze(SpcLine: TSPCLine): Boolean; override;
     procedure CalcMean; override;
     procedure CheckVarnames(); override;
     procedure CleanupOutput(OutputTable: TStatTable); override;
@@ -28,7 +28,7 @@ type
     procedure ExecuteMeanSuccess(LoopIdx: Integer; LastIdx: Integer); override;
     function GetSigma(LoopIndex, ChartNo: integer): Extended; override;
     function GetTimeVec(Dataframe: TEpiDataframe): TEpiVector; override;
-    function GetXVector: TEpiVector; override;
+    function GetXVector: TEpiVector; override;        
     function GetYVector: TEpiVector; override;
     function GetZVector: TEpiVector; override;
     function GetCenter(LoopIndex: Integer; ChartNo: Integer): Extended; override;
@@ -69,13 +69,14 @@ begin
   //
 end;
 
-function TGChart.AllowFreeze: Boolean;
+function TGChart.AllowFreeze(SpcLine: TSPCLine): Boolean;
 begin
   Result := true;
 end;
 
 procedure TGChart.CalcMean;
 begin
+  if Frozen then exit;
   Mean := Mean / Count;
 end;
 
@@ -137,13 +138,16 @@ end;
 
 procedure TGChart.ExecuteMeanSuccess(LoopIdx, LastIdx: Integer);
 begin
-  if LoopIdx = LastIdx then
-  begin
+  if Assigned(CtrlVec[0]) then
     CtrlVec[0].AsFloat[LoopIdx] := 0;
-    exit;
-  end else
-    CtrlVec[0].AsFloat[LoopIdx] := YVec.AsFloat[LoopIdx] - YVec.AsFloat[LastIdx];
-  Mean := Mean + CtrlVec[0].AsFloat[LoopIdx];
+
+  if LoopIdx = LastIdx then exit;
+
+  if Assigned(CtrlVec[0]) then
+     CtrlVec[0].AsFloat[LoopIdx] := YVec.AsFloat[LoopIdx] - YVec.AsFloat[LastIdx];
+
+  if Frozen then exit;
+  Mean := Mean + YVec.AsFloat[LoopIdx] - YVec.AsFloat[LastIdx];
   Inc(Count);
 end;
 
@@ -237,6 +241,7 @@ end;
 
 procedure TGChart.ResetMean;
 begin
+  if Frozen then exit;
   Mean := 0;
   Count := 0;
 end;

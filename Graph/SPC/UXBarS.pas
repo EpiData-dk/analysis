@@ -16,7 +16,7 @@ type
     function C4(N: Integer): EpiFloat;
     function GetNVector(): TEpiVector;
   protected
-    function AllowFreeze: Boolean; override;
+    function AllowFreeze(SpcLine: TSPCLine): Boolean; override;
     procedure CalcMean; override;
     procedure CheckVarnames(); override;
     procedure CleanupOutput(OutputTable: TStatTable); override;
@@ -63,9 +63,10 @@ uses UCmdProcessor, UDebug, USPCUtils, Series, UGraph, GeneralUtils, Graphics,
 
 { TXBarS }
 
-function TXBarS.AllowFreeze: Boolean;
+function TXBarS.AllowFreeze(SpcLine: TSPCLine): Boolean;
 begin
   result := false;
+  if SpcLine = slCenter then result := true;
 end;
 
 function TXBarS.C4(N: Integer): EpiFloat;
@@ -101,7 +102,7 @@ end;
 
 procedure TXBarS.CalcMean;
 begin
-  inherited;
+  if Frozen then exit;
   XBarBar := XBarBar / NSum;
   SigmaHat := SigmaHat / HSum;
 end;
@@ -188,6 +189,13 @@ begin
   if NVec.AsInteger[LoopIdx] = 1 then
     dm.Error('Too few samples', []);
 
+  if (Length(CtrlVec) = 2) and (Assigned(CtrlVec[1])) then
+  begin
+    CtrlVec[1].AsFloat[LoopIdx] := ZVec.AsFloat[LoopIdx];
+    ExcludeVec[1].AsFloat[LoopIdx] := ZVec.AsFloat[LoopIdx];
+  end;
+
+  if Frozen then exit;
   Inc(NSum);
   XBarBar := XBarBar + YVec.AsFloat[LoopIdx];
   C4Const := C4(NVec.AsInteger[LoopIdx]);
@@ -195,12 +203,6 @@ begin
   H := IntPower(C4Const, 2) / (1 - IntPower(C4Const, 2));
   HSum := HSum + H;
   SigmaHat := SigmaHat + ((H * ZVec.AsFloat[LoopIdx]) / C4Const);
-
-  if (Length(CtrlVec) = 2) and (Assigned(CtrlVec[1])) then
-  begin
-    CtrlVec[1].AsFloat[LoopIdx] := ZVec.AsFloat[LoopIdx];
-    ExcludeVec[1].AsFloat[LoopIdx] := ZVec.AsFloat[LoopIdx];
-  end;
 end;
 
 function TXBarS.GetCenter(LoopIndex, ChartNo: Integer): Extended;
@@ -363,6 +365,7 @@ end;
 
 procedure TXBarS.ResetMean;
 begin
+  if Frozen then exit;
   XBarBar := 0;
   SigmaHat := 0;
   HSum := 0;

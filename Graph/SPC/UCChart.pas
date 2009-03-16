@@ -13,7 +13,6 @@ type
     Count: Integer;
     PerFactor: EpiFloat;
   protected
-    function AllowFreeze: Boolean; override;
     procedure CalcMean; override;
     procedure CheckVarnames(); override;
     procedure CleanupOutput(OutputTable: TStatTable); override;
@@ -54,10 +53,6 @@ uses UCmdProcessor, UDebug, USPCUtils, Series, UGraph, GeneralUtils, Graphics,
 
 { TCChart }
 
-function TCChart.AllowFreeze: Boolean;
-begin
-  result := true;
-end;
 
 procedure TCChart.CalcMean;
 begin

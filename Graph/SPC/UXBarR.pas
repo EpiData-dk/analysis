@@ -16,7 +16,7 @@ type
     function GetMaxVector(): TEpiVector;
     function GetMinVector(): TEpiVector;
   protected
-    function AllowFreeze: Boolean; override;
+    function AllowFreeze(SpcLine: TSPCLine): Boolean; override;
     procedure CalcMean; override;
     procedure CheckVarnames(); override;
     procedure CleanupOutput(OutputTable: TStatTable); override;
@@ -69,13 +69,15 @@ const
 
 { TXBarR }
 
-function TXBarR.AllowFreeze: Boolean;
+function TXBarR.AllowFreeze(SpcLine: TSPCLine): Boolean;
 begin
   result := false;
+  if SpcLine = slCenter then result := true;
 end;
 
 procedure TXBarR.CalcMean;
 begin
+  if Frozen then exit;
   XBarBar := XBarBar / Count;
   RBar := RBar / Count;
 end;
@@ -147,7 +149,7 @@ end;
 
 procedure TXBarR.ExecuteMeanFail(LoopIdx, LastIdx: Integer);
 begin
-  if (Length(CtrlVec) = 2) and (Assigned(CtrlVec[1])) then
+  if Assigned(CtrlVec[1]) then
   begin
     CtrlVec[1].IsMissing[LoopIdx] := True;
     ExcludeVec[1].AsFloat[LoopIdx] :=
@@ -160,11 +162,16 @@ begin
   if (NVec.AsInteger[LoopIdx] < 2) or (NVec.AsInteger[LoopIdx] > 100) then
     dm.Error('%s accepts only between %d and %d values in each subgroup.', ['XBar-Range', 2, 100], 37002);
   Inc(Count);
-  CtrlVec[1].AsFloat[LoopIdx] := MaxVec.AsFloat[LoopIdx] - MinVec.AsFloat[LoopIdx];
+  if Assigned(CtrlVec[1]) then
+  begin
+    CtrlVec[1].AsFloat[LoopIdx] := MaxVec.AsFloat[LoopIdx] - MinVec.AsFloat[LoopIdx];
+    ExcludeVec[1].AsFloat[LoopIdx] :=
+      MaxVec.AsFloat[LoopIdx] - MinVec.AsFloat[LoopIdx];
+  end;
+
+  if Frozen then exit;
   XBarBar := XBarBar + YVec.AsFloat[LoopIdx];
-  RBar := RBar + CtrlVec[1].AsFloat[LoopIdx];
-  ExcludeVec[1].AsFloat[LoopIdx] :=
-    MaxVec.AsFloat[LoopIdx] - MinVec.AsFloat[LoopIdx];
+  RBar := RBar + (MaxVec.AsFloat[LoopIdx] - MinVec.AsFloat[LoopIdx]);
 end;
 
 function TXBarR.GetCenter(LoopIndex, ChartNo: Integer): Extended;
@@ -329,6 +336,7 @@ end;
 
 procedure TXBarR.ResetMean;
 begin
+  if Frozen then exit;
   XBarBar := 0;
   RBar := 0;
   Count := 0;

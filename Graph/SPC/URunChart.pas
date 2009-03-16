@@ -11,7 +11,6 @@ type
   private
     Mean: EpiFloat;
   protected
-    function AllowFreeze: Boolean; override;
     procedure CalcMean; override;
     procedure CheckVarnames(); override;
     procedure CleanupOutput(OutputTable: TStatTable); override;
@@ -49,11 +48,6 @@ uses UCmdProcessor, UDebug, USPCUtils, Series, UGraph, GeneralUtils, Graphics,
  TeEngine, Math;
 
 { TRunChart }
-
-function TRunChart.AllowFreeze: Boolean;
-begin
-  result := true;
-end;
 
 procedure TRunChart.CalcMean;
 begin
