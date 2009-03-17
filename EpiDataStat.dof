@@ -115,7 +115,7 @@ AutoIncBuild=0
 MajorVer=2
 MinorVer=2
 Release=0
-Build=164
+Build=165
 Debug=0
 PreRelease=0
 Special=0
@@ -126,7 +126,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=EpiData Association
 FileDescription=EpiData Analysis Programme
-FileVersion=2.2.0.164
+FileVersion=2.2.0.165
 InternalName=EpiDataStat
 LegalCopyright=EpiData Association Odense, Denmark
 LegalTrademarks=EpiDataStat

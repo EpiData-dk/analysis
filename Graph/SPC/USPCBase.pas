@@ -306,7 +306,7 @@ begin
 
     Dataframe := PreAggregate(aDataFrame);
 
-    // Breaks and excludes:
+        // Breaks and excludes:
     TimeVec := GetTimeVec(Dataframe);
     Breaks := OSPCUtils.FindBreak(TimeVec);
     Dataframe.Sort(TimeVec.Name);
@@ -491,7 +491,9 @@ begin
       // Find Mean or Median;
       offset := 1;
       ResetMean();
-      while YVec.IsMissing[Offset] do inc(Offset);
+      while (Offset <= Df.RowCount) and YVec.IsMissing[Offset] do inc(Offset);
+      if Offset > df.RowCount then
+        dm.Error('Too few (aggregated) samples to calculate chart.', []);
       for i := Offset to df.RowCount do
       begin
         if (not YVec.IsMissing[i]) then
@@ -586,7 +588,6 @@ begin
         else
           Dataframe.Selected[j] := False;
       Df := Dataframe.PrepareDataframe(PrepNames, MissingNames);
-
       for j := 0 to Result.Count - 1 do
       begin
         // Create vectors:
@@ -622,7 +623,9 @@ begin
       // Find Mean or Median;
       offset := 1;
       ResetMean();
-      while YVec.IsMissing[Offset] do inc(Offset);
+      while (Offset <= Df.RowCount) and YVec.IsMissing[Offset] do inc(Offset);
+      if Offset > df.RowCount then
+        dm.Error('Too few (aggregated) samples to calculate chart.', []);
       for j := Offset to df.RowCount do
       begin
         if (not YVec.IsMissing[j]) then
