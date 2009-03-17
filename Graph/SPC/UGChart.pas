@@ -133,18 +133,19 @@ end;
 
 procedure TGChart.ExecuteMeanFail(LoopIdx, LastIdx: Integer);
 begin
-  CtrlVec[0].IsMissing[LoopIdx] := true;
+  if LoopIdx = 1 then exit;
+  CtrlVec[0].IsMissing[LoopIdx-1] := true;
 end;
 
 procedure TGChart.ExecuteMeanSuccess(LoopIdx, LastIdx: Integer);
 begin
   if Assigned(CtrlVec[0]) then
-    CtrlVec[0].AsFloat[LoopIdx] := 0;
+    CtrlVec[0].IsMissing[LoopIdx] := true;
 
-  if LoopIdx = LastIdx then exit;
+  if (LoopIdx = LastIdx) then exit;
 
   if Assigned(CtrlVec[0]) then
-     CtrlVec[0].AsFloat[LoopIdx] := YVec.AsFloat[LoopIdx] - YVec.AsFloat[LastIdx];
+     CtrlVec[0].AsFloat[LoopIdx-1] := YVec.AsFloat[LoopIdx] - YVec.AsFloat[LastIdx];
 
   if Frozen then exit;
   Mean := Mean + YVec.AsFloat[LoopIdx] - YVec.AsFloat[LastIdx];
