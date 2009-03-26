@@ -45,7 +45,7 @@ begin
     else Result := Round(AValue / X) * X;
 end;
 
-procedure SplitString(const source: string; list: TStrings; const Splitters: TCharset = [' ']);
+procedure SplitString(const source: string; List: TStrings; const Splitters: TCharset = [' ']);
 var
   P, P1: PChar;
   S: string;

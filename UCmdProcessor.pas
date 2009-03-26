@@ -3739,7 +3739,6 @@ begin
   foptions.AddObject('TABLE DESIGN GRAPH',TEpiOption.Create('TABLE DESIGN GRAPH','GRAPH',EpiTyString));
 
   // Table formatting
-  // foptions.AddObject('TABLE PERCENT',TEpiOption.Create('TABLE PERCENT','OFF',EpiTyString));
   foptions.AddObject('TABLE PERCENT FORMAT COL',TEpiOption.Create('TABLE PERCENT FORMAT COL','P1{}',EpiTyString));
   foptions.AddObject('TABLE PERCENT FORMAT ROW',TEpiOption.Create('TABLE PERCENT FORMAT ROW','P1()',EpiTyString));
   foptions.AddObject('TABLE PERCENT FORMAT TOTAL',TEpiOption.Create('TABLE PERCENT FORMAT TOTAL','P1[]',EpiTyString));
@@ -3757,7 +3756,8 @@ begin
 
   // Command group options:
   foptions.AddObject('OPTION GRAPH',TEpiOption.Create('OPTION GRAPH', '/SizeX=400 /SizeY=300 ',EpiTyString));
-  foptions.AddObject('OPTION SPC',   TEpiOption.Create('OPTION SPC',    '/SizeX=600 /SizeY=200 ',EpiTyString));
+  foptions.AddObject('OPTION SPC', TEpiOption.Create('OPTION SPC', '/SizeX=600 /SizeY=200 ',EpiTyString));
+  foptions.AddObject('SPC TEST', TEpiOption.Create('SPC TEST', '0,8,6,2,4',EpiTyString));
 
   foptions.AddObject('SHOW SYSTEMINFO',TEpiOption.Create('SHOW SYSTEMINFO','OFF',EpiTyBoolean));
   foptions.AddObject('ECHO',TEpiOption.Create('ECHO','ON',EpiTyBoolean));
@@ -3799,8 +3799,6 @@ begin
   foptions.AddObject('GRAPH FILENAME SHOW', TEpiOption.Create('GRAPH FILENAME SHOW','OFF',EpiTyBoolean));
   foptions.AddObject('GRAPH FILENAME FOLDER', TEpiOption.Create('GRAPH FILENAME FOLDER','OFF',EpiTyBoolean));
   foptions.AddObject('GRAPH CLIPBOARD', TEpiOption.Create('GRAPH CLIPBOARD','ON',EpiTyBoolean));
-//  foptions.AddObject('GRAPH SIZE X', TEpiOption.Create('GRAPH SIZE X', '400', EpiTyInteger));
-//  foptions.AddObject('GRAPH SIZE Y', TEpiOption.Create('GRAPH SIZE Y', '300', EpiTyInteger));
   foptions.AddObject('GRAPH FONT SIZE',TEpiOption.Create('GRAPH FONT SIZE','10',EpiTyInteger));
   foptions.AddObject('GRAPH COLOUR',TEpiOption.Create('GRAPH COLOUR','01234567890123456789',EpiTyString));
   foptions.AddObject('GRAPH COLOUR TEXT',TEpiOption.Create('GRAPH COLOUR TEXT','102222222',EpiTyString));
@@ -3828,8 +3826,6 @@ begin
 
   fShowSysInfo :=false;
   fShowError:=true;
-
-  //foptions.AddObject('NUMBER FORMAT',TEpiOption.Create('NUMBER FORMAT','%8.2f',EpiTyString));
 
   foptions.AddObject('VIEWER FONT NAME',TEpiOption.Create('VIEWER FONT NAME','"Verdana,Arial,Fixedsys"',EpiTyString));
   foptions.AddObject('VIEWER FONT CHARSET',TEpiOption.Create('VIEWER FONT CHARSET','ISO-8859-1',EpiTyString));

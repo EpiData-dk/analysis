@@ -128,13 +128,16 @@ end;
 function TGChart.ExcludeValueFunction(index: Integer;
   df: TEpiDataFrame): Extended;
 begin
+  {if index > 1 then
+    result := Df.Vectors[0].AsFloat[index] - Df.Vectors[0].AsFloat[index-1]
+  else
+    result := NA_FLOAT; }
   result := Df.Vectors[0].AsFloat[index];
 end;
 
 procedure TGChart.ExecuteMeanFail(LoopIdx, LastIdx: Integer);
 begin
-  if LoopIdx = 1 then exit;
-  CtrlVec[0].IsMissing[LoopIdx-1] := true;
+  CtrlVec[0].IsMissing[LoopIdx] := true;
 end;
 
 procedure TGChart.ExecuteMeanSuccess(LoopIdx, LastIdx: Integer);
@@ -145,7 +148,7 @@ begin
   if (LoopIdx = LastIdx) then exit;
 
   if Assigned(CtrlVec[0]) then
-     CtrlVec[0].AsFloat[LoopIdx-1] := YVec.AsFloat[LoopIdx] - YVec.AsFloat[LastIdx];
+     CtrlVec[0].AsFloat[LoopIdx] := YVec.AsFloat[LoopIdx] - YVec.AsFloat[LastIdx];
 
   if Frozen then exit;
   Mean := Mean + YVec.AsFloat[LoopIdx] - YVec.AsFloat[LastIdx];

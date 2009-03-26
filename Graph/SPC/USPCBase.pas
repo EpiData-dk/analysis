@@ -49,7 +49,8 @@ type
     procedure ReAssignToLengend(Series: TCustomSeries);
     function CreateVector(VectorName: string; Size: Integer): TEpiVector;
     function DoAllowFreeze(SpcLine: TSPCLine): boolean;
-    function LimitValue(OptionName: string; Default: Integer): Integer;
+    function LimitValue(OptionName: string; TestNo: Integer; TestList: TStrings): Integer;
+    function GetSpcTestList(): TStrings;
   protected
     df: TEpiDataFrame;
     CenterVec, CtrlVec, ExcludeVec,
@@ -286,6 +287,7 @@ var
   dfFormat: TEpiDateFormat;
   ShowSigma1, ShowSigma2, ShowSigma3: Array of Boolean;
   Dummy: boolean;
+  SpcTestList: TStrings;
 const
   procname = 'DoSPCChart';
   procversion = '1.0.0.0';
@@ -295,6 +297,8 @@ begin
 
   fVarNames := aVarNames;
   fFrozen := false;
+
+  SpcTestList := GetSpcTestList();
 
   try
     CheckVarnames();
@@ -654,6 +658,11 @@ begin
 
           if not ExcludeVec[k].IsMissing[j] then
             AddToLine(ExcludeLine[k], ExcludeVec[k], j);
+
+          // Dirtyhack for G-Chart!
+          if (Cmd.CommandID = opGChart) and (j = 1) then
+            AddNull(CtrlLine[k], CtrlVec[k].AsFloat[2], 1);
+
           if not CtrlVec[k].IsMissing[j] then
             AddToLine(CtrlLine[k], CtrlVec[k], j);
 
@@ -735,7 +744,7 @@ begin
         if (Cmd.ParamExists['T2'] or Cmd.ParamExists['T']) then
         begin
           TestVec := nil;
-          Res := OSPCUtils.ConsecutiveTest(CenterVec[k], CtrlVec[k], TestVec, LimitValue('T2', 8));
+          Res := OSPCUtils.ConsecutiveTest(CenterVec[k], CtrlVec[k], TestVec, LimitValue('T2', 2, SpcTestList));
           AddTestResult(k+1, 2, i+1, Res);
           OutputTable.Cell[PostInc(l), OutputTable.RowCount] := IntToStr(Res);
           TestSeries := OGraph.PointSeries(XVec, TestVec, LVec);
@@ -751,7 +760,7 @@ begin
         if (Cmd.ParamExists['T3'] or Cmd.ParamExists['T']) then
         begin
           TestVec := nil;
-          Res := OSPCUtils.TrendTest(CtrlVec[k], TestVec, LimitValue('T3', 6));
+          Res := OSPCUtils.TrendTest(CtrlVec[k], TestVec, LimitValue('T3', 3, SpcTestList));
           AddTestResult(k+1, 3, i+1, Res);
           OutputTable.Cell[PostInc(l), OutputTable.RowCount] := IntToStr(Res);
           TestSeries := OGraph.PointSeries(XVec, TestVec, LVec);
@@ -767,7 +776,7 @@ begin
         if Cmd.ParamExists['T4'] then
         begin
           TestVec := nil;
-          Res := OSPCUtils.SigmaTest(Sigma2LCLVec[k], Sigma2UCLVec[k], CenterVec[k], CtrlVec[k], LimitValue('T4', 2), TestVec);
+          Res := OSPCUtils.SigmaTest(Sigma2LCLVec[k], Sigma2UCLVec[k], CenterVec[k], CtrlVec[k], LimitValue('T4', 4, SpcTestList), TestVec);
           AddTestResult(k+1, 4, i+1, Res);
           OutputTable.Cell[PostInc(l), OutputTable.RowCount] := IntToStr(Res);
           TestSeries := OGraph.LineSeries2(XVec, TestVec, LVec );
@@ -782,7 +791,7 @@ begin
         if Cmd.ParamExists['T5'] then
         begin
           TestVec := nil;
-          Res := OSPCUtils.SigmaTest(Sigma1LCLVec[k], Sigma1UCLVec[k], CenterVec[k], CtrlVec[k], LimitValue('T5', 4), TestVec);
+          Res := OSPCUtils.SigmaTest(Sigma1LCLVec[k], Sigma1UCLVec[k], CenterVec[k], CtrlVec[k], LimitValue('T5', 5, SpcTestList), TestVec);
           AddTestResult(k+1, 5, i+1, Res);
           OutputTable.Cell[PostInc(l), OutputTable.RowCount] := IntToStr(Res);
           TestSeries := OGraph.LineSeries2(XVec, TestVec, LVec );
@@ -1036,17 +1045,34 @@ begin
 end;
 
 function TCustomSPCChart.LimitValue(OptionName: string;
-  Default: Integer): Integer;
+  TestNo: Integer; TestList: TStrings): Integer;
 var
   code: integer;
+  res:  integer;
 begin
-  result := Default;
+  Val(TestList[TestNo-1], Result, Code);
+  if Code > 0 then
+    Dm.Error('Default value for test %d is not an integer.', [TestNo]);
+
   if not Cmd.ParamExists[OptionName] then exit;
   if Trim(Cmd.ParamByName[OptionName].AsString) = '' then exit;
 
-  Val(Cmd.ParamByName[OptionName].AsString, Result, Code);
-  if Code > 0 then
-    Result := Default;
+  Val(Cmd.ParamByName[OptionName].AsString, Res, Code);
+  if Code = 0 then
+    Result := Res;
+end;
+
+function TCustomSPCChart.GetSpcTestList(): TStrings;
+var
+  Opt: TEpiOption;
+  s: string;
+begin
+  if Dm.GetOptionValue('SPC TEST', Opt) then
+    s := Opt.Value;
+  Result := TStringList.Create;
+  SplitString(s, result, [',']);
+  if not Result.Count = 5 then
+    Dm.Error('SPC TEST option has incorrect number of values: %d' + #1310 + 'Must be exactly 5', [Result.Count]);
 end;
 
 function TCustomSPCChart.ExcludeFunction(index: integer;
