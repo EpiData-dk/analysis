@@ -797,7 +797,8 @@ begin
       s := s + ext;
       if (Cmd.ParamByName['SAVE'] <> nil) then
       begin
-        s := ExtractFileNameNoExt(Cmd.ParamByName['SAVE'].AsString);
+        s := ExtractFilePath(Cmd.ParamByName['SAVE'].AsString);
+        s := s + ExtractFileNameNoExt(Cmd.ParamByName['SAVE'].AsString);
         if i > 0 then
           s := s + '_' + IntToStr(i);
         if ExtractFileExt(Cmd.ParamByName['SAVE'].AsString) <> '' then

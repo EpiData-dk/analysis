@@ -219,7 +219,7 @@ begin
   if Mean = 0 then
     Mean := YVec.AsFloat[Ix]
   else
-    Mean := YVec.AsFloat[Ix-1] + (YVec.AsFloat[Ix] - YVec.AsFloat[Ix-1])*(Mean);  // Bland Medical Statistics p 55
+    Mean := YVec.AsFloat[Ix] + (YVec.AsFloat[Ix+1] - YVec.AsFloat[Ix])*(Mean);  // Bland Medical Statistics p 55
 end;
 
 procedure TRunChart.SigmaResults(ChartNo, SigmaNo, BreakIndex: Integer);

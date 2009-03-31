@@ -151,6 +151,7 @@ uses
 
 const
   UnitName = 'USPCBase';
+  TestCount = 5;
   
 { TCustomSPCChart }
 
@@ -279,6 +280,7 @@ var
   v: integer;
 
   // Other:
+  XDiff: EpiFloat;
   PrepNames, MissingNames: TStrings;
   Breaks: TArrayVariant;
   TestIdx, i, j, k, l, RowCount,
@@ -331,30 +333,17 @@ begin
     // Output table:
     OutputTable := CreateOutputTable();
     TestIdx := OutputTable.ColCount + 1;
-    if Cmd.ParamExists['T1'] or Cmd.ParamExists['T'] then
+    for i := 1 to TestCount do
     begin
-      OutputTable.AddColumn;
-      OutputTable.Cell[OutputTable.ColCount, 1] := 'Test 1:';
-    end;
-    if Cmd.ParamExists['T2'] or Cmd.ParamExists['T'] then
-    begin
-      OutputTable.AddColumn;
-      OutputTable.Cell[OutputTable.ColCount, 1] := 'Test 2:';
-    end;
-    if Cmd.ParamExists['T3'] or Cmd.ParamExists['T'] then
-    begin
-      OutputTable.AddColumn;
-      OutputTable.Cell[OutputTable.ColCount, 1] := 'Test 3:';
-    end;
-    if Cmd.ParamExists['T4'] then
-    begin
-      OutputTable.AddColumn;
-      OutputTable.Cell[OutputTable.ColCount, 1] := 'Test 4:';
-    end;
-    if Cmd.ParamExists['T5'] then
-    begin
-      OutputTable.AddColumn;
-      OutputTable.Cell[OutputTable.ColCount, 1] := 'Test 5:';
+      str := Format('T%d', [i]);
+      if Cmd.ParamExists[str] or Cmd.ParamExists['T'] then
+      begin
+        OutputTable.AddColumn;
+        OutputTable.Cell[OutputTable.ColCount, 1] := Format('Test %d:', [i]);
+        if Cmd.ParamExists[str] and (Cmd.ParamByName[str].AsString <> '') then
+          OutputTable.Footer := OutputTable.Footer + Format('Test %d = %s', [i, Cmd.ParamByName[str].AsString]);
+      end;
+      str := '';
     end;
 
     // Create Sigma lines - even if they should not be displayed.
@@ -452,22 +441,24 @@ begin
     begin
       // Documentation information.
       OutputTable.Footer := OutputTable.Footer +
-        '<br>Estimation uses data from 1-: ' + Cmd.ParamByName['F'].AsString;
+        '<br>Estimation uses data from 1-' + Cmd.ParamByName['F'].AsString;
 
       LowVal := TimeVec.AsInteger[1] - 1;
-      case TimeVec.DataType of
-        EpiTyDate:
-          begin
-            dfFormat := DateFmtToEpiDateFmt(TimeVec.FieldDataFormat);
-            EpiStrToDate(Cmd.ParamByName['F'].AsString, Res, dfFormat);
-            HighVal := Res;
-          end;
-        EpiTyInteger, EpiTyFloat:
-          try
+      try
+        case TimeVec.DataType of
+          EpiTyDate:
+            begin
+              dfFormat := DateFmtToEpiDateFmt(TimeVec.FieldDataFormat);
+              if EpiStrToDate(Cmd.ParamByName['F'].AsString, Res, dfFormat) then
+                HighVal := Res
+              else
+                HighVal := TimeVec.AsInteger[Cmd.ParamByName['F'].AsInteger];
+            end;
+          EpiTyInteger, EpiTyFloat:
             HighVal := Cmd.ParamByName['F'].AsInteger;
-          except
-            Dm.Error('Invalid freeze point: %s', [Cmd.ParamByName['F'].AsString], 0);
-          end;
+        end;
+      except
+        Dm.Error('Invalid freeze point: %s', [Cmd.ParamByName['F'].AsString], 0);
       end;
 
       if (Length(Breaks) > 0) and (Breaks[0] < HighVal) then
@@ -666,13 +657,18 @@ begin
           if not CtrlVec[k].IsMissing[j] then
             AddToLine(CtrlLine[k], CtrlVec[k], j);
 
+          if (j < Df.RowCount) then
+            XDiff := (XVec.AsFloat[j+1] - XVec.AsFloat[j]) / 2
+          else
+            XDiff := (XVec.AsFloat[j] - XVec.AsFloat[j-1]) / 2;
+
           AddToLine(CenterLine[k], CenterVec[k], j, -0.5);
-          AddToSigmaLine(Sigma1LCLLine[k], Sigma1LCLVec[k], j, ShowSigma1[k], -0.5);
-          AddToSigmaLine(Sigma1UCLLine[k], Sigma1UCLVec[k], j, Dummy, -0.5);
-          AddToSigmaLine(Sigma2LCLLine[k], Sigma2LCLVec[k], j, ShowSigma2[k], -0.5);
-          AddToSigmaLine(Sigma2UCLLine[k], Sigma2UCLVec[k], j, Dummy, -0.5);
-          AddToSigmaLine(Sigma3LCLLine[k], Sigma3LCLVec[k], j, ShowSigma3[k], -0.5);
-          AddToSigmaLine(Sigma3UCLLine[k], Sigma3UCLVec[k], j, Dummy, -0.5);
+          AddToSigmaLine(Sigma1LCLLine[k], Sigma1LCLVec[k], j, ShowSigma1[k], -XDiff);
+          AddToSigmaLine(Sigma1UCLLine[k], Sigma1UCLVec[k], j, Dummy, -XDiff);
+          AddToSigmaLine(Sigma2LCLLine[k], Sigma2LCLVec[k], j, ShowSigma2[k], -XDiff);
+          AddToSigmaLine(Sigma2UCLLine[k], Sigma2UCLVec[k], j, Dummy, -XDiff);
+          AddToSigmaLine(Sigma3LCLLine[k], Sigma3LCLVec[k], j, ShowSigma3[k], -XDiff);
+          AddToSigmaLine(Sigma3UCLLine[k], Sigma3UCLVec[k], j, Dummy, -XDiff);
         end;  // For j...
 
         Dec(j);
@@ -685,28 +681,30 @@ begin
         end;
         CenterResults(k+1, i+1);
 
+        XDiff := (XVec.AsFloat[j] - XVec.AsFloat[j-1]) / 2;
+
         // Shift the final control limits by a half point.
-        AddToLine(CenterLine[k], CenterVec[k], j, 0.5);
+        AddToLine(CenterLine[k], CenterVec[k], j, XDiff);
         if ShowSigma1[k] then
-          AddToSigmaLine(Sigma1LCLLine[k], Sigma1LCLVec[k], j, ShowSigma1[k], 0.5);
-        AddToSigmaLine(Sigma1UCLLine[k], Sigma1UCLVec[k], j, Dummy, 0.5);
+          AddToSigmaLine(Sigma1LCLLine[k], Sigma1LCLVec[k], j, ShowSigma1[k], XDiff);
+        AddToSigmaLine(Sigma1UCLLine[k], Sigma1UCLVec[k], j, Dummy, XDiff);
         if ShowSigma2[k] then
-          AddToSigmaLine(Sigma2LCLLine[k], Sigma2LCLVec[k], j, ShowSigma2[k], 0.5);
-        AddToSigmaLine(Sigma2UCLLine[k], Sigma2UCLVec[k], j, Dummy, 0.5);
+          AddToSigmaLine(Sigma2LCLLine[k], Sigma2LCLVec[k], j, ShowSigma2[k], XDiff);
+        AddToSigmaLine(Sigma2UCLLine[k], Sigma2UCLVec[k], j, Dummy, XDiff);
         if ShowSigma3[k] then
-          AddToSigmaLine(Sigma3LCLLine[k], Sigma3LCLVec[k], j, ShowSigma3[k], 0.5);
-        AddToSigmaLine(Sigma3UCLLine[k], Sigma3UCLVec[k], j, Dummy, 0.5);
+          AddToSigmaLine(Sigma3LCLLine[k], Sigma3LCLVec[k], j, ShowSigma3[k], XDiff);
+        AddToSigmaLine(Sigma3UCLLine[k], Sigma3UCLVec[k], j, Dummy, XDiff);
 
         // Make a null point to break lines when using break option.
         AddNull(ExcludeLine[k], ExcludeVec[k], j);
         AddNull(CtrlLine[k], CtrlVec[k], j);
-        AddNull(CenterLine[k], CenterVec[k], j, 0.5);
-        AddNull(Sigma1LCLLine[k], Sigma1LCLVec[k], j, 0.5);
-        AddNull(Sigma1UCLLine[k], Sigma1UCLVec[k], j, 0.5);
-        AddNull(Sigma2LCLLine[k], Sigma2LCLVec[k], j, 0.5);
-        AddNull(Sigma2UCLLine[k], Sigma2UCLVec[k], j, 0.5);
-        AddNull(Sigma3LCLLine[k], Sigma3LCLVec[k], j, 0.5);
-        AddNull(Sigma3UCLLine[k], Sigma3UCLVec[k], j, 0.5);
+        AddNull(CenterLine[k], CenterVec[k], j, XDiff);
+        AddNull(Sigma1LCLLine[k], Sigma1LCLVec[k], j, XDiff);
+        AddNull(Sigma1UCLLine[k], Sigma1UCLVec[k], j, XDiff);
+        AddNull(Sigma2LCLLine[k], Sigma2LCLVec[k], j, XDiff);
+        AddNull(Sigma2UCLLine[k], Sigma2UCLVec[k], j, XDiff);
+        AddNull(Sigma3LCLLine[k], Sigma3LCLVec[k], j, XDiff);
+        AddNull(Sigma3UCLLine[k], Sigma3UCLVec[k], j, XDiff);
 
         OutputTable.AddRow;
         MakeOutputLine(k, OutputTable);

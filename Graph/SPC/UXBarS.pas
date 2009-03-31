@@ -82,7 +82,7 @@ function TXBarS.C4(N: Integer): EpiFloat;
     Result := Result * System.Sqrt(System.Pi);
   end;
 
-  function Fac(N: Integer): Integer;
+  function Fac(N: Integer): EpiFloat;
   begin
     Result := 1;
     while N > 1 do
