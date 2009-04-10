@@ -1,6 +1,6 @@
 object GraphDialog: TGraphDialog
-  Left = 312
-  Top = 356
+  Left = 681
+  Top = 181
   Width = 517
   Height = 303
   BorderIcons = [biSystemMenu]
@@ -21,8 +21,8 @@ object GraphDialog: TGraphDialog
     Left = 0
     Top = 0
     Width = 509
-    Height = 235
-    ActivePage = tabAxis
+    Height = 228
+    ActivePage = tabSPC
     Align = alClient
     TabOrder = 0
     object tabVariables: TTabSheet
@@ -161,33 +161,33 @@ object GraphDialog: TGraphDialog
           Height = 3
         end
         object Bevel2: TBevel
-          Left = 84
+          Left = 88
           Top = 64
-          Width = 3
-          Height = 110
+          Width = 0
+          Height = 57
         end
         object chkTest1: TCheckBox
-          Left = 16
+          Left = 92
           Top = 64
-          Width = 60
+          Width = 61
           Height = 17
           Caption = 'Test 1'
           TabOrder = 1
           OnClick = chkTest1Click
         end
         object chkTest2: TCheckBox
-          Left = 16
-          Top = 88
-          Width = 60
+          Left = 92
+          Top = 81
+          Width = 61
           Height = 17
           Caption = 'Test 2'
           TabOrder = 2
           OnClick = chkTest1Click
         end
         object chkTest3: TCheckBox
-          Left = 16
-          Top = 112
-          Width = 60
+          Left = 92
+          Top = 101
+          Width = 61
           Height = 17
           Caption = 'Test 3'
           TabOrder = 3
@@ -203,8 +203,8 @@ object GraphDialog: TGraphDialog
           OnClick = chkCheckAllClick
         end
         object chkTest4: TCheckBox
-          Left = 16
-          Top = 136
+          Left = 21
+          Top = 119
           Width = 60
           Height = 17
           Caption = 'Test 4'
@@ -212,8 +212,8 @@ object GraphDialog: TGraphDialog
           OnClick = chkTest1Click
         end
         object chkTest5: TCheckBox
-          Left = 16
-          Top = 160
+          Left = 21
+          Top = 140
           Width = 60
           Height = 17
           Caption = 'Test 5'
@@ -221,8 +221,8 @@ object GraphDialog: TGraphDialog
           OnClick = chkTest1Click
         end
         object chkCombiTest: TCheckBox
-          Left = 96
-          Top = 66
+          Left = 16
+          Top = 63
           Width = 65
           Height = 17
           Caption = 'Test 1-3'
@@ -285,7 +285,7 @@ object GraphDialog: TGraphDialog
         Top = 7
         Width = 113
         Height = 185
-        Caption = 'Lines and Marks'
+        Caption = 'Special options '
         TabOrder = 2
         object chkSigmaLine: TCheckBox
           Left = 9
@@ -298,7 +298,7 @@ object GraphDialog: TGraphDialog
         end
         object chkInfo: TCheckBox
           Left = 9
-          Top = 45
+          Top = 43
           Width = 94
           Height = 17
           Caption = 'Show Info'
@@ -306,6 +306,36 @@ object GraphDialog: TGraphDialog
           State = cbChecked
           TabOrder = 1
           OnClick = chkCombiTestClick
+        end
+        object chkPoint: TCheckBox
+          Left = 10
+          Top = 68
+          Width = 94
+          Height = 17
+          Caption = 'Connect Points'
+          Checked = True
+          State = cbChecked
+          TabOrder = 2
+          OnClick = chkCombiTestClick
+        end
+        object ChkYvalue: TCheckBox
+          Left = 11
+          Top = 90
+          Width = 94
+          Height = 17
+          Caption = 'Show Y value'
+          TabOrder = 3
+          OnClick = chkCombiTestClick
+        end
+        object ChkTlimit: TCheckBox
+          Left = 13
+          Top = 112
+          Width = 84
+          Height = 17
+          Hint = 'Use T-based limits'
+          Caption = 'Use T limits'
+          TabOrder = 4
+          OnClick = chkCheckAllClick
         end
       end
       object GrpFreeze: TGroupBox
@@ -992,7 +1022,7 @@ object GraphDialog: TGraphDialog
   object Panel1: TPanel
     Tag = -1
     Left = 0
-    Top = 235
+    Top = 228
     Width = 509
     Height = 41
     Align = alBottom

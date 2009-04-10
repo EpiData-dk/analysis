@@ -167,6 +167,9 @@ type
     Label3: TLabel;
     chkLabelsX: TCheckBox;
     chkLabelsY: TCheckBox;
+    chkPoint: TCheckBox;
+    ChkYvalue: TCheckBox;
+    ChkTlimit: TCheckBox;
     procedure chkTest1Click(Sender: TObject);
     procedure chkCombiTestClick(Sender: TObject);
     procedure chkCheckAllClick(Sender: TObject);
@@ -435,6 +438,9 @@ begin
     edBreak3.Clear;
     chkSigmaLine.Checked := false;
     chkInfo.Checked := True;
+    chkPoint.Checked := True;
+    chkYvalue.checked := False;
+    chkTlimit.checked := False ;
   end;
 
   // Graph/Axis page:
@@ -558,8 +564,11 @@ begin
     AddChkBox(chkTest3, result, '/T3');
     AddChkBox(chkTest4, result, '/T4');
     AddChkBox(chkTest5, result, '/T5');
+    AddChkBox(chkTLimit, result, '/TLimit');
+    AddChkBox(chkYvalue, result, '/Yvalue');
     AddChkBox(chkSigmaLine, result, '/Sl');
     AddUnChkBox(chkInfo, result, '/Noinf');
+    AddUnChkBox(chkPoint, result, '/Point');
     AddEdit(edBreak1, result, '/B=' + edBreak1.Text);
     AddEdit(edBreak2, result, '/B=' + edBreak2.Text);
     AddEdit(edBreak3, result, '/B=' + edBreak3.Text);
