@@ -1,6 +1,6 @@
 object GraphDialog: TGraphDialog
-  Left = 681
-  Top = 181
+  Left = 617
+  Top = 120
   Width = 517
   Height = 303
   BorderIcons = [biSystemMenu]
@@ -89,7 +89,7 @@ object GraphDialog: TGraphDialog
         Top = 8
         Width = 145
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 0
         OnSelect = ComboBoxSelect
       end
@@ -99,7 +99,7 @@ object GraphDialog: TGraphDialog
         Top = 37
         Width = 145
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 1
         OnSelect = ComboBoxSelect
       end
@@ -109,7 +109,7 @@ object GraphDialog: TGraphDialog
         Top = 66
         Width = 145
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 2
         OnSelect = ComboBoxSelect
       end
@@ -119,7 +119,7 @@ object GraphDialog: TGraphDialog
         Top = 96
         Width = 145
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 3
         OnSelect = ComboBoxSelect
       end
@@ -129,7 +129,7 @@ object GraphDialog: TGraphDialog
         Top = 136
         Width = 145
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 4
         OnSelect = ComboBoxSelect
       end
@@ -139,7 +139,7 @@ object GraphDialog: TGraphDialog
         Top = 176
         Width = 145
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 5
         OnSelect = ComboBoxSelect
       end
@@ -150,14 +150,14 @@ object GraphDialog: TGraphDialog
       object GrpTests: TGroupBox
         Left = 8
         Top = 7
-        Width = 185
-        Height = 185
+        Width = 164
+        Height = 182
         Caption = 'Tests:'
         TabOrder = 0
         object Bevel1: TBevel
           Left = 16
           Top = 50
-          Width = 153
+          Width = 131
           Height = 3
         end
         object Bevel2: TBevel
@@ -231,10 +231,10 @@ object GraphDialog: TGraphDialog
         end
       end
       object GrpBreaks: TGroupBox
-        Left = 200
+        Left = 182
         Top = 7
-        Width = 169
-        Height = 121
+        Width = 167
+        Height = 122
         Caption = 'Breaks:'
         TabOrder = 1
         object brkLabel: TLabel
@@ -254,9 +254,9 @@ object GraphDialog: TGraphDialog
         object Label7: TLabel
           Left = 8
           Top = 92
-          Width = 9
+          Width = 89
           Height = 13
-          Caption = '3:'
+          Caption = 'Repeat breaks by'
         end
         object edBreak1: TMaskEdit
           Left = 32
@@ -272,19 +272,20 @@ object GraphDialog: TGraphDialog
           Height = 21
           TabOrder = 1
         end
-        object edBreak3: TMaskEdit
-          Left = 32
+        object edBreakBy: TMaskEdit
+          Left = 96
           Top = 88
-          Width = 118
+          Width = 53
           Height = 21
+          Hint = 'Break every '
           TabOrder = 2
         end
       end
       object GrpLines: TGroupBox
-        Left = 376
+        Left = 360
         Top = 7
-        Width = 113
-        Height = 185
+        Width = 133
+        Height = 122
         Caption = 'Special options '
         TabOrder = 2
         object chkSigmaLine: TCheckBox
@@ -301,7 +302,7 @@ object GraphDialog: TGraphDialog
           Top = 43
           Width = 94
           Height = 17
-          Caption = 'Show Info'
+          Caption = 'Show Estimates'
           Checked = True
           State = cbChecked
           TabOrder = 1
@@ -318,50 +319,77 @@ object GraphDialog: TGraphDialog
           TabOrder = 2
           OnClick = chkCombiTestClick
         end
-        object ChkYvalue: TCheckBox
-          Left = 11
-          Top = 90
-          Width = 94
-          Height = 17
-          Caption = 'Show Y value'
-          TabOrder = 3
-          OnClick = chkCombiTestClick
-        end
         object ChkTlimit: TCheckBox
-          Left = 13
-          Top = 112
+          Left = 12
+          Top = 94
           Width = 84
           Height = 17
           Hint = 'Use T-based limits'
-          Caption = 'Use T limits'
-          TabOrder = 4
+          Caption = 'Use T-limits'
+          TabOrder = 3
           OnClick = chkCheckAllClick
         end
       end
       object GrpFreeze: TGroupBox
-        Left = 200
-        Top = 138
+        Left = 180
+        Top = 137
         Width = 170
-        Height = 54
-        Caption = 'Estimate from (freeze)'
+        Height = 50
+        Caption = 'Freeze estimates'
         TabOrder = 3
         object Label1: TLabel
           Left = 10
           Top = 23
-          Width = 9
+          Width = 74
           Height = 13
-          Caption = '1-'
+          Caption = 'At observation: '
         end
         object edFreeze: TMaskEdit
           Tag = -1
-          Left = 33
+          Left = 96
           Top = 18
-          Width = 31
+          Width = 46
           Height = 21
           AutoSize = False
           EditMask = '99999;1; '
           MaxLength = 5
           TabOrder = 0
+          Text = '     '
+          OnClick = editClick
+          OnEnter = editEnter
+        end
+      end
+      object GrpExclude: TGroupBox
+        Left = 360
+        Top = 137
+        Width = 131
+        Height = 50
+        Caption = 'Exclude Observation'
+        TabOrder = 4
+        object EdExp1: TMaskEdit
+          Tag = -1
+          Left = 19
+          Top = 19
+          Width = 34
+          Height = 21
+          AutoSize = False
+          EditMask = '99999;1; '
+          MaxLength = 5
+          TabOrder = 0
+          Text = '     '
+          OnClick = editClick
+          OnEnter = editEnter
+        end
+        object EdExp2: TMaskEdit
+          Tag = -1
+          Left = 77
+          Top = 19
+          Width = 34
+          Height = 21
+          AutoSize = False
+          EditMask = '99999;1; '
+          MaxLength = 5
+          TabOrder = 1
           Text = '     '
           OnClick = editClick
           OnEnter = editEnter
@@ -387,13 +415,6 @@ object GraphDialog: TGraphDialog
         Height = 90
         Caption = 'Show:'
         TabOrder = 0
-        object Label24: TLabel
-          Left = 96
-          Top = 20
-          Width = 22
-          Height = 13
-          Caption = 'Grid:'
-        end
         object chkLegend: TCheckBox
           Tag = -1
           Left = 8
@@ -405,8 +426,8 @@ object GraphDialog: TGraphDialog
         end
         object chkFrame: TCheckBox
           Tag = -1
-          Left = 8
-          Top = 40
+          Left = 92
+          Top = 16
           Width = 51
           Height = 17
           Caption = 'Frame'
@@ -414,30 +435,39 @@ object GraphDialog: TGraphDialog
         end
         object chkGridH: TCheckBox
           Tag = -1
-          Left = 96
+          Left = 92
           Top = 40
-          Width = 92
+          Width = 101
           Height = 16
-          Caption = 'Horizontal'
+          Caption = 'Horizontal Grid'
           TabOrder = 3
         end
         object chkGridV: TCheckBox
           Tag = -1
-          Left = 96
+          Left = 92
           Top = 63
-          Width = 57
+          Width = 85
           Height = 17
-          Caption = 'Vertical'
+          Caption = 'Vertical Grid'
           TabOrder = 4
         end
         object chkN: TCheckBox
           Tag = -1
           Left = 8
-          Top = 64
+          Top = 39
           Width = 30
           Height = 17
           Caption = 'N'
           TabOrder = 2
+        end
+        object ChkYvalue: TCheckBox
+          Left = 8
+          Top = 62
+          Width = 65
+          Height = 17
+          Caption = 'Y values'
+          TabOrder = 5
+          OnClick = chkCombiTestClick
         end
       end
       object SizeGrpBox: TGroupBox
@@ -1013,7 +1043,7 @@ object GraphDialog: TGraphDialog
         Top = 24
         Width = 145
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 0
         Text = 'XLabel'
       end
@@ -1084,7 +1114,7 @@ object GraphDialog: TGraphDialog
       Width = 49
       Height = 20
       Anchors = [akLeft, akTop, akBottom]
-      Caption = '&Execute'
+      Caption = 'E&xecute'
       TabOrder = 4
       OnClick = ExecBtnClick
     end

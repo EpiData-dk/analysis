@@ -90,10 +90,18 @@ var Vectorlist : TEpiVectors;
    bottom,top,tal,oldtal  : Ivector;
    count,totcount         : integer;
    C,R,row,col            : Byte;
-   gamma,pgamma,ppq,pmq,gammall, gammaul,
-   ss,chi,pchi,stot,gammatot,u,pgammatot,absgammatot,
-   totppq,totpmq,totchi   : real;
-   df,totdf          : integer;
+
+   gamma,pgamma,ppq,pmq,
+   gammall, gammaul,
+   ss,chi,pchi,stot,
+   gammatot,u,pgammatot,
+   absgammatot,
+   totppq,totpmq,totchi,
+   gamma1,ppq1,pmq1,
+   var1,totvar1,sd1       : real;
+
+   success                : boolean;
+   df,totdf               : integer;
    NTABcells,cellno       : Integer; // the number of cells with at least 1 person
    Ncases                 : Integer; // the number of persons with compledte information on all variables
 
@@ -179,6 +187,7 @@ var Vectorlist : TEpiVectors;
        tab.pchi:= pchi;
        tab.gamma := gam;
        tab.pgamma2  := pgam;
+       
    {    if plusinfinity then tab.oddsratio := 9999
            else if minusinfinity then tab.oddsratio := -9999
            else
@@ -188,6 +197,9 @@ var Vectorlist : TEpiVectors;
                tab.ORLL :=otables.GetConfidenceIntervalsOR(tab,-1,inexact);
              end;
     }   //Tab.FishP2  := otables.GetFishersExact(tab);
+
+       tab.GammaLL:=gamll;
+       tab.GammaUL:=gamul;
 
    end;
 
@@ -207,9 +219,12 @@ var Vectorlist : TEpiVectors;
        if plusinfinity then table.SumOR := 9999
            else if minusinfinity then table.SumOR := -9999
            else table.SumOR  := odds;
+       table.PartGammaUL:=GamUL;
+       table.PartGammaLL:=GamLL;
    end;
 
    //    SaveSumTabelExactEstimates(effective_sim, MCChi,MCDf, MCp, MCGamma,MCpGamma);
+
    Procedure SaveSumTableExactEstimates(nsim : epiint; var cHI, Pchi, DF, Gam, pGam : Real);
    begin
        table.NSIM := round(nsim);
@@ -225,7 +240,7 @@ var Vectorlist : TEpiVectors;
    Procedure Analyze_twowaytables(var s : string; ThisTable : integer);
    label slut;
    var i,j : byte;
-    gammall, gammaul : Real;
+    //gammall, gammaul : Real;
    begin
 
        (******
@@ -250,14 +265,19 @@ var Vectorlist : TEpiVectors;
 
        rcgamma(c,r,tab2,gamma,pgamma,ppq,pmq,ss,true);
 
+       Estimate_rcgamma(c,r,tab2,gamma1,ppq1,pmq1,var1,success);
+
+       if success and (var1>0) then sd1:=sqrt(var1) else sd1:=sqrt(var1);
+
        // TODO: CI for gamma:
-       // rcgammaCI(gammall := 0;  gammaul := 0;)
+
+       gammall := gamma-1.96*sd1;  gammaul := gamma+1.96*sd1;
 
        rcchi(c,r,tab2,etab2,chi,df,pchi,true);
 
        if df>0 then
        begin
-          gammall := 0;  gammaul := 0;
+          //gammall := 0;  gammaul := 0;
               //
  {          s:=s+'Chi=';
            str(chi:7:2,s1); s:=s+s1+'  df(';
@@ -284,7 +304,7 @@ var Vectorlist : TEpiVectors;
 
        if (thistable = 0)
            then SavetableEstimates(table.margtable,Chi,pChi,df, gamma, pgamma, gammaLL, gammaUL, Oddsratio, Plusinfinity, Minusinfinity)
-           else  SavetableEstimates(Table.Subtable[thistable],Chi,pChi,df, gamma, pgamma, gammaLL, gammaUL, Oddsratio,Plusinfinity, Minusinfinity);
+           else SavetableEstimates(Table.Subtable[thistable],Chi,pChi,df, gamma, pgamma, gammaLL, gammaUL, Oddsratio,Plusinfinity, Minusinfinity);
     slut:
   end;
 
@@ -295,6 +315,7 @@ var Vectorlist : TEpiVectors;
        totppq:=totppq+ppq;
        totpmq:=totpmq+pmq;
        stot:=stot+ss;
+       TOTvar1:=Totvar1+ppq*var1;
    end;
 
 begin
@@ -350,12 +371,13 @@ begin
     nz:=table.TableCount;
     if nz=0 then goto slut;
 
-    z:=0; // this is the number of the slice
-    totchi :=0;
-    totppq :=0;
-    totpmq :=0;
-    totdf  :=0;
-    stot:=0;
+    z       :=0;   // this is the number of the slice
+    totchi  :=0;
+    totppq  :=0;
+    totpmq  :=0;
+    totdf   :=0;
+    stot    :=0;
+    totvar1 :=0;
 
     if nz > 1 then
     begin     // stratified analysis
@@ -394,7 +416,10 @@ begin
     PCHI:=PFCHI(totDF,totCHI);
     gamma2oddsratio(gammatot,oddsratio,plusinfinity,minusinfinity);
     pgammatot := 2*pgammatot ; //Two sided values
-    gammall := 0.0; gammaUL := 0.0;
+
+    if totppq>0 then totvar1:=totvar1/totppq else totvar1:=0;
+    // todo: add gamma ci here:
+    gammall := gammatot-1.96*sqrt(totvar1); gammaUL := gammatot+1.96*sqrt(totvar1);
     SaveSumTableEstimates(TotChi, pChi, TotDf, Gammatot,PGammatot,GammaLL, GammaUL,oddsratio,plusinfinity,minusinfinity);
 
 ////---------------------------------------------------------------------------------------------------------///

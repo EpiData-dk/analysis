@@ -111,7 +111,7 @@ type
     brkLabel: TLabel;
     edBreak2: TMaskEdit;
     Label4: TLabel;
-    edBreak3: TMaskEdit;
+    edBreakBy: TMaskEdit;
     Label7: TLabel;
     tabTitle: TTabSheet;
     edTitle: TEdit;
@@ -123,7 +123,6 @@ type
     Label8: TLabel;
     lblBy: TLabel;
     Label21: TLabel;
-    Label24: TLabel;
     lblWeight: TLabel;
     Bevel1: TBevel;
     edFoot: TEdit;
@@ -168,8 +167,11 @@ type
     chkLabelsX: TCheckBox;
     chkLabelsY: TCheckBox;
     chkPoint: TCheckBox;
-    ChkYvalue: TCheckBox;
     ChkTlimit: TCheckBox;
+    ChkYvalue: TCheckBox;
+    GrpExclude: TGroupBox;
+    EdExp1: TMaskEdit;
+    EdExp2: TMaskEdit;
     procedure chkTest1Click(Sender: TObject);
     procedure chkCombiTestClick(Sender: TObject);
     procedure chkCheckAllClick(Sender: TObject);
@@ -435,12 +437,16 @@ begin
       chkCombiTest.Checked := (goTest in fDlgOptions.Defaults);
     edBreak1.Clear;
     edBreak2.Clear;
-    edBreak3.Clear;
+    edBreakBy.Clear;
+    edFreeze.clear;
+
     chkSigmaLine.Checked := false;
     chkInfo.Checked := True;
     chkPoint.Checked := True;
-    chkYvalue.checked := False;
     chkTlimit.checked := False ;
+
+    EdExp1.Clear;
+    EdExp2.Clear;
   end;
 
   // Graph/Axis page:
@@ -450,6 +456,8 @@ begin
   chkN.Checked := false;
   chkGridH.Checked := false;
   chkGridV.Checked := false;
+  chkYvalue.checked := False;
+
   // - graph size
   edSizeX.Clear;
   edSizeY.Clear;
@@ -565,14 +573,15 @@ begin
     AddChkBox(chkTest4, result, '/T4');
     AddChkBox(chkTest5, result, '/T5');
     AddChkBox(chkTLimit, result, '/TLimit');
-    AddChkBox(chkYvalue, result, '/Yvalue');
     AddChkBox(chkSigmaLine, result, '/Sl');
     AddUnChkBox(chkInfo, result, '/Noinf');
     AddUnChkBox(chkPoint, result, '/Point');
     AddEdit(edBreak1, result, '/B=' + edBreak1.Text);
     AddEdit(edBreak2, result, '/B=' + edBreak2.Text);
-    AddEdit(edBreak3, result, '/B=' + edBreak3.Text);
+    AddEdit(edBreakBy, result, '/B=b' + edBreakBy.Text);
     AddEdit(edFreeze, result, '/F=' + Trim(edFreeze.Text));
+    AddEdit(edExp1, result, '/Exp=' + Trim(edExp1.Text));
+    AddEdit(edExp2, result, '/Exp=' + Trim(edExp2.Text));
   end;
 
   // Graph/Axis page:
@@ -582,6 +591,8 @@ begin
   AddChkBox(chkN, result, '/N');
   AddChkBox(chkGridH, result, '/Hgrid');
   AddChkBox(chkGridV, result, '/Vgrid');
+  AddChkBox(chkYvalue, result, '/Yvalue');
+
   // - Graph size...
   AddEdit(edSizeX, result, '/SizeX=' + Trim(edSizeX.Text));
   AddEdit(edSizeY, result, '/SizeY=' + Trim(edSizeY.Text));

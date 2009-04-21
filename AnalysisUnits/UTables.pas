@@ -2307,19 +2307,19 @@ begin
       tab.Cell[c-1,1] := Fmts.CIHdr;
       tab.cell[c,1] := 'p';
       tab.Cell[c-2, 2] := Epiformat(SumTable.margtable.Gamma,Fmts.efmt);
-      tab.cell[c-1,2] :='<font style="font-size: 0.5em">not ready</font>';
-      //tab.Cell[c-1, 2] :=EpiCIformat(1,SumTable.margtable.gammaLL,SumTable.margtable.gammaUL,efmt, cifmt,' ',1);
+      //tab.cell[c-1,2] :='<font style="font-size: 0.5em">not ready</font>';
+      tab.Cell[c-1, 2] :=EpiCIformat(1,SumTable.margtable.gammaLL,SumTable.margtable.gammaUL,Fmts.efmt, Fmts.cifmt,' ',1);
       tab.cell[c,2]   :=Epiformat(Sumtable.MargTable.pGamma2,'%7.3f');
      if SumTable.TableCount > 1 then
      begin
-      tab.Cell[c-2, 3] := Epiformat(SumTable.PartGamma,Fmts.efmt);
-      //tab.Cell[c-1, 3] :=EpiCIformat(SumTable.Partgamma,Sumtable.PartGammaLL,SumTable.margtable.gammaUL,efmt, cifmt,' ',1);
+      //tab.Cell[c-2, 3] := Epiformat(SumTable.PartGamma,Fmts.efmt);
+      tab.Cell[c-1, 3] :=EpiCIformat(SumTable.Partgamma,Sumtable.PartGammaLL,SumTable.margtable.gammaUL,Fmts.efmt, Fmts.cifmt,' ',1);
       tab.Cell[c, 3] :=Epiformat(SumTable.pPartGamma2,'%7.3f');
 
       for i := 1 to SumTable.TableCount do
         begin
-          tab.Cell[c-2,i+4] := Epiformat(SumTable[i].Gamma,Fmts.efmt);
-          //tab.Cell[c-1,i+4] := EpiCIformat(1,SumTable[i].gammaLL,SumTable[i].gammaUL,efmt, cifmt,' ',1);
+          //tab.Cell[c-2,i+4] := Epiformat(SumTable[i].Gamma,Fmts.efmt);
+          tab.Cell[c-1,i+4] := EpiCIformat(1,SumTable[i].gammaLL,SumTable[i].gammaUL,Fmts.efmt, Fmts.cifmt,' ',1);
           tab.Cell[c,i+4] := Epiformat(Sumtable.SubTable[i].pGamma2,'%7.3f');
         end;
       end;
