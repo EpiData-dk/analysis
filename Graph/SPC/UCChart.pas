@@ -56,6 +56,7 @@ uses UCmdProcessor, UDebug, USPCUtils, Series, UGraph, GeneralUtils, Graphics,
 
 procedure TCChart.CalcMean;
 begin
+  if frozen then exit;
   Mean := Mean / Count;
 end;
 
@@ -143,6 +144,7 @@ end;
 
 procedure TCChart.ExecuteMeanSuccess(LoopIdx, LastIdx: Integer);
 begin
+  if frozen then exit;
   Mean := Mean + YVec.AsFloat[LoopIdx];
   Inc(Count);
 end;
@@ -242,6 +244,7 @@ end;
 
 procedure TCChart.ResetMean;
 begin
+  if frozen then exit;
   Mean := 0;
   Count := 0;
 end;

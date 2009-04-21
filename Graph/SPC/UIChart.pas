@@ -53,6 +53,7 @@ const
 // ============================================================================
 procedure TIChart.CalcMean;
 begin
+  if Frozen then exit;
   Mean := Mean / Count;
   MRBar := MRBar / (Count - 1);
 end;
@@ -123,6 +124,8 @@ end;
 
 procedure TIChart.ExecuteMeanSuccess(LoopIdx, LastIdx: Integer);
 begin
+  if Frozen then exit;
+
   Mean := Mean + YVec.AsFloat[LoopIdx];
   Inc(Count);
 
@@ -137,6 +140,8 @@ end;
 
 procedure TIChart.ExecuteMeanFail(LoopIdx, LastIdx: Integer);
 begin
+  if Frozen then exit;
+
   if (Length(CtrlVec) = 2) and (Assigned(CtrlVec[1])) then
   begin
     CtrlVec[1].IsMissing[LoopIdx] := True;
@@ -191,6 +196,7 @@ end;
 
 procedure TIChart.ResetMean;
 begin
+  if Frozen then exit;
   Mean := 0;
   MRBar := 0;
   Count := 0;

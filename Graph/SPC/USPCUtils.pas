@@ -383,8 +383,9 @@ end;
 function TSPCUtils.FindBreak(XVector: TEpiVector): TArrayVariant;
 var
   Params: TArrayVariant;
-  i,j, res : integer;
+  i,j, k, res : integer;
   dfFormat: TEpiDateFormat;
+  BrkList: TStrings;
 
   procedure ArraySort(var List: array of variant; L, R: Integer);
   var
@@ -419,20 +420,38 @@ begin
   begin
     if not ((Cmd.Param[j].VarName = 'BREAK') or (Cmd.Param[j].VarName = 'B')) then
       continue;
-    SetLength(Params, i+1);
-    case XVector.DataType of
-      EpiTyDate:
-        begin
-          dfFormat := DateFmtToEpiDateFmt(XVector.FieldDataFormat);
-          EpiStrToDate(Cmd.Param[j].AsString, res, dfFormat);
-          Params[i] := res;
-        end;
-      EpiTyInteger:
-        Params[i] := StrToInt(Cmd.Param[j].AsString);
-    else
-      Params[i] := Cmd.Param[j].Value;
+
+    if AnsiUpperCase(Cmd.Param[j].AsString[1]) = 'B' then
+    begin
+      Res := (XVector.AsInteger[XVector.Length] - XVector.AsInteger[1]) div (StrToInt(Copy(Cmd.Param[j].AsString, 2, 10))) ;
+      for k := 1 to Res do
+      begin
+        SetLength(Params, i+1);
+        Params[i] := (XVector.AsInteger[1] + (k * StrToInt(Copy(Cmd.Param[j].AsString, 2, 10)))) - 1;
+        Inc(i);
+      end;
+      Continue;
     end;
-    inc(i);
+
+    BrkList := TStringList.Create;
+    SplitString(Cmd.Param[j].AsString, BrkList, [',']);
+    for k := 0 to BrkList.Count-1 do
+    begin
+      SetLength(Params, i+1);
+      case XVector.DataType of
+        EpiTyDate:
+          begin
+            dfFormat := DateFmtToEpiDateFmt(XVector.FieldDataFormat);
+            EpiStrToDate(BrkList[k], res, dfFormat);
+            Params[i] := res;
+          end;
+        EpiTyInteger:
+          Params[i] := StrToInt(BrkList[k]);
+      else
+        Params[i] := StrToFloat(BrkList[k]);
+      end;
+      inc(i);
+    end;
   end;
   if i>0 then
     ArraySort(Params, 0, i-1);
@@ -485,7 +504,7 @@ begin
 
   ExclVector := TEpiFloatVector.Create('$EXCLUDED', df.RowCount);
   ExclVector.FieldDataSize := 12;
-  ExclVector.FieldDataDecimals := 15;
+  ExclVector.FieldDataDecimals := 14;
   Df.Vectors.Add(ExclVector);
 
   for i := 1 to df.RowCount do

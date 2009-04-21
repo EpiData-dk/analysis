@@ -16,11 +16,6 @@ type
     fVarNames: TStrings;
     fExcluded: Boolean;
     fFrozen: Boolean;
-    // Values used if calculating global sigma lvl's (using the "freeze" options)
-    CenterVal,
-    Sigma1LCLVal, Sigma1UCLVal,
-    Sigma2LCLVal, Sigma2UCLVal,
-    Sigma3LCLVal, Sigma3UCLVal: Array of EpiFloat;
     function SigmaFactor(SigmaLvl, Count: integer): EpiFloat;
     procedure AddToSigmaLine(SigmaLine: TLineSeries; SigmaVec: TEpiVector;
       Index: Integer; var ShowSigma: boolean; XPosOffset: Extended = 0.0); overload;
@@ -36,7 +31,7 @@ type
       XPosOffset: Extended = 0.0); overload;
     procedure AddTestResult(ChartNo, TestNo, BreakIndex: Integer; Value: EpiFloat);
     procedure SetVectorValue(Vec: TEpiVector; Index: Integer;
-      FreezeVal, NormalVal: EpiFloat; SpcLine: TSPCLine);
+      FrzVec: TEpiVector; NormalVal: EpiFloat; SpcLine: TSPCLine);
     procedure NilVectorArrays(ArraySize: integer);
     procedure CommonSeriesCreate(Series: TCustomSeries;
       Title: string; LineCode: integer; ParentChart: TChart);
@@ -53,10 +48,16 @@ type
     function GetSpcTestList(): TStrings;
   protected
     df: TEpiDataFrame;
-    CenterVec, CtrlVec, ExcludeVec,
+    CtrlVec, ExcludeVec,
+    CenterVec,
     Sigma1LCLVec, Sigma1UCLVec,
     Sigma2LCLVec, Sigma2UCLVec,
     Sigma3LCLVec, Sigma3UCLVec: Array of TEpiVector;
+    // Freeze Vectors:
+    CenterFrzVec,
+    Sigma1FrzLCLVec, Sigma1FrzUCLVec,
+    Sigma2FrzLCLVec, Sigma2FrzUCLVec,
+    Sigma3FrzLCLVec, Sigma3FrzUCLVec: Array of TEpiVector;
     // If pre aggregation needed override else leave as is.
     function PreAggregate(const Dataframe: TEpiDataframe): TEpiDataframe; virtual;
     // Vector to set missing on excluding. Default to Varnames[0] - override if needed;
@@ -268,10 +269,10 @@ var
   Sigma1LCLLine, Sigma1UCLLine,
   Sigma2LCLLine, Sigma2UCLLine,
   Sigma3LCLLine, Sigma3UCLLine: Array of TLineSeries;
-  CenterGlobLine,
-  Sigma1GlobLCLLine, Sigma1GlobUCLLine,
-  Sigma2GlobLCLLine, Sigma2GlobUCLLine,
-  Sigma3GlobLCLLine, Sigma3GlobUCLLine: Array of TLineSeries;
+  CenterFrzLine,
+  Sigma1FrzLCLLine, Sigma1FrzUCLLine,
+  Sigma2FrzLCLLine, Sigma2FrzUCLLine,
+  Sigma3FrzLCLLine, Sigma3FrzUCLLine: Array of TLineSeries;
   TestSeries: TCustomSeries;
   ChartText: Array of string;
 
@@ -312,16 +313,12 @@ begin
 
     Dataframe := PreAggregate(aDataFrame);
 
-        // Breaks and excludes:
+    // Breaks and excludes:
     TimeVec := GetTimeVec(Dataframe);
     Breaks := OSPCUtils.FindBreak(TimeVec);
     Dataframe.Sort(TimeVec.Name);
 
     fExcluded := OSPCUtils.ExcludeInDataframe(GetExclusionVector(Dataframe), ExcludeValueFunction, ExcludeFunction);
-
-    // TODO -o Torsten: Remove when TEpiFloat vector no longer uses R2 rounding function.
-    if Cmd.CommandID = opGChart then
-      Dataframe.VectorByName['$EXCLUDED'].FieldDataDecimals := 14;
 
     dm.AddResult('$SPCBREAKS', EpiTyInteger, Length(Breaks), 0, 0);
     for i := 0 to Result.Count -1 do
@@ -336,7 +333,7 @@ begin
     for i := 1 to TestCount do
     begin
       str := Format('T%d', [i]);
-      if Cmd.ParamExists[str] or Cmd.ParamExists['T'] then
+      if Cmd.ParamExists[str] or (Cmd.ParamExists['T'] and (i <= 3))then
       begin
         OutputTable.AddColumn;
         OutputTable.Cell[OutputTable.ColCount, 1] := Format('Test %d:', [i]);
@@ -345,6 +342,8 @@ begin
       end;
       str := '';
     end;
+    if TestIdx < OutputTable.ColCount + 1 then
+      OutputTable.Footer := OutputTable.Footer + '<br>Tests list: ' + SpcTestList.CommaText;
 
     // Create Sigma lines - even if they should not be displayed.
     SetLength(Sigma1LCLLine, Result.Count);
@@ -406,7 +405,7 @@ begin
     MissingNames := TStringList.Create();
     PrepareVarnames(PrepNames, MissingNames);
 
-    // Set Length of Vectors.
+    // Set number of Vectors.
     SetLength(CtrlVec, Result.Count);
     SetLength(CenterVec, Result.Count);
     SetLength(ExcludeVec, Result.Count);
@@ -416,6 +415,14 @@ begin
     SetLength(Sigma2UCLVec, Result.Count);
     SetLength(Sigma3LCLVec, Result.Count);
     SetLength(Sigma3UCLVec, Result.Count);
+    // - number of freeze vectors
+    SetLength(CenterFrzVec, Result.Count);
+    SetLength(Sigma1FrzLCLVec, Result.Count);
+    SetLength(Sigma1FrzUCLVec, Result.Count);
+    SetLength(Sigma2FrzLCLVec, Result.Count);
+    SetLength(Sigma2FrzUCLVec, Result.Count);
+    SetLength(Sigma3FrzLCLVec, Result.Count);
+    SetLength(Sigma3FrzUCLVec, Result.Count);
     NilVectorArrays(Result.Count);
 
     SetLength(ShowSigma1, Result.Count);
@@ -427,14 +434,6 @@ begin
       ShowSigma2[i] := false;
       ShowSigma3[i] := false;
     end;
-
-    SetLength(CenterVal, Result.Count);
-    SetLength(Sigma1LCLVal, Result.Count);
-    SetLength(Sigma1UCLVal, Result.Count);
-    SetLength(Sigma2LCLVal, Result.Count);
-    SetLength(Sigma2UCLVal, Result.Count);
-    SetLength(Sigma3LCLVal, Result.Count);
-    SetLength(Sigma3UCLVal, Result.Count);
 
     // Calculate Sigma lvl's based on Freeze option.
     if DoAllowFreeze(slCenter) then
@@ -464,13 +463,13 @@ begin
       if (Length(Breaks) > 0) and (Breaks[0] < HighVal) then
         dm.Error('Freeze period cannot exceed first break.', []);
 
-      SetLength(CenterGlobLine, Result.Count);
-      SetLength(Sigma1GlobLCLLine, Result.Count);
-      SetLength(Sigma1GlobUCLLine, Result.Count);
-      SetLength(Sigma2GlobLCLLine, Result.Count);
-      SetLength(Sigma2GlobUCLLine, Result.Count);
-      SetLength(Sigma3GlobLCLLine, Result.Count);
-      SetLength(Sigma3GlobUCLLine, Result.Count);
+      SetLength(CenterFrzLine, Result.Count);
+      SetLength(Sigma1FrzLCLLine, Result.Count);
+      SetLength(Sigma1FrzUCLLine, Result.Count);
+      SetLength(Sigma2FrzLCLLine, Result.Count);
+      SetLength(Sigma2FrzUCLLine, Result.Count);
+      SetLength(Sigma3FrzLCLLine, Result.Count);
+      SetLength(Sigma3FrzUCLLine, Result.Count);
 
       for j := 1 to Dataframe.RowCount do
         if (TimeVec.AsInteger[j] > LowVal) and (TimeVec.AsInteger[j] <= HighVal) then
@@ -479,7 +478,7 @@ begin
           Dataframe.Selected[j] := False;
       Df := Dataframe.PrepareDataframe(PrepNames, MissingNames);
 
-      RowCount := df.SelectedRowCount;
+      RowCount := Df.SelectedRowCount;
       if RowCount < 2 then
         dm.Error('Freeze period too short', [], 0);
 
@@ -511,60 +510,75 @@ begin
         ChartText[k] := ChartText[k] + ' Freeze: ' + Cmd.ParamByName['F'].AsString + ' |';
 
         // Create new sigma lines and convert old to dotted lines.
-        Sigma3GlobUCLLine[k] := CreateFreezeLine(Sigma3UCLLine[k], 3);
-        Sigma3GlobLCLLine[k] := CreateFreezeLine(Sigma3LCLLine[k], 3);
-        Sigma3GlobLCLLine[k].ShowInLegend := false;
-        Sigma2GlobUCLLine[k] := CreateFreezeLine(Sigma2UCLLine[k], 4);
-        Sigma2GlobLCLLine[k] := CreateFreezeLine(Sigma2LCLLine[k], 4);
-        Sigma2GlobLCLLine[k].ShowInLegend := false;
-        Sigma1GlobUCLLine[k] := CreateFreezeLine(Sigma1UCLLine[k], 5);
-        Sigma1GlobLCLLine[k] := CreateFreezeLine(Sigma1LCLLine[k], 5);
-        Sigma1GlobLCLLine[k].ShowInLegend := false;
-        CenterGlobLine[k] := CreateFreezeLine(CenterLine[k], 2);
+        Sigma3FrzUCLLine[k] := CreateFreezeLine(Sigma3UCLLine[k], 3);
+        Sigma3FrzLCLLine[k] := CreateFreezeLine(Sigma3LCLLine[k], 3);
+        Sigma3FrzLCLLine[k].ShowInLegend := false;
+        Sigma2FrzUCLLine[k] := CreateFreezeLine(Sigma2UCLLine[k], 4);
+        Sigma2FrzLCLLine[k] := CreateFreezeLine(Sigma2LCLLine[k], 4);
+        Sigma2FrzLCLLine[k].ShowInLegend := false;
+        Sigma1FrzUCLLine[k] := CreateFreezeLine(Sigma1UCLLine[k], 5);
+        Sigma1FrzLCLLine[k] := CreateFreezeLine(Sigma1LCLLine[k], 5);
+        Sigma1FrzLCLLine[k].ShowInLegend := false;
+        CenterFrzLine[k] := CreateFreezeLine(CenterLine[k], 2);
         ReAssignToLengend(ExcludeLine[k]);
         ReAssignToLengend(CtrlLine[k]);
 
-        // This is not optimal, but work with SPC charts with floating Sigma lines.
+        // Create vectors:
+        CenterFrzVec[k]    := CreateVector('$CENTERFRZ', df.RowCount);
+        Sigma1FrzLCLVec[k] := CreateVector('$SIGMA1LCLFRZ', df.RowCount);
+        Sigma1FrzUCLVec[k] := CreateVector('$SIGMA1UCLFRZ', df.RowCount);
+        Sigma2FrzLCLVec[k] := CreateVector('$SIGMA2LCLFRZ', df.RowCount);
+        Sigma2FrzUCLVec[k] := CreateVector('$SIGMA2UCLFRZ', df.RowCount);
+        Sigma3FrzLCLVec[k] := CreateVector('$SIGMA3LCLFRZ', df.RowCount);
+        Sigma3FrzUCLVec[k] := CreateVector('$SIGMA3UCLFRZ', df.RowCount);
+{        df.Vectors.Add(CenterFrzVec[k]);
+        df.Vectors.Add(Sigma1FrzLCLVec[k]);
+        df.Vectors.Add(Sigma1FrzUCLVec[k]);
+        df.Vectors.Add(Sigma2FrzLCLVec[k]);
+        df.Vectors.Add(Sigma2FrzUCLVec[k]);
+        df.Vectors.Add(Sigma3FrzLCLVec[k]);
+        df.Vectors.Add(Sigma3FrzUCLVec[k]);    }
+
         for j := 1 to Df.RowCount do
         begin
           // Calculate values;
-          CenterVal[k] := Center[j,k];
-          Sigma1LCLVal[k] := CenterVal[k] - SigmaFactor(1, Df.RowCount) * Sigma[j,k];
-          Sigma1UCLVal[k] := CenterVal[k] + SigmaFactor(1, Df.RowCount) * Sigma[j,k];
-          Sigma2LCLVal[k] := CenterVal[k] - SigmaFactor(2, Df.RowCount) * Sigma[j,k];
-          Sigma2UCLVal[k] := CenterVal[k] + SigmaFactor(2, Df.RowCount) * Sigma[j,k];
-          Sigma3LCLVal[k] := CenterVal[k] - SigmaFactor(3, Df.RowCount) * Sigma[j,k];
-          Sigma3UCLVal[k] := CenterVal[k] + SigmaFactor(3, Df.RowCount) * Sigma[j,k];
+          CenterFrzVec[k].AsFloat[j] := Center[j,k];
+          Sigma1FrzLCLVec[k].AsFloat[j] := CenterFrzVec[k].AsFloat[j] - SigmaFactor(1, Df.RowCount) * Sigma[j,k];
+          Sigma1FrzUCLVec[k].AsFloat[j] := CenterFrzVec[k].AsFloat[j] + SigmaFactor(1, Df.RowCount) * Sigma[j,k];
+          Sigma2FrzLCLVec[k].AsFloat[j] := CenterFrzVec[k].AsFloat[j] - SigmaFactor(2, Df.RowCount) * Sigma[j,k];
+          Sigma2FrzUCLVec[k].AsFloat[j] := CenterFrzVec[k].AsFloat[j] + SigmaFactor(2, Df.RowCount) * Sigma[j,k];
+          Sigma3FrzLCLVec[k].AsFloat[j] := CenterFrzVec[k].AsFloat[j] - SigmaFactor(3, Df.RowCount) * Sigma[j,k];
+          Sigma3FrzUCLVec[k].AsFloat[j] := CenterFrzVec[k].AsFloat[j] + SigmaFactor(3, Df.RowCount) * Sigma[j,k];
 
         // Add value to fully drawn lines (within the freeze period)
-          AddToLine(CenterGlobLine[k], CenterVal[k], j, -0.5);
-          AddToSigmaLine(Sigma1GlobLCLLine[k], Sigma1LCLVal[k], j, ShowSigma1[k], -0.5);
-          AddToSigmaLine(Sigma1GlobUCLLine[k], Sigma1UCLVal[k], j, Dummy, -0.5);
-          AddToSigmaLine(Sigma2GlobLCLLine[k], Sigma2LCLVal[k], j, ShowSigma2[k], -0.5);
-          AddToSigmaLine(Sigma2GlobUCLLine[k], Sigma2UCLVal[k], j, Dummy, -0.5);
-          AddToSigmaLine(Sigma3GlobLCLLine[k], Sigma3LCLVal[k], j, ShowSigma3[k], -0.5);
-          AddToSigmaLine(Sigma3GlobUCLLine[k], Sigma3UCLVal[k], j, Dummy, -0.5);
+          AddToLine(CenterFrzLine[k], CenterFrzVec[k], j, -0.5);
+          AddToSigmaLine(Sigma1FrzLCLLine[k], Sigma1FrzLCLVec[k], j, ShowSigma1[k], -0.5);
+          AddToSigmaLine(Sigma1FrzUCLLine[k], Sigma1FrzUCLVec[k], j, Dummy, -0.5);
+          AddToSigmaLine(Sigma2FrzLCLLine[k], Sigma2FrzLCLVec[k], j, ShowSigma2[k], -0.5);
+          AddToSigmaLine(Sigma2FrzUCLLine[k], Sigma2FrzUCLVec[k], j, Dummy, -0.5);
+          AddToSigmaLine(Sigma3FrzLCLLine[k], Sigma3FrzLCLVec[k], j, ShowSigma3[k], -0.5);
+          AddToSigmaLine(Sigma3FrzUCLLine[k], Sigma3FrzUCLVec[k], j, Dummy, -0.5);
         end;
         Dec(j);
 
-        AddToLine(CenterGlobLine[k], CenterVal[k], j, 0.5);
+        AddToLine(CenterFrzLine[k], CenterFrzVec[k], j, 0.5);
         if ShowSigma1[k] then
-          AddToSigmaLine(Sigma1GlobLCLLine[k], Sigma1LCLVal[k], j, ShowSigma1[k], 0.5);
-        AddToSigmaLine(Sigma1GlobUCLLine[k], Sigma1UCLVal[k], j, Dummy, 0.5);
+          AddToSigmaLine(Sigma1FrzLCLLine[k], Sigma1FrzLCLVec[k], j, ShowSigma1[k], 0.5);
+        AddToSigmaLine(Sigma1FrzUCLLine[k], Sigma1FrzUCLVec[k], j, Dummy, 0.5);
         if ShowSigma2[k] then
-          AddToSigmaLine(Sigma2GlobLCLLine[k], Sigma2LCLVal[k], j, ShowSigma2[k], 0.5);
-        AddToSigmaLine(Sigma2GlobUCLLine[k], Sigma2UCLVal[k], j, Dummy, 0.5);
+          AddToSigmaLine(Sigma2FrzLCLLine[k], Sigma2FrzLCLVec[k], j, ShowSigma2[k], 0.5);
+        AddToSigmaLine(Sigma2FrzUCLLine[k], Sigma2FrzUCLVec[k], j, Dummy, 0.5);
         if ShowSigma3[k] then
-          AddToSigmaLine(Sigma3GlobLCLLine[k], Sigma3LCLVal[k], j, ShowSigma3[k], 0.5);
-        AddToSigmaLine(Sigma3GlobUCLLine[k], Sigma3UCLVal[k], j, Dummy, 0.5);
+          AddToSigmaLine(Sigma3FrzLCLLine[k], Sigma3FrzLCLVec[k], j, ShowSigma3[k], 0.5);
+        AddToSigmaLine(Sigma3FrzUCLLine[k], Sigma3FrzUCLVec[k], j, Dummy, 0.5);
 
-        AddNull(CenterGlobLine[k], CenterVal[k], j, 0.5);
-        AddNull(Sigma1GlobLCLLine[k], Sigma1LCLVal[k], j, 0.5);
-        AddNull(Sigma1GlobUCLLine[k], Sigma1UCLVal[k], j, 0.5);
-        AddNull(Sigma2GlobLCLLine[k], Sigma2LCLVal[k], j, 0.5);
-        AddNull(Sigma2GlobUCLLine[k], Sigma2UCLVal[k], j, 0.5);
-        AddNull(Sigma3GlobLCLLine[k], Sigma3LCLVal[k], j, 0.5);
-        AddNull(Sigma3GlobUCLLine[k], Sigma3UCLVal[k], j, 0.5);
+        AddNull(CenterFrzLine[k], CenterFrzVec[k], j, 0.5);
+        AddNull(Sigma1FrzLCLLine[k], Sigma1FrzLCLVec[k], j, 0.5);
+        AddNull(Sigma1FrzUCLLine[k], Sigma1FrzUCLVec[k], j, 0.5);
+        AddNull(Sigma2FrzLCLLine[k], Sigma2FrzLCLVec[k], j, 0.5);
+        AddNull(Sigma2FrzUCLLine[k], Sigma2FrzUCLVec[k], j, 0.5);
+        AddNull(Sigma3FrzLCLLine[k], Sigma3FrzLCLVec[k], j, 0.5);
+        AddNull(Sigma3FrzUCLLine[k], Sigma3FrzUCLVec[k], j, 0.5);
       end;
       if Assigned(df) then FreeAndNil(df);
       fFrozen := true;
@@ -639,13 +653,13 @@ begin
           // Calculate values;
           CtrlVec[k].AsFloat[j] := CtrlVal[j,k];
           ExcludeVec[k].AsFloat[j] := ExclVal[j, k];
-          SetVectorValue(CenterVec[k], j, CenterVal[k], Center[j,k], slCenter);
-          SetVectorValue(Sigma1LCLVec[k], j, Sigma1LCLVal[k], CenterVec[k].AsFloat[j] - SigmaFactor(1, Df.RowCount) * Sigma[j,k], slSigma);
-          SetVectorValue(Sigma1UCLVec[k], j, Sigma1UCLVal[k], CenterVec[k].AsFloat[j] + SigmaFactor(1, Df.RowCount) * Sigma[j,k], slSigma);
-          SetVectorValue(Sigma2LCLVec[k], j, Sigma2LCLVal[k], CenterVec[k].AsFloat[j] - SigmaFactor(2, Df.RowCount) * Sigma[j,k], slSigma);
-          SetVectorValue(Sigma2UCLVec[k], j, Sigma2UCLVal[k], CenterVec[k].AsFloat[j] + SigmaFactor(2, Df.RowCount) * Sigma[j,k], slSigma);
-          SetVectorValue(Sigma3LCLVec[k], j, Sigma3LCLVal[k], CenterVec[k].AsFloat[j] - SigmaFactor(3, Df.RowCount) * Sigma[j,k], slSigma);
-          SetVectorValue(Sigma3UCLVec[k], j, Sigma3UCLVal[k], CenterVec[k].AsFloat[j] + SigmaFactor(3, Df.RowCount) * Sigma[j,k], slSigma);
+          SetVectorValue(CenterVec[k], j, CenterFrzVec[k], Center[j,k], slCenter);
+          SetVectorValue(Sigma1LCLVec[k], j, Sigma1FrzLCLVec[k], CenterVec[k].AsFloat[j] - SigmaFactor(1, Df.RowCount) * Sigma[j,k], slSigma);
+          SetVectorValue(Sigma1UCLVec[k], j, Sigma1FrzUCLVec[k], CenterVec[k].AsFloat[j] + SigmaFactor(1, Df.RowCount) * Sigma[j,k], slSigma);
+          SetVectorValue(Sigma2LCLVec[k], j, Sigma2FrzLCLVec[k], CenterVec[k].AsFloat[j] - SigmaFactor(2, Df.RowCount) * Sigma[j,k], slSigma);
+          SetVectorValue(Sigma2UCLVec[k], j, Sigma2FrzUCLVec[k], CenterVec[k].AsFloat[j] + SigmaFactor(2, Df.RowCount) * Sigma[j,k], slSigma);
+          SetVectorValue(Sigma3LCLVec[k], j, Sigma3FrzLCLVec[k], CenterVec[k].AsFloat[j] - SigmaFactor(3, Df.RowCount) * Sigma[j,k], slSigma);
+          SetVectorValue(Sigma3UCLVec[k], j, Sigma3FrzUCLVec[k], CenterVec[k].AsFloat[j] + SigmaFactor(3, Df.RowCount) * Sigma[j,k], slSigma);
 
           if not ExcludeVec[k].IsMissing[j] then
             AddToLine(ExcludeLine[k], ExcludeVec[k], j);
@@ -816,19 +830,19 @@ begin
       begin
         Sigma1LCLLine[i].ParentChart := nil;
         if DoAllowFreeze(slSigma) then
-          Sigma1GlobLCLLine[i].ParentChart := nil;
+          Sigma1FrzLCLLine[i].ParentChart := nil;
       end;
       if not ShowSigma2[i] then
       begin
         Sigma2LCLLine[i].ParentChart := nil;
         if DoAllowFreeze(slSigma) then
-          Sigma2GlobLCLLine[i].ParentChart := nil;
+          Sigma2FrzLCLLine[i].ParentChart := nil;
       end;
       if not ShowSigma3[i] then
       begin
         Sigma3LCLLine[i].ParentChart := nil;
         if DoAllowFreeze(slSigma) then
-          Sigma3GlobLCLLine[i].ParentChart := nil;
+          Sigma3FrzLCLLine[i].ParentChart := nil;
       end;
     end;
     CleanupOutput(OutputTable);
@@ -906,10 +920,11 @@ begin
 end;
 
 procedure TCustomSPCChart.SetVectorValue(Vec: TEpiVector; Index: Integer;
-  FreezeVal, NormalVal: EpiFloat; SpcLine: TSPCLine);
+  FrzVec: TEpiVector; NormalVal: EpiFloat; SpcLine: TSPCLine);
 begin
-  if DoAllowFreeze(SpcLine) then
-    Vec.AsFloat[Index] := FreezeVal
+  if DoAllowFreeze(SpcLine) and (Assigned(FrzVec)) and
+     (Index <= FrzVec.Length) and (not FrzVec.IsMissing[Index]) then
+    Vec.AsFloat[Index] := FrzVec.AsFloat[Index]
   else
     Vec.AsFloat[Index] := NormalVal;
 end;
@@ -929,6 +944,14 @@ begin
     Sigma2UCLVec[i] := nil;
     Sigma3LCLVec[i] := nil;
     Sigma3UCLVec[i] := nil;
+
+    CenterFrzVec[i] := nil;
+    Sigma1FrzLCLVec[i] := nil;
+    Sigma1FrzUCLVec[i] := nil;
+    Sigma2FrzLCLVec[i] := nil;
+    Sigma2FrzUCLVec[i] := nil;
+    Sigma3FrzLCLVec[i] := nil;
+    Sigma3FrzUCLVec[i] := nil;
   end;
 end;
 
@@ -998,7 +1021,7 @@ function TCustomSPCChart.CreateVector(VectorName: string;
 begin
   result := TEpiFloatVector.Create(VectorName, Size);
   result.FieldDataSize := 12;
-  result.FieldDataDecimals := 15;
+  result.FieldDataDecimals := 14;
 end;
 
 function TCustomSPCChart.AllowFreeze(SpcLine: TSPCLine): Boolean;
@@ -1070,7 +1093,7 @@ begin
   Result := TStringList.Create;
   SplitString(s, result, [',']);
   if not Result.Count = 5 then
-    Dm.Error('SPC TEST option has incorrect number of values: %d' + #1310 + 'Must be exactly 5', [Result.Count]);
+    Dm.Error('SPC TEST option has incorrect number of values: %d' + #13#10 + 'Must be exactly 5', [Result.Count]);
 end;
 
 function TCustomSPCChart.ExcludeFunction(index: integer;

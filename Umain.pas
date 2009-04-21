@@ -3563,8 +3563,6 @@ begin
   finally
     if Assigned(Opts) then FreeAndNil(Opts);
   end;
-//  DoGraphDlg('GChart varlist', 1, 0, [EpiTyInteger, EpiTyFloat],
-//              [], [GrpSpcOpt, GrpStdOpt]);
 end;
 
 procedure TaMainForm.AcRunParetoExecute(Sender: TObject);
@@ -3588,8 +3586,6 @@ begin
   finally
     if Assigned(Opts) then FreeAndNil(Opts);
   end;
-//DoGraphDlg('Pareto varlist',1,0, [EpiTyString,EpiTyFloat,EpiTyInteger],
-//           [EpiTyFloat,EpiTyInteger], [GrpStdOpt], False, True);
 end;
 
 procedure TaMainForm.AcRunXbarChartExecute(Sender: TObject);
@@ -3616,8 +3612,6 @@ begin
   finally
     if Assigned(Opts) then FreeAndNil(Opts);
   end;
-//  DoGraphDlg('UChart varlist', 1, 2, [EpiTyInteger, EpiTyFloat],
-//              [EpiTyInteger, EpiTyString, EpiTyDate, EpiTyFloat], [GrpSpcOpt, GrpStdOpt]);
 end;
 
 

@@ -2966,7 +2966,6 @@ end;
 function TDM.XBar(Varnames: TStrings; cmd: TCommand): boolean;
 var
   df: TEpiDataFrame;
-  Vectorlist: TEpiVectors;
   i : integer;
 const
   procname = 'XBar';
@@ -2974,31 +2973,14 @@ const
 begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
   df := nil;
-  Vectorlist := nil;
   try
     if not dm.CheckDataOpen() then exit;
 
      SPCCommon(df, Varnames, Cmd, 2);
 
-{    //CheckVariableNo(Varnames, 2, 3);
-    // Do check that first var is countable (integer, datetime)
-    // and likewise with sec. var is integer.
-    VectorList := dataframe.GetVectorListByName(Varnames);
-    if not (VectorList[0].DataType in [EpiTyInteger, EpiTyFloat]) then
-      error('%s variable (%s) must be of type(s) %s', ['First', varnames[0], 'Integer, Float'], 23095);
-    if not (VectorList[1].DataType in [EpiTyInteger, EpiTyDate, EpiTyFloat]) then
-      error('%s variable (%s) must be of type(s) %s', ['Second', varnames[1], 'Integer, Float, Date'], 23095);
-    if (cmd.ParamByName['XLABEL'] <> nil) then
-      Varnames.Add(cmd.ParamByName['XLABEL'].AsString);
-    df := dataframe.prepareDataframe(Varnames, Varnames);
-
-    if df.SelectedRowCount = 0 then error('No Data', [], 10000);
-   }
     OGraph.DoGraphs(df, varnames, cmd);
-
   finally
     if Assigned(df) then FreeAndNil(df);
-    if Assigned(Vectorlist) then FreeAndNil(Vectorlist);
   end;
 end;
 
@@ -3385,11 +3367,6 @@ begin
         MissingList.Delete(1);
         MaxList.Delete(1);
       end;
-    end;
-
-    if Cmd.ParamExists['EXIT'] then
-    begin
-
     end;
 
     if Cmd.ParamExists['BY'] then

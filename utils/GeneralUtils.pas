@@ -97,7 +97,7 @@ var
   IPos: Integer;
 begin
   Factor := 0;
-  If Size < 20 then
+  If (Size < 20) and (Percentile <> 0.5) then
   begin
     Result := SmallPercentileMatrix[Size][GetPercentileIndex(Percentile)];
     Exit;

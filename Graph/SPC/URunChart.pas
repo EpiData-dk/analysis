@@ -214,6 +214,7 @@ procedure TRunChart.ResetMean;
 var
   Ix: Integer;
 begin
+  if frozen then exit;
   Df.Sort(YVec.Name);
   Ix := PercentileIndex(Df.RowCount, 0.5, Mean);
   if Mean = 0 then
