@@ -310,7 +310,6 @@ begin
     result := TChartArray.Create();
     CreateCharts(result, aDataframe);
 
-
     Dataframe := PreAggregate(aDataFrame);
 
     // Breaks and excludes:
@@ -344,6 +343,21 @@ begin
     end;
     if TestIdx < OutputTable.ColCount + 1 then
       OutputTable.Footer := OutputTable.Footer + '<br>Tests list: ' + SpcTestList.CommaText;
+
+    // Dirty hack for G-Chart not to show excluded points.
+    if (Cmd.CommandID = opGChart) and fExcluded then
+    begin
+      OutputTable.Footer := OutputTable.Footer + '<br> Excluded points: ';
+      j := 1;
+      for i := 1 to TimeVec.Length do
+        if GetExclusionVector(Dataframe).IsMissing[i] then
+        begin
+          OutputTable.Footer := OutputTable.Footer + TimeVec.AsString[i] + ' ';
+          TimeVec.IsMissing[i] := true
+        end else
+          if (TimeVec.Name = '$COUNT') then
+          TimeVec.AsInteger[i] := PostInc(j);
+    end;
 
     // Create Sigma lines - even if they should not be displayed.
     SetLength(Sigma1LCLLine, Result.Count);
@@ -1088,12 +1102,12 @@ var
   Opt: TEpiOption;
   s: string;
 begin
-  if Dm.GetOptionValue('SPC TEST', Opt) then
+  if Dm.GetOptionValue('SPC TESTLIMIT', Opt) then
     s := Opt.Value;
   Result := TStringList.Create;
   SplitString(s, result, [',']);
   if not Result.Count = 5 then
-    Dm.Error('SPC TEST option has incorrect number of values: %d' + #13#10 + 'Must be exactly 5', [Result.Count]);
+    Dm.Error('SPC TESTLIMIT option has incorrect number of values: %d' + #13#10 + 'Must be exactly 5', [Result.Count]);
 end;
 
 function TCustomSPCChart.ExcludeFunction(index: integer;

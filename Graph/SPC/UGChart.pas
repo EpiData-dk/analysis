@@ -26,6 +26,7 @@ type
     function ExcludeValueFunction(index: Integer; df: TEpiDataFrame): Extended; override;
     procedure ExecuteMeanFail(LoopIdx: Integer; LastIdx: Integer); override;
     procedure ExecuteMeanSuccess(LoopIdx: Integer; LastIdx: Integer); override;
+    function GetExclVal(LoopIndex, ChartNo: integer): EpiFloat; override;
     function GetSigma(LoopIndex, ChartNo: integer): Extended; override;
     function GetTimeVec(Dataframe: TEpiDataframe): TEpiVector; override;
     function GetXVector: TEpiVector; override;        
@@ -94,11 +95,11 @@ begin
   if not Cmd.ParamExists['NOL'] then
   begin
     for i := 2 to OutputTable.RowCount do
-      if Trim(OutputTable.Cell[3, i]) <> '' then
+      if Trim(OutputTable.Cell[4, i]) <> '' then
         break;
 
     if i > OutputTable.RowCount then
-      OutputTable.DeleteColumn(3);
+      OutputTable.DeleteColumn(4);
   end;
 end;
 
@@ -128,10 +129,6 @@ end;
 function TGChart.ExcludeValueFunction(index: Integer;
   df: TEpiDataFrame): Extended;
 begin
-  {if index > 1 then
-    result := Df.Vectors[0].AsFloat[index] - Df.Vectors[0].AsFloat[index-1]
-  else
-    result := NA_FLOAT; }
   result := Df.Vectors[0].AsFloat[index];
 end;
 
@@ -153,6 +150,11 @@ begin
   if Frozen then exit;
   Mean := Mean + YVec.AsFloat[LoopIdx] - YVec.AsFloat[LastIdx];
   Inc(Count);
+end;
+
+function TGChart.GetExclVal(LoopIndex, ChartNo: integer): EpiFloat;
+begin
+  result := NA_FLOAT;
 end;
 
 function TGChart.GetCenter(LoopIndex, ChartNo: Integer): Extended;
@@ -238,7 +240,7 @@ begin
     IncludeVarnames.Add(Cmd.ParamByName['XLABEL'].AsString);
 
   MissingVarnames.Assign(IncludeVarnames);
-  MissingVarnames.Delete(0);
+//  MissingVarnames.Delete(0);
 
   IncludeVarnames.Add('$EXCLUDED');
 end;

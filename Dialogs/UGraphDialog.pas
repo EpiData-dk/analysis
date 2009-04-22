@@ -172,6 +172,8 @@ type
     GrpExclude: TGroupBox;
     EdExp1: TMaskEdit;
     EdExp2: TMaskEdit;
+    Bevel3: TBevel;
+    EdExp3: TMaskEdit;
     procedure chkTest1Click(Sender: TObject);
     procedure chkCombiTestClick(Sender: TObject);
     procedure chkCheckAllClick(Sender: TObject);
@@ -582,6 +584,7 @@ begin
     AddEdit(edFreeze, result, '/F=' + Trim(edFreeze.Text));
     AddEdit(edExp1, result, '/Exp=' + Trim(edExp1.Text));
     AddEdit(edExp2, result, '/Exp=' + Trim(edExp2.Text));
+    AddEdit(edExp3, result, '/Exp=' + Trim(edExp3.Text));
   end;
 
   // Graph/Axis page:

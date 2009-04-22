@@ -1,6 +1,6 @@
 object GraphDialog: TGraphDialog
-  Left = 617
-  Top = 120
+  Left = 527
+  Top = 364
   Width = 517
   Height = 303
   BorderIcons = [biSystemMenu]
@@ -21,7 +21,7 @@ object GraphDialog: TGraphDialog
     Left = 0
     Top = 0
     Width = 509
-    Height = 228
+    Height = 235
     ActivePage = tabSPC
     Align = alClient
     TabOrder = 0
@@ -89,7 +89,7 @@ object GraphDialog: TGraphDialog
         Top = 8
         Width = 145
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 0
         OnSelect = ComboBoxSelect
       end
@@ -99,7 +99,7 @@ object GraphDialog: TGraphDialog
         Top = 37
         Width = 145
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 1
         OnSelect = ComboBoxSelect
       end
@@ -109,7 +109,7 @@ object GraphDialog: TGraphDialog
         Top = 66
         Width = 145
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 2
         OnSelect = ComboBoxSelect
       end
@@ -119,7 +119,7 @@ object GraphDialog: TGraphDialog
         Top = 96
         Width = 145
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 3
         OnSelect = ComboBoxSelect
       end
@@ -129,7 +129,7 @@ object GraphDialog: TGraphDialog
         Top = 136
         Width = 145
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 4
         OnSelect = ComboBoxSelect
       end
@@ -139,7 +139,7 @@ object GraphDialog: TGraphDialog
         Top = 176
         Width = 145
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 5
         OnSelect = ComboBoxSelect
       end
@@ -151,7 +151,7 @@ object GraphDialog: TGraphDialog
         Left = 8
         Top = 7
         Width = 164
-        Height = 182
+        Height = 180
         Caption = 'Tests:'
         TabOrder = 0
         object Bevel1: TBevel
@@ -166,31 +166,37 @@ object GraphDialog: TGraphDialog
           Width = 0
           Height = 57
         end
+        object Bevel3: TBevel
+          Left = 16
+          Top = 122
+          Width = 131
+          Height = 3
+        end
         object chkTest1: TCheckBox
-          Left = 92
+          Left = 16
           Top = 64
           Width = 61
           Height = 17
           Caption = 'Test 1'
-          TabOrder = 1
-          OnClick = chkTest1Click
-        end
-        object chkTest2: TCheckBox
-          Left = 92
-          Top = 81
-          Width = 61
-          Height = 17
-          Caption = 'Test 2'
           TabOrder = 2
           OnClick = chkTest1Click
         end
+        object chkTest2: TCheckBox
+          Left = 16
+          Top = 82
+          Width = 61
+          Height = 17
+          Caption = 'Test 2'
+          TabOrder = 3
+          OnClick = chkTest1Click
+        end
         object chkTest3: TCheckBox
-          Left = 92
+          Left = 16
           Top = 101
           Width = 61
           Height = 17
           Caption = 'Test 3'
-          TabOrder = 3
+          TabOrder = 4
           OnClick = chkTest1Click
         end
         object chkCheckAll: TCheckBox
@@ -203,30 +209,30 @@ object GraphDialog: TGraphDialog
           OnClick = chkCheckAllClick
         end
         object chkTest4: TCheckBox
-          Left = 21
-          Top = 119
+          Left = 16
+          Top = 135
           Width = 60
           Height = 17
           Caption = 'Test 4'
-          TabOrder = 4
-          OnClick = chkTest1Click
-        end
-        object chkTest5: TCheckBox
-          Left = 21
-          Top = 140
-          Width = 60
-          Height = 17
-          Caption = 'Test 5'
           TabOrder = 5
           OnClick = chkTest1Click
         end
-        object chkCombiTest: TCheckBox
+        object chkTest5: TCheckBox
           Left = 16
-          Top = 63
+          Top = 156
+          Width = 60
+          Height = 17
+          Caption = 'Test 5'
+          TabOrder = 6
+          OnClick = chkTest1Click
+        end
+        object chkCombiTest: TCheckBox
+          Left = 80
+          Top = 64
           Width = 65
           Height = 17
           Caption = 'Test 1-3'
-          TabOrder = 6
+          TabOrder = 1
           OnClick = chkCombiTestClick
         end
       end
@@ -254,7 +260,7 @@ object GraphDialog: TGraphDialog
         object Label7: TLabel
           Left = 8
           Top = 92
-          Width = 89
+          Width = 84
           Height = 13
           Caption = 'Repeat breaks by'
         end
@@ -287,7 +293,7 @@ object GraphDialog: TGraphDialog
         Width = 133
         Height = 122
         Caption = 'Special options '
-        TabOrder = 2
+        TabOrder = 3
         object chkSigmaLine: TCheckBox
           Left = 9
           Top = 19
@@ -336,7 +342,7 @@ object GraphDialog: TGraphDialog
         Width = 170
         Height = 50
         Caption = 'Freeze estimates'
-        TabOrder = 3
+        TabOrder = 2
         object Label1: TLabel
           Left = 10
           Top = 23
@@ -368,7 +374,7 @@ object GraphDialog: TGraphDialog
         TabOrder = 4
         object EdExp1: TMaskEdit
           Tag = -1
-          Left = 19
+          Left = 6
           Top = 19
           Width = 34
           Height = 21
@@ -382,7 +388,7 @@ object GraphDialog: TGraphDialog
         end
         object EdExp2: TMaskEdit
           Tag = -1
-          Left = 77
+          Left = 49
           Top = 19
           Width = 34
           Height = 21
@@ -390,6 +396,20 @@ object GraphDialog: TGraphDialog
           EditMask = '99999;1; '
           MaxLength = 5
           TabOrder = 1
+          Text = '     '
+          OnClick = editClick
+          OnEnter = editEnter
+        end
+        object EdExp3: TMaskEdit
+          Tag = -1
+          Left = 92
+          Top = 19
+          Width = 34
+          Height = 21
+          AutoSize = False
+          EditMask = '99999;1; '
+          MaxLength = 5
+          TabOrder = 2
           Text = '     '
           OnClick = editClick
           OnEnter = editEnter
@@ -431,7 +451,7 @@ object GraphDialog: TGraphDialog
           Width = 51
           Height = 17
           Caption = 'Frame'
-          TabOrder = 1
+          TabOrder = 3
         end
         object chkGridH: TCheckBox
           Tag = -1
@@ -440,7 +460,7 @@ object GraphDialog: TGraphDialog
           Width = 101
           Height = 16
           Caption = 'Horizontal Grid'
-          TabOrder = 3
+          TabOrder = 4
         end
         object chkGridV: TCheckBox
           Tag = -1
@@ -449,7 +469,7 @@ object GraphDialog: TGraphDialog
           Width = 85
           Height = 17
           Caption = 'Vertical Grid'
-          TabOrder = 4
+          TabOrder = 5
         end
         object chkN: TCheckBox
           Tag = -1
@@ -458,7 +478,7 @@ object GraphDialog: TGraphDialog
           Width = 30
           Height = 17
           Caption = 'N'
-          TabOrder = 2
+          TabOrder = 1
         end
         object ChkYvalue: TCheckBox
           Left = 8
@@ -466,7 +486,7 @@ object GraphDialog: TGraphDialog
           Width = 65
           Height = 17
           Caption = 'Y values'
-          TabOrder = 5
+          TabOrder = 2
           OnClick = chkCombiTestClick
         end
       end
@@ -1043,7 +1063,7 @@ object GraphDialog: TGraphDialog
         Top = 24
         Width = 145
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 0
         Text = 'XLabel'
       end
@@ -1052,7 +1072,7 @@ object GraphDialog: TGraphDialog
   object Panel1: TPanel
     Tag = -1
     Left = 0
-    Top = 228
+    Top = 235
     Width = 509
     Height = 41
     Align = alBottom
@@ -1092,7 +1112,7 @@ object GraphDialog: TGraphDialog
       Height = 20
       Anchors = [akLeft, akTop, akBottom]
       Cancel = True
-      Caption = 'R&eset'
+      Caption = 'Rese&t'
       TabOrder = 2
       OnClick = ResetBtnClick
     end
@@ -1114,7 +1134,7 @@ object GraphDialog: TGraphDialog
       Width = 49
       Height = 20
       Anchors = [akLeft, akTop, akBottom]
-      Caption = 'E&xecute'
+      Caption = '&Execute'
       TabOrder = 4
       OnClick = ExecBtnClick
     end

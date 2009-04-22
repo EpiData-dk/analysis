@@ -3046,19 +3046,6 @@ begin
 
     SPCCommon(df, Varnames, Cmd, 1);
 
-    {
-    CheckVariableNo(Varnames, 1, 1);
-
-    // Do check that first var is countable (integer, datetime)
-    // and likewise with sec. var is integer.
-    if not (dataframe.VectorByName[Varnames[0]].DataType in [EpiTyInteger, EpiTyDate, EpiTyFloat]) then
-      error('First variable (%s) must be of type Integer or Date', [varnames[0]], 23035);
-    if (cmd.ParamByName['XLABEL'] <> nil) then
-      Varnames.Add(cmd.ParamByName['XLABEL'].AsString);
-    df := dataframe.prepareDataframe(Varnames, Varnames);
-
-    if df.SelectedRowCount = 0 then error('No Data', [], 10000);  }
-
     OGraph.DoGraphs(df, varnames, cmd)
   finally
     if Assigned(df) then FreeAndNil(df);
@@ -3734,7 +3721,7 @@ begin
   // Command group options:
   foptions.AddObject('OPTION GRAPH',TEpiOption.Create('OPTION GRAPH', '/SizeX=400 /SizeY=300 ',EpiTyString));
   foptions.AddObject('OPTION SPC', TEpiOption.Create('OPTION SPC', '/SizeX=600 /SizeY=200 ',EpiTyString));
-  foptions.AddObject('SPC TEST', TEpiOption.Create('SPC TEST', '0,8,6,2,4',EpiTyString));
+  foptions.AddObject('SPC TESTLIMIT', TEpiOption.Create('SPC TESTLIMIT', '0,8,6,2,4',EpiTyString));
 
   foptions.AddObject('SHOW SYSTEMINFO',TEpiOption.Create('SHOW SYSTEMINFO','OFF',EpiTyBoolean));
   foptions.AddObject('ECHO',TEpiOption.Create('ECHO','ON',EpiTyBoolean));
