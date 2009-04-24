@@ -45,7 +45,6 @@ type
     // For Externaly available methods.
     constructor Create(); override;
     destructor Destroy(); override;
-//    function DoPChart(Dataframe: TEpiDataframe; Varnames: TStrings; var OutputTable: TStatTable): TChart;
   end;
 
 implementation
@@ -119,7 +118,10 @@ end;
 function TPChart.ExcludeValueFunction(index: Integer;
   df: TEpiDataFrame): Extended;
 begin
-  result := (df.Vectors[0].AsFloat[index] / df.Vectors[1].AsFloat[index]) * 100;
+  if df.Vectors[1].AsFloat[index] = 0 then
+    result := NA_FLOAT
+  else
+    result := (df.Vectors[0].AsFloat[index] / df.Vectors[1].AsFloat[index]) * 100;
 end;
 
 procedure TPChart.ExecuteMeanFail(LoopIdx, LastIdx: Integer);
@@ -131,6 +133,10 @@ procedure TPChart.ExecuteMeanSuccess(LoopIdx, LastIdx: Integer);
 begin
   if ZVec.AsFloat[LoopIdx] = 0 then
     dm.Error('Total must not be null (0)', [], 46000);
+
+
+  if YVec.AsFloat[LoopIdx] > ZVec.AsFloat[LoopIdx] then
+    dm.Error('Record with x-value "%s" has a ''count'' value greater than ''total''', [LVec.AsString[LoopIdx]], 0);
   if Assigned(CtrlVec[0]) then
     CtrlVec[0].AsFloat[LoopIdx] := YVec.AsFloat[LoopIdx] / ZVec.AsFloat[LoopIdx];
 

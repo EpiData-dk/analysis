@@ -30,13 +30,13 @@ type
 
   TStringArray = class(TObject)
   private
+    function GetCount(): integer;
+  protected
     fStrings: array of string;
     fData: array of EpiVariant;
-    function GetCount(): integer;
   public
-//    constructor Create();
     destructor Destroy(); override;
-    procedure Add(s: string; value: EpiVariant);
+    procedure Add(s: string; value: EpiVariant); virtual;
     function Find(s: string; var index: integer): boolean;
     procedure MoveToBack(Index: Integer);
     procedure Exchange(Index1, Index2: integer);
@@ -45,13 +45,19 @@ type
     property Count: integer read GetCount;
   end;
 
+  TLabelArray = class(TStringArray)
+  public
+    destructor Destroy(); override;
+    procedure Add(s: string; Value: EpiVariant); override;
+  end;
+
   TTwoWayTable = class
   private
     fCaption,                                // Caption = Stratified caption
     fColHeader,                              // Column variable label
     fRowHeader       : string;               // Row variable label
     fColLabel,                               // Labels for Column headers
-    fRowLabel        : TStringArray;         // Label for Row headers
+    fRowLabel        : TLabelArray;          // Label for Row headers
     fCells           : array of array of TTableCell;
 
     // For procedures which cannot be implemented as direct functions we need to
@@ -275,9 +281,6 @@ type
 
 
     function  AdjustOutput(s: string): string;
-{    procedure Getformats(cmd : TCommand; var efmt, rfmt, cfmt, tfmt,
-                               colpcthead,rowpcthead, pctheader, totalpcthead,
-                               cifmt,ciheader  : string); overload;}
     procedure GetORHeaders(Cmd: TCommand; var ORHeaders: TORHeader);
     procedure GetRRHeaders(Cmd: TCommand; var RRHeaders: TRRHeader);
     procedure GetLTHeaders(Cmd: TCommand; var LTHeaders: TLTHeader);
@@ -1313,6 +1316,7 @@ begin
     end;
 
     dataframe.Sort(newvars[0]);
+
     for j:=1 to dataframe.RowCount do
       if (cmd.ParamByName['M'] <> nil) then
         StrArray.Add(dataframe.VectorByName[newvars[0]].AsString[j],
@@ -2798,8 +2802,8 @@ begin
     for j := 1 to Rows do
       fCells[i-1,j-1] := TTableCell.Create();
   fcaption := '';
-  fColLabel := TStringArray.Create();
-  fRowLabel := TStringArray.Create();
+  fColLabel := TLabelArray.Create();
+  fRowLabel := TLabelArray.Create();
   fDF := 0;
 end;
 
@@ -3361,5 +3365,22 @@ begin
   result := high(fStrings)+1;
 end;
 
-end.
+{ TLabelArray }
 
+procedure TLabelArray.Add(s: string; Value: EpiVariant);
+var
+  index: integer;
+begin
+  index := high(fStrings)+1;
+  setlength(fStrings, index+1);
+  setlength(fdata, index+1);
+  fStrings[index] := trim(s);
+  fData[index] := Value;
+end;
+
+destructor TLabelArray.Destroy;
+begin
+  inherited;
+end;
+
+end.

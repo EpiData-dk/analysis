@@ -321,13 +321,10 @@ const
   procversion = '1.0.0.0';
 begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
-//  if assigned(dummyform) then FreeAndNil(dummyform);
-  if dummyform = nil then
+  if Not Assigned(dummyform) then
   begin
     Dummyform := TForm.CreateNew(Application);
-//    dm.GetOptionValue('GRAPH SIZE Y', opt);
     Dummyform.Height := 300; //StrToInt(opt.Value);
-//    dm.GetOptionValue('GRAPH SIZE X', opt);
     Dummyform.Width := 400; //StrToInt(opt.Value);
     dummyform.Name := 'Dummyform';
   end;

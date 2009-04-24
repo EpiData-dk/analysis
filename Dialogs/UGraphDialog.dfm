@@ -1,8 +1,8 @@
 object GraphDialog: TGraphDialog
-  Left = 527
-  Top = 364
+  Left = 518
+  Top = 397
   Width = 517
-  Height = 303
+  Height = 335
   BorderIcons = [biSystemMenu]
   Caption = 'GraphDialog'
   Color = clBtnFace
@@ -21,8 +21,8 @@ object GraphDialog: TGraphDialog
     Left = 0
     Top = 0
     Width = 509
-    Height = 235
-    ActivePage = tabSPC
+    Height = 267
+    ActivePage = tabVariables
     Align = alClient
     TabOrder = 0
     object tabVariables: TTabSheet
@@ -50,7 +50,7 @@ object GraphDialog: TGraphDialog
       end
       object Label8: TLabel
         Left = 8
-        Top = 160
+        Top = 200
         Width = 37
         Height = 13
         Caption = 'Weight:'
@@ -71,7 +71,7 @@ object GraphDialog: TGraphDialog
       end
       object lblWeight: TLabel
         Left = 168
-        Top = 184
+        Top = 224
         Width = 6
         Height = 13
         Caption = '_'
@@ -79,6 +79,20 @@ object GraphDialog: TGraphDialog
       object lblVar4: TLabel
         Left = 168
         Top = 104
+        Width = 6
+        Height = 13
+        Caption = '_'
+      end
+      object Label26: TLabel
+        Left = 8
+        Top = 160
+        Width = 61
+        Height = 13
+        Caption = 'X-Axis Label:'
+      end
+      object lblXLabel: TLabel
+        Left = 168
+        Top = 184
         Width = 6
         Height = 13
         Caption = '_'
@@ -134,13 +148,24 @@ object GraphDialog: TGraphDialog
         OnSelect = ComboBoxSelect
       end
       object cbWeight: TComboBox
+        Tag = 7
+        Left = 8
+        Top = 216
+        Width = 145
+        Height = 21
+        ItemHeight = 13
+        TabOrder = 5
+        OnSelect = ComboBoxSelect
+      end
+      object cbXLabel: TComboBox
         Tag = 6
         Left = 8
         Top = 176
         Width = 145
         Height = 21
         ItemHeight = 13
-        TabOrder = 5
+        TabOrder = 6
+        Text = 'XLabel'
         OnSelect = ComboBoxSelect
       end
     end
@@ -1042,37 +1067,21 @@ object GraphDialog: TGraphDialog
     object tabMisc: TTabSheet
       Caption = 'Misc'
       ImageIndex = 4
-      object Label26: TLabel
-        Left = 8
-        Top = 8
-        Width = 61
-        Height = 13
-        Caption = 'X-Axis Label:'
-      end
       object edSaveAs: TEdit
         Tag = -1
         Left = 8
         Top = 171
         Width = 329
         Height = 21
-        TabOrder = 1
-        Text = 'Save File As'
-      end
-      object cbXLabel: TComboBox
-        Left = 8
-        Top = 24
-        Width = 145
-        Height = 21
-        ItemHeight = 13
         TabOrder = 0
-        Text = 'XLabel'
+        Text = 'Save File As'
       end
     end
   end
   object Panel1: TPanel
     Tag = -1
     Left = 0
-    Top = 235
+    Top = 267
     Width = 509
     Height = 41
     Align = alBottom

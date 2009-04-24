@@ -336,13 +336,20 @@ begin
       begin
         OutputTable.AddColumn;
         OutputTable.Cell[OutputTable.ColCount, 1] := Format('Test %d:', [i]);
-        if Cmd.ParamExists[str] and (Cmd.ParamByName[str].AsString <> '') then
-          OutputTable.Footer := OutputTable.Footer + Format('Test %d = %s', [i, Cmd.ParamByName[str].AsString]);
+        if i = 1 then
+          if Cmd.CommandID = opRunChart then
+            OutputTable.Footer := OutputTable.Footer + Format('Test<sub>%d</sub>=Expected runs ', [i])
+          else
+            OutputTable.Footer := OutputTable.Footer + Format('Test<sub>%d</sub>=Sigma ', [i])
+        else if Cmd.ParamExists[str] and (Cmd.ParamByName[str].AsString <> '') then
+          OutputTable.Footer := OutputTable.Footer + Format('Test<sub>%d</sub>=%s ', [i, Cmd.ParamByName[str].AsString])
+        else
+          OutputTable.Footer := OutputTable.Footer + Format('Test<sub>%d</sub>=%s ', [i, SpcTestList[i-1]])
       end;
       str := '';
     end;
     if TestIdx < OutputTable.ColCount + 1 then
-      OutputTable.Footer := OutputTable.Footer + '<br>Tests list: ' + SpcTestList.CommaText;
+      OutputTable.Footer := 'Test positive at: ' + OutputTable.Footer;
 
     // Dirty hack for G-Chart not to show excluded points.
     if (Cmd.CommandID = opGChart) and fExcluded then

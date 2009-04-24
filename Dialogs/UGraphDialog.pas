@@ -126,8 +126,6 @@ type
     lblWeight: TLabel;
     Bevel1: TBevel;
     edFoot: TEdit;
-    cbXLabel: TComboBox;
-    Label26: TLabel;
     chkCombiTest: TCheckBox;
     Bevel2: TBevel;
     TxtGRpBox: TGroupBox;
@@ -174,6 +172,9 @@ type
     EdExp2: TMaskEdit;
     Bevel3: TBevel;
     EdExp3: TMaskEdit;
+    Label26: TLabel;
+    cbXLabel: TComboBox;
+    lblXLabel: TLabel;
     procedure chkTest1Click(Sender: TObject);
     procedure chkCombiTestClick(Sender: TObject);
     procedure chkCheckAllClick(Sender: TObject);
@@ -423,6 +424,7 @@ begin
   lblVar3.Caption := '';
   lblVar4.Caption := '';
   lblBy.Caption   := '';
+  lblXLabel.Caption := '';
   lblWeight.Caption := '';
   UpdateCombo(cbVar1, fDlgOptions.BoxLabels[0], fDlgOptions.VarNames[0]);
   UpdateCombo(cbVar2, fDlgOptions.BoxLabels[1], fDlgOptions.VarNames[1]);
@@ -430,6 +432,7 @@ begin
   UpdateCombo(cbVar4, fDlgOptions.BoxLabels[3], fDlgOptions.VarNames[3]);
   UpdateCombo(cbBy,   fDlgOptions.ByLabel, '');
   UpdateCombo(cbWeight, fDlgOptions.WeightLabel, '');
+  UpdateCombo(cbXLabel, rsXLabel, '');
 
   // SPC Page:
   if Assigned(tabSPC.PageControl) then
@@ -495,7 +498,6 @@ begin
   edTxtY.Clear;
 
   // Misc. page:
-  cbXLabel.Text := rsXLabel;
   edSaveAs.Text := rsSaveAs;
 end;
 
@@ -513,7 +515,8 @@ begin
      3: lblVar3.Caption := S;
      4: lblVar4.Caption := S;
      5: lblBy.Caption   := S;
-     6: lblWeight.Caption := S;
+     6: lblXLabel.Caption := S;
+     7: lblWeight.Caption := S;
    end;
 end;
 
@@ -631,6 +634,7 @@ begin
   AddEdit(edXtext, result, '/Xtext="' + edXtext.Text + '"', rsXText);
   AddEdit(edYtext, result, '/Ytext="' + edYtext.Text + '"', rsYText);
   AddEdit(edFontSz, result, '/Fontsize=' + edFontSz.Text);
+
   // - Text box.
   // TODO -o Torsten: Support multiple lines in text box
   if mmTxt.Lines.Count > 0 then
