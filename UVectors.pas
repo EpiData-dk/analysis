@@ -1597,7 +1597,7 @@ procedure TEpiVectors.SetCapacity(const Value: integer);
 var
  i,co : integer;
 begin
-  if (Capacity=Value) then exit;
+//  if (Capacity=Value) then exit;
   co := Count;
   for i:= 0 to co-1 do
     vectors[i].Capacity := Value;
@@ -2734,7 +2734,7 @@ end;
 
 procedure TEpiVector.SetCapacity(const Value: EpiUnInt);
 begin
-  if value = Capacity then exit;
+//  if value = Capacity then exit;
   Length := Value;
 end;
 
