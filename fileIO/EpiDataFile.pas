@@ -803,11 +803,11 @@ BEGIN
         END;
       IF TempResult THEN   //Begin reading the field-info
         BEGIN
-          TempInt:=pos('~kq:',eLine);    //&&
+          TempInt:=pos('~KQ:', AnsiUpperCase(eLine));    //&&
           IF TempInt>0 THEN
             BEGIN
               //Datafile contains a crypt-key
-              TempInt2:=pos(':kq~',eLine);
+              TempInt2:=pos(':KQ~', AnsiUpperCase(eLine));
               IF (TempInt2>0) AND (TempInt2>TempInt) THEN FKey:=copy(eLine,TempInt+4,TempInt2-TempInt-4);
             END;
           TempInt:=Pos('FILELABEL: ',AnsiUpperCase(eLine));
@@ -2294,7 +2294,7 @@ begin
       {Write No of fields + background colour + FileLabel}
       peWrite(ff,IntToStr(FFieldList.Count)+' 1');
       IF NOT FEpiInfoFieldNaming THEN peWrite(ff,' VLAB');
-      IF FKey<>'' THEN peWrite(ff,' ~kq:'+EncryptString(FKey,FKey)+':kq~');
+      IF FKey<>'' THEN peWrite(ff,' ~KQ:'+EncryptString(FKey,FKey)+':KQ~');
       IF trim(FFileLabel)<>'' THEN peWrite(ff,' Filelabel: '+FFilelabel);
       peWrite(ff,chr(NewLine));
       peWrite(ff,chr(LineFeed));
