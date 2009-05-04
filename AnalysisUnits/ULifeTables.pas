@@ -384,7 +384,7 @@ begin
     end;
 
     AggDF.Sort(s + LocalVarnames[1] + ',' + LocalVarnames[0]);
-//    OAggregate.OutAggregate(AggDF, cmd);
+//    OAggregate.OutAggregate(AggDF);
 
     // This might be larger than required, but the final size
     // is not known at this stage. However the final size is never
@@ -651,6 +651,7 @@ begin
 
   // Sort and prepare for counting.
   df.Sort('$INTERBEG,' + ByVec.Name);
+//  df.SendToOutput(nil);
 
   TimeVec := df.VectorByName['$INTERBEG'];
   DthVec  := df.VectorByName['$DEATHS'];
