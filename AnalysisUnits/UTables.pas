@@ -1732,13 +1732,14 @@ begin
   tab.AddColumn;
   tab.AddColumn;
   tab.Cell[tab.ColCount-2,1] := 'Gamma';
+  tab.Cell[tab.ColCount-1,1] := Fmts.CIHdr;
   tab.Cell[tab.ColCount,1] := 'p';
   for i := 1 to SumTable.TableCount do
-    begin
-      tab.Cell[tab.ColCount-2,i+1] := Epiformat(SumTable[i].Gamma, Fmts.efmt);
-      //tab.Cell[tab.ColCount-1,i+1] := EpiCIformat(1,SumTable[i].gammaLL,SumTable[i].gammaUL,efmt, cifmt,' ',1);
-      tab.Cell[tab.ColCount,i+1] := Epiformat(Sumtable.SubTable[i].pGamma2,'%7.3f');
-    end;
+  begin
+    tab.Cell[tab.ColCount-2,i+1] := Epiformat(SumTable[i].Gamma, Fmts.efmt);
+    tab.Cell[tab.ColCount-1,i+1] := EpiCIformat(SumTable[i].Gamma, SumTable[i].GammaLL, SumTable[i].gammaUL, Fmts.EFmt, Fmts.CIFmt, ' ', 1);
+    tab.Cell[tab.ColCount,i+1] := Epiformat(Sumtable.SubTable[i].pGamma2,'%7.3f');
+  end;
 end;
 
 Procedure Ttables.AddRR(Tab: TStatTable; Sumtable: Tsumtable; Fmts: TTableFormats);
