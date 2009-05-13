@@ -1358,7 +1358,6 @@ begin
         TwowayTable.fCells[0,index].fTpct := (count/total)*100;
         inc(index);
       end;
-      //sorting should be added here
       // Primary sort options, may be chosen otherwise by user!
 
       TwoWayTable.SortByRow(1,false);

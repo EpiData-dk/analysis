@@ -254,7 +254,7 @@ begin
     opDotPlot : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' M DI C' + ' ' +  Gnrl_options + GRAPH_OPTIONS);
     opBox,opboxplot: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + ' M NM OUT1 OUT2 OUT P1090 R NT ');
 
-    opFreq :result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' M NM CI ' + Gnrl_options + PCT_OPTIONS + FMT_OPTIONS);
+    opFreq :result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' M NM CI ' + Gnrl_options + SORT_OPTIONS + PCT_OPTIONS + FMT_OPTIONS);
     opTables, opShortTables: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options + SORT_OPTIONS + STAT_OPTIONS +
                                           PCT_OPTIONS + FMT_OPTIONS + ' NM FV M S F NT NC NCS ');
     opTableDialog: result := ParseParamLessCommand(opTableDialog);
