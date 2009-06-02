@@ -195,10 +195,11 @@ end;
 function TSPCUtils.RunsTest(CenterVec, CtrlVec: TEpiVector; ChartNo, BreakIndex: Integer;
   var Output: string; var OutsideLimits: integer): Integer;
 const
-  RunArLow: array[0..16] of integer = (4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8, 9, 9, 9,10,10,10);
-  RunArHi: array[0..16] of integer = (11,12,12,13,13,14,15,15,16,16,17,17,18,19,19,20,21);
+  // Index:                            14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40
+  RunArLow: array[14..40] of integer = (4,  4,  5,  5,  6,  6,  6,  7,  7,  8,  8,  9,  9,  9, 10, 10, 11, 11, 11, 11, 12, 13, 13, 13, 14, 14, 15);
+  RunArHi: array[14..40] of integer = (11, 12, 12, 13, 13, 14, 15, 15, 16, 16, 17, 17, 18, 19, 19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 25, 26, 26);
 var
-  i, j: integer;
+  i, j, PointCount: integer;
   Last: EpiFloat;
   t, s: string;
 begin
@@ -210,10 +211,12 @@ begin
   last := CtrlVec.AsFloat[j] ;
 
   // now start counting runs from point j:
+  PointCount := 0;
   for i:=j to CtrlVec.Length do
   begin
     if (CtrlVec.IsMissing[i]) then continue;
     if (CtrlVec.AsFloat[i] = CenterVec.AsFloat[i]) then continue;
+    Inc(PointCount);
     if (CtrlVec.AsFloat[i] < CenterVec.AsFloat[i]) and
        (Last < CenterVec.AsFloat[i]) then continue
     else
@@ -228,12 +231,12 @@ begin
     Last := CtrlVec.AsFloat[i];
   end;
 
-  if (CtrlVec.Length<14) or (CtrlVec.Length>30) then
+  if (PointCount < 14) or (PointCount > 40) then
     s := 'na'
   else begin
-    s := IntToStr(RunArLow[CtrlVec.Length-14]);
-    t := IntToStr(RunArHi[CtrlVec.Length-14]);
-    if (Result > RunArHi[CtrlVec.Length-14]) or (Result < RunArLow[CtrlVec.Length-14]) then
+    s := IntToStr(RunArLow[PointCount]);
+    t := IntToStr(RunArHi[PointCount]);
+    if (Result > RunArHi[PointCount]) or (Result < RunArLow[PointCount]) then
       OutsideLimits := 1
     else
       OutsideLimits := 0;

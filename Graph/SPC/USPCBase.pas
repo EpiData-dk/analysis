@@ -552,13 +552,6 @@ begin
         Sigma2FrzUCLVec[k] := CreateVector('$SIGMA2UCLFRZ', df.RowCount);
         Sigma3FrzLCLVec[k] := CreateVector('$SIGMA3LCLFRZ', df.RowCount);
         Sigma3FrzUCLVec[k] := CreateVector('$SIGMA3UCLFRZ', df.RowCount);
-{        df.Vectors.Add(CenterFrzVec[k]);
-        df.Vectors.Add(Sigma1FrzLCLVec[k]);
-        df.Vectors.Add(Sigma1FrzUCLVec[k]);
-        df.Vectors.Add(Sigma2FrzLCLVec[k]);
-        df.Vectors.Add(Sigma2FrzUCLVec[k]);
-        df.Vectors.Add(Sigma3FrzLCLVec[k]);
-        df.Vectors.Add(Sigma3FrzUCLVec[k]);    }
 
         for j := 1 to Df.RowCount do
         begin
@@ -571,35 +564,42 @@ begin
           Sigma3FrzLCLVec[k].AsFloat[j] := CenterFrzVec[k].AsFloat[j] - SigmaFactor(3, Df.RowCount) * Sigma[j,k];
           Sigma3FrzUCLVec[k].AsFloat[j] := CenterFrzVec[k].AsFloat[j] + SigmaFactor(3, Df.RowCount) * Sigma[j,k];
 
-        // Add value to fully drawn lines (within the freeze period)
-          AddToLine(CenterFrzLine[k], CenterFrzVec[k], j, -0.5);
-          AddToSigmaLine(Sigma1FrzLCLLine[k], Sigma1FrzLCLVec[k], j, ShowSigma1[k], -0.5);
-          AddToSigmaLine(Sigma1FrzUCLLine[k], Sigma1FrzUCLVec[k], j, Dummy, -0.5);
-          AddToSigmaLine(Sigma2FrzLCLLine[k], Sigma2FrzLCLVec[k], j, ShowSigma2[k], -0.5);
-          AddToSigmaLine(Sigma2FrzUCLLine[k], Sigma2FrzUCLVec[k], j, Dummy, -0.5);
-          AddToSigmaLine(Sigma3FrzLCLLine[k], Sigma3FrzLCLVec[k], j, ShowSigma3[k], -0.5);
-          AddToSigmaLine(Sigma3FrzUCLLine[k], Sigma3FrzUCLVec[k], j, Dummy, -0.5);
+          if (j < Df.RowCount) then
+            XDiff := (XVec.AsFloat[j+1] - XVec.AsFloat[j]) / 2
+          else
+            XDiff := (XVec.AsFloat[j] - XVec.AsFloat[j-1]) / 2;
+
+          // Add value to fully drawn lines (within the freeze period)
+          AddToLine(CenterFrzLine[k], CenterFrzVec[k], j, -XDiff);
+          AddToSigmaLine(Sigma1FrzLCLLine[k], Sigma1FrzLCLVec[k], j, ShowSigma1[k], -XDiff);
+          AddToSigmaLine(Sigma1FrzUCLLine[k], Sigma1FrzUCLVec[k], j, Dummy, -XDiff);
+          AddToSigmaLine(Sigma2FrzLCLLine[k], Sigma2FrzLCLVec[k], j, ShowSigma2[k], -XDiff);
+          AddToSigmaLine(Sigma2FrzUCLLine[k], Sigma2FrzUCLVec[k], j, Dummy, -XDiff);
+          AddToSigmaLine(Sigma3FrzLCLLine[k], Sigma3FrzLCLVec[k], j, ShowSigma3[k], -XDiff);
+          AddToSigmaLine(Sigma3FrzUCLLine[k], Sigma3FrzUCLVec[k], j, Dummy, -XDiff);
         end;
         Dec(j);
 
-        AddToLine(CenterFrzLine[k], CenterFrzVec[k], j, 0.5);
-        if ShowSigma1[k] then
-          AddToSigmaLine(Sigma1FrzLCLLine[k], Sigma1FrzLCLVec[k], j, ShowSigma1[k], 0.5);
-        AddToSigmaLine(Sigma1FrzUCLLine[k], Sigma1FrzUCLVec[k], j, Dummy, 0.5);
-        if ShowSigma2[k] then
-          AddToSigmaLine(Sigma2FrzLCLLine[k], Sigma2FrzLCLVec[k], j, ShowSigma2[k], 0.5);
-        AddToSigmaLine(Sigma2FrzUCLLine[k], Sigma2FrzUCLVec[k], j, Dummy, 0.5);
-        if ShowSigma3[k] then
-          AddToSigmaLine(Sigma3FrzLCLLine[k], Sigma3FrzLCLVec[k], j, ShowSigma3[k], 0.5);
-        AddToSigmaLine(Sigma3FrzUCLLine[k], Sigma3FrzUCLVec[k], j, Dummy, 0.5);
+        XDiff := (XVec.AsFloat[j] - XVec.AsFloat[j-1]) / 2;
 
-        AddNull(CenterFrzLine[k], CenterFrzVec[k], j, 0.5);
-        AddNull(Sigma1FrzLCLLine[k], Sigma1FrzLCLVec[k], j, 0.5);
-        AddNull(Sigma1FrzUCLLine[k], Sigma1FrzUCLVec[k], j, 0.5);
-        AddNull(Sigma2FrzLCLLine[k], Sigma2FrzLCLVec[k], j, 0.5);
-        AddNull(Sigma2FrzUCLLine[k], Sigma2FrzUCLVec[k], j, 0.5);
-        AddNull(Sigma3FrzLCLLine[k], Sigma3FrzLCLVec[k], j, 0.5);
-        AddNull(Sigma3FrzUCLLine[k], Sigma3FrzUCLVec[k], j, 0.5);
+        AddToLine(CenterFrzLine[k], CenterFrzVec[k], j, XDiff);
+        if ShowSigma1[k] then
+          AddToSigmaLine(Sigma1FrzLCLLine[k], Sigma1FrzLCLVec[k], j, ShowSigma1[k], XDiff);
+        AddToSigmaLine(Sigma1FrzUCLLine[k], Sigma1FrzUCLVec[k], j, Dummy, XDiff);
+        if ShowSigma2[k] then
+          AddToSigmaLine(Sigma2FrzLCLLine[k], Sigma2FrzLCLVec[k], j, ShowSigma2[k], XDiff);
+        AddToSigmaLine(Sigma2FrzUCLLine[k], Sigma2FrzUCLVec[k], j, Dummy, XDiff);
+        if ShowSigma3[k] then
+          AddToSigmaLine(Sigma3FrzLCLLine[k], Sigma3FrzLCLVec[k], j, ShowSigma3[k], XDiff);
+        AddToSigmaLine(Sigma3FrzUCLLine[k], Sigma3FrzUCLVec[k], j, Dummy, XDiff);
+
+        AddNull(CenterFrzLine[k], CenterFrzVec[k], j, XDiff);
+        AddNull(Sigma1FrzLCLLine[k], Sigma1FrzLCLVec[k], j, XDiff);
+        AddNull(Sigma1FrzUCLLine[k], Sigma1FrzUCLVec[k], j, XDiff);
+        AddNull(Sigma2FrzLCLLine[k], Sigma2FrzLCLVec[k], j, XDiff);
+        AddNull(Sigma2FrzUCLLine[k], Sigma2FrzUCLVec[k], j, XDiff);
+        AddNull(Sigma3FrzLCLLine[k], Sigma3FrzLCLVec[k], j, XDiff);
+        AddNull(Sigma3FrzUCLLine[k], Sigma3FrzUCLVec[k], j, XDiff);
       end;
       if Assigned(df) then FreeAndNil(df);
       fFrozen := true;
@@ -697,7 +697,7 @@ begin
           else
             XDiff := (XVec.AsFloat[j] - XVec.AsFloat[j-1]) / 2;
 
-          AddToLine(CenterLine[k], CenterVec[k], j, -0.5);
+          AddToLine(CenterLine[k], CenterVec[k], j, -XDiff);
           AddToSigmaLine(Sigma1LCLLine[k], Sigma1LCLVec[k], j, ShowSigma1[k], -XDiff);
           AddToSigmaLine(Sigma1UCLLine[k], Sigma1UCLVec[k], j, Dummy, -XDiff);
           AddToSigmaLine(Sigma2LCLLine[k], Sigma2LCLVec[k], j, ShowSigma2[k], -XDiff);
