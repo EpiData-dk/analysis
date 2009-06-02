@@ -1564,7 +1564,7 @@ begin
   SetDotPlot(TPointSeries(Series), 1);
 
   //result.BottomAxis.StartPosition := 20.0;
-  result.BottomAxis.EndPosition:=75;
+  //result.BottomAxis.EndPosition:=75;
   result.BottomAxis.LabelsSeparation := 0;
   //if varnames.count = 1 then maxx := max(maxx,xvalue) + 1.0 ;//; else maxx := max(maxx,xvalue) + 0.05;
   result.BottomAxis.SetMinMax(minx,maxx+0.25);

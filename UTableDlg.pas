@@ -462,6 +462,7 @@ end;
 procedure TTableDlg.AdvTablePanelClick(Sender: TObject);
 begin
   // options and buttons depend on table type
+  RRBtn.enabled := True;
   RRBtn.enabled := CompactBtn.Checked;
   Arbtn.enabled := Compactbtn.Checked;
   if (Sender = CompactBtn) then

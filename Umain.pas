@@ -1526,7 +1526,7 @@ begin
   'Contributions - specification: (SPC: V.Høgli, B. Nyen), J. Hockin, P. Arias, G.Desve',
   'Core parser commands, data management etc: S.Mahmud (2002-2003), Installation Routines : G.Desve',
   'Http://www.epidata.dk',
-  'Copyright: EpiData Association, Odense Denmark 2001-2008');
+  'Copyright: EpiData Association, Odense Denmark 2001-2009');
 end;
 
 
