@@ -11,10 +11,12 @@ type
   private
     XBarBar: EpiFloat;
     SigmaHat: EpiFloat;
+    SigmaHatHat: EpiFloat;
     NSum: EpiInt;
     HSum: EpiFloat;
     function C4(N: Integer): EpiFloat;
     function GetNVector(): TEpiVector;
+    function LocalSigmaCenterVal(LoopIndex: Integer): EpiFloat;
   protected
     function AllowFreeze(SpcLine: TSPCLine): Boolean; override;
     procedure CalcMean; override;
@@ -23,7 +25,7 @@ type
     procedure CreateCharts(ChartArray: TChartArray; const Dataframe: TEpiDataFrame);  override;
     function CreateOutputTable: TStatTable;  override;
     function ExcludeFunction(index: Integer; df: TEpiDataFrame): Boolean; override;
-    function ExcludeValueFunction(index: Integer; df: TEpiDataFrame): Extended; override;
+    function ExcludeValueFunction(index: Integer; df: TEpiDataFrame): EpiFloat; override;
     procedure ExecuteMeanFail(LoopIdx: Integer; LastIdx: Integer); override;
     procedure ExecuteMeanSuccess(LoopIdx: Integer; LastIdx: Integer); override;
     function GetExclusionVector(const Dataframe: TEpiDataframe): TEpiVector; override;
@@ -33,14 +35,15 @@ type
     function GetXVector: TEpiVector; override;
     function GetYVector: TEpiVector; override;
     function GetZVector: TEpiVector; override;
-    function GetCenter(LoopIndex: Integer; ChartNo: Integer): Extended; override;
-    function GetCtrlVal(LoopIndex: Integer; ChartNo: Integer): Extended; override;
+    function GetCenter(LoopIndex: Integer; ChartNo: Integer): EpiFloat; override;
+    function GetCtrlVal(LoopIndex: Integer; ChartNo: Integer): EpiFloat; override;
+    function GetCenterInfoTxt(ChartNo: integer): string; override;
     function GetCenterText(ChartNo: integer): string; override;
     function GetChartTypeText(ChartNo: integer): string; override;
     function GetCtrlText(const Dataframe: TEpiDataFrame; const ChartNo: integer): string; override;
     function GetLCLInfoTxt(ChartNo: Integer): String; override;
     function GetUCLInfoTxt(ChartNo: Integer): String; override;
-    function MakeOutputLine(ChartNo: Integer; OutputTable: TStatTable): Extended; override;
+    function MakeOutputLine(ChartNo: Integer; OutputTable: TStatTable): EpiFloat; override;
     function PreAggregate(const Dataframe: TEpiDataFrame): TEpiDataFrame;
       override;
     procedure PrepareVarnames(IncludeVarnames: TStrings;
@@ -101,10 +104,16 @@ begin
 end;
 
 procedure TXBarS.CalcMean;
+var
+  i: integer;
 begin
   if Frozen then exit;
   XBarBar := XBarBar / NSum;
   SigmaHat := SigmaHat / HSum;
+
+  for i := 0 to NVec.Length do
+    SigmaHatHat := SigmaHatHat + LocalSigmaCenterVal(i);
+  SigmaHatHat := SigmaHatHat / NVec.Length;
 end;
 
 procedure TXBarS.CheckVarnames;
@@ -209,12 +218,20 @@ function TXBarS.GetCenter(LoopIndex, ChartNo: Integer): Extended;
 begin
   if ChartNo = 0 then
     Result := XBarBar
+  else if Cmd.ParamExists['MVLU'] then
+    Result := LocalSigmaCenterVal(LoopIndex)
   else
-    if NVec.AsInteger[LoopIndex] = 1 then
-      Result := 0
-    else
-      Result := SigmaHat * C4(NVec.AsInteger[LoopIndex]);
+    Result := SigmaHatHat;
 end;
+
+function TXBarS.GetCenterInfoTxt(ChartNo: integer): string;
+begin
+  if ChartNo = 0 then
+    result := Inherited GetCenterInfoTxt(ChartNo)
+  else
+    Result := Format(' ' + CenterText[ChartNo] + ': %.2f', [SigmaHatHat])
+end;
+
 
 function TXBarS.GetCenterText(ChartNo: integer): string;
 begin
@@ -275,6 +292,14 @@ begin
   result := df.FindVector('$N');
 end;
 
+function TXBarS.LocalSigmaCenterVal(LoopIndex: Integer): EpiFloat;
+begin
+  if NVec.AsInteger[LoopIndex] = 1 then
+    Result := 0
+  else
+    Result := SigmaHat * C4(NVec.AsInteger[LoopIndex]);
+end;
+
 function TXBarS.GetSigma(LoopIndex, ChartNo: integer): Extended;
 var
   C4Const: EpiFloat;
@@ -326,7 +351,7 @@ begin
   end else begin
     OutputTable.Cell[1, OutputTable.RowCount] := '';
     OutputTable.Cell[2, OutputTable.RowCount] := 'Sigma';
-    OutputTable.Cell[3, OutputTable.RowCount] := Format('%.2f', [0.0]);
+    OutputTable.Cell[3, OutputTable.RowCount] := Format('%.2f', [SigmaHatHat]);
   end;
 end;
 
@@ -368,6 +393,7 @@ begin
   if Frozen then exit;
   XBarBar := 0;
   SigmaHat := 0;
+  SigmaHatHat := 0;
   HSum := 0;
   NSum := 0;
 end;

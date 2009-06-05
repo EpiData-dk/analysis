@@ -242,7 +242,7 @@ begin
     opIchart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB MR ');
     opRunChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' TAB ');
     opPareto: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS);
-    opXBar: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' SIGMA RANGE ');
+    opXBar: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' SIGMA RANGE MVLU ');
     opGChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS);
     opCChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' PER ');
     opUChart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + SPC_OPTIONS + ' PER ');
