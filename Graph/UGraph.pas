@@ -1066,10 +1066,13 @@ begin
     XWidth := (XMax - XMin) / BinCount;
 
     Factor := 1;
-    while XWidth < 10 do
+    if Vec.DataType = EpiTyFloat then
     begin
-      Factor := Factor * 10;
-      XWidth := XWidth * 10;
+      while XWidth < 10 do
+      begin
+        Factor := Factor * 10;
+        XWidth := XWidth * 10;
+      end;
     end;
     XW := Trunc(XWidth);
 
