@@ -593,7 +593,8 @@ begin
     begin
       WeightName := (Cmd.ParamByName['W'].AsString);
       Weighted := true;
-      varnames.Delete(varnames.IndexOf(WeightName));
+      // Weigth variable is inserted in position 0!
+      varnames.Delete(0);
     end;
     dm.AddResult('$tblweight', EpiTyBoolean, Weighted, 0, 0);
     agl := TAggrList.Create();
@@ -1358,16 +1359,17 @@ begin
         TwowayTable.fCells[0,index].fTpct := (count/total)*100;
         inc(index);
       end;
-      // Primary sort options, may be chosen otherwise by user!
 
-      TwoWayTable.SortByRow(1,false);
-      // options:              TODO was j - assumed k=variable . Sort incorrect
-      if SortOptions('SLA', k)  then TwoWayTable.SortByRowLabelText(false);
-      if SortOptions('SLD', k)  then TwoWayTable.SortByRowLabelText(true);
-      if SortOptions('SA', k)   then TwoWayTable.SortByRow(1, false);
-      if SortOptions('SD', k)   then  TwoWayTable.SortByRow(1, true);
-      if SortOptions('SRAT', k) then TwoWayTable.SortByRowTotal(false);
-      if SortOptions('SRDT', k) then TwoWayTable.SortByRowTotal(true);
+      // Primary sort options, may be chosen otherwise by user!
+      TwoWayTable.SortByColumn(1, false);
+      
+      // options:
+      if SortOptions('SLA', j)  then TwoWayTable.SortByRowLabelText(false);
+      if SortOptions('SLD', j)  then TwoWayTable.SortByRowLabelText(true);
+      if SortOptions('SA', j)   then TwoWayTable.SortByColumn(1, false);
+      if SortOptions('SD', j)   then TwoWayTable.SortByColumn(1, true);
+      if SortOptions('SRAT', j) then TwoWayTable.SortByRowTotal(false);
+      if SortOptions('SRDT', j) then TwoWayTable.SortByRowTotal(true);
 
       SetLength(Sumtable.fSubtables, k+1);
       sumtable.fSubtables[k] := TwowayTable;

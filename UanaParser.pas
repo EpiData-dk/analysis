@@ -505,8 +505,10 @@ begin
     include(options, PVCheckValidName);
     if ParseVariableNames(list, options) then
       Params.AddVar(TVar.Create('VARLIST',integer(list)));
-    NextToken;
-    if Currenttoken.TokenType=opDivide then
+
+    Accept([opDivide, opEndOfLine, opEndOfFile], 'Incorrect syntax in Labelvalue.');
+
+    if Currenttoken.TokenType = opDivide then
     begin
       ParseOptions('', 'CLEAR', Params, True);
     end;
@@ -861,13 +863,25 @@ var
  expStr : string;
  Params :TVarList;
  Param, exp : IValue;
+ i: integer;
 begin
   result:=nil;
   expStr:=trim(GetRestOfLine);
   exp := nil;
+
+  Params :=TVarList.Create;
+
+  i := pos('/CLOSE', AnsiUppercase(expStr));
+  if i > 0  then
+  begin
+    expStr := Copy(expStr, 1, i-1) +
+                Copy(expStr, i+6, length(expStr));
+    Params.AddVar(TVar.Create('CLOSE','CLOSE'));
+  end;
+
   if expstr <> '' then
     exp := GenExpression(expStr,AnaExecutor.VarIDF);
-  Params :=TVarList.Create;
+
   Params.AddVar(TVar.Create('EXP',exp));
   result:=TCommand.Create(pCommandID,Params);
 end;
@@ -2163,8 +2177,15 @@ begin
   result := code;
   if Addopt = '' then exit;
 
+  I := pos(' IF', AnsiUpperCase(Code));
+  if I = 0 then
+    result := Code + ' ' + Addopt
+  else
+    result := CopyLeft(Trim(code), i-1) + addopt + ' ' + CopyRight(Trim(Code), (Length(code) - i) + 1);
+
+{
   // FixMe:
-  // Idea - search backwards through the command string - if and "IF" is encountered,
+  // Idea - search backwards through the command string - if an "IF" is encountered,
   // this might be the place to put the additional options. However - be aware
   // that the word "if" may also be part of some arbitrary option value.
   for i := Length(code) downto Length(cmd) do
@@ -2174,11 +2195,7 @@ begin
     if (AnsiUpperCase(code[i]) = 'I') and (AnsiUpperCase(code[i+1]) = 'F') then
       break;
   end;
-
-  if i = Length(cmd)-1 then
-    result := Code + ' ' + Addopt
-  else
-    result := CopyLeft(Trim(code), i-1) + addopt + ' ' + CopyRight(Trim(Code), (Length(code) - i) + 1);
+}
 end;
 
 //TODO optimize this code freq run
@@ -2458,10 +2475,10 @@ begin
          opGenerate:
          begin
              n:=0;
-             Param :=cmd.ParamByName['EXP'];
+             Param := cmd.ParamByName['EXP'];
              if (Param<> nil) and (Param.AsIValue<> nil) then
                 n:=Param.AsIValue.AsInteger;
-             if dm.generate(n) then
+             if dm.generate(n, cmd) then
                dm.Browse2(nil, cmd);
          end;
          opEval, opQuery:

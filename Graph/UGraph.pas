@@ -321,6 +321,7 @@ const
   procversion = '1.0.0.0';
 begin
   ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  
   if Not Assigned(dummyform) then
   begin
     Dummyform := TForm.CreateNew(Application);
@@ -331,6 +332,7 @@ begin
   result := TChart.Create(dummyform);
   result.Parent := dummyform;
   result.Name := 'StandardChart' + IntToStr(Dummyform.ComponentCount);
+
   with result do
   begin
     // General for the form
@@ -360,13 +362,13 @@ begin
     MarginBottom := 5;
 
     // Titles, footers, etc.
-    SubFoot.Visible := False;
     Title.Font.Height := -16;
     dm.GetOptionValue('GRAPH FOOTNOTE', Opt);
     Foot.Text.Add(Opt.Value);
     Foot.Alignment := taRightJustify;
 
     Frame.Visible := False;
+
 
     // Axis
     BottomAxis.Grid.Visible := False;
@@ -792,7 +794,7 @@ begin
       if ss < 10 then s := s+ '0' + IntToStr(ss) else s := s + IntToStr(ss);
       if ms < 10 then s := s+ '0' + IntToStr(ms) else s := s + IntToStr(ms);
       s := s + ext;
-      if (Cmd.ParamByName['SAVE'] <> nil) then
+      if Cmd.ParamExists['SAVE'] then
       begin
         s := ExtractFilePath(Cmd.ParamByName['SAVE'].AsString);
         s := s + ExtractFileNameNoExt(Cmd.ParamByName['SAVE'].AsString);
@@ -2827,7 +2829,7 @@ var
   opt: TEpiOption;
   s : string;
   Dummy: Double;
-  w: integer;
+  w, fs: integer;
   OptList: TStrings;
 
   procedure RemoveOption(OptName: string);
@@ -2851,18 +2853,22 @@ begin
 
   // Set-options applied to graph before showing.
   dm.GetOptionValue('GRAPH FONT SIZE', opt);
-  // TODO -o Torsten : Implement font size option.
-  Chart.Title.Font.Size := Round(1.25 * StrToInt(opt.value));
+  Fs := StrToInt(opt.Value);
+
+  if Cmd.ParamExists['FONTSIZE'] then
+    Fs := StrToIntDef(Cmd.ParamByName['FONTSIZE'].AsString, Fs);
+
+  Chart.Title.Font.Size := Round(1.25 * Fs);
   Chart.Title.Font.Color := TGraphUtils.GetGraphTextColour(1);
-  Chart.SubTitle.Font.Size := Round(1.1 * StrToInt(opt.value));
-  Chart.SubFoot.Font.Size := Round(0.80 * StrToInt(opt.value));
-  Chart.Foot.Font.Size := Round(0.70 * StrToInt(opt.value));
+  Chart.SubTitle.Font.Size := Round(1.1 * Fs);
+  Chart.SubFoot.Font.Size := Round(0.80 * Fs);
+  Chart.Foot.Font.Size := Round(0.70 * Fs);
   Chart.Foot.Font.Color := TGraphUtils.GetGraphTextColour(2);
 
   for w := 0 to Chart.AxesList.Count -1 do
   begin
-    Chart.Axes[w].LabelsFont.Size := Max(Round(0.60 * StrToInt(opt.value)), 8);
-    Chart.Axes[w].Title.Font.Size := Max(Round(0.70 * StrToInt(opt.value)), 8);
+    Chart.Axes[w].LabelsFont.Size := Max(Round(0.60 * Fs), 8);
+    Chart.Axes[w].Title.Font.Size := Max(Round(0.70 * Fs), 8);
   end;
 
   if (Cmd.ParamExists['NOXLABEL']) then
@@ -2882,6 +2888,11 @@ begin
   else
     Chart.SubTitle.Visible := false;
   RemoveOption('SUB');
+
+  if Cmd.ParamExists['SUBFOOT'] then
+    Chart.SubFoot.Text.Add(Cmd.ParamByName['SUBFOOT'].AsString)
+  else
+    Chart.SubFoot.Visible := false;
 
   //footnote
   dm.GetOptionValue('GRAPH FOOTNOTE', Opt);

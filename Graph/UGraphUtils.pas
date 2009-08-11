@@ -128,10 +128,10 @@ begin
     OptLen := Length(Opt.Value);
     if OptLen < DefLen then
       dm.SetOptionValue(OptionStr, Opt.value + Copy(DefaultStr, 1, DefLen - OptLen));
-    Val := StrToInt(Opt.Value[Index]);
+    Val := StrToInt(Opt.Value[((Index - 1) mod DefLen) + 1]);
     Result := Colorlist[Val];
   except
-    result := 0;
+    result := colorlist[0];
   end;
 end;
 

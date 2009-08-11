@@ -199,7 +199,7 @@ type
     function Define(pVarDesc : TAnaVariableDescriptor):boolean;
     function GenField(dataframe: TEpiDataFrame; pVarDesc: TAnaVariableDescriptor; Exp: IValue): boolean;
     function GenVar(pVarDesc: TAnaVariableDescriptor; Exp: IValue): boolean;
-    function generate(rows:integer):boolean;
+    function Generate(Rows: integer; Cmd: TCommand): boolean;
     function help(HelpText: String): boolean;
     procedure CloseHelp();
     procedure PrintResult(const msg: string);
@@ -1266,15 +1266,25 @@ Result:=rc=1;
 end;
 
 
-function TDM.generate(rows: integer): boolean;
+function TDM.Generate(Rows: integer; Cmd: TCommand): boolean;
 begin
+ if Assigned(cmd) then
+   if (Cmd.ParamByName['CLOSE'] <> nil) then CloseFile();
+
+ if (Assigned(dataframe)) and (not dataframe.Modified) then
+   CloseFile();
+
   if OpenFileCount> 0 then
     error('No, data will be lost: Close first', [], 23013);
   try
     result := false;
+
     if rows<1 then
       error('Rows count must be at least 1', [], 23014);
-    if dataframe <> nil then dataFrame.free;
+
+    if Assigned(Dataframe) then
+      FreeAndNil(FDataFrame);
+
     fdataframe := TEpiDataFrame.CreateTemp(rows);
     initDataFrameVars(fdataframe);
     dataframe.FileName := 'Generated dataset';
@@ -2695,7 +2705,7 @@ begin
     if not dm.CheckDataOpen() then exit; //checkdataopen();
     CheckVariableNo(Varnames,1);
     if (cmd.ParamByName['W'] <> nil) then
-      Varnames.Add(cmd.ParamByName['W'].AsString);
+      Varnames.Insert(0, cmd.ParamByName['W'].AsString);
 
     // Option /OA = /CT /AR
     if (Cmd.ParamExists['OA']) then

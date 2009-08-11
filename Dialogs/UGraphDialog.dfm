@@ -22,7 +22,7 @@ object GraphDialog: TGraphDialog
     Top = 0
     Width = 509
     Height = 267
-    ActivePage = tabVariables
+    ActivePage = tabTitle
     Align = alClient
     TabOrder = 0
     object tabVariables: TTabSheet
