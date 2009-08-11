@@ -2844,8 +2844,9 @@ function TDM.Bar(VarNames: TStrings; cmd: TCommand): boolean;
 var
   df: TEpiDataFrame;
 begin
-       if not dm.CheckDataOpen() then exit; //checkdataopen();
+  if not dm.CheckDataOpen() then exit; //checkdataopen();
   CheckVariableNo(Varnames, 1, 1);
+  
   df := nil;
   try
     if (cmd.ParamByName['W'] <> nil) then

@@ -1011,32 +1011,94 @@ end;
 
 function TGraph.DoHistogram(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
 var
-  DF: TEpiDataframe;
+  i, Total, BinCount, Factor, XW: integer;
   agglist: TAggrList;
+  DF: TEpiDataframe;
+  Vec, NVec: TEpiVector;
+  XWidth, Xmin, XMax: EpiFloat;
+  Series: TBarSeries;
+  
+{
   series: TAreaSeries;
-  {XOnly,} Grouped: boolean;
-  i, k, total: integer;
-  // last: Variant;
+  Grouped: boolean;
   vec, nvec, zvec, tvec: TEpiVector;
-  GroupName: string;
+  GroupName: string;}
 const
   procname = 'DoHistogram';
   procversion = '1.0.0.0';
 
-  function GetColour(index: integer): TColor;
+{  function GetColour(index: integer): TColor;
   begin
     if Grouped then
       result := TGraphUtils.GetGraphColour(k)
     else
       result := TGraphUtils.GetGraphColour(index);
-  end;
+  end;}
 
 begin
   ODebug.IncIndent;
-  ODebug.Add(UnitName + ':' + procname + ' - ' + procversion, 1);
+  ODebug.Add(UnitName, ClassName, Procname, procversion, 1);
 
   try
-    // Allow groups:
+    result := CreateStandardChart;
+    
+    total := Dataframe.RowCount;
+
+    if total > 500 then
+      BinCount := Min(20 + (Total div 500), 35)
+    else
+      BinCount := Trunc(Sqrt(Total));
+
+    if Cmd.ParamExists['BINS'] then
+      BinCount := StrToIntDef(Cmd.ParamByName['BINS'].AsString, BinCount);
+
+    // Aggregate dataframe!
+    agglist := TAggrList.Create();
+    agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
+    df := OAggregate.AggregateDataframe(Dataframe, TStringList(Varnames), agglist, TCommand.Create(0, Parameters));
+
+
+    Vec := df.VectorByName[Varnames[0]];
+    NVec := df.VectorByName['$S'];
+    XMin := Vec.AsFloat[1];
+    XMax := Vec.AsFloat[Vec.Length];
+
+    XWidth := (XMax - XMin) / BinCount;
+
+    Factor := 1;
+    while XWidth < 10 do
+    begin
+      Factor := Factor * 10;
+      XWidth := XWidth * 10;
+    end;
+    XW := Trunc(XWidth);
+
+    Vec.AsFloat[1] := ((Trunc(Vec.AsFloat[1] * Factor) div XW) * XW) / Factor;
+    for i := 2 to Df.RowCount do
+    begin
+     Vec.AsFloat[i] := ((Trunc(Vec.AsFloat[i] * Factor) div XW) * XW) / Factor;
+     if Vec.compare(i-1, i) = 0 then
+       NVec.AsInteger[i] := NVec.AsInteger[i-1] + NVec.AsInteger[i];
+    end;
+
+    Series := TBarSeries.Create(result);
+    Series.ParentChart := result;
+    for i := 1 to Df.RowCount - 1 do
+    begin
+      if Vec.compare(i, i + 1) <> 0 then
+        series.AddXY(vec.AsFloat[i], nvec.AsFloat[i],
+                     vec.GetValueLabel(vec.AsString[i], Parameters),
+                     TGraphUtils.GetHisColor(i-1));
+    end;
+    i := Df.RowCount;
+    series.AddXY(vec.AsFloat[i], nvec.AsFloat[i],
+                 vec.GetValueLabel(vec.AsString[i], Parameters),
+                 TGraphUtils.GetHisColor(i-1));
+
+
+
+
+{    // Allow groups:
     if (Parameters.VarByName['BY'] <> nil) then
     begin
       GroupName := (Parameters.VarByName['BY'].AsString);
@@ -1045,10 +1107,6 @@ begin
 
     total := Dataframe.RowCount;
 
-    // Aggregate dataframe!
-    agglist := TAggrList.Create();
-    agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
-    df := OAggregate.AggregateDataframe(Dataframe, TStringList(Varnames), agglist, TCommand.Create(0, Parameters));
 
     if Grouped then
       Varnames.Delete(Varnames.IndexOf(GroupName));
@@ -1151,11 +1209,9 @@ begin
     else
       result.LeftAxis.Title.Caption := 'Count';
     CalcAxisInc(Result.BottomAxis);
-    result.BottomAxis.LabelStyle := talAuto;
+    result.BottomAxis.LabelStyle := talAuto;       }
   finally
-    if assigned(df) then FreeAndNil(df);
-    if Assigned(agglist) then FreeAndNil(agglist);
-    if Assigned(tvec) then FreeAndNil(tvec);
+
     ODebug.DecIndent;
   end;
 end;
