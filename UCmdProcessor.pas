@@ -2854,11 +2854,12 @@ begin
         Error('Weight variable must be of type Integer', [], 23034)
       else
         Varnames.Add(cmd.ParamByName['W'].AsString);
-    if (cmd.ParamByName['BY'] <> nil) then
-    begin
+        
+    if cmd.ParamExists['BY'] then
       Varnames.Add(cmd.ParamByName['BY'].AsString);
-      cmd.CommandID := opBar;  // Histogram does handle /BY but TAreaSeries cannot show proper side-by-side graphs.
-    end;
+//      cmd.CommandID := opBar;  // Histogram does handle /BY but TAreaSeries cannot show proper side-by-side graphs.
+
+
     if (cmd.ParamByName['M'] <> nil) then
       df := dataframe.prepareDataframe(Varnames, nil)
     else

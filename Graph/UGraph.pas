@@ -1014,15 +1014,9 @@ var
   i, Total, BinCount, Factor, XW: integer;
   agglist: TAggrList;
   DF: TEpiDataframe;
-  Vec, NVec: TEpiVector;
+  Vec, NVec, TVec, GVec: TEpiVector;
   XWidth, Xmin, XMax: EpiFloat;
   Series: TBarSeries;
-  
-{
-  series: TAreaSeries;
-  Grouped: boolean;
-  vec, nvec, zvec, tvec: TEpiVector;
-  GroupName: string;}
 const
   procname = 'DoHistogram';
   procversion = '1.0.0.0';
@@ -1040,8 +1034,6 @@ begin
   ODebug.Add(UnitName, ClassName, Procname, procversion, 1);
 
   try
-    result := CreateStandardChart;
-    
     total := Dataframe.RowCount;
 
     if total > 500 then
@@ -1056,7 +1048,6 @@ begin
     agglist := TAggrList.Create();
     agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
     df := OAggregate.AggregateDataframe(Dataframe, TStringList(Varnames), agglist, TCommand.Create(0, Parameters));
-
 
     Vec := df.VectorByName[Varnames[0]];
     NVec := df.VectorByName['$S'];
@@ -1076,22 +1067,63 @@ begin
     end;
     XW := Trunc(XWidth);
 
+    if Cmd.ParamExists['BY'] then
+      GVec := Df.VectorByName[Cmd.ParamByName['BY'].AsString]
+    else begin
+      GVec := TEpiIntVector.Create('$G', Df.RowCount);
+      Df.Vectors.Add(GVec);
+    end;
+
+    Df.Sort(GVec.Name + ',' + Vec.Name);
+
     Vec.AsFloat[1] := ((Trunc(Vec.AsFloat[1] * Factor) div XW) * XW) / Factor;
     for i := 2 to Df.RowCount do
     begin
      Vec.AsFloat[i] := ((Trunc(Vec.AsFloat[i] * Factor) div XW) * XW) / Factor;
-     if Vec.compare(i-1, i) = 0 then
+     if (Vec.compare(i-1, i) = 0) and (GVec.compare(i-1, i) = 0) then
        NVec.AsInteger[i] := NVec.AsInteger[i-1] + NVec.AsInteger[i];
     end;
 
+//    df := OAggregate.AggregateDataframe(df, TStringList(Varnames), agglist, TCommand.Create(0, Parameters));
+
+    // Create posible percent vector.
+    if Cmd.ParamExists['PCT'] then
+    begin
+      TVec := TEpiFloatVector.Create('$P', NVec.Length);
+      for i := 1 to NVec.Length do
+        TVec.AsFloat[i] := (NVec.AsInteger[i] / total) * 100;
+      NVec := TVec;
+      TVec := nil;
+    end;
+
+    Dm.Info('Bins = %d, Start = %f, Width = %f', [BinCount, Vec.AsFloat[1], XW / Factor]);
+
+    result := CreateStandardChart;
+    result.Title.Text.Add(Vec.GetVariableLabel(Parameters));
+    result.BottomAxis.Title.Caption := ' ' + vec.GetVariableLabel(Parameters);
+
     Series := TBarSeries.Create(result);
     Series.ParentChart := result;
+    Series.Marks.Visible := False;
+    Series.Color := TGraphUtils.GetGraphColour(0);
+    Series.Title := Vec.GetVariableLabel(Parameters);
+    if Cmd.ParamExists['BY'] then
+      Series.Title := GVec.GetValueLabel(GVec.AsString[1], Parameters);
+
     for i := 1 to Df.RowCount - 1 do
     begin
       if Vec.compare(i, i + 1) <> 0 then
         series.AddXY(vec.AsFloat[i], nvec.AsFloat[i],
                      vec.GetValueLabel(vec.AsString[i], Parameters),
                      TGraphUtils.GetHisColor(i-1));
+      if GVec.compare(i, i + 1) <> 0 then
+      begin
+        Series := TBarSeries.Create(result);
+        Series.ParentChart := result;
+        Series.Marks.Visible := False;
+        Series.Color := TGraphUtils.GetGraphColour(Result.SeriesCount - 1);
+        Series.Title := GVec.GetValueLabel(GVec.AsString[i+1], Parameters);
+      end;
     end;
     i := Df.RowCount;
     series.AddXY(vec.AsFloat[i], nvec.AsFloat[i],
@@ -1099,7 +1131,10 @@ begin
                  TGraphUtils.GetHisColor(i-1));
 
 
-
+    if Assigned(Parameters.VarbyName['PCT']) then
+      result.LeftAxis.Title.Caption := 'Percent'
+    else
+      result.LeftAxis.Title.Caption := 'Count';
 
 {    // Allow groups:
     if (Parameters.VarByName['BY'] <> nil) then
