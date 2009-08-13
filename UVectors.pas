@@ -2963,7 +2963,7 @@ end;
 procedure TEpiIntVector.SetAsBoolean(const index: Integer;
   const Value: EpiBool);
 begin
-    AsInteger[index] := integer(Value);
+  AsInteger[index] := integer(Value);
 end;
 
 procedure TEpiIntVector.SetAsDate(const index: Integer; const Value: EpiDate);

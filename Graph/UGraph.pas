@@ -1011,23 +1011,15 @@ end;
 
 function TGraph.DoHistogram(Dataframe: TEpiDataframe; Varnames: TStrings; CmdID: Word; Parameters: TVarList): TChart;
 var
-  i, Total, BinCount, Factor, XW: integer;
+  i, j, Total, BinCount, Factor, XW: integer;
   agglist: TAggrList;
   DF: TEpiDataframe;
-  Vec, NVec, TVec, GVec: TEpiVector;
+  Vec, NVec, XVec, TVec, GVec: TEpiVector;
   XWidth, Xmin, XMax: EpiFloat;
-  Series: TBarSeries;
+  Series: TChartSeries;
 const
   procname = 'DoHistogram';
   procversion = '1.0.0.0';
-
-{  function GetColour(index: integer): TColor;
-  begin
-    if Grouped then
-      result := TGraphUtils.GetGraphColour(k)
-    else
-      result := TGraphUtils.GetGraphColour(index);
-  end;}
 
 begin
   ODebug.IncIndent;
@@ -1044,212 +1036,117 @@ begin
     if Cmd.ParamExists['BINS'] then
       BinCount := StrToIntDef(Cmd.ParamByName['BINS'].AsString, BinCount);
 
-    // Aggregate dataframe!
-    agglist := TAggrList.Create();
-    agglist.Add(TAggrCount.Create('$S', Varnames[0], acAll));
-    df := OAggregate.AggregateDataframe(Dataframe, TStringList(Varnames), agglist, TCommand.Create(0, Parameters));
+    Vec := Dataframe.VectorByName[Varnames[0]];
+    Dataframe.Sort(Vec.Name);
 
-    Vec := df.VectorByName[Varnames[0]];
-    NVec := df.VectorByName['$S'];
     XMin := Vec.AsFloat[1];
     XMax := Vec.AsFloat[Vec.Length];
-
     XWidth := (XMax - XMin) / BinCount;
 
-    Factor := 1;
-    if Vec.DataType = EpiTyFloat then
-    begin
-      while XWidth < 10 do
-      begin
-        Factor := Factor * 10;
-        XWidth := XWidth * 10;
-      end;
-    end;
-    XW := Trunc(XWidth);
-
     if Cmd.ParamExists['BY'] then
-      GVec := Df.VectorByName[Cmd.ParamByName['BY'].AsString]
+      GVec := Dataframe.VectorByName[Cmd.ParamByName['BY'].AsString]
     else begin
-      GVec := TEpiIntVector.Create('$G', Df.RowCount);
-      Df.Vectors.Add(GVec);
+      GVec := TEpiIntVector.Create('$G', Dataframe.RowCount);
+      Dataframe.Vectors.Add(GVec);
     end;
+    Dataframe.Sort(GVec.Name + ',' + Vec.Name);
 
-    Df.Sort(GVec.Name + ',' + Vec.Name);
+    NVec := TEpiIntVector.Create('$N', BinCount);
+    XVec := TEpiFloatVector.Create('$X', BinCount);
 
-    Vec.AsFloat[1] := ((Trunc(Vec.AsFloat[1] * Factor) div XW) * XW) / Factor;
-    for i := 2 to Df.RowCount do
+    for i := 1 to BinCount do
     begin
-     Vec.AsFloat[i] := ((Trunc(Vec.AsFloat[i] * Factor) div XW) * XW) / Factor;
-     if (Vec.compare(i-1, i) = 0) and (GVec.compare(i-1, i) = 0) then
-       NVec.AsInteger[i] := NVec.AsInteger[i-1] + NVec.AsInteger[i];
+      XVec.AsFloat[i] := XMin + (i - 1) * XWidth;
+      NVec.AsInteger[i] := 0;
     end;
 
-//    df := OAggregate.AggregateDataframe(df, TStringList(Varnames), agglist, TCommand.Create(0, Parameters));
-
-    // Create posible percent vector.
-    if Cmd.ParamExists['PCT'] then
-    begin
-      TVec := TEpiFloatVector.Create('$P', NVec.Length);
-      for i := 1 to NVec.Length do
-        TVec.AsFloat[i] := (NVec.AsInteger[i] / total) * 100;
-      NVec := TVec;
-      TVec := nil;
-    end;
-
-    Dm.Info('Bins = %d, Start = %f, Width = %f', [BinCount, Vec.AsFloat[1], XW / Factor]);
+    Dm.Info('Bins = %d, Start = %f, Width = %f', [BinCount, Vec.AsFloat[1], XWidth]);
 
     result := CreateStandardChart;
     result.Title.Text.Add(Vec.GetVariableLabel(Parameters));
     result.BottomAxis.Title.Caption := ' ' + vec.GetVariableLabel(Parameters);
-
-    Series := TBarSeries.Create(result);
-    Series.ParentChart := result;
-    Series.Marks.Visible := False;
-    Series.Color := TGraphUtils.GetGraphColour(0);
-    Series.Title := Vec.GetVariableLabel(Parameters);
-    if Cmd.ParamExists['BY'] then
-      Series.Title := GVec.GetValueLabel(GVec.AsString[1], Parameters);
-
-    for i := 1 to Df.RowCount - 1 do
+      
+    i := 1;
+    while i <= Dataframe.RowCount do
     begin
-      if Vec.compare(i, i + 1) <> 0 then
-        series.AddXY(vec.AsFloat[i], nvec.AsFloat[i],
-                     vec.GetValueLabel(vec.AsString[i], Parameters),
-                     TGraphUtils.GetHisColor(i-1));
-      if GVec.compare(i, i + 1) <> 0 then
+      j := Trunc((Vec.AsFloat[i] - XMin) / XWidth);  
+      NVec.AsInteger[j] := NVec.AsInteger[j] + 1;
+
+      if ((i < Dataframe.RowCount) and (GVec.compare(i, i+1) <> 0)) or
+         (i = Dataframe.RowCount) then
       begin
-        Series := TBarSeries.Create(result);
+        if Cmd.ParamExists['BY'] then
+          Series := TBarSeries.Create(result)
+        else begin
+          Series := TAreaSeries.Create(result);
+          TAreaSeries(Series).Stairs := true;
+        end;
         Series.ParentChart := result;
         Series.Marks.Visible := False;
         Series.Color := TGraphUtils.GetGraphColour(Result.SeriesCount - 1);
-        Series.Title := GVec.GetValueLabel(GVec.AsString[i+1], Parameters);
-      end;
-    end;
-    i := Df.RowCount;
-    series.AddXY(vec.AsFloat[i], nvec.AsFloat[i],
-                 vec.GetValueLabel(vec.AsString[i], Parameters),
-                 TGraphUtils.GetHisColor(i-1));
+        Series.Title := Vec.GetVariableLabel(Parameters);
+        if Cmd.ParamExists['BY'] then
+          Series.Title := GVec.GetValueLabel(GVec.AsString[i], Parameters);
 
-
-    if Assigned(Parameters.VarbyName['PCT']) then
-      result.LeftAxis.Title.Caption := 'Percent'
-    else
-      result.LeftAxis.Title.Caption := 'Count';
-
-{    // Allow groups:
-    if (Parameters.VarByName['BY'] <> nil) then
-    begin
-      GroupName := (Parameters.VarByName['BY'].AsString);
-      Grouped := true;
-    end;
-
-    total := Dataframe.RowCount;
-
-
-    if Grouped then
-      Varnames.Delete(Varnames.IndexOf(GroupName));
-
-//    if df.VectorByName[Varnames[0]].DataType <> EpiTyDate then
-//    begin
-      for i := df.RowCount downto 1 do
-        if (not df.VectorByName[Varnames[0]].IsMissing[i]) then break;
-      df := df.ExpandDataframe(varnames, df.VectorByName[Varnames[0]].AsFloat[1],
-                             df.VectorByName[Varnames[0]].AsFloat[i]);
-//    end;
-
-    if Grouped then
-    begin
-      df.Sort(GroupName + ',' + varnames.CommaText);
-      zvec := df.VectorByName[GroupName];
-    end else
-      df.Sort(Varnames.CommaText);
-
-    vec := df.VectorByName[Varnames[0]];
-    nvec := df.VectorByName['$S'];
-
-    for i := 1 to df.RowCount do
-      if nvec.IsMissing[i] then nvec.AsInteger[i] := 0;
-
-    // Create posible percent vector.
-    if assigned(Parameters.VarbyName['PCT']) then
-    begin
-      tvec := TEpiFloatVector.Create('$P', nvec.Length);
-      for i := 0 to nvec.Length do
-        tvec.AsFloat[i] := (nvec.AsInteger[i] / total) * 100;
-      nvec := tvec;
-    end;
-
-    // Create the graph and set customizable settings.
-    result := CreateStandardChart();
-    result.Title.Text.Add(vec.GetVariableLabel(Parameters));
-    result.BottomAxis.Title.Caption := ' ' + vec.GetVariableLabel(Parameters);
-
-    // Create the histogram series.
-    // series := Thistogramseries.create(nil);
-    series := TAreaSeries.Create(nil);
-    series.Name := 'Areaseries';
-    k := 0;
-    for i := 1 to vec.Length do
-    begin
-      if (vec.IsMissing[i]) then
-        series.AddXY(vec.AsFloat[i-1]+1, nvec.AsFloat[i],
-                     vec.GetValueLabel(vec.AsString[i], Parameters),
-                     TGraphUtils.GetHisColor(i-1))
-      else
-        series.AddXY(vec.AsFloat[i], nvec.AsFloat[i],
-                     vec.GetValueLabel(vec.AsString[i], Parameters),
-                     TGraphUtils.GetHisColor(i-1));
-      if Grouped and (i<vec.length) and (zvec.compare(i, i+1)<>0) then
-      begin
-        Series.Stairs := True;
-        series.marks.Visible := False;
-        Series.ParentChart := result;
-        Series.Color := GetColour(i-1);
-        series.Title := zvec.GetValueLabel(zvec.AsString[i], Parameters);
-        if (Parameters.VarbyName['YVALUE'] <> nil) then
-        with series do begin
-          Marks.Visible := true;
-          Marks.Style := smsValue;
-          Marks.Color := clWhite;
+        for j := 1 to BinCount do
+        begin
+          if Cmd.ParamExists['PCT'] then
+            series.AddXY(XVec.AsFloat[j], (NVec.AsFloat[j] / total) * 100,
+                         XVec.AsString[j],
+                         TGraphUtils.GetHisColor(j - 1))
+          else
+            series.AddXY(XVec.AsFloat[j], NVec.AsFloat[j],
+                         XVec.AsString[j],
+                         TGraphUtils.GetHisColor(j - 1));
+          NVec.AsInteger[j] := 0;
         end;
-        inc(k);
-        series := TAreaSeries.Create(nil);
       end;
+      inc(i);
     end;
-     //add one last point to see the last bar:
-     //TODO: +1 should be one unit in current x variable   but does not work properly:
-    try
-      dec(i);
-      if (not vec.IsMissing[i]) and (i>1) then
-        series.AddXY(vec.AsFloat[i] + (vec.AsFloat[i]-vec.asfloat[i-1]), nvec.AsFloat[i],'',
-                     TGraphUtils.GetHisColor(i-1));
-    except
-      dm.info('report problem with histogram (drawing last bar): %d', [i], 33009);
+
+    // Dirty hardcoded "beautification" of histograms up to catagorical groupsize of 4.
+    case Result.SeriesCount of
+      2: begin
+           TBarSeries(Result.Series[0]).BarWidthPercent := 50;
+           TBarSeries(Result.Series[0]).MultiBar := mbNone;
+           TBarSeries(Result.Series[0]).SideMargins := false;
+           TBarSeries(Result.Series[0]).OffsetPercent := -50;
+           TBarSeries(Result.Series[1]).BarWidthPercent := 50;
+           TBarSeries(Result.Series[1]).SideMargins := false;
+           TBarSeries(Result.Series[1]).OffsetPercent := 50;
+           Result.BottomAxis.MinimumOffset := 10;
+           Result.BottomAxis.MaximumOffset := 10;
+         end;
+      3: begin
+           TBarSeries(Result.Series[0]).MultiBar := mbNone;
+           TBarSeries(Result.Series[0]).BarWidthPercent := 33;
+           TBarSeries(Result.Series[0]).SideMargins := false;
+           TBarSeries(Result.Series[0]).OffsetPercent := -100;
+           TBarSeries(Result.Series[1]).BarWidthPercent := 33;
+           TBarSeries(Result.Series[1]).SideMargins := false;
+           TBarSeries(Result.Series[1]).OffsetPercent := 0;
+           TBarSeries(Result.Series[2]).BarWidthPercent := 34;
+           TBarSeries(Result.Series[2]).SideMargins := false;
+           TBarSeries(Result.Series[2]).OffsetPercent := 100;
+           Result.BottomAxis.MinimumOffset := 10;
+           Result.BottomAxis.MaximumOffset := 10;
+         end;
+      4: begin
+           TBarSeries(Result.Series[0]).BarWidthPercent := 99;
+           TBarSeries(Result.Series[1]).BarWidthPercent := 99;
+           TBarSeries(Result.Series[2]).BarWidthPercent := 99;
+           TBarSeries(Result.Series[3]).BarWidthPercent := 99;
+           Result.BottomAxis.MinimumOffset := 10;
+           Result.BottomAxis.MaximumOffset := 10;
+         end;
     end;
-    Series.Stairs := True;
-    Series.Marks.Visible := False;
-    result.LeftAxis.AutomaticMinimum := false;
-    result.LeftAxis.Minimum := 0;
-    if grouped then
-    begin
-      series.Title := zvec.GetValueLabel(zvec.AsString[vec.Length], Parameters);
-      Series.Color := GetColour(vec.Length);
-    end;
-    series.ParentChart := result;
-    if (Parameters.VarbyName['YVALUE'] <> nil) then
-    with series do begin
-      Marks.Visible := true;
-      Marks.Style := smsValue;
-      Marks.Color := clWhite;
-    end;
+
     if Assigned(Parameters.VarbyName['PCT']) then
       result.LeftAxis.Title.Caption := 'Percent'
     else
       result.LeftAxis.Title.Caption := 'Count';
-    CalcAxisInc(Result.BottomAxis);
-    result.BottomAxis.LabelStyle := talAuto;       }
-  finally
 
+  finally
     ODebug.DecIndent;
   end;
 end;

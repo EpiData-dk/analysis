@@ -1361,13 +1361,13 @@ begin
       end;
 
       // Primary sort options, may be chosen otherwise by user!
-      TwoWayTable.SortByColumn(1, false);
+      TwoWayTable.SortByRowLabel(false);
       
       // options:
       if SortOptions('SLA', j)  then TwoWayTable.SortByRowLabelText(false);
       if SortOptions('SLD', j)  then TwoWayTable.SortByRowLabelText(true);
-      if SortOptions('SA', j)   then TwoWayTable.SortByColumn(1, false);
-      if SortOptions('SD', j)   then TwoWayTable.SortByColumn(1, true);
+      if SortOptions('SA', j)   then TwoWayTable.SortByRowLabel(false);
+      if SortOptions('SD', j)   then TwoWayTable.SortByRowLabel(true);
       if SortOptions('SRAT', j) then TwoWayTable.SortByRowTotal(false);
       if SortOptions('SRDT', j) then TwoWayTable.SortByRowTotal(true);
 
