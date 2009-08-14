@@ -381,6 +381,9 @@ begin
     for i := 0 to Result.Count -1 do
     begin
       Sigma3UCLLine[i] := CreateLine('Sigma 3',     3, Result.Chart[i]);
+      // Dirty hack for RunChart. 
+      if Cmd.CommandID = opRunchart then
+        Sigma3UCLLine[i].ShowInLegend := false;
       Sigma3LCLLine[i] := CreateLine('Sigma 3 LCL', 3, Result.Chart[i]);
       Sigma3LCLLine[i].ShowInLegend := false;
       Sigma2UCLLine[i] := CreateLine('Sigma 2',     4, Result.Chart[i]);
@@ -533,13 +536,10 @@ begin
         // Create new sigma lines and convert old to dotted lines.
         Sigma3FrzUCLLine[k] := CreateFreezeLine(Sigma3UCLLine[k], 3);
         Sigma3FrzLCLLine[k] := CreateFreezeLine(Sigma3LCLLine[k], 3);
-        Sigma3FrzLCLLine[k].ShowInLegend := false;
         Sigma2FrzUCLLine[k] := CreateFreezeLine(Sigma2UCLLine[k], 4);
         Sigma2FrzLCLLine[k] := CreateFreezeLine(Sigma2LCLLine[k], 4);
-        Sigma2FrzLCLLine[k].ShowInLegend := false;
         Sigma1FrzUCLLine[k] := CreateFreezeLine(Sigma1UCLLine[k], 5);
         Sigma1FrzLCLLine[k] := CreateFreezeLine(Sigma1LCLLine[k], 5);
-        Sigma1FrzLCLLine[k].ShowInLegend := false;
         CenterFrzLine[k] := CreateFreezeLine(CenterLine[k], 2);
         ReAssignToLengend(ExcludeLine[k]);
         ReAssignToLengend(CtrlLine[k]);
@@ -1011,6 +1011,7 @@ function TCustomSPCChart.CreateFreezeLine(OrgLine: TLineSeries;
   LineCode: integer): TLineSeries;
 begin
   Result := CreateLine(OrgLine.Title, LineCode, TChart(OrgLine.ParentChart));
+  Result.ShowInLegend := OrgLine.ShowInLegend;
   OrgLine.LinePen.Style := psDash;
   OrgLine.LinePen.EndStyle := esSquare;
   OrgLine.ShowInLegend := false;

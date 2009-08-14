@@ -235,7 +235,7 @@ begin
     opErasePng: result:=ParseTypicalCommand(Currenttoken.TokenSubType, [], 'NOCONFIRM ALL D ');
     opPie : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options +  GRAPH_OPTIONS);
     opBar : result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options +  GRAPH_OPTIONS + ' PCT XALL M ');
-    opHistogram, opShortHistogram: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' M PCT BINS ' + Gnrl_options + GRAPH_OPTIONS);
+    opHistogram, opShortHistogram: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  ' M PCT BINS WIDTH START' + Gnrl_options + GRAPH_OPTIONS);
     opLine: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + ' M BYC BYS ');
     opScatter, opShortScatter: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf],  Gnrl_options + GRAPH_OPTIONS + ' M BYC BYS ');
     opPchart: result:=ParseTypicalCommand(Currenttoken.TokenSubType,[PCAllowVarList,PCAllowIf], Gnrl_options +  GRAPH_OPTIONS + SPC_OPTIONS + ' TAB ');

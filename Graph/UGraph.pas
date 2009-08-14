@@ -1021,6 +1021,28 @@ const
   procname = 'DoHistogram';
   procversion = '1.0.0.0';
 
+  procedure BinCalculation();
+  begin
+    if Cmd.ParamExists['BINS'] then
+    begin
+      BinCount := StrToIntDef(Cmd.ParamByName['BINS'].AsString, BinCount);
+      XWidth := (XMax - XMin) / BinCount;
+      Exit;
+    end;
+
+    if Cmd.ParamExists['START'] then
+    Begin
+      XMin := StrToFloatDef(Cmd.ParamByName['START'].AsString, XMin);
+      XWidth := (XMax - XMin) / BinCount;
+    end;
+
+    if Cmd.ParamExists['WIDTH'] then
+    begin
+      XWidth := StrToFloatDef(Cmd.ParamByName['WIDTH'].AsString, XWidth);
+      BinCount := Ceil((XMax - XMin) / XWidth);
+    end;
+  end;
+
 begin
   ODebug.IncIndent;
   ODebug.Add(UnitName, ClassName, Procname, procversion, 1);
@@ -1028,20 +1050,23 @@ begin
   try
     total := Dataframe.RowCount;
 
+    Vec := Dataframe.VectorByName[Varnames[0]];
+    Dataframe.Sort(Vec.Name);
+
     if total > 500 then
       BinCount := Min(20 + (Total div 500), 35)
     else
       BinCount := Trunc(Sqrt(Total));
 
-    if Cmd.ParamExists['BINS'] then
-      BinCount := StrToIntDef(Cmd.ParamByName['BINS'].AsString, BinCount);
-
-    Vec := Dataframe.VectorByName[Varnames[0]];
-    Dataframe.Sort(Vec.Name);
-
     XMin := Vec.AsFloat[1];
     XMax := Vec.AsFloat[Vec.Length];
     XWidth := (XMax - XMin) / BinCount;
+
+    if Cmd.ParamExists['BINS'] or Cmd.ParamExists['WIDTH'] or
+       Cmd.ParamExists['START'] then BinCalculation;
+
+    Dm.Info('Bins = %d, Width = %f, Range %f - %f, N = %d',
+      [BinCount, XWidth, Vec.AsFloat[1], Vec.AsFloat[Vec.Length], Total]);
 
     if Cmd.ParamExists['BY'] then
       GVec := Dataframe.VectorByName[Cmd.ParamByName['BY'].AsString]
@@ -1051,8 +1076,14 @@ begin
     end;
     Dataframe.Sort(GVec.Name + ',' + Vec.Name);
 
+    // The actual number of bins must be +1 since TAreaSeries otherwise
+    // does not correctly display the last bin - SUCKS!
+    Inc(BinCount);
     NVec := TEpiIntVector.Create('$N', BinCount);
-    XVec := TEpiFloatVector.Create('$X', BinCount);
+    if Trunc(XWidth) <> XWidth then
+      XVec := TEpiFloatVector.Create('$X', BinCount)
+    else
+      XVec := TEpiIntVector.Create('$X', BinCount);
 
     for i := 1 to BinCount do
     begin
@@ -1060,7 +1091,6 @@ begin
       NVec.AsInteger[i] := 0;
     end;
 
-    Dm.Info('Bins = %d, Start = %f, Width = %f', [BinCount, Vec.AsFloat[1], XWidth]);
 
     result := CreateStandardChart;
     result.Title.Text.Add(Vec.GetVariableLabel(Parameters));
@@ -1069,7 +1099,9 @@ begin
     i := 1;
     while i <= Dataframe.RowCount do
     begin
-      j := Trunc((Vec.AsFloat[i] - XMin) / XWidth);  
+      j := Trunc((Vec.AsFloat[i] - XMin) / XWidth) + 1;
+      // Always put the Max value into the last (visible) bin.
+      if j = BinCount then dec(j);
       NVec.AsInteger[j] := NVec.AsInteger[j] + 1;
 
       if ((i < Dataframe.RowCount) and (GVec.compare(i, i+1) <> 0)) or
