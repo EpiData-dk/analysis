@@ -1017,6 +1017,7 @@ var
   Vec, NVec, XVec, TVec, GVec: TEpiVector;
   XWidth, Xmin, XMax: EpiFloat;
   Series: TChartSeries;
+  S: String;
 const
   procname = 'DoHistogram';
   procversion = '1.0.0.0';
@@ -1065,8 +1066,11 @@ begin
     if Cmd.ParamExists['BINS'] or Cmd.ParamExists['WIDTH'] or
        Cmd.ParamExists['START'] then BinCalculation;
 
-    Dm.Info('Bins = %d, Width = %f, Range %f - %f, N = %d',
-      [BinCount, XWidth, Vec.AsFloat[1], Vec.AsFloat[Vec.Length], Total]);
+    S := 'Bins = %d, Width = %f, Range %f - %f, N = %d';
+    if Cmd.ParamExists['BY'] then
+      S := S + '<br>Groups centered around tickmarks.';
+
+    Dm.Info(S, [BinCount, XWidth, Vec.AsFloat[1], Vec.AsFloat[Vec.Length], Total]);
 
     if Cmd.ParamExists['BY'] then
       GVec := Dataframe.VectorByName[Cmd.ParamByName['BY'].AsString]
