@@ -120,7 +120,6 @@ type
     cbBy: TComboBox;
     tabMisc: TTabSheet;
     edSaveAs: TEdit;
-    Label8: TLabel;
     lblBy: TLabel;
     Label21: TLabel;
     lblWeight: TLabel;
@@ -392,7 +391,8 @@ begin
   cbBy.Enabled := (goBy in fDlgOptions.Defaults);
   if cbBy.Enabled then InitCombo(cbBy, fDlgOptions.ByTypes);
   cbWeight.Enabled := (goWeight in fDlgOptions.Defaults);
-  if cbWeight.Enabled then InitCombo(cbWeight, fDlgOptions.WeightTypes);
+  if cbWeight.Enabled then InitCombo(cbWeight, fDlgOptions.WeightTypes)
+       else cbWeight.Visible := False;
 
   InitCombo(cbXLabel, [EpiTyBoolean, EpiTyString, EpiTyUppercase, EpiTyDate, EpiTyInteger, EpiTyFloat]);
 
@@ -667,7 +667,7 @@ procedure TGraphDialog.FormShow(Sender: TObject);
 const
   def: TFormDefaults = (Section: 'GraphDlg';
                         Top: 60; Left: 300;
-                        Width: 515; Height: 295;
+                        Width: 515; Height: 303;
                         Maximize: false);
 begin
   OIniFile.LoadForm(self, def);

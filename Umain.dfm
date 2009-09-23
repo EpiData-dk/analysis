@@ -24,7 +24,7 @@ object aMainForm: TaMainForm
     Left = 633
     Top = 54
     Width = 2
-    Height = 446
+    Height = 436
     Align = alRight
     AutoSnap = False
     MinSize = 20
@@ -32,7 +32,7 @@ object aMainForm: TaMainForm
   end
   object StatusBar: TSMStatusBar
     Left = 0
-    Top = 500
+    Top = 490
     Width = 844
     Height = 19
     Anchors = [akRight, akBottom]
@@ -191,7 +191,7 @@ object aMainForm: TaMainForm
     Left = 0
     Top = 54
     Width = 633
-    Height = 446
+    Height = 436
     Align = alClient
     Alignment = taLeftJustify
     BorderStyle = bsSingle
@@ -199,7 +199,7 @@ object aMainForm: TaMainForm
     OnMouseMove = ToolBar1MouseMove
     object Splitter1: TSplitter
       Left = 1
-      Top = 417
+      Top = 407
       Width = 627
       Height = 2
       Cursor = crVSplit
@@ -209,7 +209,7 @@ object aMainForm: TaMainForm
     end
     object CmdPanel: TPanel
       Left = 1
-      Top = 419
+      Top = 409
       Width = 627
       Height = 22
       Align = alBottom
@@ -223,7 +223,7 @@ object aMainForm: TaMainForm
     Left = 635
     Top = 54
     Width = 209
-    Height = 446
+    Height = 436
     Align = alRight
     TabOrder = 2
     OnResize = Panel1Resize
@@ -231,7 +231,7 @@ object aMainForm: TaMainForm
       Left = 1
       Top = 99
       Width = 207
-      Height = 233
+      Height = 223
       Hint = 'Close: press F3'
       Align = alClient
       BevelInner = bvNone
@@ -280,7 +280,7 @@ object aMainForm: TaMainForm
     end
     object Historylist: TListBox
       Left = 1
-      Top = 332
+      Top = 322
       Width = 207
       Height = 113
       Hint = 'Close: press F7'
@@ -5120,6 +5120,11 @@ object aMainForm: TaMainForm
       Caption = 'Epidemic Curve'
       OnExecute = AcRunEpicurveExecute
     end
+    object AcEraseGraphs: TAction
+      Category = 'viewer'
+      Caption = 'Erase &Graphs'
+      OnExecute = AcEraseGraphsExecute
+    end
   end
   object Viewerpopup: TPopupMenu
     Images = ImageList1
@@ -5789,6 +5794,9 @@ object aMainForm: TaMainForm
       object Clearscreen2: TMenuItem
         Tag = 1301
         Action = EditClearScreen
+      end
+      object EraseGraphs1: TMenuItem
+        Action = AcEraseGraphs
       end
       object N4: TMenuItem
         Tag = -1

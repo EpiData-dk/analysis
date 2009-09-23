@@ -2,7 +2,7 @@ object GraphDialog: TGraphDialog
   Left = 518
   Top = 397
   Width = 517
-  Height = 335
+  Height = 303
   BorderIcons = [biSystemMenu]
   Caption = 'GraphDialog'
   Color = clBtnFace
@@ -21,8 +21,8 @@ object GraphDialog: TGraphDialog
     Left = 0
     Top = 0
     Width = 509
-    Height = 267
-    ActivePage = tabTitle
+    Height = 228
+    ActivePage = tabVariables
     Align = alClient
     TabOrder = 0
     object tabVariables: TTabSheet
@@ -48,13 +48,6 @@ object GraphDialog: TGraphDialog
         Height = 13
         Caption = '_'
       end
-      object Label8: TLabel
-        Left = 8
-        Top = 200
-        Width = 37
-        Height = 13
-        Caption = 'Weight:'
-      end
       object lblBy: TLabel
         Left = 168
         Top = 144
@@ -70,8 +63,8 @@ object GraphDialog: TGraphDialog
         Caption = 'By:'
       end
       object lblWeight: TLabel
-        Left = 168
-        Top = 224
+        Left = 350
+        Top = 160
         Width = 6
         Height = 13
         Caption = '_'
@@ -149,8 +142,8 @@ object GraphDialog: TGraphDialog
       end
       object cbWeight: TComboBox
         Tag = 7
-        Left = 8
-        Top = 216
+        Left = 352
+        Top = 176
         Width = 145
         Height = 21
         ItemHeight = 13
@@ -1081,7 +1074,7 @@ object GraphDialog: TGraphDialog
   object Panel1: TPanel
     Tag = -1
     Left = 0
-    Top = 267
+    Top = 228
     Width = 509
     Height = 41
     Align = alBottom

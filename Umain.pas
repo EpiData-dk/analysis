@@ -334,6 +334,8 @@ type
     N42: TMenuItem;
     N44: TMenuItem;
     N39: TMenuItem;
+    AcEraseGraphs: TAction;
+    EraseGraphs1: TMenuItem;
 
     procedure FormCreate(Sender: TObject);
     procedure CmdEditCommand(Sender: TObject);
@@ -488,6 +490,7 @@ type
     procedure AcRunCIPlotExecute(Sender: TObject);
     procedure AcRunEpicurveExecute(Sender: TObject);
     procedure AcRunXbarChartExecute(Sender: TObject);
+    procedure AcEraseGraphsExecute(Sender: TObject);
     //JL add end
   private
     dbfdata: TEpiDBFdataset;
@@ -3614,6 +3617,12 @@ begin
   end;
 end;
 
+
+
+procedure TaMainForm.AcEraseGraphsExecute(Sender: TObject);
+begin
+  InternalRunCommand('Erasepng');
+end;
 
 
 end.
