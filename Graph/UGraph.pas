@@ -2917,9 +2917,8 @@ begin
   RemoveOption('SUB');
 
   if Cmd.ParamExists['SUBFOOT'] then
-    Chart.SubFoot.Text.Add(Cmd.ParamByName['SUBFOOT'].AsString)
-  else
-    Chart.SubFoot.Visible := false;
+    Chart.SubFoot.Text.Insert(0, Cmd.ParamByName['SUBFOOT'].AsString);
+  RemoveOption('SUBFOOT');
 
   //footnote
   dm.GetOptionValue('GRAPH FOOTNOTE', Opt);
