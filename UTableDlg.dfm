@@ -1,6 +1,6 @@
 object TableDlg: TTableDlg
-  Left = 736
-  Top = 394
+  Left = 337
+  Top = 219
   Width = 666
   Height = 349
   BorderIcons = [biSystemMenu]
@@ -20,7 +20,7 @@ object TableDlg: TTableDlg
   object CmdPanel: TPanel
     Tag = -1
     Left = 0
-    Top = 289
+    Top = 282
     Width = 658
     Height = 33
     Align = alBottom
@@ -162,7 +162,7 @@ object TableDlg: TTableDlg
     Left = 0
     Top = 0
     Width = 658
-    Height = 289
+    Height = 282
     Align = alClient
     Alignment = taLeftJustify
     TabOrder = 1
