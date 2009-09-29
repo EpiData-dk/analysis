@@ -3049,8 +3049,7 @@ end;
 
 procedure TaMainForm.AcRunLifeTableExecute(Sender: TObject);
 begin
-  AcRunKMPlotExecute(Self);
-  //DoDlg('lifetable varlist');
+ DoDlg('lifetable varlist');
 end;
 
 procedure TaMainForm.AcShowSPCMenuExecute(Sender: TObject);
@@ -3370,18 +3369,8 @@ begin
       Opts := TGraphDlgOptions.Create();
     Opts.Cmd := 'LIFETABLE';
 
-    // dialog called as well from graph menu and table menu:
-    if Sender is AcRunLifeTableExecute(Self) then
-      begin
-        Opts.CmdOptions := '/NG';
-        Opts.Title := 'Lifetable';
-      end
-    else
-      begin
-        Opts.CmdOptions := '/NOLT';
-        Opts.Title := 'Kaplan-Meier Plot';
-      end;
-
+    Opts.CmdOptions := '/NOLT';
+    Opts.Title := 'Kaplan-Meier Plot';
     Opts.VarCount := 3;
     Opts.Defaults := [goBY, goWeight];
     Opts.BoxLabels[0] := 'Outcome';

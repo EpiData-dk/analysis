@@ -90,6 +90,17 @@ begin
  end;
   EpiDlg.InitializeDlg(ParseString);
   OTranslator.TranslateForm(EpiDlg);
+
+   // TODO dirtyhack here to make EpiDlg show lifetable texts (not nice) JL Sept 29 2009
+   if EpiDlg.CmdName = 'LIFETABLE' then
+      begin
+        EpiDlg.Label2.Caption := 'Outcome:';
+        EpiDlg.Label3.Caption := 'Time:(+ by)';
+        EpiDlg.timevar.visible := True;
+        EpiDlg.Testchk.Caption := 'Log Rank Test' ;
+        EpiDlg.testchk.Hint := 'Difference in Survival by groups';
+      end;
+
   EpiDlg.showmodal;
   Result:=EpiDlg.DlgResult;
   CmdString := EpiDlg.CmdString;
@@ -110,15 +121,16 @@ begin
   ParseString(ps);
   if pos(ps,' correlate varlist means varlist kwallis varlist regress varlist lifetable varlist ') > 0 then
   begin
+    Timevar.visible := False;
     AllPanel.Visible := False;
     StatPanel.Visible := True;
     MeansBox.Visible := False;
-    if (pos(ps,' means varlist ') > 0) or (pos(ps,' kwallis varlist ') > 0) then
+    if (pos(ps,' lifetable varlist ') > 0) or (pos(ps,' means varlist ') > 0) or (pos(ps,' kwallis varlist ') > 0) then
       begin
-           MeansBox.Visible := True;
-           testchk.Visible := True;
+       MeansBox.Visible := True;
+       TestChk.Visible := False;
+       if (pos(ps,' lifetable varlist ') > 0) or (pos(ps,' means varlist ') > 0)   then testchk.Visible := True;
       end;
-    if pos(ps,' kwallis varlist ') > 0 then testchk.Visible := False;
   end
   else
   begin
@@ -126,6 +138,7 @@ begin
     StatPanel.Visible := False;
     DesignBox.Visible := False;
   end;
+
   ResetBtnClick(nil);
   SetupDlg(ps);
 end;
@@ -135,15 +148,6 @@ procedure TEpiDlg.SetupDlg(const ps: string);
 begin
   GetVar.Items := dm.dataframe.GetVectorNames(Nil);
   Caption := CmdName;
-
-  if pos(CmdName, ' LIFETABLE' ) > 0 then
-  begin
-    Label2.Caption := 'Outcome:';
-    Label3.Caption := 'Time:(+ by)';
-    timevar.visible := True;
-  end
-  else
-    timevar.visible := False;
 end;
 
 
@@ -220,7 +224,11 @@ begin
       end;
 
   if CmdName = 'LIFETABLE' then
-    cmd := cmd + ' /NG ';
+    begin
+      cmd := cmd + ' /NG ';
+      addoption(TestChk,' /T');
+      addoption(MissingCHK,' /M');
+    end;
 
   if LineClass.checked or BoxClass.Checked or ShadedClass.Checked or FilledClass.Checked then
   begin    // run set command:
