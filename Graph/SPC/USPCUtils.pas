@@ -244,7 +244,10 @@ begin
   if (s <> 'na') then
     Output := '('+ s + '-' + t + ')'
   else
-    Output := '';
+    Output := '(na)';
+    // tell points on median
+    Output := output + '&nbsp;&nbsp;&nbsp;&nbsp;[' + IntToStr(PointCount) + '/' + IntToStr(CtrlVec.Length-PointCount) + '] ';
+
 
   dm.AddResult('$SPC' + IntToStr(ChartNo) + 'B' + IntToStr(BreakIndex) +
                'RUNS', EpiTyFloat, Result, 0, 0);

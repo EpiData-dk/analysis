@@ -100,7 +100,7 @@ begin
   if Cmd.ParamExists['T'] then
   begin
     Result.Cell[3,1] := 'Runs:';
-    Result.Cell[4,1] := 'Limit:';
+    Result.Cell[4,1] := 'Limit:&nbsp;&nbsp;&nbsp;&nbsp;N';
   end;
 end;
 

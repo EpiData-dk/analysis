@@ -349,7 +349,12 @@ begin
       str := '';
     end;
     if TestIdx < OutputTable.ColCount + 1 then
+      begin
       OutputTable.Footer := 'Test positive at: ' + OutputTable.Footer;
+      if (Cmd.CommandID = opRunChart) then
+        OutputTable.Footer := OutputTable.Footer + '<br><small>Limit:(Expected Runs) N:[used/on median]</small> '  ;
+      end;
+
 
     // Dirty hack for G-Chart not to show excluded points.
     if (Cmd.CommandID = opGChart) and fExcluded then
@@ -756,8 +761,10 @@ begin
             Res := OSPCUtils.RunsTest(CenterVec[k], CtrlVec[k], k+1, i+1, str, v);
             AddTestResult(k+1, 1, i+1, v);
             OutputTable.Cell[3, OutputTable.RowCount] := IntToStr(Res);
+            //OutputTable.Cell[4, OutputTable.RowCount] := copy(str,pos(']',str)+1,length(str)-pos(']',str));
             OutputTable.Cell[4, OutputTable.RowCount] := str;
             OutputTable.Cell[PostInc(l), OutputTable.RowCount] := IntToStr(v);
+            //OutputTable.footer := outputtable.footer + ' ' + copy(str,1,pos(']',str));
           end else begin
             TestVec := nil;
             Res := OSPCUtils.LimitTest(Sigma3LCLVec[k], Sigma3UCLVec[k], CtrlVec[k], TestVec);
