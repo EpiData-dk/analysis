@@ -62,10 +62,14 @@ type
 
     // For procedures which cannot be implemented as direct functions we need to
     // add variables to store them in external procedures.
-    fDF                                   : EpiInt;        // Integer: Actual Degrees of Freedom, total N
-    fChi, fpchi, fpexact, ffp2            : EpiFloat;      // Chi2, p for that and exact P for table
-    fGamma, fpGamma2, fGammaUL, fGammaLL  : EpiFloat;      // Gamma coeff., p and CI
-    foddsratio,fpOR, fORLL, fORUL         : EpiFloat;      // stratum OR of 2x2  - generalised Odds Ratio for nxk
+    fDF                                     : EpiInt;        // Integer: Actual Degrees of Freedom, total N
+    fChi, fpchi, fpexact, ffp2              : EpiFloat;      // Chi2, p for that and exact P for table
+    fGamma, fpGamma2, fGammaUL, fGammaLL    : EpiFloat;      // Gamma coeff., p and CI
+    fMleOR, fMleORLL, fMleORUL, fpMleOR     : EpiFloat;      // stratum OR of 2x2  - generalised Odds Ratio for nxk
+
+    // single table RR and OR implementet as direct functions, see below
+    fpOR                                 : EpiFloat;      // stratum Standard OR of 2x2
+
     // summary variables for stratified analysis
     //fORChiNum,
     //fORChiDen         : EpiFloat;             // MantelHaenzel Weights - rr weights
@@ -80,13 +84,17 @@ type
     function GetRowHeaderLabel(const index: integer): String;
     function GetColHeaderValue(const index: integer): EpiVariant;
     function GetColHeaderLabel(const index: integer): String;
+
     // 2x2 table estimators as functions :
     function GetFishers2p() :EpiFloat;       // fishers exact 2 sided
     function GetCrudeOR(): EpiFloat;
     function GetCrudeRR(): EpiFloat;
+    function GetORLL: EpiFloat;
+    function GetORUL: EpiFloat;
     function GetRRUL: EpiFloat;
     function GetRRLL: EpiFloat;
-    function Getgrci(WhichLim: Integer):EpiFloat;
+    function GetRRgrci(WhichLim: Integer):EpiFloat;
+    function GetORgrci(WhichLim: Integer):EpiFloat;
     function MinCount: EpiInt;
     //sorting
     procedure InternalSortGeneric(SCompare: TTwoWaySortCompare; SExchange: TTwoWaySortExchange; L, R: integer; const index: integer; Desc: boolean);
@@ -117,6 +125,7 @@ type
     property ColHeader: String read fColHeader;
     property RowHeader: String read fRowHeader;
     property Caption: String read fCaption;
+
     //add statistical estimators here - and the variable above in private section
     property DF: EpiInt read fDF write fDF;
     property CHI: EpiFloat read fChi write fChi;
@@ -129,16 +138,21 @@ type
     property GammaUL : EpiFloat read fGammaUL write fGammaUL ;
     property GammaLL : EpiFloat read fGammaLL write fGammaLL ;
 
-    property OddsRatio: EpiFloat read {getCrudeOR ; //} foddsratio write foddsratio;
+    property MleOR  : EpiFloat read {get MLE based OR ; //} fMleOR write fMleOR;
+    property MleORLL: EpiFloat read fMleORLL write fMleORLL;
+    property MleORUL: EpiFloat read fMleORUL write fMleORUL;
+    property pMleOR : EpiFloat read fpMleOR write fpMleOR;
+
+    property OddsRatio: EpiFloat read getCrudeOR ; // fStdoddsratio write fStdoddsratio;
+    property ORLL: EpiFloat read getORLL;
+    property ORUL: EpiFloat read getORUL;
     property pOR: EpiFloat read fpOR write fpOR;
-    property ORLL: EpiFloat read fORLL write fORLL;
-    property ORUL: EpiFloat read fORUL write fORUL;
 
-    property RR: EpiFloat read GetCrudeRR ;       // fRR write fRR;
-    property   RRUL        : EpiFloat read Getrrul;
-    property   RRLL        : EpiFloat read GetRRLL;
+    property RR   : EpiFloat read GetCrudeRR ;       // fRR write fRR;
+    property RRUL : EpiFloat read GetRRUL;
+    property RRLL : EpiFloat read GetRRLL;
 
-    property SmallE   : EpiInt  read MinCount ;
+    property SmallE : EpiInt  read MinCount ;
   end;
 
   TSumTable = class(TObject)
@@ -155,8 +169,10 @@ type
     fNsim, fDf, fmcdf                   : EpiInt;         // Simulations
     fGamma, fpGamma2, fGammaUL,
     fGammaLL, fMCGammaUL, fMCGammaLL    : EpiFloat;       // Gamma coeff., p and CI
-    fOddsratio, fpOR, fORLL, fORUL      : EpiFloat;       // generalised Odds Ratio for nxk
-    fRR, fRRLL, fRRUL                   : EpiFloat;       // Summary RR of 2x2
+    fOddsratio, fpOR, fORLL, fORUL      : EpiFloat;       // generalised Exact MLE based Odds Ratio for nxk
+    fMHOddsratio, fMHpOR, fMHORLL, fMHORUL      : EpiFloat;       // generalised Mantel-Haenzel Odds Ratio for nxk
+
+    fRR, fRRLL, fRRUL                   : EpiFloat;       // Summary Mantel-Haenzel RR of 2x2
     fWolfSum     : EpiFloat;       // Wolfsum for test of interaction
 
     function GetSubTable(const index: integer): TTwoWayTable;
@@ -166,7 +182,6 @@ type
     function GetDFZeroCount(): EpiUnInt;
     function GetWolfError(): Boolean;
     function GetWolfChiSum(): EpiFloat;
-
     procedure AddSubTable(aTable: TTwoWayTable);
   protected
     //
@@ -200,10 +215,15 @@ type
     property PartGammaLL : EpiFloat read fGammaLL write fGammaLL ;
     property pPartGamma2 : EpiFloat   read fpGamma2 write fpGamma2 ;
 
-    property SumOR: EpiFloat read fOddsratio write fOddsratio;
-    property SumpOR: EpiFloat read fpOR write fpOR;
-    property SumORLL: EpiFloat read fORLL write fORLL;
-    property SumORUL: EpiFloat read fORUL write fORUL;
+    property SumMleOR: EpiFloat read fOddsratio write fOddsratio;
+    property SumpMleOR: EpiFloat read fpOR write fpOR;
+    property SumMleORLL: EpiFloat read fORLL write fORLL;
+    property SumMleORUL: EpiFloat read fORUL write fORUL;
+
+    property SumMHOR: EpiFloat read fMHOddsratio write fMHOddsratio;
+    property SumpMHOR: EpiFloat read fMHpOR write fMHpOR;
+    property SumMHORLL: EpiFloat read fMHORLL write fMHORLL;
+    property SumMHORUL: EpiFloat read fMHORUL write fMHORUL;
 
     property SumRR: EpiFloat read fRR write fRR;
     property SumRRLL: EpiFloat read fRRLL write fRRLL;
@@ -240,7 +260,7 @@ type
                 Lost,
                 Survival,
                 StdErr: string;
-              end;  
+              end;
   TTableFormats = record
                     EFmt, RFmt, CFmt, TFmt,
                     ColPctHdr, RowPCtHdr, PctHdr, TotPctHdr,
@@ -257,8 +277,9 @@ type
     OutputOptions: Cardinal;
     function SortOptions(sortname: string; var index: integer): boolean;
     procedure SortTable(aTable: TTwoWayTable);
-    procedure GetTableOR(aTable: TTwoWayTable); // 2x2 table estimator Odds ratio, p value and limits:
-    procedure OutS(SumTable: TSumTable);
+
+    //Output formatting procedures:
+     procedure OutS(SumTable: TSumTable);
     procedure OutEpi(SumTable: TSumTable);
     procedure SumtableToResultvar(SumTable: TSumTable);
 
@@ -279,17 +300,25 @@ type
     function AddTotals(const Tab: TStatTable; const TwoWayTable: TTwoWayTable): string;
     function AddPercents(const Tab: TStatTable; const TwoWayTable: TTwoWayTable; Cmd :TCommand): string;
 
-
     function  AdjustOutput(s: string): string;
     procedure GetORHeaders(Cmd: TCommand; var ORHeaders: TORHeader);
     procedure GetRRHeaders(Cmd: TCommand; var RRHeaders: TRRHeader);
     procedure GetLTHeaders(Cmd: TCommand; var LTHeaders: TLTHeader);
-    procedure CollectEstimates(var allestimates : string);
-    procedure DoFreqTable(Dataframe: TEpiDataframe; Varnames: TStrings);        // Common procedure for aggregating, statistics and outputting frequency tables
-    procedure DoStratifiedTable(Dataframe: TEpiDataframe; Varnames: TStrings);  // Common procedure for aggregating, statistics and outputting stratified tables
-    procedure DoFV(Dataframe: TEpiDataframe; Varnames: TStrings);               // Common procedure for aggregating, statistics and outputting FV tables
+    procedure CollectEstimates(var allestimates : string);      //string of estimates to show
+
+    //common functions for output of tables:
+    procedure DoFreqTable(Dataframe: TEpiDataframe; Varnames: TStrings);        // frequency table
+    procedure DoStratifiedTable(Dataframe: TEpiDataframe; Varnames: TStrings);  // Statistics and outputting stratified tables
+    procedure DoFV(Dataframe: TEpiDataframe; Varnames: TStrings);               // FV tables
     function OutTwoWayTable(const TwoWayTable: TTwoWayTable): TStatTable;
-    Function Get2x2statistics(Sumtable: TSumTable): Boolean;
+
+    //add estimators at sumtable or single table level
+    function Get2x2statistics(Sumtable: TSumTable): Boolean;
+    procedure GetTableExactOR(aTable: TTwoWayTable);    // 2x2 table estimator Odds ratio, p value and limits:
+    procedure GetTableExactSumOR(SumTable: TSumTable); // Summary table Exact OR CI and P
+    procedure GetTableMHSumOR(SumTable: TSumTable) ;   // Mantel-Haenzel summary Odds Ratio calculations
+    procedure GetTableMHSumRR(SumTable: TSumTable) ;   // Mantel-Haenzel summary Rate Ratio calculations
+
   protected
     // For internally available methods!
   public
@@ -313,7 +342,7 @@ var
 
 implementation
 
-uses UCmdProcessor, UAggregate, USKTables, {SMUtils}GeneralUtils, Math, UFormats, UEpiDatatypes,
+uses UCmdProcessor, UAggregate, USKTables, GeneralUtils, Math, UFormats, UEpiDatatypes,
   StrUtils, Forms, UTableStat, Ustatfunctions,EpiInfoStats, UDebug, EpiDataUtils, UCmdTypes,
   UDateUtils;
 
@@ -336,218 +365,26 @@ Function Ttables.Get2x2statistics(Sumtable: TSumTable): Boolean;
 // and estimate OR based on the Epi6 module for MLE OR calculation'
 // In this organisation of source code all 2x2 special calculation
 // are placed in the core Ttables (but should be defined as an object).
-var
-  i,s: integer;
-  t2,t3 : TTableItem;
-  Stratified : Boolean;
-  FisherStat, FishLocal: TFisherStat;      //exact estimation for odds ratios.
-  // summary stat evaluation
-  MHChiSqr, StratPValue : epifloat;
-  MantelNum : epifloat;
-  MantelDiv, CHiNum, ChiDenom : epifloat;
-  Asum, Bsum, Csum, Dsum : epifloat;
-  Numstrata,PassNum : integer;
-  (*Variables for Woolf's test for Heterogeneity of Odds Ratios*)
-  (* from Schlesselman, p. 194*)
-  WSum, ORSum, AORSum, WolfSum : epifloat;
-  WolfError : Boolean (*If true, a zero cell was encountered*);
-  (*Variables for Rothman's Evaluation of Effect Modification of Relative
-    risk.  Pg222*)
-   RRWSum, RRSum, RRPooled, RRChiSqr : epifloat;
-  (*Variables for Robins, Greenland, Breslow Conf. limits on Odds Ratio
-    and Greenland,Robins Relative Risk*)
-  RRMHgr, SumDgr, SumRgr, SumSgr : epifloat;
-  SumPRrgb, SumPSandQRrgb, SumQSrgb : epifloat;
-  RRgr: epifloat;
-  Grandtotal: EpiInt;
-
-  // procedures moved here (Organise different ?)
-  procedure initVar;
-  begin
-    PassNum := 0;
-    MantelNum := 0.0;
-    MantelDiv := 0.0;
-    Asum := 0.0;
-    Bsum := 0.0;
-    Csum := 0.0;
-    Dsum := 0.0;
-    ChiNum := 0.0;
-    ChiDenom := 0.0;
-    Numstrata := 0;
-    RRMHgr := 0.0;
-    SumDgr := 0.0;
-    SumRgr := 0.0;
-    SumSgr := 0.0;
-    SumPRrgb := 0.0;
-    SumPSandQRrgb := 0.0;
-    SumQSrgb := 0.0;
-    RRgr := 0.0;
-    GrandTotal :=0;
-  end;
-
-  function CalcRGBandGRSums (t2: TTableItem):boolean;
-   {Produce sums for Greenland/Robins confidence limits for
-   Relative Risk in single and stratified tables.
-   Greenland, S, Robins, JM, Biometrics 1985;41:55-68}
-   {Produce sums for Robins, Greenland, Breslow confidence limits        Rothman I. p 216 f 12-54
-    on the odds ratio for single and stratified tables}
-  Var
-    R, S, Dgr, Rrgb, Srgb, Vgr, Prgb, Qrgb  : EpiFloat;
-  begin
-    // note t2 table has case-ref left and exposure at top !!
-    R := t2.A * t2.N0 / t2.tot ;
-    S := t2.C * t2.N1 / t2.tot;     // C: unexposed cases
-    Dgr := ((t2.N1 * t2.N0 * t2.M1) - (t2.A * t2.C * t2.tot)) / Sqr(t2.tot);
-    SumDgr := SumDgr + Dgr;
-    SumRgr := SumRgr + R;
-    SumSgr := SumSgr + S;
-    {Done with GR sums}
-    {Now do RGB sums}
-    Prgb := (t2.A + t2.D) /t2.Tot;
-    Qrgb := (t2.B + t2.C) /t2.Tot;
-    SumPRrgb := SumPRrgb + (Prgb*(t2.A*t2.D)/t2.Tot);
-    SumPSandQRrgb := SumPSandQRrgb + (Prgb*(t2.B*t2.C)/t2.Tot)+(Qrgb*(t2.A*t2.D)/t2.Tot);
-    SumQSrgb := SumQSrgb + (Qrgb * (t2.B*t2.C)/t2.Tot);
-  end;
-
-  function AddTable(t2: TTableItem; FisherStat : TFisherStat):boolean;
-  var
-    TempW      : Epifloat;
-    TempLnOR   : Epifloat;
-    RRWi, RRi      :Epifloat;
-  begin
-    if not WolfError then
-      inc(PassNum);
-    FisherStat.addSet(t2);
-    NumStrata :=NumStrata+1;
-    CalcRGBandGRSums(t2);
-    If Stratified Then
-    Begin
-      MantelNum := MantelNum + (t2.A * t2.D / t2.Tot);
-      MantelDiv := MantelDiv  + (t2.B * t2.C / t2.Tot);
-      WolfError := WolfError or (t2.A = 0) or (t2.B = 0) or (t2.C = 0) or (t2.D = 0);
-      If (t2.a * t2.d > 0)  then
-      begin
-        Asum := Asum + t2.A;
-        Bsum := Bsum + t2.B;
-        Csum := Csum + t2.C;
-        Dsum := Dsum + t2.D;
-        ChiNum := ChiNum + (1.0*t2.M1*t2.N1/(t2.Tot));
-        If t2.Tot > 1 then
-          ChiDenom := ChiDenom +((1.0*t2.M1*t2.M0*t2.N1*t2.N0)/
-        (1.0*(t2.Tot-1.0)*t2.Tot*t2.Tot));
-      end;
-      If Not WolfError then
-      Begin
-        TempLnOR := Ln ((t2.A*t2.D) / (t2.B*t2.C));        { Ln(ORi) }
-        TempW := 1 / (1/t2.A + 1/t2.B + 1/t2.C + 1/t2.D);  { weight }
-        RRWi := 1 / ( (t2.b/(t2.a*t2.N1)) + (t2.d/(t2.c*t2.N0)) );{ weight(i) Rothman p 188 12-10}
-        RRi := (t2.a/t2.N1)/(t2.c/t2.N0);                  { RR(i) }
-        RRWSum := RRWSum + RRWi;
-        RRSum := RRSum + (RRWi * Ln(RRi));
-        If PassNum = 2 then         // passnum 2 is when the final table is ready
-        Begin
-          AORSum := ln(exp(ORSum / WSum));
-          WolfSum := WolfSum + Sqr(TempLnOR - AORSum)*TempW;
-          RRPooled := exp(RRSum / RRWSum);
-          RRChiSqr := RRChiSqr + ( Sqr(Ln(RRi) - Ln(RRPooled))*RRWi);
-          exit;
-        end;
-        ORSum := ORSum + (TempW * TempLnOR);   { w1Ln(ORi) }
-        WSum := WSum + TempW;                  { sum of the weights}
-      End (*If wolferror*);
-    End (*If Stratified *);
-  end;
-
-  // calculate summary rr plus ci
-  Procedure CalculateRRMH(var sumtab: TSumTable);
-  {Sept 87  RR calculations for Greenland/Robins method Biometrics, 1985; 41:55-68}
-  Var
-    V, RRgr, LowerRRgr, UpperRRgr : epifloat;
-  begin
-    If SumSgr <> 0 then
-      RRgr := SumRgr/SumSgr
-    else
-      RRgr := -9999;
-    If SumRgr * SumSgr > 0 then
-      V := SumDgr / (SumRgr * SumSgr)
-    else
-      V := -9999;
-    If V >= 0 then
-    begin
-      LowerRRgr := exp ( ln (RRgr) - (ConfScore * Sqrt (V)));
-      UpperRRgr := exp ( ln (RRgr) + (ConfScore * Sqrt (V)));
-    end
-    else
-    begin
-      LowerRRgr := -9999;
-      UpperRRgr := -9999;
-    end;
-    sumtab.sumrr := rrgr;
-    sumtab.sumrrUL := UpperRRgr;
-    sumtab.sumrrLL := LowerRRgr;
-    sumtab.fDf := 1;  // set for Mantel Haenzel test summary Chi Sq
-  end;
-/////////////////////////////////////////////////////////////////////////////////////
-//  no more helper routines                                                        //
-/////////////////////////////////////////////////////////////////////////////////////
 
 // get started:
 begin   // do the actual work here:
-// add crude odds ratios to marginal table and all subtables:
-   GetTableOR(SUmtable.MargTable);
-   for i := 1 to SumTable.TableCount do   //add all subtables for weighted estimates:
-   GetTableOR(Sumtable.SubTable[i]);
 
-   // now we have all crude odds ratios in place
-// marginaltable handle marginal table first:
+  // single table:
+    // Odds Ratios are added:
+    // Get MLE Exact based Odds Ratio for Marginal table:
+    GetTableExactOR(SUmtable.MargTable);
+    // Single Odds Ratio, RR and Robins,Greenland,Breslow Conf. Intervals are properties
+    // on marginal table.
 
-  //Now ready for the stratified analysis:
-  if (SumTable.TableCount > 1) and  (sumtable.tabletype in [3,4]) then
-  begin
-    FisherStat := TFisherStat.Create(false);
-    Stratified := True;
-    initvar();
-    try
-      for i := 1 to SumTable.TableCount do   //add all subtables for weighted estimates:
-      begin
-        t2:= TtableItem.Create(SumTable[i].Cell[1,1].n,SumTable[i].Cell[2,1].n,
-                               SumTable[i].Cell[1,2].n,SumTable[i].Cell[2,2].n,1);
-        addtable(t2,FisherStat);   // for the stratfied analysis
-        s := fisherstat.show(t2,i);      // for the stratfied analysis
-      end;
-     // after all strata we have the stratified values:
-        Sumtable.SumOR := t2.sOR;
-        Sumtable.SumORUL := t2.ORUL;
-        Sumtable.SumORLL := t2.ORLL;
-        Sumtable.SumpOR := t2.pOR;
-
-        if (ChiDenom <> 0) then
-          begin
-            { Historical comment kept from EpiInfo source:
-              dcs 5/6/94 Kevin says the corrected chi square is produced for summary
-              and it should be uncorrected.  This looks like corrrected.
-              Andy says put both in  (Andy Dean and Kevin Sullivan  -- added Jens Lauritsen}
-
-            Sumtable.SumCHI := (Sqr(Abs(Asum-ChiNum))) / ChiDenom;
-            Sumtable.pSumCHI := ChiPValue(Sumtable.SumCHI, 1);
-          end
-          else
-          begin
-          Sumtable.SumCHI := 0;
-          Sumtable.pSumCHI := 0;
-          end;
-    except
-      dm.error('2x2 table stats error %d', [i], 41001);
-    end;
-    // rr estimation:
-    CalculateRRMH(Sumtable);
-    if Assigned(t2) then FreeAndNil(t2); //t2.free;
-    if Assigned(FisherStat) then FreeAndNil(FisherStat); //FisherStat.free;
-  end; // stratified table analysis
+    //Now ready for the stratified analysis:
+    if (SumTable.TableCount > 1) and  (sumtable.tabletype in [3,4]) then
+    begin
+      GetTableExactSumOR(SUmtable);
+      // MH-based estimation:
+      GetTableMHSumOR(Sumtable);
+      GetTableMHSumRR(Sumtable);
+    end; // stratified table analysis
 end;
-
-
 
 {*****************************************
   TTables:
@@ -660,7 +497,7 @@ var
   s: string;
   Statistics: boolean;
 begin
-  // Step 2a: Create sumtable.
+  // Step 2: Create sumtable.
   sumtab := nil;
   try
     sumtab := CreateStratTable(Dataframe, varnames);
@@ -668,15 +505,11 @@ begin
     if not Assigned(sumtab) then
       exit;
 
-    // Step 2b: Create resultvariables.
-    //  SumtableToResultvar(SumTab);
-
-
     // Step 3: Statistics
     Statistics := false;
     collectestimates(s);
     if ((length(trim(s)) > 0) or  (cmd.ParamExists['CT'])) {or  (cmd.ParamByName['OA'] <> nil))} then
-    begin
+    begin             //get some estimates
       Statistics := true;
       SKTableAnalysis(sumtab, cmd, s);
       if (sumtab.TableType in [3,4,7,8]) then      // add 2x2 estimates
@@ -1055,7 +888,7 @@ begin
               begin
                 N := dataframe.VectorByName['$S'].AsInteger[dfoffset];
                 inc(subtable.fCells[j,k].fN, N);
-                // This test because we wish to print the table if it is not 2x2 later on... 
+                // This test because we wish to print the table if it is not 2x2 later on...
                 if (j < margtable.ColumnCount) and (k < margtable.RowCount) then
                   inc(margtable.fCells[j,k].fN, N);
                 inc(dfoffset);
@@ -1226,7 +1059,7 @@ begin
           subtable.fRowLabel.Add(yvec.GetValueLabel(s2, Cmd.ParameterList),
                                  YArray.GetValue(k));
         while (dfoffset<=TempDF.RowCount) and (trim(xvec.AsString[dfoffset]) = s1) and
-           (trim(yvec.AsString[dfoffset]) = s2) do 
+           (trim(yvec.AsString[dfoffset]) = s2) do
         begin
           inc(subtable.fCells[j,k].fN, NVec.AsInteger[dfoffset]);
           inc(dfoffset);
@@ -1362,7 +1195,7 @@ begin
 
       // Primary sort options, may be chosen otherwise by user!
       TwoWayTable.SortByRowLabel(false);
-      
+
       // options:
       if SortOptions('SLA', j)  then TwoWayTable.SortByRowLabelText(false);
       if SortOptions('SLD', j)  then TwoWayTable.SortByRowLabelText(true);
@@ -1516,10 +1349,19 @@ begin
     // add statistics result variables:
     if (trim(s) <> '') then
       begin   // Some statistics, which ones:
-      //odds ratios for 2x2 tables
+      //Exact odds ratios for 2x2 tables
+      if (pos(' OEX ',s) > 0) and ( Sumtable.TableType in [3,4,7,8]) then
+        begin
+          Dm.AddResult('$OR'+iname, EpiTyFloat, Table.MleOR, 0, 0);
+          Dm.AddResult('$pOR'+iname, EpiTyFloat, Table.pMleOR, 0, 0);
+          Dm.AddResult('$ORUL'+iname, EpiTyFloat, Table.MleORUL, 0, 0);
+          Dm.AddResult('$ORLL'+iname, EpiTyFloat, Table.MleORLL, 0, 0);
+        end;
+
+       //Std odds ratios for 2x2 tables
       if (pos(' O ',s) > 0) and ( Sumtable.TableType in [3,4,7,8]) then
         begin
-          Dm.AddResult('$OR'+iname, EpiTyFloat, Table.OddsRatio, 0, 0);
+          Dm.AddResult('$Oddsratio'+iname, EpiTyFloat, Table.OddsRatio, 0, 0);
           Dm.AddResult('$pOR'+iname, EpiTyFloat, Table.pOR, 0, 0);
           Dm.AddResult('$ORUL'+iname, EpiTyFloat, Table.ORUL, 0, 0);
           Dm.AddResult('$ORLL'+iname, EpiTyFloat, Table.ORLL, 0, 0);
@@ -1562,10 +1404,10 @@ begin
     begin
     if (pos(' O ',s) > 0) and (SumTable.TableType in [3,4]) then
       begin
-        Dm.AddResult('$SumOR', EpiTyFloat, SumTable.SumOR, 0, 0);
-        Dm.AddResult('$SumORLL', EpiTyFloat, SumTable.SumORLL, 0, 0);
-        Dm.AddResult('$SumORUL', EpiTyFloat, SumTable.SumORUL, 0, 0);
-        Dm.AddResult('$SumpOR', EpiTyFloat, SumTable.SumpOR, 0, 0);
+        Dm.AddResult('$SumOR', EpiTyFloat, SumTable.SumMLEOR, 0, 0);
+        Dm.AddResult('$SumORLL', EpiTyFloat, SumTable.SumMLEORLL, 0, 0);
+        Dm.AddResult('$SumORUL', EpiTyFloat, SumTable.SumMLEORUL, 0, 0);
+        Dm.AddResult('$SumpOR', EpiTyFloat, SumTable.SumpMLEOR, 0, 0);
       end;
 
     if (pos(' GAM ',s) > 0) then
@@ -1790,10 +1632,11 @@ Procedure Ttables.AddOR(Tab: TStatTable; Sumtable: Tsumtable; Cmd :TCommand; for
     // add optional parts to table:
 var i:integer;
 begin
-  If ((force) or (cmd.ParamByName['O'] <> nil)) and (SumTable.TableType in [3,4,7,8]) then
+
+  If ((force) or ( (cmd.ParamByName['O'] <> nil) and (cmd.ParamByName['EX'] = nil)) ) and (SumTable.TableType in [3,4,7,8]) then
   begin
     tab.AddColumn;
-    tab.Cell[tab.ColCount,1] := 'OR';
+    tab.Cell[tab.ColCount,1] :=  'OR';
     tab.AddColumn;
     tab.Cell[tab.ColCount,1] := Fmts.CIHdr; // '95% CI';
     for i := 1 to SumTable.TableCount do
@@ -1803,6 +1646,24 @@ begin
          tab.Cell[tab.ColCount, i+1] := EpiCIformat(SumTable[i].OddsRatio,SumTable[i].ORLL, SumTable[i].ORUL, Fmts.EFmt, Fmts.CIFmt, Fmts.CIHdr,1);
         end; // end i
   end;
+
+  // check whether to add as well/or the MLE based Odds Ratio
+  If (cmd.ParamByName['OEX'] <> nil)
+     and (SumTable.TableType in [3,4,7,8]) then
+  begin
+    tab.AddColumn;
+    tab.Cell[tab.ColCount,1] := 'OR<sub><small>exact</small></sub>';
+    tab.AddColumn;
+    tab.Cell[tab.ColCount,1] := Fmts.CIHdr; // '95% CI';
+    for i := 1 to SumTable.TableCount do
+      if  (SumTable[i].RowTotal[1] > 0)  and (SumTable[i].RowTotal[2] > 0) then
+        begin
+         tab.Cell[tab.ColCount-1, i+1] := Epiformat(SumTable[i].MleOR, Fmts.EFmt);
+         tab.Cell[tab.ColCount, i+1] := EpiCIformat(SumTable[i].MleOR,SumTable[i].MleORLL, SumTable[i].MleORUL, Fmts.EFmt, Fmts.CIFmt, Fmts.CIHdr,1);
+        end; // end i
+  end;
+
+
 end;
 
 
@@ -1965,7 +1826,7 @@ begin
     tab.Caption := TwoWayTable.fcaption ;
 
     //Table header
-    if (cmd.ParamExists['OR']) then
+    if (cmd.ParamExists['O']) then
       tab.Caption := Fmts.ORHdr.Outcome + TwoWayTable.fcaption ;
     if (cmd.ParamExists['RR']) then
       tab.Caption := Fmts.RRHdr.Outcome + TwoWayTable.fcaption ;
@@ -2000,6 +1861,14 @@ begin
         z := 1;
         TableCell := TwoWayTable.Cell[i,j];
         tab.Cell[(i-1)*factor+2, j+1] := IntToStr(TableCell.N);
+
+        if (cmd.ParamExists['EXP']) then // add expected counts
+          tab.Cell[(i-1)*factor+2, j+1] := tab.Cell[(i-1)*factor+2, j+1]
+                                            + '<br>'+Epiformat(TwoWayTable.Cell[i,j].NestL,Fmts.efmt) + '<sup>e</sup>';
+        if (cmd.ParamExists['DIF']) then // add obs-exp
+          tab.Cell[(i-1)*factor+2, j+1] := tab.Cell[(i-1)*factor+2, j+1]
+                                            + '<br>'+Epiformat((TableCell.N-TwoWayTable.Cell[i,j].NestL),Fmts.efmt) + '<sup>d</sup>';
+
 
         if multipct then
         begin
@@ -2110,13 +1979,35 @@ begin
              footer := footer + addmin(TwoWayTable);   // smallE warning
          end;
 
+       If (cmd.ParamByName['EXP'] <> nil ) then
+           footer := footer + '<br><sup>e</sup>: <small>Expected N</small>';
+       If (cmd.ParamByName['DIF'] <> nil ) then
+           footer := footer + '<br><sup>d</sup>: <small>Observed - Expected N</small>';
+
+
        if (cmd.ParamByName['O'] <> nil) and ( Sumtable.TableType in [3,4]) then
            begin
-           footer := footer + '<br>&nbsp;&nbsp;Odds Ratio = ' + Epiformat(TwoWayTable.OddsRatio,Fmts.efmt)
-                            + EpiCIformat(TwoWayTable.OddsRatio,TwoWayTable.ORLL, TwoWayTable.ORUL, Fmts.EFmt, Fmts.CIFmt, Fmts.CIHdr,2);
-           if (cmd.ParamByName['ADV'] <> nil ) then
-              footer := footer + '<br>&nbsp;&nbsp;pOR = ' + EpiFormat(TwoWayTable.pOR,'%7.4f ');
+           Footer := footer + '<br>&nbsp;&nbsp;Odds Ratio = '
+                            + Epiformat(TwoWayTable.OddsRatio,Fmts.efmt)
+                            + EpiCIformat(TwoWayTable.OddsRatio,TwoWayTable.ORLL, TwoWayTable.ORUL, Fmts.EFmt, Fmts.CIFmt, Fmts.CIHdr,2)
+                            + '&nbsp;&nbsp;&nbsp;&nbsp;<small>(Robins,Greenland,Breslow CI)</small>' ;
+               // continue with this ??
+               if (cmd.ParamByName['ADV'] <> nil ) then
+                  if   TwoWayTable.Oddsratio > 1.0
+                      then footer := footer + '<br>&nbsp;&nbsp;&nbsp;&nbsp;pOR >=1.0 = ' + EpiFormat(TwoWayTable.pOR,'%7.4f ')
+                      else footer := footer + '<br>&nbsp;&nbsp;&nbsp;&nbsp;pOR <=1.0 = ' + EpiFormat(TwoWayTable.pOR,'%7.4f ');
            end;
+
+     if (cmd.ParamByName['OEX'] <> nil) and ( Sumtable.TableType in [3,4]) then
+           begin
+                Footer := footer + '<br>&nbsp;&nbsp;Exact (MLE) Odds Ratio = '
+                                 + Epiformat(TwoWayTable.MleOR,Fmts.efmt)
+                                 + EpiCIformat(TwoWayTable.MleOR,TwoWayTable.MleORLL, TwoWayTable.MleORUL, Fmts.EFmt, Fmts.CIFmt, Fmts.CIHdr,2);
+                   if   TwoWayTable.MleOR > 1.0
+                      then footer := footer + '<br>&nbsp;&nbsp;&nbsp;&nbsp;pOR<sub>ex</sub>>=1.0 = ' + EpiFormat(TwoWayTable.pMleOR,'%7.4f ')
+                      else footer := footer + '<br>&nbsp;&nbsp;&nbsp;&nbsp;pOR<sub>ex</sub><=1.0 = ' + EpiFormat(TwoWayTable.pMleOR,'%7.4f ');
+           end;
+
        if (cmd.ParamByName['RR'] <> nil) and ( Sumtable.TableType in [3,4]) then
            footer := footer + '<br>&nbsp;&nbsp;RR = ' + Epiformat(TwoWayTable.RR, Fmts.efmt)
                             + EpiCIformat(TwoWayTable.RR,TwoWayTable.RRLL, TwoWayTable.RRUL, Fmts.efmt, Fmts.cifmt, Fmts.CIHdr,2);
@@ -2131,9 +2022,9 @@ begin
 
     If (cmd.ParamByName['EX'] <> nil) then
       if (TwoWaytable.ColumnCount = 2) and (TwoWayTable.RowCount = 2) and (TwoWayTable.DF > 0) then
-         footer := footer + '<br>Fishers<small><sub>exact</sub><small> p= ' + format('%7.4f',[TwoWayTable.FishP2])
+         footer := footer + '<br>&nbsp;&nbsp;Fishers<small><sub>exact</sub><small> p= ' + format('%7.4f',[TwoWayTable.FishP2])
          else
-         footer := footer + '<br>Exact p values available: single 2x2 and stratified nxk tables (when df>0)';
+         footer := footer + '<br>&nbsp;&nbsp;Exact p values available: single 2x2 and stratified nxk tables (when df>0)';
 
     // Strata table done - output to screen.
     dm.CodeMaker.OutputTable(tab, footer);
@@ -2147,7 +2038,7 @@ end;
 
 
 procedure TTables.OutS(SumTable: TSumTable);
-// summary table output including 'CC' table
+// summary table output including 'CT' table
 var
   tab:  TStatTable;
   cr,c,i: integer;
@@ -2231,11 +2122,11 @@ begin
       tab.Cell[c, 2] := EpiCIformat(SumTable.margtable.OddsRatio,SumTable.margtable.ORLL,SumTable.margtable.ORUL,Fmts.efmt, Fmts.cifmt,Fmts.CIHdr,1);
       if SumTable.TableCount > 1 then
         begin
-          tab.Cell[c-1,3] := Epiformat(SumTable.SumOR,Fmts.efmt);
-          tab.Cell[c, 3] :=EpiCIformat(SumTable.SumOR,SumTable.SumORLL,SumTable.SumORUL,Fmts.efmt, Fmts.cifmt,Fmts.CIHdr,1);
+          tab.Cell[c-1,3] := Epiformat(SumTable.SumMHOR,Fmts.efmt);
+          tab.Cell[c, 3] :=EpiCIformat(SumTable.SumMHOR,SumTable.SumMHORLL,SumTable.SumMHORUL,Fmts.efmt, Fmts.cifmt,Fmts.CIHdr,1);
           for i := 1 to SumTable.TableCount do
             begin
-              tab.Cell[c-1,i+4] := Epiformat(SumTable[i].OddsRatio,Fmts.efmt);
+              tab.Cell[c-1,i+4] := Epiformat(SumTable[i].Oddsratio,Fmts.efmt);
               tab.Cell[c, i+4] := EpiCIformat(SumTable[i].OddsRatio,SumTable[i].ORLL,SumTable[i].ORUL,Fmts.efmt, Fmts.cifmt,Fmts.CIHdr,1);
             end;
         end;
@@ -2246,13 +2137,44 @@ begin
           tab.Cell[c, 2] := Epiformat(SumTable.margtable.pOR,'%7.3f');
           if SumTable.TableCount > 1 then
           begin
-            tab.Cell[c,3] := Epiformat(SumTable.SumpOR,'%7.3f');
+            tab.Cell[c,3] := Epiformat(SumTable.SumpMHOR,'%7.3f');
             for i := 1 to SumTable.TableCount do
               tab.Cell[c,i+4] := Epiformat(SumTable[i].pOR,'%7.3f');
           end;
         end;
      end;
 
+   // "Exact" Odds Ratio
+   If  ((est = 'OEX')) and (SumTable.Tabletype in [3,4]) then
+    begin
+      newcol(c,2);
+      tab.Cell[c-1,1] := 'OR<small><sub>Exact</sub></small>';
+      tab.Cell[c,1] := Fmts.CIHdr;
+      tab.Cell[c-1, 2] := Epiformat(SumTable.margtable.MleOR,Fmts.EFmt);
+      tab.Cell[c, 2] := EpiCIformat(SumTable.margtable.MleOR,SumTable.margtable.MleORLL,SumTable.margtable.MleORUL,Fmts.efmt, Fmts.cifmt,Fmts.CIHdr,1);
+      if SumTable.TableCount > 1 then
+        begin
+          tab.Cell[c-1,3] := Epiformat(SumTable.SumMleOR,Fmts.efmt);
+          tab.Cell[c, 3] :=EpiCIformat(SumTable.SumMleOR,SumTable.SumMleORLL,SumTable.SumMleORUL,Fmts.efmt, Fmts.cifmt,Fmts.CIHdr,1);
+          for i := 1 to SumTable.TableCount do
+            begin
+              tab.Cell[c-1,i+4] := Epiformat(SumTable[i].MleOR,Fmts.efmt);
+              tab.Cell[c, i+4] := EpiCIformat(SumTable[i].MleOR,SumTable[i].MleORLL,SumTable[i].MleORUL,Fmts.efmt, Fmts.cifmt,Fmts.CIHdr,1);
+            end;
+        end;
+        if (cmd.ParamByName['ADV'] <> nil ) then
+        begin
+          newcol(c,1);
+          tab.Cell[c,1] := 'pOR<sub>exact</sub>';
+          tab.Cell[c, 2] := Epiformat(SumTable.margtable.pMleOR,'%7.3f');
+          if SumTable.TableCount > 1 then
+          begin
+            tab.Cell[c,3] := Epiformat(SumTable.SumpMleOR,'%7.3f');
+            for i := 1 to SumTable.TableCount do
+              tab.Cell[c,i+4] := Epiformat(SumTable[i].pMleOR,'%7.3f');
+          end;
+        end;
+     end;
 
    // Rate Ratio
    If  (est = 'RR') and (SumTable.Tabletype in [3,4]) then
@@ -2369,7 +2291,7 @@ begin
 
        if ((cmd.ParamByName['ADV']  <> nil ) and not ( Sumtable.TableType in [3,4])) then
            footer := footer + format('<br>&nbsp;&nbsp;Generalised Pseudo Odds Ratio = ' + Fmts.efmt + ' ' + Fmts.CIHdr + ' %8.4f - %8.4f.',
-                                                    [SumTable.SumOR,SumTable.SumORLL, SumTable.SumORUL]);
+                                                    [SumTable.SumMHOR,SumTable.SumMHORLL, SumTable.SumMHORUL]);
 
        if small then footer := footer + '<br>*: Small Expected Numbers, use P<sub>exact</sub> /ex';
 
@@ -2444,7 +2366,7 @@ begin
   end else begin       // O table
     AddCC(tab, Sumtable, 1, Fmts);
     AddCC(tab, Sumtable, 2, Fmts);
-    AddOR(Tab, Sumtable, Cmd, True, Fmts);
+    AddOR(Tab, Sumtable, Cmd, False, Fmts);
   end;
 
   AddChi2test(Tab,Sumtable,Cmd,Small);
@@ -2644,26 +2566,6 @@ begin
   GetLTHeaders(Cmd, TableFormats.LTHdr);
 end;
 
-{Procedure TTables.GetFormats(cmd : TCommand; var efmt, rfmt, cfmt, tfmt,
-                colpcthead,rowpcthead, pctheader, totalpcthead
-                ,cifmt,ciheader  : string);
-var
- opt: TEpiOption;
- fmts: TTableFormats;
-begin
-  Getformats(cmd, fmts);
-  efmt := fmts.EFmt;
-  rfmt := fmts.RFmt;
-  cfmt := fmts.CFmt;
-  tfmt := fmts.TFmt;
-  colpcthead := fmts.ColPctHdr;
-  rowpcthead := fmts.RowPCtHdr;
-  pctheader := fmts.PctHdr;
-  totalpcthead := fmts.TotPctHdr;
-  cifmt := fmts.CIFmt;
-  ciheader := fmts.CIHdr;
-end;
-}
 procedure TTables.CollectEstimates(var AllEstimates: string);
 // get a list of statistics to calculate
 var
@@ -2678,29 +2580,207 @@ begin
   allestimates := s ;
 end;
 
+{*****************************************
+  Estimations implemented at "table" level
+******************************************}
+{// order of precedence is:
+    a complex and summary estimation functions at TTable level
+      are used to fill in parameters at TTwoWay or TSumTable level
 
-procedure TTables.GetTableOR(aTable: TTwoWayTable);
+    b If possible impleted as direct functions instead of variables
+
+    In the following section:
+    1: exact odds ratio's are using the Epi6 based module:
+       first single table, and then the sumtable summary estimate
+    2: M-H techniques for Odds Ratios, including CI (Robins, Greenland, Breslow)
+    3: M-H techniques for Rate Ratios, including CI (Robins, Greenland)
+}
+
+procedure TTables.GetTableExactOR(aTable: TTwoWayTable);
 var
   s: integer;
   t2 : TTableItem;
-  FisherStat: TFisherStat;      //exact estimation for odds ratios.
+  FisherStat: TFisherStat;      //exact estimation for odds ratios code in epiinfostat.pas
 begin
-  // Add all odds ratio related estimators for a single table
+  // Add all exact odds ratio related estimators for a single table
   FisherStat := TFisherStat.Create(false);
   t2:= TtableItem.Create(aTable.Cell[1,1].n,aTable.Cell[2,1].n,
         aTable.Cell[1,2].n,aTable.Cell[2,2].n,1);
   FisherStat.addSet(t2);
-  //addtable(t2,FisherStat);
   s := fisherstat.show(t2,1);   // s is statuscode for result
-  aTable.Oddsratio := t2.sOR;
-  aTable.ORUL := t2.ORUL;
-  aTable.ORLL := t2.ORLL;
-  aTable.pOR := t2.pOR;
-  FreeAndNil(t2); //t2.free;
-  FreeAndNil(Fisherstat); //Fisherstat.Free;
-  // done with this table
+  aTable.MleOR := t2.sOR;
+  aTable.MleORUL := t2.ORUL;
+  aTable.MleORLL := t2.ORLL;
+  aTable.pMleOR := t2.pOR;
+  if Assigned(t2) then FreeAndNil(t2); //t2.free;
+  if Assigned(FisherStat) then FreeAndNil(FisherStat); //FisherStat.free;
+  // done with exact this table
 end;
 
+procedure TTables.GetTableExactSumOR(SumTable: TSumTable);
+// get the MLE stratified overall result and single table
+// The source code for the Fisherstat module contained in EpiInfoStats is taken from Epi6 source code.
+// Kindly provided by Andrew Dean in 2001 .
+var
+  i,s: integer;
+  t2 : TTableItem;
+  FisherStat: TFisherStat;      //exact estimation for odds ratios.
+begin
+  // iterate over all subtables.
+    FisherStat := TFisherStat.Create(false);
+    try
+      for i := 1 to SumTable.TableCount do   //add all subtables for weighted estimates:
+      begin
+        GetTableExactOR(SumTable[i]);    //needed to also have the individual strata estimates
+        t2:= TtableItem.Create(SumTable[i].Cell[1,1].n,SumTable[i].Cell[2,1].n,
+                               SumTable[i].Cell[1,2].n,SumTable[i].Cell[2,2].n,1);
+        //addtable(t2,FisherStat);   // for the stratfied analysis
+        FisherStat.Add(t2);
+        s := fisherstat.show(t2,i);      // for the stratfied analysis
+      end;
+       // after all strata we have the stratified values:
+        Sumtable.SumMleOR := t2.sOR;
+        Sumtable.SumMleORUL := t2.ORUL;
+        Sumtable.SumMleORLL := t2.ORLL;
+        Sumtable.SumpMleOR := t2.pOR;
+    except
+      dm.error('2x2 Summary table stats error (Exact Odds Ratio), stratum: %d', [i], 41001);
+    end;
+    if Assigned(t2) then FreeAndNil(t2); //t2.free;
+    if Assigned(FisherStat) then FreeAndNil(FisherStat); //FisherStat.free;
+  // done with exact this table
+end;
+
+// next are Mantel Haenzel based summary OR and RR.
+
+procedure TTables.GetTableMHSumOR(SumTable: TSumTable);
+// Mantel-Haenzel summary Odds Ratio calculations
+var
+  table :TTwowaytable;   //for easy of reading code
+  i,j: integer;
+  // Mantel-Haenzel summary stat evaluation
+     MantelNum, MantelDiv : epifloat;
+  (*Variables for Robins, Greenland, Breslow Conf. limits on Odds Ratio
+    *From Rothman p220 formula 12-58 *)
+   P,Q,R,S,SumPR,SumR,SumPSQR,SumSQ,SumS,SumRS,Variance: epifloat;
+ (*Variables for Rothman's Evaluation of Effect Modification of Ratio based
+    measures of effect.  Pg 222 formula 12-60
+    Notice variance formulae is specific to OR and RR !*)
+   //..
+
+    procedure initVar;
+      begin
+        MantelNum := 0.0; MantelDiv := 0.0;
+        SumPR := 0.0; SumR := 0.0; SumPSQR := 0.0; SumSQ := 0.0; SumS := 0.0; SumRS := 0.0;
+
+      end;
+
+  begin
+  try
+    Initvar;
+
+    for i := 1 to SumTable.TableCount do   //add all subtables for weighted estimates:
+      begin
+      Table:= SumTable.GetSubTable(i);
+        //MH:
+        MantelNum := MantelNum + ((Table.getCell(1,1).n)*(Table.getCell(2,2).n))/Table.GetTotal;
+        MantelDiv := MantelDiv + ((Table.getCell(1,2).n)*(Table.getCell(2,1).n))/Table.GetTotal;
+      //MH-CI  (robins, greenland, breslow)
+        if (Table.Gettotal > 0) and ((Table.getCell(1,2).n * Table.getCell(2,1).n) > 0) then
+          begin
+          p := (Table.getCell(1,1).n + Table.getCell(2,2).n ) / Table.GetTotal;
+          q := (Table.getCell(1,2).n + Table.getCell(2,1).n ) / Table.GetTotal;
+          r := (Table.getCell(1,1).n * Table.getCell(2,2).n) / Table.GetTotal;
+          s := (Table.getCell(1,2).n * Table.getCell(2,1).n) / Table.GetTotal;
+          SumR    := SumR + R;
+          SumS    := SumS + S;
+          SumRS   := SumRS + R*S;
+          SumPR   := SumPR + P*R;
+          SumPSQR := SumPSQR + ((P*S + Q*R));
+          SumSQ   := SumSQ + (S*Q);
+          end;
+      end;
+
+    // Calculate and transfer to sumtable esitmators.
+        Sumtable.SumMHOR := MantelNum/MantelDiv;
+    //CI
+    If (SumR*SumS <> 0) then
+              //Begin
+              Variance := abs((SumPR)/(2*(sqr(SumR))) + (SumPSQR/(2*SumR*SumS)) + (SumSQ/(2*sqr(SumS))))
+              // if Variance < 0 then Variance := Variance*(-1);
+              // end
+       else Variance := -9999;
+
+       If  Variance < 0 then
+        begin
+           Sumtable.SumMHORUL := -9999;
+           Sumtable.SumMHORLL := -9999;
+        end
+       else
+        begin
+           Sumtable.SumMHORUL := Exp (ln (Sumtable.SumMHOR) + (ConfScore * Sqrt (Variance)));
+           Sumtable.SumMHORLL :=  Exp (ln (Sumtable.SumMHOR) - (ConfScore * Sqrt (Variance)));
+        end;
+        Sumtable.SumpMHOR := 0.0;
+    except
+      dm.error('2x2 Summary table MH-OR  stats error %d', [i], 41001);
+    end;
+end;
+
+procedure TTables.GetTableMHSumRR(SumTable: TSumTable);   // Mantel-Haenzel summary Rate Ratio calculations
+var
+ i,j: integer;
+ WolfError : Boolean (*If true, a zero cell was encountered*);
+  (*Variables for Rothman's Evaluation of Effect Modification of Relative
+    risk.  Pg222*)
+   RRWSum, RRSum, RRPooled, RRChiSqr : epifloat;
+{Produce sums for Greenland/Robins confidence limits for
+   Relative Risk in single and stratified tables.
+   Greenland, S, Robins, JM, Biometrics 1985;41:55-68}
+
+  Var
+    R, S, Dgr, Rrgb, Srgb, Vgr, Prgb, Qrgb  : EpiFloat;
+
+{  procedure initVar;
+  begin
+    RRMHgr := 0.0;
+    SumDgr := 0.0;
+    SumRgr := 0.0;
+    SumSgr := 0.0;
+    SumPRrgb := 0.0;
+    SumPSandQRrgb := 0.0;
+    SumQSrgb := 0.0;
+    RRgr := 0.0;
+  end;
+ }
+  begin
+  try
+       for i := 1 to SumTable.TableCount do   //add all subtables for weighted estimates:
+      begin
+    {R := SumTable.SubTable[i].getCell(1,1).n * GetRowTotal(1) / gettotal ;
+    S := SumTable.SubTable[i].getCell(1,2).n * GetRowTotal(2) / gettotal;
+    Dgr := ((SumTable.SubTable[i].GetRowTotal(2) * SumTable.SubTable[i].GetRowTotal(1) * SumTable.SubTable[i].GetColTotal(1))
+            - (SumTable.SubTable[i].getcell(1,1).n * SumTable.SubTable[i].getcell(1,2).n * SumTable.SubTable[i].gettotal)) / Sqr(SumTable.SubTable[i].gettotal);
+      //rothman p 216 and p196 formula 12-27
+
+    // note t2 table has case-ref left and exposure at top !!
+    R := t2.A * t2.N0 / t2.tot ;
+    S := t2.C * t2.N1 / t2.tot;     // C: unexposed cases
+    Dgr := ((t2.N1 * t2.N0 * t2.M1) - (t2.A * t2.C * t2.tot)) / Sqr(t2.tot);
+
+
+    SumDgr := SumDgr + Dgr;
+    SumRgr := SumRgr + R;
+    SumSgr := SumSgr + S;
+    {Done with GR sums}
+
+
+     sumtable.fDf := 1;  // set for Mantel Haenzel test summary Chi Sq
+     end;
+    except
+      dm.error('2x2 Summary table RR stats error %d', [i], 41001);
+    end;
+end;
 
 {*****************************************
   TSumTable:
@@ -2767,6 +2847,8 @@ begin
 end;
 
 function TSumTable.GetWolfChiSum(): EpiFloat;
+(*  Woolf's test for Heterogeneity of Odds Ratios*)
+(* from Schlesselman, p. 194*)
  var i : integer;
   function weight(Tab : TTwowaytable): EpiFloat;
    begin
@@ -2777,7 +2859,7 @@ begin
   result := 0.0;
   for i := 1 to TableCount do
     result := result
-      + sqr((ln(GetSubTable(i).Oddsratio)-ln(SumOR)))*weight(GetSubtable(i));
+      + sqr((ln(GetSubTable(i).Oddsratio)-ln(SumMHOR)))*weight(GetSubtable(i));
 end;
 
 function TSumTable.GetWolfError(): Boolean;
@@ -3116,9 +3198,7 @@ end;
 
 {*****************************************
   TTwoWayTable adapted 2x2 estimators:
-******************************************}
-
-
+****************************************** }
 
 Function TTwoWayTable.GetCrudeOR: EpiFloat;
 begin
@@ -3126,7 +3206,8 @@ begin
       result := -9999.0
     else if ((getcell(1,1).n*getcell(2,2).n) = 0) then
       result := 0.0
-    else Result:=(getcell(1,1).n*getcell(2,2).n) / (getcell(2,1).n*getcell(2,1).n);
+    else Result:=(getcell(1,1).n*getcell(2,2).n) / (getcell(1,2).n*getcell(2,1).n);
+    // dm.info(format(' %d %d %d %d',[getcell(1,1).n,getcell(1,2).n,getcell(2,1).n,getcell(2,2).n]));
 end;
 
 
@@ -3139,33 +3220,72 @@ begin
                   + ' r2: ' + inttostr(getcell(1,2).n)+ ' ' + inttostr(GetRowTotal(2))
            + ' = ' + floattostr(result)          );
   }
+
 end;
 
 function TTwoWaytable.GetRRUL: EpiFloat;
 begin
-      Result := getgrci(1);
+      Result := getRRgrci(1);
 end;
 
 function TTwoWaytable.GetRRLL: EpiFloat;
 begin
-      Result := getgrci(-1);
+      Result := getRRgrci(-1);
 end;
 
 
-function TTwoWaytable.GetGRCI(WhichLim: Integer):EpiFloat;
+function TTwoWaytable.GetORUL: EpiFloat;
+begin
+      Result := getORgrci(1);
+end;
+
+function TTwoWaytable.GetORLL: EpiFloat;
+begin
+      Result := getORgrci(-1);
+end;
+
+function TTwoWaytable.GetORgrci(WhichLim: Integer):EpiFloat;
+ {Produce sums Greenland/Robins confidence limits Odds Ratio in a single table
+ Greenland, S, Robins, JM, Biometrics 1985;41:55-68 -- See Rothman p 220 formula 12-58}
+ // part1..3 are the separate parts of the summation formula
+Var p ,q , r, s , part1, part2, part3 : EpiFloat;
+begin
+    p := (getcell(1,1).n + getcell(2,2).n ) / gettotal;
+    q := (getcell(1,2).n + getcell(2,1).n ) / gettotal;
+    r := getcell(1,1).n * getcell(2,2).n / gettotal ;
+    s := getcell(1,2).n * getcell(2,1).n / gettotal;
+
+    if (r = 0) then part1 := 0 else
+        part1 := (p*r)/(2*sqr(r));
+    if ((r*s) = 0) then part2 := 0 else
+        part2 := (p*s + q*r)/(2*r*s);
+    if (s = 0) then part3 := 0 else
+        part3 := (q*s)/(2*sqr(s));
+
+    If (r >0) and (S > 0) then
+       begin
+         if whichlim = -1 then
+           result := Exp (ln (r/s) - (ConfScore * Sqrt (part1+part2+part3)))
+           else
+           result := Exp (ln (r/s) + (ConfScore * Sqrt (part1+part2+part3))); //upper
+       end
+       else
+         result := -9999.0;
+    if result > 9999.0 then result := 9999.0
+end;
+
+
+function TTwoWaytable.GetRRGRCI(WhichLim: Integer):EpiFloat;
  {Produce sums for Greenland/Robins confidence limits for
  Relative Risk in single and stratified tables.
  Greenland, S, Robins, JM, Biometrics 1985;41:55-68}
-Var R, S, Dgr, Rrgb, Srgb, Vgr, Prgb, Qrgb  : EpiFloat;
+Var R, S, Dgr, Rrgb, Vgr : EpiFloat;
 begin
     R := getcell(1,1).n * GetRowTotal(2) / gettotal ;
     S := getcell(1,2).n * GetRowTotal(1) / gettotal;
     Dgr := ((GetRowTotal(2) * GetRowTotal(1) * GetColTotal(1))
             - (getcell(1,1).n * getcell(1,2).n * gettotal)) / Sqr(gettotal);
-{    R := A * N0 / Tot ;
-    S := C * N1 / tot;
-    Dgr := ((N1 * N0 * M1) - (A * C * tot)) / Sqr(tot);
-}
+
     If R *S <> 0 then Vgr := Dgr / (R * S) else
          Vgr := -9999.0;
     If S <> 0 then RRgb := R / S else RRgb := -9999.0;

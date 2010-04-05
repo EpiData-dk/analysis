@@ -110,7 +110,9 @@ FUNCTION BINCL(N,X:LONGINT; PP:EXTENDED): EXTENDED;
 
 const
  EpiTolerance : Extended =MinExtended;
- ConfScore=1.960;
+ //ConfScore=1.960;
+ ConfScore=1.645;
+
 
 implementation
 
@@ -413,10 +415,8 @@ var a,b,c: EpiFloat;
   result:=format('%3.2f - %3.2f',[LL,UL]);
 end;
 
-
-
-
-Function CornFieldLimit(A,B,C,D:EpiFloat;WhichLim: integer; Var inexact : boolean){**inexact added 10/30/87 AD} : EpiFloat;
+Function CornFieldLimit(A,B,C,D:EpiFloat;WhichLim: integer; Var inexact : boolean)
+                                                   {**inexact added 10/30/87 AD} : EpiFloat;
 {Returns Cornfield Confidence interval, upper if Whichlim is 1 and
  lower if Whichlim is -1, with confidence based on ConfScore}
 {Returns zero if limits cannot be calculated. Inexact is true if KKM test is failed}
@@ -535,46 +535,8 @@ begin
       Result := 0;
 end;
 
+//////////////////////////////////////
 
-(*needs alltotal
-Procedure RGBandGRSums (Var LowerRR, UpperRR:epifloat);
- {Produce sums for Greenland/Robins confidence limits for
- Relative Risk in single and stratified tables.
- Greenland, S, Robins, JM, Biometrics 1985;41:55-68}
- {Produce sums for Robins, Greenland, Breslow confidence limits
-  on the odds ratio for single and stratified tables}
-Var R, S, Dgr, Rrgb, Srgb, Vgr, Prgb, Qrgb  : epifloat;
-begin
-  R := A * N0 / AllTotal;
-  S := C * N1 / AllTotal;
-  Dgr := ((N1 * N0 * M1) - (A * C * AllTotal)) / Sqr(AllTotal);
-  If R *S <> 0 then Vgr := Dgr / (R * S) else
-       Vgr := -9999;
-  If S <> 0 then RRMHgr := R / S else RRMHgr := -9999;
-  If RRMHgr > 0 then
-     begin
-       LowerRR := Exp (ln (RRMHgr) - (ConfScore * Sqrt (Vgr)));
-       UpperRR := Exp (ln (RRMHgr) + (ConfScore * Sqrt (Vgr)));
-     end
-     else
-     begin
-       LowerRR := -9999;
-       UpperRR := -9999;
-     end;
-   SumDgr := SumDgr + Dgr;
-   SumRgr := SumRgr + R;
-   SumSgr := SumSgr + S;
-   {Done with GR sums}
-   {Now do RGB sums}
-   Prgb := (A + D) /Tot;
-   Qrgb := (B + C) /Tot;
-   SumPRrgb := SumPRrgb + (Prgb*(A*D)/Tot);
-   SumPSandQRrgb := SumPSandQRrgb + (Prgb*(B*C)/Tot)+(Qrgb*(A*D)/Tot);
-   SumQSrgb := SumQSrgb + (Qrgb * (B*C)/Tot);
-end;
-*)
-
-//////////////////////////////////////////////////////////////////////////////////////////
 //
 // cleanup from here, partial overlap
 

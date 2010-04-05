@@ -31,7 +31,7 @@ Interface
 {                                                                             }
 {  Adapted to EPI Info: 6/9/93 by Chris Smith, CDC                            }
    Adapted to EpiData and D4 by Salah Mahmud 2002-2003
-   ADapted further to EpiData by Jens Lauritsen 2005
+   ADapted further to EpiData Analysis by Jens Lauritsen 2005
 {-----------------------------------------------------------------------------*)
    MAXITER         = 100;       { Max # of iterations }
    TOLERANCE       = 1E-5;      { Relative tolerance in results }
@@ -63,7 +63,6 @@ type
     fEb: Epifloat;
     fEc: Epifloat;
     fODR, fORUL, fORLL, fpOR: EpiFloat;
-    //fxor, fxorul, fxorll: EpiFloat;
    public
        constructor Create(aCell, bCell, cCell, dCell: longint;aFreq: word);
 //       destructor Destroy;override;
@@ -90,8 +89,6 @@ type
        property   ORLL        : EpiFloat read fORLL write fORLL;
        property   pOR         : EpiFloat read fpOR write fpOR;
 
-       //function GetCornFieldLimit(WhichLim: integer;var inexact: boolean): EpiFloat;
-       //function GetChiSq(ChiType:word): EpiFloat;
    end;
 
    TEqualFunc=function (q: TTableItem): boolean;
@@ -142,13 +139,7 @@ type
        destructor Destroy; virtual;
        procedure addSet(p: TTableItem);
        function show(t: TTableItem;stratum:integer): integer; virtual;
-       procedure showRGB(mantelNum : Epifloat; mantelDiv : Epifloat);
      end;
-
-//  Procedure CalculateRGB(var LowerRGB, UpperRGB : epifloat);
-  Function ChiPValue(ChiSqr : epifloat; Degrees: Integer) : epifloat;
-  function FormatLimits(s: string; t: string; lower, upper: epifloat):String;
-  function FormatChi(const s,fmt: string; chi: Epifloat):string;
 
 Implementation
 
@@ -187,34 +178,6 @@ begin
      else
       begin fEa := 0; fEb := 0;fEc := 0;fEd := 0; end; // of no use
 end;
-
-
-function FormatChi(const s,fmt: string; chi: Epifloat):string;
-var
-  pval: Epifloat;
-begin
- pval := chiPValue(chi, 1);
- result:=s +'Chi<sup>2</sup>='+ format(fmt,[chi])+ ' p='+ format(fmt,[pval]);
-{ if (pval < 0.05) then
-    write(TPStr, arrow);}
-end;
-
-function FormatLimits(s: string; t: string; lower, upper: epifloat):String;
-   var
-      lowerSt: string;
-      upperSt: string;
-   begin
-      If lower = -9999 then
-         lowerSt := UNDEFINED
-      else
-         Str(lower:6:2, lowerSt);
-      If (upper = -9999) or (upper = INFINITY) then
-         upperSt := UNDEFINED
-      else
-         Str(upper:6:2, upperSt);
-//      result:=s+ ' '+ lowerSt+ ' < '+ t+ ' < '+ upperSt;
-    result:=s+ ' '+ lowerSt+ t+  upperSt;
-   end;
 
 
 function min(a, b: longint): longint;
@@ -753,6 +716,7 @@ var
          inc(maxSumA, (min(a+d, a+c) * freq));
          inc(SumAD, a * d * freq);
          inc(SumBC, b * c * freq);
+         dm.info(format('%d  %d  %d  %d',[a,b,c,d]));
          end;
    end;
 begin
@@ -804,79 +768,14 @@ var
         val := upper;
         s := s + GTE;
         end;
-     s := s + temp;
-     s := s + ' if population OR = 1.0)=';
-//     Result:= s + format('%9.4f',[val]);
-     Result:= s + format('%12.11f',[val]) ;
-     //dm.info(s);
+     {s := s + temp;
+     //s := s + ' if population OR = 1.0)=';
+        Result:= s + format('%9.4f',[val]);
+       Result:= s + format('%12.11f',[val]) ;
+       dm.info(s);
+     }
      if val = INFINITY then val := -9999;
      t.pOR := val;
-end;
-
-
-{ dcs 3/15/95 show RGB Limits for the case where exact can't be calculated }
-procedure TFisherStat.showRGB(mantelNum : epifloat; mantelDiv : epifloat);
-var
-   lowerRGB      : epifloat;
-   upperRGB      : epifloat;
-   odds          : epifloat;
-   sumPSandQRrgb : epifloat;
-   sumQSrgb      : epifloat;
-   vrgb          : epifloat;
-
-   procedure sumRGB(p: TTableItem);   { object of iterator }
-   var
-      ptot        : longint;
-      Prgb       : epifloat;
-      Qrgb       : epifloat;
-      sumA       : longint;
-      sumB       : longint;
-      sumC       : longint;
-      sumD       : longint;
-      sumAD      : epifloat;
-      sumBC      : epifloat;
-      test       : epifloat;
-   begin
-    with p do
-    begin
-      sumA := a * freq;
-      sumB := b * freq;
-      sumC := c * freq;
-      sumD := d * freq;
-      ptot := sumA + sumB + sumC + sumD;
-      if (ptot = 0) then
-         exit;
-
-      Prgb := (sumA+sumD)/tot;
-      Qrgb := (sumB+sumC)/tot;
-      sumAD := sumA * sumD;
-      sumBC := sumB * sumC;
-      test := (Prgb*sumAD/tot);
-      sumPRrgb := test + sumPRrgb;
-      sumPSandQRrgb := sumPSandQRrgb + (Prgb*sumBC/tot) + (Qrgb*sumAD/tot);
-      sumQSrgb := sumQSrgb + (Qrgb * sumBC/tot);
-    end;
-   end;
-
-begin
-     lowerRGB := -9999;
-     upperRGB := -9999;
-     if (mantelNum > 0) or (mantelDiv > 0) then
-        begin
-        sumPRrgb := 0.0;
-        sumPSandQRrgb := 0.0;
-        sumQSrgb := 0.0;
-        forEach(@sumRGB);
-        vrgb := (sumPRrgb/(2*sqr(mantelNum))) +
-                (sumPSandQRrgb/(2*mantelNum*mantelDiv)) +
-                (sumQSrgb/(2*sqr(mantelDiv)));               //Rothman I, p 220
-        Odds := mantelNum / mantelDiv;
-        lowerRGB := exp(ln(odds) - (confScore*sqrt(vrgb)));
-        upperRGB := exp(ln(odds) + (confScore*sqrt(vrgb)));
-        end;
-        {dm.Info(format('95% confidence limits for M-H OR %6.3f - %6.3f',[lowerRGB,upperRGB]));
-        resultstr:='xxx'; //FormatOR('Max Likelihood Est: OR= ', dm.FloatFormat, cmle);
-        }
 end;
 
 function TFisherStat.show(t: TtableItem; stratum:integer): integer;
@@ -931,8 +830,9 @@ begin
      cmle := calcCMLE(1.0);
 
      displaypvalue(t,cmle);      // copy P for OR to t table
-    //dm.writeln(FormatOR('MLE estimate of OR ', dm.FloatFormat,cmle) + ' p= ' + trim(format(' %s ',[displayPValue(cmle,stratum)])));
-
+    {dm.writeln(FormatOR('MLE estimate of OR ', dm.FloatFormat,cmle) + ' p= '
+            + trim(format(' %s - i: %d',[displayPValue(t,cmle),stratum])));
+     }
      upper := getLimit(false, true, cmle, 0.95);
      if (upper <> INFINITY) then
         approx := cmle*cmle/upper
@@ -949,12 +849,10 @@ begin
      t.orul := upper;
        if t.orul = INFINITY then t.orul := -9999;
 
-    { resultstr:='<br>'
-                + FormatOR('MLE: OR= ',0 dm.FloatFormat, cmle)
-                + FormatLimits(' (Exact 95% CI:',' - ', getLimit(true, true, approx, 0.95), upper)
-                + ')' + {displayPValue(cmle,stratum)+ ' stratum:' + inttostr(stratum) ;
-      //dm.info(resultstr);
-     }
+     resultstr:='<br>'
+                + Format('MLE: OR= %7.4f (%7.4f - %7.4f) p=%7.5f i= %d',[t.sor,t.ORLL,t.orul,t.por ,   stratum]);
+     dm.info(resultstr);
+     //}
      PolyD.free;
      PolyD := nil;
 end;
@@ -976,74 +874,6 @@ begin
      inherited;
 end;
 
-
-
-  Function ChiPValue (ChiSqr : epifloat; Degrees: Integer) : epifloat;
-
-  (*Adapted from Poole, Lon, and Mary Borchers. Some Common BASIC Programs.
-     Berkeley, CA, Adam Osborne & Assoc., 1977.*)
-
-    Var
-      I : Integer;
-      Firstterm, R, Sum, M, J, P : epifloat;
-
-    Begin
-      If ChiSqr <= 0.0
-      Then
-        ChiPValue := 1.0
-{dcs 6/28/93 Should be able to calculate a p value for chi square greater than 40}
-{dcs 6/23/94 This one can't}
-      Else If ChiSqr > 40 Then
-        ChiPValue := 0.0
-      Else
-        Begin
-          R:=1E-20;
-          I := Degrees;
-          Repeat
-            R := R*I;
-            dec(I, 2);
-          Until I < 1;
-          FirstTerm := (Exp((1.0*((degrees+1) DIV 2))*
-                              Ln(chisqr))*Exp(-chisqr/2)/1E+20)/r;
-          If odd(degrees) then
-            J := sqrt (2.0/chisqr/3.141592653559)
-          else
-            J := 1;
-          sum := 1;
-          m := 1;
-          While m > 1E-10 do
-            begin
-              degrees := degrees +2;
-              m := M*chisqr/degrees;
-              sum := sum+ m
-            end;
-          P := 1-(J*firstterm*sum);
-          ChiPValue := P;
-         End;(*If ChiSqr*)
-    End (*ChiPValue*);
-
-
-
-    {
-
-function TTableItem.GetCornFieldLimit(WhichLim: integer; Var inexact : boolean): EpiFloat;
-begin
- Result:=CornfieldLimit(A,B,C,D,WhichLim,inexact);
-end;
-
-    function TTableItem.GetChiSq(ChiType:word): EpiFloat;
-    var
-      f : Epifloat;
-    begin
-       f := M1 * M0 * N1 * N0;
-       if f = 0 then f:= 10E-10;
-    case  chitype of
-     ChiUnCorrected: Result:= Tot * Sqr (((a * d) - (b * c))) / f;
-     ChiMH: Result := (Tot-1)* Sqr(((a * d) - (b * c))) /f;
-     ChiYates:Result := Tot * Sqr (Abs (((a * d) - (b * c))) - Tot/2) / f;
-    end;
-    end;
-}
 End.
 
 

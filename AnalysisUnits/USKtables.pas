@@ -187,7 +187,7 @@ var Vectorlist : TEpiVectors;
        tab.pchi:= pchi;
        tab.gamma := gam;
        tab.pgamma2  := pgam;
-       
+
    {    if plusinfinity then tab.oddsratio := 9999
            else if minusinfinity then tab.oddsratio := -9999
            else
@@ -216,9 +216,9 @@ var Vectorlist : TEpiVectors;
        table.pSumChi:= pchi;
        table.PartGamma := gam;
        table.pPartgamma2  := pgam;
-       if plusinfinity then table.SumOR := 9999
-           else if minusinfinity then table.SumOR := -9999
-           else table.SumOR  := odds;
+       if plusinfinity then table.SumMLEOR := 9999
+           else if minusinfinity then table.SumMLEOR := -9999
+           else table.SumMLEOR  := odds;
        table.PartGammaUL:=GamUL;
        table.PartGammaLL:=GamLL;
    end;
@@ -362,6 +362,10 @@ begin
  //   if ((r = 2) and (c=2) and (cmd.ParamByName['EX'] <> nil)) then  // do a fishers exact test
 //           Table.Margtable.FishP2 := oTables.GetFishersExact(Table.Margtable);
 
+   // save expected values back to sumtable.margtable
+       for x:=1 to c do
+        for y:=1 to r do Table.MargTable.Cell(.x,y.).NestL := etab2(.x,y.);
+
     dimx:=c;
     dimy:=r;
 
@@ -403,7 +407,12 @@ begin
         // save the slice
         Store_xyz_slice(z,xyz_table,xyz_arrays,exyz_table,exyz_arrays,
                     tdimx,tdimy,xy_size,tab2,etab2);
-        if ((r = 2) and (c=2) and (cmd.ParamByName['EX'] <> nil)) then  // do a fishers exact test
+        // save expected values back to sumtable.subtable
+       for x:=1 to c do
+        for y:=1 to r do Table.SubTable(.z.).Cell(.x,y.).NestL := etab2(.x,y.);
+
+
+//        if ((r = 2) and (c=2) and (cmd.ParamByName['EX'] <> nil)) then  // do a fishers exact test
 //           Table.Subtable(.z.).FishP2 :=  oTables.GetFishersExact(Table.SubTable(.z.));
        end;  // strata
     end; // stratified analysis
