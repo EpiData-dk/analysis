@@ -716,7 +716,7 @@ var
          inc(maxSumA, (min(a+d, a+c) * freq));
          inc(SumAD, a * d * freq);
          inc(SumBC, b * c * freq);
-         dm.info(format('%d  %d  %d  %d',[a,b,c,d]));
+         //dm.info(format('%d  %d  %d  %d',[a,b,c,d]));
          end;
    end;
 begin
@@ -849,6 +849,7 @@ begin
      t.orul := upper;
        if t.orul = INFINITY then t.orul := -9999;
 
+     {// check results:
      resultstr:='<br>'
                 + Format('MLE: OR= %7.4f (%7.4f - %7.4f) p=%7.5f i= %d',[t.sor,t.ORLL,t.orul,t.por ,   stratum]);
      dm.info(resultstr);

@@ -2725,61 +2725,73 @@ var
     except
       dm.error('2x2 Summary table MH-OR  stats error %d', [i], 41001);
     end;
+      SumTable.fDf := 1;  // set for Mantel Haenzel test summary Chi Sq
 end;
 
 procedure TTables.GetTableMHSumRR(SumTable: TSumTable);   // Mantel-Haenzel summary Rate Ratio calculations
 var
+ table :TTwowaytable;   //for easy of reading code
  i,j: integer;
- WolfError : Boolean (*If true, a zero cell was encountered*);
-  (*Variables for Rothman's Evaluation of Effect Modification of Relative
-    risk.  Pg222*)
-   RRWSum, RRSum, RRPooled, RRChiSqr : epifloat;
 {Produce sums for Greenland/Robins confidence limits for
    Relative Risk in single and stratified tables.
    Greenland, S, Robins, JM, Biometrics 1985;41:55-68}
+   R,S,VDenom,Variance,SumVDenom,SumR,SumS: epifloat;
 
-  Var
-    R, S, Dgr, Rrgb, Srgb, Vgr, Prgb, Qrgb  : EpiFloat;
+     (*Variables for Rothman's Evaluation of Effect Modification of Relative
+    risk.  Pg222*)
+   //RRWSum, RRSum, RRPooled, RRChiSqr : epifloat;
 
-{  procedure initVar;
-  begin
-    RRMHgr := 0.0;
-    SumDgr := 0.0;
-    SumRgr := 0.0;
-    SumSgr := 0.0;
-    SumPRrgb := 0.0;
-    SumPSandQRrgb := 0.0;
-    SumQSrgb := 0.0;
-    RRgr := 0.0;
-  end;
- }
+   WolfError : Boolean (*If true, a zero cell was encountered*);
+
+   procedure initVar;
+     begin
+       SumR := 0.0; SumS := 0.0; SumVdenom := 0.0;
+     end;
+
   begin
   try
-       for i := 1 to SumTable.TableCount do   //add all subtables for weighted estimates:
+    Initvar;
+
+    for i := 1 to SumTable.TableCount do   //add all subtables for weighted estimates:
       begin
-    {R := SumTable.SubTable[i].getCell(1,1).n * GetRowTotal(1) / gettotal ;
-    S := SumTable.SubTable[i].getCell(1,2).n * GetRowTotal(2) / gettotal;
-    Dgr := ((SumTable.SubTable[i].GetRowTotal(2) * SumTable.SubTable[i].GetRowTotal(1) * SumTable.SubTable[i].GetColTotal(1))
-            - (SumTable.SubTable[i].getcell(1,1).n * SumTable.SubTable[i].getcell(1,2).n * SumTable.SubTable[i].gettotal)) / Sqr(SumTable.SubTable[i].gettotal);
-      //rothman p 216 and p196 formula 12-27
+      Table:= SumTable.GetSubTable(i);
+      if (Table.getCell(1,1).n > 0) and (Table.getCell(1,2).n > 0) then
+          begin
+          R := (Table.getcell(1,1).n * Table.GetRowTotal(2)) / Table.gettotal ;
+          S := (Table.getcell(1,2).n * Table.GetRowTotal(1)) / Table.gettotal;
+          VDenom := ((Table.GetRowTotal(2) * Table.GetRowTotal(1) * Table.GetColTotal(1))
+            - (Table.getcell(1,1).n * Table.getcell(1,2).n * Table.gettotal)) / Sqr(Table.gettotal);
+          SumR    := SumR + R;
+          SumS    := SumS + S;
+          SumVdenom := SumVdenom + Vdenom
+          end;
+      end;
 
-    // note t2 table has case-ref left and exposure at top !!
-    R := t2.A * t2.N0 / t2.tot ;
-    S := t2.C * t2.N1 / t2.tot;     // C: unexposed cases
-    Dgr := ((t2.N1 * t2.N0 * t2.M1) - (t2.A * t2.C * t2.tot)) / Sqr(t2.tot);
+    // Calculate and transfer to sumtable esitmators.
+    //CI
 
+    If SumR = 0 then  SumTable.SumRR := 0.0
+      else if SumS <> 0 then  Sumtable.SumRR := SumR/SumS
+         else SumTable.SumRR := -9999.0;
 
-    SumDgr := SumDgr + Dgr;
-    SumRgr := SumRgr + R;
-    SumSgr := SumSgr + S;
-    {Done with GR sums}
+    if (SumS*SumR = 0) then Variance := -9999.0
+       else Variance := abs(SumVDenom / (SumS * SumR));
 
-
-     sumtable.fDf := 1;  // set for Mantel Haenzel test summary Chi Sq
-     end;
+    If  Variance < 0 then
+        begin
+           Sumtable.SumRRUL := -9999.0;
+           Sumtable.SumRRLL := -9999.0;
+        end
+       else
+        begin
+           Sumtable.SumRRUL := Exp (ln (Sumtable.SumRR) + (ConfScore * Sqrt (Variance)));
+           Sumtable.SumRRLL :=  Exp (ln (Sumtable.SumRR) - (ConfScore * Sqrt (Variance)));
+        end;
+    //Sumtable.SumpRR := -1.0;
     except
-      dm.error('2x2 Summary table RR stats error %d', [i], 41001);
+      dm.error('2x2 Summary table MH-RR  stats error %d', [i], 41001);
     end;
+
 end;
 
 {*****************************************
