@@ -1367,6 +1367,8 @@ begin
     info('Loading data %s, please wait...', [fn], 23056);
     if ext ='.REC' then
       dataframe := TEpiDataFrame.Create(TEpiInfoDataset,fn,0,pw)
+    else if ((ext ='.EPX') or (ext ='.EPZ')) then
+      dataframe := TEpiDataFrame.Create(TEpiEPXDataset,fn,0)
     else if ext ='.DBF' then
       dataframe := TEpiDataFrame.Create(TEpiDBFdataset,fn,0)
     else if ((ext ='.TXT') or (ext ='.CSV')) then

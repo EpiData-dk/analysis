@@ -3,7 +3,7 @@ unit UFrames;
 interface
 uses
   controls,sysutils, dialogs, classes,db,ansDataTypes,UEpiDataTypes,Uepifile, windows, EpiDataFile,
-  SMUtils, UCmdTypes, UCheckProps, EpiDataUtils, DateUtils, Math;
+  SMUtils, UCmdTypes, UCheckProps, EpiDataUtils, DateUtils, Math, XMLdoc, xmlintf, xmldom;
 
 const
   SNotEditing = 'DataSet not in update state';
@@ -227,6 +227,28 @@ public
   function Last:integer;override;
   function Append:integer;override;
   function Post:integer;override;
+end;
+
+TEpiEPXDataset=class(TEpiDataSet)
+private
+  FFirstRec: Boolean;   // Needed because read records procedure in UVectors does both a ADataSet.first AND Adataset.Next to read the first record!!!!
+  FRecNode: IXMLNode;
+  FFieldList: TList;
+  FEpiDocument: TXMLDocument;
+  FEpiDataFile: IXMLNode;
+  FEpiDocFormatSettings: TFormatSettings;
+protected
+  function  GetDeleted: boolean; override;
+  function  GetField(Index: integer): TeField; override;
+  function  GetFieldCount: integer; override;
+  function  GetFileLabel: string; override;
+  function  GetRecordCount: integer; override;
+public
+  Constructor Create(const filename: TEpiFileName;Mode:Epiint;var fCheckProperties: TdfChkProp; const pw:string='');override;
+  Destructor  Destroy;override;
+  function    First: integer; override;
+  function    GetFieldData(obs:integer; Fld: TeField; Dst: Pointer; var Blank: boolean): Boolean; override;
+  function    Next: integer; override;
 end;
 
 
@@ -2036,5 +2058,191 @@ except
 end;  //try..except
 end;  //function getFieldData
 
+
+{ TEpiEPXDataset }
+
+constructor TEpiEPXDataset.Create(const filename: TEpiFileName;
+  Mode: Epiint; var fCheckProperties: TdfChkProp; const pw: string);
+var
+  Node, FNode: IXMLNode;
+  AField: TeField;
+const
+  XMLFieldTypesToEpiFieldTypes: array[0..13] of TFelttyper = (
+    ftBoolean,                            // Boolean                       (0)
+    ftInteger, ftIDNUM, ftFloat,          // Integer, AutoInc, Float       (3)
+    ftEuroDate, ftDate, ftYMDDate,        // DMYDate, MDYDate, YMDDate     (6)
+    ftEuroToday, ftToday, ftYMDToday,     // DMYToday, MDYToday, YMDToday  (9)
+    ftFloat, ftFloat,                     // Time, TimeNow                (11)
+    ftAlfa, ftUpperAlfa                   // String, UpperString          (13)
+  );
+begin
+  inherited Create(filename, Mode, fCheckProperties);
+
+  try
+    FEpiDocument := TXMLDocument.Create(DM);
+    FEpiDocument.LoadFromFile(filename);
+    Node := FEpiDocument.DocumentElement;
+
+    FEpiDocFormatSettings.DateSeparator := OleStrToString(PWideChar(Node.ChildNodes['Settings'].ChildNodes['DateSeparator'].Text))[1];
+    FEpiDocFormatSettings.TimeSeparator := OleStrToString(PWideChar(Node.ChildNodes['Settings'].ChildNodes['TimeSeparator'].Text))[1];
+    FEpiDocFormatSettings.DecimalSeparator := OleStrToString(PWideChar(Node.ChildNodes['Settings'].ChildNodes['DecimalSeparator'].Text))[1];
+    FEpiDocFormatSettings.ShortTimeFormat  := 'HH:NN:SS';
+
+    // Only support for reading the first datafile.
+    FEpiDataFile := Node.ChildNodes['DataFiles'].ChildNodes[0];
+    FFieldList := TList.Create;
+
+    if FEpiDataFile.ChildNodes['Sections'].HasChildNodes then
+      Node := FEpiDataFile.ChildNodes['Sections'].ChildNodes[0]
+    else
+      Node := nil;
+
+    // Create the TeFields - store in list for later retrieval.
+    while Assigned(Node) do
+    begin
+      if Node.ChildNodes['Fields'].HasChildNodes then
+        FNode := Node.ChildNodes['Fields'].ChildNodes[0]
+      else
+        FNode := nil;
+
+      while Assigned(FNode) do
+      begin
+        AField                := TeField.Create;
+        AField.Felttype       := XMLFieldTypesToEpiFieldTypes[StrToInt(FNode.ChildNodes['Type'].Text)];
+        AField.FFieldColor    := StrToInt(FNode.ChildNodes['Type'].Text);
+        AField.FieldName      := FNode.ChildNodes['Name'].Text;
+        Afield.FFieldComments := FNode.Attributes['id'];  // dirty, but FieldComment not used in Analysis.
+        AField.FLength        := StrToInt(FNode.ChildNodes['Length'].Text);
+        AField.FNumDecimals   := StrToInt(FNode.ChildNodes['Decimals'].Text);
+        AField.FVariableLabel := FNode.ChildNodes['Heading'].ChildNodes['Caption'].Text;
+        with AField do
+        case FFieldColor of
+          1,2:    FFieldFormat := '%d';
+          3:      FFieldFormat := '%' + Format('%d.%d', [FLength, FNumDecimals]) + 'f';
+          4,7:    FFieldFormat := '%DMY';
+          5,8:    FFieldFormat := '%MDY';
+          6,9:    FFieldFormat := '%YMD';
+          10,11:  begin
+                    FFieldFormat := '%1.6f';
+                    FNumDecimals := 6;
+                  end;  
+        end;
+
+        FFieldList.Add(AField);
+        FNode := FNode.NextSibling;
+      end;
+      Node := Node.NextSibling;
+    end;
+  except
+    FreeAndNil(FEpiDocument);
+    raise;
+  end;
+end;
+
+destructor TEpiEPXDataset.Destroy;
+begin
+  FreeAndNil(FEpiDocument);
+  inherited;
+end;
+
+function TEpiEPXDataset.First: integer;
+begin
+  FFirstRec := true;
+  if GetRecordCount = 0 then exit;
+  FRecNode := FEpiDataFile.ChildNodes['Records'].ChildNodes[0];
+end;
+
+function TEpiEPXDataset.GetDeleted: boolean;
+begin
+  result := FRecNode.Attributes['st'] = '1';
+end;
+
+function TEpiEPXDataset.GetField(Index: integer): TeField;
+begin
+  result := TeField(FFieldList[Index]);
+end;
+
+function TEpiEPXDataset.GetFieldCount: integer;
+var
+  Node: IXMLNode;
+begin
+  result := FFieldList.Count;
+end;
+
+function TEpiEPXDataset.GetFieldData(obs: integer; Fld: TeField;
+  Dst: Pointer; var Blank: boolean): Boolean;
+var
+  S: String;
+  I: Integer;
+  F: EpiFloat;
+  D: TDateTime;
+  Code: integer;
+begin
+  result := true;
+
+  Blank := not FRecNode.HasAttribute(Fld.FFieldComments);
+  if Blank then exit;
+
+  S := FRecNode.Attributes[Fld.FFieldComments];
+  case Fld.Felttype of
+    ftAlfa,ftUpperAlfa:
+      begin
+        if (fld.Felttype = ftUpperAlfa) then
+          S := Sysutils.AnsiUpperCase(S);
+        StrPCopy(dst, S);
+      end;
+    ftInteger, ftIDNUM:
+      begin
+        Result := TryStrToInt(S, I);
+        integer(dst^) := I;
+      end;
+    ftFloat:
+      begin
+        if Fld.FFieldColor in [10, 11] then
+        begin
+          // This was a time field.
+          result := TryStrToTime(S, D, FEpiDocFormatSettings);
+          EpiFloat(dst^) := D;
+        end else begin
+          // This was a floating field.
+          result := TryStrToFloat(S, F, FEpiDocFormatSettings);
+          EpiFloat(dst^) := F;
+        end;
+      end;
+    ftDate,ftToday,ftEuroDate,ftEuroToday,ftYMDDate,ftYMDToday:
+      begin
+        if Fld.Felttype in [ftEuroDate,ftEuroToday] then FEpiDocFormatSettings.ShortDateFormat := 'dd/mm/yyyy';
+        if Fld.Felttype in [ftDate,ftToday]         then FEpiDocFormatSettings.ShortDateFormat := 'mm/dd/yyyy';
+        if Fld.Felttype in [ftYMDDate,ftYMDToday]   then FEpiDocFormatSettings.ShortDateFormat := 'yyyy/mm/dd';
+        Result := TryStrToDate(S, D, FEpiDocFormatSettings);
+        EpiDate(dst^) := Trunc(D) + 36522; // Magic analysis constant!?!?!?
+      end;
+    ftBoolean:
+      begin
+        if (S = 'Y') then
+          Word(Dst^) := 1
+        else
+          Word(Dst^) := 0;
+      end;
+  end;
+end;
+
+function TEpiEPXDataset.GetFileLabel: string;
+begin
+  result := FEpiDataFile.ChildNodes['Name'].Text;
+end;
+
+function TEpiEPXDataset.GetRecordCount: integer;
+begin
+  result := FEpiDataFile.ChildNodes['Records'].ChildNodes.Count;
+end;
+
+function TEpiEPXDataset.Next: integer;
+begin
+  if FFirstRec then
+    FFirstRec := false
+  else
+    FRecNode := FRecNode.NextSibling;
+end;
 
 end.

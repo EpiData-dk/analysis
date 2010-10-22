@@ -16,7 +16,7 @@ resourcestring
  EpiVectorNameMissing = 'Field name missing';
  EpiVectorNotFound = 'Field ''%s'' not found';
 
- EpiDataFilter='Datafiles|*.rec;*.dbf;*.csv;*.txt|DBF|*.dbf|EpiData & Epi6 Data Files|*.rec|All|*.*';
+ EpiDataFilter='Datafiles|*.rec;*.dbf;*.csv;*.txt;*.epx;*.epz|DBF|*.dbf|EpiData & Epi6 Data Files|*.rec|EpiData Project File XML|*.epx;*.epz|All|*.*';
  EpiProgramFilter='Program Files (*.pgm)|*.pgm|Text Files (*.txt)|*.txt |HTML Files (*.htm,*.html)|*.htm;*.html';
  EpiLogFileFilter='HTML Files (*.htm,*.html)|*.htm;*.html|Text Files (*.txt)|*.txt|Log files (*.log)|*.log';
 

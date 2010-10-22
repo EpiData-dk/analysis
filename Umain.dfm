@@ -1,6 +1,6 @@
 object aMainForm: TaMainForm
-  Left = 306
-  Top = 234
+  Left = 486
+  Top = 291
   Width = 852
   Height = 565
   Caption = 'aMainForm'
@@ -24,7 +24,7 @@ object aMainForm: TaMainForm
     Left = 633
     Top = 54
     Width = 2
-    Height = 436
+    Height = 446
     Align = alRight
     AutoSnap = False
     MinSize = 20
@@ -32,7 +32,7 @@ object aMainForm: TaMainForm
   end
   object StatusBar: TSMStatusBar
     Left = 0
-    Top = 490
+    Top = 500
     Width = 844
     Height = 19
     Anchors = [akRight, akBottom]
@@ -191,7 +191,7 @@ object aMainForm: TaMainForm
     Left = 0
     Top = 54
     Width = 633
-    Height = 436
+    Height = 446
     Align = alClient
     Alignment = taLeftJustify
     BorderStyle = bsSingle
@@ -199,7 +199,7 @@ object aMainForm: TaMainForm
     OnMouseMove = ToolBar1MouseMove
     object Splitter1: TSplitter
       Left = 1
-      Top = 407
+      Top = 417
       Width = 627
       Height = 2
       Cursor = crVSplit
@@ -209,7 +209,7 @@ object aMainForm: TaMainForm
     end
     object CmdPanel: TPanel
       Left = 1
-      Top = 409
+      Top = 419
       Width = 627
       Height = 22
       Align = alBottom
@@ -223,7 +223,7 @@ object aMainForm: TaMainForm
     Left = 635
     Top = 54
     Width = 209
-    Height = 436
+    Height = 446
     Align = alRight
     TabOrder = 2
     OnResize = Panel1Resize
@@ -231,7 +231,7 @@ object aMainForm: TaMainForm
       Left = 1
       Top = 99
       Width = 207
-      Height = 223
+      Height = 233
       Hint = 'Close: press F3'
       Align = alClient
       BevelInner = bvNone
@@ -280,7 +280,7 @@ object aMainForm: TaMainForm
     end
     object Historylist: TListBox
       Left = 1
-      Top = 322
+      Top = 332
       Width = 207
       Height = 113
       Hint = 'Close: press F7'
