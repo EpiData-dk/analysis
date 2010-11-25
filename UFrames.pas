@@ -237,6 +237,8 @@ private
   FEpiDocument: TXMLDocument;
   FEpiDataFile: IXMLNode;
   FEpiDocFormatSettings: TFormatSettings;
+  FLocalLabelBlockList: TLabelBlocksList;
+  FMissingValuesList: TStringList;
 protected
   function  GetDeleted: boolean; override;
   function  GetField(Index: integer): TeField; override;
@@ -2064,8 +2066,12 @@ end;  //function getFieldData
 constructor TEpiEPXDataset.Create(const filename: TEpiFileName;
   Mode: Epiint; var fCheckProperties: TdfChkProp; const pw: string);
 var
-  Node, FNode: IXMLNode;
+  Doc,
+  Node, FNode, ANode,
+  VLNode: IXMLNode;
   AField: TeField;
+  FVLSet: TLabelValueList;
+  Idx, I: Integer;
 const
   XMLFieldTypesToEpiFieldTypes: array[0..13] of TFelttyper = (
     ftBoolean,                            // Boolean                       (0)
@@ -2081,15 +2087,76 @@ begin
   try
     FEpiDocument := TXMLDocument.Create(DM);
     FEpiDocument.LoadFromFile(filename);
-    Node := FEpiDocument.DocumentElement;
+    Doc := FEpiDocument.DocumentElement;
 
-    FEpiDocFormatSettings.DateSeparator := OleStrToString(PWideChar(Node.ChildNodes['Settings'].ChildNodes['DateSeparator'].Text))[1];
-    FEpiDocFormatSettings.TimeSeparator := OleStrToString(PWideChar(Node.ChildNodes['Settings'].ChildNodes['TimeSeparator'].Text))[1];
-    FEpiDocFormatSettings.DecimalSeparator := OleStrToString(PWideChar(Node.ChildNodes['Settings'].ChildNodes['DecimalSeparator'].Text))[1];
+    Node := Doc.ChildNodes['Settings'];
+    FEpiDocFormatSettings.DateSeparator := OleStrToString(PWideChar(Node.ChildNodes['DateSeparator'].Text))[1];
+    FEpiDocFormatSettings.TimeSeparator := OleStrToString(PWideChar(Node.ChildNodes['TimeSeparator'].Text))[1];
+    FEpiDocFormatSettings.DecimalSeparator := OleStrToString(PWideChar(Node.ChildNodes['DecimalSeparator'].Text))[1];
     FEpiDocFormatSettings.ShortTimeFormat  := 'HH:NN:SS';
 
+
+    // Read valuelabels.
+    if Not Assigned(fCheckProperties) then
+      fCheckProperties := TdfChkProp.Create;
+    FLocalLabelBlockList := fCheckProperties.ValueLabels;
+
+
+    Node := Doc.ChildNodes['ValueLabelSets'];
+    if Assigned(Node) and Node.HasChildNodes then
+    begin
+      FMissingValuesList := TStringList.Create;
+      Node := Node.ChildNodes[0];
+      while Assigned(Node) do
+      begin
+        // Compatability testing.
+        FNode := Node.ChildNodes['External'];
+        if Assigned(FNode) and FNode.HasChildNodes then
+        begin
+          // No support for external value labels import within and EPX file.
+          Node := Node.NextSibling;
+          Continue;
+        end;
+        if not (Integer(Node['Type']) in [1, 12]) then
+        begin
+          // Only Interger and String valuelabels supported.
+          Node := Node.NextSibling;
+          Continue;
+        end;
+
+        // Create valuelabel set
+        FVLSet := TLabelValueList.Create;
+        FNode := Node.ChildNodes['Internal'];
+        FVLSet.LabelName := Node.ChildNodes['Name'].Text;
+
+        // Read the values and labels.
+        VLNode := FNode.ChildNodes[0];
+        while Assigned(VLNode) do
+        begin
+          FVLSet.AddPair(VLNode.Attributes['value'], VLNode['Label']);
+
+          if (VLNode.HasAttribute('missing')) and
+             (VLNode.Attributes['missing'] = 'true') and
+             (FMissingValuesList.IndexOf(Node.Attributes['id']) = -1) then
+          begin
+            FMissingValuesList.AddObject(Node.Attributes['id'], TObject(Pointer(FNode)));
+          end;
+          VLNode := VLNode.NextSibling;
+        end;
+
+        // Add the set.
+        // - using a little dirty trick here: ID is stored in list of valuelabel sets,
+        //   but the actual name of the valuelabelset is store with the ValueLabel set itself.
+        //   This way the field lookup in TEpiDataFrame.LoadFromDataSet find the right ValueLabelSet,
+        //   as field in .EPX files use ID references.
+        // - To restore correctness this is fixed later in TEpiDataSet.First.
+        FLocalLabelBlockList.AddObject(Node.Attributes['id'], FVLSet);
+        Node := Node.NextSibling;
+      end;
+    end;
+
     // Only support for reading the first datafile.
-    FEpiDataFile := Node.ChildNodes['DataFiles'].ChildNodes[0];
+    FEpiDataFile := Doc.ChildNodes['DataFiles'].ChildNodes[0];
     FFieldList := TList.Create;
 
     if FEpiDataFile.ChildNodes['Sections'].HasChildNodes then
@@ -2114,6 +2181,7 @@ begin
         Afield.FFieldComments := FNode.Attributes['id'];  // dirty, but FieldComment not used in Analysis.
         AField.FLength        := StrToInt(FNode.ChildNodes['Length'].Text);
         AField.FNumDecimals   := StrToInt(FNode.ChildNodes['Decimals'].Text);
+        AField.FValueLabel    := FNode.ChildNodes['ValueLabelId'].Text;
         AField.FVariableLabel := FNode.ChildNodes['Heading'].ChildNodes['Caption'].Text;
         with AField do
         case FFieldColor of
@@ -2128,6 +2196,27 @@ begin
                   end;  
         end;
 
+        if (AField.FValueLabel <> '') and
+           (FMissingValuesList.IndexOf(AField.FValueLabel) <> -1) then
+        begin
+          Idx := FMissingValuesList.IndexOf(AField.FValueLabel);
+          ANode := IXMLNode(Pointer(FMissingValuesList.Objects[Idx]));
+          VLNode := ANode.ChildNodes[0];
+
+          I := 0;
+          while Assigned(VLNode) do
+          begin
+            if (VLNode.HasAttribute('missing')) and
+               (VLNode.Attributes['missing'] = 'true') then
+            begin
+              AField.MissingValues[I] := VLNode.Attributes['value'];
+              Inc(I);
+              if I = MAXDEFINEDMISSINGVALUES then break;
+            end;
+            VLNode := VLNode.NextSibling;
+          end;
+        end;
+
         FFieldList.Add(AField);
         FNode := FNode.NextSibling;
       end;
@@ -2135,6 +2224,7 @@ begin
     end;
   except
     FreeAndNil(FEpiDocument);
+    FreeAndNil(FMissingValuesList);
     raise;
   end;
 end;
@@ -2142,13 +2232,23 @@ end;
 destructor TEpiEPXDataset.Destroy;
 begin
   FreeAndNil(FEpiDocument);
+  FreeAndNil(FMissingValuesList);
   inherited;
 end;
 
 function TEpiEPXDataset.First: integer;
+var
+  i: integer;
 begin
   FFirstRec := true;
   if GetRecordCount = 0 then exit;
+
+  // Hack: Update valuelabels here...
+  FLocalLabelBlockList.Sorted := false;
+  for i := 0 to FLocalLabelBlockList.Count - 1 do
+    FLocalLabelBlockList[i] := TLabelValueList(FLocalLabelBlockList.Objects[i]).LabelName;
+  FLocalLabelBlockList.Sorted := true;
+
   FRecNode := FEpiDataFile.ChildNodes['Records'].ChildNodes[0];
 end;
 

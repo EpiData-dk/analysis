@@ -1,6 +1,6 @@
 object aMainForm: TaMainForm
-  Left = 486
-  Top = 291
+  Left = 650
+  Top = 433
   Width = 852
   Height = 565
   Caption = 'aMainForm'
