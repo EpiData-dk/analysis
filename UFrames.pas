@@ -233,6 +233,7 @@ TEpiEPXDataset=class(TEpiDataSet)
 private
   FFirstRec: Boolean;   // Needed because read records procedure in UVectors does both a ADataSet.first AND Adataset.Next to read the first record!!!!
   FRecNode: IXMLNode;
+  FRecCount: integer;
   FFieldList: TList;
   FEpiDocument: TXMLDocument;
   FEpiDataFile: IXMLNode;
@@ -2083,6 +2084,7 @@ const
   );
 begin
   inherited Create(filename, Mode, fCheckProperties);
+  FRecCount := -1;
 
   try
     FEpiDocument := TXMLDocument.Create(DM);
@@ -2113,7 +2115,7 @@ begin
         FNode := Node.ChildNodes['External'];
         if Assigned(FNode) and FNode.HasChildNodes then
         begin
-          // No support for external value labels import within and EPX file.
+          // No support for external value labels import within an EPX file.
           Node := Node.NextSibling;
           Continue;
         end;
@@ -2182,7 +2184,7 @@ begin
         AField.FLength        := StrToInt(FNode.ChildNodes['Length'].Text);
         AField.FNumDecimals   := StrToInt(FNode.ChildNodes['Decimals'].Text);
         AField.FValueLabel    := FNode.ChildNodes['ValueLabelId'].Text;
-        AField.FVariableLabel := FNode.ChildNodes['Heading'].ChildNodes['Caption'].Text;
+        AField.FVariableLabel := FNode.ChildNodes['Question'].Text;
         with AField do
         case FFieldColor of
           1,2:    FFieldFormat := '%d';
@@ -2333,8 +2335,12 @@ begin
 end;
 
 function TEpiEPXDataset.GetRecordCount: integer;
+var
+  Node: IXMLNode;
 begin
-  result := FEpiDataFile.ChildNodes['Records'].ChildNodes.Count;
+  if FRecCount < 0 then
+    FrecCount := FEpiDataFile.ChildNodes['Records'].ChildNodes.Count;
+  Result := FRecCount;
 end;
 
 function TEpiEPXDataset.Next: integer;

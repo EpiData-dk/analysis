@@ -935,6 +935,7 @@ var
   strbuf:    array[0..100] of char;
   opt:       TEpiOption;
   loopcounter: integer;
+  St: Cardinal;
 begin
    assert(AdataSet<> nil);
    List :=nil;
@@ -942,7 +943,12 @@ try
   Result:=0;
   list:=TList.Create;
   co := Adataset.FieldCount;
+//  dm.Info('Start RecordCount');
+//  St := GetTickCount;
   n := Adataset.RecordCount;
+//  St := GetTickCount - st;
+//  dm.Info('EndRecordCount: ' + IntToStr(St));
+  Dm.Sendoutput;
   lcapacity:=(n div DefaultGrowthFactor)* DefaultGrowthFactor + DefaultGrowthFactor;
   if n=0 then n:=-1;
   for i:= 0 to co-1 do
