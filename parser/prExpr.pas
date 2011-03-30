@@ -277,7 +277,7 @@ begin
  if assigned(fOnError) then
      fOnError(ErrorMsg, Token, handled);
  if not handled then
-   raise EExpression.Create(format('%s' + #13#10+ 'At line %d',[ErrorMsg,Token.line]));
+   raise EExpression.Create(format('%s' +  #13#10+ 'At line %d',[ErrorMsg,Token.line]));
 end;
 
 

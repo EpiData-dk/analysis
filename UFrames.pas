@@ -2073,6 +2073,7 @@ var
   AField: TeField;
   FVLSet: TLabelValueList;
   Idx, I: Integer;
+  S: String;
 const
   XMLFieldTypesToEpiFieldTypes: array[0..13] of TFelttyper = (
     ftBoolean,                            // Boolean                       (0)
@@ -2135,7 +2136,12 @@ begin
         VLNode := FNode.ChildNodes[0];
         while Assigned(VLNode) do
         begin
-          FVLSet.AddPair(VLNode.Attributes['value'], VLNode['Label']);
+          if VLNode.ChildNodes.FindNode('Label') = nil then
+            S := ''
+          else
+            S := VLNode['Label'];
+
+          FVLSet.AddPair(VLNode.Attributes['value'], S);
 
           if (VLNode.HasAttribute('missing')) and
              (VLNode.Attributes['missing'] = 'true') and
