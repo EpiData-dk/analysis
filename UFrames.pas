@@ -2337,7 +2337,7 @@ end;
 
 function TEpiEPXDataset.GetFileLabel: string;
 begin
-  result := FEpiDataFile.ChildNodes['Name'].Text;
+  result := FEpiDocument.DocumentElement.ChildNodes['Study'].ChildNodes['Title'].Text;
 end;
 
 function TEpiEPXDataset.GetRecordCount: integer;
