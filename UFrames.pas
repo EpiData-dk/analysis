@@ -240,6 +240,7 @@ private
   FEpiDocFormatSettings: TFormatSettings;
   FLocalLabelBlockList: TLabelBlocksList;
   FMissingValuesList: TStringList;
+  FDataList: TStringList;
 protected
   function  GetDeleted: boolean; override;
   function  GetField(Index: integer): TeField; override;
@@ -257,7 +258,7 @@ end;
 
 implementation
 
-uses uDateUtils, PasswordUnit, Forms, UCmdProcessor, ClipBrd;
+uses uDateUtils, PasswordUnit, Forms, UCmdProcessor, ClipBrd, VCLUnZip;
 
 CONST
   antallinier=100000;
@@ -269,7 +270,8 @@ CONST
   DateChars:       Set of CHAR=['0'..'9','/','-'];
   DateSepChars:    Set of CHAR=['/','-'];
   NumChars:        Set of CHAR=['0'..'9'];
-
+  DummyStringComma = #243#176#80#80;  // Unicode private area: http://www.utf8-chartable.de/unicode-utf8-table.pl?start=983040
+  DummyStringSpace = #243#176#80#81;
 var
   FErrorText: string;
 
@@ -2074,6 +2076,8 @@ var
   FVLSet: TLabelValueList;
   Idx, I: Integer;
   S: String;
+  MS: TMemoryStream;
+  Unzip: TVCLUnZip;
 const
   XMLFieldTypesToEpiFieldTypes: array[0..13] of TFelttyper = (
     ftBoolean,                            // Boolean                       (0)
@@ -2088,8 +2092,18 @@ begin
   FRecCount := -1;
 
   try
+    MS := TMemoryStream.Create;
+    if ExtractFileExt(fFileName) = '.epz' then
+    begin
+      Unzip := TVCLUnZip.Create(nil);
+      Unzip.ZipName := fFileName;
+      Unzip.UnZipToStreamByIndex(MS, 0);
+      UnZip.Free;
+    end else
+      MS.LoadFromFile(fFileName);
+
     FEpiDocument := TXMLDocument.Create(DM);
-    FEpiDocument.LoadFromFile(filename);
+    FEpiDocument.LoadFromStream(MS, xetUTF_8);
     Doc := FEpiDocument.DocumentElement;
 
     Node := Doc.ChildNodes['Settings'];
@@ -2120,7 +2134,7 @@ begin
           Node := Node.NextSibling;
           Continue;
         end;
-        if not (Integer(Node['Type']) in [1, 12]) then
+        if not (Integer(Node.Attributes['type']) in [1, 12]) then
         begin
           // Only Interger and String valuelabels supported.
           Node := Node.NextSibling;
@@ -2130,7 +2144,7 @@ begin
         // Create valuelabel set
         FVLSet := TLabelValueList.Create;
         FNode := Node.ChildNodes['Internal'];
-        FVLSet.LabelName := Node.ChildNodes['Name'].Text;
+        FVLSet.LabelName := Node.Attributes['name'];
 
         // Read the values and labels.
         VLNode := FNode.ChildNodes[0];
@@ -2183,16 +2197,17 @@ begin
       while Assigned(FNode) do
       begin
         AField                := TeField.Create;
-        AField.Felttype       := XMLFieldTypesToEpiFieldTypes[StrToInt(FNode.ChildNodes['Type'].Text)];
-        AField.FFieldColor    := StrToInt(FNode.ChildNodes['Type'].Text);
-        AField.FieldName      := FNode.ChildNodes['Name'].Text;
+        AField.FFieldColor    := StrToInt(FNode.Attributes['type']);
+        AField.Felttype       := XMLFieldTypesToEpiFieldTypes[AField.FFieldColor];
+        AField.FieldName      := FNode.Attributes['name'];
         Afield.FFieldComments := FNode.Attributes['id'];  // dirty, but FieldComment not used in Analysis.
-        AField.FLength        := StrToInt(FNode.ChildNodes['Length'].Text);
-        AField.FNumDecimals   := StrToInt(FNode.ChildNodes['Decimals'].Text);
-        AField.FValueLabel    := FNode.ChildNodes['ValueLabelId'].Text;
-        AField.FVariableLabel := FNode.ChildNodes['Question'].Text;
+        AField.FLength        := StrToInt(FNode.Attributes['length']);
+        AField.FNumDecimals   := StrToInt(FNode.Attributes['decimals']);
+        if FNode.HasAttribute('valuelabelref') then
+          AField.FValueLabel    := FNode.Attributes['valuelabelref'];
+        AField.FVariableLabel := FNode.ChildNodes['Question'].ChildNodes[0].Text;  // <Question>  <Text xml:lang="..."> TEXT </Text> </Question>
         with AField do
-        case FFieldColor of
+        case FFieldColor of   // The XML Field type.
           1,2:    FFieldFormat := '%d';
           3:      FFieldFormat := '%' + Format('%d.%d', [FLength, FNumDecimals]) + 'f';
           4,7:    FFieldFormat := '%DMY';
@@ -2258,6 +2273,9 @@ begin
   FLocalLabelBlockList.Sorted := true;
 
   FRecNode := FEpiDataFile.ChildNodes['Records'].ChildNodes[0];
+  FDataList := TStringList.Create;
+  FDataList.Delimiter := ',';
+  FDataList.QuoteChar := '"';
 end;
 
 function TEpiEPXDataset.GetDeleted: boolean;
@@ -2285,13 +2303,21 @@ var
   F: EpiFloat;
   D: TDateTime;
   Code: integer;
+
+  function UnDummyfy(Const T: string): string;
+  begin
+    result := StringReplace(T, DummyStringSpace, ' ', [rfReplaceAll]);
+    result := StringReplace(result, DummyStringComma, ',', [rfReplaceAll])
+  end;
+
 begin
   result := true;
 
-  Blank := not FRecNode.HasAttribute(Fld.FFieldComments);
+  Blank := FDataList.IndexOfName(Fld.FFieldComments) = -1;
+//  Blank := not FRecNode.HasAttribute(Fld.FFieldComments);
   if Blank then exit;
 
-  S := FRecNode.Attributes[Fld.FFieldComments];
+  S := UnDummyfy(FDataList.Values[Fld.FFieldComments]);
   case Fld.Felttype of
     ftAlfa,ftUpperAlfa:
       begin
@@ -2337,7 +2363,7 @@ end;
 
 function TEpiEPXDataset.GetFileLabel: string;
 begin
-  result := FEpiDocument.DocumentElement.ChildNodes['Study'].ChildNodes['Title'].Text;
+  result := FEpiDocument.DocumentElement.ChildNodes['Study'].ChildNodes['Title'].ChildNodes[0].Text;
 end;
 
 function TEpiEPXDataset.GetRecordCount: integer;
@@ -2350,11 +2376,26 @@ begin
 end;
 
 function TEpiEPXDataset.Next: integer;
+var
+  S: string;
+
+  function DummyFy(Const T: string): string;
+  begin
+    result := StringReplace(T,      '\,', DummyStringComma, [rfReplaceAll]);
+    result := StringReplace(Result, ' ',  DummyStringSpace, [rfReplaceAll]);
+  end;
+
 begin
   if FFirstRec then
     FFirstRec := false
   else
     FRecNode := FRecNode.NextSibling;
+
+  if Assigned(FRecNode) then
+  begin
+    S := FRecNode.Text;
+    FDataList.DelimitedText := DummyFy(S);
+  end;
 end;
 
 end.
