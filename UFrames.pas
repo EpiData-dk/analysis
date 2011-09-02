@@ -234,7 +234,7 @@ private
   FFirstRec: Boolean;   // Needed because read records procedure in UVectors does both a ADataSet.first AND Adataset.Next to read the first record!!!!
   FRecNode: IXMLNode;
   FRecCount: integer;
-  FFieldList: TList;
+  FFieldList: TStringList;
   FEpiDocument: TXMLDocument;
   FEpiDataFile: IXMLNode;
   FEpiDocFormatSettings: TFormatSettings;
@@ -2179,7 +2179,7 @@ begin
 
     // Only support for reading the first datafile.
     FEpiDataFile := Doc.ChildNodes['DataFiles'].ChildNodes[0];
-    FFieldList := TList.Create;
+    FFieldList := TStringList.Create;
 
     if FEpiDataFile.ChildNodes['Sections'].HasChildNodes then
       Node := FEpiDataFile.ChildNodes['Sections'].ChildNodes[0]
@@ -2200,12 +2200,11 @@ begin
         AField.FFieldColor    := StrToInt(FNode.Attributes['type']);
         AField.Felttype       := XMLFieldTypesToEpiFieldTypes[AField.FFieldColor];
         AField.FieldName      := FNode.Attributes['name'];
-        Afield.FFieldComments := FNode.Attributes['id'];  // dirty, but FieldComment not used in Analysis.
         AField.FLength        := StrToInt(FNode.Attributes['length']);
         AField.FNumDecimals   := StrToInt(FNode.Attributes['decimals']);
         if FNode.HasAttribute('valuelabelref') then
           AField.FValueLabel    := FNode.Attributes['valuelabelref'];
-        AField.FVariableLabel := FNode.ChildNodes['Question'].ChildNodes[0].Text;  // <Question>  <Text xml:lang="..."> TEXT </Text> </Question>
+        AField.FVariableLabel := FNode.ChildNodes['Question'].ChildNodes[0].Text;  // <Question><Text xml:lang="..."> TEXT </Text></Question>
         with AField do
         case FFieldColor of   // The XML Field type.
           1,2:    FFieldFormat := '%d';
@@ -2240,7 +2239,7 @@ begin
           end;
         end;
 
-        FFieldList.Add(AField);
+        FFieldList.AddObject(FNode.Attributes['id'], AField);
         FNode := FNode.NextSibling;
       end;
       Node := Node.NextSibling;
@@ -2285,7 +2284,7 @@ end;
 
 function TEpiEPXDataset.GetField(Index: integer): TeField;
 begin
-  result := TeField(FFieldList[Index]);
+  result := TeField(FFieldList.Objects[Index]);
 end;
 
 function TEpiEPXDataset.GetFieldCount: integer;
@@ -2298,7 +2297,7 @@ end;
 function TEpiEPXDataset.GetFieldData(obs: integer; Fld: TeField;
   Dst: Pointer; var Blank: boolean): Boolean;
 var
-  S: String;
+  S, Id: String;
   I: Integer;
   F: EpiFloat;
   D: TDateTime;
@@ -2312,12 +2311,13 @@ var
 
 begin
   result := true;
+  With FFieldList do
+    Id := Strings[IndexOfObject(Fld)];
 
-  Blank := FDataList.IndexOfName(Fld.FFieldComments) = -1;
-//  Blank := not FRecNode.HasAttribute(Fld.FFieldComments);
+  Blank := FDataList.IndexOfName(Id) = -1;
   if Blank then exit;
 
-  S := UnDummyfy(FDataList.Values[Fld.FFieldComments]);
+  S := UnDummyfy(FDataList.Values[Id]);
   case Fld.Felttype of
     ftAlfa,ftUpperAlfa:
       begin
