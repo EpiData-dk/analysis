@@ -182,7 +182,7 @@ var
   opt: TEpiOption;
   found : Boolean;
 begin
-  sysdir := ExtractFilePath(Application.ExeName) + 'docs' + PathDelim;
+  sysdir := ExtractFilePath(Application.ExeName) + 'languages' + PathDelim;
 
   if dm.GetOptionValue('LANGUAGE', opt) then
     lang := AnsiLowerCase(opt.value);
@@ -213,7 +213,7 @@ var
   end;
 
 begin
-  sysdir := ExtractFilePath(Application.ExeName) + 'docs' + PathDelim;
+  sysdir := ExtractFilePath(Application.ExeName) + 'languages' + PathDelim;
   if dm.GetOptionValue('LANGUAGE', opt) then
     if AnsiUpperCase(opt.Value) = 'ENGLISH' then lang := 'en'
       else  lang := OTranslator.Translate(105,'en');  // was lang := AnsiLowerCase(opt.value);
@@ -221,34 +221,37 @@ begin
   loadfile := '';
 
   // notice that as soon as loadfile is <> '', then the test(      )   will fail.
-  // 1. search in {sysdir}\docs\{language}\xxxx.htm[l] for the language specific extended file: (e.g. read.htm og read.html)
+  // 1. search in {sysdir}\languages\{language}\xxxx.htm[l] for the language specific extended file: (e.g. read.htm og read.html)
   if test(sysdir + lang + PathDelim + HelpText + '.htm') then
     loadfile := sysdir + lang + PathDelim + helptext + '.htm';
 
   if test(sysdir + lang + PathDelim + HelpText + '.html') then
     loadfile := sysdir + lang + PathDelim + helptext + '.html';
 
-  // 2.search in {sysdir}\docs\en\ xxxx.htm[l]  for the file. (fx read.htm og read.html)
+  // 2.search in {sysdir}\languages\en\ xxxx.htm[l]  for the file. (fx read.htm og read.html)
   if test(sysdir + 'en' + PathDelim + HelpText + '.htm') then
     loadfile := sysdir + 'en' + PathDelim + helptext + '.htm';
   if test(sysdir + 'en' + PathDelim + HelpText + '.html') then
     loadfile := sysdir + 'en' + PathDelim + helptext + '.html';
 
-  // 3. search for translated  {sysdir}\docs\{language}\commands.htm
+  // 3. search for translated  {sysdir}\languages\{language}\commands.htm
   if test(sysdir + lang + PathDelim + 'commands.htm') then
     loadfile := sysdir + lang + PathDelim + 'commands.htm';
 
-  // 4. finally if none of 1-3 apply show the english version file:  {sysdir}\docs\en\commands.htm
+  // 4. finally if none of 1-3 apply show the english version file:  {sysdir}\languages\en\commands.htm
   if LoadFile = '' then
     loadfile := sysdir + 'en' + PathDelim + 'commands.htm';
 
   Viewer.LoadFromFile(loadfile);
   Self.Caption := Viewer.DocumentTitle;
+  
 //  Viewer.positionto('#top');
   if (helptext <> '') and ((loadfile = sysdir + 'en' + PathDelim + 'commands.htm') or
      (loadfile = sysdir + lang + PathDelim + 'commands.htm')) then
     Viewer.positionto('#' + helptext)      // find relevant #xx  in the html file
-    else Viewer.positionto('#top');
+  else
+    Viewer.positionto('#top');
+
   OldHelpText := HelpText;
 end;
 

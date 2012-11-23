@@ -90,7 +90,7 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=EpiData Analysis - www.epidata.dk
 [Directories]
-OutputDir=..\test
+OutputDir=
 UnitOutputDir=
 PackageDLLOutputDir=
 PackageDCPOutputDir=
@@ -115,7 +115,7 @@ AutoIncBuild=0
 MajorVer=2
 MinorVer=2
 Release=2
-Build=177
+Build=179
 Debug=0
 PreRelease=0
 Special=0
@@ -126,7 +126,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=EpiData Association
 FileDescription=EpiData Analysis Programme
-FileVersion=2.2.2.177
+FileVersion=2.2.2.179
 InternalName=EpiDataStat
 LegalCopyright=EpiData Association Odense, Denmark
 LegalTrademarks=EpiDataStat
