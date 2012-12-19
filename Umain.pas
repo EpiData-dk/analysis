@@ -785,7 +785,7 @@ begin
       if (DM.GetOptionValue('START PAGE', opt) and (fileexists(opt.Value))) then
         InternalRunCommand('view "' + opt.value + '"')
       else
-        InternalRunCommand('view "' + extractfilepath(application.exename)+ 'docs\' +
+        InternalRunCommand('view "' + extractfilepath(application.exename)+ 'languages\' +
                OTranslator.Translate(105,'en') + '\start.htm"');
 
     if (CmdPanel.visible) then
@@ -914,7 +914,7 @@ var
   // help routines for small repeating texts
   function StartView(): string;
   begin
-       result := 'view "@sysdir/docs/' + OTranslator.Translate(105,'en') + '/start.htm"';
+       result := 'view "@sysdir/languages/' + OTranslator.Translate(105,'en') + '/start.htm"';
   end;
 
 begin
@@ -933,9 +933,9 @@ begin
   WriteToFile(sysdir + 'epiout.css', EpiOutCSSblack);
   try
     begin     // attemp create - exception avoided if existing.
-      sysdir := ExtractFilePath(Application.ExeName)   + 'docs' + PathDelim ;
+      sysdir := ExtractFilePath(Application.ExeName)   + 'languages' + PathDelim ;
       if not DirectoryExists(sysdir) then MkDir(sysdir);
-      sysdir := ExtractFilePath(Application.ExeName)   + 'docs'
+      sysdir := ExtractFilePath(Application.ExeName)   + 'languages'
                 + PathDelim + OTranslator.Translate(105,'en') + PathDelim;
       if not DirectoryExists(sysdir) then MkDir(sysdir);
     end
@@ -943,7 +943,7 @@ begin
     sysdir := ExtractFilePath(Application.ExeName);
   end;
 
-    // standard font and start files in docs/{language}/
+    // standard font and start files in languages/{language}/
   WriteToFile(sysdir + 'epiout.css',EpiOutCSS);
 
    // default start file:

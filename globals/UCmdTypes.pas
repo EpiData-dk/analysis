@@ -47,10 +47,12 @@ BgColors:array[0..7] of TColor = (clBlack,clNavy,clGreen,clTeal,clMaroon,clPurpl
 TYPE
   str45=string[45];
     ByteFile=File of Byte;
-  TFelttyper = (ftInteger,ftAlfa,ftDate,ftUpperAlfa,ftCheckBox,  
+
+  TFelttyper = (ftInteger,ftAlfa,ftDate,ftUpperAlfa,ftCheckBox,
                 ftBoolean,ftFloat,ftPhoneNum,ftTime,ftLocalNum,
                 ftToday,ftEuroDate,ftIDNUM,ftRes4,ftRes5,
                 ftQuestion,ftEuroToday,ftSoundex,ftCrypt,ftYMDDate,ftYMDToday);    //&&
+
   TMissingValues = array[0..MAXDEFINEDMISSINGVALUES] of string;
 
 

@@ -258,7 +258,8 @@ end;
 
 implementation
 
-uses uDateUtils, PasswordUnit, Forms, UCmdProcessor, ClipBrd, VCLUnZip;
+uses uDateUtils, PasswordUnit, Forms, UCmdProcessor, ClipBrd, VCLUnZip,
+  TypInfo;
 
 CONST
   antallinier=100000;
@@ -2078,6 +2079,26 @@ var
   S: String;
   MS: TMemoryStream;
   Unzip: TVCLUnZip;
+  Version: integer;
+
+  function FtNumberFromFtText(FTText: string): integer;
+  begin
+    if FTText = 'ftBoolean'         then Result := 0
+    else if FTText = 'ftInteger'    then Result := 1
+    else if FTText = 'ftAutoInc'    then Result := 2
+    else if FTText = 'ftFloat'      then Result := 3
+    else if FTText = 'ftDMYDate'    then Result := 4
+    else if FTText = 'ftMDYDate'    then Result := 5
+    else if FTText = 'ftYMDDate'    then Result := 6
+    else if FTText = 'ftDMYAuto'    then Result := 7
+    else if FTText = 'ftMDYAuto'    then Result := 8
+    else if FTText = 'ftYMDAuto'    then Result := 9
+    else if FTText = 'ftTime'       then Result := 10
+    else if FTText = 'ftTimeAuto'   then Result := 11
+    else if FTText = 'ftString'     then Result := 12
+    else if FTText = 'ftUpperString' then Result := 13;
+  end;
+
 const
   XMLFieldTypesToEpiFieldTypes: array[0..13] of TFelttyper = (
     ftBoolean,                            // Boolean                       (0)
@@ -2105,13 +2126,24 @@ begin
     FEpiDocument := TXMLDocument.Create(DM);
     FEpiDocument.LoadFromStream(MS, xetUTF_8);
     Doc := FEpiDocument.DocumentElement;
+    MS.Free;
+
+    Version := Integer(Doc.Attributes['version']);
+
+    if (Version >= 2) and
+       (Doc.HasAttribute('Password'))
+    then
+    begin
+      dm.Error('Error: Reading encrypted EPX/EPZ files is not supported!', [], 0);
+      checkfileerror(-2);
+    end;
+
 
     Node := Doc.ChildNodes['Settings'];
-    FEpiDocFormatSettings.DateSeparator := OleStrToString(PWideChar(Node.ChildNodes['DateSeparator'].Text))[1];
-    FEpiDocFormatSettings.TimeSeparator := OleStrToString(PWideChar(Node.ChildNodes['TimeSeparator'].Text))[1];
-    FEpiDocFormatSettings.DecimalSeparator := OleStrToString(PWideChar(Node.ChildNodes['DecimalSeparator'].Text))[1];
+    FEpiDocFormatSettings.DateSeparator := String(Node.Attributes['dateSeparator'])[1];
+    FEpiDocFormatSettings.TimeSeparator := String(Node.Attributes['timeSeparator'])[1];
+    FEpiDocFormatSettings.DecimalSeparator := String(Node.Attributes['decimalSeparator'])[1];
     FEpiDocFormatSettings.ShortTimeFormat  := 'HH:NN:SS';
-
 
     // Read valuelabels.
     if Not Assigned(fCheckProperties) then
@@ -2134,7 +2166,7 @@ begin
           Node := Node.NextSibling;
           Continue;
         end;
-        if not (Integer(Node.Attributes['type']) in [1, 12]) then
+        if not (FtNumberFromFtText(Node.Attributes['type']) in [1, 12]) then
         begin
           // Only Interger and String valuelabels supported.
           Node := Node.NextSibling;
@@ -2144,7 +2176,7 @@ begin
         // Create valuelabel set
         FVLSet := TLabelValueList.Create;
         FNode := Node.ChildNodes['Internal'];
-        FVLSet.LabelName := Node.Attributes['name'];
+        FVLSet.LabelName := Node.Attributes['id'];
 
         // Read the values and labels.
         VLNode := FNode.ChildNodes[0];
@@ -2197,14 +2229,16 @@ begin
       while Assigned(FNode) do
       begin
         AField                := TeField.Create;
-        AField.FFieldColor    := StrToInt(FNode.Attributes['type']);
+
+        AField.FFieldColor    := FtNumberFromFtText(FNode.Attributes['type']);
         AField.Felttype       := XMLFieldTypesToEpiFieldTypes[AField.FFieldColor];
-        AField.FieldName      := FNode.Attributes['name'];
+        AField.FieldName      := FNode.Attributes['id'];
         AField.FLength        := StrToInt(FNode.Attributes['length']);
         AField.FNumDecimals   := StrToInt(FNode.Attributes['decimals']);
-        if FNode.HasAttribute('valuelabelref') then
-          AField.FValueLabel    := FNode.Attributes['valuelabelref'];
-        AField.FVariableLabel := FNode.ChildNodes['Question'].ChildNodes[0].Text;  // <Question><Text xml:lang="..."> TEXT </Text></Question>
+        if FNode.HasAttribute('valueLabelRef') then
+          AField.FValueLabel    := FNode.Attributes['valueLabelRef'];
+        if FNode.HasChildNodes then
+          AField.FVariableLabel := FNode.ChildNodes['Question'].ChildNodes[0].Text;  // <Question><Text xml:lang="..."> TEXT </Text></Question>
         with AField do
         case FFieldColor of   // The XML Field type.
           1,2:    FFieldFormat := '%d';
@@ -2363,7 +2397,7 @@ end;
 
 function TEpiEPXDataset.GetFileLabel: string;
 begin
-  result := FEpiDocument.DocumentElement.ChildNodes['Study'].ChildNodes['Title'].ChildNodes[0].Text;
+  result := FEpiDocument.DocumentElement.ChildNodes['StudyInfo'].ChildNodes['Title'].ChildNodes[0].Text;
 end;
 
 function TEpiEPXDataset.GetRecordCount: integer;
