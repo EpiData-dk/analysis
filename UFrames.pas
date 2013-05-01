@@ -247,6 +247,7 @@ protected
   function  GetFieldCount: integer; override;
   function  GetFileLabel: string; override;
   function  GetRecordCount: integer; override;
+  function  GetVerified: Boolean; override;
 public
   Constructor Create(const filename: TEpiFileName;Mode:Epiint;var fCheckProperties: TdfChkProp; const pw:string='');override;
   Destructor  Destroy;override;
@@ -2313,7 +2314,7 @@ end;
 
 function TEpiEPXDataset.GetDeleted: boolean;
 begin
-  result := FRecNode.Attributes['st'] = '1';
+  result := FRecNode.Attributes['status'] = 'rsDeleted';
 end;
 
 function TEpiEPXDataset.GetField(Index: integer): TeField;
@@ -2407,6 +2408,11 @@ begin
   if FRecCount < 0 then
     FrecCount := FEpiDataFile.ChildNodes['Records'].ChildNodes.Count;
   Result := FRecCount;
+end;
+
+function TEpiEPXDataset.GetVerified: Boolean;
+begin
+  result := FRecNode.Attributes['status'] = 'rsVerified';
 end;
 
 function TEpiEPXDataset.Next: integer;

@@ -932,7 +932,7 @@ var
   dt1        : Epidate;
   lErrCount, delcount,dateerror, finalobs  : integer;
   c          : char;
-  strbuf:    array[0..100] of char;
+  strbuf:    array[0..255] of char;
   opt:       TEpiOption;
   loopcounter: integer;
   St: Cardinal;
@@ -1066,7 +1066,7 @@ try
                 end;}
               ftAlfa,ftUpperAlfa,ftSoundex,ftCrypt:
                 begin
-                  strbuf:='12345678912345678912345678912345678912345678912345678';
+//                  strbuf:='1234567890123456789012345678901234567890123456789012345678';
                   valid := ADataSet.GetFieldData(j,List[i],@strbuf,Blank);
                   s:=strbuf;
                   if (blank) then Vectors[i].isMissing[obs] := true

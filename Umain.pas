@@ -3065,7 +3065,7 @@ var
   end;
 
 begin
-  sysdir := ExtractFilePath(Application.ExeName) + 'docs' + PathDelim;
+  sysdir := ExtractFilePath(Application.ExeName) + 'languages' + PathDelim;
   if dm.GetOptionValue('LANGUAGE', opt) then
     if AnsiUpperCase(opt.Value) = 'ENGLISH' then
       lang := 'en'
@@ -3075,19 +3075,20 @@ begin
   loadfile := '';
 
   // notice that as soon as loadfile is <> '', then the test(      )   will fail.
-  // 1. search in {sysdir}\docs\{language}\xxxx.htm[l] for the language specific extended file: (e.g. read.htm og read.html)
+  // 1. search in {sysdir}\languages\{language}\xxxx.htm[l] for the language specific extended file: (e.g. read.htm og read.html)
   if test(sysdir + lang + PathDelim + 'spc.htm') then
     loadfile := sysdir + lang + PathDelim + 'spc.htm';
 
   if test(sysdir + lang + PathDelim + 'spc.htm') then
     loadfile := sysdir + lang + PathDelim + 'spc.html';
 
-  // 2.search in {sysdir}\docs\en\ xxxx.htm[l]  for the file.
+  // 2.search in {sysdir}\languages\en\ xxxx.htm[l]  for the file.
   if test(sysdir + 'en' + PathDelim + 'spc.htm') then
     loadfile := sysdir + 'en' + PathDelim + 'spc.htm';
-  if test(sysdir + 'en' + PathDelim + 'spc.htm') then
-    loadfile := sysdir + 'en' + PathDelim + 'spc.htm';
+  if test(sysdir + 'en' + PathDelim + 'spc.html') then
+    loadfile := sysdir + 'en' + PathDelim + 'spc.html';
 
+  DM.Writeln('Showing file: ' + loadfile);
   ViewHelpForm(Loadfile);
 end;
 

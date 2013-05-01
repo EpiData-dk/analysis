@@ -2315,7 +2315,7 @@ begin
     if fAnaParser <> nil then
         fAnaParser.free;
     fAnaparser := TAnaParser.CreateString(self,cmdLine);
-    fAnaParser.onError :=self.ParserErrHandler;
+    fAnaParser.onError := self.ParserErrHandler;
     cmdlst:=fAnaParser.ParseFile;
     if cmdlst<> nil then
       result:=ExecuteCommandList(cmdLst);

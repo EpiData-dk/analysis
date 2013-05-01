@@ -115,7 +115,7 @@ AutoIncBuild=0
 MajorVer=2
 MinorVer=2
 Release=2
-Build=180
+Build=181
 Debug=0
 PreRelease=0
 Special=0
@@ -126,7 +126,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=EpiData Association
 FileDescription=EpiData Analysis Programme
-FileVersion=2.2.2.180
+FileVersion=2.2.2.181
 InternalName=EpiDataStat
 LegalCopyright=EpiData Association Odense, Denmark
 LegalTrademarks=EpiDataStat
@@ -134,40 +134,11 @@ OriginalFilename=EpiDataStat.exe
 ProductName=EpiData Analysis programme
 ProductVersion=See Caption
 Comments=Get latest copy from: Http://www.epidata.dk
-[HistoryLists\hlDebugSourcePath]
-Count=12
-Item0=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;.\AnalysisUnits\regress;.\VCLZip
-Item1=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;.\AnalysisUnits\regress
-Item2=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;C:\Programmer\Steema Software\TeeChart Pro 7.04 Full Source Code\Sources;.\AnalysisUnits\regress
-Item3=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;$(TEECHART_SOURCE)\Sources;.\AnalysisUnits\regress
-Item4=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;$(TEECHART);.\AnalysisUnits\regress
-Item5=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;..\teechart;.\AnalysisUnits\regress
-Item6=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;..\teechart;.\AnalysisUnits\regress
-Item7=.\MWEdit2;.\AnalysisUnits;.\AnalysisUnits\regress
-Item8=.\MWEdit2;D:\EpiDataStat\source\parser\
-Item9=.\MWEdit2
-Item10=.\MWEdit2;D:\EpiDataStat\source\globals\
-Item11=D:\Epidatastat\source\MWEdit2\
-[HistoryLists\hlConditionals]
-Count=3
-Item0=handlemissing on
-Item1=handlemissing on;purepascal on
-Item2=handlemissing on;purepascal
 [HistoryLists\hlUnitAliases]
 Count=2
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE
 Item1=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=8
-Item0=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;.\AnalysisUnits\regress;.\VCLZip
-Item1=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;.\AnalysisUnits\regress
-Item2=$(DELPHI)\Lib\Debug;.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;.\AnalysisUnits\regress
-Item3=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;$(TEECHART);.\AnalysisUnits\regress
-Item4=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;..\teechart;.\AnalysisUnits\regress
-Item5=$(DELPHI)\Lib\Debug;.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;..\teechart;.\AnalysisUnits\regress
-Item6=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;..\teechart;.\AnalysisUnits\regress
-Item7=$(DELPHI)\Lib\Debug;.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;..\teechart;.\AnalysisUnits\regress
-[HistoryLists\hlOutputDirectorry]
 Count=2
-Item0=..\test
-Item1=d:\epidatastat\test
+Item0=.\fileIO;.\globals;.\MWEdit2;.\parser\;.\utils;.\Thtml\;.\PACKAGE;.\AnalysisUnits;.\EpiEditor;.\png;.\AnalysisUnits\regress;.\VCLZip
+Item1=..\MWEdit2
