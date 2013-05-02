@@ -419,7 +419,7 @@ StartHTM: string =  '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://w
     '</HEAD>' + #13 +
     '<body class=body>' + #13 +
     '<h3 align="left">EpiData Analysis<font style="Font-size=0.9em" >' + #13 +
-    'Copyright 2002-2008  Epidata Association <A HREF="HTTP:\\www.epidata.dk">www.epidata.dk</A></font></h3>' + #13;
+    'Copyright 2002-2013  Epidata Association <A HREF="HTTP:\\www.epidata.dk">www.epidata.dk</A></font></h3>' + #13;
 
 
  StartFontHtml: string =     '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">' + #13 +

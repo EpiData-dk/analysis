@@ -884,7 +884,8 @@ end;
 procedure TaMainForm.SetupBasicFiles();
 {$I BasicFiles.inc}
 var
-  sysdir, startfont: string;
+  sysdir, langdir, helpdir: string;
+  startfont: string;
   FHandle: HWND;
   Output: TStringList;
 
@@ -931,23 +932,24 @@ begin
   WriteToFile(sysdir + 'epiout_w.css', EpiOutCSSblack);
   WriteToFile(sysdir + 'epiout_b.css', EpiOutCSSwhite);
   WriteToFile(sysdir + 'epiout.css', EpiOutCSSblack);
+
   try
     begin     // attemp create - exception avoided if existing.
-      sysdir := ExtractFilePath(Application.ExeName)   + 'languages' + PathDelim ;
-      if not DirectoryExists(sysdir) then MkDir(sysdir);
-      sysdir := ExtractFilePath(Application.ExeName)   + 'languages'
-                + PathDelim + OTranslator.Translate(105,'en') + PathDelim;
-      if not DirectoryExists(sysdir) then MkDir(sysdir);
+      langdir := sysdir + 'languages' + PathDelim;
+      if not DirectoryExists(langdir) then MkDir(langdir);
+      langdir := sysdir + 'languages' + PathDelim +
+                 OTranslator.Translate(105,'en') + PathDelim;
+      if not DirectoryExists(langdir) then MkDir(langdir);
     end
   except
-    sysdir := ExtractFilePath(Application.ExeName);
+    langdir := sysdir;
   end;
 
-    // standard font and start files in languages/{language}/
-  WriteToFile(sysdir + 'epiout.css',EpiOutCSS);
+  // standard font and start files in languages/{language}/
+  WriteToFile(langdir + 'epiout.css',EpiOutCSS);
 
-   // default start file:
-  WriteToFile(sysdir +  'start0.htm',
+  // default start file:
+  WriteToFile(langdir +  'start0.htm',
     StartHTM + '<p><ul>'
     + '<li>' + OTranslator.Translate(125,'Introduction to EpiData Analysis, see Help menu') + #13
     + '<li>' + OTranslator.Translate(126,'Check regularly for updated versions and documentation')
@@ -964,11 +966,11 @@ begin
     + '<li>' + OTranslator.Translate(133,'Select background and text colour') + #13
     + '<ul><li><A HREF=''epi:cls;set echo=off;define fn __________________________ glob;fn= "@sysdir"; '
     + 'cd "@fn";copyfile "epiout_w.css" "epiout.css" /replace;'
-    + 'copyfile "epiout.css" "docs/'+ OTranslator.Translate(105,'en') + '/epiout.css" /replace;' + StartView() + '''>'
+    + 'copyfile "epiout.css" "languages/'+ OTranslator.Translate(105,'en') + '/epiout.css" /replace;' + StartView() + '''>'
     + OTranslator.Translate(134,'White background') + '</a></li>' + #13
     + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<A HREF=''epi:cls;set echo=off;define fn __________________________ glob;fn= "@sysdir"; '
     + 'cd "@fn";copyfile "epiout_b.css" "epiout.css"  /replace;'
-    + 'copyfile "epiout.css" "docs/'+ OTranslator.Translate(105,'en') + '/epiout.css" /replace;' + StartView() + '''>'
+    + 'copyfile "epiout.css" "languages/'+ OTranslator.Translate(105,'en') + '/epiout.css" /replace;' + StartView() + '''>'
     + OTranslator.Translate(135,'Black background')+ '</a></li></ul><br>' + #13
     + '<li>' + OTranslator.Translate(136,'Choose text font size') + '<ul>' + #13
     + '<li>&nbsp;&nbsp;' + font10 + StartView() +  '''><font style="Font-size=14px ; font-weight : bold; color: blue">10</font></a>&nbsp;&nbsp;&nbsp;&nbsp;'
@@ -980,31 +982,30 @@ begin
     + '</ol>' + #13 + '<hr>' + #13 + '</body></html>' + #13 ;
 
   // modify to accomplish translation:
-  WriteToFile(sysdir + 'epidatahelp.css',EpiOutCSS);
-  WriteToFile(sysdir + 'startfont.htm',Startfont);
-  WriteToFile(sysdir + 'start.htm',StartFont);
-{  WriteToFile(sysdir + 'docs' + PathSeperator +
-              OTranslator.Translate(105,'en') + PathSeperator + 'SPC.htm', SpcHTML);}
+  WriteToFile(langdir + 'startfont.htm', Startfont);
+  WriteToFile(langdir + 'start.htm', StartFont);
 
-   // redo if commands.htm was not found, then we should make simplified startfiles:
-  if not FileExists(sysdir + 'commands.htm') then
+  try
+    begin     // attemp create - exception avoided if existing.
+      helpdir := langdir + 'help' + PathDelim;
+      if not DirectoryExists(helpdir) then MkDir(helpdir);
+    end
+  except
+    helpdir := langdir;
+  end;
+
+  // write help files
+  WriteToFile(helpdir + 'epidatahelp.css', EpiOutCSS);
+  WriteToFile(helpdir + 'SPC.htm', SpcHTML);
+
+  // redo if commands.htm was not found, then we should make simplified startfiles:
+  if not FileExists(helpdir + 'commands.htm') then
   begin
-    WriteToFile(sysdir + 'commands.htm',
+    WriteToFile(helpdir + 'commands.htm',
         StartHTM + '<p><ul>'
         + '<li><b>' + OTranslator.Translate(127,'Documentation files missing - see ')
         + '<a href="' + OTranslator.Translate(120,'Http://www.epidata.dk')+'">' + OTranslator.Translate(120,'Http://www.epidata.dk') + '</a>' + #13
         + '</b><br></ul>' + #13 + '</p></body><html>');
-
-    WriteToFile(sysdir + 'start.htm',
-        StartHTM + '<p><ul>'
-        + '<li><b>' + OTranslator.Translate(127,'Documentation files missing - see ')
-        + '<a href="' + OTranslator.Translate(120,'Http://www.epidata.dk')+'">' + OTranslator.Translate(120,'Http://www.epidata.dk') + '</a>' + #13
-        + '</b><br></ul>' + #13 + '</p></body><html>');
-    {WriteToFile(sysdir + 'startfont.htm',
-        StartHTM + '<p><ul>'
-        + '<li><b>' + OTranslator.Translate(127,'Documentation files missing - see ')
-        + '<a href="' + OTranslator.Translate(120,'Http://www.epidata.dk')+'">' + OTranslator.Translate(120,'Http://www.epidata.dk') + '</a>' + #13
-        + '</b><br></ul>' + #13 + '</p></body><html>');}
   end;
   sysdir := ExtractFilePath(Application.ExeName);
   FreeAndNil(Output);
@@ -1202,7 +1203,7 @@ begin
      if not fileexists(path) then
      begin
        path := extractfilename(path);
-       path :=extractfilepath(application.exename)+'docs\'+path;
+       path :=extractfilepath(application.exename)+'languages\en\'+path;
      end;
   end;
   if not fileexists(path) then path:=fn;
@@ -3054,7 +3055,8 @@ end;
 
 procedure TaMainForm.AcShowSPCMenuExecute(Sender: TObject);
 var
-  sysdir, loadfile, lang: string;
+  sysdir, langdir: string;
+  loadfile, lang: string;
   opt: TEpiOption;
 
   function test(path: string): boolean;
@@ -3065,28 +3067,28 @@ var
   end;
 
 begin
-  sysdir := ExtractFilePath(Application.ExeName) + 'languages' + PathDelim;
   if dm.GetOptionValue('LANGUAGE', opt) then
     if AnsiUpperCase(opt.Value) = 'ENGLISH' then
       lang := 'en'
     else
       lang := OTranslator.Translate(105,'en');
+  sysdir  := ExtractFilePath(Application.ExeName) + 'languages\en\help\';
+  langdir := ExtractFilePath(Application.ExeName) + 'languages\' + lang + '\help\';
 
   loadfile := '';
 
   // notice that as soon as loadfile is <> '', then the test(      )   will fail.
-  // 1. search in {sysdir}\languages\{language}\xxxx.htm[l] for the language specific extended file: (e.g. read.htm og read.html)
-  if test(sysdir + lang + PathDelim + 'spc.htm') then
-    loadfile := sysdir + lang + PathDelim + 'spc.htm';
+  // 1. search in {language}\help\xxxx.htm[l] for the language specific extended file: (e.g. read.htm og read.html)
+  if test(langdir + 'spc.htm') then
+    loadfile := langdir + 'spc.htm';
+  if test(langdir + 'spc.html') then
+    loadfile := langdir + 'spc.html';
 
-  if test(sysdir + lang + PathDelim + 'spc.htm') then
-    loadfile := sysdir + lang + PathDelim + 'spc.html';
-
-  // 2.search in {sysdir}\languages\en\ xxxx.htm[l]  for the file.
-  if test(sysdir + 'en' + PathDelim + 'spc.htm') then
-    loadfile := sysdir + 'en' + PathDelim + 'spc.htm';
-  if test(sysdir + 'en' + PathDelim + 'spc.html') then
-    loadfile := sysdir + 'en' + PathDelim + 'spc.html';
+  // 2.search in en\help\xxxx.htm[l]  for the file.
+  if test(sysdir + 'spc.htm') then
+    loadfile := sysdir + 'spc.htm';
+  if test(sysdir + 'spc.html') then
+    loadfile := sysdir + 'spc.html';
 
   DM.Writeln('Showing file: ' + loadfile);
   ViewHelpForm(Loadfile);
