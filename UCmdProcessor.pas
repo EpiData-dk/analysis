@@ -1552,10 +1552,24 @@ begin
   Relateframe := nil;
   try
     if Trim(Filename) = '' then
+    begin
       if not OD.Execute then
         exit
-      else
+      else begin
         Filename := OD.FileName;
+        S := 'Append /FILE="' + Filename + '"';
+        if Cmd.ParamExists['KEY'] then
+          S := S + ' /KEY="' + Cmd.ParamByName['KEY'].AsString + '"';
+        if Cmd.ParamExists['UPDATE'] then
+          S := S + ' /UPDATE';
+        if Cmd.ParamExists['UPDATEALL'] then
+          S := S + ' /UPDATEALL';
+        if Cmd.ParamExists['TABLE'] then
+          S := S + ' /TABLE';
+
+        aMainForm.CmdEdit.HackHistory('Append', S);
+      end;
+    end;
 
     pw := '';
     if Cmd.ParamExists['KEY'] then

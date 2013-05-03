@@ -2272,7 +2272,7 @@ begin
     InternalRunCommand('view "' + opt.value + '"')
   else
     InternalRunCommand('view "' + extractfilepath(application.exename)
-        + 'docs\' + OTranslator.Translate(105,'en') + '\start.htm"');
+        + 'languages\' + OTranslator.Translate(105,'en') + '\start.htm"');
 end;
 
 procedure TaMainForm.AcHelpWindowExecute(Sender: TObject);
@@ -2282,12 +2282,12 @@ end;
 
 procedure TaMainForm.AcHelpWindowKeyboard(Sender: TObject);
 begin
- dm.ViewHelpfile(extractfilepath(application.exename)+'docs\' + OTranslator.Translate(105,'en') + '\keyboard.htm');
+ dm.ViewHelpfile(extractfilepath(application.exename)+'languages\' + OTranslator.Translate(105,'en') + '\keyboard.htm');
 end;
 
 procedure TaMainForm.AcFontSelectExecute(Sender: TObject);
 begin
-  dm.ViewHelpfile(extractfilepath(application.exename)+'docs\' + OTranslator.Translate(105,'en') + '\startfont.htm');
+  dm.ViewHelpfile(extractfilepath(application.exename)+'languages\' + OTranslator.Translate(105,'en') + '\startfont.htm');
 end;
 
 procedure TaMainForm.AcEditSetupFile(Sender: TObject);
@@ -2696,7 +2696,7 @@ begin
   SearchOptions := SearchOPt;
   if frStartpage in SearchOpt then
     if pos('start.htm', viewer.CurrentFile) = 0 then
-      InternalRunCommand('view "' + extractfilepath(application.exename)+ '\docs\' +
+      InternalRunCommand('view "' + extractfilepath(application.exename)+ '\languages\' +
              OTranslator.Translate(105,'en') + '\start.htm"');
   if (frCommands in SearchOpt) or (frHowTo in SearchOpt) then
   begin
