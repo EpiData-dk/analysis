@@ -3,19 +3,26 @@ File_0=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\tru
 File_1=SourceModule,'c:\program files\borland\delphi7\source\rtl\Win\Windows.pas',0,1,28593,1,28621,0,0
 File_2=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UAnaToken.pas',0,1,73,60,113,0,0
 File_3=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UHelp.pas',0,1,233,24,242,0,0
-File_4=SourceModule,'c:\program files\borland\delphi7\source\rtl\Sys\sysutils.pas',0,1,324,1,349,0,0
-File_5=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\BasicFiles.inc',0,1,547,63,567,0,0
-File_6=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\parser\AAHshLnP.pas',0,1,472,1,499,0,0
+File_4=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\BasicFiles.inc',0,1,547,63,567,0,0
+File_5=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\parser\AAHshLnP.pas',0,1,472,1,499,0,0
 
 [Modules]
-Module0=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
-Module1=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas
-Module2=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas
-Module3=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas
-Count=4
+Module0=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas
+Module1=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
+Module2=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas
+Module3=c:\program files\borland\delphi7\source\rtl\Sys\sysutils.pas
+Module4=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
+Module5=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas
+Module6=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas
+Count=7
 EditWindowCount=1
 
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas]
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -25,7 +32,12 @@ ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas]
+[c:\program files\borland\delphi7\source\rtl\Sys\sysutils.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -35,7 +47,8 @@ ModuleType=SourceModule
 FormState=1
 FormOnTop=0
 
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\EpiDataStat.dpr]
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas]
+ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
@@ -43,13 +56,20 @@ FormOnTop=0
 FormState=0
 FormOnTop=0
 
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\EpiDataStat.dpr]
+FormState=0
+FormOnTop=0
+
 [EditWindow0]
-ViewCount=4
-CurrentView=2
+ViewCount=7
+CurrentView=5
 View0=0
 View1=1
 View2=2
 View3=3
+View4=4
+View5=5
+View6=6
 CodeExplorer=CodeExplorer@EditWindow0
 MessageView=MessageView@EditWindow0
 Create=1
@@ -73,26 +93,47 @@ BottomPanelData=0000040000000000000000000000000000000000000000000001000000000000
 
 [View0]
 Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas
-CursorX=1
-CursorY=630
+CursorX=46
+CursorY=617
 TopLine=605
 LeftCol=1
 
 [View1]
 Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas
-CursorX=120
-CursorY=227
+CursorX=62
+CursorY=229
 TopLine=200
 LeftCol=1
 
 [View2]
 Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
-CursorX=95
-CursorY=1557
-TopLine=1536
+CursorX=14
+CursorY=136
+TopLine=136
 LeftCol=1
 
 [View3]
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
+CursorX=1
+CursorY=2113
+TopLine=2086
+LeftCol=1
+
+[View4]
+Module=c:\program files\borland\delphi7\source\rtl\Sys\sysutils.pas
+CursorX=1
+CursorY=6115
+TopLine=6084
+LeftCol=1
+
+[View5]
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas
+CursorX=89
+CursorY=1030
+TopLine=1001
+LeftCol=1
+
+[View6]
 Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas
 CursorX=1
 CursorY=119
@@ -124,7 +165,9 @@ LRDockWidth=294
 Dockable=1
 
 [Breakpoints]
-Count=0
+Count=2
+Breakpoint0='C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas',2113,'',0,1,'',1,0,0,'',1,'','',''
+Breakpoint1='C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas',587,'',0,1,'',1,0,0,'',1,'','',''
 
 [AddressBreakpoints]
 Count=0
@@ -188,7 +231,7 @@ LRDockWidth=182
 Dockable=1
 SplitPos=85
 ArrangeBy=Name
-SelectedItem=Action
+SelectedItem=Caption
 ExpandedItems=
 HiddenCategories=
 

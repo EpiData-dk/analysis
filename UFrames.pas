@@ -2358,7 +2358,7 @@ begin
       begin
         if (fld.Felttype = ftUpperAlfa) then
           S := Sysutils.AnsiUpperCase(S);
-        StrPCopy(dst, S);
+        StrPLCopy(dst, S, 255);
       end;
     ftInteger, ftIDNUM:
       begin
