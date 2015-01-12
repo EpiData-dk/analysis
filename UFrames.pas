@@ -241,6 +241,11 @@ private
   FLocalLabelBlockList: TLabelBlocksList;
   FMissingValuesList: TStringList;
   FDataList: TStringList;
+  FVersion: Integer;
+private
+  function FtNumberFromFtText(FTText: string): integer;
+  procedure LoadValueLabelSetsV2(VLSetsNode: IXMLNode);
+  procedure LoadValueLabelSetsV3(VLSetsNode: IXMLNode);
 protected
   function  GetDeleted: boolean; override;
   function  GetField(Index: integer): TeField; override;
@@ -274,6 +279,8 @@ CONST
   NumChars:        Set of CHAR=['0'..'9'];
   DummyStringComma = #243#176#80#80;  // Unicode private area: http://www.utf8-chartable.de/unicode-utf8-table.pl?start=983040
   DummyStringSpace = #243#176#80#81;
+  DummyStringQuote = #243#176#80#82;
+  DummyStringDQuote = #243#176#80#83;
 var
   FErrorText: string;
 
@@ -2080,25 +2087,6 @@ var
   S: String;
   MS: TMemoryStream;
   Unzip: TVCLUnZip;
-  Version: integer;
-
-  function FtNumberFromFtText(FTText: string): integer;
-  begin
-    if FTText = 'ftBoolean'         then Result := 0
-    else if FTText = 'ftInteger'    then Result := 1
-    else if FTText = 'ftAutoInc'    then Result := 2
-    else if FTText = 'ftFloat'      then Result := 3
-    else if FTText = 'ftDMYDate'    then Result := 4
-    else if FTText = 'ftMDYDate'    then Result := 5
-    else if FTText = 'ftYMDDate'    then Result := 6
-    else if FTText = 'ftDMYAuto'    then Result := 7
-    else if FTText = 'ftMDYAuto'    then Result := 8
-    else if FTText = 'ftYMDAuto'    then Result := 9
-    else if FTText = 'ftTime'       then Result := 10
-    else if FTText = 'ftTimeAuto'   then Result := 11
-    else if FTText = 'ftString'     then Result := 12
-    else if FTText = 'ftUpperString' then Result := 13;
-  end;
 
 const
   XMLFieldTypesToEpiFieldTypes: array[0..13] of TFelttyper = (
@@ -2129,10 +2117,10 @@ begin
     Doc := FEpiDocument.DocumentElement;
     MS.Free;
 
-    Version := Integer(Doc.Attributes['version']);
+    FVersion := Integer(Doc.Attributes['version']);
 
-    if (Version >= 2) and
-       (Doc.HasAttribute('Password'))
+    if (FVersion >= 2) and
+       (Doc.HasAttribute('password'))
     then
     begin
       dm.Error('Error: Reading encrypted EPX/EPZ files is not supported!', [], 0);
@@ -2155,58 +2143,9 @@ begin
     Node := Doc.ChildNodes['ValueLabelSets'];
     if Assigned(Node) and Node.HasChildNodes then
     begin
-      FMissingValuesList := TStringList.Create;
-      Node := Node.ChildNodes[0];
-      while Assigned(Node) do
-      begin
-        // Compatability testing.
-        FNode := Node.ChildNodes['External'];
-        if Assigned(FNode) and FNode.HasChildNodes then
-        begin
-          // No support for external value labels import within an EPX file.
-          Node := Node.NextSibling;
-          Continue;
-        end;
-        if not (FtNumberFromFtText(Node.Attributes['type']) in [1, 12]) then
-        begin
-          // Only Interger and String valuelabels supported.
-          Node := Node.NextSibling;
-          Continue;
-        end;
-
-        // Create valuelabel set
-        FVLSet := TLabelValueList.Create;
-        FNode := Node.ChildNodes['Internal'];
-        FVLSet.LabelName := Node.Attributes['id'];
-
-        // Read the values and labels.
-        VLNode := FNode.ChildNodes[0];
-        while Assigned(VLNode) do
-        begin
-          if VLNode.ChildNodes.FindNode('Label') = nil then
-            S := ''
-          else
-            S := VLNode['Label'];
-
-          FVLSet.AddPair(VLNode.Attributes['value'], S);
-
-          if (VLNode.HasAttribute('missing')) and
-             (VLNode.Attributes['missing'] = 'true') and
-             (FMissingValuesList.IndexOf(Node.Attributes['id']) = -1) then
-          begin
-            FMissingValuesList.AddObject(Node.Attributes['id'], TObject(Pointer(FNode)));
-          end;
-          VLNode := VLNode.NextSibling;
-        end;
-
-        // Add the set.
-        // - using a little dirty trick here: ID is stored in list of valuelabel sets,
-        //   but the actual name of the valuelabelset is store with the ValueLabel set itself.
-        //   This way the field lookup in TEpiDataFrame.LoadFromDataSet find the right ValueLabelSet,
-        //   as field in .EPX files use ID references.
-        // - To restore correctness this is fixed later in TEpiDataSet.First.
-        FLocalLabelBlockList.AddObject(Node.Attributes['id'], FVLSet);
-        Node := Node.NextSibling;
+      case FVersion of
+        2: LoadValueLabelSetsV2(Node);
+        3: LoadValueLabelSetsV3(Node);
       end;
     end;
 
@@ -2308,7 +2247,12 @@ begin
 
   FRecNode := FEpiDataFile.ChildNodes['Records'].ChildNodes[0];
   FDataList := TStringList.Create;
-  FDataList.Delimiter := ',';
+
+  case FVersion of
+    2: FDataList.Delimiter := ',';
+    3: FDataList.Delimiter := ';';
+  end;
+
   FDataList.QuoteChar := '"';
 end;
 
@@ -2340,8 +2284,12 @@ var
 
   function UnDummyfy(Const T: string): string;
   begin
-    result := StringReplace(T, DummyStringSpace, ' ', [rfReplaceAll]);
-    result := StringReplace(result, DummyStringComma, ',', [rfReplaceAll])
+    if (FVersion = 2) then
+    begin
+      result := StringReplace(T, DummyStringSpace, ' ', [rfReplaceAll]);
+      result := StringReplace(result, DummyStringComma, ',', [rfReplaceAll])
+    end else
+      Result := T;
   end;
 
 begin
@@ -2415,14 +2363,163 @@ begin
   result := FRecNode.Attributes['status'] = 'rsVerified';
 end;
 
+function TEpiEPXDataset.FtNumberFromFtText(FTText: string): integer;
+begin
+  if FTText = 'ftBoolean'         then Result := 0
+  else if FTText = 'ftInteger'    then Result := 1
+  else if FTText = 'ftAutoInc'    then Result := 2
+  else if FTText = 'ftFloat'      then Result := 3
+  else if FTText = 'ftDMYDate'    then Result := 4
+  else if FTText = 'ftMDYDate'    then Result := 5
+  else if FTText = 'ftYMDDate'    then Result := 6
+  else if FTText = 'ftDMYAuto'    then Result := 7
+  else if FTText = 'ftMDYAuto'    then Result := 8
+  else if FTText = 'ftYMDAuto'    then Result := 9
+  else if FTText = 'ftTime'       then Result := 10
+  else if FTText = 'ftTimeAuto'   then Result := 11
+  else if FTText = 'ftString'     then Result := 12
+  else if FTText = 'ftUpperString' then Result := 13;
+end;
+
+procedure TEpiEPXDataset.LoadValueLabelSetsV2(VLSetsNode: IXMLNode);
+var
+  Node, FNode, VLNode: IXMLNode;
+  FVLSet: TLabelValueList;
+  S: string;
+begin
+  FMissingValuesList := TStringList.Create;
+  Node := VLSetsNode.ChildNodes[0];
+  while Assigned(Node) do
+  begin
+    // Compatability testing.
+    FNode := Node.ChildNodes['External'];
+    if Assigned(FNode) and FNode.HasChildNodes then
+    begin
+      // No support for external value labels import within an EPX file.
+      Node := Node.NextSibling;
+      Continue;
+    end;
+
+    if not (FtNumberFromFtText(Node.Attributes['type']) in [1, 12]) then
+    begin
+      // Only Interger and String valuelabels supported.
+      Node := Node.NextSibling;
+      Continue;
+    end;
+
+    // Create valuelabel set
+    FVLSet := TLabelValueList.Create;
+    FNode := Node.ChildNodes['Internal'];
+    FVLSet.LabelName := Node.Attributes['id'];
+
+    // Read the values and labels.
+    VLNode := FNode.ChildNodes[0];
+    while Assigned(VLNode) do
+    begin
+      if VLNode.ChildNodes.FindNode('Label') = nil then
+        S := ''
+      else
+        S := VLNode['Label'];
+
+      FVLSet.AddPair(VLNode.Attributes['value'], S);
+
+      if (VLNode.HasAttribute('missing')) and
+         (VLNode.Attributes['missing'] = 'true') and
+         (FMissingValuesList.IndexOf(Node.Attributes['id']) = -1) then
+      begin
+        FMissingValuesList.AddObject(Node.Attributes['id'], TObject(Pointer(FNode)));
+      end;
+      VLNode := VLNode.NextSibling;
+    end;
+
+    // Add the set.
+    // - using a little dirty trick here: ID is stored in list of valuelabel sets,
+    //   but the actual name of the valuelabelset is store with the ValueLabel set itself.
+    //   This way the field lookup in TEpiDataFrame.LoadFromDataSet find the right ValueLabelSet,
+    //   as field in .EPX files use ID references.
+    // - To restore correctness this is fixed later in TEpiDataSet.First.
+    FLocalLabelBlockList.AddObject(Node.Attributes['id'], FVLSet);
+    Node := Node.NextSibling;
+  end;
+end;
+
+procedure TEpiEPXDataset.LoadValueLabelSetsV3(VLSetsNode: IXMLNode);
+var
+  VLSetNode, VLNode: IXMLNode;
+  FVLSet: TLabelValueList;
+  S: string;
+begin
+  FMissingValuesList := TStringList.Create;
+  VLSetNode := VLSetsNode.ChildNodes[0];
+  while Assigned(VLSetNode) do
+  begin
+    // Compatability testing.
+    if VLSetNode.Attributes['scope'] = 'vlsExternal' then
+    begin
+      // No support for external value labels import within an EPX file for Analysis.
+      VLSetNode := VLSetNode.NextSibling;
+      Continue;
+    end;
+
+    if not (FtNumberFromFtText(VLSetNode.Attributes['type']) in [1, 12]) then
+    begin
+      // Only Interger and String valuelabels supported.
+      VLSetNode := VLSetNode.NextSibling;
+      Continue;
+    end;
+
+    // Create valuelabel set
+    FVLSet := TLabelValueList.Create;
+    FVLSet.LabelName := VLSetNode.Attributes['id'];
+
+    // Read the values and labels.
+    VLNode := VLSetNode.ChildNodes[0];
+    while Assigned(VLNode) do
+    begin
+      if VLNode.ChildNodes.FindNode('Label') = nil then
+        S := ''
+      else
+        S := VLNode['Label'];
+
+      FVLSet.AddPair(VLNode.Attributes['value'], S);
+
+      if (VLNode.HasAttribute('missing')) and
+         (VLNode.Attributes['missing'] = 'true') and
+         (FMissingValuesList.IndexOf(VLSetNode.Attributes['id']) = -1) then
+      begin
+        FMissingValuesList.AddObject(VLSetNode.Attributes['id'], TObject(Pointer(VLSetNode)));
+      end;
+      VLNode := VLNode.NextSibling;
+    end;
+
+    // Add the set.
+    // - using a little dirty trick here: ID is stored in list of valuelabel sets,
+    //   but the actual name of the valuelabelset is store with the ValueLabel set itself.
+    //   This way the field lookup in TEpiDataFrame.LoadFromDataSet find the right ValueLabelSet,
+    //   as field in .EPX files use ID references.
+    // - To restore correctness this is fixed later in TEpiDataSet.First.
+    FLocalLabelBlockList.AddObject(VLSetNode.Attributes['id'], FVLSet);
+    VLSetNode := VLSetNode.NextSibling;
+  end;
+end;
+
 function TEpiEPXDataset.Next: integer;
 var
   S: string;
 
   function DummyFy(Const T: string): string;
   begin
-    result := StringReplace(T,      '\,', DummyStringComma, [rfReplaceAll]);
-    result := StringReplace(Result, ' ',  DummyStringSpace, [rfReplaceAll]);
+    if (FVersion = 2) then
+    begin
+      result := StringReplace(T,      '\,', DummyStringComma, [rfReplaceAll]);
+      result := StringReplace(Result, ' ',  DummyStringSpace, [rfReplaceAll]);
+    end;
+
+    if (FVersion = 3) then
+    begin
+      Result := StringReplace(T,      '""', DummyStringDQuote, [rfReplaceAll]);
+      Result := StringReplace(Result, '"', DummyStringQuote, [rfReplaceAll]);
+    end;
   end;
 
 begin
