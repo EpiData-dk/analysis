@@ -2250,7 +2250,7 @@ begin
 
   case FVersion of
     2: FDataList.Delimiter := ',';
-    3: FDataList.Delimiter := ';';
+//    3: FDataList.Delimiter := ';';
   end;
 
   FDataList.QuoteChar := '"';
@@ -2306,7 +2306,7 @@ begin
       begin
         if (fld.Felttype = ftUpperAlfa) then
           S := Sysutils.AnsiUpperCase(S);
-        StrPLCopy(dst, S, 255);
+        StrPLCopy(dst, S, 1024);
       end;
     ftInteger, ftIDNUM:
       begin
@@ -2522,6 +2522,82 @@ var
     end;
   end;
 
+  procedure ReadV3Record(Const T: string);
+  var
+    L: Integer;
+    PEnd: PChar;
+    PCur: PChar;
+    PStart: PChar;
+    FieldName, Value: String;
+    EscapedQuotes: Boolean;
+  begin
+    FDataList.Clear;
+    
+    L := Length(T);
+
+    PStart := @T[1];
+    PCur := PStart;
+
+    while (PCur - PStart) < L do
+    begin
+      // Find field name (FN)
+      PEnd := PCur;
+      while PEnd^ <> '=' do Inc(PEnd);
+      FieldName := Copy(T, (PCur - PStart) + 1, (PEnd - PCur));
+
+      PCur := PEnd;
+      Inc(PCur);
+
+      if PCur^ = '"' then
+        begin
+          Inc(PCur);
+          PEnd := PCur;
+
+          // Detect 2xdouble quotes, which translates to a single double qoute: "" -> "
+          EscapedQuotes := false;
+          while true
+          do
+            begin
+              if (PEnd^ = '"') then
+                if ((Pend + 1)^ <> '"')
+                 then
+                   // A regular "Stop"
+                   Break
+                 else
+                   begin
+                     // 2x double quotes found! Step over next "
+                     Inc(PEnd);
+                     EscapedQuotes := true;
+                   end;
+              Inc(PEnd);
+            end;
+
+          Value := Copy(T, (PCur - PStart) + 1, (PEnd - PCur));
+
+          if EscapedQuotes then
+            Value := StringReplace(Value, '""', '"', [rfReplaceAll]);
+
+          Inc(PEnd);
+        end
+      else
+        begin
+          PEnd := PCur;
+          while (PEnd^ <> ';') and
+                (PEnd^ <> #0)
+          do
+            Inc(PEnd);
+
+          Value := Copy(T, (PCur - PStart) + 1, (PEnd - PCur));
+        end;
+
+      Inc(PEnd);
+
+      FDataList.Values[FieldName] := Value;
+
+      PCur := PEnd;
+    end;
+  end;
+
 begin
   if FFirstRec then
     FFirstRec := false
@@ -2531,7 +2607,12 @@ begin
   if Assigned(FRecNode) then
   begin
     S := FRecNode.Text;
-    FDataList.DelimitedText := DummyFy(S);
+
+    if (FVersion = 2) then
+      FDataList.DelimitedText := DummyFy(S);
+
+    if (FVersion = 3) then
+      ReadV3Record(S);
   end;
 end;
 

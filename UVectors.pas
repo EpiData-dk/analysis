@@ -932,7 +932,7 @@ var
   dt1        : Epidate;
   lErrCount, delcount,dateerror, finalobs  : integer;
   c          : char;
-  strbuf:    array[0..255] of char;
+  strbuf:    array[0..1023] of char;
   opt:       TEpiOption;
   loopcounter: integer;
   St: Cardinal;
