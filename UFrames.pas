@@ -2177,7 +2177,9 @@ begin
         AField.FNumDecimals   := StrToInt(FNode.Attributes['decimals']);
         if FNode.HasAttribute('valueLabelRef') then
           AField.FValueLabel    := FNode.Attributes['valueLabelRef'];
-        if FNode.HasChildNodes then
+        if (FNode.HasChildNodes) and
+           (FNode.ChildNodes.IndexOf('Question') >= 0)
+        then
           AField.FVariableLabel := FNode.ChildNodes['Question'].ChildNodes[0].Text;  // <Question><Text xml:lang="..."> TEXT </Text></Question>
         with AField do
         case FFieldColor of   // The XML Field type.

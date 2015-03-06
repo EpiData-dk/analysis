@@ -350,7 +350,7 @@
 23055=Script interrupted by user
 23056=Loading data %s, please wait...
 23057=Errors reading data
-23058=File name :
+23058=File name:
 23059=Fields: %d   Total records: %d   Included: %d
 23060=Appended file:  Fields: %d   Total records: %d   Valid records: %d
 23061=No of deselected records: %d

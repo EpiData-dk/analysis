@@ -1447,7 +1447,7 @@ begin
     initDataFrameVars(fdataframe);
     NotifyInterface(EpiVectorListChanged,integer(dataframe),0);
     NotifyInterface(EpiOpenFile,integer(dataframe),0);
-    s := lang(23058, 'File name :') + fn ;
+    s := lang(23058, 'File name: ') + fn ;
     if dataframe.DataLAbel<> '' then
          s:= s + '<br>' + dataframe.DataLAbel;
     filename:=fn;
