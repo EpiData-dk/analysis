@@ -1,54 +1,28 @@
 [Closed Files]
-File_0=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\EpiDataUtils.pas',0,1,1,1,1,0,0
-File_1=SourceModule,'c:\program files\borland\delphi7\source\rtl\Sys\system.pas',0,1,199,1,217,0,0
-File_2=SourceModule,'c:\program files\borland\delphi7\source\rtl\Sys\sysutils.pas',0,1,6084,1,6115,0,0
-File_3=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Thtml\Htmlview.pas',0,1,321,1,349,0,0
-File_4=SourceModule,'c:\program files\borland\delphi7\source\rtl\Win\Windows.pas',0,1,28593,1,28621,0,0
-File_5=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UAnaToken.pas',0,1,73,60,113,0,0
-File_6=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UHelp.pas',0,1,233,24,242,0,0
-File_7=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\BasicFiles.inc',0,1,547,63,567,0,0
+File_0=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UAnaToken.pas',0,1,1,1,21,0,0
+File_1=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\utils\uDateUtils.pas',0,1,655,21,677,0,0
+File_2=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Uoutput.pas',0,1,91,1,116,0,0
+File_3=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\AnalysisUnits\Ustatfunctions.pas',0,1,168,1,195,0,0
+File_4=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\AnalysisUnits\Udocument.pas',0,1,37,177,44,0,0
+File_5=SourceModule,'c:\program files\borland\delphi7\source\rtl\common\classes.pas',0,1,10717,1,10742,0,0
 
 [Modules]
-Module0=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
-Module1=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\uepifile.PAS
-Module2=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas
-Module3=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\LanguageFiles\UTranslation.pas
-Module4=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
-Module5=c:\program files\borland\delphi7\Source\Xml\XMLIntf.pas
-Module6=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas
-Module7=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectorVar.pas
-Module8=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas
-Module9=c:\program files\borland\delphi7\source\rtl\common\classes.pas
-Module10=c:\program files\borland\delphi7\source\rtl\Sys\Variants.pas
-Module11=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\ansDatatypes.pas
-Module12=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UVariables.pas
-Module13=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UEpiDataTypes.pas
-Module14=c:\program files\borland\delphi7\source\rtl\common\TypInfo.pas
-Module15=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\EpiDataFile.pas
-Module16=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\parser\UExpToken.pas
-Module17=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\parser\prExpr.pas
-Module18=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\utils\uDateUtils.pas
-Module19=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Thtml\Readhtml.pas
-Module20=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas
-Count=21
+Module0=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas
+Module1=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
+Module2=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas
+Module3=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
+Module4=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\AnalysisUnits\UTables.pas
+Module5=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Thtml\Readhtml.pas
+Module6=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCommands.pas
+Module7=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas
+Module8=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\uepifile.PAS
+Module9=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\EpiDataFile.pas
+Module10=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCmdTypes.pas
+Module11=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas
+Count=12
 EditWindowCount=1
 
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\uepifile.PAS]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\LanguageFiles\UTranslation.pas]
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -58,72 +32,17 @@ ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[c:\program files\borland\delphi7\Source\Xml\XMLIntf.pas]
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectorVar.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas]
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas]
 ModuleType=SourceModule
 FormState=1
 FormOnTop=0
 
-[c:\program files\borland\delphi7\source\rtl\common\classes.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[c:\program files\borland\delphi7\source\rtl\Sys\Variants.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\ansDatatypes.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UVariables.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UEpiDataTypes.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[c:\program files\borland\delphi7\source\rtl\common\TypInfo.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\EpiDataFile.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\parser\UExpToken.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\parser\prExpr.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\utils\uDateUtils.pas]
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\AnalysisUnits\UTables.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -133,9 +52,34 @@ ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas]
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCommands.pas]
 ModuleType=SourceModule
 FormState=0
+FormOnTop=0
+
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\uepifile.PAS]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\EpiDataFile.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCmdTypes.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas]
+ModuleType=SourceModule
+FormState=1
 FormOnTop=0
 
 [C:\Program Files\Borland\Delphi7\Projects\ProjectGroup1.bpg]
@@ -147,8 +91,8 @@ FormState=0
 FormOnTop=0
 
 [EditWindow0]
-ViewCount=21
-CurrentView=4
+ViewCount=12
+CurrentView=7
 View0=0
 View1=1
 View2=2
@@ -161,15 +105,6 @@ View8=8
 View9=9
 View10=10
 View11=11
-View12=12
-View13=13
-View14=14
-View15=15
-View16=16
-View17=17
-View18=18
-View19=19
-View20=20
 CodeExplorer=CodeExplorer@EditWindow0
 MessageView=MessageView@EditWindow0
 Create=1
@@ -177,165 +112,102 @@ Visible=1
 State=0
 Left=192
 Top=107
-Width=1701
-Height=1055
+Width=1726
+Height=963
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1693
-ClientHeight=1028
+ClientWidth=1718
+ClientHeight=936
 LeftPanelSize=0
 RightPanelSize=205
 RightPanelClients=CallStackWindow,WatchWindow,LocalVarsWindow,CodeExplorer@EditWindow0,ToDo List
-RightPanelData=00000400030000000F00000043616C6C537461636B57696E646F770B000000576174636857696E646F770F0000004C6F63616C5661727357696E646F77CD0000000000000002AC030000000000000100000001CD000000000000000200000000020200000C000000436F64654578706C6F7265720200000000AC0300000E000000546F446F4C69737457696E646F770100000001040400000000000002000000000F0100000000000002000000003B0200000000000002000000000404000000000000FFFFFFFF
+RightPanelData=00000400030000000F00000043616C6C537461636B57696E646F770B000000576174636857696E646F770F0000004C6F63616C5661727357696E646F77CD000000000000000250030000000000000100000001CD000000000000000200000000020200000C000000436F64654578706C6F7265720200000000500300000E000000546F446F4C69737457696E646F770100000001040400000000000002000000000F0100000000000002000000003B0200000000000002000000000404000000000000FFFFFFFF
 BottomPanelSize=85
 BottomPanelClients=MessageView@EditWindow0
-BottomPanelData=00000400000000009D060000000000000255000000000000000100000000000000000000000001000000009D0600000000000001000000009D0600000B0000004D65737361676556696577FFFFFFFF
+BottomPanelData=0000040000000000B606000000000000025500000000000000010000000000000000000000000100000000B60600000B0000004D65737361676556696577FFFFFFFF
 
 [View0]
 Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas
-CursorX=116
-CursorY=1477
-TopLine=1448
+CursorX=44
+CursorY=755
+TopLine=738
 LeftCol=1
 
 [View1]
 Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas
-CursorX=31
-CursorY=2416
-TopLine=2389
+CursorX=1
+CursorY=2570
+TopLine=2546
 LeftCol=1
 
 [View2]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Thtml\Readhtml.pas
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
 CursorX=1
-CursorY=3016
-TopLine=2994
+CursorY=2746
+TopLine=2710
 LeftCol=1
 
 [View3]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\utils\uDateUtils.pas
-CursorX=21
-CursorY=677
-TopLine=655
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\AnalysisUnits\UTables.pas
+CursorX=1
+CursorY=449
+TopLine=427
 LeftCol=1
 
 [View4]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
-CursorX=100
-CursorY=1394
-TopLine=1390
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCommands.pas
+CursorX=1
+CursorY=202
+TopLine=177
 LeftCol=1
 
 [View5]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas
-CursorX=1
-CursorY=220
-TopLine=218
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Thtml\Readhtml.pas
+CursorX=32
+CursorY=3009
+TopLine=2991
 LeftCol=1
 
 [View6]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\LanguageFiles\UTranslation.pas
-CursorX=1
-CursorY=110
-TopLine=106
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
+CursorX=66
+CursorY=2506
+TopLine=2477
 LeftCol=1
 
 [View7]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\parser\prExpr.pas
-CursorX=1
-CursorY=1044
-TopLine=1042
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas
+CursorX=100
+CursorY=546
+TopLine=529
 LeftCol=1
 
 [View8]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\parser\UExpToken.pas
-CursorX=2
-CursorY=49
-TopLine=67
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\EpiDataFile.pas
+CursorX=1
+CursorY=90
+TopLine=65
 LeftCol=1
 
 [View9]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\EpiDataFile.pas
-CursorX=21
-CursorY=438
-TopLine=412
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCmdTypes.pas
+CursorX=1
+CursorY=51
+TopLine=2
 LeftCol=1
 
 [View10]
-Module=c:\program files\borland\delphi7\source\rtl\common\TypInfo.pas
-CursorX=44
-CursorY=243
-TopLine=226
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\uepifile.PAS
+CursorX=1
+CursorY=1461
+TopLine=1431
 LeftCol=1
 
 [View11]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UEpiDataTypes.pas
-CursorX=1
-CursorY=1
-TopLine=58
-LeftCol=1
-
-[View12]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectorVar.pas
-CursorX=139
-CursorY=265
-TopLine=250
-LeftCol=1
-
-[View13]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UVariables.pas
-CursorX=1
-CursorY=62
-TopLine=83
-LeftCol=1
-
-[View14]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\ansDatatypes.pas
-CursorX=1
-CursorY=1
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas
+CursorX=122
+CursorY=39
 TopLine=1
-LeftCol=1
-
-[View15]
-Module=c:\program files\borland\delphi7\source\rtl\Sys\Variants.pas
-CursorX=1
-CursorY=1
-TopLine=1
-LeftCol=1
-
-[View16]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas
-CursorX=1
-CursorY=585
-TopLine=550
-LeftCol=1
-
-[View17]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
-CursorX=50
-CursorY=284
-TopLine=260
-LeftCol=1
-
-[View18]
-Module=c:\program files\borland\delphi7\Source\Xml\XMLIntf.pas
-CursorX=111
-CursorY=96
-TopLine=75
-LeftCol=1
-
-[View19]
-Module=c:\program files\borland\delphi7\source\rtl\common\classes.pas
-CursorX=1
-CursorY=517
-TopLine=492
-LeftCol=1
-
-[View20]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\uepifile.PAS
-CursorX=1
-CursorY=187
-TopLine=129
 LeftCol=1
 
 [Watches]
@@ -363,9 +235,7 @@ LRDockWidth=294
 Dockable=1
 
 [Breakpoints]
-Count=2
-Breakpoint0='C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas',1291,'',0,1,'',1,0,0,'',1,'','',''
-Breakpoint1='C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas',2454,'',0,1,'',1,0,0,'',1,'','',''
+Count=0
 
 [AddressBreakpoints]
 Count=0
@@ -374,7 +244,7 @@ Count=0
 Create=1
 Visible=1
 State=0
-Left=1
+Left=0
 Top=0
 Width=1920
 Height=105
@@ -404,13 +274,13 @@ Create=1
 Visible=0
 State=0
 Left=160
-Top=158
+Top=145
 Width=1599
-Height=883
+Height=807
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=1591
-ClientHeight=856
+ClientHeight=780
 DumpPane=79
 DisassemblyPane=187
 RegisterPane=231
@@ -435,18 +305,18 @@ Visible=1
 State=0
 Left=0
 Top=193
-Width=182
-Height=842
+Width=181
+Height=820
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=182
-ClientHeight=842
+ClientWidth=181
+ClientHeight=820
 TBDockHeight=573
-LRDockWidth=182
+LRDockWidth=181
 Dockable=1
 SplitPos=85
 ArrangeBy=Name
-SelectedItem=Caption
+SelectedItem=Name
 ExpandedItems=
 HiddenCategories=
 
@@ -472,14 +342,14 @@ Visible=1
 State=0
 Left=0
 Top=12
-Width=182
+Width=181
 Height=165
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=182
+ClientWidth=181
 ClientHeight=165
 TBDockHeight=386
-LRDockWidth=182
+LRDockWidth=181
 Dockable=1
 
 [LocalVarsWindow]
@@ -505,11 +375,11 @@ State=0
 Left=0
 Top=526
 Width=205
-Height=414
+Height=322
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=205
-ClientHeight=414
+ClientHeight=322
 TBDockHeight=250
 LRDockWidth=205
 Dockable=1
@@ -534,7 +404,7 @@ MaxLeft=-1
 MaxTop=-1
 ClientWidth=205
 ClientHeight=498
-TBDockHeight=928
+TBDockHeight=836
 LRDockWidth=205
 Dockable=1
 
@@ -544,11 +414,11 @@ Visible=1
 State=0
 Left=12
 Top=0
-Width=1681
+Width=1706
 Height=85
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1681
+ClientWidth=1706
 ClientHeight=85
 TBDockHeight=85
 LRDockWidth=443
@@ -562,17 +432,17 @@ DockSiteType=0
 Create=1
 Visible=1
 State=0
-Left=0
-Top=105
-Width=190
-Height=1059
+Left=2
+Top=104
+Width=189
+Height=1037
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=182
-ClientHeight=1035
+ClientWidth=181
+ClientHeight=1013
 TBDockHeight=1059
 LRDockWidth=190
 Dockable=1
 DockClients=ObjectTree,PropertyInspector
-DockSiteData=00000400000000000B0400000000000001B6000000000000000100000000B50000000E0000004F626A656374547265655669657701000000000B0400001100000050726F7065727479496E73706563746F72FFFFFFFF
+DockSiteData=0000040000000000F50300000000000001B5000000000000000100000000B50000000E0000004F626A65637454726565566965770100000000F50300001100000050726F7065727479496E73706563746F72FFFFFFFF
 

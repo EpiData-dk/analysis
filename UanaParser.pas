@@ -614,7 +614,7 @@ try
           if nexttoken.token <> '=' then error(Currenttoken,format('= sign expected at %s', [Currenttoken.Token]));
           tok := nexttoken.Token;
           if not (Currenttoken.TokenType in [opNumber,opIdentifier,opString]) then error(Currenttoken,'Invalid option value');
-        end;
+        end;                                                                      
 
         if (oplist.IndexOf(opname)> -1) or AllowUnknown then
         begin

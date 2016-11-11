@@ -2087,6 +2087,7 @@ var
   S: String;
   MS: TMemoryStream;
   Unzip: TVCLUnZip;
+  EVal: Extended;
 
 const
   XMLFieldTypesToEpiFieldTypes: array[0..13] of TFelttyper = (
@@ -2207,7 +2208,20 @@ begin
             if (VLNode.HasAttribute('missing')) and
                (VLNode.Attributes['missing'] = 'true') then
             begin
-              AField.MissingValues[I] := VLNode.Attributes['value'];
+              S := VLNode.Attributes['value'];
+
+              if (AField.Felttype = ftFloat) then
+                begin
+                  if (not TryStrToFloat(S, EVal)) then
+                  begin
+                    if Pos(',', S) > 0 then
+                      S := StringReplace(S, ',', '.', [])
+                    else
+                      S := StringReplace(S, '.', ',', []);
+                  end;
+                end;
+              AField.MissingValues[I] := S;
+
               Inc(I);
               if I = MAXDEFINEDMISSINGVALUES then break;
             end;
@@ -2449,7 +2463,9 @@ procedure TEpiEPXDataset.LoadValueLabelSetsV3(VLSetsNode: IXMLNode);
 var
   VLSetNode, VLNode: IXMLNode;
   FVLSet: TLabelValueList;
-  S: string;
+  S, T: string;
+  TypeNo: Integer;
+  EVal: Extended;
 begin
   FMissingValuesList := TStringList.Create;
   VLSetNode := VLSetsNode.ChildNodes[0];
@@ -2463,7 +2479,8 @@ begin
       Continue;
     end;
 
-    if not (FtNumberFromFtText(VLSetNode.Attributes['type']) in [1, 12]) then
+    TypeNo := FtNumberFromFtText(VLSetNode.Attributes['type']);
+    if not (TypeNo in [1, 3, 12]) then
     begin
       // Only Interger and String valuelabels supported.
       VLSetNode := VLSetNode.NextSibling;
@@ -2483,7 +2500,20 @@ begin
       else
         S := VLNode['Label'];
 
-      FVLSet.AddPair(VLNode.Attributes['value'], S);
+      T := VLNode.Attributes['value'];
+      if (TypeNo = 3) then
+        begin
+          // EPX Float valuelabel
+          if (not TryStrToFloat(T, EVal)) then
+          begin
+            if Pos(',', T) > 0 then
+              T := StringReplace(T, ',', '.', [])
+            else
+              T := StringReplace(T, '.', ',', []);
+          end;
+        end;
+
+      FVLSet.AddPair(T, S);
 
       if (VLNode.HasAttribute('missing')) and
          (VLNode.Attributes['missing'] = 'true') and

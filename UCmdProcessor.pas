@@ -2687,7 +2687,6 @@ begin
     if df.SelectedRowCount = 0 then error('No Data', [], 10000);
     if df.SelectedRowCount < 10 then info('Warning: Percentiles imprecise', [], 23084);
     DoMeans(df, varnames, cmd);
-
   finally
     if df <> nil then df.free;
   end;
