@@ -1,38 +1,54 @@
 [Closed Files]
-File_0=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UAnaToken.pas',0,1,1,1,21,0,0
-File_1=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\utils\uDateUtils.pas',0,1,655,21,677,0,0
-File_2=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Uoutput.pas',0,1,91,1,116,0,0
-File_3=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\AnalysisUnits\Ustatfunctions.pas',0,1,168,1,195,0,0
-File_4=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\AnalysisUnits\Udocument.pas',0,1,37,177,44,0,0
-File_5=SourceModule,'c:\program files\borland\delphi7\source\rtl\common\classes.pas',0,1,10717,1,10742,0,0
+File_0=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas',0,1,2546,1,2570,0,0
+File_1=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\AnalysisUnits\UTables.pas',0,1,427,1,449,0,0
+File_2=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCommands.pas',0,1,177,1,202,0,0
+File_3=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Thtml\Readhtml.pas',0,1,2991,32,3009,0,0
+File_4=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\EpiDataFile.pas',0,1,65,1,90,0,0
+File_5=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCmdTypes.pas',0,1,2,1,51,0,0
+File_6=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\uepifile.PAS',0,1,1431,1,1461,0,0
 
 [Modules]
-Module0=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas
-Module1=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
-Module2=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas
-Module3=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
-Module4=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\AnalysisUnits\UTables.pas
-Module5=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Thtml\Readhtml.pas
-Module6=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCommands.pas
-Module7=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas
-Module8=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\uepifile.PAS
-Module9=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\EpiDataFile.pas
-Module10=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCmdTypes.pas
-Module11=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas
+Module0=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\DataBrowser\UpdateBrowse.pas
+Module1=c:\program files\borland\delphi7\source\vcl\Graphics.pas
+Module2=c:\program files\borland\delphi7\source\vcl\grids.pas
+Module3=c:\program files\borland\delphi7\source\vcl\Controls.pas
+Module4=c:\program files\borland\delphi7\source\rtl\common\classes.pas
+Module5=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas
+Module6=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
+Module7=c:\program files\borland\delphi7\source\vcl\Dialogs.pas
+Module8=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas
+Module9=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectorVar.pas
+Module10=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\simdesign\nativexml\nativexml.pas
+Module11=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
 Count=12
 EditWindowCount=1
 
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\DataBrowser\UpdateBrowse.pas]
+ModuleType=SourceModule
+FormState=1
+FormOnTop=0
+
+[c:\program files\borland\delphi7\source\vcl\Graphics.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[c:\program files\borland\delphi7\source\vcl\grids.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[c:\program files\borland\delphi7\source\vcl\Controls.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[c:\program files\borland\delphi7\source\rtl\common\classes.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
 [C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -42,37 +58,7 @@ ModuleType=SourceModule
 FormState=1
 FormOnTop=0
 
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\AnalysisUnits\UTables.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Thtml\Readhtml.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCommands.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\uepifile.PAS]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\EpiDataFile.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCmdTypes.pas]
+[c:\program files\borland\delphi7\source\vcl\Dialogs.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -80,6 +66,21 @@ FormOnTop=0
 [C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas]
 ModuleType=SourceModule
 FormState=1
+FormOnTop=0
+
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectorVar.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\simdesign\nativexml\nativexml.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas]
+ModuleType=SourceModule
+FormState=0
 FormOnTop=0
 
 [C:\Program Files\Borland\Delphi7\Projects\ProjectGroup1.bpg]
@@ -92,7 +93,7 @@ FormOnTop=0
 
 [EditWindow0]
 ViewCount=12
-CurrentView=7
+CurrentView=5
 View0=0
 View1=1
 View2=2
@@ -111,103 +112,103 @@ Create=1
 Visible=1
 State=0
 Left=192
-Top=107
+Top=104
 Width=1726
-Height=963
+Height=1037
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=1718
-ClientHeight=936
+ClientHeight=1010
 LeftPanelSize=0
 RightPanelSize=205
 RightPanelClients=CallStackWindow,WatchWindow,LocalVarsWindow,CodeExplorer@EditWindow0,ToDo List
-RightPanelData=00000400030000000F00000043616C6C537461636B57696E646F770B000000576174636857696E646F770F0000004C6F63616C5661727357696E646F77CD000000000000000250030000000000000100000001CD000000000000000200000000020200000C000000436F64654578706C6F7265720200000000500300000E000000546F446F4C69737457696E646F770100000001040400000000000002000000000F0100000000000002000000003B0200000000000002000000000404000000000000FFFFFFFF
+RightPanelData=00000400030000000F00000043616C6C537461636B57696E646F770B000000576174636857696E646F770F0000004C6F63616C5661727357696E646F77CD00000000000000029A030000000000000100000001CD000000000000000200000000020200000C000000436F64654578706C6F72657202000000009A0300000E000000546F446F4C69737457696E646F770100000001040400000000000002000000000F0100000000000002000000003B0200000000000002000000000404000000000000FFFFFFFF
 BottomPanelSize=85
 BottomPanelClients=MessageView@EditWindow0
-BottomPanelData=0000040000000000B606000000000000025500000000000000010000000000000000000000000100000000B60600000B0000004D65737361676556696577FFFFFFFF
+BottomPanelData=000004000000000000000000000000000000000000000000000100000000000000000B0000004D65737361676556696577FFFFFFFF
 
 [View0]
 Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas
-CursorX=44
-CursorY=755
+CursorX=43
+CursorY=763
 TopLine=738
 LeftCol=1
 
 [View1]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UanaParser.pas
-CursorX=1
-CursorY=2570
-TopLine=2546
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
+CursorX=85
+CursorY=260
+TopLine=243
 LeftCol=1
 
 [View2]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
-CursorX=1
-CursorY=2746
-TopLine=2710
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\simdesign\nativexml\nativexml.pas
+CursorX=22
+CursorY=3621
+TopLine=3595
 LeftCol=1
 
 [View3]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\AnalysisUnits\UTables.pas
-CursorX=1
-CursorY=449
-TopLine=427
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas
+CursorX=125
+CursorY=1119
+TopLine=1105
 LeftCol=1
 
 [View4]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCommands.pas
-CursorX=1
-CursorY=202
-TopLine=177
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
+CursorX=55
+CursorY=1365
+TopLine=1350
 LeftCol=1
 
 [View5]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Thtml\Readhtml.pas
-CursorX=32
-CursorY=3009
-TopLine=2991
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\DataBrowser\UpdateBrowse.pas
+CursorX=1
+CursorY=732
+TopLine=705
 LeftCol=1
 
 [View6]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
-CursorX=66
-CursorY=2506
-TopLine=2477
+Module=c:\program files\borland\delphi7\source\vcl\grids.pas
+CursorX=1
+CursorY=480
+TopLine=455
 LeftCol=1
 
 [View7]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas
-CursorX=100
-CursorY=546
-TopLine=529
+Module=c:\program files\borland\delphi7\source\vcl\Controls.pas
+CursorX=1
+CursorY=1361
+TopLine=1336
 LeftCol=1
 
 [View8]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\EpiDataFile.pas
+Module=c:\program files\borland\delphi7\source\vcl\Graphics.pas
 CursorX=1
-CursorY=90
-TopLine=65
+CursorY=277
+TopLine=252
 LeftCol=1
 
 [View9]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\globals\UCmdTypes.pas
+Module=c:\program files\borland\delphi7\source\rtl\common\classes.pas
 CursorX=1
-CursorY=51
-TopLine=2
+CursorY=3483
+TopLine=3458
 LeftCol=1
 
 [View10]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\uepifile.PAS
+Module=c:\program files\borland\delphi7\source\vcl\Dialogs.pas
 CursorX=1
-CursorY=1461
-TopLine=1431
+CursorY=209
+TopLine=184
 LeftCol=1
 
 [View11]
-Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UcmdlineEdit.pas
-CursorX=122
-CursorY=39
-TopLine=1
+Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectorVar.pas
+CursorX=55
+CursorY=291
+TopLine=250
 LeftCol=1
 
 [Watches]
@@ -269,23 +270,6 @@ TBDockHeight=303
 LRDockWidth=438
 Dockable=1
 
-[CPUWindow]
-Create=1
-Visible=0
-State=0
-Left=160
-Top=145
-Width=1599
-Height=807
-MaxLeft=-1
-MaxTop=-1
-ClientWidth=1591
-ClientHeight=780
-DumpPane=79
-DisassemblyPane=187
-RegisterPane=231
-FlagPane=64
-
 [AlignmentPalette]
 Create=1
 Visible=0
@@ -317,7 +301,7 @@ Dockable=1
 SplitPos=85
 ArrangeBy=Name
 SelectedItem=Name
-ExpandedItems=
+ExpandedItems=Font
 HiddenCategories=
 
 [CallStackWindow]
@@ -375,11 +359,11 @@ State=0
 Left=0
 Top=526
 Width=205
-Height=322
+Height=396
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=205
-ClientHeight=322
+ClientHeight=396
 TBDockHeight=250
 LRDockWidth=205
 Dockable=1
@@ -404,7 +388,7 @@ MaxLeft=-1
 MaxTop=-1
 ClientWidth=205
 ClientHeight=498
-TBDockHeight=836
+TBDockHeight=910
 LRDockWidth=205
 Dockable=1
 

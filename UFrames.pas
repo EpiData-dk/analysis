@@ -3,7 +3,8 @@ unit UFrames;
 interface
 uses
   controls,sysutils, dialogs, classes,db,ansDataTypes,UEpiDataTypes,Uepifile, windows, EpiDataFile,
-  SMUtils, UCmdTypes, UCheckProps, EpiDataUtils, DateUtils, Math, XMLdoc, xmlintf, xmldom;
+  SMUtils, UCmdTypes, UCheckProps, EpiDataUtils, DateUtils, Math,
+  {$IFDEF NativeXML}nativexml{$ELSE}XMLdoc, xmlintf, xmldom{$ENDIF};
 
 const
   SNotEditing = 'DataSet not in update state';
@@ -232,20 +233,40 @@ end;
 TEpiEPXDataset=class(TEpiDataSet)
 private
   FFirstRec: Boolean;   // Needed because read records procedure in UVectors does both a ADataSet.first AND Adataset.Next to read the first record!!!!
-  FRecNode: IXMLNode;
   FRecCount: integer;
   FFieldList: TStringList;
+{$IFDEF NativeXML}
+  FRecNode: TXmlNode;
+  FEpiDocument: TNativeXml;
+  FEpiDataFile: TXmlNode;
+{$ELSE}
+  FRecNode: IXMLNode;
   FEpiDocument: TXMLDocument;
   FEpiDataFile: IXMLNode;
+{$ENDIF}
   FEpiDocFormatSettings: TFormatSettings;
   FLocalLabelBlockList: TLabelBlocksList;
   FMissingValuesList: TStringList;
   FDataList: TStringList;
   FVersion: Integer;
 private
+{$IFDEF NativeXML}
+  function GetNode(Const Name: string; Parent: TXmlNode): TXmlNode;
+  function GetNodeText(Node: TXmlNode): string;
+  function GetAttribute(Const Name: string; Parent: TXmlNode): string;
+  function GetFirstChild(Parent: TXmlNode): TXmlNode;
+  function GetNextSibling(Node: TXmlNode): TXmlNode;
+{$ELSE}
+  function GetNode(Const Name: string; Parent: IXMLNode): IXMLNode;
+  function GetNodeText(Node: IXMLNode): string;
+  function GetAttribute(Const Name: string; Parent: IXMLNode): string;
+  function GetFirstChild(Parent: IXMLNode): IXMLNode;
+  function GetNextSibling(Node: IXMLNode): IXMLNode;
+{$ENDIF}
+private
   function FtNumberFromFtText(FTText: string): integer;
-  procedure LoadValueLabelSetsV2(VLSetsNode: IXMLNode);
-  procedure LoadValueLabelSetsV3(VLSetsNode: IXMLNode);
+  procedure LoadValueLabelSetsV2(VLSetsNode: {$IFDEF NativeXML}TXmlNode{$ELSE}IXMLNode{$ENDIF});
+  procedure LoadValueLabelSetsV3(VLSetsNode: {$IFDEF NativeXML}TXmlNode{$ELSE}IXMLNode{$ENDIF});
 protected
   function  GetDeleted: boolean; override;
   function  GetField(Index: integer): TeField; override;
@@ -2080,7 +2101,7 @@ constructor TEpiEPXDataset.Create(const filename: TEpiFileName;
 var
   Doc,
   Node, FNode, ANode,
-  VLNode: IXMLNode;
+  VLNode: {$IFDEF NativeXML}TXmlNode{$ELSE}IXMLNode{$ENDIF};
   AField: TeField;
   FVLSet: TLabelValueList;
   Idx, I: Integer;
@@ -2113,26 +2134,36 @@ begin
     end else
       MS.LoadFromFile(fFileName);
 
+    {$IFDEF NativeXML}
+    FEpiDocument := TNativeXml.Create(nil);
+    FEpiDocument.LoadFromStream(MS);
+    Doc := FEpiDocument.Root;
+    {$ELSE}
     FEpiDocument := TXMLDocument.Create(DM);
     FEpiDocument.LoadFromStream(MS, xetUTF_8);
     Doc := FEpiDocument.DocumentElement;
+    {$ENDIF}
     MS.Free;
 
-    FVersion := Integer(Doc.Attributes['version']);
+    FVersion := StrToInt(GetAttribute('version', Doc));
 
     if (FVersion >= 2) and
-       (Doc.HasAttribute('password'))
+       (
+        (Doc.HasAttribute('password')) or
+        (Assigned(GetNode('Crypto', Doc)))
+       )
     then
     begin
-      dm.Error('Error: Reading encrypted EPX/EPZ files is not supported!', [], 0);
+      dm.Error('Error: Reading encrypted EPX/EPZ files are not supported!', [], 0);
       checkfileerror(-2);
     end;
 
 
-    Node := Doc.ChildNodes['Settings'];
-    FEpiDocFormatSettings.DateSeparator := String(Node.Attributes['dateSeparator'])[1];
-    FEpiDocFormatSettings.TimeSeparator := String(Node.Attributes['timeSeparator'])[1];
-    FEpiDocFormatSettings.DecimalSeparator := String(Node.Attributes['decimalSeparator'])[1];
+    Node := GetNode('Settings', Doc);// {$IFDEF NativeXML}Doc.NodeByName('Settings'){$ELSE}Doc.ChildNodes['Settings']{$ENDIF};
+    
+    FEpiDocFormatSettings.DateSeparator := GetAttribute('dateSeparator', node)[1];
+    FEpiDocFormatSettings.TimeSeparator := GetAttribute('timeSeparator', node)[1];
+    FEpiDocFormatSettings.DecimalSeparator := GetAttribute('decimalSeparator', node)[1];
     FEpiDocFormatSettings.ShortTimeFormat  := 'HH:NN:SS';
 
     // Read valuelabels.
@@ -2141,47 +2172,41 @@ begin
     FLocalLabelBlockList := fCheckProperties.ValueLabels;
 
 
-    Node := Doc.ChildNodes['ValueLabelSets'];
-    if Assigned(Node) and Node.HasChildNodes then
+    Node := GetNode('ValueLabelSets', Doc);
+    if Assigned(Node) { and Node.HasChildNodes} then
     begin
       case FVersion of
         2: LoadValueLabelSetsV2(Node);
-        3: LoadValueLabelSetsV3(Node);
+      else
+      // version 3 + 4 (so far)
+        LoadValueLabelSetsV3(Node);
       end;
     end;
 
     // Only support for reading the first datafile.
-    FEpiDataFile := Doc.ChildNodes['DataFiles'].ChildNodes[0];
+    FEpiDataFile := GetFirstChild(GetNode('DataFiles', Doc)); // Doc.ChildNodes['DataFiles'].ChildNodes[0];
     FFieldList := TStringList.Create;
 
-    if FEpiDataFile.ChildNodes['Sections'].HasChildNodes then
-      Node := FEpiDataFile.ChildNodes['Sections'].ChildNodes[0]
-    else
-      Node := nil;
+    Node := GetFirstChild(GetNode('Sections', FEpiDataFile));
 
     // Create the TeFields - store in list for later retrieval.
     while Assigned(Node) do
     begin
-      if Node.ChildNodes['Fields'].HasChildNodes then
-        FNode := Node.ChildNodes['Fields'].ChildNodes[0]
-      else
-        FNode := nil;
+      FNode := GetFirstChild(GetNode('Fields', Node));
 
       while Assigned(FNode) do
       begin
         AField                := TeField.Create;
 
-        AField.FFieldColor    := FtNumberFromFtText(FNode.Attributes['type']);
+        AField.FFieldColor    := FtNumberFromFtText(GetAttribute('type', FNode));
         AField.Felttype       := XMLFieldTypesToEpiFieldTypes[AField.FFieldColor];
-        AField.FieldName      := FNode.Attributes['id'];
-        AField.FLength        := StrToInt(FNode.Attributes['length']);
-        AField.FNumDecimals   := StrToInt(FNode.Attributes['decimals']);
-        if FNode.HasAttribute('valueLabelRef') then
-          AField.FValueLabel    := FNode.Attributes['valueLabelRef'];
-        if (FNode.HasChildNodes) and
-           (FNode.ChildNodes.IndexOf('Question') >= 0)
-        then
-          AField.FVariableLabel := FNode.ChildNodes['Question'].ChildNodes[0].Text;  // <Question><Text xml:lang="..."> TEXT </Text></Question>
+        AField.FieldName      := GetAttribute('id', FNode);
+        AField.FLength        := StrToInt(GetAttribute('length', FNode));
+        AField.FNumDecimals   := StrToInt(GetAttribute('decimals', FNode));
+
+        AField.FValueLabel    := GetAttribute('valueLabelRef', FNode);
+        AField.FVariableLabel := GetNodeText(GetFirstChild(GetNode('Question', FNode))); // <Question><Text xml:lang="..."> TEXT </Text></Question>
+
         with AField do
         case FFieldColor of   // The XML Field type.
           1,2:    FFieldFormat := '%d';
@@ -2199,16 +2224,15 @@ begin
            (FMissingValuesList.IndexOf(AField.FValueLabel) <> -1) then
         begin
           Idx := FMissingValuesList.IndexOf(AField.FValueLabel);
-          ANode := IXMLNode(Pointer(FMissingValuesList.Objects[Idx]));
-          VLNode := ANode.ChildNodes[0];
+          ANode := {$IFDEF NativeXML}{$ELSE}IXMLNode{$ENDIf}(Pointer(FMissingValuesList.Objects[Idx]));
+          VLNode := GetFirstChild(ANode);
 
           I := 0;
           while Assigned(VLNode) do
           begin
-            if (VLNode.HasAttribute('missing')) and
-               (VLNode.Attributes['missing'] = 'true') then
+            if (GetAttribute('missing', VLNode) = 'true') then
             begin
-              S := VLNode.Attributes['value'];
+              S := GetAttribute('value', VLNode);
 
               if (AField.Felttype = ftFloat) then
                 begin
@@ -2225,14 +2249,14 @@ begin
               Inc(I);
               if I = MAXDEFINEDMISSINGVALUES then break;
             end;
-            VLNode := VLNode.NextSibling;
+            VLNode := GetNextSibling(VLNode);
           end;
         end;
 
-        FFieldList.AddObject(FNode.Attributes['id'], AField);
-        FNode := FNode.NextSibling;
+        FFieldList.AddObject(AField.FieldName, AField);
+        FNode := GetNextSibling(FNode);
       end;
-      Node := Node.NextSibling;
+      Node := GetNextSibling(Node);
     end;
   except
     FreeAndNil(FEpiDocument);
@@ -2261,7 +2285,7 @@ begin
     FLocalLabelBlockList[i] := TLabelValueList(FLocalLabelBlockList.Objects[i]).LabelName;
   FLocalLabelBlockList.Sorted := true;
 
-  FRecNode := FEpiDataFile.ChildNodes['Records'].ChildNodes[0];
+  FRecNode := GetFirstChild(GetNode('Records', FEpiDataFile)); // FEpiDataFile.ChildNodes['Records'].ChildNodes[0];
   FDataList := TStringList.Create;
 
   case FVersion of
@@ -2274,7 +2298,7 @@ end;
 
 function TEpiEPXDataset.GetDeleted: boolean;
 begin
-  result := FRecNode.Attributes['status'] = 'rsDeleted';
+  result := GetAttribute('status', FRecNode) = 'rsDeleted';
 end;
 
 function TEpiEPXDataset.GetField(Index: integer): TeField;
@@ -2283,8 +2307,6 @@ begin
 end;
 
 function TEpiEPXDataset.GetFieldCount: integer;
-var
-  Node: IXMLNode;
 begin
   result := FFieldList.Count;
 end;
@@ -2362,21 +2384,24 @@ end;
 
 function TEpiEPXDataset.GetFileLabel: string;
 begin
-  result := FEpiDocument.DocumentElement.ChildNodes['StudyInfo'].ChildNodes['Title'].ChildNodes[0].Text;
+  result := GetNodeText(GetFirstChild(GetNode('Title', GetNode('StudyInfo', {$IFDEF NativeXml}FEpiDocument.Root{$ELSE}FEpiDocument.DocumentElement{$ENDIF}))));
+// result := FEpiDocument.DocumentElement.ChildNodes['StudyInfo'].ChildNodes['Title'].ChildNodes[0].Text;
 end;
 
 function TEpiEPXDataset.GetRecordCount: integer;
-var
-  Node: IXMLNode;
 begin
   if FRecCount < 0 then
+  {$IFDEF NativeXml}
+    FRecCount := GetNode('Records', FEpiDataFile).ContainerCount;
+  {$ELSE}
     FrecCount := FEpiDataFile.ChildNodes['Records'].ChildNodes.Count;
+  {$ENDIF}
   Result := FRecCount;
 end;
 
 function TEpiEPXDataset.GetVerified: Boolean;
 begin
-  result := FRecNode.Attributes['status'] = 'rsVerified';
+  result := GetAttribute('status', FRecNode) = 'rsVerified';
 end;
 
 function TEpiEPXDataset.FtNumberFromFtText(FTText: string): integer;
@@ -2397,55 +2422,54 @@ begin
   else if FTText = 'ftUpperString' then Result := 13;
 end;
 
-procedure TEpiEPXDataset.LoadValueLabelSetsV2(VLSetsNode: IXMLNode);
+procedure TEpiEPXDataset.LoadValueLabelSetsV2(VLSetsNode: {$IFDEF NativeXML}TXmlNode{$ELSE}IXMLNode{$ENDIF});
 var
-  Node, FNode, VLNode: IXMLNode;
+  Node, FNode, VLNode: {$IFDEF NativeXml}TXmlNode{$ELSE}IXMLNode{$ENDIF};
   FVLSet: TLabelValueList;
   S: string;
 begin
   FMissingValuesList := TStringList.Create;
-  Node := VLSetsNode.ChildNodes[0];
+
+  Node := GetFirstChild(VLSetsNode);
   while Assigned(Node) do
   begin
     // Compatability testing.
-    FNode := Node.ChildNodes['External'];
-    if Assigned(FNode) and FNode.HasChildNodes then
+    FNode := GetNode('External', Node);
+    if Assigned(FNode) then
     begin
       // No support for external value labels import within an EPX file.
-      Node := Node.NextSibling;
+      Node := GetNextSibling(Node);
       Continue;
     end;
 
-    if not (FtNumberFromFtText(Node.Attributes['type']) in [1, 12]) then
+    if not (FtNumberFromFtText(GetAttribute('type', Node)) in [1, 12]) then
     begin
       // Only Interger and String valuelabels supported.
-      Node := Node.NextSibling;
+      Node := GetNextSibling(Node);
       Continue;
     end;
 
     // Create valuelabel set
     FVLSet := TLabelValueList.Create;
-    FNode := Node.ChildNodes['Internal'];
-    FVLSet.LabelName := Node.Attributes['id'];
+    FNode := GetNode('Internal', Node);
+    FVLSet.LabelName := GetAttribute('id', Node);
 
     // Read the values and labels.
-    VLNode := FNode.ChildNodes[0];
+    VLNode := GetFirstChild(FNode);
     while Assigned(VLNode) do
     begin
-      if VLNode.ChildNodes.FindNode('Label') = nil then
-        S := ''
-      else
-        S := VLNode['Label'];
+      S := GetNodeText(GetNode('Label', VLNode));
 
-      FVLSet.AddPair(VLNode.Attributes['value'], S);
+      FVLSet.AddPair(GetAttribute('value', VLNode), S);
 
-      if (VLNode.HasAttribute('missing')) and
-         (VLNode.Attributes['missing'] = 'true') and
-         (FMissingValuesList.IndexOf(Node.Attributes['id']) = -1) then
+      S := GetAttribute('missing', VLNode);
+
+      if (S = 'true') and
+         (FMissingValuesList.IndexOf(FVLSet.LabelName) = -1) then
       begin
-        FMissingValuesList.AddObject(Node.Attributes['id'], TObject(Pointer(FNode)));
+        FMissingValuesList.AddObject(FVLSet.LabelName, TObject(Pointer(FNode)));
       end;
-      VLNode := VLNode.NextSibling;
+      VLNode := GetNextSibling(VLNode); 
     end;
 
     // Add the set.
@@ -2454,53 +2478,50 @@ begin
     //   This way the field lookup in TEpiDataFrame.LoadFromDataSet find the right ValueLabelSet,
     //   as field in .EPX files use ID references.
     // - To restore correctness this is fixed later in TEpiDataSet.First.
-    FLocalLabelBlockList.AddObject(Node.Attributes['id'], FVLSet);
-    Node := Node.NextSibling;
+    FLocalLabelBlockList.AddObject(FVLSet.LabelName, FVLSet);
+    Node := GetNextSibling(Node);
   end;
 end;
 
-procedure TEpiEPXDataset.LoadValueLabelSetsV3(VLSetsNode: IXMLNode);
+procedure TEpiEPXDataset.LoadValueLabelSetsV3(VLSetsNode: {$IFDEF NativeXML}TXmlNode{$ELSE}IXMLNode{$ENDIF});
 var
-  VLSetNode, VLNode: IXMLNode;
+  VLSetNode, VLNode: {$IFDEF NativeXml}TXmlNode{$ELSE}IXMLNode{$ENDIF};
   FVLSet: TLabelValueList;
   S, T: string;
   TypeNo: Integer;
   EVal: Extended;
 begin
   FMissingValuesList := TStringList.Create;
-  VLSetNode := VLSetsNode.ChildNodes[0];
+  
+  VLSetNode := GetFirstChild(VLSetsNode);
   while Assigned(VLSetNode) do
   begin
     // Compatability testing.
-    if VLSetNode.Attributes['scope'] = 'vlsExternal' then
+    if GetAttribute('scope', VLSetNode) = 'vlsExternal' then
     begin
       // No support for external value labels import within an EPX file for Analysis.
-      VLSetNode := VLSetNode.NextSibling;
+      VLSetNode := GetNextSibling(VLSetNode);
       Continue;
     end;
 
-    TypeNo := FtNumberFromFtText(VLSetNode.Attributes['type']);
+    TypeNo := FtNumberFromFtText(GetAttribute('type', VLSetNode));
     if not (TypeNo in [1, 3, 12]) then
     begin
       // Only Interger and String valuelabels supported.
-      VLSetNode := VLSetNode.NextSibling;
+      VLSetNode := GetNextSibling(VLSetNode);
       Continue;
     end;
 
     // Create valuelabel set
     FVLSet := TLabelValueList.Create;
-    FVLSet.LabelName := VLSetNode.Attributes['id'];
+    FVLSet.LabelName := GetAttribute('id', VLSetNode);
 
     // Read the values and labels.
-    VLNode := VLSetNode.ChildNodes[0];
+    VLNode := GetFirstChild(VLSetNode);
     while Assigned(VLNode) do
     begin
-      if VLNode.ChildNodes.FindNode('Label') = nil then
-        S := ''
-      else
-        S := VLNode['Label'];
-
-      T := VLNode.Attributes['value'];
+      S := GetNodeText(GetNode('Label', VLNode));
+      T := GetAttribute('value', VLNode);
       if (TypeNo = 3) then
         begin
           // EPX Float valuelabel
@@ -2515,13 +2536,12 @@ begin
 
       FVLSet.AddPair(T, S);
 
-      if (VLNode.HasAttribute('missing')) and
-         (VLNode.Attributes['missing'] = 'true') and
-         (FMissingValuesList.IndexOf(VLSetNode.Attributes['id']) = -1) then
+      if (GetAttribute('missing', VLNode) = 'true') and
+         (FMissingValuesList.IndexOf(FVLSet.LabelName) = -1) then
       begin
-        FMissingValuesList.AddObject(VLSetNode.Attributes['id'], TObject(Pointer(VLSetNode)));
+        FMissingValuesList.AddObject(FVLSet.LabelName, TObject(Pointer(VLSetNode)));
       end;
-      VLNode := VLNode.NextSibling;
+      VLNode := GetNextSibling(VLNode);
     end;
 
     // Add the set.
@@ -2530,8 +2550,8 @@ begin
     //   This way the field lookup in TEpiDataFrame.LoadFromDataSet find the right ValueLabelSet,
     //   as field in .EPX files use ID references.
     // - To restore correctness this is fixed later in TEpiDataSet.First.
-    FLocalLabelBlockList.AddObject(VLSetNode.Attributes['id'], FVLSet);
-    VLSetNode := VLSetNode.NextSibling;
+    FLocalLabelBlockList.AddObject(FVLSet.LabelName, FVLSet);
+    VLSetNode := GetNextSibling(VLSetNode); 
   end;
 end;
 
@@ -2634,18 +2654,105 @@ begin
   if FFirstRec then
     FFirstRec := false
   else
-    FRecNode := FRecNode.NextSibling;
+    FRecNode := GetNextSibling(FRecNode); 
 
   if Assigned(FRecNode) then
   begin
-    S := FRecNode.Text;
+    S := GetNodeText(FRecNode);
 
     if (FVersion = 2) then
       FDataList.DelimitedText := DummyFy(S);
 
-    if (FVersion = 3) then
+    if (FVersion >= 3) then
       ReadV3Record(S);
   end;
 end;
+
+{$IFDEF NativeXML}
+function TEpiEPXDataset.GetNode(Const Name: string; Parent: TXmlNode): TXmlNode;
+var
+s: string;
+begin
+  result := nil;
+  if Assigned(Parent) then
+  begin
+    S := Parent.ClassName;
+    result := Parent.NodeByName(Name);
+  end;
+end;
+
+function TEpiEPXDataset.GetNodeText(Node: TXmlNode): string;
+begin
+  result := '';
+  if Assigned(Node) then
+    result := Utf8ToAnsi(Node.Value);
+end;
+
+function TEpiEPXDataset.GetAttribute(Const Name: string; Parent: TXmlNode): string;
+begin
+  result := '';
+  if Assigned(Parent) then
+    result := Parent.AttributeValueByName[Name];
+end;
+
+function TEpiEPXDataset.GetFirstChild(Parent: TXmlNode): TXmlNode;
+begin
+  result := nil;
+  if Assigned(Parent) and
+     (Parent.NodeCount > 0)
+  then
+    result := Parent.FirstNodeByType(xeElement); // Nodes[0];
+end;
+
+function TEpiEPXDataset.GetNextSibling(Node: TXmlNode): TXmlNode;
+begin
+  result := nil;
+  if Assigned(Node) and
+     Assigned(Node.Parent)
+  then
+    result := Node.Parent.NextSibling(Node);
+end;
+
+
+{$ELSE}
+function TEpiEPXDataset.GetAttribute(const Name: string; Parent: IXMLNode): string;
+begin
+  result := '';
+  if Assigned(Parent) and
+     Parent.HasAttribute(Name)
+  then
+    result := Parent.Attributes[Name];
+end;
+
+function TEpiEPXDataset.GetNode(const Name: string; Parent: IXMLNode): IXMLNode;
+begin
+  result := nil;
+  if (Parent.ChildNodes.IndexOf(Name) >= 0) then
+    result := Parent.ChildNodes.Nodes[Name];
+end;
+
+function TEpiEPXDataset.GetNodeText(Node: IXMLNode): string;
+begin
+  result := '';
+  if (Assigned(Node)) then
+    result := Node.Text;
+end;
+
+function TEpiEPXDataset.GetFirstChild(Parent: IXMLNode): IXMLNode;
+begin
+  result := nil;
+  if (Assigned(Parent)) and
+     (Parent.HasChildNodes)
+  then
+    result := Parent.ChildNodes[0];
+end;
+
+function TEpiEPXDataset.GetNextSibling(Node: IXMLNode): IXMLNode;
+begin
+  result := nil;
+  if Assigned(Node) then
+    result := Node.NextSibling;
+end;
+{$ENDIF}
 
 end.
