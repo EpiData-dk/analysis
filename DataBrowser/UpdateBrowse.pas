@@ -29,8 +29,6 @@ type
     Button2: TButton;
     AcValues: TAction;
     AcSelectAll: TAction;
-    Button3: TButton;
-    FontDialog1: TFontDialog;
     procedure DataGridDrawCell(Sender: TObject; ACol, ARow: Integer;
       Rect: TRect; State: TGridDrawState);
     procedure DataGridSetEditText(Sender: TObject; ACol, ARow: Integer;
@@ -59,7 +57,6 @@ type
       Shift: TShiftState);
     procedure AcValuesExecute(Sender: TObject);
     procedure AcSelectAllExecute(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
   private
     { Private declarations }
     FVectorList: TEpiVectors;
@@ -724,14 +721,6 @@ begin
   t.Right := DataGrid.ColCount - 1;
   t.Bottom := DataGrid.RowCount - 1;
   DataGrid.Selection := t;
-end;
-
-procedure TUpdateForm.Button3Click(Sender: TObject);
-begin
-  FontDialog1.Font := DataGrid.Font;
-
-  if FontDialog1.Execute then
-    DataGrid.Font := FontDialog1.Font;
 end;
 
 end.

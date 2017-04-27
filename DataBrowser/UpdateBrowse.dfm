@@ -219,15 +219,6 @@ object UpdateForm: TUpdateForm
       Action = AcValues
       TabOrder = 5
     end
-    object Button3: TButton
-      Left = 304
-      Top = 8
-      Width = 75
-      Height = 25
-      Caption = 'Button3'
-      TabOrder = 6
-      OnClick = Button3Click
-    end
   end
   object DataGrid: TStringGrid
     Left = 0
@@ -310,14 +301,5 @@ object UpdateForm: TUpdateForm
       ShortCut = 16449
       OnExecute = AcSelectAllExecute
     end
-  end
-  object FontDialog1: TFontDialog
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    Left = 384
-    Top = 120
   end
 end

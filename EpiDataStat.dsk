@@ -8,37 +8,47 @@ File_5=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\tru
 File_6=SourceModule,'C:\Documents and Settings\epidata\My Documents\Analysis\trunk\fileIO\uepifile.PAS',0,1,1431,1,1461,0,0
 
 [Modules]
-Module0=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\DataBrowser\UpdateBrowse.pas
-Module1=c:\program files\borland\delphi7\source\vcl\Graphics.pas
-Module2=c:\program files\borland\delphi7\source\vcl\grids.pas
-Module3=c:\program files\borland\delphi7\source\vcl\Controls.pas
-Module4=c:\program files\borland\delphi7\source\rtl\common\classes.pas
-Module5=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas
-Module6=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
-Module7=c:\program files\borland\delphi7\source\vcl\Dialogs.pas
-Module8=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas
-Module9=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectorVar.pas
-Module10=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\simdesign\nativexml\nativexml.pas
-Module11=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
+Module0=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
+Module1=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas
+Module2=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\DataBrowser\UpdateBrowse.pas
+Module3=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
+Module4=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectorVar.pas
+Module5=c:\program files\borland\delphi7\source\vcl\Dialogs.pas
+Module6=c:\program files\borland\delphi7\source\rtl\common\classes.pas
+Module7=c:\program files\borland\delphi7\source\vcl\Graphics.pas
+Module8=c:\program files\borland\delphi7\source\vcl\Controls.pas
+Module9=c:\program files\borland\delphi7\source\vcl\grids.pas
+Module10=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas
+Module11=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\simdesign\nativexml\nativexml.pas
 Count=12
 EditWindowCount=1
+
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas]
+ModuleType=SourceModule
+FormState=1
+FormOnTop=0
+
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas]
+ModuleType=SourceModule
+FormState=1
+FormOnTop=0
 
 [C:\Documents and Settings\epidata\My Documents\Analysis\trunk\DataBrowser\UpdateBrowse.pas]
 ModuleType=SourceModule
 FormState=1
 FormOnTop=0
 
-[c:\program files\borland\delphi7\source\vcl\Graphics.pas]
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[c:\program files\borland\delphi7\source\vcl\grids.pas]
+[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectorVar.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[c:\program files\borland\delphi7\source\vcl\Controls.pas]
+[c:\program files\borland\delphi7\source\vcl\Dialogs.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -48,37 +58,27 @@ ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
+[c:\program files\borland\delphi7\source\vcl\Graphics.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[c:\program files\borland\delphi7\source\vcl\Controls.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[c:\program files\borland\delphi7\source\vcl\grids.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
 [C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectors.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas]
-ModuleType=SourceModule
-FormState=1
-FormOnTop=0
-
-[c:\program files\borland\delphi7\source\vcl\Dialogs.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas]
-ModuleType=SourceModule
-FormState=1
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectorVar.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
 [C:\Documents and Settings\epidata\My Documents\Analysis\trunk\simdesign\nativexml\nativexml.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -93,7 +93,7 @@ FormOnTop=0
 
 [EditWindow0]
 ViewCount=12
-CurrentView=5
+CurrentView=4
 View0=0
 View1=1
 View2=2
@@ -111,34 +111,34 @@ MessageView=MessageView@EditWindow0
 Create=1
 Visible=1
 State=0
-Left=192
-Top=104
-Width=1726
-Height=1037
+Left=190
+Top=102
+Width=1729
+Height=968
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1718
-ClientHeight=1010
+ClientWidth=1721
+ClientHeight=941
 LeftPanelSize=0
 RightPanelSize=205
 RightPanelClients=CallStackWindow,WatchWindow,LocalVarsWindow,CodeExplorer@EditWindow0,ToDo List
-RightPanelData=00000400030000000F00000043616C6C537461636B57696E646F770B000000576174636857696E646F770F0000004C6F63616C5661727357696E646F77CD00000000000000029A030000000000000100000001CD000000000000000200000000020200000C000000436F64654578706C6F72657202000000009A0300000E000000546F446F4C69737457696E646F770100000001040400000000000002000000000F0100000000000002000000003B0200000000000002000000000404000000000000FFFFFFFF
+RightPanelData=00000400030000000F00000043616C6C537461636B57696E646F770B000000576174636857696E646F770F0000004C6F63616C5661727357696E646F77CD000000000000000255030000000000000100000001CD000000000000000200000000020200000C000000436F64654578706C6F7265720200000000550300000E000000546F446F4C69737457696E646F770100000001040400000000000002000000000F0100000000000002000000003B0200000000000002000000000404000000000000FFFFFFFF
 BottomPanelSize=85
 BottomPanelClients=MessageView@EditWindow0
 BottomPanelData=000004000000000000000000000000000000000000000000000100000000000000000B0000004D65737361676556696577FFFFFFFF
 
 [View0]
 Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\Umain.pas
-CursorX=43
-CursorY=763
+CursorX=78
+CursorY=765
 TopLine=738
 LeftCol=1
 
 [View1]
 Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UFrames.pas
-CursorX=85
-CursorY=260
-TopLine=243
+CursorX=66
+CursorY=2158
+TopLine=2126
 LeftCol=1
 
 [View2]
@@ -157,16 +157,16 @@ LeftCol=1
 
 [View4]
 Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UCmdProcessor.pas
-CursorX=55
-CursorY=1365
+CursorX=86
+CursorY=1375
 TopLine=1350
 LeftCol=1
 
 [View5]
 Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\DataBrowser\UpdateBrowse.pas
 CursorX=1
-CursorY=732
-TopLine=705
+CursorY=726
+TopLine=702
 LeftCol=1
 
 [View6]
@@ -206,8 +206,8 @@ LeftCol=1
 
 [View11]
 Module=C:\Documents and Settings\epidata\My Documents\Analysis\trunk\UVectorVar.pas
-CursorX=55
-CursorY=291
+CursorX=83
+CursorY=272
 TopLine=250
 LeftCol=1
 
@@ -290,18 +290,18 @@ State=0
 Left=0
 Top=193
 Width=181
-Height=820
+Height=746
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=181
-ClientHeight=820
+ClientHeight=746
 TBDockHeight=573
 LRDockWidth=181
 Dockable=1
 SplitPos=85
 ArrangeBy=Name
 SelectedItem=Name
-ExpandedItems=Font
+ExpandedItems=
 HiddenCategories=
 
 [CallStackWindow]
@@ -359,11 +359,11 @@ State=0
 Left=0
 Top=526
 Width=205
-Height=396
+Height=327
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=205
-ClientHeight=396
+ClientHeight=327
 TBDockHeight=250
 LRDockWidth=205
 Dockable=1
@@ -388,7 +388,7 @@ MaxLeft=-1
 MaxTop=-1
 ClientWidth=205
 ClientHeight=498
-TBDockHeight=910
+TBDockHeight=998
 LRDockWidth=205
 Dockable=1
 
@@ -398,11 +398,11 @@ Visible=1
 State=0
 Left=12
 Top=0
-Width=1706
+Width=1709
 Height=85
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1706
+ClientWidth=1709
 ClientHeight=85
 TBDockHeight=85
 LRDockWidth=443
@@ -416,17 +416,17 @@ DockSiteType=0
 Create=1
 Visible=1
 State=0
-Left=2
-Top=104
+Left=0
+Top=106
 Width=189
-Height=1037
+Height=963
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=181
-ClientHeight=1013
+ClientHeight=939
 TBDockHeight=1059
 LRDockWidth=190
 Dockable=1
 DockClients=ObjectTree,PropertyInspector
-DockSiteData=0000040000000000F50300000000000001B5000000000000000100000000B50000000E0000004F626A65637454726565566965770100000000F50300001100000050726F7065727479496E73706563746F72FFFFFFFF
+DockSiteData=0000040000000000AB0300000000000001B5000000000000000100000000B50000000E0000004F626A65637454726565566965770100000000AB0300001100000050726F7065727479496E73706563746F72FFFFFFFF
 
