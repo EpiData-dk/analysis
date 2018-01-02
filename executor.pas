@@ -385,7 +385,7 @@ procedure TExecutor.ClearFieldVars;
 var
   i: Integer;
 begin
-  FSortedFields.Clear;
+  SortedFields.Clear;
 
   for i := 0 to FFields.count -1 do
     FFields.Data[i].Free;
@@ -563,7 +563,7 @@ begin
   for F in FDataFile.Fields do
     begin
       FFields.add(F.Name, TExecVarField.Create(F));
-      FSortedFields.AddItem(F);
+      SortedFields.AddItem(F);
       RV.AsStringVector[i] := F.Name;
       inc(i);
     end;
@@ -3157,35 +3157,110 @@ procedure TExecutor.ExecReorder(ST: TReorderCommand);
 var
   AList: TStrings;
   Opt: TOption;
-  PivotIdx, FIdx, i: Integer;
-  F, PivotField, FirstField: TEpiField;
+  PivotIdx, FIdx, i, Top, Left: Integer;
+  PivotField, FirstField, F: TEpiField;
   Reverse: Boolean;
   RV: TCustomExecutorDataVariable;
+  Item: TEpiCustomControlItem;
+  Section: TEpiSection;
+  Heading: TEpiHeading;
+  TmpItems: TEpiCustomControlItemList;
 begin
-  AList := ST.VariableList.GetIdentsAsList;
-  FirstField := FSortedFields.FieldByName[AList[0]];
+  // Before making the re-order, check that no sections exists - if they do:
+  // 1: extract all controls to the main form.
+  // 2: place them left aligned, top-to-bottom
+  // 3: Delete all sections
+  if (FDataFile.Sections.Count > 1) then
+    begin
+      // Create a tmp list to loop over - if working on the "live" list,
+      // then any re-order using top/left may disrupt the list.
+      // This will in the end make the list fail!
+      TmpItems := TEpiCustomControlItemList.Create(nil);
+      TmpItems.Sorted := false;
 
-  PivotField := FSortedFields[0];
+      for Item in FDataFile.ControlItems do
+        if (Item = FDataFile.MainSection) then
+          Continue
+        else
+          TmpItems.AddItem(Item);
+
+      // Now process the list
+      Top := 25;
+      Left := 200;
+      for Item in TmpItems do
+        begin
+          if (Item is TEpiSection) then
+            begin
+              Section := TEpiSection(Item);
+
+              Heading := FDataFile.NewHeading;
+              Heading.Name := 'SectionHeading_' + Section.Name;
+              Heading.Caption.Text := Section.Caption.Text;
+              Heading.Top := Top;
+              Heading.Left := Left;
+
+              Inc(Top, 30);
+
+              Continue;
+            end;
+
+          if (Item is TEpiHeading) then
+            begin
+              Section := TEpiHeading(Item).Section;
+
+              if (Section <> FDataFile.MainSection) then
+                begin
+                  Section.Headings.RemoveItem(Item);
+                  FDataFile.MainSection.Headings.AddItem(Item);
+                end;
+            end;
+
+          if (Item is TEpiField) then
+            begin
+              Section := TEpiField(Item).Section;
+
+              if (Section <> FDataFile.MainSection) then
+                begin
+                  Section.Fields.RemoveItem(Item);
+                  FDataFile.MainSection.Fields.AddItem(Item);
+                end;
+            end;
+
+          Item.Top := Top;
+          Item.Left := Left;
+
+          Inc(Top, 30);
+        end;
+
+      for i := FDataFile.Sections.Count -1 downto 0 do
+        if FDataFile.Section[i] <> FDataFile.MainSection then
+          FDataFile.Section[i].Free;
+    end;
+
+  AList := ST.VariableList.GetIdentsAsList;
+  FirstField := SortedFields.FieldByName[AList[0]];
+
+  PivotField := SortedFields[0];
 
   if ST.HasOption('before', Opt) then
-    PivotField := FSortedFields.FieldByName[Opt.Expr.AsIdent];
+    PivotField := SortedFields.FieldByName[Opt.Expr.AsIdent];
 
   if ST.HasOption('after', Opt) then
     begin
-      FIdx := FSortedFields.IndexOf(FSortedFields.FieldByName[Opt.Expr.AsIdent]) + 1;
-      if (FIdx >= FSortedFields.Count) then
+      FIdx := SortedFields.IndexOf(SortedFields.FieldByName[Opt.Expr.AsIdent]) + 1;
+      if (FIdx >= SortedFields.Count) then
         PivotField := nil
       else
-        PivotField := FSortedFields[FIdx];
+        PivotField := SortedFields[FIdx];
     end;
 
   if ST.HasOption('last') then
     PivotField := nil;
 
-  FIdx     := FSortedFields.IndexOf(FirstField);
-  PivotIdx := FSortedFields.IndexOf(PivotField);
+  FIdx     := SortedFields.IndexOf(FirstField);
+  PivotIdx := SortedFields.IndexOf(PivotField);
   if (PivotIdx = -1) then
-    PivotIdx := FSortedFields.Count - 1;
+    PivotIdx := SortedFields.Count - 1;
 
   Reverse := false;
   if (PivotIdx > FIdx) and
@@ -3193,10 +3268,11 @@ begin
   then
     begin
       Dec(PivotIdx);
-      PivotField := FSortedFields[PivotIdx];
+      PivotField := SortedFields[PivotIdx];
       Reverse := true;
     end;
 
+  // TODO: Rewrite the re-order algorithm to use the ControlItems list...
   for i := 0 to AList.Count - 1 do
     begin
       if Reverse then
@@ -3204,19 +3280,19 @@ begin
       else
         FIdx := i;
 
-      F := FSortedFields.FieldByName[AList[FIdx]];
-      FIdx := FSortedFields.IndexOf(F);
+      F := SortedFields.FieldByName[AList[FIdx]];
+      FIdx := SortedFields.IndexOf(F);
 
-      PivotIdx := FSortedFields.IndexOf(PivotField);
+      PivotIdx := SortedFields.IndexOf(PivotField);
       if (PivotIdx = -1) then
-        PivotIdx := FSortedFields.Count - 1;
+        PivotIdx := SortedFields.Count - 1;
 
-      FSortedFields.Move(FIdx, PivotIdx);
+      SortedFields.Move(FIdx, PivotIdx);
     end;
 
   RV := FResults.KeyData['$variable'];
-  for i := 0 to FSortedFields.Count - 1 do
-    RV.AsStringVector[i] := FSortedFields.Field[i].Name;
+  for i := 0 to SortedFields.Count - 1 do
+    RV.AsStringVector[i] := SortedFields.Field[i].Name;
 
   DoGUIInteraction(gaProjectTree);
 end;
@@ -4068,8 +4144,8 @@ begin
 
         evtField:
           begin
-            StartIdx := FSortedFields.IndexOf(FSortedFields.FieldByName[VR.StartVariable.Ident]);
-            EndIdx   := FSortedFields.IndexOf(FSortedFields.FieldByName[VR.EndVariable.Ident]);
+            StartIdx := SortedFields.IndexOf(SortedFields.FieldByName[VR.StartVariable.Ident]);
+            EndIdx   := SortedFields.IndexOf(SortedFields.FieldByName[VR.EndVariable.Ident]);
           end;
 
         evtDataset:
@@ -4115,7 +4191,7 @@ begin
             AVariableList.Add(TVariable.Create(FConsts.Keys[i], Self));
 
           evtField:
-            AVariableList.Add(TVariable.Create(FSortedFields[i].Name, Self));
+            AVariableList.Add(TVariable.Create(SortedFields[i].Name, Self));
 
           evtDataset:
             AVariableList.Add(TVariable.Create(FDataSets.Keys[i], Self));
@@ -4151,7 +4227,7 @@ begin
       R.ModifierI := true;
 
       if (evtField in EVTypes) then
-        for F in FSortedFields do
+        for F in SortedFields do
           if (R.Exec(F.Name)) and
              (R.Match[0] = F.Name)
           then
