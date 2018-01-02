@@ -1,0 +1,57 @@
+unit ana_globals;
+
+{$mode objfpc}{$H+}
+
+interface
+
+const
+  // Set Options Globals
+
+  ANA_SO_BROWSER_FONT_SIZE             = 'BROWSER FONT SIZE';
+  ANA_SO_BROWSER_FONT_NAME             = 'BROWSER FONT NAME';
+  ANA_SO_BROWSER_FONT_COLOR            = 'BROWSER FONT COLOUR';
+  ANA_SO_BROWSER_FONT_STYLE            = 'BROWSER FONT STYLE';
+  ANA_SO_BROWSER_BG_COLOR              = 'BROWSER BG COLOUR';
+  ANA_SO_CLIPBOARD_DELIMITER           = 'CLIPBOARD DELIMITER';
+
+  ANA_SO_CMDEDIT_FONT_SIZE             = 'COMMANDLINE FONT SIZE';
+  ANA_SO_CMDEDIT_FONT_NAME             = 'COMMANDLINE FONT NAME';
+  ANA_SO_CMDEDIT_FONT_COLOR            = 'COMMANDLINE FONT COLOUR';
+  ANA_SO_CMDEDIT_FONT_STYLE            = 'COMMANDLINE FONT STYLE';
+  ANA_SO_CMDEDIT_BG_COLOR              = 'COMMANDLINE BG COLOUR';
+
+  ANA_SO_COMMANDLOG                    = 'COMMANDLOG';
+  ANA_SO_COMMANDLOGFILE                = 'COMMANDLOGFILE';
+  ANA_SO_COMMANDLOGLINES               = 'COMMANDLOGLINES';
+
+  ANA_SO_ECHO                          = 'ECHO';
+  ANA_SO_EDITOR_FONT_SIZE              = 'EDITOR FONT SIZE';
+  ANA_SO_EDITOR_FONT_NAME              = 'EDITOR FONT NAME';
+  ANA_SO_EXITSAVE                      = 'EXITSAVE';
+
+  ANA_SO_FORMAT_VALUE_LABEL            = 'FORMAT VALUE LABEL';
+  ANA_SO_FORMAT_VARIABLE_LABEL         = 'FORMAT VARIABLE LABEL';
+
+  ANA_SO_INCLUDE_DELETED               = 'INCLUDE DELETED';
+
+  ANA_SO_OUTPUT_FONT_SIZE              = 'OUTPUT FONT SIZE';
+  ANA_SO_OUTPUT_FONT_NAME              = 'OUTPUT FONT NAME';
+  ANA_SO_OUTPUT_FONT_COLOR             = 'OUTPUT FONT COLOUR';
+  ANA_SO_OUTPUT_FONT_STYLE             = 'OUTPUT FONT STYLE';
+  ANA_SO_OUTPUT_BG_COLOR               = 'OUTPUT BG COLOUR';
+  ANA_SO_OUTPUT_FORMAT                 = 'OUTPUT FORMAT';
+
+  ANA_SO_SHOW_COMMAND                  = 'SHOW COMMAND';
+  ANA_SO_SHOW_DEBUG                    = 'SHOW DEBUG';
+  ANA_SO_SHOW_ERROR                    = 'SHOW ERROR';
+  ANA_SO_SHOW_INFO                     = 'SHOW INFO';
+  ANA_SO_SHOW_WARNING                  = 'SHOW WARNING';
+
+
+  //  Executor Field Names
+  ANA_EXEC_PREPAREDS_OBSNO_FIELD       = '@obsno';
+
+implementation
+
+end.
+

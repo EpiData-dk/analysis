@@ -1,0 +1,273 @@
+﻿"Name"     = 'EpiData Analysis Grammar'
+"Author"   = 'Torsten Bonde Christiansen'
+"Version"  = '1.0'
+"About"    = 'The grammar for the EpiData Analysis Program'
+"Case Sensitive" = 'False'
+"Start Symbol" = <Program>
+
+! ------------------------------------------------- Sets
+
+{ID Head}            = {Letter} + [_]
+{ID Tail}            = {Alphanumeric} + [_?*]
+{String Chars}       = {All Printable} + {HT} - ["]
+
+! ------------------------------------------------- Terminals
+
+Identifier    = '$'?{ID Head}{ID Tail}*
+String        = '"' {String Chars}* '"'
+Integer       = {Digit}+
+Float         = {Digit}+'.'{Digit}+
+
+! Comments
+Comment Start = '/*'
+Comment End   = '*/'
+Comment Line  = '//' 
+
+! Special tokens
+Missing       = '.'
+Pi            = 'pi'|'π'
+RecNumber     = '_n'
+              
+
+! ==========================================================
+! ===============        Commands      =====================
+! ==========================================================
+
+!Crud commands
+opNew         = 'new'
+opList        = 'lis'('t')?
+opEdit        = 'edi'('t')?
+opDrop        = 'dro'('p')?
+
+!Check/Report
+opCheck       = 'check'
+opReport      = 'report'
+
+! -- Variable commands.
+opMeans       = 'mea'('ns')?
+opUse         = 'use'
+opBrowse      = 'bro'('wse')?
+opFreq        = 'freq'('uence')?
+opSort        = 'sor'('t')?
+opAppend      = 'app'('end')?
+opMerge       = 'mer'('ge')?
+opReorder     = 'reo'('rder')?
+
+! -- String commands
+opRunTest     = 'runtest'
+opRun         = 'run'
+opRead        = 'rea'('d')?
+opSave        = 'sav'('e')?
+opCD          = 'cd'
+opLS          = 'ls'|'dir'
+opErase       = 'erase'
+              
+! -- Empty Commands
+opCls         = 'cls'
+opClh         = 'clh'
+opCount       = 'cou'('nt')?
+opClose       = 'clo'('se')?
+opQuit        = 'qui'('t')?
+opReset       = 'reset'
+!opPack        = 'pack'
+
+              
+! -- Other commands
+opAssert      = 'assert'
+opSet         = 'set'   
+!opRecode      = 'recode'                        
+
+
+! ------------------------------------------------- Rules
+
+<Program>                                  ::= <Statement List>
+
+<Statement List>                           ::= <Statement> ';' <Statement List>
+                                           |
+               
+<Statement>                                ::= 'begin' <Statement List> 'end'
+                                           |   'if' <Expression> 'then' <Statement> <Optional Else>
+                                           |   'select' <Expression> 'do' <Statement>
+                                           |   'for' <Indexed Variable> ':=' <Expression> <For Direction> <Expression> 'do' <Statement>
+                                           |   'for' <Indexed Variable> 'in' <Array> 'do' <Statement>
+!                                          |   'function' Identifier '(' <Parameter Type List> ')' <Optional Return Value> ';' 'begin' <Statement List> 'end'
+                                           |   opUse <Indexed Variable> <Option List>
+                                           |   '?' <Expression>
+                                           |   opAssert <Expression>        <Option List>
+                                           |   opAssert '(' <Statement> ')' <Option List>
+                                           |   opSet <Optional Expression> <Optional Assignment>
+!                                           |   opRecode <Referenced Variable> <Optional Recode To> <Recode By Or Intervals> <Option List>
+                                           |   <Indexed Variable> ':=' <Expression>
+                                           |   <Crud Commands>
+                                           |   <Check Command>
+                                           |   <Report Command>
+                                           |   <Variable Command> <Optional Indexed Variable List> <Option List>
+                                           |   <String Command>   <Optional Expression>            <Option List>
+                                           |   <Empty Command>                                     <Option List>
+                                           |   <System Command>   <Optional Expression>
+                                           |   ! This is to accomodate empty commands
+       
+<Crud Commands>                            ::= opNew  <Variable>  <New SubSystem>                   <Option List>
+                                           |   opEdit <Variable>  <Edit SubSystem>                  <Option List>
+                                           |   opDrop <Variable>  <Optional Indexed Variable List>  <Option List>
+                                           |   opList <Variable>  <Optional Indexed Variable List>  <Option List>
+
+<New SubSystem>                            ::= <Indexed Variable> <Variable> <Optional Assignment> ! New global (vector), variable
+                                           |   <Indexed Variable> <Variable> <Value Label Pairs>   ! New value label
+                                           |   <Indexed Variable>                                  ! New dataset
+                                           |                                                       ! New project
+
+<Edit SubSystem>                           ::= <Indexed Variable> <Value Label Pairs>        ! Edit value label
+                                           |   <Indexed Variable>                            ! Edit dataset, variable, value label
+                                           |                                                 ! Edit project, data
+
+<Check Command>                            ::= opCheck <Variable> <Optional Indexed Variable List> <Option List>
+
+<Report Command>                           ::= opReport <Variable> <Optional Indexed Variable List> <Option List>
+
+<Variable Command>                         ::= opMeans
+                                           |   opBrowse
+                                           |   opFreq
+                                           |   opSort
+                                           |   opAppend
+                                           |   opMerge
+                                           |   opReorder
+
+<String Command>                           ::= opRead
+                                           |   opRuntest
+                                           |   opRun
+                                           |   opSave
+                                           |   opErase
+                    
+<Empty Command>                            ::= opCls
+                                           |   opClh
+                                           |   opCount
+                                           |   opClose
+                                           |   opQuit
+                                           |   opReset
+!                                           |   opPack
+
+<System Command>                           ::= opCD
+                                           |   opLS
+                                           |   '!'
+
+<Optional Else>                            ::= 'else' <Statement>
+                                           |
+                   
+<For Direction>                            ::= 'to'
+                                           |  'downto'
+                   
+<Value Label Pairs>                        ::= <Expression> String <Value Label Pairs>
+                                           |   <Expression> String
+
+<Optional Assignment>                      ::= ':=' <Expression>
+                                           |
+                                           
+!  =====================================================
+!        RECODING STUFF
+!  =====================================================
+
+!<Optional Recode To>                       ::= 'to' <Referenced Variable>
+!                                           |
+
+!<Recode By Or Intervals>                   ::= 'by' <Expression>
+!                                           |   <Recode Inteval List>
+
+!<Recode Inteval List>                      ::= <Recode Interval> <Recode Inteval List>
+!                                           |   <Recode Interval>
+                                           
+!<Recode Interval>                          ::= <Interval> ':=' <Expression>
+                                            
+!<Interval>                                 ::= 'from' <Expression> 'to' <Expression>
+!                                           |   opUse <Expression>
+
+!  =====================================================
+!        VARIABLES
+!  =====================================================
+
+<Optional Indexed Variable List>        ::= <Indexed Variable List>
+                                        |
+
+<Indexed Variable List>                 ::= <Indexed Variable> <Optional Indexed Variable List>
+                                        |   <Indexed Variable> '-' <Indexed Variable> <Optional Indexed Variable List>
+
+<Indexed Variable>                      ::= <Referenced Variable> '[' <Expression List> ']'
+                                        |   <Referenced Variable>
+
+<Referenced Variable>                   ::= '@' '{' <Expression> '}'
+                                        |   <Variable>
+
+<Variable>                              ::= Identifier
+
+
+!  =====================================================
+!        OPTIONS
+!  =====================================================
+
+<Option List>                              ::= <Option> <Option List>
+                                           |
+
+<Option>                                   ::= '!' <Indexed Variable>
+                                           |   '!' <Variable> ':=' <Expression>
+
+
+!  =====================================================
+!        EXPRESSIONS
+!  =====================================================
+
+<Optional Expression List>                 ::= <Expression List>
+                                           |
+
+<Expression List>                          ::= <Expression> ',' <Expression List>
+                                           |   <Expression>
+
+<Optional Expression>                      ::= <Expression>
+                                           |
+                   
+<Expression>                               ::= <Expression> '>'  <Add Exp>
+                                           |   <Expression> '<'  <Add Exp>
+                                           |   <Expression> '<=' <Add Exp>
+                                           |   <Expression> '>=' <Add Exp>
+                                           |   <Expression> '='  <Add Exp>    ! Equal
+                                           |   <Expression> '<>' <Add Exp>    ! Not equal
+                                           |   <Add Exp>
+
+<Add Exp>                                  ::= <Add Exp> '+' <Mult Exp>
+                                           |   <Add Exp> '-' <Mult Exp>
+                                           |   <Add Exp> 'or' <Mult Exp>
+                                           |   <Add Exp> 'xor' <Mult Exp>
+                                           |   <Mult Exp>
+
+<Mult Exp>                                 ::= <Mult Exp> '*' <Exponential Exp>
+                                           |   <Mult Exp> '/' <Exponential Exp>
+                                           |   <Mult Exp> 'div' <Exponential Exp>
+                                           |   <Mult Exp> 'mod' <Exponential Exp>
+                                           |   <Mult Exp> 'and' <Exponential Exp>
+                                           |   <Mult Exp> 'shl' <Exponential Exp>
+                                           |   <Mult Exp> 'shr' <Exponential Exp>
+                                           |   <Exponential Exp>
+                   
+<Exponential Exp>                          ::= <Exponential Exp> '^' <Negate Exp>
+                                           |   <Negate Exp>
+
+<Negate Exp>                               ::= '-' <Negate Exp>
+                                           |   'not' <Negate Exp>
+                                           |   <Value>
+
+<Value>                                    ::= <Indexed Variable>
+                                           |   Integer
+                                           |   Float
+                                           |   String
+                                           |   Missing
+                                           |   Pi
+                                           |   RecNumber
+                                           |   'true'
+                                           |   'false'
+!                                           |   <Array>
+                                           |   '(' <Expression> ')'
+                                           |   <Function Call>
+
+<Function Call>                            ::= Identifier '(' <Optional Expression List> ')'
+
+<Array>                                    ::= '[' <Expression List> ']'
+

@@ -1,0 +1,3 @@
+read "/home/torsten/BtSync/EpiData Arbejde/data/bromar.epx";
+new g s s := "/home/torsten/BtSync/EpiData Arbejde/data/bromar.epx";
+append !fn := s;
