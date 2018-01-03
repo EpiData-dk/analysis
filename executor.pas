@@ -100,7 +100,7 @@ type
 
   // Internal Vars
   private
-    FSortedFields: TEpiFields;
+//    FSortedFields: TEpiFields;
     FOptions: TSetOptionsMap;
     FDataSets: TExecutorDatasetVariables;
     FVLSets:  TExecutorValuelabelsets;
@@ -112,6 +112,7 @@ type
     procedure InitSetOptions;
     function  GetSetOptionValue(const Key: UTF8String): UTF8String;
     procedure SetSetOptionValue(const Key: UTF8String; AValue: UTF8String);
+    function  GetSortedFields: TEpiFields;
   public
     function  AddResultConst(Const Ident: UTF8String; DataType: TEpiFieldType): TExecVarGlobal; virtual;
     function  AddResultVector(Const Ident: UTF8String; DataType: TEpiFieldType;
@@ -123,7 +124,7 @@ type
     procedure ClearResults;
     property  Valuelabels: TExecutorValuelabelsets read FVLSets;
     property  Datasets: TExecutorDatasetVariables read FDataSets;
-    property  SortedFields: TEpiFields read FSortedFields;
+    property  SortedFields: TEpiFields read GetSortedFields;
     property  Fields: TExecutorDataVariables read FFields;
     property  Consts: TExecutorDataVariables read FConsts;
     property  Results: TExecutorDataVariables read FResults;
@@ -385,8 +386,6 @@ procedure TExecutor.ClearFieldVars;
 var
   i: Integer;
 begin
-  SortedFields.Clear;
-
   for i := 0 to FFields.count -1 do
     FFields.Data[i].Free;
 
@@ -563,7 +562,6 @@ begin
   for F in FDataFile.Fields do
     begin
       FFields.add(F.Name, TExecVarField.Create(F));
-      SortedFields.AddItem(F);
       RV.AsStringVector[i] := F.Name;
       inc(i);
     end;
@@ -1728,6 +1726,11 @@ procedure TExecutor.SetSetOptionValue(const Key: UTF8String; AValue: UTF8String
   );
 begin
   SetOptions.GetValue(Key).Value := AValue;
+end;
+
+function TExecutor.GetSortedFields: TEpiFields;
+begin
+  result := FDataFile.Fields;
 end;
 
 function TExecutor.AddResultConst(const Ident: UTF8String;
@@ -3157,7 +3160,7 @@ procedure TExecutor.ExecReorder(ST: TReorderCommand);
 var
   AList: TStrings;
   Opt: TOption;
-  PivotIdx, FIdx, i, Top, Left: Integer;
+  PivotIdx, FIdx, i, Top, Left, Runner: Integer;
   PivotField, FirstField, F: TEpiField;
   Reverse: Boolean;
   RV: TCustomExecutorDataVariable;
@@ -3165,6 +3168,7 @@ var
   Section: TEpiSection;
   Heading: TEpiHeading;
   TmpItems: TEpiCustomControlItemList;
+  S: String;
 begin
   // Before making the re-order, check that no sections exists - if they do:
   // 1: extract all controls to the main form.
@@ -3235,13 +3239,14 @@ begin
       for i := FDataFile.Sections.Count -1 downto 0 do
         if FDataFile.Section[i] <> FDataFile.MainSection then
           FDataFile.Section[i].Free;
+
+      TmpItems.Free;
     end;
+  // Done "deflating" the content of the dataset.
 
-  AList := ST.VariableList.GetIdentsAsList;
-  FirstField := SortedFields.FieldByName[AList[0]];
-
+  // Find the spot to place the of selected varialbes - the pivot field.
+  // the variables will be placed BEFORE the pivot field.
   PivotField := SortedFields[0];
-
   if ST.HasOption('before', Opt) then
     PivotField := SortedFields.FieldByName[Opt.Expr.AsIdent];
 
@@ -3257,38 +3262,61 @@ begin
   if ST.HasOption('last') then
     PivotField := nil;
 
-  FIdx     := SortedFields.IndexOf(FirstField);
-  PivotIdx := SortedFields.IndexOf(PivotField);
-  if (PivotIdx = -1) then
-    PivotIdx := SortedFields.Count - 1;
+  // Now work on the tmp list again.
+  TmpItems := TEpiCustomControlItemList.Create(nil);
+  TmpItems.Sorted := false;
+  for Item in FDataFile.ControlItems do
+    if (Item = FDataFile.MainSection) then
+      Continue
+    else
+      TmpItems.AddItem(Item);
 
-  Reverse := false;
-  if (PivotIdx > FIdx) and
-     (not ST.HasOption('last'))
-  then
+  // At this point there are no more sections (besides the main section)
+  Runner := 0;
+  Top := 25;
+  Left := 200;
+  AList := ST.VariableList.GetIdentsAsList;
+
+  while (Runner < TmpItems.Count) do
     begin
-      Dec(PivotIdx);
-      PivotField := SortedFields[PivotIdx];
-      Reverse := true;
+      Item := TEpiCustomControlItem(TmpItems[Runner]);
+      Inc(Runner);
+
+      if (Item = PivotField) then
+        begin
+          for S in AList do
+            begin
+              F := SortedFields.FieldByName[S];
+
+              F.Top := Top;
+              F.Left := Left;
+
+              Inc(Top, 30);
+            end;
+        end;
+
+      if AList.IndexOf(Item.Name) >= 0 then
+        Continue;
+
+      Item.Top := Top;
+      Item.Left := Left;
+
+      Inc(Top, 30);
     end;
 
-  // TODO: Rewrite the re-order algorithm to use the ControlItems list...
-  for i := 0 to AList.Count - 1 do
-    begin
-      if Reverse then
-        FIdx := AList.Count - (i + 1)
-      else
-        FIdx := i;
+  if (not Assigned(PivotField)) then
+    for S in AList do
+      begin
+        F := SortedFields.FieldByName[S];
 
-      F := SortedFields.FieldByName[AList[FIdx]];
-      FIdx := SortedFields.IndexOf(F);
+        F.Top := Top;
+        F.Left := Left;
 
-      PivotIdx := SortedFields.IndexOf(PivotField);
-      if (PivotIdx = -1) then
-        PivotIdx := SortedFields.Count - 1;
+        Inc(Top, 30);
+      end;
 
-      SortedFields.Move(FIdx, PivotIdx);
-    end;
+  TmpItems.Clear;
+  TmpItems.Free;
 
   RV := FResults.KeyData['$variable'];
   for i := 0 to SortedFields.Count - 1 do
@@ -3500,7 +3528,7 @@ constructor TExecutor.Create(OutputCreator: TOutputCreator);
 var
   F: TEpiField;
 begin
-  FSortedFields  := TEpiFields.Create(nil);
+//  FSortedFields  := TEpiFields.Create(nil);
   FOutputCreator := OutputCreator;
 
   FOldRedrawRequest := FOutputCreator.OnRedrawRequest;
