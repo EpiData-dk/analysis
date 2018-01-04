@@ -241,7 +241,7 @@ type
 
   { Help }
   private
-    procedure HelpLookup;
+    procedure HelpLookup(ContextLookup: Boolean);
 
   { Recent Files }
   private
@@ -1250,8 +1250,11 @@ begin
   aKey := Key;
   Key := VK_UNKNOWN;
   case aKey of
-    VK_H:  if (ssCtrlOS in Shift) then HelpLookup else Key := aKey;
-    VK_F1: HelpLookup;
+    VK_H:  if (ssCtrlOS in Shift) then
+             HelpLookup(true)
+           else
+             Key := aKey;
+    VK_F1: HelpLookup(false);
     VK_F2: ToggleProjectTreeExecute(nil);
     VK_F3: ToggleVarnamesListActionExecute(nil);
     VK_F4: if (Shift = []) then CmdEditFocusActionExecute(Nil) else Key := aKey;
@@ -1652,7 +1655,7 @@ begin
   HtmlGenerator.Free;
 end;
 
-procedure TMainForm.HelpLookup;
+procedure TMainForm.HelpLookup(ContextLookup: Boolean);
 
   function WholeWordFromPos(Const Input: String; StartPos: Integer): string;
   var
@@ -1729,8 +1732,10 @@ begin
     S := WholeWordFromPos(TrimLeft(Txt), 1);
 
   // If a word is found, then make it an index to search for.
-  if (S <> '') then
-    S := '#' + S;
+  if (S <> '') and (ContextLookup) then
+    S := '#' + S
+  else
+    S := '';
 
   {$IFDEF DARWIN}
   S := 'file://' + ProgramDirectory + '../../../docs' + DirectorySeparator + 'commands.html' + S;
