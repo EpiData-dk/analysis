@@ -5,7 +5,8 @@ unit report;
 interface
 
 uses
-  Classes, SysUtils, ast, executor, epidocument, outputcreator;
+  Classes, SysUtils, ast, executor, result_variables, epidocument,
+  outputcreator;
 
 type
 
@@ -18,6 +19,7 @@ type
     FOutputCreator: TOutputCreator;
   protected
     procedure DoReportUsers;
+    procedure DoReportCountById;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
     procedure Report(ST: TCustomReportCommand);
@@ -26,7 +28,8 @@ type
 implementation
 
 uses
-  episecuritylog, epilogger, epiglobals, epidatafileutils, epireport_report_countbyid;
+  episecuritylog, epilogger, epiglobals, epidatafileutils, epireport_report_countbyid,
+  ast_types;
 
 
 { TReports }
@@ -129,6 +132,60 @@ begin
   FSt.ExecResult := csrSuccess;
 end;
 
+procedure TReports.DoReportCountById;
+var
+  CoreReportConverter: TCoreReportGeneratorToOutputCreator;
+  CBIDReport: TEpiReportCountById;
+var
+  Opt: TOption;
+  FileNames, Datasets: TExecVarGlobalVector;
+begin
+  if FSt.HasOption('fn', Opt) then
+    begin
+      if (Opt.Expr.ResultType <> rtString) then
+        begin
+          FExecutor.Error('"' + Opt.Expr.AsIdent + '" must contain string values!');
+          FSt.ExecResult := csrFailed;
+          Exit;
+        end;
+
+      FileNames := TExecVarGlobalVector(FExecutor.GetExecDataVariable(Opt.Expr.AsIdent));
+    end;
+
+  if FSt.HasOption('ds', Opt) then
+    begin
+      if (Opt.Expr.ResultType <> rtString) then
+        begin
+          FExecutor.Error('"' + Opt.Expr.AsIdent + '" must contain string values!');
+          FSt.ExecResult := csrFailed;
+          Exit;
+        end;
+
+      Datasets := TExecVarGlobalVector(FExecutor.GetExecDataVariable(Opt.Expr.AsIdent));
+    end;
+
+  if (Assigned(FileNames)) and
+     (Assigned(Datasets)) and
+     (FileNames.Length <> Datasets.Length)
+  then
+    begin
+      FExecutor.Error(
+        '"' + FileNames.Ident + '" and "' + Datasets.Ident + '" must have the same number of elements!' + LineEnding +
+        FileNames.Ident + ': size = ' + IntToStr(FileNames.Length) + LineEnding +
+        Datasets.Ident + ': size = ' + IntToStr(Datasets.Length)
+      );
+      FSt.ExecResult := csrFailed;
+      Exit;
+    end;
+
+  CoreReportConverter := TCoreReportGeneratorToOutputCreator.Create(FOutputCreator);
+
+  CBIDReport := TEpiReportCountById.Create(CoreReportConverter);
+  CBIDReport.FieldNames := FSt.VariableList.GetIdentsAsList;
+
+  CBIDReport.Free;
+end;
+
 constructor TReports.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator
   );
 begin
@@ -141,7 +198,8 @@ begin
   FSt := ST;
 
   case FSt.SubCmd of
-    rscCountById: ;
+    rscCountById:
+      DoReportCountById;
 
     rscUsers:
       DoReportUsers;

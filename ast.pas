@@ -1517,7 +1517,9 @@ end;
 function TReportCountById.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-//  result.Insert('fn', [rtObject], [evtDataset], [evfInternal, evfExternal, evfAsObject]);
+
+  result.Insert('fn', [rtObject], [evtGlobalVector], [evfInternal, evfAsObject]);
+  result.Insert('ds', [rtObject], [evtGlobalVector], [evfInternal, evfAsObject]);
 end;
 
 function TReportCountById.GetAcceptedVariableCount: TBoundArray;

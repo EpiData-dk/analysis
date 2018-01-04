@@ -7,7 +7,7 @@ unit outputcreator;
 interface
 
 uses
-  Classes, SysUtils, contnrs, options_hashmap;
+  Classes, SysUtils, contnrs, options_hashmap, epireport_generator_base, epireport_types;
 
 type
   TOutputType = (
@@ -184,13 +184,144 @@ type
     property SetOptions: TSetOptionsMap read FSetOptions write FSetOptions;
   end;
 
+  { TCoreReportGeneratorToOutputCreator }
+
+  TCoreReportGeneratorToOutputCreator = class(TEpiReportGeneratorBase)
+  // Inherited overrides!
+  private
+    FCurrentTable: TOutputTable;
+    function LineFromLines(var Lines: String): string;
+  public
+    // Lines
+    procedure Section(Const Text: string); override;
+    procedure Heading(Const Text: string); override;
+    procedure Line(Const Text: string); override;
+
+    // Table
+    procedure TableHeader(const Text: string; const AColCount, ARowCount: Integer;
+      const HeaderOptions: TEpiReportGeneratorTableHeaderOptionSet = [
+      thoRowHeader]); override;
+    procedure TableFooter(Const Text: string); override;
+    procedure TableCell(const Text: string; const Col, Row: Integer;
+      const CellAdjust: TEpiReportGeneratorTableCellAdjustment = tcaAutoAdjust;
+      Const CellOptions: TEpiReportGeneratorTableCellOptionSet = []
+      ); override;
+
+    procedure StartReport(Const Title: string); override;
+    procedure EndReport; override;
+  private
+    FOutputCreator: TOutputCreator;
+  public
+    constructor Create(AOutputCreator: TOutputCreator);
+  end;
+
 const
   cbAll = [cbTop, cbLeft, cbRight, cbBottom];
 
 implementation
 
 uses
-  math, ana_globals, LazUTF8;
+  math, ana_globals, LazUTF8, strutils;
+
+{ TCoreReportGeneratorToOutputCreator }
+
+function TCoreReportGeneratorToOutputCreator.LineFromLines(var Lines: String
+  ): string;
+var
+  p: Integer;
+begin
+  p := Pos(LineEnding, Lines);
+  if p = 0 then
+  begin
+    result:=Lines;
+    Lines:='';
+  end else begin
+    Result := Copy(Lines, 1, p-1);
+    delete(Lines, 1, (p - 1) + Length(LineEnding));
+  end;
+end;
+
+procedure TCoreReportGeneratorToOutputCreator.Section(const Text: string);
+begin
+  FOutputCreator.DoNormal(Text);
+end;
+
+procedure TCoreReportGeneratorToOutputCreator.Heading(const Text: string);
+begin
+  FOutputCreator.DoNormal(Text);
+end;
+
+procedure TCoreReportGeneratorToOutputCreator.Line(const Text: string);
+begin
+  FOutputCreator.DoNormal(Text);
+end;
+
+procedure TCoreReportGeneratorToOutputCreator.TableHeader(const Text: string;
+  const AColCount, ARowCount: Integer;
+  const HeaderOptions: TEpiReportGeneratorTableHeaderOptionSet);
+begin
+  inherited TableHeader(Text, AColCount, ARowCount, HeaderOptions);
+
+  FCurrentTable := FOutputCreator.AddTable;
+  FCurrentTable.RowCount := ARowCount;
+  FCurrentTable.ColCount := AColCount;
+  FCurrentTable.Header.Text := Text;
+
+  if (thoColHeader in HeaderOptions) then FCurrentTable.SetRowBorders(0, [cbBottom]);
+  if (thoRowHeader in HeaderOptions) then FCurrentTable.SetColBorders(0, [cbRight]);
+end;
+
+procedure TCoreReportGeneratorToOutputCreator.TableFooter(const Text: string);
+begin
+  FCurrentTable.Footer.Text := Text;
+
+  inherited TableFooter(Text);
+end;
+
+procedure TCoreReportGeneratorToOutputCreator.TableCell(const Text: string;
+  const Col, Row: Integer;
+  const CellAdjust: TEpiReportGeneratorTableCellAdjustment;
+  const CellOptions: TEpiReportGeneratorTableCellOptionSet);
+var
+  Cell: TOutputTableCell;
+  CBorders: TOutputTableCellBorders;
+begin
+  inherited TableCell(Text, Col, Row, CellAdjust, CellOptions);
+
+  Cell := FCurrentTable.Cell[Col, Row];
+  Cell.Text := Text;
+
+  case CellAdjust of
+    tcaAutoAdjust:  Cell.Alignment := taLeftJustify;
+    tcaLeftAdjust:  Cell.Alignment := taLeftJustify;
+    tcaCenter:      Cell.Alignment := taCenter;
+    tcaRightAdjust: Cell.Alignment := taRightJustify;
+  end;
+
+  CBorders := [];
+  if (tcoLeftBorder in CellOptions)   then Include(CBorders, cbLeft);
+  if (tcoRightBorder in CellOptions)  then Include(CBorders, cbRight);
+  if (tcoTopBorder in CellOptions)    then Include(CBorders, cbTop);
+  if (tcoBottomBorder in CellOptions) then Include(CBorders, cbBottom);
+  Cell.Borders := CBorders;
+end;
+
+procedure TCoreReportGeneratorToOutputCreator.StartReport(const Title: string);
+begin
+  //
+end;
+
+procedure TCoreReportGeneratorToOutputCreator.EndReport;
+begin
+  //
+end;
+
+constructor TCoreReportGeneratorToOutputCreator.Create(
+  AOutputCreator: TOutputCreator);
+begin
+  inherited Create;
+  FOutputCreator := AOutputCreator;
+end;
 
 { TOutputAlignedText }
 
