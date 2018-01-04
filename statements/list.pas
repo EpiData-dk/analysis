@@ -206,12 +206,22 @@ var
   VL: TEpiValueLabelSet;
   i, j: Integer;
   VLs: TExecutorValuelabelsets;
+  AList: TStrings;
 begin
   VLs := FExecutor.Valuelabels;
 
-  for i := 0 to VLs.Count - 1 do
+  if Assigned(FST.Variables) then
+    AList := FSt.Variables.GetIdentsAsList
+  else
+    AList := TStringList.Create;
+
+  if (AList.Count = 0) then
+    for i := 0 to FExecutor.Valuelabels.Count - 1 do
+      AList.Add(VLs.Data[i].Ident);
+
+  for i := 0 to AList.Count - 1 do
     begin
-      VL := VLs.Data[i].Valuelabelset;
+      VL := VLs[AList[i]].Valuelabelset;
 
       T := FOutputCreator.AddTable;
       T.ColCount := 3;

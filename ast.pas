@@ -2590,6 +2590,7 @@ begin
     ccGlobal,
     ccData,
     ccResult,
+    ccValuelabel,
     ccVariable:
       result[0] := 0;
   else
