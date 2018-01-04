@@ -1945,8 +1945,8 @@ function TEditValueLabel.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
   result.Insert('delete',    AllResultDataTypes);
-  result.Insert('missing',   AllResultDataTypes);
-  result.Insert('nomissing', AllResultDataTypes);
+  result.Insert('m',   AllResultDataTypes);
+  result.Insert('nom', AllResultDataTypes);
 end;
 
 function TEditValueLabel.GetAcceptedVariableTypesAndFlags(Index: Integer
@@ -2256,7 +2256,7 @@ function TNewValuelabel.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  result.Insert('missing', AllResultDataTypes);
+  result.Insert('m', AllResultDataTypes);
 end;
 
 constructor TNewValuelabel.Create(AValueLabelPairs: TValueLabelPairs;

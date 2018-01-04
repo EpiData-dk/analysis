@@ -1394,7 +1394,7 @@ begin
   for i := 0 to ST.OptionList.Count - 1 do
     begin
       Opt := ST.OptionList.Options[i];
-      if Opt.Ident <> 'missing' then continue;
+      if Opt.Ident <> 'm' then continue;
 
       VLSet.ValueLabel[Opt.Expr.AsString].IsMissingValue := true;
     end;
