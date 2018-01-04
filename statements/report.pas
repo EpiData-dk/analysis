@@ -26,7 +26,7 @@ type
 implementation
 
 uses
-  episecuritylog, epilogger, epiglobals, epidatafileutils;
+  episecuritylog, epilogger, epiglobals, epidatafileutils, epireport_report_countbyid;
 
 
 { TReports }

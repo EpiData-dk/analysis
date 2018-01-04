@@ -185,7 +185,16 @@ begin
   if (ST.HasOption('fn', Opt)) and
      (Assigned(Opt.Expr))
   then
-    FN := Opt.Expr.AsString;
+    begin
+      FN := Opt.Expr.AsString;
+
+      if (not FileExistsUTF8(FN)) then
+      begin
+        FExecutor.Error('File does not exist: ' + FN);
+        ST.ExecResult := csrFailed;
+        Exit(false);
+      end;
+    end;
 
   OptList := TOptionList.Create;
 
