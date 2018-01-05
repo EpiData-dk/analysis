@@ -5,8 +5,8 @@ unit report;
 interface
 
 uses
-  Classes, SysUtils, ast, executor, result_variables, epidocument,
-  outputcreator;
+  Classes, SysUtils, fgl, ast, executor, result_variables, epidocument,
+  epiopenfile, outputcreator;
 
 type
 
@@ -29,7 +29,7 @@ implementation
 
 uses
   episecuritylog, epilogger, epiglobals, epidatafileutils, epireport_report_countbyid,
-  ast_types;
+  ast_types, epiopenfile_cache, epidatafiles, LazFileUtils;
 
 
 { TReports }
@@ -139,7 +139,16 @@ var
 var
   Opt: TOption;
   FileNames, Datasets: TExecVarGlobalVector;
+  FileCache: TEpiDocumentFileCache;
+  S, DSName: String;
+  i, Idx: Integer;
+  DataFiles: TEpiDataFiles;
+  Doc: TEpiDocument;
+  DF: TEpiDataFile;
+  DocFile: TEpiDocumentFile;
+  DocFiles: TEpiDocumentFileList;
 begin
+  FileNames := nil;
   if FSt.HasOption('fn', Opt) then
     begin
       if (Opt.Expr.ResultType <> rtString) then
@@ -152,6 +161,7 @@ begin
       FileNames := TExecVarGlobalVector(FExecutor.GetExecDataVariable(Opt.Expr.AsIdent));
     end;
 
+  Datasets := nil;
   if FSt.HasOption('ds', Opt) then
     begin
       if (Opt.Expr.ResultType <> rtString) then
@@ -178,12 +188,125 @@ begin
       Exit;
     end;
 
+  if (not Assigned(FileNames)) and
+     (not Assigned(DataFiles))
+  then
+    begin
+      FExecutor.Error('Neither !fs or !ds was used. At least one must be provided!');
+      FSt.ExecResult := csrFailed;
+      Exit;;
+    end;
+
+  DataFiles := TEpiDataFiles.Create(nil);
+  DataFiles.UniqueNames := false;
+  DataFiles.Sorted := false;
+  DataFiles.ItemOwner := false;
+
+  DocFiles := TEpiDocumentFileList.Create;
+
+  if Assigned(FileNames) then
+    begin
+      FileCache := TEpiDocumentFileCache.Create;
+
+      for i := 0 to FileNames.Length - 1 do
+        begin
+          S := FileNames.AsStringVector[i];
+
+          if S <> '' then
+            begin
+              if (not FileExistsUTF8(S)) then
+                begin
+
+                end;
+
+
+              DocFile := FileCache.OpenFile(S);
+              Doc := DocFile.Document;
+
+              if Assigned(Datasets) then
+                begin
+                  DSName := Datasets.AsStringVector[i];
+                  if ((DSName = '') or (DSName = TEpiStringField.DefaultMissing)) and
+                     (Doc.DataFiles.Count > 1)
+                  then
+                    begin
+                      FExecutor.Error('The project "' + S + '" contains more than one dataset and no dataset name was given on index: ' + IntToStr(i + 1));
+                      FSt.ExecResult := csrFailed;
+                      Exit;
+                    end;
+
+                  if ((DSName = '') or (DSName = TEpiStringField.DefaultMissing)) then
+                    DF := Doc.DataFiles[0]
+                  else
+                    DF := Doc.DataFiles.GetDataFileByName(DSName);
+
+                  if (not Assigned(DF)) then
+                    begin
+                      FExecutor.Error('The project "' + S + '" contains no dataset with the name "' + DSName + '" (on index: ' + IntToStr(i + 1) + ')');
+                      FSt.ExecResult := csrFailed;
+                      Exit;
+                    end;
+
+                  DocFiles.Add(DocFile);
+                  DataFiles.AddItem(DF);
+                end
+              else
+                // NO Assigned Datasets
+                begin
+                  if (Doc.DataFiles.Count > 1) then
+                    begin
+                      FExecutor.Error('The project "' + S + '" contains more than one dataset and no dataset name was given on index: ' + IntToStr(i + 1));
+                      FSt.ExecResult := csrFailed;
+                      Exit;
+                    end;
+
+                  DF := Doc.DataFiles[0];
+                  DocFiles.Add(DocFile);
+                  DataFiles.AddItem(DF);
+                end;
+            end;
+        end;
+    end
+  else
+    // NO Assigned Filenames
+    begin
+      for i := 0 to Datasets.Length - 1 do
+        begin
+          DSName := Datasets.AsStringVector[i];
+
+          if ((DSName = '') or (DSName = TEpiStringField.DefaultMissing)) then
+            begin
+              FExecutor.Error('No filename provided and no dataset name provided! (on index: ' + IntToStr(i + 1) + ')');
+              FSt.ExecResult := csrFailed;
+              Exit;
+            end;
+
+          if (not FExecutor.Datasets.Find(DSName, Idx)) then
+            begin
+              FExecutor.Error('Current contains no dataset with the name "' + DSName + '" (on index: ' + IntToStr(i + 1) + ')');
+              FSt.ExecResult := csrFailed;
+              Exit;
+            end;
+
+          DF := FExecutor.Datasets.Data[Idx].DataFile;
+          DataFiles.AddItem(DF);
+          DocFiles.Add(FExecutor.DocFile);
+        end;
+    end;
+
+
   CoreReportConverter := TCoreReportGeneratorToOutputCreator.Create(FOutputCreator);
 
   CBIDReport := TEpiReportCountById.Create(CoreReportConverter);
-  CBIDReport.FieldNames := FSt.VariableList.GetIdentsAsList;
-
+  CBIDReport.FieldNames    := FSt.VariableList.GetIdentsAsList;
+  CBIDReport.DataFiles     := DataFiles;
+  CBIDReport.DocumentFiles := DocFiles;
+  CBIDReport.RunReport;
   CBIDReport.Free;
+
+  DataFiles.Free;
+  DocFiles.Free;
+  FileCache.Free;
 end;
 
 constructor TReports.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator

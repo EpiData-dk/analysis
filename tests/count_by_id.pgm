@@ -1,0 +1,13 @@
+cls;
+cd "/home/torsten/BtSync/EpiData Arbejde/data//Personer/Jens Lauritsen/counttest/";
+
+read "fil1.epx" !c;
+
+new global filenames[4] string;
+filenames[1] := "fil1.epx";
+filenames[2] := "fil2.epx";
+filenames[3] := "fil3.epx";
+filenames[4] := "fil4.epx";
+
+report cbid id !fn := filenames;
+

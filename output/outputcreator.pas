@@ -267,8 +267,10 @@ begin
   FCurrentTable.ColCount := AColCount;
   FCurrentTable.Header.Text := Text;
 
-  if (thoColHeader in HeaderOptions) then FCurrentTable.SetRowBorders(0, [cbBottom]);
-  if (thoRowHeader in HeaderOptions) then FCurrentTable.SetColBorders(0, [cbRight]);
+  if (thoColHeader in HeaderOptions) then
+    FCurrentTable.SetColBoxBorder(0);
+  if (thoRowHeader in HeaderOptions) then
+    FCurrentTable.SetRowBoxBorder(0);
 end;
 
 procedure TCoreReportGeneratorToOutputCreator.TableFooter(const Text: string);
@@ -298,11 +300,15 @@ begin
     tcaRightAdjust: Cell.Alignment := taRightJustify;
   end;
 
-  CBorders := [];
-  if (tcoLeftBorder in CellOptions)   then Include(CBorders, cbLeft);
-  if (tcoRightBorder in CellOptions)  then Include(CBorders, cbRight);
-  if (tcoTopBorder in CellOptions)    then Include(CBorders, cbTop);
-  if (tcoBottomBorder in CellOptions) then Include(CBorders, cbBottom);
+  CBorders := Cell.Borders;
+  if (tcoLeftBorder in CellOptions)   then
+    Include(CBorders, cbLeft);
+  if (tcoRightBorder in CellOptions)  then
+    Include(CBorders, cbRight);
+  if (tcoTopBorder in CellOptions)    then
+    Include(CBorders, cbTop);
+  if (tcoBottomBorder in CellOptions) then
+    Include(CBorders, cbBottom);
   Cell.Borders := CBorders;
 end;
 
