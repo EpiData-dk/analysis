@@ -17,6 +17,7 @@ type
     FSt: TCustomReportCommand;
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
+    procedure FileError(const Msg: string);
   protected
     procedure DoReportUsers;
     procedure DoReportCountById;
@@ -29,10 +30,15 @@ implementation
 
 uses
   episecuritylog, epilogger, epiglobals, epidatafileutils, epireport_report_countbyid,
-  ast_types, epiopenfile_cache, epidatafiles, LazFileUtils;
+  ast_types, epiopenfile_cache, epidatafiles, LazFileUtils, datamodule;
 
 
 { TReports }
+
+procedure TReports.FileError(const Msg: string);
+begin
+  FExecutor.Error(Msg);
+end;
 
 procedure TReports.DoReportUsers;
 var
@@ -147,6 +153,7 @@ var
   DF: TEpiDataFile;
   DocFile: TEpiDocumentFile;
   DocFiles: TEpiDocumentFileList;
+  ReadCmd: TReadCommand;
 begin
   FileNames := nil;
   if FSt.HasOption('fn', Opt) then
@@ -215,12 +222,24 @@ begin
           if S <> '' then
             begin
               if (not FileExistsUTF8(S)) then
+              begin
+                FExecutor.Error('File does not exist: ' + S + '  (index: ' + IntToStr(i + 1));
+                FSt.ExecResult := csrFailed;
+                Exit;
+              end;
+
+              ReadCmd := TReadCommand.Create(
+                TStringLiteral.Create(S),
+                TOptionList.Create
+              );
+
+              aDM.OnOpenFileError := @FileError;
+              if aDM.OpenFile(ReadCmd, Docfile) <> dfrSuccess then
                 begin
-
+                  FExecutor.Error('Error loading file: ' + S);
+                  FSt.ExecResult := csrFailed;
+                  Exit;
                 end;
-
-
-              DocFile := FileCache.OpenFile(S);
               Doc := DocFile.Document;
 
               if Assigned(Datasets) then
@@ -264,6 +283,8 @@ begin
                   DocFiles.Add(DocFile);
                   DataFiles.AddItem(DF);
                 end;
+
+              ReadCmd.Free;
             end;
         end;
     end
@@ -305,8 +326,9 @@ begin
   CBIDReport.Free;
 
   DataFiles.Free;
+  for i := DocFiles.Count - 1 downto 0 do
+    DocFiles[i].Free;
   DocFiles.Free;
-  FileCache.Free;
 end;
 
 constructor TReports.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator

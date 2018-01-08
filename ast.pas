@@ -1242,8 +1242,11 @@ type
 
   TReportCountById = class(TCustomReportCommand)
   protected
+    function GetRequireOpenProject: Boolean; override;
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec;
+      override;
   public
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
@@ -1514,6 +1517,11 @@ end;
 
 { TReportCountById }
 
+function TReportCountById.GetRequireOpenProject: Boolean;
+begin
+  Result := false;
+end;
+
 function TReportCountById.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
@@ -1526,6 +1534,13 @@ function TReportCountById.GetAcceptedVariableCount: TBoundArray;
 begin
   Result := inherited GetAcceptedVariableCount;
   Result[0] := -1;
+end;
+
+function TReportCountById.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  Result.Flags := [evfInternal, evfExternal, evfAsObject];
 end;
 
 constructor TReportCountById.Create(AVariableList: TVariableList;

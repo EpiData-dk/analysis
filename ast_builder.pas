@@ -1019,14 +1019,18 @@ begin
 
   SubCmd := UTF8LowerString(V.Ident);
   case SubCmd of
-    'cbid':
+    'cby':
       result := TReportCountById.Create(VarList, OptList);
 
     'u',
     'users':
       result := TReportUsers.Create(VarList, OptList);
   else
-    DoError('Unknown report sub-command: ' + V.Ident, R.Tokens[1]);
+    DoError(
+      'Unknown report sub-command: ' + V.Ident + LineEnding +
+      'Possible sub-commands are: cby, users (u)',
+      R.Tokens[1]
+    );
     Exit;
   end;
 
