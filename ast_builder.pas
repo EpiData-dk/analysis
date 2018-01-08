@@ -1025,10 +1025,13 @@ begin
     'u',
     'users':
       result := TReportUsers.Create(VarList, OptList);
+
+    'val':
+      result := TReportCountById.Create(VarList, OptList);
   else
     DoError(
       'Unknown report sub-command: ' + V.Ident + LineEnding +
-      'Possible sub-commands are: cby, users (u)',
+      'Possible sub-commands are: cby, users (u), val',
       R.Tokens[1]
     );
     Exit;

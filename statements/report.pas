@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, fgl, ast, executor, result_variables, epidocument,
-  epiopenfile, outputcreator;
+  epidatafilestypes, epiopenfile, outputcreator;
 
 type
 
@@ -21,6 +21,7 @@ type
   protected
     procedure DoReportUsers;
     procedure DoReportCountById;
+    procedure DoReportValidateDoubleEntry;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
     procedure Report(ST: TCustomReportCommand);
@@ -30,7 +31,7 @@ implementation
 
 uses
   episecuritylog, epilogger, epiglobals, epidatafileutils, epireport_report_countbyid,
-  ast_types, epiopenfile_cache, epidatafiles, LazFileUtils, datamodule;
+  ast_types, epiopenfile_cache, epidatafiles, LazFileUtils, datamodule, epireport_report_doubleentryvalidate;
 
 
 { TReports }
@@ -166,6 +167,15 @@ begin
         end;
 
       FileNames := TExecVarGlobalVector(FExecutor.GetExecDataVariable(Opt.Expr.AsIdent));
+    end
+  else
+    begin
+      if (not Assigned(FExecutor.Document)) then
+        begin
+          FExecutor.Error('If !fn is not used then a project must be opened for Count-by-Id to work!');
+          FSt.ExecResult := csrFailed;
+          Exit;
+        end;
     end;
 
   Datasets := nil;
@@ -331,6 +341,45 @@ begin
   DocFiles.Free;
 end;
 
+procedure TReports.DoReportValidateDoubleEntry;
+var
+  Opt: TOption;
+  FN: EpiString;
+  ReadCMD: TReadCommand;
+  Docfile: TEpiDocumentFile;
+begin
+  if FSt.HasOption('fn', Opt) then
+    begin
+      FN := '';
+      if (Assigned(Opt.Expr)) then
+        begin
+          FN := OPt.Expr.AsString
+
+          if (not FileExistsUTF8(FN)) then
+            begin
+              DoError('File does not exist: ' + FN);
+              FSt.ExecResult := csrFailed;
+              Exit;
+            end;
+        end;
+
+      ReadCMD := TReadCommand.Create(TStringLiteral.Create(FN), TOptionList.Create);
+      aDM.OnOpenFileError := @FileError;
+      if (aDM.OpenFile(ReadCMD, Docfile) <> dfrSuccess) then
+        begin
+          FExecutor.Error('Error loading file: ' + S);
+          FSt.ExecResult := csrFailed;
+          Exit;
+        end;
+    end
+  else
+    Docfile := FExecutor.DocFile;
+
+  if FSt.HasOption('ds', Opt) then
+    begin
+    end;
+end;
+
 constructor TReports.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator
   );
 begin
@@ -348,6 +397,9 @@ begin
 
     rscUsers:
       DoReportUsers;
+
+    rscValidateDoubleEntry:
+      DoReportValidateDoubleEntry;
   end;
 end;
 

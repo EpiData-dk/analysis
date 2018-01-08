@@ -1225,6 +1225,7 @@ type
 
   TReportSubCommand = (
     rscCountById,                     // Count Keys across datasets
+    rscValidateDoubleEntry,           // Validates 2 datasets/projects to each other
     rscUsers                          // Created a report on login data
   );
 
@@ -1241,6 +1242,19 @@ type
   { TReportCountById }
 
   TReportCountById = class(TCustomReportCommand)
+  protected
+    function GetRequireOpenProject: Boolean; override;
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec;
+      override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
+  { TReportValidateDoubleEntry }
+
+  TReportValidateDoubleEntry = class(TCustomReportCommand)
   protected
     function GetRequireOpenProject: Boolean; override;
     function GetAcceptedOptions: TStatementOptionsMap; override;
@@ -1376,6 +1390,39 @@ uses
   epi_script_function_stringfunctions,
   epi_script_function_systemfunctions,
   math, variants, LazUTF8, LazFileUtils;
+
+{ TReportValidateDoubleEntry }
+
+function TReportValidateDoubleEntry.GetRequireOpenProject: Boolean;
+begin
+  Result := false;
+end;
+
+function TReportValidateDoubleEntry.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  Result.Insert('fn', [rtString]);
+  Result.Insert('ds', [rtObject], [evtDataset], [evfInternal, evfExternal, evfAsObject]);
+end;
+
+function TReportValidateDoubleEntry.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  Result[0] := -1;
+end;
+
+function TReportValidateDoubleEntry.GetAcceptedVariableTypesAndFlags(
+  Index: Integer): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  Result.Flags := [evfInternal, evfExternal, evfAsObject];
+end;
+
+constructor TReportValidateDoubleEntry.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, rscValidateDoubleEntry);
+end;
 
 { TReportUsers }
 
