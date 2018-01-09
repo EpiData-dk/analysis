@@ -31,7 +31,8 @@ implementation
 
 uses
   episecuritylog, epilogger, epiglobals, epidatafileutils, epireport_report_countbyid,
-  ast_types, epiopenfile_cache, epidatafiles, LazFileUtils, datamodule, epireport_report_doubleentryvalidate;
+  ast_types, epiopenfile_cache, epidatafiles, LazFileUtils, datamodule,
+  epireport_report_doubleentryvalidate, epicustomlist_helper, epidatafilerelations;
 
 
 { TReports }
@@ -347,17 +348,44 @@ var
   FN: EpiString;
   ReadCMD: TReadCommand;
   Docfile: TEpiDocumentFile;
+  DSName: UTF8String;
+  CoreReporter: TCoreReportGeneratorToOutputCreator;
+  DblVal: TEpiReportDoubleEntryValidation;
+  DF: TEpiDataFile;
+
+  function CompareTreeStructure(Const RelationListA, RelationListB: TEpiDatafileRelationList): boolean;
+  var
+    i: Integer;
+    MRA: TEpiMasterRelation;
+    MRB: TEpiMasterRelation;
+  begin
+    result := (RelationListA.Count = RelationListB.Count);
+    if not Result then exit;
+
+    for i := 0 to RelationListA.Count - 1 do
+    begin
+      MRA := RelationListA.MasterRelation[i];
+      MRB := RelationListB.MasterRelation[i];
+
+      Result :=
+        (MRA.Datafile.Name = MRB.Datafile.Name) and
+        CompareTreeStructure(MRA.DetailRelations, MRB.DetailRelations);
+
+      if not Result then exit;
+    end;
+  end;
+
 begin
   if FSt.HasOption('fn', Opt) then
     begin
       FN := '';
       if (Assigned(Opt.Expr)) then
         begin
-          FN := OPt.Expr.AsString
+          FN := OPt.Expr.AsString;
 
           if (not FileExistsUTF8(FN)) then
             begin
-              DoError('File does not exist: ' + FN);
+              FExecutor.Error('File does not exist: ' + FN);
               FSt.ExecResult := csrFailed;
               Exit;
             end;
@@ -367,7 +395,7 @@ begin
       aDM.OnOpenFileError := @FileError;
       if (aDM.OpenFile(ReadCMD, Docfile) <> dfrSuccess) then
         begin
-          FExecutor.Error('Error loading file: ' + S);
+          FExecutor.Error('Error loading file: ' + FN);
           FSt.ExecResult := csrFailed;
           Exit;
         end;
@@ -375,9 +403,86 @@ begin
   else
     Docfile := FExecutor.DocFile;
 
+  DSName := '';
   if FSt.HasOption('ds', Opt) then
+    DSName := Opt.Expr.AsIdent;
+
+  if (not FSt.HasOption('ds')) and
+     (not FSt.HasOption('fn'))
+  then
     begin
+      FExecutor.Error('At least one of the options !fn or !ds must be used');
+      FSt.ExecResult := csrFailed;
+      Exit;
     end;
+
+  if (DSName = '') and
+     (not CompareTreeStructure(FExecutor.Document.Relations, Docfile.Document.Relations))
+  then
+    begin
+      FExecutor.Error('The two projects do not share the same structure of related datasets!');
+      FSt.ExecResult := csrFailed;
+      Exit;
+    end
+  else
+    if (Docfile.Document.DataFiles.Count > 1) and
+       (DSName = '')
+    then
+      begin
+        FExecutor.Error('The project "' + Docfile.FileName + '" has more than one dataset, and !ds is not specified');
+        FSt.ExecResult := csrFailed;
+        Exit;
+      end;
+
+  if (DSName <> '') and
+     (not Docfile.Document.DataFiles.ItemExistsByName(DSName))
+  then
+    begin
+      FExecutor.Error('Dataset "' + DSName + '" not found!');
+      FSt.ExecResult := csrFailed;
+      Exit;
+    end;
+
+  // TODO : Extract (and check) for join-by variables (!join := XX) and compare variables
+  // (case with no join variables should be accounted for too!
+
+  CoreReporter := TCoreReportGeneratorToOutputCreator.Create(FOutputCreator);
+
+  if (FExecutor.Document.DataFiles.Count > 1) and
+     (Docfile.Document.DataFiles.Count > 1)
+  then
+    // The only case where two who projects are being validate against each other.
+    begin
+      for DF in FExecutor.Document.DataFiles do
+        begin
+          DblVal := TEpiReportDoubleEntryValidation.Create(CoreReporter);
+          DblVal.KeyFields     := DF.KeyFields;
+          DblVal.CompareFields := DF.Fields;
+          DblVal.MainDF := DF;
+          DblVal.DuplDF := Docfile.Document.DataFiles.GetDataFileByName(DF.Name);
+          DblVal.RunReport;
+        end;
+    end
+  else
+    begin
+      DF := FExecutor.DataFile;
+      if (DSName <> '') then
+        DF := Docfile.Document.DataFiles.GetDataFileByName(DSName)
+      else
+        DF := Docfile.Document.DataFiles[0];
+
+      DblVal := TEpiReportDoubleEntryValidation.Create(CoreReporter);
+//      DblVal.KeyFields     := DF.KeyFields;
+//      DblVal.CompareFields := DF.Fields;
+      DblVal.MainDF := DF;
+      DblVal.DuplDF := Docfile.Document.DataFiles.GetDataFileByName(DF.Name);
+      DblVal.RunReport;
+    end;
+
+
+
+  if (Docfile <> FExecutor.DocFile) then
+    Docfile.Free;
 end;
 
 constructor TReports.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator

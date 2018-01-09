@@ -1401,7 +1401,7 @@ end;
 function TReportValidateDoubleEntry.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  Result.Insert('fn', [rtString]);
+  Result.Insert('fn', [rtString, rtUndefined]);
   Result.Insert('ds', [rtObject], [evtDataset], [evfInternal, evfExternal, evfAsObject]);
 end;
 

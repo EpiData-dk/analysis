@@ -80,7 +80,6 @@ type
     procedure SetVarLabelType(VarLabelType: TEpiGetVariableLabelType);
     procedure FontSizeChanged(Sender: TObject);
     procedure FormChanged(Sender: TObject; Form: TCustomForm);
-
   private
     FValueLabelType: TEpiGetValueLabelType;
     procedure SetValueLabelType(ValueLabelType: TEpiGetValueLabelType);
@@ -98,6 +97,8 @@ type
     FExecutor: TExecutor;
     function GetCellText(ACol, ARow: Integer): UTF8String;
     procedure DrawCell(Sender: TObject; aCol, aRow: Integer; aRect: TRect;
+      aState: TGridDrawState);
+    procedure PrepareCanvas(sender: TObject; aCol, aRow: Integer;
       aState: TGridDrawState);
     procedure HeaderClick(Sender: TObject; IsColumn: Boolean; Index: Integer);
     procedure CalcWidhtsAndHeight;
@@ -434,8 +435,8 @@ begin
   if (ACol = 0) and (ARow > 0) then
     begin
       Result := FRowNoField.AsString[ARow - 1];
-      if FDataFile.Deleted[ARow - 1] then
-        Result := result + '*';
+//      if FDataFile.Deleted[ARow - 1] then
+//        Result := result + '*';
     end;
 
   if (ACol > 0) and (ARow > 0) then
@@ -481,6 +482,16 @@ begin
   FGrid.Canvas.TextStyle := TS;
   if (ARect.Left<>ARect.Right) and (ARect.Top<>ARect.Bottom) then
     FGrid.Canvas.TextRect(aRect,ARect.Left,ARect.Top, GetCellText(aCol, aRow));
+end;
+
+procedure TBrowseForm4.PrepareCanvas(sender: TObject; aCol, aRow: Integer;
+  aState: TGridDrawState);
+begin
+  if (aRow > 0) then
+    begin
+      if FDataFile.Deleted[ARow - 1]  then FGrid.Canvas.Brush.Color := clRed;
+      if FDataFile.Verified[ARow - 1] then FGrid.Canvas.Brush.Color := clTeal;
+    end;
 end;
 
 procedure TBrowseForm4.HeaderClick(Sender: TObject; IsColumn: Boolean;
@@ -632,10 +643,11 @@ begin
      goHorzLine, goRangeSelect, goDrawFocusSelected, goSmoothScroll,
      goHeaderHotTracking, goHeaderPushedLook];
 
-  FGrid.OnDrawCell    := @DrawCell;
-  FGrid.OnHeaderClick := @HeaderClick;
+  FGrid.OnPrepareCanvas := @PrepareCanvas;
+  FGrid.OnDrawCell      := @DrawCell;
+  FGrid.OnHeaderClick   := @HeaderClick;
 
-  FGrid.Parent        := Self;
+  FGrid.Parent          := Self;
 
   FExecutor.SetOptions.GetValue(ANA_SO_BROWSER_FONT_NAME).AddOnChangeHandler(@FontSizeChanged);
   FExecutor.SetOptions.GetValue(ANA_SO_BROWSER_FONT_SIZE).AddOnChangeHandler(@FontSizeChanged);
