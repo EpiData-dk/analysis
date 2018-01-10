@@ -1027,7 +1027,7 @@ begin
       result := TReportUsers.Create(VarList, OptList);
 
     'val':
-      result := TReportCountById.Create(VarList, OptList);
+      result := TReportValidateDoubleEntry.Create(VarList, OptList);
   else
     DoError(
       'Unknown report sub-command: ' + V.Ident + LineEnding +

@@ -31,8 +31,8 @@ implementation
 
 uses
   episecuritylog, epilogger, epiglobals, epidatafileutils, epireport_report_countbyid,
-  ast_types, epiopenfile_cache, epidatafiles, LazFileUtils, datamodule,
-  epireport_report_doubleentryvalidate, epicustomlist_helper, epidatafilerelations;
+  ast_types, epiopenfile_cache, epidatafiles, LazFileUtils, datamodule, epicustomlist_helper,
+  epireport_report_doubleentryvalidate, epidatafilerelations;
 
 
 { TReports }
@@ -352,6 +352,9 @@ var
   CoreReporter: TCoreReportGeneratorToOutputCreator;
   DblVal: TEpiReportDoubleEntryValidation;
   DF: TEpiDataFile;
+  List: TStrings;
+  Fields, JoinFields: TEpiFields;
+  i: Integer;
 
   function CompareTreeStructure(Const RelationListA, RelationListB: TEpiDatafileRelationList): boolean;
   var
@@ -445,7 +448,6 @@ begin
 
   // TODO : Extract (and check) for join-by variables (!join := XX) and compare variables
   // (case with no join variables should be accounted for too!
-
   CoreReporter := TCoreReportGeneratorToOutputCreator.Create(FOutputCreator);
 
   if (FExecutor.Document.DataFiles.Count > 1) and
@@ -453,6 +455,23 @@ begin
   then
     // The only case where two who projects are being validate against each other.
     begin
+      if Assigned(FSt.VariableList) and
+         (FSt.VariableList.Count > 0)
+      then
+        begin
+          FExecutor.Error('When comparing whole projects, it is not possible to select individual variables to compare!');
+          FSt.ExecResult := csrFailed;
+          Exit;
+        end;
+
+      if FSt.HasOption('join') then
+        begin
+          FExecutor.Error('When comparing whole projects, it is not possible to select individual join-by variables!');
+          FSt.ExecResult := csrFailed;
+          Exit;
+        end;
+
+
       for DF in FExecutor.Document.DataFiles do
         begin
           DblVal := TEpiReportDoubleEntryValidation.Create(CoreReporter);
@@ -465,21 +484,42 @@ begin
     end
   else
     begin
-      DF := FExecutor.DataFile;
       if (DSName <> '') then
         DF := Docfile.Document.DataFiles.GetDataFileByName(DSName)
       else
         DF := Docfile.Document.DataFiles[0];
 
+      if Assigned(FSt.VariableList) and
+        (FSt.VariableList.Count > 0)
+      then
+        List := FSt.VariableList.GetIdentsAsList
+      else
+        List := FExecutor.DataFile.Fields.GetItemNames(false);
+
+      Fields := TEpiFields.Create(nil);
+      Fields.UniqueNames := false;
+      Fields.Sorted := false;
+      for i := 0 to List.Count - 1 do
+        Fields.AddItem(FExecutor.DataFile.Fields.FieldByName[List[i]]);
+
+      JoinFields := TEpiFields.Create(nil);
+      for i := 0 to FSt.Options.Count - 1 do
+        begin
+          Opt := FSt.Options[i];
+          if Opt.Ident = 'join' then
+            JoinFields.AddItem(FExecutor.DataFile.Fields.FieldByName[Opt.Expr.AsIdent]);
+        end;
+
       DblVal := TEpiReportDoubleEntryValidation.Create(CoreReporter);
-//      DblVal.KeyFields     := DF.KeyFields;
-//      DblVal.CompareFields := DF.Fields;
-      DblVal.MainDF := DF;
-      DblVal.DuplDF := Docfile.Document.DataFiles.GetDataFileByName(DF.Name);
+      DblVal.KeyFields     := JoinFields;
+      DblVal.CompareFields := Fields;
+      DblVal.MainDF := FExecutor.DataFile;
+      DblVal.DuplDF := DF;
       DblVal.RunReport;
+
+      Fields.Free;
+      JoinFields.Free;
     end;
-
-
 
   if (Docfile <> FExecutor.DocFile) then
     Docfile.Free;

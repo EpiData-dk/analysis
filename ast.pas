@@ -1020,7 +1020,7 @@ type
     procedure   Remove(Option: TOption);
     function    HasOption(Const Ident: UTF8String; out AOption: TOption): boolean; overload;
     function    HasOption(Const Ident: UTF8String): boolean; overload;
-    property    Options[Const Index: Integer]: TOption read GetOptions;
+    property    Options[Const Index: Integer]: TOption read GetOptions; default;
     property    Option[Const Ident: UTF8String]: TOption read GetOption;
     property    Count: Integer read GetCount;
   end;
@@ -1401,14 +1401,15 @@ end;
 function TReportValidateDoubleEntry.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  Result.Insert('fn', [rtString, rtUndefined]);
-  Result.Insert('ds', [rtObject], [evtDataset], [evfInternal, evfExternal, evfAsObject]);
+  Result.Insert('fn',  [rtString, rtUndefined]);
+  Result.Insert('ds',  [rtObject], [evtDataset], [evfInternal, evfExternal, evfAsObject]);
+  Result.Insert('join', [rtObject], [evtField], [evfInternal, evfAsObject]);
 end;
 
 function TReportValidateDoubleEntry.GetAcceptedVariableCount: TBoundArray;
 begin
   Result := inherited GetAcceptedVariableCount;
-  Result[0] := -1;
+  Result[0] := 0;
 end;
 
 function TReportValidateDoubleEntry.GetAcceptedVariableTypesAndFlags(
