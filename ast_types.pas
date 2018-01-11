@@ -200,7 +200,8 @@ type
     otFuncPos,            // Returns position of character in string
     otFuncTrim,           // Trims string for whitespace
     otFuncLower,          // lowercases a string
-    otFuncUpper,           // UPPERCASES a string
+    otFuncUpper,          // UPPERCASES a string
+    otFuncConcat,         // Concatenation function with check for missing
 
     // -math functions
     otFuncAbs,            // Abs(x)

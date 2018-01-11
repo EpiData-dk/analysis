@@ -46,6 +46,8 @@ begin
       result[0] := 2;
     otFuncSubString:
       result[0] := 3;
+    otFuncConcat:
+      result[0] := -1;
   end;
 end;
 
@@ -67,6 +69,11 @@ begin
         Result.ResultTypes := [rtAny, rtString]
       else
         Result.ResultTypes := [rtInteger];
+    otFuncConcat:
+      if ParamNo = 0 then
+        Result.ResultTypes := [rtString]
+      else
+        Result.ResultTypes := [rtAny, rtString];
   end;
 end;
 
@@ -86,7 +93,8 @@ begin
     otFuncLower,
     otFuncUpper,
     otFuncSubString,
-    otFuncTrim:
+    otFuncTrim,
+    otFuncConcat:
       result := rtString;
   end;
 end;
@@ -111,14 +119,19 @@ begin
 end;
 
 function TEpiScriptFunction_StringFunctions.AsString: EpiString;
+var
+  S: EpiString;
+  i: Integer;
 begin
   result := inherited;
 
   case FOp of
     otFuncLower:
       result := UTF8LowerCase(Param[0].AsString);
+
     otFuncUpper:
       result := UTF8UpperCase(Param[0].AsString);
+
     otFuncSubString:
       begin
         if Param[0].IsMissing then Exit;
@@ -128,11 +141,24 @@ begin
         else
           result := UTF8Copy(Param[0].AsString, Param[1].AsInteger, Param[2].AsInteger);
       end;
+
     otFuncTrim:
       if Param[0].IsMissing then
         Exit(inherited AsString)
       else
         Result := UTF8Trim(Param[0].AsString);
+
+    otFuncConcat:
+      begin
+        S := Param[0].AsString;
+
+        result := '';
+        for i := 1 to FParamList.Count - 1 do
+          if Param[i].IsMissing then
+            Result := Result + S
+          else
+            Result := Result + Param[i].AsString;
+      end;
   end;
 end;
 

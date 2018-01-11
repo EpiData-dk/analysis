@@ -4820,6 +4820,9 @@ begin
       result := TEpiScriptFunction_StringFunctions.Create(otFuncLower, ParamList);
     'upper':
       result := TEpiScriptFunction_StringFunctions.Create(otFuncUpper, ParamList);
+    'concat':
+      result := TEpiScriptFunction_StringFunctions.Create(otFuncConcat, ParamList);
+
 
     { System }
     'exist':
@@ -4888,6 +4891,14 @@ begin
   Result := false;
   for i := Low(AllowedCounts) to High(AllowedCounts) do
   begin
+    if (AllowedCounts[i] < 0) and
+       (Abs(AllowedCounts[i]) <= CurrentCount)
+    then
+      begin
+        Result := true;
+        break;
+      end;
+
     if AllowedCounts[i] = CurrentCount then
     begin
       Result := true;
