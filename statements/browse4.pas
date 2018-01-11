@@ -199,6 +199,14 @@ begin
 
   if ((Key = VK_LEFT) and (Shift = [ssModifier])) then
     FGrid.Col := 1;
+
+  if ((Key = VK_L) and (Shift = [ssModifier])) then
+    begin
+      if (FValueLabelType = gvtLabel) then
+        SetValueLabelType(gvtValue)
+      else
+        SetValueLabelType(gvtLabel);
+    end;
 end;
 
 procedure TBrowseForm4.GotoRecordActionExecute(Sender: TObject);
