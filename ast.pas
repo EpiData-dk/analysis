@@ -3620,7 +3620,7 @@ var
   Opt: TOption;
 begin
   for Opt in FOptList do
-    if Opt.Ident = Ident then
+    if UTF8LowerString(Opt.Ident) = UTF8LowerString(Ident) then
       Exit(Opt);
 
   result := nil;
