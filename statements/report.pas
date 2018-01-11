@@ -49,7 +49,7 @@ implementation
 uses
   episecuritylog, epilogger, epiglobals, epidatafileutils, epireport_report_countbyid,
   ast_types, epiopenfile_cache, LazFileUtils, datamodule, epicustomlist_helper,
-  epireport_report_doubleentryvalidate, epidatafilerelations;
+  epireport_report_doubleentryvalidate, epidatafilerelations, epitools_val_dbl_entry;
 
 
 { TReports }
@@ -422,6 +422,7 @@ var
   List: TStrings;
   Fields, JoinFields: TEpiFields;
   i: Integer;
+  F: TEpiField;
 
   function CompareTreeStructure(Const RelationListA, RelationListB: TEpiDatafileRelationList): boolean;
   var
@@ -538,16 +539,25 @@ begin
           Exit;
         end;
 
+      Fields := TEpiFields.Create(nil);
+      Fields.ItemOwner := false;
+      Fields.UniqueNames := false;
+
       DBLValCreateResultVars(FExecutor.Document.DataFiles.Count);
       for DF in FExecutor.Document.DataFiles do
         begin
+          for F in DF.Fields do
+            Fields.AddItem(F);
+
           DblVal := TEpiReportDoubleEntryValidation.Create(CoreReporter);
           DblVal.KeyFields     := DF.KeyFields;
-          DblVal.CompareFields := DF.Fields;
+          DblVal.CompareFields := Fields;
           DblVal.MainDF := DF;
           DblVal.DuplDF := Docfile.Document.DataFiles.GetDataFileByName(DF.Name);
+          DblVal.DblEntryValidateOptions := [devIgnoreDeleted];
           DblVal.RunReport;
 
+          Fields.Clear;
           Inc(FCurrentDblValDFIndex);
         end;
     end
@@ -587,6 +597,7 @@ begin
       DblVal.MainDF := FExecutor.DataFile;
       DblVal.DuplDF := DF;
       DblVal.OnCallAllDone := @DBLValCallAllCallback;
+      DblVal.DblEntryValidateOptions := [devIgnoreDeleted];
       DblVal.RunReport;
 
       Fields.Free;
