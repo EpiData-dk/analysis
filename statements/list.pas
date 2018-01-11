@@ -49,24 +49,34 @@ var
   Gvt: TEpiGetValueLabelType;
   L: TOutputLine;
   Fields: TEpiFields;
-  T1, T2, T3, T4: TDateTime;
   VGvt: TEpiGetVariableLabelType;
   DF: TEpiDataFile;
   VarList: TStrings;
+  V: TCustomVariable;
 begin
-  T1 := Now;
 
   Gvt := ValueLabelTypeFromOptionList(ST.OptionList, FExecutor.SetOptions);
   VGvt := VariableLabelTypeFromOptionList(ST.OptionList, FExecutor.SetOptions);
 
   VarList := ST.Variables.GetIdentsAsList;
-
   if ST.HasOption('del') then
     DF := FExecutor.PrepareDatafile(VarList, nil, [pdoInvertDelete])
   else
     DF := FExecutor.PrepareDatafile(VarList, nil);
 
-  Fields := DF.Fields;
+  Fields := TEpiFields.Create(nil);
+  Fields.UniqueNames := false;
+  Fields.Sorted := false;
+
+  if (not Assigned(FST.Variables)) or
+     (FST.Variables.Count = 0)
+  then
+    Fields.Assign(FExecutor.SortedFields)
+  else
+    for V in FST.Variables do
+      Fields.AddItem(FExecutor.SortedFields.FieldByName[V.Ident]);
+
+//  Fields := DF.Fields;
 
   T := FOutputCreator.AddTable;
   T.ColCount := Fields.Count + 1;
@@ -93,8 +103,7 @@ begin
   FOutputCreator.DoInfoAll('Note: Browse is faster than List');
   ST.ExecResult := csrSuccess;
 
-  T2 := Now;
-//  writeln('DoListData: ' +  FormatDateTime('SS:ZZ', T2-T1));
+  Fields.Free;
 end;
 
 procedure TExecList.DoListVar;

@@ -121,6 +121,13 @@ var
 begin
   Document := FExecutor.Document;
 
+  if (not Document.Admin.Initialized) then
+    begin
+      FExecutor.Error('User administration is not used on current project!');
+      FSt.ExecResult := csrFailed;
+      Exit;
+    end;
+
   SecurityLog := TEpiSecurityDatafile(Document.DataFiles.GetDataFileByName(EpiSecurityLogDatafileName));
   DataLog     := TEpiSecurityDataEventLog(Document.Datafiles.GetDataFileByName(EpiSecurityLogDataEventName));
   KeyLog      := TEpiSecurityKeyFieldLog(Document.DataFiles.GetDataFileByName(EpiSecurityLogKeyDataName));
