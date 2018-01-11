@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, fgl, ast, executor, result_variables, epidocument,
-  epidatafilestypes, epiopenfile, outputcreator;
+  epidatafilestypes, epiopenfile, outputcreator, epidatafiles;
 
 type
 
@@ -18,6 +18,23 @@ type
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
     procedure FileError(const Msg: string);
+    procedure CBIDSumStatCallback(UniqueObs, CombinedObs: Integer;
+      MissingObs: TBoundArray; ResultDF: TEpiDataFile; CountFields: TEpiFields);
+
+  private
+    FCommonRecRes,
+    FMissingMainRes,
+    FMissingDublRes,
+    FNonUniqMainRes,
+    FNonUniqDuplRes,
+    FErrorRecRes,
+    FErrorVarRes:
+      TCustomExecutorDataVariable;
+    FCurrentDblValDFIndex: Integer;
+    procedure DBLValCreateResultVars(Size: Integer);
+    procedure DBLValCallAllCallback(CommonRecords, MissingInMain,
+      MissingInDupl, NonUniqueMain, NonUniqueDupl, ErrorRec,
+      ErrorFields: integer);
   protected
     procedure DoReportUsers;
     procedure DoReportCountById;
@@ -31,7 +48,7 @@ implementation
 
 uses
   episecuritylog, epilogger, epiglobals, epidatafileutils, epireport_report_countbyid,
-  ast_types, epiopenfile_cache, epidatafiles, LazFileUtils, datamodule, epicustomlist_helper,
+  ast_types, epiopenfile_cache, LazFileUtils, datamodule, epicustomlist_helper,
   epireport_report_doubleentryvalidate, epidatafilerelations;
 
 
@@ -40,6 +57,55 @@ uses
 procedure TReports.FileError(const Msg: string);
 begin
   FExecutor.Error(Msg);
+end;
+
+procedure TReports.CBIDSumStatCallback(UniqueObs, CombinedObs: Integer;
+  MissingObs: TBoundArray; ResultDF: TEpiDataFile; CountFields: TEpiFields);
+var
+  RV: TExecVarVector;
+  i: Integer;
+begin
+  FExecutor.AddResultConst('$report_cby_nt', ftInteger).AsIntegerVector[0]       := UniqueObs;
+  FExecutor.AddResultConst('$report_cby_complete', ftInteger).AsIntegerVector[0] := CombinedObs;
+  RV := FExecutor.AddResultVector('$report_cby_nf', ftInteger, Length(MissingObs));
+  for i := Low(MissingObs) to High(MissingObs) do
+    RV.AsIntegerVector[i] := MissingObs[i];
+end;
+
+procedure TReports.DBLValCreateResultVars(Size: Integer);
+begin
+  if (Size = 1) then
+    begin
+      FCommonRecRes   := FExecutor.AddResultConst('$report_val_common', ftInteger);
+      FMissingMainRes := FExecutor.AddResultConst('$report_val_mmis', ftInteger);
+      FMissingDublRes := FExecutor.AddResultConst('$report_val_dmis', ftInteger);
+      FNonUniqMainRes := FExecutor.AddResultConst('$report_val_mnuniq', ftInteger);
+      FNonUniqDuplRes := FExecutor.AddResultConst('$report_val_dnuniq', ftInteger);
+      FErrorRecRes    := FExecutor.AddResultConst('$report_val_errorrec', ftInteger);
+      FErrorVarRes    := FExecutor.AddResultConst('$report_val_errorvar', ftInteger);
+    end
+  else
+    begin
+      FCommonRecRes   := FExecutor.AddResultVector('$report_val_common', ftInteger, Size);
+      FMissingMainRes := FExecutor.AddResultVector('$report_val_mmis', ftInteger, Size);
+      FMissingDublRes := FExecutor.AddResultVector('$report_val_dmis', ftInteger, Size);
+      FNonUniqMainRes := FExecutor.AddResultVector('$report_val_mnuniq', ftInteger, Size);
+      FNonUniqDuplRes := FExecutor.AddResultVector('$report_val_dnuniq', ftInteger, Size);
+      FErrorRecRes    := FExecutor.AddResultVector('$report_val_errorrec', ftInteger, Size);
+      FErrorVarRes    := FExecutor.AddResultVector('$report_val_errorvar', ftInteger, Size);
+    end;
+end;
+
+procedure TReports.DBLValCallAllCallback(CommonRecords, MissingInMain,
+  MissingInDupl, NonUniqueMain, NonUniqueDupl, ErrorRec, ErrorFields: integer);
+begin
+  FCommonRecRes.AsIntegerVector[FCurrentDblValDFIndex]   := CommonRecords;
+  FMissingMainRes.AsIntegerVector[FCurrentDblValDFIndex] := MissingInMain;
+  FMissingDublRes.AsIntegerVector[FCurrentDblValDFIndex] := MissingInDupl;
+  FNonUniqMainRes.AsIntegerVector[FCurrentDblValDFIndex] := NonUniqueMain;
+  FNonUniqDuplRes.AsIntegerVector[FCurrentDblValDFIndex] := NonUniqueDupl;
+  FErrorRecRes.AsIntegerVector[FCurrentDblValDFIndex]    := ErrorRec;
+  FErrorVarRes.AsIntegerVector[FCurrentDblValDFIndex]    := ErrorFields;
 end;
 
 procedure TReports.DoReportUsers;
@@ -333,6 +399,7 @@ begin
   CBIDReport.FieldNames    := FSt.VariableList.GetIdentsAsList;
   CBIDReport.DataFiles     := DataFiles;
   CBIDReport.DocumentFiles := DocFiles;
+  CBIDReport.OnSumStatsComplete := @CBIDSumStatCallback;
   CBIDReport.RunReport;
   CBIDReport.Free;
 
@@ -419,13 +486,14 @@ begin
       Exit;
     end;
 
-  if (DSName = '') and
-     (not CompareTreeStructure(FExecutor.Document.Relations, Docfile.Document.Relations))
-  then
+  if (DSName = '') then
     begin
-      FExecutor.Error('The two projects do not share the same structure of related datasets!');
-      FSt.ExecResult := csrFailed;
-      Exit;
+      if (not CompareTreeStructure(FExecutor.Document.Relations, Docfile.Document.Relations))   then
+        begin
+          FExecutor.Error('The two projects do not share the same structure of related datasets!');
+          FSt.ExecResult := csrFailed;
+          Exit;
+        end;
     end
   else
     if (Docfile.Document.DataFiles.Count > 1) and
@@ -446,9 +514,8 @@ begin
       Exit;
     end;
 
-  // TODO : Extract (and check) for join-by variables (!join := XX) and compare variables
-  // (case with no join variables should be accounted for too!
   CoreReporter := TCoreReportGeneratorToOutputCreator.Create(FOutputCreator);
+  FCurrentDblValDFIndex := 0;
 
   if (FExecutor.Document.DataFiles.Count > 1) and
      (Docfile.Document.DataFiles.Count > 1)
@@ -471,7 +538,7 @@ begin
           Exit;
         end;
 
-
+      DBLValCreateResultVars(FExecutor.Document.DataFiles.Count);
       for DF in FExecutor.Document.DataFiles do
         begin
           DblVal := TEpiReportDoubleEntryValidation.Create(CoreReporter);
@@ -480,6 +547,8 @@ begin
           DblVal.MainDF := DF;
           DblVal.DuplDF := Docfile.Document.DataFiles.GetDataFileByName(DF.Name);
           DblVal.RunReport;
+
+          Inc(FCurrentDblValDFIndex);
         end;
     end
   else
@@ -510,11 +579,14 @@ begin
             JoinFields.AddItem(FExecutor.DataFile.Fields.FieldByName[Opt.Expr.AsIdent]);
         end;
 
+      DBLValCreateResultVars(1);
+
       DblVal := TEpiReportDoubleEntryValidation.Create(CoreReporter);
       DblVal.KeyFields     := JoinFields;
       DblVal.CompareFields := Fields;
       DblVal.MainDF := FExecutor.DataFile;
       DblVal.DuplDF := DF;
+      DblVal.OnCallAllDone := @DBLValCallAllCallback;
       DblVal.RunReport;
 
       Fields.Free;
