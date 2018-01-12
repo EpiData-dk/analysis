@@ -1162,7 +1162,7 @@ begin
   Result := False;
   VLPairs := TValueLabelPairs(GetObjectProp(ST, 'ValueLabelPairs'));
 
-  Values := TStringListUTF8.Create;
+{  Values := TStringListUTF8.Create;
   Values.CaseSensitive := false;
   Values.Sorted := true;
   Values.Duplicates := dupIgnore;
@@ -1190,7 +1190,7 @@ begin
 
         Values.Add(VLPairs.Values[i].AsString);
       end;
-  end;
+  end; }
 
 
   for i := 0 to ST.OptionList.Count - 1 do
@@ -1231,7 +1231,7 @@ begin
       end;
     end;
 
-  Values.Free;
+//  Values.Free;
   result := true;
 end;
 
@@ -1377,7 +1377,10 @@ begin
   if Assigned(VLPairs) then
     for i := 0 to VLPairs.Count -1 do
       begin
-        VL := VLSet.NewValueLabel;
+        if VLSet.ValueLabelExists[VLPairs.Values[i].AsString] then
+          VL := VLSet.ValueLabel[VLPairs.Values[i].AsString]
+        else
+          VL := VLSet.NewValueLabel;
 
         VL.TheLabel.Text := VLPairs.LabelText[i];
         case VLSet.LabelType of

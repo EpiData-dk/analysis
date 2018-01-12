@@ -63,7 +63,10 @@ begin
   if Assigned(VLPairs) then
     for i := 0 to VLPairs.Count -1 do
       begin
-        VL := VLSet.NewValueLabel;
+        if VLSet.ValueLabelExists[VLPairs.Values[i].AsString] then
+          VL := VLSet.ValueLabel[VLPairs.Values[i].AsString]
+        else
+          VL := VLSet.NewValueLabel;
 
         VL.TheLabel.Text := VLPairs.LabelText[i];
         case VLSet.LabelType of
