@@ -12,6 +12,26 @@ type
 
   { TEpiScriptFunction_MathFunctions }
 
+{
+  otFuncAbs,
+  otFuncExp,
+  otFuncFraction,
+  otFuncLn,
+  otFuncLog,
+  otFuncSqrt,
+  otFuncRandom,
+  otFuncTan,
+  otFuncArcTan,
+  otFuncSin,
+  otFuncArcSin,
+  otFuncCos,
+  otFuncArcCos:
+  otFuncRound,
+  otFuncLRE:
+  otFuncSameValue:
+  otFuncSum:
+}
+
   TEpiScriptFunction_MathFunctions = class(TFunctionCall)
   private
     FOp: TParserOperationType;
@@ -62,6 +82,8 @@ begin
         Result[0] := 2;
         Result[1] := 3;
       end;
+    otFuncSum:
+      Result[0] := -1;
   end;
 end;
 
@@ -98,6 +120,8 @@ begin
         Result.ResultTypes := [rtInteger, rtFloat, rtDate, rtTime]
       else
         Result.ResultTypes := [rtInteger];
+    otFuncSum:
+      Result.ResultTypes := [rtInteger, rtFloat];
   end;
 end;
 
@@ -131,6 +155,8 @@ begin
       result := rtInteger;
     otFuncSameValue:
       result := rtBoolean;
+    otFuncSum:
+      result := Param[0].ResultType;
   end;
 end;
 
@@ -153,6 +179,9 @@ begin
 end;
 
 function TEpiScriptFunction_MathFunctions.AsInteger: EpiInteger;
+var
+  i: Integer;
+  P: TExpr;
 begin
   result := inherited AsInteger;
 
@@ -161,12 +190,25 @@ begin
       Result := Abs(Param[0].AsInteger);
     otFuncRandom:
       result := Random(Param[0].AsInteger);
+    otFuncSum:
+      begin
+        result := 0;
+
+        for i := 0 to FParamList.Count - 1 do
+          begin
+            P := Param[i];
+            if (not P.IsMissing) then
+              Result := Result + P.AsInteger;
+          end;
+      end;
   end;
 end;
 
 function TEpiScriptFunction_MathFunctions.AsFloat: EpiFloat;
 var
   c, t: EpiFloat;
+  i: Integer;
+  P: TExpr;
 begin
   // Do not call inherited here, because we may end up calling Abs()
   // twice - one time in AsInteger and one time here. This is NOT allowed
@@ -177,30 +219,43 @@ begin
   case FOp of
     otFuncAbs:
       Result := Abs(Param[0].AsFloat);
+
     otFuncExp:
       Result := exp(Param[0].AsFloat);
+
     otFuncFraction:
       Result := frac(Param[0].AsFloat);
+
     otFuncLn:
       result := ln(Param[0].AsFloat);
+
     otFuncLog:
       result := log10(Param[0].AsFloat);
+
     otFuncSqrt:
       Result := sqrt(Param[0].AsFloat);
+
     otFuncRound:
       result := RoundTo(Param[0].AsFloat, -Param[1].AsInteger);
+
     otFuncTan:
       result := tan(Param[0].AsFloat);
+
     otFuncArcTan:
       result := arctan(Param[0].AsFloat);
+
     otFuncSin:
       result := sin(Param[0].AsFloat);
+
     otFuncArcSin:
       result := arcsin(Param[0].AsFloat);
+
     otFuncCos:
       result := cos(Param[0].AsFloat);
+
     otFuncArcCos:
       result := arccos(Param[0].AsFloat);
+
     otFuncLRE:
       begin
 {       From Stata: http://www.stata.com/support/cert/nist/
@@ -236,7 +291,19 @@ begin
           result := min(15, -log10(abs(c - t) / t))
         else
           result := min(15, -log10(abs(c - t)));
-      end
+      end;
+
+    otFuncSum:
+      begin
+        result := 0;
+
+        for i := 0 to FParamList.Count - 1 do
+          begin
+            P := Param[i];
+            if (not P.IsMissing) then
+              Result := Result + P.AsFloat;
+          end;
+      end;
   else
     result := inherited AsFloat;
   end;
@@ -268,6 +335,8 @@ begin
     otFuncSameValue,
     otFuncLRE:
       result := Param[0].IsMissing or Param[1].IsMissing;
+    otFuncSum:
+      Result := false;
   end;
 end;
 

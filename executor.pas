@@ -77,6 +77,7 @@ type
     FMissingFields: TStrings;
     FDropDeleted: Boolean;
     FPrepareDFOptions: TPrepareDatasetOptions;
+    function GetDataFile: TEpiDataFile;
     function PrepareDatafilePack(Sender: TEpiDataFile; Index: Integer): boolean;
   protected
     function DoPrepareDatafile(SelectField: TStrings; MissingFields: TStrings; Options: TPrepareDatasetOptions = []): TEpiDataFile; virtual;
@@ -94,7 +95,7 @@ type
     procedure UpdateDatasetResultVar;
     procedure UpdateValuelabelsResultVar;
     function  PrepareDatafile(SelectField: TStrings; MissingFields: TStrings; Options: TPrepareDatasetOptions = []): TEpiDataFile;
-    property  DataFile: TEpiDataFile read FDataFile;
+    property  DataFile: TEpiDataFile read GetDataFile;
     property  Document: TEpiDocument read GetDocument;
     property  DocFile: TEpiDocumentFile read FDocFile;
 
@@ -1689,6 +1690,9 @@ begin
   FOptions.Insert(ANA_SO_BROWSER_FONT_COLOR,             TFontColorOption.Create('#000000', rtString));
   FOptions.Insert(ANA_SO_BROWSER_FONT_STYLE,             TFontStyleOption.Create('',        rtString));
   FOptions.Insert(ANA_SO_BROWSER_BG_COLOR,               TFontColorOption.Create('#FFFFFF', rtString));
+  FOptions.Insert(ANA_SO_BROWSER_OBS_DEFAULT_COLOR,      TFontColorOption.Create('#F0F0F0', rtString));
+  FOptions.Insert(ANA_SO_BROWSER_OBS_DELETED_COLOR,      TFontColorOption.Create('#FF0000', rtString));
+  FOptions.Insert(ANA_SO_BROWSER_OBS_VERIFIED_COLOR,     TFontColorOption.Create('#008080', rtString));
 
   // OUTPUT VIEWER
   SOpt := TSetOption.Create('TEXT', rtString);
@@ -3620,6 +3624,11 @@ procedure TExecutor.TypeCheckError(const Msg: string; const LineNo, ColNo,
 begin
   if FTypeCheckErrorOutput then
     DoError(Msg);
+end;
+
+function TExecutor.GetDataFile: TEpiDataFile;
+begin
+  result := FDataFile;
 end;
 
 function TExecutor.CheckVariableIndex(EV: TCustomExecutorVariable;

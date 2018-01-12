@@ -214,7 +214,7 @@
         <PackageName Value="LCL"/>
       </Item7>
     </RequiredPackages>
-    <Units Count="68">
+    <Units Count="69">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -513,6 +513,10 @@
         <Filename Value="statements/save_output.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit67>
+      <Unit68>
+        <Filename Value="functions/epi_script_function_observations.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit68>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

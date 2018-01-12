@@ -214,6 +214,7 @@ type
     otFuncRandom,         // Random(x), Generata random integer number between 0 - X.
     otFuncSameValue,      // SameValue(x, y[, z]), compares x vs. y if they are the same (given z as epsilon for precision)
     otFuncLRE,            // LogRelativeError - compares two values, gives best digit precission.
+    otFuncSum,            // Sums up parameters, ignoring missing
 
     // -- trigonometry
     otFuncTan,            // Tan(x)
@@ -230,7 +231,11 @@ type
     otFuncSize,           // returns the size of an identifier
     otFuncIif,            // terniary operator iif(<expr>, <true-val>, <false-val>)
     otFuncLabel,          // extracts the label of an indentifier
-    otFuncCwd             // returns current working dir as string
+    otFuncCwd,            // returns current working dir as string
+
+    // -observation functions
+    otFuncDeleted,        // true/false if an observation is marked for deletion
+    otFuncVerified        // true/false if an observation is marked as verified
   );
 
   TExecutorGetRecordIndex = function(Sender: TObject): integer;

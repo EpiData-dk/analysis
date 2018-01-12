@@ -153,7 +153,7 @@ begin
   DF := FExecutor.DataFile;
 
 
-  if (ST.HasOption('del')) then
+  if (ST.HasOption('md')) then
     begin
       for i := 0 to SelectVec.Size - 1 do
         DF.Deleted[SelectVec.AsInteger[i]] := true;
@@ -161,12 +161,28 @@ begin
       FOutputCreator.DoInfoAll(IntToStr(SelectVec.Size) + ' obs. marked for deletion');
     end;
 
-  if (ST.HasOption('undel')) then
+  if (ST.HasOption('nomd')) then
     begin
       for i := 0 to SelectVec.Size - 1 do
         DF.Deleted[SelectVec.AsInteger[i]] := false;
 
       FOutputCreator.DoInfoAll(IntToStr(SelectVec.Size) + ' obs. removed marked for deletion');
+    end;
+
+  if (ST.HasOption('vf')) then
+    begin
+      for i := 0 to SelectVec.Size - 1 do
+        DF.Verified[SelectVec.AsInteger[i]] := true;
+
+      FOutputCreator.DoInfoAll(IntToStr(SelectVec.Size) + ' obs. marked verfied');
+    end;
+
+  if (ST.HasOption('novf')) then
+    begin
+      for i := 0 to SelectVec.Size - 1 do
+        DF.Verified[SelectVec.AsInteger[i]] := false;
+
+      FOutputCreator.DoInfoAll(IntToStr(SelectVec.Size) + ' obs. removed veried mark');
     end;
 end;
 

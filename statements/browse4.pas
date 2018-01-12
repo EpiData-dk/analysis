@@ -95,6 +95,9 @@ type
     FRowNoField: TEpiField;
     FFields: TEpiFields;
     FExecutor: TExecutor;
+    FDeletedColour: TColor;
+    FVerifiedColour: TColor;
+    FDefaultColour: TColor;
     function GetCellText(ACol, ARow: Integer): UTF8String;
     procedure DrawCell(Sender: TObject; aCol, aRow: Integer; aRect: TRect;
       aState: TGridDrawState);
@@ -368,6 +371,7 @@ end;
 procedure TBrowseForm4.FormShow(Sender: TObject);
 begin
   LoadFormPosition(Self, Self.ClassName);
+  FontSizeChanged(nil);
 end;
 
 procedure TBrowseForm4.FormClose(Sender: TObject; var CloseAction: TCloseAction
@@ -404,6 +408,10 @@ begin
 
   FGrid.Font.Assign(AFont);
   FGrid.Color := TFontColorOption(FExecutor.SetOptions[ANA_SO_BROWSER_BG_COLOR]).GetBGRValue;
+
+  FDeletedColour  := TFontColorOption(FExecutor.SetOptions[ANA_SO_BROWSER_OBS_DELETED_COLOR]).GetBGRValue;;
+  FVerifiedColour := TFontColorOption(FExecutor.SetOptions[ANA_SO_BROWSER_OBS_VERIFIED_COLOR]).GetBGRValue;;
+  FDefaultColour  := TFontColorOption(FExecutor.SetOptions[ANA_SO_BROWSER_OBS_DEFAULT_COLOR]).GetBGRValue;;
 
   CalcWidhtsAndHeight;
   FGrid.Invalidate;
@@ -495,10 +503,12 @@ end;
 procedure TBrowseForm4.PrepareCanvas(sender: TObject; aCol, aRow: Integer;
   aState: TGridDrawState);
 begin
-  if (aRow > 0) then
+  if (aRow > 0) and (aCol = 0) then
     begin
-      if FDataFile.Deleted[ARow - 1]  then FGrid.Canvas.Brush.Color := clRed;
-      if FDataFile.Verified[ARow - 1] then FGrid.Canvas.Brush.Color := clTeal;
+      if FDataFile.Deleted[ARow - 1]  then FGrid.Canvas.Brush.Color := FDeletedColour
+      else if FDataFile.Verified[ARow - 1] then FGrid.Canvas.Brush.Color := FVerifiedColour
+      else FGrid.Canvas.Brush.Color := FDefaultColour;
+
     end;
 end;
 
@@ -657,11 +667,18 @@ begin
 
   FGrid.Parent          := Self;
 
+  FDeletedColour  := clRed;
+  FVerifiedColour := clTeal;
+  FDefaultColour  := clWhite;
+
   FExecutor.SetOptions.GetValue(ANA_SO_BROWSER_FONT_NAME).AddOnChangeHandler(@FontSizeChanged);
   FExecutor.SetOptions.GetValue(ANA_SO_BROWSER_FONT_SIZE).AddOnChangeHandler(@FontSizeChanged);
   FExecutor.SetOptions.GetValue(ANA_SO_BROWSER_FONT_COLOR).AddOnChangeHandler(@FontSizeChanged);
   FExecutor.SetOptions.GetValue(ANA_SO_BROWSER_FONT_STYLE).AddOnChangeHandler(@FontSizeChanged);
   FExecutor.SetOptions.GetValue(ANA_SO_BROWSER_BG_COLOR).AddOnChangeHandler(@FontSizeChanged);
+  FExecutor.SetOptions.GetValue(ANA_SO_BROWSER_OBS_DEFAULT_COLOR).AddOnChangeHandler(@FontSizeChanged);
+  FExecutor.SetOptions.GetValue(ANA_SO_BROWSER_OBS_DELETED_COLOR).AddOnChangeHandler(@FontSizeChanged);
+  FExecutor.SetOptions.GetValue(ANA_SO_BROWSER_OBS_VERIFIED_COLOR).AddOnChangeHandler(@FontSizeChanged);
 
   UpdateShortcuts;
 end;

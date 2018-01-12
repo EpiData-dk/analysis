@@ -54,6 +54,7 @@ type
   { IEpiScriptExecutor }
 
   IEpiScriptExecutor = interface ['IEpiScriptExecutor']
+    function GetDataFile: TEpiDataFile;
     function GetExecVariable(Const Ident: UTF8String): TCustomExecutorVariable;
     function GetVariableExecType(Const Ident: UTF8String): TExecutorVariableType;
     function GetVariableValueBool(Const Sender: TCustomVariable): Boolean;
@@ -73,6 +74,7 @@ type
     procedure TypeCheckError(Const Msg: string;
       Const LineNo, ColNo, BytePos: integer);
     procedure SetTypeCheckErrorOutput(Active: boolean);
+    property DataFile: TEpiDataFile read GetDataFile;
   end;
 
   IEpiTypeChecker = IEpiScriptExecutor;
@@ -1389,6 +1391,7 @@ uses
   epi_script_function_timefunctions,
   epi_script_function_stringfunctions,
   epi_script_function_systemfunctions,
+  epi_script_function_observations,
   math, variants, LazUTF8, LazFileUtils;
 
 { TReportValidateDoubleEntry }
@@ -1443,8 +1446,10 @@ end;
 function TEditData.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  Result.Insert('del', [rtUndefined]);
-  Result.Insert('undel', [rtUndefined]);
+  Result.Insert('md',   [rtUndefined]);
+  Result.Insert('nomd', [rtUndefined]);
+  Result.Insert('vf',   [rtUndefined]);
+  Result.Insert('novf', [rtUndefined]);
 end;
 
 constructor TEditData.Create(AOptionList: TOptionList);
@@ -4777,6 +4782,8 @@ begin
       result := TEpiScriptFunction_MathFunctions.Create(otFuncArcCos, ParamList);
     'lre':
       result := TEpiScriptFunction_MathFunctions.Create(otFuncLre, ParamList);
+    'sum':
+      result := TEpiScriptFunction_MathFunctions.Create(otFuncSum, ParamList);
 
 
     { Date functions }
@@ -4854,6 +4861,12 @@ begin
       result := TTypeCast.Create(otTimeCast,    ParamList);
     'string':
       result := TTypeCast.Create(otStringCast,  ParamList);
+
+    { Observations }
+    'verified':
+      result := TEpiScriptFunction_ObsFunctions.Create(otFuncVerified, ParamList);
+    'deleted':
+      result := TEpiScriptFunction_ObsFunctions.Create(otFuncDeleted, ParamList);
   else
     result := nil;
   end;
