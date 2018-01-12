@@ -83,7 +83,7 @@ begin
   for i := 0 to ST.OptionList.Count - 1 do
     begin
       Opt := ST.OptionList.Options[i];
-      if (Opt.Ident <> 'delete') then continue;
+      if (Opt.Ident <> 'd') then continue;
 
       VL := VLSet.ValueLabel[Opt.Expr.AsString];
       Vl.Free;
@@ -105,7 +105,7 @@ begin
       VLSet.ValueLabel[Opt.Expr.AsString].IsMissingValue := false;
     end;
 
-  if ST.HasOption('rename', Opt) then
+  if ST.HasOption('r', Opt) then
     VLSet.Name := Opt.Expr.AsIdent;
 
   FOutputCreator.DoInfoAll('Edited valuelabel: ' + VLSet.Name + LineEnding +
@@ -140,7 +140,7 @@ begin
   if (St.HasOption('statusbar', Opt)) then
     DF.StatusbarContentString := Opt.Expr.AsString;
 
-  if ST.HasOption('rename', Opt) then
+  if ST.HasOption('r', Opt) then
     DF.Name := Opt.Expr.AsIdent;
 
   ST.ExecResult := csrSuccess;

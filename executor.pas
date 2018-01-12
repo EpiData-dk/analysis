@@ -873,7 +873,7 @@ var
 begin
   result := false;
 
-  if (ST.HasOption('rename', Opt)) then
+  if (ST.HasOption('r', Opt)) then
     begin
       S := Opt.Expr.AsIdent;
       Ev := GetExecVariable(S);
@@ -1000,7 +1000,7 @@ begin
       StatusbarParser.Free;
     end;
 
-  if (ST.HasOption('rename', Opt)) and
+  if (ST.HasOption('r', Opt)) and
      (not DF.ValidateRename(Opt.Expr.AsIdent, false))
   then
     begin
@@ -1038,7 +1038,7 @@ begin
   Len := F.Length;
   Dec := F.Decimals;
 
-  if (ST.HasOption('length', Opt)) then
+  if (ST.HasOption('l', Opt)) then
   begin
     Len := Opt.Expr.AsInteger;
     if (Len < 1) or ((F.FieldType = ftInteger) and (Len > 19)) then
@@ -1048,7 +1048,7 @@ begin
     end;
   end;
 
-  if ST.OptionList.HasOption('decimal', Opt) then
+  if ST.OptionList.HasOption('d', Opt) then
     begin
       if not (F.FieldType in FloatFieldTypes) then
         DoWarning('Setting decimals on non-float variables have no effect');
@@ -1078,36 +1078,36 @@ begin
         end;
     end;
 
-  if (ST.HasOption('rangelow', OptLow)) or
-     (ST.HasOption('rangehigh', OptHigh))
+  if (ST.HasOption('min', OptLow)) or
+     (ST.HasOption('max', OptHigh))
   then
     begin
-      if (not ST.HasOption('rangelow', OptLow)) then
+      if (not ST.HasOption('min', OptLow)) then
         begin
-          DoError('Missing !rangelow option!');
+          DoError('Missing !min option!');
           Exit;
         end;
 
-      if (not ST.HasOption('rangehigh', OptHigh)) then
+      if (not ST.HasOption('max', OptHigh)) then
         begin
-          DoError('Missing !rangehigh option!');
+          DoError('Missing !max option!');
           Exit;
         end;
 
       if (OptLow.Expr.ResultType <> FieldTypeToASTTypeTable[F.FieldType]) then
         begin
-          DoError('!rangelow value does not have the same datatype as the variable!');
+          DoError('!min value does not have the same datatype as the variable!');
           Exit;
         end;
 
       if (OptHigh.Expr.ResultType <> FieldTypeToASTTypeTable[F.FieldType]) then
         begin
-          DoError('!rangehigh value does not have the same datatype as the variable!');
+          DoError('!max value does not have the same datatype as the variable!');
           Exit;
         end;
     end;
 
-  if (ST.HasOption('entrymode', Opt)) and
+  if (ST.HasOption('entry', Opt)) and
      ((Opt.Expr.AsInteger > 2) or
       (Opt.Expr.AsInteger < 0))
   then
@@ -1162,56 +1162,25 @@ begin
   Result := False;
   VLPairs := TValueLabelPairs(GetObjectProp(ST, 'ValueLabelPairs'));
 
-{  Values := TStringListUTF8.Create;
-  Values.CaseSensitive := false;
-  Values.Sorted := true;
-  Values.Duplicates := dupIgnore;
-
-  if Assigned(VLPairs) then
-  begin
-    for i := 0 to VLPairs.Count -1 do
-      begin
-        S := VLPairs.Values[i].AsString;
-        if VLS.ValueLabelExists[S] then
-          begin
-            DoError(
-              Format('Cannot create value label: %s = %s', [VLPairs.Values[i].AsString, VLPairs.LabelText[i]]) + LineEnding +
-              'Value already exists!'
-            );
-            Exit;
-          end;
-
-        if Values.Find(S, Idx) then
-          begin
-            DoError(Format('Cannot create multiple value labels with same value: %s', [S]));
-            Values.Free;
-            Exit;
-          end;
-
-        Values.Add(VLPairs.Values[i].AsString);
-      end;
-  end; }
-
-
   for i := 0 to ST.OptionList.Count - 1 do
     begin
       Opt := ST.OptionList.Options[i];
       if (Assigned(Opt.Expr)) and
-         (Opt.Ident <> 'rename')
+         (Opt.Ident <> 'r')
       then
         S := Opt.Expr.AsString;
 
       case Opt.Ident of
-        'missing':
+        'm':
           begin
-            if (not (VLs.ValueLabelExists[S] or Values.Find(S, Idx))) then
+            if (not (VLs.ValueLabelExists[S] or VLPairs.Find(S, Idx))) then
               begin
                 DoError('Cannot assign missing - value does not exist!');
                 Exit;
               end;
           end;
 
-        'delete':
+        'd':
           begin
             if (not VLs.ValueLabelExists[S]) then
               begin
@@ -1220,7 +1189,7 @@ begin
               end;
           end;
 
-        'nomissing':
+        'nom':
           begin
             if (not VLs.ValueLabelExists[S]) then
               begin
@@ -1426,16 +1395,16 @@ var
   end;
 
 begin
-  if ST.HasOption('rename', Opt) then
+  if ST.HasOption('r', Opt) then
     F.Name := Opt.Expr.AsIdent;
 
   if ST.HasOption('label', Opt) then
     F.Question.Text := Opt.Expr.AsString;
 
-  if ST.HasOption('length', Opt) then
+  if ST.HasOption('l', Opt) then
     F.Length := Opt.Expr.AsInteger;
 
-  if ST.HasOption('decimal', Opt) then
+  if ST.HasOption('d', Opt) then
     F.Decimals := Opt.Expr.AsInteger;
 
   if ST.HasOption('vl', Opt) then
@@ -1444,7 +1413,7 @@ begin
   if ST.HasOption('novl') then
     F.ValueLabelSet := nil;
 
-  if ST.HasOption('rangelow', Opt) then
+  if ST.HasOption('min', Opt) then
     begin
       if (Assigned(F.Ranges)) then
         F.Ranges.Free;
@@ -1467,7 +1436,7 @@ begin
           R.AsTime[true] := Opt.Expr.AsTime;
       end;
 
-      ST.HasOption('rangehigh', Opt);
+      ST.HasOption('max', Opt);
       case F.FieldType of
         ftInteger:
           R.AsInteger[false] := Opt.Expr.AsInteger;
@@ -1491,7 +1460,7 @@ begin
       F.Ranges := nil;
     end;
 
-  if ST.HasOption('entrymode', Opt) then
+  if ST.HasOption('entry', Opt) then
     F.EntryMode := TEpiEntryMode(Opt.Expr.AsInteger);
 
   if ST.HasOption('confirm') then
@@ -1826,18 +1795,6 @@ begin
       end;
     end;
 
-  // Add the 'd' option it not present - since Executor is not present in DATAMODULE
-  // aquiring the setoption in the DM is a no-go.
-  if (not ST.HasOption('d')) then
-    begin
-      ST.Options.Add(
-        TOption.Create(
-          TVariable.Create('d', Self),
-          TStringLiteral.Create(SetOptions[ANA_SO_CLIPBOARD_DELIMITER].Value)
-        )
-      );
-    end;
-
   try
     aDM.OnOpenFileError := @OpenFileError;
     aDm.OnDocFileCreated := @DMDocFileCreated;
@@ -2019,7 +1976,7 @@ begin
   if (ExportSetting.InheritsFrom(TEpiStataExportSetting)) then
     with TEpiStataExportSetting(ExportSetting) do
       begin
-        if ST.HasOption('sversion', Opt) then
+        if ST.HasOption('version', Opt) then
           begin
             Ver := Opt.Expr.AsInteger;
             case Ver of
@@ -3354,14 +3311,13 @@ begin
   DoUseDatafile(Datasets.Data[Idx].DataFile);
   DoInfo('Using ' + DataFile.Caption.Text + ' (' + DataFile.Name + ')');
 
-
   for F in DataFile.Fields do
     begin
       if Valuelabels.Find(F.Name, Idx) then
         begin
           FOutputCreator.DoWarning(
             'Variable "' + F.Name + '" has the same name as a valuelabel. Use this command to change the name of the valuelabel: ' + LineEnding +
-            'edit valuelabel ' + F.Name + ' !rename := <new name>;'
+            'edit valuelabel ' + F.Name + ' !r := <new name>;'
           );
         end;
 

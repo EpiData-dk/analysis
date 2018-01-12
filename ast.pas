@@ -764,6 +764,7 @@ type
   public
     constructor Create(AValueType: TASTResultType); virtual;
     function TypeCheck(Parser: IEpiTypeChecker): boolean; override;
+    function Find(Const S: UTF8String; out Index: Integer): boolean;
     procedure AddPair(Value: TExpr; Ident: UTF8String);
     property Count: Integer read GetCount;
     property ValueType: TASTResultType read FValueType;
@@ -1537,7 +1538,7 @@ begin
 
   // Stata Options
   // - version
-  Result.Insert('sversion', [rtInteger]);
+  Result.Insert('version', [rtInteger]);
 
   // CSV options
   // - header/varnames
@@ -2014,7 +2015,7 @@ end;
 function TEditValueLabel.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  result.Insert('delete',    AllResultDataTypes);
+  result.Insert('d',    AllResultDataTypes);
   result.Insert('m',   AllResultDataTypes);
   result.Insert('nom', AllResultDataTypes);
 end;
@@ -2055,14 +2056,14 @@ begin
   Result := inherited GetAcceptedOptions;
 
   result.Insert('label',        [rtString]);
-  result.Insert('length',       [rtInteger]);
-  result.Insert('decimal',      [rtInteger]);
+  result.Insert('l',            [rtInteger]);
+  result.Insert('d',            [rtInteger]);
   result.Insert('vl',           [rtObject], [evtValuelabel], [evfInternal, evfAsObject]);
   result.Insert('novl',         [rtUndefined]);
-  result.Insert('rangelow',     AllResultDataTypes);
-  result.Insert('rangehigh',    AllResultDataTypes);
+  result.Insert('max',          AllResultDataTypes);
+  result.Insert('min',          AllResultDataTypes);
   result.Insert('norange',      [rtUndefined]);
-  result.Insert('entrymode',    [rtInteger]);
+  result.Insert('entry',        [rtInteger]);
   result.Insert('confirm',      [rtUndefined]);
   result.Insert('noconfirm',    [rtUndefined]);
   result.Insert('key',          [rtUndefined]);
@@ -2112,7 +2113,7 @@ end;
 function TCustomEditCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  result.Insert('rename', [rtObject], ExecutorVariableTypesAll, [evfExternal, evfAsObject]);
+  result.Insert('r', [rtObject], ExecutorVariableTypesAll, [evfExternal, evfAsObject]);
 end;
 
 function TCustomEditCommand.GetVariable: TCustomVariable;
@@ -2200,6 +2201,20 @@ begin
     end;
 end;
 
+function TValueLabelPairs.Find(const S: UTF8String; out Index: Integer
+  ): boolean;
+var
+  i: Integer;
+begin
+  for i := 0 to FPairs.Count - 1 do
+    begin
+      if TExpr(FPairs.Objects[i]).AsString = S then
+        break;
+    end;
+  Index := i;
+  result := (Index < FPairs.Count);
+end;
+
 procedure TValueLabelPairs.AddPair(Value: TExpr; Ident: UTF8String);
 begin
   FPairs.AddObject(Ident, Value);
@@ -2242,12 +2257,12 @@ begin
   Result := inherited GetAcceptedOptions;
 
   result.Insert('label',      [rtString]);
-  result.Insert('length',     [rtInteger]);
-  result.Insert('decimal',    [rtInteger]);
+  result.Insert('l',          [rtInteger]);
+  result.Insert('d',          [rtInteger]);
   result.Insert('vl',         [rtObject], [evtValuelabel], [evfInternal, evfAsObject]);
-  result.Insert('rangelow',   AllResultDataTypes);
-  result.Insert('rangehigh',  AllResultDataTypes);
-  result.Insert('entrymode',  [rtInteger]);
+  result.Insert('min',        AllResultDataTypes);
+  result.Insert('max',        AllResultDataTypes);
+  result.Insert('entry',      [rtInteger]);
   result.Insert('confirm',    [rtUndefined]);
   result.Insert('key',        [rtUndefined]);
   result.Insert('cmpEQ',      [rtObject], [evtField], [evfInternal, evfAsObject]);

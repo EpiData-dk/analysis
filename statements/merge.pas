@@ -454,7 +454,7 @@ begin
     begin
       Opts := TOptionList.Create;
       Opts.Add(TOption.Create(TVariable.Create('label', FExecutor),  TStringLiteral.Create('Source of information for each observation')));
-      Opts.Add(TOption.Create(TVariable.Create('length', FExecutor), TIntegerLiteral.Create(1)));
+      Opts.Add(TOption.Create(TVariable.Create('l', FExecutor), TIntegerLiteral.Create(1)));
       NewST := TNewVariable.Create(TIntegerLiteral.Create(1), ftInteger, TVariable.Create('mergevar', FExecutor), Opts);
       NewST.AssignToken(TToken.Create(ST.LineNo, ST.ColNo, ST.ByteNo));
 
