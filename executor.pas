@@ -1826,6 +1826,18 @@ begin
       end;
     end;
 
+  // Add the 'd' option it not present - since Executor is not present in DATAMODULE
+  // aquiring the setoption in the DM is a no-go.
+  if (not ST.HasOption('d')) then
+    begin
+      ST.Options.Add(
+        TOption.Create(
+          TVariable.Create('d', Self),
+          TStringLiteral.Create(SetOptions[ANA_SO_CLIPBOARD_DELIMITER].Value)
+        )
+      );
+    end;
+
   try
     aDM.OnOpenFileError := @OpenFileError;
     aDm.OnDocFileCreated := @DMDocFileCreated;
@@ -1991,8 +2003,9 @@ begin
   if (ExportSetting.InheritsFrom(TEpiCSVExportSetting)) then
     with TEpiCSVExportSetting(ExportSetting) do
       begin
-        if ST.HasOption('varn', Opt)   then ExportFieldNames := Opt.Expr.AsBoolean else ExportFieldNames := true;
+        FieldSeparator := SetOptions[ANA_SO_CLIPBOARD_DELIMITER].Value;
         if ST.HasOption('d', Opt)      then FieldSeparator   := Opt.Expr.AsString;
+        if ST.HasOption('varn', Opt)   then ExportFieldNames := Opt.Expr.AsBoolean else ExportFieldNames := true;
         if ST.HasOption('q', Opt)      then QuoteChar        := Opt.Expr.AsString;
         if ST.HasOption('dated', Opt)  then DateSeparator    := Opt.Expr.AsString;
         if ST.HasOption('timed', Opt)  then TimeSeparator    := Opt.Expr.AsString;
