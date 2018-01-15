@@ -123,16 +123,38 @@ var
 
   procedure CloneItem(SrcItem: TEpiCustomControlItem; Dst: TEpiCustomControlItemList; Offset: Integer);
   var
-    DstItem: TEpiCustomControlItem;
+    DstItem, Item: TEpiCustomControlItem;
     F: TEpiField absolute DstItem;
     VLSet: TEpiValueLabelSet;
   begin
     if DstDatafile.ControlItems.ItemExistsByName(SrcItem.Name) then
       Exit;
 
-    DstItem := TEpiCustomControlItem(SrcItem.Clone(Dst, RefMap));
-    DstItem.Top := DstItem.Top + Offset;
-    Dst.AddItem(DstItem);
+    if (SrcItem is TEpiSection) then
+      begin
+        DstItem := TEpiSection.Create(Dst);
+        TEpiSection(DstItem).Top :=    TEpiSection(SrcItem).Top;
+        TEpiSection(DstItem).Left :=   TEpiSection(SrcItem).Left;
+        TEpiSection(DstItem).Width :=  TEpiSection(SrcItem).Width;
+        TEpiSection(DstItem).Height := TEpiSection(SrcItem).Height;
+
+        DstItem.Name                := SrcItem.Name;
+        DstItem.Top := DstItem.Top + Offset;
+        Dst.AddItem(DstItem);
+
+        for Item in TEpiSection(SrcItem).Fields do
+          CloneItem(Item, TEpiSection(DstItem).Fields, 0);
+
+        for Item in TEpiSection(SrcItem).Headings do
+          CloneItem(Item, TEpiSection(DstItem).Headings, 0);
+      end
+    else
+      begin
+        DstItem := TEpiCustomControlItem(SrcItem.Clone(Dst, RefMap));
+        DstItem.Top := DstItem.Top + Offset;
+        Dst.AddItem(DstItem);
+      end;
+
     if (DstItem is TEpiField) then
     begin
       F.Size := DstDatafile.Size;
