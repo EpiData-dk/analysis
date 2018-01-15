@@ -1,7 +1,7 @@
 object EditorForm: TEditorForm
-  Left = 471
+  Left = 2016
   Height = 662
-  Top = 261
+  Top = 202
   Width = 823
   ActiveControl = SynEdit1
   AllowDropFiles = True
@@ -51,8 +51,8 @@ object EditorForm: TEditorForm
     TabOrder = 1
     inline SynEdit1: TSynEdit
       Left = 2
-      Height = 588
-      Top = 26
+      Height = 582
+      Top = 32
       Width = 819
       Align = alClient
       Font.Height = 13
@@ -565,6 +565,7 @@ object EditorForm: TEditorForm
       end
       object MenuItem28: TMenuItem
         Action = MainForm.CommandsHelpAction
+        OnClick = MenuItem28Click
       end
     end
   end

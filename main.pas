@@ -240,7 +240,7 @@ type
     function  HTMLStream: TStream;
 
   { Help }
-  private
+  public
     procedure HelpLookup(ContextLookup: Boolean);
 
   { Recent Files }
@@ -730,8 +730,9 @@ procedure TMainForm.CommandsHelpActionExecute(Sender: TObject);
 var
   S: String;
 begin
-  S := 'file://' + ProgramDirectory + DirectorySeparator + 'docs' + DirectorySeparator + 'commands.html';
-  OpenURL(S);
+  HelpLookup(false);
+//  S := 'file://' + ProgramDirectory + DirectorySeparator + 'docs' + DirectorySeparator + 'commands.html';
+//  OpenURL(S);
 end;
 
 procedure TMainForm.ToggleProjectTreeExecute(Sender: TObject);
