@@ -1878,6 +1878,7 @@ begin
   Result.Insert('d0',  [rtUndefined]);
   Result.Insert('d1',  [rtUndefined]);
   Result.Insert('d2',  [rtUndefined]);
+  Result.Insert('ci',  [rtUndefined]);
 end;
 
 function TFreqCommand.GetAcceptedVariableCount: TBoundArray;

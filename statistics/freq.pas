@@ -6,8 +6,7 @@ interface
 
 uses
   Classes, SysUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
-  executor, result_variables, interval_types, epifields_helper,
-  outputcreator;
+  executor, result_variables, epifields_helper, outputcreator;
 
 
 type
@@ -32,7 +31,7 @@ type
 implementation
 
 uses
-  epimiscutils, options_utils;
+  epimiscutils, options_utils, statfunctions;
 
 { TFreqCommand }
 
@@ -80,6 +79,7 @@ var
   CategV, CountV: TEpiField;
   i, Sum, CCount, Col, RunSum: Integer;
   RCount, RCateg,  RPerc, RCum: TExecVarVector;
+  CILow, CIHigh: EpiFloat;
 begin
   CategV := InputDF.Fields.FieldByName['categ'];
   CountV := InputDF.Fields.FieldByName['count'];
@@ -88,22 +88,19 @@ begin
   T.Header.Text := CategV.Question.Text;
 
   CCount := 2;
-  if ST.HasOption('r') then
-    begin
-      inc(CCount);
-    end;
-  if ST.HasOption('cum') then
-    inc(CCount);
+  if ST.HasOption('r') then   inc(CCount);
+  if ST.HasOption('ci') then  inc(CCount);
+  if ST.HasOption('cum') then inc(CCount);
+
 
   T.ColCount := CCount;
   T.RowCount := InputDF.Size + 2;
 
   Col := 1;
   T.Cell[PostInc(Col), 0].Text := 'N';
-  if ST.HasOption('r') then
-    T.Cell[PostInc(Col), 0].Text := '%';
-  if ST.HasOption('cum') then
-    T.Cell[PostInc(Col), 0].Text := 'Cum %';
+  if ST.HasOption('r') then   T.Cell[PostInc(Col), 0].Text := '%';
+  if ST.HasOption('ci') then  T.Cell[PostInc(Col), 0].Text := '(95% CI)';
+  if ST.HasOption('cum') then T.Cell[PostInc(Col), 0].Text := 'Cum %';
 
   Sum := 0;
   for i := 0 to InputDF.Size - 1 do
@@ -134,6 +131,12 @@ begin
         begin
           T.Cell[PostInc(Col), i + 1].Text := Format('%8.' + IntToStr(FDecimals) + 'F', [(CountV.AsInteger[i] / Sum) * 100]);
           RPerc.AsFloatVector[i] := (CountV.AsInteger[i] / Sum) * 100;
+        end;
+
+      if ST.HasOption('ci') then
+        begin
+          EpiProportionCI(CountV.AsInteger[i], Sum, CIHigh, CILow);
+          T.Cell[PostInc(Col), i + 1].Text := Format('(%.' + IntToStr(FDecimals) + 'F - %.' + IntToStr(FDecimals) + 'F)', [CILow*100, CIHigh*100]);
         end;
 
       if ST.HasOption('cum') then
