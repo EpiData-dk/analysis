@@ -71,9 +71,9 @@ begin
         Result.ResultTypes := [rtInteger];
     otFuncConcat:
       if ParamNo = 0 then
-        Result.ResultTypes := [rtString]
+        Result.ResultTypes := AllResultDataTypes
       else
-        Result.ResultTypes := [rtAny, rtString];
+        Result.ResultTypes := AllResultDataTypes + [rtAny]
   end;
 end;
 
