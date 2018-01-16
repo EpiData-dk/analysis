@@ -1129,20 +1129,14 @@ begin
         end;
 
       if (ST.HasOption('key')) and
-         (FDataFile.KeyFields.FieldExists(F))
+         (F.IsKeyfield)
       then
-        begin
-          DoError('Variable is already part of the key!');
-          Exit;
-        end;
+        DoWarning('Variable is already part of the key! Ignoring !key option');
 
       if (ST.HasOption('nokey')) and
-         (not FDataFile.KeyFields.FieldExists(F))
+         (not F.IsKeyfield)
       then
-        begin
-          DoError('Variable is not part of the key!');
-          Exit;
-        end;
+        DoWarning('Variable is not part of the key! Ignoring !nokey option');
     end;
 
   result := true;
@@ -1470,10 +1464,14 @@ begin
   if ST.HasOption('noconfirm') then
     F.ConfirmEntry := False;
 
-  if ST.HasOption('key') then
+  if ST.HasOption('key') and
+     (not F.IsKeyfield)
+  then
     FDataFile.KeyFields.AddItem(F);
 
-  if ST.HasOption('nokey') then
+  if ST.HasOption('nokey') and
+     (F.IsKeyfield)
+  then
     FDataFile.KeyFields.RemoveItem(F);
 
   if ST.HasOption('cmpEQ', Opt) then AddCompare(Opt.Expr.AsIdent, fcEq);
