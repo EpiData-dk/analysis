@@ -121,9 +121,26 @@ var
   Opt: TOption;
   DF: TEpiDataFile;
   DR: TEpiDetailRelation;
+  MR: TEpiMasterRelation;
+
+  procedure RecurseMoveToTop(Rel: TEpiMasterRelation);
+  var
+    NewRel: TEpiMasterRelation;
+  begin
+    NewRel := FExecutor.Document.Relations.NewMasterRelation;
+    NewRel.Datafile := Rel.Datafile;
+
+    for NewRel in Rel.DetailRelations do
+      RecurseMoveToTop(NewRel);
+
+    Rel.Datafile := nil;
+    Rel.Free;
+  end;
+
 begin
   DF := FExecutor.Document.DataFiles.GetDataFileByName(ST.Variable.Ident);
-  DR := TEpiDetailRelation(FExecutor.Document.Relations.MasterRelationFromDatafileName(DF.Name));
+  MR := FExecutor.Document.Relations.MasterRelationFromDatafileName(DF.Name);
+  DR := TEpiDetailRelation(MR);
 
   if (ST.HasOption('size', Opt)) then
     DF.Size := Opt.Expr.AsInteger;
@@ -142,6 +159,14 @@ begin
 
   if ST.HasOption('r', Opt) then
     DF.Name := Opt.Expr.AsIdent;
+
+  if ST.HasOption('noparent') then
+    begin
+      if (not (MR is TEpiDetailRelation)) then
+        FOutputCreator.DoWarning('"' + DF.Name + '" is NOT a related dataset. Ignoring option !noparent')
+      else
+        RecurseMoveToTop(MR);
+    end;
 
   ST.ExecResult := csrSuccess;
 end;

@@ -2094,6 +2094,7 @@ begin
   Result.Insert('afterobs',  [rtInteger]);
   Result.Insert('statusbar', [rtString]);
   Result.Insert('size',      [rtInteger]);
+  Result.Insert('noparent',  [rtUndefined]);
 end;
 
 function TEditDataset.GetAcceptedVariableTypesAndFlags(Index: Integer
