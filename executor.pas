@@ -301,6 +301,7 @@ uses
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
   RegExpr, ana_globals, browse4, strutils, options_fontoptions,
+  ana_documentfile,
 
   // STATEMENTS
   list, edit, drop, systemcmd, merge, integrity_tests, report, save_output,
@@ -1859,9 +1860,9 @@ var
   opt: TOption;
   Ver: ASTInteger;
   SaveOutput: TSaveOutput;
+  DF: TEpiDataFile;
 begin
   FN := '';
-
 
   if (ST.HasOption('output', Opt)) then
     begin
@@ -1997,20 +1998,32 @@ begin
           Version := dta14;
       end;
 
+  if (ExportSetting.InheritsFrom(TEpiEPXExportSetting)) then
+    with TEpiEPXExportSetting(ExportSetting) do
+      begin
+        DocumentClass := TAnaDocumentFile;
+        ExportValueLabels := true;
+      end;
 
   if (Setting <> TEpiEPXExportSetting) or
      ((Setting = TEpiEPXExportSetting) and
-      (ST.HasOption('df'))
+      (ST.HasOption('ds'))
      )
   then
     begin
       DFSetting := TEpiExportDatafileSettings.Create;
-      DFSetting.DatafileName := FDataFile.Name;
+
+      if (St.HasOption('ds', opt)) then
+        DF := Document.DataFiles.GetDataFileByName(Opt.Expr.AsIdent)
+      else
+        DF := DataFile;
+
+      DFSetting.DatafileName := DF.Name;
       DFSetting.ExportFileName := FN;
       DFSetting.FromRecord := 0;
       DFSetting.ToRecord   := FDataFile.Size - 1;
 
-      for F in FDataFile.Fields do
+      for F in DF.Fields do
         with DFSetting.ExportItems do
           begin
             if IndexOf(TEpiCustomItem(F.Owner.Owner).Name) < 0 then

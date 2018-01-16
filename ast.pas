@@ -1531,7 +1531,7 @@ begin
   Result.Insert('format',  [rtString]);
   Result.Insert('replace', [rtUndefined]);
   Result.Insert('force',   [rtUndefined]);
-  Result.Insert('dataset', [rtString]);
+  Result.Insert('ds',      [rtObject], [evtDataset], [evfInternal, evfAsObject]);
 
   // Save Output
   result.Insert('output',   [rtString, rtUndefined]);
