@@ -28,7 +28,7 @@ type
     procedure TransferData(DestField, SrcField: TEpiField; DestIdx, SrcIdx: Integer; MergeOption: TMergeOption = moReplace);
     procedure CopyStructure(DstDatafile, SrcDatafile: TEpiDataFile);
   protected
-    function InternalOpenFile(ST: TCustomMergeCommand; out
+    function InternalCheckAndOpenFile(ST: TCustomMergeCommand; out
       Docfile: TEpiDocumentFile): boolean;
     procedure InternalAppend(ST: TAppendCommand; AppendDocFile: TEpiDocumentFile);
     procedure InternalMerge(ST: TMergeCommand; MergeDF: TEpiDataFile; VarNames: TStrings);
@@ -191,68 +191,140 @@ begin
   RefMap.Free;
 end;
 
-function TMerge.InternalOpenFile(ST: TCustomMergeCommand; out
+function TMerge.InternalCheckAndOpenFile(ST: TCustomMergeCommand; out
   Docfile: TEpiDocumentFile): boolean;
 var
   Opt: TOption;
   ReadCmd: TCustomStringCommand;
   OptList: TOptionList;
   S, FN: EpiString;
+  DSName: String;
 const
   ReadOptionNames: array[0..4] of EpiString = (
     'd', 'q', 'h', 'pw', 'login'
   );
-begin
-  FN := '';
-  if (ST.HasOption('fn', Opt)) and
-     (Assigned(Opt.Expr))
-  then
-    begin
-      FN := Opt.Expr.AsString;
 
-      if (not FileExistsUTF8(FN)) then
-      begin
-        FExecutor.Error('File does not exist: ' + FN);
-        ST.ExecResult := csrFailed;
-        Exit(false);
+  function CompareTreeStructure(Const RelationListA, RelationListB: TEpiDatafileRelationList): boolean;
+  var
+    i: Integer;
+    MRA: TEpiMasterRelation;
+    MRB: TEpiMasterRelation;
+  begin
+    result := (RelationListA.Count = RelationListB.Count);
+    if not Result then exit;
+
+    for i := 0 to RelationListA.Count - 1 do
+    begin
+      MRA := RelationListA.MasterRelation[i];
+      MRB := RelationListB.MasterRelation[i];
+
+      Result :=
+        (MRA.Datafile.Name = MRB.Datafile.Name) and
+        CompareTreeStructure(MRA.DetailRelations, MRB.DetailRelations);
+
+      if not Result then exit;
+    end;
+  end;
+
+begin
+  Result := false;
+
+  if St.HasOption('fn', Opt) then
+    begin
+      FN := '';
+      if (Assigned(Opt.Expr)) then
+        begin
+          FN := OPt.Expr.AsString;
+
+          if (not FileExistsUTF8(FN)) then
+            begin
+              FExecutor.Error('File does not exist: ' + FN);
+              St.ExecResult := csrFailed;
+              Exit;
+            end;
+        end;
+
+      OptList := TOptionList.Create;
+
+      for S in ReadOptionNames do
+        if ST.HasOption(S, Opt) then
+          OptList.Add(Opt);
+
+      ReadCMD := TReadCommand.Create(TStringLiteral.Create(FN), OptList);
+//      aDM.OnOpenFileError := @FileError;
+
+      case aDM.OpenFile(ReadCMD, Docfile) of
+        dfrCanceled:
+          begin
+            FOutputCreator.DoInfoAll('Read cancelled!');
+            FExecutor.Cancelled := true;
+            ST.ExecResult := csrFailed;
+            Exit;
+          end;
+
+        dfrError:
+          begin
+            FExecutor.Error('Error loading file: ' + ST.Filename);
+            ST.ExecResult := csrFailed;
+            Exit;
+          end;
+
+        dfrSuccess:
+          ST.Filename := '';
       end;
+    end
+  else
+    Docfile := FExecutor.DocFile;
+
+  if (FExecutor.Document.DataFiles.Count = 0) then
+    begin
+      FExecutor.Error('At least one internal datafile must be present!');
+      St.ExecResult := csrFailed;
+      Exit;
     end;
 
-  OptList := TOptionList.Create;
+  DSName := '';
+  if St.HasOption('ds', Opt) then
+    DSName := Opt.Expr.AsIdent;
 
-  for S in ReadOptionNames do
-    if ST.HasOption(S, Opt) then
-      OptList.Add(Opt);
+  if (not St.HasOption('ds')) and
+     (not St.HasOption('fn'))
+  then
+    begin
+      FExecutor.Error('At least one of the options !fn or !ds must be used');
+      St.ExecResult := csrFailed;
+      Exit;
+    end;
 
-  ReadCmd := TCustomStringCommand.Create(
-    TStringLiteral.Create(Fn),
-    OptList,
-    'read'
-  );
-
-  result := false;
-  case aDM.OpenFile(ReadCmd, DocFile) of
-    dfrCanceled:
+  if (DSName = '') then
+    begin
+      if (not CompareTreeStructure(FExecutor.Document.Relations, Docfile.Document.Relations))   then
+        begin
+          FExecutor.Error('The two projects do not share the same structure of related datasets!');
+          St.ExecResult := csrFailed;
+          Exit;
+        end;
+    end
+  else
+    if (Docfile.Document.DataFiles.Count > 1) and
+       (DSName = '')
+    then
       begin
-        FOutputCreator.DoInfoAll('Read cancelled!');
-        FExecutor.Cancelled := true;
-        ST.ExecResult := csrFailed;
+        FExecutor.Error('The project "' + Docfile.FileName + '" has more than one dataset, and !ds is not specified');
+        St.ExecResult := csrFailed;
         Exit;
       end;
 
-    dfrError:
-      begin
-        FExecutor.Error('Error loading file: ' + ST.Filename);
-        ST.ExecResult := csrFailed;
-        Exit;
-      end;
+  if (DSName <> '') and
+     (not Docfile.Document.DataFiles.ItemExistsByName(DSName))
+  then
+    begin
+      FExecutor.Error('Dataset "' + DSName + '" not found in: ' + Docfile.FileName);
+      St.ExecResult := csrFailed;
+      Exit;
+    end;
 
-    dfrSuccess:
-      begin
-        ST.Filename := '';
-        result := true;
-      end;
-  end;
+  Result := true;
 end;
 
 procedure TMerge.InternalAppend(ST: TAppendCommand;
@@ -266,71 +338,100 @@ var
   LocalFields: TEpiFields;
   F, AppendF: TEpiField;
   StartIdx, i: Integer;
+  DFName: String;
+
+  procedure AppendDataset(Src, Dst: TEpiDataFile; DstFields: TEpiFields);
+  var
+    DstF, SrcF: TEpiField;
+    I: integer;
+  begin
+    StartIdx := Dst.Size;
+    Dst.Size := Dst.Size + Src.Size;
+
+    for DstF in DstFields do
+      begin
+        SrcF := Src.Fields.FieldByName[DstF.Name];
+
+        if (not Assigned(SrcF)) then Continue;
+
+        for i := 0 to Src.Size - 1 do
+          TransferData(DstF, SrcF, StartIdx + i, i);
+      end;
+  end;
 
 begin
   AppendDoc := AppendDocFile.Document;
 
-  if ST.HasOption('ds', Opt) then
+  FOutputCreator.DoInfoAll('Appending data...');
+  FOutputCreator.RequestRedraw;
+
+  if ((FExecutor.Document.DataFiles.Count > 1) and (AppendDoc.DataFiles.Count > 1)) and
+     (not ST.HasOption('ds'))
+  then
     begin
-      DFs := TEpiDataFiles.Create(nil);
-      DFs.AddItem(FExecutor.Document.DataFiles.GetItemByName(Opt.Expr.AsIdent));
-    end
-  else
-    DFs := FExecutor.Document.Relations.GetOrderedDataFiles;
-
-  Strict := ST.HasOption('strict');
-
-  // First sanity checks, so we don't manipulate data and half-way find an error!
-  for DF in DFs do
-    begin
-      AppendDF := AppendDoc.DataFiles.GetDataFileByName(DF.Name);
-
-      if (not Assigned(AppendDF)) then
+      if Assigned(St.VariableList) and
+         (St.VariableList.Count > 0)
+      then
         begin
-          if (not Strict) then
-            Continue;
-
-          FExecutor.Error(
-            Format(
-              'Dataset "%s" not found in append project!',
-              [DF.Name]
-            )
-          );
-          ST.ExecResult := csrFailed;
+          FExecutor.Error('When appending whole projects, it is not possible to select individual variables!');
+          St.ExecResult := csrFailed;
           Exit;
         end;
 
+      for DF in FExecutor.Document.DataFiles do
+        begin
+          AppendDF := AppendDoc.DataFiles.GetDataFileByName(DF.Name);
+          AppendDataset(AppendDF, DF, DF.Fields);
+
+{          StartIdx := DF.Size;
+          DF.Size := DF.Size + AppendDF.Size;
+
+          for F in DF.Fields do
+            begin
+              AppendF := AppendDF.Fields.FieldByName[F.Name];
+
+              if (not Assigned(AppendF)) then
+                Continue;
+
+              for i := 0 to AppendDF.Size - 1 do
+                TransferData(F, AppendF, StartIdx + i, i);
+            end;    }
+        end;
+    end
+  else
+    begin
+      DF := FExecutor.DataFile;
       if ST.VariableList.Count > 0 then
         LocalFields := FieldsFromStrings(ST.VariableList.GetIdentsAsList, DF)
       else
         LocalFields := DF.Fields;
 
-      for F in LocalFields do
+      if ST.HasOption('ds', Opt) then
+        AppendDF := AppendDoc.DataFiles.GetDataFileByName(Opt.Expr.AsIdent)
+      else
+        AppendDF := AppendDoc.DataFiles[0];
+
+      AppendDataset(AppendDF, DF, LocalFields);
+
+      {
+
+      StartIdx := DF.Size;
+      DF.Size := DF.Size + AppendDF.Size;
+
+
+
+      for F in DF.Fields do
         begin
           AppendF := AppendDF.Fields.FieldByName[F.Name];
 
-          if (not Assigned(AppendF)) or
-             ((F.FieldType <> AppendF.FieldType) and Strict)
-          then
-            begin
-              if (not Strict) then
-                Continue;
+          if (not Assigned(AppendF)) then
+            Continue;
 
-              FExecutor.Error(
-                Format(
-                  'Variable "%s" not found in dataset "%s" append project!',
-                  [F.Name, AppendDF.Name]
-                )
-              );
-              ST.ExecResult := csrFailed;
-              Exit;
-            end;
-        end;
+          for i := 0 to AppendDF.Size - 1 do
+            TransferData(F, AppendF, StartIdx + i, i);
+        end;       }
     end;
-
-  FOutputCreator.DoInfoAll('Appending data...');
-  FOutputCreator.RequestRedraw;
-
+             {
   for DF in DFs do
     begin
       AppendDF := AppendDoc.DataFiles.GetDataFileByName(DF.Name);
@@ -347,7 +448,7 @@ begin
         LocalFields := DF.Fields;
 
 
-      for F in LocalFields do
+      for F in DF.Fields do
         begin
           AppendF := AppendDF.Fields.FieldByName[F.Name];
 
@@ -357,7 +458,7 @@ begin
           for i := 0 to AppendDF.Size - 1 do
             TransferData(F, AppendF, StartIdx + i, i);
         end;
-    end;
+    end;      }
   FOutputCreator.DoInfoAll('Complete');
   FOutputCreator.DoWarning('Data may be in an inconsisten state if the dataset(s) use keys or has related data!' + LineEnding +
                            'Use the data validator tool to check for inconsistencies!');
@@ -633,7 +734,7 @@ var
   DF: TEpiDataFile;
   TmpDoc: TEpiDocument;
 begin
-  if (not InternalOpenFile(ST, AppendDocFile)) then
+  if (not InternalCheckAndOpenFile(ST, AppendDocFile)) then
     Exit;
 
   LastModified := TDateTime(0);
@@ -700,7 +801,7 @@ begin
   MergeDocFile := nil;
 
   if (ST.HasOption('fn')) and
-     (not InternalOpenFile(ST, MergeDocFile))
+     (not InternalCheckAndOpenFile(ST, MergeDocFile))
   then
     Exit;
 

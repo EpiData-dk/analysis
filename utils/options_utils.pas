@@ -14,6 +14,8 @@ function ValueLabelTypeFromOptionList(OptionList: TOptionList; SetOptions: TSetO
 procedure AddVariableLabelOptions(STOptionList: TStatementOptionsMap);
 function VariableLabelTypeFromOptionList(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil): TEpiGetVariableLabelType;
 
+procedure AddReadOptions(STOptionList: TStatementOptionsMap);
+
 function FontFromSetOptions(Const FontName, SizeName, ColorName, StyleName: String; SetOptions: TSetOptionsMap): TFont;
 procedure FontToSetOptions(AFont: TFont; Const FontName, SizeName, ColorName, StyleName: String;
   SetOptions: TSetOptionsMap);
@@ -81,6 +83,16 @@ begin
   if OptionList.HasOption('vnl') then Result := gvtVarNameLabel;
   if OptionList.HasOption('vla') then Result := gvtVarLabel;
   if OptionList.HasOption('vln') then Result := gvtVarLabelName;
+end;
+
+procedure AddReadOptions(STOptionList: TStatementOptionsMap);
+begin
+  STOptionList.Insert('fn',       [rtString, rtUndefined]);
+  STOptionList.Insert('d',        [rtString]);
+  STOptionList.Insert('q',        [rtString]);
+  STOptionList.Insert('h',        [rtBoolean]);
+  STOptionList.Insert('pw',       [rtString]);
+  STOptionList.Insert('login',    [rtString]);
 end;
 
 function FontFromSetOptions(const FontName, SizeName, ColorName,

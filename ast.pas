@@ -1813,13 +1813,7 @@ begin
   Result := inherited GetAcceptedOptions;
   // Common options used for loading files - mostly when importing CSV files.
   result.Insert('ds',       [rtObject], [evtDataset], [evfInternal, evfExternal, evfAsObject]);
-  result.Insert('fn',       [rtString, rtUndefined]);
-  result.Insert('strict',   [rtUndefined]);
-  result.Insert('d',        [rtString]);
-  result.Insert('q',        [rtString]);
-  result.Insert('h',        [rtBoolean]);
-  result.Insert('pw',       [rtString]);
-  result.Insert('login',    [rtString]);
+  AddReadOptions(Result);
 end;
 
 { TMeansCommand }
