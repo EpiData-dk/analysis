@@ -55,7 +55,7 @@ begin
     Ini := GetIniFile(FileName);
 
     for i := 0 to RecentList.Count - 1 do
-      Ini.WriteString('Files', 'file'+inttostr(i), RecentList[i]);
+      Ini.WriteString('Files', RecentList.Names[i], RecentList.ValueFromIndex[i]);
   finally
     Ini.Free;
   end;
@@ -77,12 +77,13 @@ begin
 
     // Read recent files.
     Sec := 'Files';
-    for i := 0 to MaxRecentFiles - 1 do
+    Ini.ReadSectionValues(Sec, RecentList);
+{    for i := 0 to MaxRecentFiles - 1 do
     begin
       S := Ini.ReadString(sec, 'file'+inttostr(i), '');
       if S <> '' then
         RecentList.Add(S);
-    end;
+    end; }
   finally
     Ini.Free;
   end;

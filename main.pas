@@ -1598,8 +1598,6 @@ begin
 
   RecentFilesSubMenu.Visible := RecentDataFiles.Count > 0;
   RecentFilesSubMenu.Clear;
-{  RecentFilesSubPopupMenu.Visible := RecentFilesSubMenu.Visible;
-  RecentFilesSubPopupMenu.Clear;}
 
   for i := 0 to MaxRecentFiles - 1 do
   begin
@@ -1614,17 +1612,12 @@ begin
     end;
 
     A.Enabled := true;
-    A.Caption := RecentDataFiles[i];
+    A.Caption := RecentDataFiles.ValueFromIndex[i];
 
     Mi := TMenuItem.Create(RecentFilesSubMenu);
     Mi.Name := 'recent' + inttostr(i);
     Mi.Action := A;
     RecentFilesSubMenu.Add(Mi);
-
-{    // Popup menu
-    Mi := TMenuItem.Create(RecentFilesSubPopupMenu);
-    Mi.Action := A;
-    RecentFilesSubPopupMenu.Add(Mi);   }
   end;
 end;
 
