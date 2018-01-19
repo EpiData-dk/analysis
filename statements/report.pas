@@ -412,8 +412,8 @@ begin
 
   DataFiles.Free;
   for i := DocFiles.Count - 1 downto 0 do
-    DocFiles[i].Free;
-  DocFiles.Free;
+    if DocFiles[i] <> FExecutor.DocFile then
+      DocFiles[i].Free;
 end;
 
 procedure TReports.DoReportValidateDoubleEntry;
