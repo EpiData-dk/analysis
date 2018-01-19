@@ -3953,6 +3953,7 @@ begin
     ftTime,
     ftTimeAuto:
       result :=  TEpiFloatField.CheckMissing(GetVariableValueTime(Sender));
+    ftMemo,
     ftString,
     ftUpperString:
       result :=  TEpiStringField.CheckMissing(GetVariableValueString(Sender));
