@@ -202,7 +202,7 @@ begin
       for i := 0 to SelectVec.Size - 1 do
         DF.Verified[SelectVec.AsInteger[i]] := true;
 
-      FOutputCreator.DoInfoAll(IntToStr(SelectVec.Size) + ' obs. marked verfied');
+      FOutputCreator.DoInfoAll(IntToStr(SelectVec.Size) + ' obs. marked verified');
     end;
 
   if (ST.HasOption('novf')) then
@@ -210,7 +210,7 @@ begin
       for i := 0 to SelectVec.Size - 1 do
         DF.Verified[SelectVec.AsInteger[i]] := false;
 
-      FOutputCreator.DoInfoAll(IntToStr(SelectVec.Size) + ' obs. removed veried mark');
+      FOutputCreator.DoInfoAll(IntToStr(SelectVec.Size) + ' obs. removed verified mark');
     end;
 end;
 
