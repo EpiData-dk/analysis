@@ -197,7 +197,7 @@ begin
       FOutputCreator.DoInfoAll(IntToStr(SelectVec.Size) + ' obs. removed marked for deletion');
     end;
 
-  if (ST.HasOption('vf')) then
+  if (ST.HasOption('mv')) then
     begin
       for i := 0 to SelectVec.Size - 1 do
         DF.Verified[SelectVec.AsInteger[i]] := true;
@@ -205,7 +205,7 @@ begin
       FOutputCreator.DoInfoAll(IntToStr(SelectVec.Size) + ' obs. marked verified');
     end;
 
-  if (ST.HasOption('novf')) then
+  if (ST.HasOption('nomv')) then
     begin
       for i := 0 to SelectVec.Size - 1 do
         DF.Verified[SelectVec.AsInteger[i]] := false;

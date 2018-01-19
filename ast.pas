@@ -1449,8 +1449,8 @@ begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('md',   [rtUndefined]);
   Result.Insert('nomd', [rtUndefined]);
-  Result.Insert('vf',   [rtUndefined]);
-  Result.Insert('novf', [rtUndefined]);
+  Result.Insert('mv',   [rtUndefined]);
+  Result.Insert('nomv', [rtUndefined]);
 end;
 
 constructor TEditData.Create(AOptionList: TOptionList);
