@@ -173,7 +173,7 @@ type
   private
     FFileName: UTF8String;
     function  DoSavePGM(ForceDialog: boolean): boolean;
-    procedure DoOpenPGM(Const filename: UTF8String = ''; ANewTab: boolean = false);
+    procedure DoOpenPGM(Const filename: UTF8String = '');
 
   private
     FOldLineNo: Integer;
@@ -631,7 +631,7 @@ var
   S: String;
 begin
   for S in FileNames do
-    DoOpenPGM(S, true);
+    DoOpenPGM(S);
 end;
 
 procedure TEditorForm.InsertSetOptionsActionExecute(Sender: TObject);
@@ -794,6 +794,11 @@ begin
   PR.Stream := TMemoryStream.Create;
   PR.FileName := '';
   PR.Modified := false;
+  PR.CaretPos := Point(1,1);
+  PR.TopLine  := 1;
+  PR.Selection := false;
+  PR.SelectBegin := Point(1,1);
+  PR.SelectEnd   := Point(1,1);
 
   O.Tag := PtrInt(PR);
   TabControl1.TabIndex := result;
@@ -952,25 +957,16 @@ begin
   end;
 end;
 
-procedure TEditorForm.DoOpenPGM(const filename: UTF8String; ANewTab: boolean);
+procedure TEditorForm.DoOpenPGM(const filename: UTF8String);
 var
   S: String;
   L: TStrings;
 begin
-  if (not ANewTab) and
-     (not CloseTab(TabControl1.TabIndex))
-  then
-    Exit;
-
   OpenDialog1.InitialDir := GetCurrentDirUTF8;
   if (filename = '') and
      (not OpenDialog1.Execute)
   then
-    begin
-      NewTab;
-      UpdateCaption;
-      Exit;
-    end;
+    Exit;
 
   if (filename <> '') then
     begin
@@ -995,7 +991,10 @@ begin
           Continue;
         end;
 
-      NewTab;
+      if (SynEdit1.Modified) or
+         (FFileName <> '')
+      then
+        NewTab;
 
       FFileName := S;
       SynEdit1.Lines.LoadFromFile(FFileName);
@@ -1204,7 +1203,7 @@ end;
 
 procedure TEditorForm.AsyncOpenRecent(Data: PtrInt);
 begin
-  DoOpenPGM(TAction(Data).Caption, true);
+  DoOpenPGM(TAction(Data).Caption);
 end;
 
 procedure TEditorForm.OpenRecentMenuItemClick(Sender: TObject);
