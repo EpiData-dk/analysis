@@ -2199,15 +2199,14 @@ end;
 
 function TValueLabelPairs.Find(const S: UTF8String; out Index: Integer
   ): boolean;
-var
-  i: Integer;
 begin
-  for i := 0 to FPairs.Count - 1 do
+  Index := 0;
+  while (Index < FPairs.Count) do
     begin
-      if TExpr(FPairs.Objects[i]).AsString = S then
+      if TExpr(FPairs.Objects[Index]).AsString = S then
         break;
+      Inc(Index);
     end;
-  Index := i;
   result := (Index < FPairs.Count);
 end;
 
