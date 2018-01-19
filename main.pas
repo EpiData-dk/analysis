@@ -1599,7 +1599,7 @@ begin
   RecentFilesSubMenu.Visible := RecentDataFiles.Count > 0;
   RecentFilesSubMenu.Clear;
 
-  for i := 0 to MaxRecentFiles - 1 do
+  for i := 0 to 8 do
   begin
     // Main menu
     A := TAction(RecentFilesActionList.Actions[i]);
@@ -1612,7 +1612,7 @@ begin
     end;
 
     A.Enabled := true;
-    A.Caption := RecentDataFiles.ValueFromIndex[i];
+    A.Caption := RecentDataFiles[i];
 
     Mi := TMenuItem.Create(RecentFilesSubMenu);
     Mi.Name := 'recent' + inttostr(i);

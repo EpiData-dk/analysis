@@ -25,7 +25,7 @@ var
   RecentPGMFiles: TStringList;
 
 const
-  MaxRecentFiles = 9;
+  MaxRecentFiles = 30;
 
 
 implementation
@@ -55,7 +55,7 @@ begin
     Ini := GetIniFile(FileName);
 
     for i := 0 to RecentList.Count - 1 do
-      Ini.WriteString('Files', RecentList.Names[i], RecentList.ValueFromIndex[i]);
+      Ini.WriteString('Files', 'file' + inttostr(i), RecentList[i]);
   finally
     Ini.Free;
   end;
@@ -77,13 +77,12 @@ begin
 
     // Read recent files.
     Sec := 'Files';
-    Ini.ReadSectionValues(Sec, RecentList);
-{    for i := 0 to MaxRecentFiles - 1 do
-    begin
-      S := Ini.ReadString(sec, 'file'+inttostr(i), '');
-      if S <> '' then
-        RecentList.Add(S);
-    end; }
+    I := 0;
+    while Ini.ValueExists(Sec, 'file'+inttostr(i)) do
+      begin
+        RecentList.Add(Ini.ReadString(Sec, 'file'+inttostr(i), ''));
+        Inc(i);
+      end;
   finally
     Ini.Free;
   end;
@@ -121,7 +120,7 @@ var
 begin
   Fn := ExpandFileNameUTF8(AFilename);
 
-  Idx := RecentList.IndexOf(Fn);
+  Idx := RecentList.IndexOf(FN);
   if (Idx >= 0) then
     RecentList.Move(Idx, 0)
   else
