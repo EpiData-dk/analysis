@@ -296,30 +296,30 @@ begin
   with FExecutor do
   begin
     Sz := MeanDataFile.Size;
-    AddResultConst('$meansize',  ftInteger).AsIntegerVector[0] := Sz;
-    AddResultConst('$meanvar',  ftString).AsStringVector[0]    := CountVar.Name;
+    AddResultConst('$means_size',  ftInteger).AsIntegerVector[0] := Sz;
+    AddResultConst('$means_var',  ftString).AsStringVector[0]    := CountVar.Name;
 
     if MeanDataFile.Size = 1 then
       begin
-        CatV  := AddResultConst('$category', ftString);
-        ObsV  := AddResultConst('$obs',      ftInteger);
-        SumV  := AddResultConst('$sum',      ftFloat);
-        MeanV := AddResultConst('$mean',     ftFloat);
-        SvV   := AddResultConst('$sv',       ftFloat);
-        SdV   := AddResultConst('$sd',       ftFloat);
-        CfilV := AddResultConst('$cfil',     ftFloat);
-        CfihV := AddResultConst('$cfih',     ftFloat);
+        CatV  := AddResultConst('$means_category', ftString);
+        ObsV  := AddResultConst('$means_obs',      ftInteger);
+        SumV  := AddResultConst('$means_sum',      ftFloat);
+        MeanV := AddResultConst('$means_mean',     ftFloat);
+        SvV   := AddResultConst('$means_sv',       ftFloat);
+        SdV   := AddResultConst('$means_sd',       ftFloat);
+        CfilV := AddResultConst('$means_cfil',     ftFloat);
+        CfihV := AddResultConst('$means_cfih',     ftFloat);
       end
     else
       begin
-        CatV  := AddResultVector('$category', ftString, Sz);
-        ObsV  := AddResultVector('$obs',      ftInteger, Sz);
-        SumV  := AddResultVector('$sum',      ftFloat, Sz);
-        MeanV := AddResultVector('$mean',     ftFloat, Sz);
-        SvV   := AddResultVector('$sv',       ftFloat, Sz);
-        SdV   := AddResultVector('$sd',       ftFloat, Sz);
-        CfilV := AddResultVector('$cfil',     ftFloat, Sz);
-        CfihV := AddResultVector('$cfih',     ftFloat, Sz);
+        CatV  := AddResultVector('$means_category', ftString, Sz);
+        ObsV  := AddResultVector('$means_obs',      ftInteger, Sz);
+        SumV  := AddResultVector('$means_sum',      ftFloat, Sz);
+        MeanV := AddResultVector('$means_mean',     ftFloat, Sz);
+        SvV   := AddResultVector('$means_sv',       ftFloat, Sz);
+        SdV   := AddResultVector('$means_sd',       ftFloat, Sz);
+        CfilV := AddResultVector('$means_cfil',     ftFloat, Sz);
+        CfihV := AddResultVector('$means_cfih',     ftFloat, Sz);
       end;
   end;
 
@@ -416,20 +416,20 @@ begin
     T.Cell[4,1].Text := Format('%8.6f', [F]);
     T.Cell[5,1].Text := Format('%8.6f', [PROB]);
 
-    FExecutor.AddResultConst('$DFB', ftInteger).AsIntegerVector[0] := DFB;
-    FExecutor.AddResultConst('$SSB', ftFloat).AsFloatVector[0]     := SSB;
-    FExecutor.AddResultConst('$MSB', ftFloat).AsFloatVector[0]     := MSB;
-    FExecutor.AddResultConst('$F',   ftFloat).AsFloatVector[0]     := F;
-    FExecutor.AddResultConst('$PROB', ftFloat).AsFloatVector[0]    := PROB;
+    FExecutor.AddResultConst('$means_DFB', ftInteger).AsIntegerVector[0] := DFB;
+    FExecutor.AddResultConst('$means_SSB', ftFloat).AsFloatVector[0]     := SSB;
+    FExecutor.AddResultConst('$means_MSB', ftFloat).AsFloatVector[0]     := MSB;
+    FExecutor.AddResultConst('$means_F',   ftFloat).AsFloatVector[0]     := F;
+    FExecutor.AddResultConst('$means_PROB', ftFloat).AsFloatVector[0]    := PROB;
 
     T.Cell[0,2].Text := 'Within';
     T.Cell[1,2].Text := IntToStr(DFW);
     T.Cell[2,2].Text := Format('%8.6f', [SSW]);
     T.Cell[3,2].Text := Format('%8.6f', [MSW]);
 
-    FExecutor.AddResultConst('$DFW', ftInteger).AsIntegerVector[0] := DFW;
-    FExecutor.AddResultConst('$SSW', ftFloat).AsFloatVector[0]     := SSW;
-    FExecutor.AddResultConst('$MSW', ftFloat).AsFloatVector[0]     := MSW;
+    FExecutor.AddResultConst('$means_DFW', ftInteger).AsIntegerVector[0] := DFW;
+    FExecutor.AddResultConst('$means_SSW', ftFloat).AsFloatVector[0]     := SSW;
+    FExecutor.AddResultConst('$means_MSW', ftFloat).AsFloatVector[0]     := MSW;
   end;
 end;
 

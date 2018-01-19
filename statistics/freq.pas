@@ -106,16 +106,16 @@ begin
   for i := 0 to InputDF.Size - 1 do
     Sum := Sum + CountV.AsInteger[i];
 
-  FExecutor.AddResultConst('$total', ftInteger).AsIntegerVector[0] := Sum;
-  FExecutor.AddResultConst('$rows', ftInteger).AsIntegerVector[0]  := InputDF.Size;
+  FExecutor.AddResultConst('$freq_total', ftInteger).AsIntegerVector[0] := Sum;
+  FExecutor.AddResultConst('$freq_rows', ftInteger).AsIntegerVector[0]  := InputDF.Size;
 
 
-  RCount := FExecutor.AddResultVector('$count', ftInteger, InputDF.Size);
-  RCateg := FExecutor.AddResultVector('$labels', ftString,  InputDF.Size);
+  RCount := FExecutor.AddResultVector('$freq_count', ftInteger, InputDF.Size);
+  RCateg := FExecutor.AddResultVector('$freq_labels', ftString,  InputDF.Size);
   if ST.HasOption('r') then
-    RPerc := FExecutor.AddResultVector('$rowpercent', ftFloat,  InputDF.Size);
+    RPerc := FExecutor.AddResultVector('$freq_rowpercent', ftFloat,  InputDF.Size);
   if ST.HasOption('cum') then
-    RCum  := FExecutor.AddResultVector('$cumpercent', ftFloat,  InputDF.Size);
+    RCum  := FExecutor.AddResultVector('$freq_cumpercent', ftFloat,  InputDF.Size);
 
   RunSum := 0;
   for i := 0 to InputDF.Size - 1 do
