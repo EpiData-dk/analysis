@@ -261,12 +261,15 @@ function EpiFieldTypeFromString(Const S: UTF8String; out Ft: TEpiFieldType): boo
 
 implementation
 
+uses
+  LazUTF8;
+
 function EpiFieldTypeFromString(const S: UTF8String; out Ft: TEpiFieldType
   ): boolean;
 begin
   result := true;
 
-  case S of
+  case UTF8LowerString(S) of
     'b', 'bool', 'boolean':
       ft := ftBoolean;
 
