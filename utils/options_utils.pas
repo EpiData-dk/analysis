@@ -54,7 +54,7 @@ begin
   if (Assigned(SetOptions)) then
     case SetOptionVariant of
       sovStatistics:
-        S := UTF8LowerString(SetOptions.GetValue(ANA_SO_FORMAT_VALUE_LABEL).Value);
+        S := UTF8LowerString(SetOptions.GetValue(ANA_SO_STATISTICS_VALUE_LABEL).Value);
 
       sovBrowser:
         S := UTF8LowerString(SetOptions.GetValue(ANA_SO_BROWSE_VALUE_LABEL).Value)
@@ -94,7 +94,7 @@ begin
   if (Assigned(SetOptions)) then
     case SetOptionVariant of
       sovStatistics:
-        S := UTF8LowerString(SetOptions.GetValue(ANA_SO_FORMAT_VARIABLE_LABEL).Value);
+        S := UTF8LowerString(SetOptions.GetValue(ANA_SO_STATISTICS_VARIABLE_LABEL).Value);
 
       sovBrowser:
         S := UTF8LowerString(SetOptions.GetValue(ANA_SO_BROWSE_VARIABLE_LABEL).Value)

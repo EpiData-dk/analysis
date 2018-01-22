@@ -1681,14 +1681,28 @@ begin
   SOpt.LegalValues.Add('V');
   SOpt.LegalValues.Add('VL');
   SOpt.LegalValues.Add('LV');
-  FOptions.Insert(ANA_SO_FORMAT_VALUE_LABEL, SOpt);
+  FOptions.Insert(ANA_SO_STATISTICS_VALUE_LABEL, SOpt);
+
+  SOpt := TSetOption.Create('VLA', rtString);
+  SOpt.LegalValues.Add('VN');
+  SOpt.LegalValues.Add('VNL');
+  SOpt.LegalValues.Add('VLN');
+  SOpt.LegalValues.Add('VLA');
+  FOptions.Insert(ANA_SO_STATISTICS_VARIABLE_LABEL, SOpt);
+
+  SOpt := TSetOption.Create('V', rtString);
+  SOpt.LegalValues.Add('L');
+  SOpt.LegalValues.Add('V');
+  SOpt.LegalValues.Add('VL');
+  SOpt.LegalValues.Add('LV');
+  FOptions.Insert(ANA_SO_BROWSE_VALUE_LABEL, SOpt);
 
   SOpt := TSetOption.Create('VN', rtString);
   SOpt.LegalValues.Add('VN');
   SOpt.LegalValues.Add('VNL');
   SOpt.LegalValues.Add('VLN');
   SOpt.LegalValues.Add('VLA');
-  FOptions.Insert(ANA_SO_FORMAT_VARIABLE_LABEL, SOpt);
+  FOptions.Insert(ANA_SO_BROWSE_VARIABLE_LABEL, SOpt);
 
   FOptions.Insert(ANA_SO_INCLUDE_DELETED, TSetOption.Create('OFF', rtBoolean));
 end;
