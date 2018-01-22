@@ -636,7 +636,7 @@ end;
 procedure TBrowseForm4.UpdateShortcuts;
 begin
   CloseBrowserAction.ShortCut    := ShortCut(VK_W, [ssModifier]);
-  CloseAllAction.ShortCut := ShortCut(VK_Q, [ssModifier]);
+  CloseAllAction.ShortCut        := ShortCut(VK_Q, [ssModifier]);
 end;
 
 constructor TBrowseForm4.Create(TheOwner: TComponent; AExecutor: TExecutor);
