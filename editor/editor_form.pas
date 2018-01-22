@@ -726,6 +726,7 @@ var
   Res: TModalResult;
   Pr: TTabRecord;
   OldIndex: Integer;
+  S: String;
 begin
   result := false;
 
@@ -741,8 +742,13 @@ begin
       if (Self.CanFocus) then
         Self.SetFocus;
 
+      if FFileName <> '' then
+        S := ExtractFileName(FFileName)
+      else
+        S := 'untitled';
+
       Res := MessageDlg('Warning',
-                        'Editor Content (EpiData Analysis pgm) not saved. Save before closing ?',
+                        'Editor Content (' + S + ') not saved. Save before closing ?',
                         mtWarning,
                         mbYesNoCancel, 0
              );
