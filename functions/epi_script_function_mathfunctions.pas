@@ -197,7 +197,7 @@ begin
         for i := 0 to FParamList.Count - 1 do
           begin
             P := Param[i];
-            if (not P.IsMissing) then
+            if (not (P.IsMissing or P.IsUserMissing)) then
               Result := Result + P.AsInteger;
           end;
       end;
@@ -300,7 +300,7 @@ begin
         for i := 0 to FParamList.Count - 1 do
           begin
             P := Param[i];
-            if (not P.IsMissing) then
+            if (not (P.IsMissing or P.IsUserMissing)) then
               Result := Result + P.AsFloat;
           end;
       end;

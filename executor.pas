@@ -239,7 +239,8 @@ type
     function GetVariableValueDate(const Sender: TCustomVariable): EpiDate; virtual;
     function GetVariableValueTime(const Sender: TCustomVariable): EpiDateTime; virtual;
     function GetVariableValueString(Const Sender: TCustomVariable): EpiString; virtual;
-    function GetVariableValueMissing(const Sender: TCustomVariable): boolean;
+    function GetVariableValueMissing(const Sender: TCustomVariable): boolean; virtual;
+    function GetVariableValueUserMissing(Const Sender: TCustomVariable): boolean; virtual;
     function GetVariableType(const Sender: TCustomVariable): TEpiFieldType; virtual;
     function GetCurrentRecordNo: Integer; virtual;
     function CreateFunction(const FunctionName: string;
@@ -3957,6 +3958,44 @@ begin
     ftString,
     ftUpperString:
       result :=  TEpiStringField.CheckMissing(GetVariableValueString(Sender));
+  end;
+end;
+
+function TExecutor.GetVariableValueUserMissing(const Sender: TCustomVariable
+  ): boolean;
+var
+  V: TCustomExecutorVariable;
+  VF: TExecVarField;
+  IV: TIndexVariable absolute Sender;
+begin
+  Result := false;
+
+  try
+    V := GetExecVariable(Sender.Ident);
+    CheckVariableIndex(V, Sender, False)
+  except
+    Exit;
+  end;
+
+  case V.VarType of
+    evtField:
+      begin
+        VF := TExecVarField(V);
+        if Sender.VarType = vtVariable then
+          result := VF.Field.IsMissingValue[SelectVector.AsInteger[FCurrentRecNo]]
+        else
+          result := VF.Field.IsMissingValue[SelectVector.AsInteger[IV.Expr[0].AsInteger - 1]];
+      end;
+
+  else
+{    evtGlobal: ;
+    evtGlobalVector: ;
+    evtDataset: ;
+    evtValuelabel: ;
+    evtResultConst: ;
+    evtResultVector: ;
+    evtResultMatrix: ;    }
+    result := false;
   end;
 end;
 

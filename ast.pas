@@ -64,6 +64,7 @@ type
     function GetVariableValueTime(Const Sender: TCustomVariable): EpiDateTime;
     function GetVariableValueString(Const Sender: TCustomVariable): EpiString;
     function GetVariableValueMissing(Const Sender: TCustomVariable): boolean;
+    function GetVariableValueUserMissing(Const Sender: TCustomVariable): boolean;
     function GetVariableType(Const Ident: TCustomVariable): TEpiFieldType;
     function GetCurrentRecordNo: Integer;
     function TypeCheckVariable(Const Sender: TCustomVariable;
@@ -299,6 +300,7 @@ type
     function AsString:  EpiString; virtual;
     function AsIdent:   UTF8String; virtual;
     function IsMissing: Boolean; virtual;
+    function IsUserMissing: Boolean; virtual;
   end;
 
   { TLiteral }
@@ -561,6 +563,7 @@ type
     function  AsTime: EpiDateTime; override;
     function  AsString: EpiString; override;
     function  IsMissing: Boolean; override;
+    function  IsUserMissing: Boolean; override;
 
   { IFPObserved }
   private
@@ -5885,6 +5888,11 @@ begin
   result := false;
 end;
 
+function TExpr.IsUserMissing: Boolean;
+begin
+  result := false;
+end;
+
 { TCustomVariable }
 
 function TCustomVariable.GetIdent: UTF8String;
@@ -6021,6 +6029,11 @@ end;
 function TCustomVariable.IsMissing: Boolean;
 begin
   result := FExecutor.GetVariableValueMissing(Self);
+end;
+
+function TCustomVariable.IsUserMissing: Boolean;
+begin
+  Result := FExecutor.GetVariableValueUserMissing(Self);
 end;
 
 procedure TCustomVariable.FPOAttachObserver(AObserver: TObject);
