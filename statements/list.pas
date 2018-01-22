@@ -54,9 +54,8 @@ var
   VarList: TStrings;
   V: TCustomVariable;
 begin
-
-  Gvt := ValueLabelTypeFromOptionList(ST.OptionList, FExecutor.SetOptions);
-  VGvt := VariableLabelTypeFromOptionList(ST.OptionList, FExecutor.SetOptions);
+  Gvt := ValueLabelTypeFromOptionList(ST.OptionList, FExecutor.SetOptions, sovBrowser);
+  VGvt := VariableLabelTypeFromOptionList(ST.OptionList, FExecutor.SetOptions, sovBrowser);
 
   VarList := ST.Variables.GetIdentsAsList;
   if ST.HasOption('del') then

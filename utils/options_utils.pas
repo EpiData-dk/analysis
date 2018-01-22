@@ -8,11 +8,17 @@ uses
   Classes, sysutils, ast, epifields_helper, options_hashmap, ast_types, Graphics;
 
 
+type
+  TSetOptionVariant = (
+    sovStatistics,   // Set options accociated with ANA_SO_FORMAT_VALUE_LABEL and ANA_SO_FORMAT_VARIABLE_LABEL
+    sovBrowser       //      -- do --               ANA_SO_BROWSE_VALUE_LABEL and ANA_SO_BROWSE_VARIABLE_LABEL
+  );
+
 procedure AddValueLabelOptions(STOptionList: TStatementOptionsMap);
-function ValueLabelTypeFromOptionList(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil): TEpiGetValueLabelType;
+function ValueLabelTypeFromOptionList(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil; SetOptionVariant: TSetOptionVariant = sovStatistics): TEpiGetValueLabelType;
 
 procedure AddVariableLabelOptions(STOptionList: TStatementOptionsMap);
-function VariableLabelTypeFromOptionList(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil): TEpiGetVariableLabelType;
+function VariableLabelTypeFromOptionList(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil; SetOptionVariant: TSetOptionVariant = sovStatistics): TEpiGetVariableLabelType;
 
 procedure AddReadOptions(STOptionList: TStatementOptionsMap);
 
@@ -37,26 +43,36 @@ begin
   STOptionList.Insert('lv', [rtUndefined]);
 end;
 
-function ValueLabelTypeFromOptionList(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil): TEpiGetValueLabelType;
+function ValueLabelTypeFromOptionList(OptionList: TOptionList;
+  SetOptions: TSetOptionsMap; SetOptionVariant: TSetOptionVariant
+  ): TEpiGetValueLabelType;
+var
+  S: String;
 begin
-  Result := gvtLabel;
+  S := '';
 
   if (Assigned(SetOptions)) then
-    case UTF8LowerString(SetOptions.GetValue(ANA_SO_FORMAT_VALUE_LABEL).Value) of
-      'v':  Result := gvtValue;
-      'l':  Result := gvtLabel;
-      'vl': Result := gvtValueLabel;
-      'lv': Result := gvtLabelValue;
+    case SetOptionVariant of
+      sovStatistics:
+        S := UTF8LowerString(SetOptions.GetValue(ANA_SO_FORMAT_VALUE_LABEL).Value);
+
+      sovBrowser:
+        S := UTF8LowerString(SetOptions.GetValue(ANA_SO_BROWSE_VALUE_LABEL).Value)
     end;
 
-  if OptionList.HasOption('l') then
+  case S of
+    'v':  Result := gvtValue;
+    'l':  Result := gvtLabel;
+    'vl': Result := gvtValueLabel;
+    'lv': Result := gvtLabelValue;
+  else
     Result := gvtLabel;
-  if OptionList.HasOption('v') then
-    Result := gvtValue;
-  if OptionList.HasOption('vl') then
-    Result := gvtValueLabel;
-  if OptionList.HasOption('lv') then
-    Result := gvtLabelValue;
+  end;
+
+  if OptionList.HasOption('l') then  Result := gvtLabel;
+  if OptionList.HasOption('v') then  Result := gvtValue;
+  if OptionList.HasOption('vl') then Result := gvtValueLabel;
+  if OptionList.HasOption('lv') then Result := gvtLabelValue;
 end;
 
 procedure AddVariableLabelOptions(STOptionList: TStatementOptionsMap);
@@ -67,17 +83,31 @@ begin
   STOptionList.Insert('vln', [rtUndefined]);
 end;
 
-function VariableLabelTypeFromOptionList(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil): TEpiGetVariableLabelType;
+function VariableLabelTypeFromOptionList(OptionList: TOptionList;
+  SetOptions: TSetOptionsMap; SetOptionVariant: TSetOptionVariant
+  ): TEpiGetVariableLabelType;
+var
+  S: String;
 begin
-  Result := gvtVarName;
+  S := '';
 
   if (Assigned(SetOptions)) then
-    case UTF8LowerString(SetOptions.GetValue(ANA_SO_FORMAT_VARIABLE_LABEL).Value) of
+    case SetOptionVariant of
+      sovStatistics:
+        S := UTF8LowerString(SetOptions.GetValue(ANA_SO_FORMAT_VARIABLE_LABEL).Value);
+
+      sovBrowser:
+        S := UTF8LowerString(SetOptions.GetValue(ANA_SO_BROWSE_VARIABLE_LABEL).Value)
+    end;
+
+  case S of
       'vn':  Result := gvtVarName;
       'vnl': Result := gvtVarNameLabel;
       'vla': Result := gvtVarLabel;
       'vln': Result := gvtVarLabelName;
-    end;
+  else
+    Result := gvtVarName;
+  end;
 
   if OptionList.HasOption('vn') then  Result := gvtVarName;
   if OptionList.HasOption('vnl') then Result := gvtVarNameLabel;

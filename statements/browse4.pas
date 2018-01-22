@@ -700,8 +700,8 @@ var
   S: String;
   i: Integer;
 begin
-  SetVarLabelType(VariableLabelTypeFromOptionList(ASt.Options, FExecutor.SetOptions));
-  SetValueLabelType(ValueLabelTypeFromOptionList(ASt.Options, FExecutor.SetOptions));
+  SetVarLabelType(VariableLabelTypeFromOptionList(ASt.Options, FExecutor.SetOptions, sovBrowser));
+  SetValueLabelType(ValueLabelTypeFromOptionList(ASt.Options, FExecutor.SetOptions, sovBrowser));
 
   FSortIdx := 1;
   FDataFile := ADataFile;
