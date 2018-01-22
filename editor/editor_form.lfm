@@ -51,8 +51,8 @@ object EditorForm: TEditorForm
     TabOrder = 1
     inline SynEdit1: TSynEdit
       Left = 2
-      Height = 588
-      Top = 26
+      Height = 582
+      Top = 32
       Width = 819
       Align = alClient
       Font.Height = 13
@@ -739,7 +739,7 @@ object EditorForm: TEditorForm
       Category = 'File'
       Caption = '&Quit'
       OnExecute = QuitActionExecute
-      ShortCut = 32883
+      ShortCut = 8273
     end
     object FontAction: TAction
       Category = 'File'
