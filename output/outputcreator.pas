@@ -646,7 +646,7 @@ procedure TOutputCreator.DoError(const Msg: UTF8String);
 var
   L: TOutputLine;
 begin
-  if (not SetOptionActive(ANA_SO_ECHO)) then exit;
+//  if (not SetOptionActive(ANA_SO_ECHO)) then exit;
   if (not SetOptionActive(ANA_SO_SHOW_ERROR)) then exit;
 
   L := AddLine;
