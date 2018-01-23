@@ -229,6 +229,7 @@ var
   DocFile: TEpiDocumentFile;
   DocFiles: TEpiDocumentFileList;
   ReadCmd: TReadCommand;
+  Options: TEpiReportCBIDOptions;
 begin
   FileNames := nil;
   if FSt.HasOption('fn', Opt) then
@@ -401,12 +402,17 @@ begin
 
 
   CoreReportConverter := TCoreReportGeneratorToOutputCreator.Create(FOutputCreator);
+  Options := [ercoShowSumstats];
+
+  if (not (FST.HasOption('nol'))) then
+    Include(Options, ercoShowDetailList);
 
   CBIDReport := TEpiReportCountById.Create(CoreReportConverter);
-  CBIDReport.FieldNames    := FSt.VariableList.GetIdentsAsList;
-  CBIDReport.DataFiles     := DataFiles;
-  CBIDReport.DocumentFiles := DocFiles;
+  CBIDReport.FieldNames         := FSt.VariableList.GetIdentsAsList;
+  CBIDReport.DataFiles          := DataFiles;
+  CBIDReport.DocumentFiles      := DocFiles;
   CBIDReport.OnSumStatsComplete := @CBIDSumStatCallback;
+  CBIDReport.Options            := Options;
   CBIDReport.RunReport;
   CBIDReport.Free;
 
@@ -430,6 +436,7 @@ var
   Fields, JoinFields: TEpiFields;
   i: Integer;
   F: TEpiField;
+  Options: TEpiReportDEVOptions;
 
   function CompareTreeStructure(Const RelationListA, RelationListB: TEpiDatafileRelationList): boolean;
   var
@@ -524,9 +531,12 @@ begin
 
   CoreReporter := TCoreReportGeneratorToOutputCreator.Create(FOutputCreator);
   FCurrentDblValDFIndex := 0;
+  Options := [erdoShowOverview];
+  if (not (FSt.HasOption('nol'))) then
+    Include(Options, erdoShowDetailList);
 
-  if (FExecutor.Document.DataFiles.Count > 1) and
-     (Docfile.Document.DataFiles.Count > 1)
+  if ((FExecutor.Document.DataFiles.Count > 1) and (Docfile.Document.DataFiles.Count > 1)) and
+     (not FSt.HasOption('ds'))
   then
     // The only case where two who projects are being validate against each other.
     begin
@@ -562,6 +572,7 @@ begin
           DblVal.MainDF := DF;
           DblVal.DuplDF := Docfile.Document.DataFiles.GetDataFileByName(DF.Name);
           DblVal.DblEntryValidateOptions := [devIgnoreDeleted];
+          DblVal.ReportOptions := Options;
           DblVal.RunReport;
 
           Fields.Clear;
@@ -605,6 +616,7 @@ begin
       DblVal.DuplDF := DF;
       DblVal.OnCallAllDone := @DBLValCallAllCallback;
       DblVal.DblEntryValidateOptions := [devIgnoreDeleted];
+      DblVal.ReportOptions := Options;
       DblVal.RunReport;
 
       Fields.Free;

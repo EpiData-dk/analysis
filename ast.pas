@@ -1411,6 +1411,7 @@ begin
   Result.Insert('fn',  [rtString, rtUndefined]);
   Result.Insert('ds',  [rtObject], [evtDataset], [evfInternal, evfExternal, evfAsObject]);
   Result.Insert('join', [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('nol', [rtUndefined]);
 end;
 
 function TReportValidateDoubleEntry.GetAcceptedVariableCount: TBoundArray;
@@ -1585,6 +1586,7 @@ begin
 
   result.Insert('fn', [rtObject], [evtGlobalVector], [evfInternal, evfAsObject]);
   result.Insert('ds', [rtObject], [evtGlobalVector], [evfInternal, evfAsObject]);
+  result.Insert('nol', [rtUndefined]);
 end;
 
 function TReportCountById.GetAcceptedVariableCount: TBoundArray;
