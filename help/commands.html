@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
   <meta name="generator" content="HTML Tidy for HTML5 for Linux version 5.2.0"></meta>
@@ -208,7 +207,11 @@ read fn;                               // expression where the variable fn is us
               An optional expression (instead of &lt;filename&gt;) that resolves to a string with the filename. This can be e.g. a concatenation of strings, a global variable or something else.
               See <a href="read">read</a> for examples.
             </li>
-           <li>
+            <li>
+              <font class="option">!output [:= "html | text"]</font>
+              Instead of saving to the project, this options saves the output to a file. If no format is specified (text/html) then the current output format is used.
+            </li>
+            <li>
             <font class="option">!replace</font> Overwrite existing file
            </li>
            <li>
@@ -230,7 +233,7 @@ read fn;                               // expression where the variable fn is us
               This option is only valid when saving delimited files. The default value is " (double quotation mark)
             </li>
            <li>
-            <font class="option">!sversion := &lt;integer&gt;</font>
+            <font class="option">!version := &lt;integer&gt;</font>
             Specify which stata version to save the data as. Accept values range from 4 -&gt; 14, default is 14
            </li>
            <li>
@@ -732,9 +735,13 @@ new global g7[10] integer := 10;
               Changes the size of the dataset to &lt;size&gt; amount of observations.<br/>
             </li>
            <li>
-            <font class="option">!rename := &lt;new dataset name&gt;</font>
+            <font class="option">!r := &lt;new dataset name&gt;</font>
             Changes the name of the dataset. If the name is already in use an error will occur.
            </li>
+            <li>
+              <font class="option">!noparent</font>
+              Moves the current dataset (and all related datasets) to be a top-level dataset.
+            </li>
           </ul>
          <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
         </td>
@@ -755,36 +762,36 @@ new global g7[10] integer := 10;
            An existing variable label will be replaced with the new one.<br/>
          </li>
          <li>
-           <font class="option">!valuelabel := &lt;valuelabel id&gt;</font>
+           <font class="option">!vl := &lt;valuelabel id&gt;</font>
            Assign an existing valuelabel set to the variable.<br/>
            An existing assignment will be replaced but not deleted. To delete the existing valuelabel set see <a href="#deletegrp">deleting content</a>
          </li>
          <li>
-           <font class="option">!novaluelabel</font>
+           <font class="option">!novl</font>
            Removes an existing valuelabel set from the variable.<br/>
          </li>
          <li>
-           <font class="option">!length := &lt;integer&gt;</font>
+           <font class="option">!l := &lt;integer&gt;</font>
            Changes the entry length of a variable
          </li>
          <li>
-           <font class="option">!decimal := &lt;integer&gt;</font>
+           <font class="option">!d := &lt;integer&gt;</font>
            Changes the decimal entry length for floating point variables. Changing the decimal length for other variable types have no impact
          </li>
          <li>
-           <font class="option">!rangelow := &lt;value&gt;</font>
-           Set the lower bound for a range of values. Must be used in combination with !rangehigh
+           <font class="option">!min := &lt;value&gt;</font>
+           Set the lower bound for a range of values. Must be used in combination with !max
          </li>
          <li>
-           <font class="option">!rangehigh:= &lt;value&gt;</font>
-           Set the upper bound for a range of values. Must be used in combination with !rangelow
+           <font class="option">!max:= &lt;value&gt;</font>
+           Set the upper bound for a range of values. Must be used in combination with !min
          </li>
          <li>
            <font class="option">!norange</font>
            Removes an existing defined range for the variable
          </li>
          <li>
-           <font class="option">!entrymode := &lt;integer&gt;</font>
+           <font class="option">!entry := &lt;integer&gt;</font>
            Changes the entry mode used in EpiData EntryClient<br/>
            0 = default, 1 = must enter, 2 = no enter
          </li>
@@ -809,7 +816,7 @@ new global g7[10] integer := 10;
            Removes the variable from being part of the key for the current dataset
          </li>
          <li>
-           <font class="option">!rename := &lt;new variable name&gt;</font>
+           <font class="option">!r := &lt;new variable name&gt;</font>
            Changes the name of the variable. If the name is already in use an error will occur.
          </li>
        </ul>
@@ -830,22 +837,22 @@ new global g7[10] integer := 10;
         If no (value, label) pairs are assigned not additional pairs are created</p>
        <ul>
         <li>
-         <font class="option">!missing := &lt;value&gt;</font>
+         <font class="option">!m := &lt;value&gt;</font>
          Marks the given value in the value label set as missing. If the value is not part of the (value, label) pairs, an already existing pair or the datatype does not match an error will be reported.<br/>
          This option can be used multiple times with different values.
         </li>
         <li>
-         <font class="option">!delete := &lt;value&gt;</font>
+         <font class="option">!d := &lt;value&gt;</font>
          Deletes the value label pair with the given value. If no such pair exists and error will be reported.<br/>
          This option can be used multiple times with different values.
         </li>
         <li>
-         <font class="option">!nomissing := &lt;value&gt;</font>
+         <font class="option">!nom := &lt;value&gt;</font>
          Removes the marks on the given value label pair that it should be considered missing. If no such pair exists and error will be reported.<br/>
          This option can be used multiple times with different values.
         </li>
         <li>
-         <font class="option">!rename := &lt;new value label name&gt;</font>
+         <font class="option">!r := &lt;new value label name&gt;</font>
          Changes the name of the value label. If the new name is already in use an error will occur. <font class="limit">Note:</font> All variables already using that value label will continue to have the same label.
 		       To remove a valuelabel from a variable, see <a href="#editvariable">edit variable</a>
         </li>
@@ -853,7 +860,26 @@ new global g7[10] integer := 10;
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
       </td>
      </tr>
-
+      <tr valign="top">
+        <td>
+          <a name="editdata" id="editdata">edit data</a><br/>
+          edit d<br/>
+        </td>
+        <td>
+          <font class="cmd">edit data [!md] [!nomd] [!mv] [!nomv]</font>
+          <p>Edit the status of observations</p>
+          <ul>
+            <li>
+              <font class="option">!md / !nomd</font>
+              Marks / Unmarks the current select observations for deletion
+            </li>
+            <li>
+              <font class="option">!mv / !nomv</font>
+              Marks / Unmarks the current select observations as verified
+            </li>
+          </ul>
+        </td>
+      </tr>
 
      <!--
       ######################################################3
@@ -1237,7 +1263,7 @@ clh;
             - All <font class="cmd">set ["parameter"]</font> definitions may be added to the file <b>startup.pgm</b>, such that you define your own default standard. 
                An example of this is colour or font selection. 
               Notice that placement can depend on operation system, but for most will be where your exe file is placed</li>
-            <li>values can be a number, text, ON/OFF or a hexadecimal font colour (<a hREF= "https://www.w3schools.com/colors/colors_hexadecimal.asp"> See examples here (requires internet) </a>).<br/>
+            <li>values can be a number, text, ON/OFF or a hexadecimal font colour (<a href= "https://www.w3schools.com/colors/colors_hexadecimal.asp"> See examples here (requires internet) </a>).<br/>
                 see table below</li>
             <li>to see current value: <font class="cmd">set ["parameter"]</font> e.g.: <font class="cmd">set "echo"</font></li>
             <li>For set's with ON/OFF or a text value include this in " " e.g.: <font class="cmd">set "echo" := "off"</font>&nbsp;&nbsp;<font class="cmd">set "COMMANDLINE FONT COLOUR" := "#FFF000"</font></li>
@@ -1257,70 +1283,98 @@ clh;
                 <td><b>Comments or function</b></td>
               </tr>
               <tr>
+                <td>BROWSER BG COLOUR</td> <!-- Option -->
+                <td>&lt;hex colour code&gt;</td> <!-- Possible Values-->
+                <td>"#FFFFFF"</td> <!-- Default Value -->
+                <td>Adjust the colour of the background. e.g. #000000 is black. </td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>BROWSER FONT COLOUR</td> <!-- Option -->
+                <td>&lt;hex colour code&gt;</td> <!-- Possible Values-->
+                <td>"#000000"</td> <!-- Default Value -->
+                <td>Adjust the colour of the font. e.g. #FFF000 is yellow. </td> <!-- Comment -->
+              </tr>
+              <tr>
                 <td>BROWSER FONT NAME</td> <!-- Option -->
                 <td>&lt;string&gt;</td> <!-- Possible Values-->
                 <td>(depends on the operating system)</td> <!-- Default Value -->
-                <td>Name of the font used in the commandline edit. </td> <!-- Comment -->
+                <td>Name of the font used in the browser. </td> <!-- Comment -->
                </tr>
                <tr>
                 <td>BROWSER FONT SIZE</td> <!-- Option -->
                 <td>&lt;integer&gt;</td> <!-- Possible Values-->
                 <td>10</td> <!-- Default Value -->
-                <td>Adjust the size of the font in the commandline edit. </td> <!-- Comment -->
+                <td>Adjust the size of the font in the browser. </td> <!-- Comment -->
                </tr>
-               <tr>
-                <td>BROWSER FONT COLOUR</td> <!-- Option -->
+              <tr>
+                <td>BROWSER FONT STYLE</td> <!-- Option -->
+                <td>&lt;fsBold/fsItalic/fsUnderline&gt;</td> <!-- Possible Values-->
+                <td>" "</td> <!-- Default Value -->
+                <td>Adjust the style of the text in the browser. Eg. underlines text, bold text.</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>BROWSER OBS DEFAULT COLOUR</td> <!-- Option -->
                 <td>&lt;hex colour code&gt;</td> <!-- Possible Values-->
-                <td>"#000000"</td> <!-- Default Value -->
-                <td>Adjust the colour of the background. e.g. #FFF000 is yellow. </td> <!-- Comment -->
-               </tr>
-		<tr>
-                <td>BROWSER BG COLOUR</td> <!-- Option -->
+                <td>"#F0F0F0"</td> <!-- Default Value -->
+                <td>Adjust the colour of "obs" column for normal/default observations</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>BROWSER OBS DELETED COLOUR</td> <!-- Option -->
                 <td>&lt;hex colour code&gt;</td> <!-- Possible Values-->
-                <td>"#FFFFFF"</td> <!-- Default Value -->
-                <td>Adjust the colour of the background. e.g. #000000 is black. </td> <!-- Comment -->
-               </tr>
-          	<tr>
-                <td>CLIPBOARD DELIMITER</td> <!-- Option -->
-                <td>&lt;any desired delimiter&gt;</td> <!-- Possible Values-->
-                <td>,</td> <!-- Default Value -->
-                <td>The separator used between variables when you export to the clipboard from the browser.</td> <!-- Comment -->
-               </tr>
-
-
-               <tr>
-                <td>COMMANDLINE FONT NAME</td> <!-- Option -->
-                <td>&lt;string&gt;</td> <!-- Possible Values-->
-                <td>(depends on the operating system)</td> <!-- Default Value -->
-                <td>Name of the font used in the commandline edit. </td> <!-- Comment -->
-               </tr>
-               <tr>
-                <td>COMMANDLINE FONT SIZE</td> <!-- Option -->
-                <td>&lt;integer&gt;</td> <!-- Possible Values-->
-                <td>10</td> <!-- Default Value -->
-                <td>Adjust the size of the font in the commandline edit. </td> <!-- Comment -->
-               </tr>
-               <tr>
-                <td>COMMANDLINE FONT COLOUR</td> <!-- Option -->
+                <td>"#FF0000"</td> <!-- Default Value -->
+                <td>Adjust the colour of "obs" column for observations marked for deletion</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>BROWSER OBS VERIFIED COLOUR</td> <!-- Option -->
                 <td>&lt;hex colour code&gt;</td> <!-- Possible Values-->
-                <td>"#000000"</td> <!-- Default Value -->
-                <td>Adjust the colour of the background. e.g. #FFF000 is yellow. </td> <!-- Comment -->
-               </tr>
-		<tr>
+                <td>"#008080"</td> <!-- Default Value -->
+                <td>Adjust the colour of "obs" column for verified observations</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>BROWSER VALUE LABEL</td> <!-- Option -->
+                <td>L/V/LV/VL</td> <!-- Possible Values-->
+                <td>V</td> <!-- Default Value -->
+                <td>Default option for output of variable data (value and/or label). See <a href="#labeling">Valuelabels</a> for options.<br/>
+                This options applies to "list data" and "browse" only</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>BROWSER VARIABLE LABEL</td> <!-- Option -->
+                <td>VLA / VLN / VN / VNL</td> <!-- Possible Values-->
+                <td>VN</td> <!-- Default Value -->
+                <td>Default option for displaying variable name and/or label. See <a href="#variablelabels">Variable labels</a> for options<br/>
+                  This options applies to "list data" and "browse" only</td> <!-- Comment -->
+              </tr>
+              <tr>
                 <td>COMMANDLINE BG COLOUR</td> <!-- Option -->
                 <td>&lt;hex colour code&gt;</td> <!-- Possible Values-->
                 <td>"#FFFFFF"</td> <!-- Default Value -->
                 <td>Adjust the colour of the background. e.g. #000000 is black. </td> <!-- Comment -->
-               </tr>
-           
-		<tr>
+              </tr>
+              <tr>
+                <td>COMMANDLINE FONT COLOUR</td> <!-- Option -->
+                <td>&lt;hex colour code&gt;</td> <!-- Possible Values-->
+                <td>"#000000"</td> <!-- Default Value -->
+                <td>Adjust the colour of the font. e.g. #FFF000 is yellow. </td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>COMMANDLINE FONT NAME</td> <!-- Option -->
+                <td>&lt;string&gt;</td> <!-- Possible Values-->
+                <td>(depends on the operating system)</td> <!-- Default Value -->
+                <td>Name of the font used in the commandline edit. </td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>COMMANDLINE FONT SIZE</td> <!-- Option -->
+                <td>&lt;integer&gt;</td> <!-- Possible Values-->
+                <td>10</td> <!-- Default Value -->
+                <td>Adjust the size of the font in the commandline edit. </td> <!-- Comment -->
+              </tr>
+              <tr>
                 <td>COMMANDLINE FONT STYLE</td> <!-- Option -->
                 <td>&lt;fsBold/fsItalic/fsUnderline&gt;</td> <!-- Possible Values-->
                 <td>"&nbsp;"</td> <!-- Default Value -->
                 <td>Adjust the style of the font, e.g. bold, underline etc</td> <!-- Comment -->
-               </tr>
-
-		<tr>
+              </tr>
+		          <tr>
                <td>COMMANDLOG</td> <!-- Option -->
                 <td>ON/OFF</td> <!-- Possible Values-->
                 <td>ON</td> <!-- Default Value -->
@@ -1339,10 +1393,17 @@ clh;
                 <td>The number of lines kept in the commandlog file. If the number of lines is exceeded, the lines are dropped from the beginning</td> <!-- Comment -->
               </tr>
               <tr>
+                <td>CSV DELIMITER</td> <!-- Option -->
+                <td>&lt;any desired delimiter&gt;</td> <!-- Possible Values-->
+                <td>,</td> <!-- Default Value -->
+                <td>The separator used between variables when you export to the clipboard from the browser.</td> <!-- Comment -->
+              </tr>
+              <tr>
                 <td>ECHO</td>
                 <td>ON/OFF</td>
                 <td>ON</td>
-                <td>When = ON show results, OFF: "silent"</td>
+                <td>When = ON show results, OFF: "silent"<br/>
+                <font class="limit">NOTE:</font> output from error ignore this setting! Use "SHOW ERROR" := "OFF" if you wish to suppress errors too!</td>
               </tr>
               <tr>
                 <td>EDITOR FONT NAME</td> <!-- Option -->
@@ -1363,22 +1424,28 @@ clh;
                 <td>If "YES" the user is prompted on closing the program for saving if a project is open and has been modified</td> <!-- Comment -->
               </tr>
               <tr>
-                <td>FORMAT VALUE LABEL</td> <!-- Option -->
-                <td>L/V/LV/VL</td> <!-- Possible Values-->
-                <td>L</td> <!-- Default Value -->
-                <td>Default option for output of variable data (value and/or label). See <a href="#labeling">Valuelabels</a> for options</td> <!-- Comment -->
-              </tr>
-              <tr>
-                <td>FORMAT VARIABLE LABEL</td> <!-- Option -->
-                <td>VLA / VLN / VN / VNL</td> <!-- Possible Values-->
-                <td>VLA</td> <!-- Default Value -->
-                <td>Default option for displaying variable name and/or label. See <a href="#variablelabels">Variable labels</a> for options</td> <!-- Comment -->
+                <td>EXITSAVE</td> <!-- Option -->
+                <td>YES/NO</td> <!-- Possible Values-->
+                <td>NO</td> <!-- Default Value -->
+                <td>If "YES" the user is prompted on closing the program for saving if a project is open and has been modified</td> <!-- Comment -->
               </tr>
               <tr>
                 <td>INCLUDE DELETED</td> <!-- Option -->
                 <td>ON/OFF</td> <!-- Possible Values-->
                 <td>OFF</td> <!-- Default Value -->
                 <td>If "ON" then observations marked for deletion is also included in calculations</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>OUTPUT BG COLOUR</td> <!-- Option -->
+                <td>&lt;hex colour code&gt;</td> <!-- Possible Values-->
+                <td>"#FFFFFF"</td> <!-- Default Value -->
+                <td>Adjust the colour of the output background. e.g. #000000 is black. </td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>OUTPUT FONT COLOUR</td> <!-- Option -->
+                <td>&lt;hex colour code&gt;</td> <!-- Possible Values-->
+                <td>"#000000"</td> <!-- Default Value -->
+                <td>Adjust the colour of the output font. e.g. #FFF000 is yellow. </td> <!-- Comment -->
               </tr>
               <tr>
                 <td>OUTPUT FONT NAME</td> <!-- Option -->
@@ -1392,34 +1459,18 @@ clh;
                 <td>10</td> <!-- Default Value -->
                 <td>Adjust the size of the font in the text output. </td> <!-- Comment -->
               </tr>
-               <tr>
-                <td>OUTPUT FONT COLOUR</td> <!-- Option -->
-                <td>&lt;hex colour code&gt;</td> <!-- Possible Values-->
-                <td>"#000000"</td> <!-- Default Value -->
-                <td>Adjust the colour of the background. e.g. #FFF000 is yellow. </td> <!-- Comment -->
-               </tr>
-		<tr>
-                <td>OUTPUT BG COLOUR</td> <!-- Option -->
-                <td>&lt;hex colour code&gt;</td> <!-- Possible Values-->
-                <td>"#FFFFFF"</td> <!-- Default Value -->
-                <td>Adjust the colour of the background. e.g. #000000 is black. </td> <!-- Comment -->
-               </tr>
-           </tr>
-		
-		<tr>
+              <tr>
                 <td>OUTPUT FONT STYLE</td> <!-- Option -->
                 <td>&lt;fsBold/fsItalic/fsUnderline&gt;</td> <!-- Possible Values-->
                 <td>"&nbsp;"</td> <!-- Default Value -->
                 <td>Adjust the style of the font, e.g. bold, underline etc</td> <!-- Comment -->
-               </tr>
-<tr>
+              </tr>
+              <tr>
                 <td>OUTPUT FORMAT</td> <!-- Option -->
                 <td>TEXT/HTML</td> <!-- Possible Values-->
                 <td>TEXT</td> <!-- Default Value -->
                 <td>Format of the output window (currently only TEXT is implemented)</td> <!-- Comment -->
-               </tr>
-           </tr>
-
+              </tr>
               <tr>
                 <td>SHOW COMMAND</td> <!-- Option -->
                 <td>ON/OFF</td> <!-- Possible Values-->
@@ -1449,6 +1500,20 @@ clh;
                 <td>ON/OFF</td> <!-- Possible Values-->
                 <td>ON</td> <!-- Default Value -->
                 <td>If "ON" then lines containing warning information is shown. "OFF" = no output</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>STATISTICS VALUE LABEL</td> <!-- Option -->
+                <td>L/V/LV/VL</td> <!-- Possible Values-->
+                <td>L</td> <!-- Default Value -->
+                <td>Default option for output of variable data (value and/or label). See <a href="#labeling">Valuelabels</a> for options<br/>
+                This options applies to commands not covered by "BROWSER VALUE LABEL"</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>STATISTICS VARIABLE LABEL</td> <!-- Option -->
+                <td>VLA / VLN / VN / VNL</td> <!-- Possible Values-->
+                <td>VLA</td> <!-- Default Value -->
+                <td>Default option for displaying variable name and/or label. See <a href="#variablelabels">Variable labels</a> for options<br/>
+                This options applies to commands not covered by "BROWSER VALUE LABEL"</td> <!-- Comment -->
               </tr>
             </tbody>
           </table>
@@ -1548,7 +1613,7 @@ reorder age km !before := agegrp // Moved the variables age and km in front of a
       </tr>
       <tr valign="top">
         <td>
-         <a name="calculate" id="calculate"/><a name="?"/>?</td>
+         <a name="calculate" id="calculate"/><a name="eval"/>?</td>
         <td>
          <font class="cmd">? &lt;expression&gt;</font><br/>
          <p>Show result of an expression. It is posible to use all types of variables (standard, results or global) in the expression.<br/>
@@ -1765,7 +1830,8 @@ reorder age km !before := agegrp // Moved the variables age and km in front of a
           <li>The "*" (asterisk) is used as a replacement for 0 to many characters</li>
           <li>The "?" (questionmark) is used as a replacement for exactly 1 character</li>
           </ul>
-        <font class="limit">Please Notice</font> If there are no variables matching the result, e.g. t? and you have no variables with t, then you get an error <br><br>
+          <font class="limit">Please Notice</font> If there are no variables matching the result, e.g. t? and you have no variables with t, then you get an error <br/>
+          <br/>
 
           It is possible to combine "*" and "?" for more elaborate expressions, but neither can be combined with "-"<br/>
           Variables for expansion cannot start with the "*" or "?", but must start with a "normal" character.<br/>
@@ -1819,20 +1885,19 @@ for i := 1 to size($variable) do
          <p>The Variable inside the @{..} may itself be another reference (with or without index), making it possible to conbime multiple levels of references.</p>
          <font class="cmd">
 new global f    string := "age"         
-new global g[3] string := "f";  // All entries have the value "age", but that is fine for this example.
+new global g[3] string := "f";  // All entries have the value "f", but that is fine for this example.
 new global h[3] string := "g";  // All entries have the value "g", but that is fine for this example.   
 
 // The line below is a valid construction, which evalutes the following way
 // 1: h[1] is evaluated into the string "g"
 // 2: "g" is used in @{"g"}, which means - use the content of g as a variable
 // 3: g[1] is evaluated into the string "f"
-// 4: "f is used int @{"f"}, which means - use the content of f as a variable
+// 4: "f is used in @{"f"}, which means - use the content of f as a variable
 // 5: @{f} is evalued to the variable AGE
 // 6: The command freq is run on the variable AGE.
 
 freq @{ @{h[1]}[1] };  
 
-<br>
 Example of how to loop over a referenced variable: 
 
 // you wish to estimate the time for parts of an analysis and have created a number of time stamps:
@@ -1855,10 +1920,7 @@ for i:= 2 to 5 do
      tdif := (@{"t" + i} - @{"t" + (i-1)});  // notice again the (tdif = t2 -t1 ) when i was = 2 
      ? i + " difference : " + tdif;
    end;
-
-
-
-         </font> 
+</font> 
         </td>
       </tr>
       <!--<tr valign="top">
@@ -2005,6 +2067,16 @@ end;
         <td>s</td>
         <td>upper("Abcde") =&gt; "ABCDE"</td>
       </tr>
+      <tr valign="top">
+        <td><a name="concat"/>concat(X, s<sub>1</sub>, s<sub>2</sub>, ..., s<sub>n</sub>)</td>
+        <td>s, any, ...</td>
+        <td>s</td>
+        <td>Concat(...) concatinates values s<sub>1</sub> -> s<sub>n</sub> into a string. If any of the s<sub>x</sub> parameters return sys. missing it will be replaced by the value of X<br/>
+        <font class="cmd">concat("X", "a", v1[_n]) =&gt; "aX" if v1 is missing, else a + the value of v1</font><br/>
+          <br/>
+        <font class="limit">NOTE:</font> the concat function only adds the first parameter for system missing (.), for user defined missing the actual value is added for that variable.
+        </td>
+      </tr>
       <tr>
         <td colspan="4" class="cmdgroup"><a href="#functions">&#8613;</a><a name="mathgrp" id="mathgrp"></a> Arithmetic functions (including Random numbers)</td>
       </tr>
@@ -2064,6 +2136,12 @@ end;
         <td>i</td>
         <td>i</td>
         <td>Random integer from 0 to x</td>
+      </tr>
+      <tr valign="top">
+        <td><a name="sum"/>sum(n<sub>1</sub>, n<sub>2</sub>, ..., n<sub>n</sub>)</td>
+        <td>n, ...</td>
+        <td>n</td>
+        <td>Sums that values n<sub>1</sub> =&gt; n<sub>n</sub>, but ignores the entries if they are either sys. missing or user defined missing</td>
       </tr>
       <tr>
         <td colspan="4" class="cmdgroup"><a href="#functions">&#8613;</a><a name="triggrp" id="triggrp"></a> Trigonomety functions</td>
@@ -2330,6 +2408,83 @@ end;
         <td>string(1.23) =&gt; "1.23"</td>
       </tr>
       <tr>
+        <td colspan="4" class="cmdgroup"><a href="#functions">&#8613;</a><a name="identgrp" id="identgrp"></a> Identifier functions</td>
+      </tr>
+      <tr>
+        <td><b>function</b></td>
+        <td><b>takes</b></td>
+        <td><b>result</b></td>
+        <td><b>example</b></td>
+      </tr>
+      <tr valign="top">
+        <td><a name="exist"/>exist(x)</td>
+        <td>v</td>
+        <td>b</td>
+        <td>Returns true/false whether the provided identifier exist
+        </td>
+      </tr>
+      <tr valign="top">
+        <td><a name="idtype"/>idtype(x)</td>
+        <td>v</td>
+        <td>i</td>
+        <td>Returns the type of the identifier provided. This function cal be used on all valid identifiers and the integer value returned have the following associations:<br/>
+          <br/>
+          0: Global variable<br/>
+          1: Global vector<br/>
+          2: Regular Variable<br/>  
+          3: Dataset<br/>
+          4: Valuelabel<br/>
+          5: Result Variable<br/>
+          6: Result Vector<br/>
+          7: Result Matrix<br/>    
+          <br/>
+          <font class="limit">Note: </font> if using idtype(x) with the eval function "?", the output will be in text.
+        </td>
+      </tr>
+      <tr valign="top">
+        <td><a name="datatype"/>datatype(x)</td>
+        <td>v</td>
+        <td>i</td>
+        <td>Similarly as to idtype(x) this function takes any variable, but in this case returns the type of date stored in the variable. The integer value return have the following associations:<br/>
+          <br/>
+          -1: Variable has no data type - e.g. a dataset variable.<br/>
+          0: Boolean<br/>
+          1: Integer<br/>
+          2: Auto Increment<br/>
+          3: Float<br/>
+          4: DMY Date<br/>
+          5: MDY Date<br/>
+          6: YMD Date<br/>
+          7: DMY Auto Date<br/>
+          8: MDY Auto Date<br/>
+          9: YMD Auto Date<br/>
+          10: Time<br/>
+          11: Auto Time<br/>
+          12: Uppercase String<br/>
+          13: String<br/>
+          14: Memo<br/>
+          <br/>
+          <font class="limit">Note: </font> if using datatype(x) with the eval function "?", the output will be in text.
+        </td>
+      </tr>
+      <tr valign="top">
+        <td><a name="size"/>size(x)</td>
+        <td>v</td>
+        <td>i</td>
+        <td>Size returns the size/length of an identifier (if applicable). The function works as follows: <br/>
+          Global &amp; Result variables always have size 1<br/>
+          Global vector, Result Vector, Variable &amp; Valuelabel return the length/size/count of elements/data<br/>
+          Result Matrix is not implemented yet - it returns -1;<br/>
+          Dataset returns the total number of observations (even if a select is applied).<br/>       
+        </td>
+      </tr>      
+      <tr valign="top">
+        <td><a name="string"/>label(v)</td>
+        <td>v</td>
+        <td>s</td>
+        <td>Return the descriptive label of the identifier. This is only possible for variables and datasets.</td>
+      </tr>
+      <tr>
         <td colspan="4" class="cmdgroup"><a href="#functions">&#8613;</a><a name="testgrp" id="testgrp"></a> Test and special functions</td>
       </tr>
       <tr>
@@ -2371,66 +2526,30 @@ end;
       </td>
       </tr>
       <tr valign="top">
-       <td><a name="exist"/>exist(x)</td>
-       <td>v</td>
-       <td>b</td>
-       <td>Returns true/false whether the provided identifier exist
-       </td>
+        <td>cwd()</td>
+        <td>-</td>
+        <td>s</td>
+        <td>Returns the current working directory</td>
       </tr>
       <tr valign="top">
-       <td><a name="idtype"/>idtype(x)</td>
-       <td>v</td>
-       <td>i</td>
-       <td>Returns the type of the identifier provided. This function cal be used on all valid identifiers and the integer value returned have the following associations:<br/>
-        <br/>
-        0: Global variable<br/>
-        1: Global vector<br/>
-        2: Regular Variable<br/>  
-        3: Dataset<br/>
-        4: Valuelabel<br/>
-        5: Result Variable<br/>
-        6: Result Vector<br/>
-        7: Result Matrix<br/>    
-        <br/>
-        <font class="limit">Note: </font> if using idtype(x) with the eval function "?", the output will be in text.
-       </td>
+        <td>deleted([index])</td>
+        <td>[i]</td>
+        <td>b</td>
+        <td>Returns true/false whether the record is marked for deletion. If no index is supplied the current record number is tested:<br/>
+        <font class="cmd">
+select deleted() do
+  edit data !nomd // selects current records marked for deletion and unmark them</font>
+        </td>
       </tr>
       <tr valign="top">
-       <td><a name="datatype"/>datatype(x)</td>
-       <td>v</td>
-       <td>i</td>
-       <td>Similarly as to idtype(x) this function takes any variable, but in this case returns the type of date stored in the variable. The integer value return have the following associations:<br/>
-        <br/>
-        -1: Variable has no data type - e.g. a dataset variable.<br/>
-         0: Boolean<br/>
-         1: Integer<br/>
-         2: Auto Increment<br/>
-         3: Float<br/>
-         4: DMY Date<br/>
-         5: MDY Date<br/>
-         6: YMD Date<br/>
-         7: DMY Auto Date<br/>
-         8: MDY Auto Date<br/>
-         9: YMD Auto Date<br/>
-        10: Time<br/>
-        11: Auto Time<br/>
-        12: Uppercase String<br/>
-        13: String<br/>
-        14: Memo<br/>
-        <br/>
-        <font class="limit">Note: </font> if using datatype(x) with the eval function "?", the output will be in text.
-       </td>
-      </tr>
-      <tr valign="top">
-       <td><a name="size"/>size(x)</td>
-       <td>v</td>
-       <td>i</td>
-       <td>Size returns the size/length of an identifier (if applicable). The function works as follows: <br/>
-        Global &amp; Result variables always have size 1<br/>
-        Global vector, Result Vector, Variable &amp; Valuelabel return the length/size/count of elements/data<br/>
-        Result Matrix is not implemented yet - it returns -1;<br/>
-        Dataset returns the total number of observations (even if a select is applied).<br/>       
-       </td>
+        <td>verified([index])</td>
+        <td>[i]</td>
+        <td>b</td>
+        <td>Returns true/false whether the record is marked as verified. If no index is supplied the current record number is tested:<br/>
+          <font class="cmd">
+select verified() do
+  edit data !nomd // selects current records marked for deletion and unmark them</font>
+        </td>
       </tr>
     </tbody>
   </table><br/>
