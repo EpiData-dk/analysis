@@ -2627,7 +2627,7 @@ begin
 
           if (not res) then
             begin
-              DoError('Cannot create "' + S + '", name already used!');
+              DoError('Cannot create "' + S + '", name already used as a ' + ExecutorVariableTypeString[V.VarType] + '!');
               ST.ExecResult := csrFailed;
               Exit;
             end;
