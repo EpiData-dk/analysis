@@ -25,7 +25,7 @@ Relation:
 new global fn string := "mergeA.epx";
 
 read fn !c;
-merge !ds := child;
+merge;
 reorder k2 !after := k1;
 /*
 M1: merge C into P (no options = retain all data in parent, only create new vars from child dataset)
@@ -40,7 +40,7 @@ K1	K2	V1	V2	V3
 list d;
 
 read fn !c;
-merge !ds := child !combine;
+merge !combine;
 reorder k2 !after := k1;
 /*
 M1: merge C into P (combine = only replace existing vars where data is sys.mis.)
@@ -56,7 +56,7 @@ K1	K2	V1	V2	V3
 list d;
 
 read fn !c;
-merge !ds := child !update;
+merge !update;
 reorder k2 !after := k1;
 /*
 M1: merge C into P (update = update existing vars with data that is not sys.missing )
@@ -72,7 +72,7 @@ K1	K2	V1	V2	V3
 list d;
 
 read fn !c;
-merge !ds := child !replace;
+merge !replace;
 reorder k2 !after := k1;
 /*
 M1: merge C into P (repace = unconditionally replace existing vars with data from child )
