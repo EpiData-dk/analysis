@@ -1,0 +1,90 @@
+/* An example of combining data with MERGE:
+
+Parent:
+---------------------------
+K1	V1	V2
+1	A	B
+2	.	D
+3	E	F
+
+Child:
+---------------------------
+K1	K2	V3	V1
+1	1	X	æ
+1	2	Y	.
+2	1	Z	å
+3	.	.	.
+
+Relation:
+---------------------------
+ Parent
+ |- Child
+
+*/
+
+new global fn string := "mergeA.epx";
+
+read fn !c;
+merge !ds := child;
+reorder k2 !after := k1;
+/*
+M1: merge C into P (no options = retain all data in parent, only create new vars from child dataset)
+[V1(parent) = V1(parent)]
+
+K1	K2	V1	V2	V3
+1	1	A	B	X
+1	2	A	B	Y
+2	1	.	D	Z
+3	.	E	F	.
+*/
+list d;
+
+read fn !c;
+merge !ds := child !combine;
+reorder k2 !after := k1;
+/*
+M1: merge C into P (combine = only replace existing vars where data is sys.mis.)
+[V1(parent) = V1(child) if V1(parent) <> .]
+
+K1	K2	V1	V2	V3
+1	1	A	B	X
+1	2	A	B	Y
+2	1	å	D	Z
+3	.	E	F	.
+
+*/
+list d;
+
+read fn !c;
+merge !ds := child !update;
+reorder k2 !after := k1;
+/*
+M1: merge C into P (update = update existing vars with data that is not sys.missing )
+[V1(parent) = V1(child) if V1(child) <> .]
+
+K1	K2	V1	V2	V3
+1	1	æ	B	X
+1	2	A	B	Y
+2	1	å	D	Z
+3	.	E	F	.
+
+*/
+list d;
+
+read fn !c;
+merge !ds := child !replace;
+reorder k2 !after := k1;
+/*
+M1: merge C into P (repace = unconditionally replace existing vars with data from child )
+[V1(parent) = V1(child)]
+
+K1	K2	V1	V2	V3
+1	1	æ	B	X
+1	2	.	B	Y
+2	1	å	D	Z
+3	.	.	F	.
+
+*/
+list d;
+close;
+
