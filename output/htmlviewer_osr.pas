@@ -55,6 +55,12 @@ type
     procedure ChromiumLoadEnd(Sender: TObject; const Browser: ICefBrowser;
       const Frame: ICefFrame; httpStatusCode: Integer);
   public
+    // IAnaOutputViewer
+    function GetCaretPos: TPoint;
+    function GetLineAtCaret: String;
+    function GetSelectedText: String;
+    function IsFocused: Boolean;
+  public
     procedure Initialize;
     procedure LoadFromStream(ST: TStream);
     function GetOutputGeneratorClass: TOutputGeneratorClass;
@@ -154,6 +160,26 @@ begin
   Frame.ExecuteJavaScript('window.scrollTo(0,document.body.scrollHeight);', 'about:blank', 0);
 end;
 
+function THTMLViewerOSR.GetCaretPos: TPoint;
+begin
+  result := Point(1,1);
+end;
+
+function THTMLViewerOSR.GetLineAtCaret: String;
+begin
+  result := '';
+end;
+
+function THTMLViewerOSR.GetSelectedText: String;
+begin
+  result := '';
+end;
+
+function THTMLViewerOSR.IsFocused: Boolean;
+begin
+  result := false;
+end;
+
 procedure THTMLViewerOSR.PanelKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
@@ -212,6 +238,7 @@ var
   ME: TCefMouseEvent;
   CefBtn: TCefMouseButtonType;
 begin
+  FPanel.SetFocus;
   ME := BuildMouseEvent(Button, Shift, X, Y, CefBtn);
   FChromiumOSR.Browser.Host.SendMouseClickEvent(ME, CefBtn, false, 1);
 end;
@@ -222,6 +249,7 @@ var
   ME: TCefMouseEvent;
   CefBtn: TCefMouseButtonType;
 begin
+  FPanel.SetFocus;
   ME := BuildMouseEvent(mbLeft, Shift, X, Y, CefBtn);
   FChromiumOSR.Browser.Host.SendMouseMoveEvent(ME, FPaintBox.MouseInClient);
 end;
@@ -232,6 +260,7 @@ var
   ME: TCefMouseEvent;
   CefBtn: TCefMouseButtonType;
 begin
+  FPanel.SetFocus;
   ME := BuildMouseEvent(Button, Shift, X, Y, CefBtn);
   FChromiumOSR.Browser.Host.SendMouseClickEvent(ME, CefBtn, true, 1);
 end;

@@ -34,6 +34,13 @@ Type
     procedure DoHide; override;
     procedure DoShow; override;
   public
+    // IAnaOutputViewer
+    function GetCaretPos: TPoint;
+    function GetLineAtCaret: String;
+    function GetSelectedText: String;
+    function IsFocused: Boolean;
+
+  public
     destructor Destroy; override;
 
     procedure Initialize;
@@ -41,6 +48,7 @@ Type
     procedure LoadFromStream(ST: TStream);
     function GetOutputGeneratorClass: TOutputGeneratorClass;
     procedure UpdateFontAndSize(AExecutor: TExecutor);
+
 
     property Url: String read fUrl write fUrl;
   end;
@@ -115,6 +123,26 @@ begin
   If Assigned(fChromium) then fChromium.Show;
 end;
 
+function TWebPanel.GetCaretPos: TPoint;
+begin
+  result := Point(1,1);
+end;
+
+function TWebPanel.GetLineAtCaret: String;
+begin
+  result := '';
+end;
+
+function TWebPanel.GetSelectedText: String;
+begin
+  result := '';
+end;
+
+function TWebPanel.IsFocused: Boolean;
+begin
+  result := false;
+end;
+
 destructor TWebPanel.Destroy;
 begin
   inherited Destroy;
@@ -127,6 +155,11 @@ begin
     fChromium := TChromium.Create(Self);
     fChromium.TabStop := True;
     fChromium.Parent := Self;
+{    fChromium.Anchors := [];
+    fChromium.AnchorParallel(akTop,   25, Self);
+    fChromium.AnchorParallel(akLeft,   0, Self);
+    fChromium.AnchorParallel(akRight,  0, Self);
+    fChromium.AnchorParallel(akBottom, 0, Self); }
     fChromium.AnchorAsAlign(alClient, 0);
 
     fChromium.DefaultUrl := 'about:blank';
@@ -179,9 +212,9 @@ end;
 initialization
   begin
     try
-      Path := GetCurrentDirUTF8 + DirectorySeparator;
-      CefResourcesDirPath := Path ;
-      CefLocalesDirPath := Path + DirectorySeparator + 'locales';
+   //   Path := GetCurrentDirUTF8 + DirectorySeparator + 'CEF' + DirectorySeparator;
+   //   CefResourcesDirPath := Path + 'Resources' + DirectorySeparator;
+   //   CefLocalesDirPath := CefResourcesDirPath + 'locales' + DirectorySeparator;
       if CefInitialize then
         fHtmlSupported := true
       else

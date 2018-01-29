@@ -43,7 +43,8 @@ implementation
 
 uses
   epidatafilestypes, epidatafilerelations_helper, LazUTF8, epitools_integritycheck,
-  epicustombase, math, epivaluelabels, ast_types, Token, LazFileUtils;
+  epicustombase, math, epivaluelabels, ast_types, Token, LazFileUtils, epidatafileutils,
+  epifields_helper;
 
 const
   MERGE_CUSTOM_DATA = 'MERGE_CUSTOM_DATA';
@@ -198,6 +199,7 @@ var
   OptList: TOptionList;
   S, FN: EpiString;
   DSName: String;
+  MR: TEpiMasterRelation;
 const
   ReadOptionNames: array[0..4] of EpiString = (
     'd', 'q', 'h', 'pw', 'login'
@@ -250,7 +252,6 @@ begin
           OptList.Add(Opt);
 
       ReadCMD := TReadCommand.Create(TStringLiteral.Create(FN), OptList);
-//      aDM.OnOpenFileError := @FileError;
 
       case aDM.OpenFile(ReadCMD, Docfile) of
         dfrCanceled:
@@ -282,12 +283,14 @@ begin
       Exit;
     end;
 
+  if (ST is TMergeCommand) then
+    Exit(true);
+
   DSName := '';
   if St.HasOption('ds', Opt) then
     DSName := Opt.Expr.AsIdent;
 
-  if (not St.HasOption('ds')) and
-     (not St.HasOption('fn'))
+  if (not St.HasOption('ds')) and (not St.HasOption('fn'))
   then
     begin
       FExecutor.Error('At least one of the options !fn or !ds must be used');
@@ -494,7 +497,11 @@ var
         MainField := MainKeyFields[i];
         MergeField := MergeKeyFields[i];
 
-        case MainField.FieldType of
+        CompareFieldRecords(Result, MainField, MergeField, MainIdx, MergeIdx);
+        if (Result <> 0) then
+          Exit;
+
+{        case MainField.FieldType of
           ftBoolean:
             result := CompareValue(MainField.AsBoolean[MainIdx], MergeField.AsBoolean[MergeIdx]);
 
@@ -521,7 +528,7 @@ var
           ftString,
           ftMemo:
             result := Sign(UTF8CompareStr(MainField.AsString[MainIdx], MergeField.AsString[MergeIdx]));
-        end;
+        end;}
       end;
   end;
 
@@ -537,7 +544,7 @@ begin
     if (not KeyChecker.IndexIntegrity(MergeDF, TmpRecsA, TmpRecsB, true, MergeKeyFields)) then
       begin
         FExecutor.Error(
-          Format('External lookup table dataset "%s" has a non-unique key combination', [MainDF.Name]) + LineEnding +
+          Format('External lookup table dataset "%s" has a non-unique key combination', [MergeDF.Name]) + LineEnding +
           'Please use the integrity tool to get a complete list of non-unique values'
         );
         ST.ExecResult := csrFailed;
@@ -549,7 +556,7 @@ begin
   then
     begin
       FExecutor.Error(
-        Format('Internal dataset "%s" has a non-unique key combination', [MergeDF.Name]) + LineEnding +
+        Format('Internal dataset "%s" has a non-unique key combination', [MainDF.Name]) + LineEnding +
         'Please use the integrity tool to get a complete list of non-unique values'
       );
       ST.ExecResult := csrFailed;
@@ -611,7 +618,7 @@ begin
 
   MainRunner := 0;
   MergeRunner := 0;
-  PrevCompare := EqualsValue;
+  PrevCompare := LessThanValue;
 
   while (MainRunner < MainDFBeforeSize) and
         (MergeRunner < MergeDF.Size)
@@ -634,19 +641,26 @@ begin
                 // additional key values from the merge dataset
                 DestIdx := MainDF.NewRecords();
 
+                // First transfer data from existing fields into new records.
+                for MainF in MainDF.Fields do
+                  begin
+//                    if MainF.IsKeyfield then continue;
+                    TransferData(MainF, MainF, DestIdx, MainRunner);
+                  end;
+
                 for MergeF in MergeDF.Fields do
                   begin
                     MainF := MainDF.Fields.FieldByName[MergeF.Name];
 
 
-                    if Assigned(MainF.FindCustomData(MERGE_CUSTOM_DATA)) or
+       {             if Assigned(MainF.FindCustomData(MERGE_CUSTOM_DATA)) or
                        (MergeOpt in [moUpdate, moReplace])
                     then
                       // This is a field from the merge dataset
                       TransferData(MainF, MergeF, DestIdx, MergeRunner, moCombine)
                     else
-                      // this field was in the original dataset also
-                      TransferData(MainF, MainF,  DestIdx, MainRunner,  moCombine)
+                      // this field was in the original dataset also    }
+                      TransferData(MainF, MergeF,  DestIdx, MergeRunner,  MergeOpt)
                   end;
               end
             else
@@ -780,7 +794,7 @@ var
     result := true;
 
     if (ST.HasOption('ds', Opt)) and
-       (not Datafiles.ItemExistsByName(Opt.Ident))
+       (not Datafiles.ItemExistsByName(Opt.Expr.AsIdent))
     then
       begin
         S := '';
@@ -995,7 +1009,8 @@ begin
   then
     MergeDF.Free;
 
-  MergeDocFile.Free;
+  if (MergeDocFile <> FExecutor.DocFile) then
+    MergeDocFile.Free;
 end;
 
 end.

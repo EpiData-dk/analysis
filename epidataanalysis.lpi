@@ -15,6 +15,7 @@
       <UseVersionInfo Value="True"/>
       <MinorVersionNr Value="9"/>
       <RevisionNr Value="2"/>
+      <BuildNr Value="1"/>
       <StringTable ProductVersion="0.6.4.0"/>
     </VersionInfo>
     <BuildModes Count="6">
@@ -171,47 +172,48 @@
     </PublishOptions>
     <RunParams>
       <environment>
-        <UserOverrides Count="2">
-          <Variable0 Name="LD_LIBRARY_PATH" Value="."/>
-          <Variable1 Name="LANG" Value="da_DK.UTF-8"/>
+        <UserOverrides Count="1">
+          <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/"/>
         </UserOverrides>
       </environment>
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
           <environment>
-            <UserOverrides Count="2">
-              <Variable0 Name="LD_LIBRARY_PATH" Value="."/>
-              <Variable1 Name="LANG" Value="da_DK.UTF-8"/>
+            <UserOverrides Count="1">
+              <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/"/>
             </UserOverrides>
           </environment>
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="7">
+    <RequiredPackages Count="8">
       <Item1>
-        <PackageName Value="BGRABitmapPack"/>
+        <PackageName Value="CEF3"/>
       </Item1>
       <Item2>
-        <PackageName Value="FrameViewer09"/>
+        <PackageName Value="BGRABitmapPack"/>
       </Item2>
       <Item3>
-        <PackageName Value="virtualtreeview_package"/>
+        <PackageName Value="FrameViewer09"/>
       </Item3>
       <Item4>
-        <PackageName Value="epidatacore_visuals"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="virtualtreeview_package"/>
       </Item4>
       <Item5>
-        <PackageName Value="epidatacore"/>
+        <PackageName Value="epidatacore_visuals"/>
         <MinVersion Major="2" Valid="True"/>
       </Item5>
       <Item6>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="epidatacore"/>
+        <MinVersion Major="2" Valid="True"/>
       </Item6>
       <Item7>
-        <PackageName Value="LCL"/>
+        <PackageName Value="SynEdit"/>
       </Item7>
+      <Item8>
+        <PackageName Value="LCL"/>
+      </Item8>
     </RequiredPackages>
     <Units Count="69">
       <Unit0>

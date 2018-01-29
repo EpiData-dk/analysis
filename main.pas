@@ -1216,6 +1216,7 @@ begin
         FOutputCreator.Clear;
         FOutputCreator.DoWarning('WARNING - Testversion. Confirm results with Public release!');
         FOutputCreator.DoNormal('');
+//        FOutputCreator.DoNormal('<a href="http://www.epidata.dk> TEST </a>');
         FOutputCreator.DoInfoAll(GetProgramInfo);
         FOutputCreator.DoNormal('');
         RedrawOutput;
