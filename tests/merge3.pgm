@@ -15,10 +15,22 @@ K1	K2	V3	V1
 2	1	Z	å
 3	.	.	.
 
+
+Table
+---------------------------
+K1	T1
+1	Text 1
+2	Text 2
+3	Text 3
+
+
+
 Relation:
 ---------------------------
- Parent
- |- Child
+ - Parent
+   |- Child
+ - Table
+
 
 */
 
@@ -38,6 +50,7 @@ K1	K2	V1	V2	V3
 3	.	E	F	.
 */
 list d;
+assert V1
 
 read fn !c;
 merge !combine;
