@@ -6150,13 +6150,19 @@ begin
   for i := 0 to FVarList.Count - 1 do
     begin
       V := FVarList[i];
+      Exec := V.Executor;
+
+      // Call typecheck here, such than any nested variables containing indexes (like @{$dataset[...]}
+      // get to proper label the ident!
+      Exec.SetTypeCheckErrorOutput(false);
+      V.TypeCheck(Exec, TypesAndFlags());
+      Exec.SetTypeCheckErrorOutput(true);
 
       if (UTF8Pos('?', V.Ident) > 0) or
          (UTF8Pos('*', V.Ident) > 0) or
          (V is TVariableRange)
       then
         begin
-          Exec   := V.Executor;
           Result := Exec.ExpandVariableList(V, VariableChecker, TmpVarList.Count, VL);
 
           if (not result) then

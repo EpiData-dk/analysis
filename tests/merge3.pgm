@@ -34,7 +34,8 @@ Relation:
 
 */
 
-new global fn string := "mergeA.epx";
+new global fn string  := "mergeA.epx";
+new global fn2 string := "mergeB.epx";
 
 read fn !c;
 merge;
@@ -49,8 +50,11 @@ K1	K2	V1	V2	V3
 2	1	.	D	Z
 3	.	E	F	.
 */
-list d;
-assert V1
+//list d;
+assert V1[1] = "A";
+assert V1[2] = "A";
+assert V1[3] = .;
+assert V1[4] = "E";
 
 read fn !c;
 merge !combine;
@@ -66,7 +70,11 @@ K1	K2	V1	V2	V3
 3	.	E	F	.
 
 */
-list d;
+//list d;
+assert V1[1] = "A";
+assert V1[2] = "A";
+assert V1[3] = "å";
+assert V1[4] = "E";
 
 read fn !c;
 merge !update;
@@ -82,7 +90,11 @@ K1	K2	V1	V2	V3
 3	.	E	F	.
 
 */
-list d;
+//list d;
+assert V1[1] = "æ";
+assert V1[2] = "A";
+assert V1[3] = "å";
+assert V1[4] = "E";
 
 read fn !c;
 merge !replace;
@@ -98,6 +110,47 @@ K1	K2	V1	V2	V3
 3	.	.	F	.
 
 */
-list d;
+//list d;
+assert V1[1] = "æ";
+assert V1[2] = .;
+assert V1[3] = "å";
+assert V1[4] = .;
+
+
+// ========================================================================
+//    EXTERNAL MERGE
+// ========================================================================
+read fn !c;
+merge k1 !ds := Child !fn := fn2;
+reorder k2 !after := k1;
+assert V1[1] = "A";
+assert V1[2] = "A";
+assert V1[3] = .;
+assert V1[4] = "E";
+
+read fn !c;
+merge k1 !ds := Child !fn := fn2 !combine;
+reorder k2 !after := k1;
+assert V1[1] = "A";
+assert V1[2] = "A";
+assert V1[3] = "å";
+assert V1[4] = "E";
+
+read fn !c;
+merge k1 !ds := Child !fn := fn2 !update;
+reorder k2 !after := k1;
+assert V1[1] = "æ";
+assert V1[2] = "A";
+assert V1[3] = "å";
+assert V1[4] = "E";
+
+read fn !c;
+merge k1 !ds := Child !fn := fn2 !replace;
+reorder k2 !after := k1;
+assert V1[1] = "æ";
+assert V1[2] = .;
+assert V1[3] = "å";
+assert V1[4] = .;
+
 close;
 
