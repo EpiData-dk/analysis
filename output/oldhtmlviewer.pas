@@ -16,6 +16,7 @@ type
   private
     FHtmlView: THtmlViewer;
   public
+    procedure InvalidateView;
     procedure Initialize;
     procedure LoadFromStream(ST: TStream);
     procedure UpdateFontAndSize(AExecutor: TExecutor);
@@ -32,6 +33,11 @@ uses
   Controls, Graphics, outputgenerator_html;
 
 { TOldHtmlSheet }
+
+procedure TOldHtmlSheet.InvalidateView;
+begin
+  //
+end;
 
 procedure TOldHtmlSheet.Initialize;
 begin

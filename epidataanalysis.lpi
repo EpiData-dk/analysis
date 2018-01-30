@@ -173,7 +173,7 @@
     <RunParams>
       <environment>
         <UserOverrides Count="1">
-          <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/"/>
+          <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
         </UserOverrides>
       </environment>
       <FormatVersion Value="2"/>
@@ -181,7 +181,7 @@
         <Mode0 Name="default">
           <environment>
             <UserOverrides Count="1">
-              <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/"/>
+              <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
             </UserOverrides>
           </environment>
         </Mode0>
@@ -551,7 +551,7 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dEPI_CHROMIUM_HTML1"/>
+      <CustomOptions Value="-dEPI_CHROMIUM_HTML"/>
     </Other>
   </CompilerOptions>
   <Debugging>

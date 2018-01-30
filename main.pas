@@ -176,6 +176,7 @@ type
     procedure MainExceptionHandler(Sender: TObject; E: Exception);
     procedure CmdEditFontChangeEvent(Sender: TObject);
     procedure DelayCmdEditFocus(Data: PtrInt);
+    procedure ApplicationActivate(Sender: TObject);
 
   { Variable List }
   private
@@ -407,6 +408,7 @@ begin
   Screen.AddHandlerActiveFormChanged(@FormChanged);
   Application.AddOnKeyDownBeforeHandler(@PrimaryKeyHandler);
   Application.AddOnExceptionHandler(@MainExceptionHandler);
+  Application.AddOnActivateHandler(@ApplicationActivate);
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -1383,6 +1385,11 @@ end;
 procedure TMainForm.DelayCmdEditFocus(Data: PtrInt);
 begin
   if FCmdEdit.CanFocus then FCmdEdit.SetFocus;
+end;
+
+procedure TMainForm.ApplicationActivate(Sender: TObject);
+begin
+  FOutputViewer.Initialize;
 end;
 
 procedure TMainForm.ExecutorStart(Sender: TObject);

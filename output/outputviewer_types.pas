@@ -14,6 +14,7 @@ type
 
   IAnaOutputViewer = interface ['IAnaOutputViewer']
     procedure Initialize;
+    procedure InvalidateView;
     procedure LoadFromStream(ST: TStream);
     procedure UpdateFontAndSize(AExecutor: TExecutor);
     function GetOutputGeneratorClass: TOutputGeneratorClass;

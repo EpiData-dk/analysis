@@ -16,6 +16,7 @@ type
   THTMLViewerOSR = class(TTabSheet, IAnaOutputViewer)
   private
     // Internal vars
+    FFileName: string;
     FChromiumOSR: TChromiumOSR;
     FPanel: TPanel;
     FPaintBox: TPaintBox;
@@ -60,6 +61,7 @@ type
     function GetLineAtCaret: String;
     function GetSelectedText: String;
     function IsFocused: Boolean;
+    procedure InvalidateView;
   public
     procedure Initialize;
     procedure LoadFromStream(ST: TStream);
@@ -148,7 +150,6 @@ begin
   Rect.Left := 0;
   Rect.Right := awidth;
 
-
   FPaintBox.Canvas.Lock;
   BGRABitmapDraw(FPaintBox.Canvas, Rect, buffer, False, awidth, aheight, false);
   FPaintBox.Canvas.Unlock;
@@ -178,6 +179,11 @@ end;
 function THTMLViewerOSR.IsFocused: Boolean;
 begin
   result := false;
+end;
+
+procedure THTMLViewerOSR.InvalidateView;
+begin
+//  FChromiumOSR.Load('file://' + FFileName);
 end;
 
 procedure THTMLViewerOSR.PanelKeyDown(Sender: TObject; var Key: Word;
@@ -249,9 +255,9 @@ var
   ME: TCefMouseEvent;
   CefBtn: TCefMouseButtonType;
 begin
-  FPanel.SetFocus;
   ME := BuildMouseEvent(mbLeft, Shift, X, Y, CefBtn);
   FChromiumOSR.Browser.Host.SendMouseMoveEvent(ME, FPaintBox.MouseInClient);
+  FChromiumOSR.Browser.Host.SendFocusEvent(false);
 end;
 
 procedure THTMLViewerOSR.PaintBoxMouseUp(Sender: TObject; Button: TMouseButton;
@@ -331,12 +337,13 @@ var
 begin
   if not (ST is TFileStream) then
   begin
-    Fn := GetTempFileNameUTF8('','');
+    FFileName := GetTempFileNameUTF8('','');
     ST.Position := 0;
 
-    FS := TFileStream.Create(FN, fmCreate);
+    FS := TFileStream.Create(FFileName, fmCreate);
     FS.CopyFrom(ST, ST.Size);
     FS.Free;
+    FN := FFileName;
   end else
     FN := TFileStream(ST).FileName;
 

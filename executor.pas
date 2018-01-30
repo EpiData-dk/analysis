@@ -1886,7 +1886,9 @@ begin
       Exit;
     end;
 
-  if (SelectVector.Size <> DataFile.Size) then
+  if (Assigned(DataFile)) and
+     (SelectVector.Size <> DataFile.Size)
+  then
     begin
       DoError('do NOT combine SAVE with SELECT - Cannot save a partial dataset!');
       ST.ExecResult := csrFailed;
@@ -2024,6 +2026,13 @@ begin
      )
   then
     begin
+      if (not Assigned(DataFile)) then
+        begin
+          DoError('Project contains no datasets and cannot be exported!');
+          ST.ExecResult := csrFailed;
+          Exit;
+        end;
+
       DFSetting := TEpiExportDatafileSettings.Create;
 
       if (St.HasOption('ds', opt)) then

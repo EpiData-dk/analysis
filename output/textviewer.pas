@@ -17,6 +17,7 @@ type
     FHighlighter: TSynCustomHighlighter;
     FEdit: TSynEdit;
   public
+    procedure InvalidateView;
     procedure Initialize;
     procedure LoadFromStream(ST: TStream);
     procedure UpdateFontAndSize(AExecutor: TExecutor);
@@ -131,6 +132,11 @@ begin
 end;
 
 { TTextPanel }
+
+procedure TTextPanel.InvalidateView;
+begin
+  //
+end;
 
 procedure TTextPanel.Initialize;
 var

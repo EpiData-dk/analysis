@@ -42,7 +42,7 @@ Type
 
   public
     destructor Destroy; override;
-
+    procedure InvalidateView;
     procedure Initialize;
     procedure RequestClose;
     procedure LoadFromStream(ST: TStream);
@@ -60,7 +60,6 @@ Implementation
 Uses Main, cef3ref, cef3scp, outputgenerator_html;
 
 var
-  Path: ustring;
   fHtmlSupported: boolean;
 
 function IsHTMLSupported: boolean;
@@ -148,6 +147,11 @@ begin
   inherited Destroy;
 end;
 
+procedure TWebPanel.InvalidateView;
+begin
+  //
+end;
+
 procedure TWebPanel.Initialize;
 begin
   If not Assigned(fChromium) then
@@ -209,12 +213,18 @@ begin
   //
 end;
 
+var
+  Path: ustring;
+  Lang, FallbackLang: string;
+
 initialization
   begin
     try
-   //   Path := GetCurrentDirUTF8 + DirectorySeparator + 'CEF' + DirectorySeparator;
-   //   CefResourcesDirPath := Path + 'Resources' + DirectorySeparator;
-   //   CefLocalesDirPath := CefResourcesDirPath + 'locales' + DirectorySeparator;
+      Path := UTF8Decode(GetCurrentDirUTF8 + DirectorySeparator + 'CEF' + DirectorySeparator);
+      CefResourcesDirPath := Path + UTF8Decode( 'Resources' + DirectorySeparator);
+      CefLocalesDirPath   := Path + UTF8Decode('Resources' + DirectorySeparator + 'locales' + DirectorySeparator);
+      LazGetLanguageIDs(Lang, FallbackLang);
+      CefLocale := UTF8Decode(FallbackLang);
       if CefInitialize then
         fHtmlSupported := true
       else
