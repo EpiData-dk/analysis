@@ -148,10 +148,10 @@ begin
   if (ST.HasOption('label', Opt)) then
     DF.Caption.Text := Opt.Expr.AsString;
 
-  if (St.HasOption('childrec', Opt)) then
+  if (St.HasOption('childobs', Opt)) then
     DR.MaxRecordCount := Opt.Expr.AsInteger;
 
-  if (St.HasOption('afterrec', Opt)) then
+  if (St.HasOption('afterobs', Opt)) then
     DF.AfterRecordState := TEpiDataFileAfterRecordState(Opt.Expr.AsInteger);
 
   if (St.HasOption('statusbar', Opt)) then
