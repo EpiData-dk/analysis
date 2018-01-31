@@ -49,7 +49,8 @@ implementation
 uses
   episecuritylog, epilogger, epiglobals, epidatafileutils, epireport_report_countbyid,
   ast_types, epiopenfile_cache, LazFileUtils, datamodule, epicustomlist_helper,
-  epireport_report_doubleentryvalidate, epidatafilerelations, epitools_val_dbl_entry;
+  epireport_report_doubleentryvalidate, epidatafilerelations, epitools_val_dbl_entry,
+  epireport_report_mainheader;
 
 
 { TReports }
@@ -437,6 +438,8 @@ var
   i: Integer;
   F: TEpiField;
   Options: TEpiReportDEVOptions;
+  R: TEpiReportMainHeader;
+  DocumentFiles: TEpiDocumentFileList;
 
   function CompareTreeStructure(Const RelationListA, RelationListB: TEpiDatafileRelationList): boolean;
   var
@@ -534,6 +537,19 @@ begin
   Options := [erdoShowOverview];
   if (not (FSt.HasOption('nol'))) then
     Include(Options, erdoShowDetailList);
+
+
+  DocumentFiles := TEpiDocumentFileList.Create;
+  DocumentFiles.Add(FExecutor.DocFile);
+  DocumentFiles.Add(Docfile);
+
+  R := TEpiReportMainHeader.Create(CoreReporter);
+  R.ProjectList := DocumentFiles;
+  R.Title := 'Double Entry Validation Report';
+  R.RunReport;
+  R.Free;
+  DocumentFiles.Free;
+
 
   if ((FExecutor.Document.DataFiles.Count > 1) and (Docfile.Document.DataFiles.Count > 1)) and
      (not FSt.HasOption('ds'))

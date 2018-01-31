@@ -242,13 +242,23 @@ begin
 end;
 
 procedure TCoreReportGeneratorToOutputCreator.Section(const Text: string);
+var
+  l: PtrInt;
 begin
+  l := UTF8Length(Text);
+  FOutputCreator.DoNormal(DupeString('=', l));
   FOutputCreator.DoNormal(Text);
+  FOutputCreator.DoNormal(DupeString('=', l));
 end;
 
 procedure TCoreReportGeneratorToOutputCreator.Heading(const Text: string);
+var
+  l: PtrInt;
 begin
+  l := UTF8Length(Text);
+  FOutputCreator.DoNormal(DupeString('-', l));
   FOutputCreator.DoNormal(Text);
+  FOutputCreator.DoNormal(DupeString('-', l));
 end;
 
 procedure TCoreReportGeneratorToOutputCreator.Line(const Text: string);
