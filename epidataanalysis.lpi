@@ -551,7 +551,7 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dEPI_CHROMIUM_HTML"/>
+      <CustomOptions Value="-dEPI_CHROMIUM_HTML1"/>
     </Other>
   </CompilerOptions>
   <Debugging>

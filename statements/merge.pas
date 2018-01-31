@@ -500,35 +500,6 @@ var
         CompareFieldRecords(Result, MainField, MergeField, MainIdx, MergeIdx);
         if (Result <> 0) then
           Exit;
-
-{        case MainField.FieldType of
-          ftBoolean:
-            result := CompareValue(MainField.AsBoolean[MainIdx], MergeField.AsBoolean[MergeIdx]);
-
-          ftInteger,
-          ftAutoInc:
-            result := CompareValue(MainField.AsInteger[MainIdx], MergeField.AsInteger[MergeIdx]);
-
-          ftFloat:
-            result := CompareValue(MainField.AsFloat[MainIdx], MergeField.AsFloat[MergeIdx], 0.0);
-
-          ftDMYDate,
-          ftMDYDate,
-          ftYMDDate,
-          ftDMYAuto,
-          ftMDYAuto,
-          ftYMDAuto:
-            result := CompareValue(MainField.AsDate[MainIdx],  MergeField.AsDate[MergeIdx]);
-
-          ftTime,
-          ftTimeAuto:
-            result := CompareValue(MainField.AsTime[MainIdx], MergeField.AsTime[MergeIdx], 0.0);
-
-          ftUpperString,
-          ftString,
-          ftMemo:
-            result := Sign(UTF8CompareStr(MainField.AsString[MainIdx], MergeField.AsString[MergeIdx]));
-        end;}
       end;
   end;
 
@@ -612,6 +583,9 @@ begin
       CombineVar.ValueLabelSet := MainDF.ValueLabels.GetValueLabelSetByName('_mergevar_lbl');
     end;
 
+  for i := 0 to CombineVar.Size - 1 do
+    CombineVar.AsInteger[i] := 1;
+
   TableLookup := ST.HasOption('table');
 
   MainDFBeforeSize := MainDF.Size;
@@ -643,24 +617,12 @@ begin
 
                 // First transfer data from existing fields into new records.
                 for MainF in MainDF.Fields do
-                  begin
-//                    if MainF.IsKeyfield then continue;
-                    TransferData(MainF, MainF, DestIdx, MainRunner);
-                  end;
+                  TransferData(MainF, MainF, DestIdx, MainRunner, moReplace);
 
                 for MergeF in MergeDF.Fields do
                   begin
                     MainF := MainDF.Fields.FieldByName[MergeF.Name];
-
-
-       {             if Assigned(MainF.FindCustomData(MERGE_CUSTOM_DATA)) or
-                       (MergeOpt in [moUpdate, moReplace])
-                    then
-                      // This is a field from the merge dataset
-                      TransferData(MainF, MergeF, DestIdx, MergeRunner, moCombine)
-                    else
-                      // this field was in the original dataset also    }
-                      TransferData(MainF, MergeF,  DestIdx, MergeRunner,  MergeOpt)
+                    TransferData(MainF, MergeF,  DestIdx, MergeRunner,  MergeOpt);
                   end;
               end
             else
@@ -670,7 +632,7 @@ begin
                 for MergeF in MergeDF.Fields do
                   begin
                     MainF := MainDF.Fields.FieldByName[MergeF.Name];
-                    if MainDF.KeyFields.FieldExists(MainF) then
+                    if MainF.IsKeyfield then
                       TransferData(MainF, MergeF, DestIdx, MergeRunner, moCombine)
                     else
                       TransferData(MainF, MergeF, DestIdx, MergeRunner, MergeOpt);
@@ -695,15 +657,11 @@ begin
                 for MergeF in MergeDF.Fields do
                   begin
                     MainF := MainDF.Fields.FieldByName[MergeF.Name];
-                    if MainDF.KeyFields.FieldExists(MainF) then
-                      TransferData(MainF, MergeF, DestIdx, MergeRunner, moCombine)
-                    else
-                      TransferData(MainF, MergeF, DestIdx, MergeRunner, MergeOpt);
+                    TransferData(MainF, MergeF, DestIdx, MergeRunner, moReplace)
                   end;
 
                 CombineVar.AsInteger[DestIdx] := 2;
               end;
-
 
             PrevCompare := GreaterThanValue;
             Inc(MergeRunner);
@@ -719,12 +677,10 @@ begin
         for MergeF in MergeDF.Fields do
           begin
             MainF := MainDF.Fields.FieldByName[MergeF.Name];
-            if MainDF.KeyFields.FieldExists(MainF) then
-              TransferData(MainF, MergeF, DestIdx, MergeRunner, moCombine)
-            else
-              TransferData(MainF, MergeF, DestIdx, MergeRunner, MergeOpt);
+            TransferData(MainF, MergeF, DestIdx, MergeRunner, moReplace)
           end;
 
+        CombineVar.AsInteger[DestIdx] := 2;
         Inc(MergeRunner);
       end;
 

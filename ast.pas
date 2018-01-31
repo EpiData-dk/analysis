@@ -1408,10 +1408,10 @@ end;
 function TReportValidateDoubleEntry.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  Result.Insert('fn',  [rtString, rtUndefined]);
-  Result.Insert('ds',  [rtObject], [evtDataset], [evfInternal, evfExternal, evfAsObject]);
+  Result.Insert('fn',   [rtString, rtUndefined]);
+  Result.Insert('ds',   [rtObject], [evtDataset], [evfInternal, evfExternal, evfAsObject]);
   Result.Insert('join', [rtObject], [evtField], [evfInternal, evfAsObject]);
-  result.Insert('nol', [rtUndefined]);
+  result.Insert('nol',  [rtUndefined]);
 end;
 
 function TReportValidateDoubleEntry.GetAcceptedVariableCount: TBoundArray;

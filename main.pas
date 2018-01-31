@@ -408,7 +408,7 @@ begin
   Screen.AddHandlerActiveFormChanged(@FormChanged);
   Application.AddOnKeyDownBeforeHandler(@PrimaryKeyHandler);
   Application.AddOnExceptionHandler(@MainExceptionHandler);
-  Application.AddOnActivateHandler(@ApplicationActivate);
+//  Application.AddOnActivateHandler(@ApplicationActivate);
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
