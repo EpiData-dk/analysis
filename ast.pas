@@ -1404,8 +1404,12 @@ begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('fn',   [rtString, rtUndefined]);
   Result.Insert('ds',   [rtObject], [evtDataset], [evfInternal, evfExternal, evfAsObject]);
-  Result.Insert('join', [rtObject], [evtField], [evfInternal, evfAsObject]);
   result.Insert('nol',  [rtUndefined]);
+  Result.Insert('nos', [rtUndefined]);
+  Result.Insert('nodt', [rtUndefined]);
+  Result.Insert('noc', [rtUndefined]);
+  Result.Insert('noauto', [rtUndefined]);
+  Result.Insert('val', [rtUndefined]);
 end;
 
 function TReportValidateDoubleEntry.GetAcceptedVariableCount: TBoundArray;

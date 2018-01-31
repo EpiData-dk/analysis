@@ -440,6 +440,7 @@ var
   Options: TEpiReportDEVOptions;
   R: TEpiReportMainHeader;
   DocumentFiles: TEpiDocumentFileList;
+  DblOptions: TEpiToolsDblEntryValidateOptions;
 
   function CompareTreeStructure(Const RelationListA, RelationListB: TEpiDatafileRelationList): boolean;
   var
@@ -534,10 +535,13 @@ begin
 
   CoreReporter := TCoreReportGeneratorToOutputCreator.Create(FOutputCreator);
   FCurrentDblValDFIndex := 0;
-  Options := [erdoShowOverview];
-  if (not (FSt.HasOption('nol'))) then
-    Include(Options, erdoShowDetailList);
 
+  Options := [erdoShowOverview];
+  if (not (FSt.HasOption('nol'))) then Include(Options, erdoShowDetailList);
+
+  DblOptions := [devIgnoreDeleted, devCaseSensitiveText];
+  if FSt.HasOption('noc') then Exclude(DblOptions, devCaseSensitiveText);
+  if FSt.HasOption('val') then Include(DblOptions, devAddVerifiedFlagToDF);
 
   DocumentFiles := TEpiDocumentFileList.Create;
   DocumentFiles.Add(FExecutor.DocFile);
@@ -550,7 +554,6 @@ begin
   R.Free;
   DocumentFiles.Free;
 
-
   if ((FExecutor.Document.DataFiles.Count > 1) and (Docfile.Document.DataFiles.Count > 1)) and
      (not FSt.HasOption('ds'))
   then
@@ -561,13 +564,6 @@ begin
       then
         begin
           FExecutor.Error('When comparing whole projects, it is not possible to select individual variables to compare!');
-          FSt.ExecResult := csrFailed;
-          Exit;
-        end;
-
-      if FSt.HasOption('join') then
-        begin
-          FExecutor.Error('When comparing whole projects, it is not possible to select individual join-by variables!');
           FSt.ExecResult := csrFailed;
           Exit;
         end;
@@ -587,7 +583,7 @@ begin
           DblVal.CompareFields := Fields;
           DblVal.MainDF := DF;
           DblVal.DuplDF := Docfile.Document.DataFiles.GetDataFileByName(DF.Name);
-          DblVal.DblEntryValidateOptions := [devIgnoreDeleted];
+          DblVal.DblEntryValidateOptions := DblOptions;
           DblVal.ReportOptions := Options;
           DblVal.RunReport;
 
@@ -607,20 +603,25 @@ begin
       then
         List := FSt.VariableList.GetIdentsAsList
       else
-        List := FExecutor.DataFile.Fields.GetItemNames(false);
-
-      Fields := TEpiFields.Create(nil);
-      Fields.UniqueNames := false;
-      Fields.Sorted := false;
-      for i := 0 to List.Count - 1 do
-        Fields.AddItem(FExecutor.DataFile.Fields.FieldByName[List[i]]);
+        List := FExecutor.DataFile.KeyFields.GetItemNames(false);
 
       JoinFields := TEpiFields.Create(nil);
-      for i := 0 to FSt.Options.Count - 1 do
+      JoinFields.UniqueNames := false;
+      JoinFields.Sorted := false;
+      for i := 0 to List.Count - 1 do
+        JoinFields.AddItem(FExecutor.DataFile.Fields.FieldByName[List[i]]);
+
+      Fields := TEpiFields.Create(nil);
+
+      for F in FExecutor.DataFile.Fields do
         begin
-          Opt := FSt.Options[i];
-          if Opt.Ident = 'join' then
-            JoinFields.AddItem(FExecutor.DataFile.Fields.FieldByName[Opt.Expr.AsIdent]);
+          if (JoinFields.ItemExistsByName(F.Name)) then continue;
+
+          if (FSt.HasOption('nos'))    and (F.FieldType in StringFieldTypes) then continue;
+          if (FSt.HasOption('nodt'))   and (F.FieldType in DateFieldTypes + TimeFieldTypes) then continue;
+          if (FSt.HasOption('noauto')) and (F.FieldType in AutoFieldTypes) then continue;
+
+          Fields.AddItem(F);
         end;
 
       DBLValCreateResultVars(1);
@@ -631,7 +632,7 @@ begin
       DblVal.MainDF := FExecutor.DataFile;
       DblVal.DuplDF := DF;
       DblVal.OnCallAllDone := @DBLValCallAllCallback;
-      DblVal.DblEntryValidateOptions := [devIgnoreDeleted];
+      DblVal.DblEntryValidateOptions := DblOptions;
       DblVal.ReportOptions := Options;
       DblVal.RunReport;
 
