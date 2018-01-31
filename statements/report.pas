@@ -282,7 +282,7 @@ begin
     end;
 
   if (not Assigned(FileNames)) and
-     (not Assigned(DataFiles))
+     (not Assigned(Datasets))
   then
     begin
       FExecutor.Error('Neither !fs or !ds was used. At least one must be provided!');
