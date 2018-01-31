@@ -408,7 +408,7 @@ begin
   Screen.AddHandlerActiveFormChanged(@FormChanged);
   Application.AddOnKeyDownBeforeHandler(@PrimaryKeyHandler);
   Application.AddOnExceptionHandler(@MainExceptionHandler);
-//  Application.AddOnActivateHandler(@ApplicationActivate);
+  Application.AddOnActivateHandler(@ApplicationActivate);
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -1389,7 +1389,7 @@ end;
 
 procedure TMainForm.ApplicationActivate(Sender: TObject);
 begin
-  FOutputViewer.Initialize;
+  FOutputViewer.InvalidateView;
 end;
 
 procedure TMainForm.ExecutorStart(Sender: TObject);

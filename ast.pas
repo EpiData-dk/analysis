@@ -1262,7 +1262,6 @@ type
 
   TReportValidateDoubleEntry = class(TCustomReportCommand)
   protected
-    function GetRequireOpenProject: Boolean; override;
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
     function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec;
@@ -1399,11 +1398,6 @@ uses
   math, variants, LazUTF8, LazFileUtils;
 
 { TReportValidateDoubleEntry }
-
-function TReportValidateDoubleEntry.GetRequireOpenProject: Boolean;
-begin
-  Result := false;
-end;
 
 function TReportValidateDoubleEntry.GetAcceptedOptions: TStatementOptionsMap;
 begin
