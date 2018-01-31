@@ -346,7 +346,18 @@ begin
   end;
 
   if Table.Header.Text <> '' then
-    WriteToStream(AdjustedText(Table.Header, ColWidthTotal) + LineEnding);
+    begin
+      H := 0;
+      Txt := GetText(Table.Header);
+      while Length(Txt) > 0 do
+      begin
+        Inc(H);
+        LineFromLines(Txt);
+      end;
+
+      for i := 1 to H do
+        WriteToStream(AdjustedText(Table.Header, ColWidthTotal, i) + LineEnding);
+    end;
 
   for Row := 0 to Table.RowCount -1 do
   begin
@@ -432,7 +443,18 @@ begin
   end;
 
   if Table.Footer.Text <> '' then
-    WriteToStream(AdjustedText(Table.Footer, ColWidthTotal) + LineEnding);
+    begin
+      H := 0;
+      Txt := GetText(Table.Footer);
+      while Length(Txt) > 0 do
+      begin
+        Inc(H);
+        LineFromLines(Txt);
+      end;
+
+      for i := 1 to H do
+        WriteToStream(AdjustedText(Table.Footer, ColWidthTotal, i) + LineEnding);
+    end;
 
 
   WriteToStream(LineEnding);

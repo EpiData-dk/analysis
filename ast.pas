@@ -2643,6 +2643,9 @@ begin
 
   if SubCommand in [ccData, ccDataset] then
     AddVariableLabelOptions(Result);
+
+  if SubCommand = ccProject then
+    Result.Insert('info', [rtUndefined]);
 end;
 
 function TListCommand.GetRequireOpenProject: Boolean;

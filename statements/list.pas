@@ -24,6 +24,7 @@ type
     procedure DoListValueLabels;
     procedure DoListResults;
     procedure DoListGlobals;
+    procedure DoListProject;
     procedure FillDataSetTable(const Relation: TEpiMasterRelation;
       const Depth: Cardinal; const Index: Cardinal; var aContinue: boolean;
       Data: Pointer = nil);
@@ -37,7 +38,8 @@ implementation
 
 uses
   Forms, Controls, result_variables, epidatafiles, epidatafilerelations_helper,
-  epivaluelabels, LazUTF8, epimiscutils, strutils, epifields_helper, options_utils;
+  epivaluelabels, LazUTF8, epimiscutils, strutils, epifields_helper, options_utils,
+  epireport_report_studyinfo, epireport_report_projectheading;
 
 { TExecList }
 
@@ -376,6 +378,33 @@ begin
   AList.Free;
 end;
 
+procedure TExecList.DoListProject;
+var
+  Converter: TCoreReportGeneratorToOutputCreator;
+  RH: TEpiReportProjectHeader;
+  RS: TEpiReportStudyInfo;
+begin
+  Converter := TCoreReportGeneratorToOutputCreator.Create(FOutputCreator);
+
+  RH := TEpiReportProjectHeader.Create(Converter);
+  RH.Options := [];
+  RH.Document := FExecutor.Document;
+  RH.Filename := FExecutor.DocFile.FileName;
+  RH.FileNo   := 1;
+  RH.RunReport;
+  RH.Free;
+
+  if (FST.HasOption('info')) then
+    begin
+      RS := TEpiReportStudyInfo.Create(Converter);
+      RS.Document := FExecutor.Document;
+      RS.RunReport;
+      RS.Free;
+    end;
+
+  Converter.Free;
+end;
+
 procedure TExecList.FillDataSetTable(const Relation: TEpiMasterRelation;
   const Depth: Cardinal; const Index: Cardinal; var aContinue: boolean;
   Data: Pointer = nil);
@@ -461,6 +490,9 @@ begin
 
     ccGlobal:
       DoListGlobals;
+
+    ccProject:
+      DoListProject;
   end;
   ST.ExecResult := csrSuccess;
 end;
