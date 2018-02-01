@@ -1109,12 +1109,29 @@ begin
         end;
     end;
 
-  if (ST.HasOption('entry', Opt)) and
-     ((Opt.Expr.AsInteger > 2) or
-      (Opt.Expr.AsInteger < 0))
+  if (ST.HasOption('entry', Opt)) then
+    begin
+      if ((Opt.Expr.AsInteger > 2) or
+          (Opt.Expr.AsInteger < 0))
+      then
+        begin
+          DoError('Invalid entrymode value. Must be 0, 1 or 2!');
+          Exit;
+        end;
+
+      if (F.FieldType in AutoFieldTypes) then
+        begin
+          DoError('Entrymode cannot be set on automatic variables!');
+          Exit;
+        end;
+    end;
+
+  if (ST.HasOption('auto', Opt)) and
+     (Assigned(Opt.Expr)) and
+     ((Opt.Expr.AsInteger < 0) or (Opt.Expr.AsInteger > 2))
   then
     begin
-      DoError('Invalid entrymode value. Must be 0, 1 or 2!');
+      DoError('Invalid auto mode value. Must be 0, 1 or 2!');
       Exit;
     end;
 
@@ -1475,6 +1492,12 @@ begin
   then
     FDataFile.KeyFields.RemoveItem(F);
 
+  if ST.HasOption('auto', Opt) then
+    if Assigned(Opt.Expr) then
+      TEpiCustomAutoField(F).AutoMode := TEpiAutoUpdateMode(Opt.Expr.AsInteger)
+    else
+      TEpiCustomAutoField(F).AutoMode := umCreated;
+
   if ST.HasOption('cmpEQ', Opt) then AddCompare(Opt.Expr.AsIdent, fcEq);
   if ST.HasOption('cmpNE', Opt) then AddCompare(Opt.Expr.AsIdent, fcNEq);
   if ST.HasOption('cmpGT', Opt) then AddCompare(Opt.Expr.AsIdent, fcGT);
@@ -1499,6 +1522,8 @@ var
   lTop, lLeft: Integer;
   Opt: TOption;
   R: TEpiRange;
+  ft: TEpiFieldType;
+  Auto: Boolean;
 begin
   Section := FDataFile.MainSection;
 
@@ -1514,7 +1539,30 @@ begin
       lLeft := 80;
     end;
 
-  F := Section.NewField(ST.NewType);
+  ft := ST.NewType;
+  Case ft of
+    ftInteger:
+      if ST.HasOption('auto') then ft := ftAutoInc;
+
+    ftDMYDate:
+      begin
+        if ST.HasOption('dmy')  then ft := ftDMYDate;
+        if ST.HasOption('mdy')  then ft := ftMDYDate;
+        if ST.HasOption('ymd')  then ft := ftYMDDate;
+        if ST.HasOption('auto') then ft := Succ(Succ(Succ(ft)));
+      end;
+
+    ftTime:
+      if ST.HasOption('auto') then ft := ftTimeAuto;
+
+    ftString:
+      begin
+        if ST.HasOption('u')    then ft := ftUpperString;
+        if ST.HasOption('memo') then ft := ftMemo;
+      end
+  end;
+
+  F := Section.NewField(ft);
   F.Name := ST.Variable.Ident;
   F.Top  := lTop;
   F.Left := lLeft;
@@ -2636,7 +2684,10 @@ begin
 
           if (not res) then
             begin
-              DoError('Cannot create "' + S + '", name already used as a ' + ExecutorVariableTypeString[V.VarType] + '!');
+              if Assigned(V) then
+                DoError('Cannot create "' + S + '", name already used as a ' + ExecutorVariableTypeString[V.VarType] + '!')
+              else
+                DoError('Cannot create "' + S + '", name already used as section or heading!');
               ST.ExecResult := csrFailed;
               Exit;
             end;

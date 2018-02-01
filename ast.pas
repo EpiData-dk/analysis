@@ -2269,6 +2269,32 @@ begin
   result.Insert('cmpLT',      [rtObject], [evtField], [evfInternal, evfAsObject]);
   result.Insert('cmpGE',      [rtObject], [evtField], [evfInternal, evfAsObject]);
   result.Insert('cmpLE',      [rtObject], [evtField], [evfInternal, evfAsObject]);
+
+  case NewType of
+    ftBoolean: ;  // No extra options for boolean
+
+    ftFloat: ;    // No extra options for float
+
+    ftInteger:
+      result.Insert('auto', [rtUndefined]);
+
+    ftDMYDate:
+      begin
+        result.Insert('auto', [rtUndefined, rtInteger]);
+        result.Insert('dmy',  [rtUndefined]);
+        result.Insert('mdy',  [rtUndefined]);
+        result.Insert('ymd',  [rtUndefined]);
+      end;
+
+    ftTime:
+      result.Insert('auto', [rtUndefined, rtInteger]);
+
+    ftString:
+      begin
+        result.Insert('u',    [rtUndefined]);
+        result.Insert('memo', [rtUndefined]);
+      end;
+  end;
 end;
 
 constructor TNewVariable.Create(AValueExpr: TExpr; ANewType: TEpiFieldType;
