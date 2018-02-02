@@ -1,7 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-  <meta name="generator" content="HTML Tidy for HTML5 for Linux version 5.2.0"></meta>
   <meta name="Get_Latest_From" content="Http://www.epidata.dk"></meta>
   <meta name="author" content="Specification: JM.Lauritsen. TB.Christiansen"></meta>
   <meta name="Initial_design" content="J.Hockin"></meta>
@@ -60,9 +59,12 @@
          <ul>
       	   <li><a href="#creategrp">Create new (datasets, variables, labels)</a></li>
           <li><a href="#editgrp">Modify (datasets, variables, labels, values)</a></li>
-          <li><a href="#deletegrp">Delete (datasets, variables, labels)</a><br/><br/></li>
+          <li><a href="#deletegrp">Delete (datasets, variables, labels)</a>
+              <br/>
+              <br/></li>
           <li><a href="#stopgrp">Clean up &amp; stop</a></li>
-          <li><a href="#infogrp">Information / Calculator </a><br/><br/></li>
+          <li><a href="#infogrp">Information / Calculator </a></li>
+          <li><a href="#reportsgrp">Reports</a><br/><br/></li>
           <li><a href="#programgrp">Run scripts</a></li>
          </ul>
         </td>
@@ -1628,7 +1630,32 @@ reorder age km !before := agegrp // Moved the variables age and km in front of a
        </td>
       </tr>
 
-
+     <!--
+      ######################################################3
+      REPORTS
+      ######################################################3
+     -->
+     <tr>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="reportgrp" id="reportgrp"></a> Reports</td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="report" id="report"/>report users</td>
+      <td>
+       <font class="cmd">report users</font><br/>
+       <p>If a project is using Extended Access control, this command will show a condensed report of the log entries and a list of failed login attempts.</p>
+       If the project is not using Extended Access control, an error will be displayed. 
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="report_users" id="report_"/>report users</td>
+      <td>
+       <font class="cmd">report users</font><br/>
+       If a project is using Extended Access control, this command will show a condensed report of the log entries and a list of failed login attempts. 
+      </td>
+     </tr>
+     
      <!--
       ######################################################3
       Disk commands

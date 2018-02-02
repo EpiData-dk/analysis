@@ -535,6 +535,16 @@ begin
     end;
   KeyChecker.Free;
 
+  if (MainDF.Fields.ItemExistsByName('mergevar')) then
+    begin
+      FExecutor.Error(
+        Format('"mergevar" already exists in the main dataset!' + LineEnding +
+        'Drop or rename the variable before using "merge"'
+      );
+      ST.ExecResult := csrFailed;
+      Exit;
+    end;
+
   CopyStructure(MainDF, MergeDF);
 
   MainDF.SortRecords(MainKeyFields);
@@ -548,40 +558,35 @@ begin
   if ST.HasOption('replace') then
     MergeOpt := moReplace;
 
+  Opts := TOptionList.Create;
+  Opts.Add(TOption.Create(TVariable.Create('label', FExecutor),  TStringLiteral.Create('Source of information for each observation')));
+  Opts.Add(TOption.Create(TVariable.Create('l', FExecutor), TIntegerLiteral.Create(1)));
+  NewST := TNewVariable.Create(TIntegerLiteral.Create(1), ftInteger, TVariable.Create('mergevar', FExecutor), Opts);
+  NewST.AssignToken(TToken.Create(ST.LineNo, ST.ColNo, ST.ByteNo));
 
-  CombineVar := MainDF.Fields.FieldByName['mergevar'];
-  if (not Assigned(CombineVar)) then
+  FExecutor.ExecStatement(NewST);
+  NewST.Free;
+  Opts.Free;
+
+  if (not MainDf.ValueLabels.ItemExistsByName('_mergevar_lbl')) then
     begin
+      VLList := TValueLabelPairs.Create(rtInteger);
+      VLList.AddPair(TIntegerLiteral.Create(1), 'In main dataset only');
+      VLList.AddPair(TIntegerLiteral.Create(2), 'In merged dataset only');
+      VLList.AddPair(TIntegerLiteral.Create(3), 'In both datasets');
       Opts := TOptionList.Create;
-      Opts.Add(TOption.Create(TVariable.Create('label', FExecutor),  TStringLiteral.Create('Source of information for each observation')));
-      Opts.Add(TOption.Create(TVariable.Create('l', FExecutor), TIntegerLiteral.Create(1)));
-      NewST := TNewVariable.Create(TIntegerLiteral.Create(1), ftInteger, TVariable.Create('mergevar', FExecutor), Opts);
+
+      NewST := TNewValuelabel.Create(VLList, ftInteger, TVariable.Create('_mergevar_lbl', FExecutor), Opts);
       NewST.AssignToken(TToken.Create(ST.LineNo, ST.ColNo, ST.ByteNo));
 
       FExecutor.ExecStatement(NewST);
       NewST.Free;
+      VLList.Free;
       Opts.Free;
-
-      if (not MainDf.ValueLabels.ItemExistsByName('_mergevar_lbl')) then
-        begin
-          VLList := TValueLabelPairs.Create(rtInteger);
-          VLList.AddPair(TIntegerLiteral.Create(1), 'In main dataset only');
-          VLList.AddPair(TIntegerLiteral.Create(2), 'In merged dataset only');
-          VLList.AddPair(TIntegerLiteral.Create(3), 'In both datasets');
-          Opts := TOptionList.Create;
-
-          NewST := TNewValuelabel.Create(VLList, ftInteger, TVariable.Create('_mergevar_lbl', FExecutor), Opts);
-          NewST.AssignToken(TToken.Create(ST.LineNo, ST.ColNo, ST.ByteNo));
-
-          FExecutor.ExecStatement(NewST);
-          NewST.Free;
-          VLList.Free;
-          Opts.Free;
-        end;
-
-      CombineVar := MainDF.Fields.FieldByName['mergevar'];
-      CombineVar.ValueLabelSet := MainDF.ValueLabels.GetValueLabelSetByName('_mergevar_lbl');
     end;
+
+  CombineVar := MainDF.Fields.FieldByName['mergevar'];
+  CombineVar.ValueLabelSet := MainDF.ValueLabels.GetValueLabelSetByName('_mergevar_lbl');
 
   for i := 0 to CombineVar.Size - 1 do
     CombineVar.AsInteger[i] := 1;
