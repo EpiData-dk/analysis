@@ -555,10 +555,12 @@ object EditorForm: TEditorForm
         Caption = 'Totorials (Local)'
       end
       object MenuItem37: TMenuItem
-        Action = MainForm.TutorialsWikiAction
+        Caption = 'Tutorials (Epidata Wiki)'
+        OnClick = TutorialsWikiActionExecute
       end
       object MenuItem39: TMenuItem
-        Action = MainForm.TutorialsWebAction
+        Caption = 'Tutorials On Web'
+        OnClick = TutorialsWebActionExecute
       end
       object MenuItem36: TMenuItem
         Caption = '-'

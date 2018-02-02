@@ -28,6 +28,9 @@ type
     procedure FillDataSetTable(const Relation: TEpiMasterRelation;
       const Depth: Cardinal; const Index: Cardinal; var aContinue: boolean;
       Data: Pointer = nil);
+    procedure FillDataSetTableAll(const Relation: TEpiMasterRelation;
+      const Depth: Cardinal; const Index: Cardinal; var aContinue: boolean;
+      Data: Pointer = nil);
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
     destructor Destroy; override;
@@ -208,6 +211,34 @@ begin
   T.SetColAlignment(3, taLeftJustify);
   T.SetColAlignment(4, taLeftJustify);
   T.SetColAlignment(5, taLeftJustify);
+
+  if (FST.HasOption('all')) then
+    begin
+      T := FOutputCreator.AddTable;
+      T.ColCount := 7;
+      T.RowCount := 1;
+
+      Idx := 0;
+      T.Cell[PostInc(Idx), 0].Text := '{\b Name}';
+      T.Cell[PostInc(Idx), 0].Text := '{\b Obs}';
+      T.Cell[PostInc(Idx), 0].Text := '{\b Deleted}';
+      T.Cell[PostInc(Idx), 0].Text := '{\b Validated}';
+      T.Cell[PostInc(Idx), 0].Text := '{\b Created}';
+      T.Cell[PostInc(Idx), 0].Text := '{\b Structure Edited}';
+      T.Cell[PostInc(Idx), 0].Text := '{\b Data Edited}';
+      T.SetRowBorders(0, [cbTop, cbBottom]);
+      FExecutor.Document.Relations.OrderedWalk(@FillDataSetTableAll, T);
+
+      T.SetRowBorders(T.RowCount -1, [cbBottom]);
+      T.SetColAlignment(0, taLeftJustify);
+      T.SetColAlignment(1, taRightJustify);
+      T.SetColAlignment(2, taRightJustify);
+      T.SetColAlignment(3, taRightJustify);
+      T.SetColAlignment(4, taRightJustify);
+      T.SetColAlignment(5, taRightJustify);
+
+      T.Footer.Text := '(see *) Deleted: Marked for deletion. Validated: Marked validated in compare duplicate';
+    end;
 end;
 
 procedure TExecList.DoListValueLabels;
@@ -455,6 +486,44 @@ begin
     S := S + ' + (' + F.GetVariableLabel(Gvt) + ')';
   Delete(S, 1, 3);
   T.Cell[PostInc(Idx), Row].Text := S;
+end;
+
+procedure TExecList.FillDataSetTableAll(const Relation: TEpiMasterRelation;
+  const Depth: Cardinal; const Index: Cardinal; var aContinue: boolean;
+  Data: Pointer = nil);
+var
+  Gvt: TEpiGetVariableLabelType;
+  T: TOutputTable;
+  Row, Idx: Integer;
+begin
+  Gvt := VariableLabelTypeFromOptionList(FST.OptionList, FExecutor.SetOptions);
+
+  T := TOutputTable(Data);
+  Row := T.RowCount;
+
+  T.RowCount := Row + 1;
+  Idx := 0;
+
+  // Name
+  T.Cell[PostInc(Idx), Row].Text := Relation.Datafile.Name + IfThen(Relation.Datafile = FExecutor.DataFile, '*', '');
+
+  // Obs
+  T.Cell[PostInc(Idx), Row].Text := IntToStr(Relation.Datafile.Size);
+
+  // Deleted
+  T.Cell[PostInc(Idx), Row].Text := IntToStr(Relation.Datafile.DeletedCount);
+
+  // Validate
+  T.Cell[PostInc(Idx), Row].Text := IntToStr(Relation.Datafile.VerifiedCount);
+
+  // Created
+  T.Cell[PostInc(Idx), Row].Text := DateTimeToStr(Relation.Datafile.Created);
+
+  // Structure Edited
+  T.Cell[PostInc(Idx), Row].Text := DateTimeToStr(Relation.Datafile.StructureModifiedDate);
+
+  // Data Edited
+  T.Cell[PostInc(Idx), Row].Text := DateTimeToStr(Relation.Datafile.RecModifiedDate);
 end;
 
 constructor TExecList.Create(AExecutor: TExecutor;

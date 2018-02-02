@@ -137,6 +137,8 @@ type
     procedure ReplaceActionExecute(Sender: TObject);
     procedure FormDropFiles(Sender: TObject; const FileNames: array of String);
     procedure InsertSetOptionsActionExecute(Sender: TObject);
+    procedure TutorialsWikiActionExecute(Sender: TObject);
+    procedure TutorialsWebActionExecute(Sender: TObject);
   private
     type
       // Hold to active settings of the editor/text
@@ -699,6 +701,16 @@ begin
 
   SynEdit1.InsertTextAtCaret(AList.Text);
   AList.Free;
+end;
+
+procedure TEditorForm.TutorialsWikiActionExecute(Sender: TObject);
+begin
+  MainForm.TutorialsWikiActionExecute(self);
+end;
+
+procedure TEditorForm.TutorialsWebActionExecute(Sender: TObject);
+begin
+  MainForm.TutorialsWebActionExecute(self);
 end;
 
 procedure TEditorForm.FontChangeEvent(Sender: TObject);

@@ -2674,6 +2674,9 @@ begin
   if SubCommand in [ccData, ccDataset] then
     AddVariableLabelOptions(Result);
 
+  if SubCommand = ccDataset then
+    Result.Insert('all', [rtUndefined]);
+
   if SubCommand = ccProject then
     Result.Insert('info', [rtUndefined]);
 end;
