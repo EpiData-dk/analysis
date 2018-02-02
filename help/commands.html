@@ -710,7 +710,7 @@ new global g7[10] integer := 10;
           <a name="editdataset" id="editdataset">edit dataset</a><br/>
           edit ds<br/>
         </td>
-        <td>
+        <td>m
           <font class="cmd">edit dataset <i>dataset<sub>1</sub></i> [!options...]</font><br/>
           <p>Edits an existing dataset in the project.</p>
           <ul>
@@ -742,7 +742,8 @@ new global g7[10] integer := 10;
            </li>
             <li>
               <font class="option">!noparent</font>
-              Moves the current dataset (and all related datasets) to be a top-level dataset.
+              Moves the current dataset (and all related datasets) to be a top-level dataset.<br/>
+              Notice than one must create a new empty child dataset to restore the relate situation followed by a merge of data in child datasets. 
             </li>
           </ul>
          <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
@@ -1640,7 +1641,7 @@ reorder age km !before := agegrp // Moved the variables age and km in front of a
      </tr>
      <tr valign="top">
       <td>
-       <a name="report" id="report"/>report users</td>
+       <a name="report" id="report_users"/>report users</td>
       <td>
        <font class="cmd">report users</font><br/>
        <p>If a project is using Extended Access control, this command will show a condensed report of the log entries and a list of failed login attempts.</p>
@@ -1649,10 +1650,16 @@ reorder age km !before := agegrp // Moved the variables age and km in front of a
      </tr>
      <tr valign="top">
       <td>
-       <a name="report_users" id="report_"/>report users</td>
+        <a name="report" id="report_validate"/>report validate [var<sub>1</sub> var<sub>2</sub> ...] [!options]</td>
       <td>
-       <font class="cmd">report users</font><br/>
-       If a project is using Extended Access control, this command will show a condensed report of the log entries and a list of failed login attempts. 
+       <font class="cmd">report val</font><br/>
+       Compares two dataset / projects against eachother, validating the data content and outputs a report of diffenrences based on the comparison.<br/>
+        <ul>
+          <li><font class="option">!fn := "&lt;string&gt;"</font> Opens an external file to compare with.</li>
+          <li><font class="option">!ds := &lt;dataset id&gt;</font> Specifies a single dataset (internal/external) to compare with.</li>
+          <li><font class="option">!nos</font> </li>
+        </ul>
+        
       </td>
      </tr>
      

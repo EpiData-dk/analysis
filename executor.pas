@@ -1492,7 +1492,9 @@ begin
   then
     FDataFile.KeyFields.RemoveItem(F);
 
-  if ST.HasOption('auto', Opt) then
+  if ST.HasOption('auto', Opt) and
+     (F.InheritsFrom(TEpiCustomAutoField))
+  then
     if Assigned(Opt.Expr) then
       TEpiCustomAutoField(F).AutoMode := TEpiAutoUpdateMode(Opt.Expr.AsInteger)
     else
