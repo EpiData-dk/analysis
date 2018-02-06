@@ -693,10 +693,8 @@ function TExecutor.DoPrepareDatafile(SelectField: TStrings;
   MissingFields: TStrings; Options: TPrepareDatasetOptions): TEpiDataFile;
 var
   i: Integer;
-  F, DeleteVec, ObsNoVec: TEpiField;
-  S: String;
+  F, ObsNoVec: TEpiField;
   CloneDoc: TEpiDocument;
-  Idx: Int64;
 begin
   CloneDoc := TEpiDocument(FDocFile.Document.Clone);
   Result := CloneDoc.DataFiles.GetDataFileByName(FDataFile.Name);
@@ -725,6 +723,14 @@ begin
       SelectField.Add(ANA_EXEC_PREPAREDS_OBSNO_FIELD);
     end;
 
+  // Dump all the fields no longer needed. They take up time during the packing fase.
+  for i := Result.Fields.Count -1 downto 0 do
+    begin
+      F := Result.Field[i];
+      if SelectField.IndexOf(F.Name) < 0 then
+          F.Free;
+    end;
+
   if (pdoIgnoreDeleteSetOption in Options) then
     FDropDeleted := false
   else
@@ -743,14 +749,6 @@ begin
   Result.Pack(@PrepareDatafilePack);
 
   FInverseSelectVector.Free;
-
-  // This also removed the DeleteVec
-  for i := Result.Fields.Count -1 downto 0 do
-    begin
-      F := Result.Field[i];
-      if SelectField.IndexOf(F.Name) < 0 then
-        F.Free;
-    end;
 
   if (pdoAddOrgObsNo in Options) then
     SelectField.Delete(SelectField.IndexOf(ANA_EXEC_PREPAREDS_OBSNO_FIELD));
