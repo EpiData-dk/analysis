@@ -602,7 +602,7 @@ end;</font>
             </li>
             <li>
               <font class="option">!confirm</font>
-              If used, the variable has the "confirm entry" flag set. Used in EpiData EntryClient.
+              If used, the variable has the "confirm entry" flag set. Used in EpiData EntryClient
             </li>
             <li>
               <font class="option">!key</font>
@@ -610,7 +610,21 @@ end;</font>
             </li>
            <li>
             <font class="option">!cmpX := <i>variable</i></font>
-            Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between the new variable and the assigned variable. 
+            Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between the new variable and the assigned variable
+           </li>
+           <li>
+            <font class="option">!u | !memo</font>
+            When creating a string variable it is possible to specify the sub type using one of the above options. !u specifies this is an uppercase string variable. !memo specifies this a memo variable
+           </li>
+           <li>
+            <font class="option">!dmy | !mdy | !ymd</font>
+            When creating a date variable it is possible to specify the sub type using one of the above options. !dmy is the default type if no option is used else the specified sub type is used
+           </li>
+           <li>
+            <font class="option">!auto [:= &lt;integer&gt;]</font>
+            When creating a variable that supports automatic content (date, time or integer) using this option changes the default type to the automatic type. Integers -> AutoIncrement, Dmy -> AutoDMY, etc..<br/>
+            For time and date variables it is possible to specify a number 0 (default), 1 or 2 which specifies when the variable is updated:<br/>
+            0 = When obervation is created, 1 = When observation is first saved, 2 = Each time the record is saved after being edited
            </li>
           </ul>
           Examples where all observations get the same value:<br/>
@@ -1025,14 +1039,30 @@ drop data !del ; // drop all observations "marked for deletion"
         </td>
       </tr>
 
-      <tr valign="top">
+     <tr valign="top">
+      <td>
+       <a name="listdataset" id="listdataset">list project</a><br/>
+       list p
+      </td>
+      <td>
+       <font class="cmd">list project</font>
+       <p>Shows a brief overview of the project</p>
+       <ul>
+        <li><font class="option">!info</font> Also outputs the study information</li>
+       </ul>
+      </td>
+     </tr>
+     <tr valign="top">
         <td>
           <a name="listdataset" id="listdataset">list dataset</a><br/>
           list ds
         </td>
         <td>
-          <font class="cmd">list dataset</font>
-          <p>Shows a list of datasets for the project</p>
+         <font class="cmd">list dataset</font>
+         <p>Shows a list of datasets for the project</p>
+         <ul>
+          <li><font class="option">!all</font> Outputs additional information about the listed datasets</li>
+         </ul>
         </td>
       </tr>
       <tr valign="top">
@@ -1637,7 +1667,7 @@ reorder age km !before := agegrp // Moved the variables age and km in front of a
       ######################################################3
      -->
      <tr>
-      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="reportgrp" id="reportgrp"></a> Reports</td>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="reportsgrp" id="reportsgrp"></a> Reports</td>
      </tr>
      <tr valign="top">
       <td>
@@ -1650,16 +1680,75 @@ reorder age km !before := agegrp // Moved the variables age and km in front of a
      </tr>
      <tr valign="top">
       <td>
-        <a name="report" id="report_validate"/>report validate [var<sub>1</sub> var<sub>2</sub> ...] [!options]</td>
+       <a name="report" id="report_validate"/>report val</td>
       <td>
-       <font class="cmd">report val</font><br/>
+       <font class="cmd">report validate [var<sub>1</sub> var<sub>2</sub> ...] [!options]</font><br/>
        Compares two dataset / projects against eachother, validating the data content and outputs a report of diffenrences based on the comparison.<br/>
+       The variables var<sub>1</sub> .. var<sub>n</sub> denotes the sorting variables. This is required if not comparing whole projects OR if the datasets does not contain and key variables.    
         <ul>
-          <li><font class="option">!fn := "&lt;string&gt;"</font> Opens an external file to compare with.</li>
-          <li><font class="option">!ds := &lt;dataset id&gt;</font> Specifies a single dataset (internal/external) to compare with.</li>
-          <li><font class="option">!nos</font> </li>
+         <li><font class="option">!fn := "&lt;string&gt;"</font> Opens an external file to compare with.</li>
+         <li><font class="option">!ds := &lt;dataset id&gt;</font> Specifies a single dataset (internal/external) to compare with.</li>
+         <li><font class="option">!nos</font> Excludes all string types from comparison</li>
+         <li><font class="option">!nodt</font> Excludes all date and time types from comparison</li>
+         <li><font class="option">!noauto</font> Excludes all auto types from comparison</li>
+         <li><font class="option">!noc</font> All text comparisons are done case in-sensitive</li>
+         <li><font class="option">!nol</font> Only show the condensed report - do not show the list of observations</li>
+         <li><font class="option">!val</font> All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!</li>
         </ul>
+       Examples:<font class="cmd">
         
+// Run a report based on the two internal datasets (1st is currently used, 2nd is the one marked with !ds :=...) 
+report val id !ds := ds2;
+
+// Run a report based on the two datasets, one internal and one external (1st is currently used, 2nd is the one marked with !ds :=...) 
+report val id !fn := "double_entry.epx" !ds := ds1
+
+// If you have two projects there are two ways compare there. If you wish to compare individual dataset, use the options above.
+// If you have two project you wish to make a complete validation on, use following:
+
+// Run a report based on the two complete projects, one internal and one external
+report val !fn := "double_entry.epx"
+
+// The last example is a special case where both the internal and external project only contains a single dataset each.
+// In this case you only need to specify the sorting variable(s) and the external file. The dataset option is not need
+// since the external project only has a single dataset.
+report val id !fn := "double_entry.epx"</font>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="report" id="report_countby"/>report cby</td>
+      <td>
+       <font class="cmd">report cby [var<sub>1</sub> var<sub>2</sub> ...] [!options]</font><br/>
+       Compares the combination of variables across several datasets. The variables var<sub>1</sub> .. var<sub>n</sub> is considere a "key" and each unique combination of this key is counted across all the specified datasets.<br/>
+       The output is a report with a condensed table of the found keys and a complete table with the found unique key values and the count of these in each dataset.
+       <ul>
+        <li><font class="option">!fn := &lt;global string vector&gt;</font> This option accepts a global vector with the filenames that is included in the report</li>
+        <li><font class="option">!ds := &lt;global string vector&gt;</font> This option accepts a global vector with the dataset name that is included in the report</li>
+        <li><font class="option">!nol</font> Only show the condensed report - do not show the list of observations</li>
+       </ul>
+       Examples:<font class="cmd">
+        
+// Setup the input for the report:
+new global filenames[5] string;
+filenames[1] := "count_file_1.epx";
+filenames[2] := "count_file_2.rec";
+filenames[3] := "count_file_3.dta";
+filenames[4] := "count_file_4.csv";
+filenames[5] := .;
+// NOTE: the filename are not required to be the same format, only the variable names MUST be the same
+//       if an entry in the vector is sys.missing, the command assumes the dataset is in the currently opened project.
+
+// The number of entries in the dataset variable MUST be the same as the filenames
+new global datasets[5] string;
+datasets[1] := "ds1";
+datasets[2] := "ds1";
+datasets[3] := "ds1";
+datasets[4] := "ds1";
+datasets[5] := "ds1";
+
+// Run the report:
+report cby id !fn := filenames !ds := datasets</font> 
       </td>
      </tr>
      
