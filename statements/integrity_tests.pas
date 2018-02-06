@@ -465,7 +465,9 @@ begin
 
     if (CmpResult < 0) then
       begin
-        if (ChildObsCount > DR.MaxRecordCount) then
+        if (ChildObsCount > DR.MaxRecordCount) and
+           (DR.MaxRecordCount > 0)
+        then
           begin
             for i := 0 to ChildObsCount - 1 do
               begin

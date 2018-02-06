@@ -538,7 +538,7 @@ begin
   if (MainDF.Fields.ItemExistsByName('mergevar')) then
     begin
       FExecutor.Error(
-        Format('"mergevar" already exists in the main dataset!' + LineEnding +
+        '"mergevar" already exists in the main dataset!' + LineEnding +
         'Drop or rename the variable before using "merge"'
       );
       ST.ExecResult := csrFailed;
