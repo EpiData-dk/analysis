@@ -759,20 +759,21 @@ type
 
   TValueLabelPairs = class(TAbstractSyntaxTreeBase)
   private
-    FPairs: TStrings;
+    FValues: TObjectList;
+    FTexts: TObjectList;
     FValueType: TASTResultType;
     function GetCount: Integer;
-    function GetLabelText(const Index: Integer): UTF8String;
+    function GetText(const Index: Integer): TExpr;
     function GetValues(const Index: Integer): TExpr;
   public
     constructor Create(AValueType: TASTResultType); virtual;
     function TypeCheck(Parser: IEpiTypeChecker): boolean; override;
     function Find(Const S: UTF8String; out Index: Integer): boolean;
-    procedure AddPair(Value: TExpr; Ident: UTF8String);
+    procedure AddPair(Value, Text: TExpr);
     property Count: Integer read GetCount;
     property ValueType: TASTResultType read FValueType;
     property Values[Const Index: Integer]: TExpr read GetValues;
-    property LabelText[Const Index: Integer]: UTF8String read GetLabelText;
+    property Text[Const Index: Integer]: TExpr read GetText;
   end;
 
 
@@ -2150,22 +2151,23 @@ end;
 
 function TValueLabelPairs.GetCount: Integer;
 begin
-  result := FPairs.Count;
+  result := FValues.Count;
 end;
 
-function TValueLabelPairs.GetLabelText(const Index: Integer): UTF8String;
+function TValueLabelPairs.GetText(const Index: Integer): TExpr;
 begin
-  result := FPairs.Strings[Index];
+  result := TExpr(FTexts[Index]);
 end;
 
 function TValueLabelPairs.GetValues(const Index: Integer): TExpr;
 begin
-  result := TExpr(FPairs.Objects[Index]);
+  result := TExpr(FValues[Index]);
 end;
 
 constructor TValueLabelPairs.Create(AValueType: TASTResultType);
 begin
-  FPairs := TStringListUTF8.Create;
+  FValues := TObjectList.Create(false);
+  FTexts  := TObjectList.Create(false);
   FValueType := AValueType;
 end;
 
@@ -2177,11 +2179,10 @@ begin
   Result := inherited TypeCheck(Parser);
 
   if result then
-    for i := 0 to FPairs.Count -1 do
+    for i := 0 to FValues.Count -1 do
     begin
-      Expr := TExpr(FPairs.Objects[I]);
+      Expr := TExpr(FValues[I]);
       Result := Expr.TypeCheck(Parser, TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData));
-
 
       if (Expr.ResultType <> FValueType) then
       begin
@@ -2197,6 +2198,11 @@ begin
 
       if (not result) then
         break;
+
+      Expr := TExpr(FTexts[I]);
+      Result := Expr.TypeCheck(Parser, TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData));
+
+      if (not result) then break;
     end;
 end;
 
@@ -2204,18 +2210,19 @@ function TValueLabelPairs.Find(const S: UTF8String; out Index: Integer
   ): boolean;
 begin
   Index := 0;
-  while (Index < FPairs.Count) do
+  while (Index < FValues.Count) do
     begin
-      if TExpr(FPairs.Objects[Index]).AsString = S then
+      if TExpr(FValues[Index]).AsString = S then
         break;
       Inc(Index);
     end;
-  result := (Index < FPairs.Count);
+  result := (Index < FValues.Count);
 end;
 
-procedure TValueLabelPairs.AddPair(Value: TExpr; Ident: UTF8String);
+procedure TValueLabelPairs.AddPair(Value, Text: TExpr);
 begin
-  FPairs.AddObject(Ident, Value);
+  FValues.Add(Value);
+  FTexts.Add(Text);
 end;
 
 { TNewGlobalVector }

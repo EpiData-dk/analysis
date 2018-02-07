@@ -626,12 +626,12 @@ end;
 function TASTBuilder.DoValueLabelPairs(R: TReduction;
   OwnerList: TValueLabelPairs): TValueLabelPairs;
 var
-  Expr: TExpr;
+  Value, Text: TExpr;
   S: UTF8String;
 begin
-{                                                  0           1             2
-<Value Label Pairs>                        ::= <Expression> String <Value Label Pairs>
-                                           |   <Expression> String
+{                                               0       1        2       3        4           5
+<Value Label Pairs>                        ::= '(' <Expression> ',' <Expression> ')' <Value Label Pairs>
+                                           |   '(' <Expression> ',' <Expression> ')'
 
 }
   if Assigned(OwnerList) then
@@ -639,16 +639,14 @@ begin
   else
     result := TValueLabelPairs.Create(rtUndefined);
 
-  // <Expression>
-  Expr := DoExpression(R.Tokens[0].Reduction);
-  // <String>
-  S := R.Tokens[1].DataVar;
-  S := Copy(S, 2, Length(S) - 2);
+  // <Expression> , <Expression>
+  Value := DoExpression(R.Tokens[1].Reduction);
+  Text  := DoExpression(R.Tokens[3].Reduction);
 
-  result.AddPair(Expr, S);
+  result.AddPair(Value, Text);
 
-  if R.TokenCount = 3 then
-    result := DoValueLabelPairs(R.Tokens[2].Reduction, result);
+  if R.TokenCount = 6 then
+    result := DoValueLabelPairs(R.Tokens[5].Reduction, result);
 end;
 
 function TASTBuilder.DoNewDataset(R: TReduction; OptionList: TOptionList

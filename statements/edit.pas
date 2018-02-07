@@ -68,7 +68,7 @@ begin
         else
           VL := VLSet.NewValueLabel;
 
-        VL.TheLabel.Text := VLPairs.LabelText[i];
+        VL.TheLabel.Text := VLPairs.Text[i].AsString;
         case VLSet.LabelType of
           ftInteger: TEpiIntValueLabel(VL).Value    := VLPairs.Values[i].AsInteger;
           ftFloat:   TEpiFloatValueLabel(VL).Value  := VLPairs.Values[i].AsFloat;

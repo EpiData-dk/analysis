@@ -571,9 +571,9 @@ begin
   if (not MainDf.ValueLabels.ItemExistsByName('_mergevar_lbl')) then
     begin
       VLList := TValueLabelPairs.Create(rtInteger);
-      VLList.AddPair(TIntegerLiteral.Create(1), 'In main dataset only');
-      VLList.AddPair(TIntegerLiteral.Create(2), 'In merged dataset only');
-      VLList.AddPair(TIntegerLiteral.Create(3), 'In both datasets');
+      VLList.AddPair(TIntegerLiteral.Create(1), TStringLiteral.Create('In main dataset only'));
+      VLList.AddPair(TIntegerLiteral.Create(2), TStringLiteral.Create('In merged dataset only'));
+      VLList.AddPair(TIntegerLiteral.Create(3), TStringLiteral.Create('In both datasets'));
       Opts := TOptionList.Create;
 
       NewST := TNewValuelabel.Create(VLList, ftInteger, TVariable.Create('_mergevar_lbl', FExecutor), Opts);
