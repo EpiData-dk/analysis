@@ -139,6 +139,7 @@ type
     procedure InsertSetOptionsActionExecute(Sender: TObject);
     procedure TutorialsWikiActionExecute(Sender: TObject);
     procedure TutorialsWebActionExecute(Sender: TObject);
+    procedure CommandsHelpActionExecute(Sender: TObject);
   private
     type
       // Hold to active settings of the editor/text
@@ -268,8 +269,6 @@ end;
 procedure TEditorForm.FormShow(Sender: TObject);
 begin
   SBUpdateFileName;
-  OpenDialog1.InitialDir := GetCurrentDirUTF8;
-  SaveDialog1.InitialDir := GetCurrentDirUTF8;
 
   CopyAction.ShortCut  := SynEdit1.Keystrokes[SynEdit1.Keystrokes.FindCommand(ecCopy)].ShortCut;
   CutAction.ShortCut   := SynEdit1.Keystrokes[SynEdit1.Keystrokes.FindCommand(ecCut)].ShortCut;
@@ -713,6 +712,11 @@ begin
   MainForm.TutorialsWebActionExecute(self);
 end;
 
+procedure TEditorForm.CommandsHelpActionExecute(Sender: TObject);
+begin
+  MainForm.CommandsHelpActionExecute(self);
+end;
+
 procedure TEditorForm.FontChangeEvent(Sender: TObject);
 begin
   SynEdit1.Font.BeginUpdate;
@@ -949,6 +953,10 @@ begin
 
   if ((ForceDialog) or (FFileName = '')) then
   begin
+    if (FFileName = '') then
+      SaveDialog1.InitialDir := GetCurrentDirUTF8
+    else
+      SaveDialog1.InitialDir := ExtractFilePath(FFileName);
     SaveDialog1.FileName := FFileName;
     if (not SaveDialog1.Execute) then
       Exit

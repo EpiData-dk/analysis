@@ -1742,7 +1742,7 @@ begin
   {$IFDEF DARWIN}
   S := 'file://' + ProgramDirectory + '../../../docs' + DirectorySeparator + 'commands.html' + S;
   {$ELSE}
-  S := 'file://' + ProgramDirectory + DirectorySeparator + 'docs' + DirectorySeparator + 'commands.html' + S;
+  S := 'file://' + ProgramDirectory + 'docs' + DirectorySeparator + 'commands.html' + S;
   {$ENDIF}
   OpenURL(S);
 end;

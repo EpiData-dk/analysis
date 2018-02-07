@@ -157,8 +157,8 @@ opSet         = 'set'
 <For Direction>                            ::= 'to'
                                            |  'downto'
                    
-<Value Label Pairs>                        ::= <Expression> String <Value Label Pairs>
-                                           |   <Expression> String
+<Value Label Pairs>                        ::= '(' <Expression> ',' <Expression> ')' <Value Label Pairs>
+                                           |   '(' <Expression> ',' <Expression> ')'
 
 <Optional Assignment>                      ::= ':=' <Expression>
                                            |
