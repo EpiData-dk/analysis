@@ -145,7 +145,6 @@ opSet         = 'set'
                                            |   opClose
                                            |   opQuit
                                            |   opReset
-!                                           |   opPack
 
 <System Command>                           ::= opCD
                                            |   opLS

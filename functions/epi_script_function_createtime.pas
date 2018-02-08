@@ -20,7 +20,7 @@ type
     function ResultType: TASTResultType; override;
     function AsInteger: EpiInteger; override;
     function AsTime: EpiTime; override;
-    function AsString: EpiString; override;
+    function IsMissing: Boolean; override;
   end;
 
   EEpiScriptFunction_CreateTime = class(Exception);
@@ -95,15 +95,49 @@ begin
     if Hour.IsMissing then
       result := inherited AsTime
     else
-      result := EncodeTime(Hour.AsInteger, M, S, 0);
+      if (not TryEncodeTime(Hour.AsInteger, M, S, 0, result)) then
+        result := inherited AsTime;
 
     Exit;
   end;
 end;
 
-function TEpiScriptFunction_CreateTime.AsString: EpiString;
+function TEpiScriptFunction_CreateTime.IsMissing: Boolean;
+var
+  S, M: Integer;
+  Dummy: TDateTime;
+  Hour, Minute, Sec: TExpr;
+  Msg: string;
 begin
-  Result := TimeToStr(AsTime);
+  Result := inherited IsMissing;
+
+  if FParamList.Count = 1 then
+  begin
+    result := not EpiStrToTimeGues(Param[0].AsString, Dummy, Msg);
+    Exit;
+  end;
+
+  if FParamList.Count = 3 then
+  begin
+    Hour := Param[0];
+    Minute := Param[1];
+    Sec   := Param[2];
+
+    if Sec.IsMissing then
+      S := 0
+    else
+      S := Sec.AsInteger;
+
+    if Minute.IsMissing then
+      M := 0
+    else
+      M := Minute.AsInteger;
+
+    if Hour.IsMissing then
+      result := true
+    else
+      result := not TryEncodeTime(Hour.AsInteger, M, S, 0, Dummy);
+  end;
 end;
 
 end.

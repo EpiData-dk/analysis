@@ -1291,7 +1291,15 @@ begin
   QuitAction.ShortCut :=
     {$IFDEF linux}  KeyToShortCut(VK_Q, [ssCtrl]){$ENDIF}
     {$IFDEF darwin} KeyToShortCut(VK_Q, [ssMeta]){$ENDIF}
-    {$IFDEF windows}KeyToShortCut(VK_F4, [ssAlt]){$ENDIF}
+    {$IFDEF windows}KeyToShortCut(VK_F4, [ssAlt]){$ENDIF};
+
+//  {$IFDEF darwin}
+  SynEdit1.Keystrokes[SynEdit1.Keystrokes.FindKeycode(VK_C, [ssCtrl])].ShortCut := KeyToShortCut(VK_C, [ssCtrlOS]);
+  SynEdit1.Keystrokes[SynEdit1.Keystrokes.FindKeycode(VK_V, [ssCtrl])].ShortCut := KeyToShortCut(VK_V, [ssCtrlOS]);
+  SynEdit1.Keystrokes[SynEdit1.Keystrokes.FindKeycode(VK_X, [ssCtrl])].ShortCut := KeyToShortCut(VK_X, [ssCtrlOS]);
+//  {$ENDIF}
+
+
 end;
 
 constructor TEditorForm.Create(TheOwner: TComponent);
