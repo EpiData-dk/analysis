@@ -568,7 +568,7 @@ begin
   if R.TokenCount = 0 then
     begin
       DoError(Format('New %s: missing datatype and variable name!' + LineEnding +
-                     'Corrent syntax: new %s <name> <type> (<value> "<label text>" ...) [!options ...];',
+                     'Corrent syntax: new %s <name> <type> (<value> , <label>) (...) [!options ...];',
                      [CrudCommandString[ccValuelabel], CrudCommandString[ccValuelabel]]),
               FCrudErrorToken); // DoError
       Exit;
@@ -578,7 +578,7 @@ begin
   if (R.TokenCount = 1) then
     begin
       DoError(Format('New %s: missing datatype or variable name!' + LineEnding +
-                     'Corrent syntax: new %s <name> <type> (<value> "<label text>" ...) [!options ...];',
+                     'Corrent syntax: new %s <name> <type> (<value> , <label>) (...) [!options ...];',
                      [CrudCommandString[ccValuelabel], CrudCommandString[ccValuelabel]]),
                      TToken.Create(NameVar.LineNo, NameVar.ColNo, NameVar.ByteNo)
       );
@@ -588,7 +588,7 @@ begin
   if (R.Tokens[2].Name = 'Optional Assignment') then
     begin
       DoError(Format('New %s: incorrect syntax!' + LineEnding +
-                     'Corrent syntax: new %s <name> <type> (<value> "<label text>" ...) [!options ...];',
+                     'Corrent syntax: new %s <name> <type> (<value> , <label>) (...) [!options ...];',
                      [CrudCommandString[ccValuelabel], CrudCommandString[ccValuelabel]]),
                      TToken.Create(NameVar.LineNo, NameVar.ColNo, NameVar.ByteNo)
       );
@@ -598,7 +598,7 @@ begin
   if (NameVar is TIndexVariable) then
     begin
       DoError(Format('New %s: Index not allowed on variable name!' + LineEnding +
-                     'Correct syntax: new %s <name> [!options...];',
+                     'Corrent syntax: new %s <name> <type> (<value> , <label>) (...) [!options...];',
                      [CrudCommandString[ccDataset], CrudCommandString[ccDataset]]),
               TToken.Create(V.LineNo, V.ColNo, V.ByteNo)
       );
@@ -877,7 +877,7 @@ begin
   if (R.TokenCount = 0) then
     begin
       DoError(Format('Edit %s: incorrect syntax!' + LineEnding +
-                     'Corrent syntax: edit %s <name> (<value> "<label text>" ...) [!options ...];',
+                     'Corrent syntax: edit %s <name> (<value> , <label text>) (...) [!options ...];',
                      [CrudCommandString[ccValuelabel], CrudCommandString[ccValuelabel]]),
               FCrudErrorToken
       );

@@ -1166,12 +1166,25 @@ var
   Values: TStringListUTF8;
   S: EpiString;
   Opt: TOption;
+  VL: TEpiCustomValueLabel;
 begin
   result := DoCrudCommonSanityCheck(ST, VLs);
   if (not result) then exit;
 
   Result := False;
   VLPairs := TValueLabelPairs(GetObjectProp(ST, 'ValueLabelPairs'));
+
+  // Build a list of combined existing and new values - use it to check
+  // if !d deletes all instances in the list.
+  Values := TStringListUTF8.Create;
+  Values.Sorted := true;
+  Values.Duplicates := dupIgnore;
+  for VL in VLs do
+    Values.Add(VL.ValueAsString);
+
+  if (Assigned(VLPairs)) then
+    for i := 0 to VLPairs.Count - 1 do
+      Values.Add(VLPairs.Values[i].AsString);
 
   for i := 0 to ST.OptionList.Count - 1 do
     begin
@@ -1198,6 +1211,10 @@ begin
                 DoError('Cannot delete - value does not exist!');
                 Exit;
               end;
+
+            Idx := Values.IndexOf(S);
+            if Idx >= 0 then
+              Values.Delete(Idx);
           end;
 
         'nom':
@@ -1211,7 +1228,16 @@ begin
       end;
     end;
 
-//  Values.Free;
+  if (Values.Count = 0) then
+    begin
+      DoError(
+        'Cannot remove all (value, label) pairs from the set.' + LineEnding +
+        'If you wish to remove the entire set use: drop valuelabel ' + VLs.Name + ';'
+      );
+      Exit;
+    end;
+
+  Values.Free;
   result := true;
 end;
 

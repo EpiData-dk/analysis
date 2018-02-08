@@ -178,7 +178,6 @@ end;
 function TaDM.OpenFile(ST: TCustomStringCommand; out DocFile: TEpiDocumentFile
   ): TDMFileResult;
 var
-  Ext: String;
   I: TEpiImport;
   DF: TEpiDataFile;
   Ft: TEpiDialogFilter;
@@ -196,20 +195,20 @@ begin
   if Assigned(ST.StringExpr) then
     FN := ST.StringExpr.AsString;
 
-  if (FN = '') and
-     (not ImpClipBrd)
+  if (FN = '') and (not ImpClipBrd)
   then
-  begin
-    OpenDialog1.Filter := GetEpiDialogFilter(dfImport);
-
-    if OpenDialog1.Execute then
     begin
-      FN := OpenDialog1.FileName;
-      DoDialogFilename(FN);
-    end
-    else
-      Exit(dfrCanceled);
-  end;
+      OpenDialog1.InitialDir := GetCurrentDirUTF8;
+      OpenDialog1.Filter := GetEpiDialogFilter(dfImport);
+
+      if OpenDialog1.Execute then
+      begin
+        FN := OpenDialog1.FileName;
+        DoDialogFilename(FN);
+      end
+      else
+        Exit(dfrCanceled);
+    end;
 
   DocFile := TAnaDocumentFile.Create;
   Docfile.OnAfterDocumentCreated := @AfterDocumentCreated;
@@ -298,19 +297,19 @@ begin
         if (not DocFile.OpenFile(FN)) then
           begin
             result := dfrError;
-            DocFile.OnWarning := OldWarning;
+//            DocFile.OnWarning := OldWarning;
             exit;
           end;
 
         if DocFile.Document.Admin.Initialized and
            (not DocFile.AuthedUser.Groups.HasRights([earExport]))
         then
-        begin
-          S := DocFile.AuthedUser.Login;
-          FreeAndNil(DocFile);
-          result := dfrError;
-          DoError('User "' + S + '" is not authorized to open this project for analysis!');
-        end;
+          begin
+            S := DocFile.AuthedUser.Login;
+            FreeAndNil(DocFile);
+            result := dfrError;
+            DoError('User "' + S + '" is not authorized to open this project for analysis!');
+          end;
       end
   else
     FreeAndNil(DocFile);
