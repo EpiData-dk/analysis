@@ -679,10 +679,10 @@ new global g7[10] integer := 10;
           new vl<br/>
         </td>
         <td>
-          <font class="cmd">new valuelabel <i>valuelabel<sub>1</sub></i> &lt;type&gt; [(&lt;value&gt; , &lt;label&gt;) ...] [!missing := &lt;value&gt;]</font>
-          <p>Create a new value label set with a given <a href="#types">type</a> (boolean not supported) and optionally assign any number of (value, label) pairs.
-          Each (value, label) pair will be added to the newly created set. The datatype of the value MUST match the defined datatype for the value label set itself<br/>
-          If no (value, label) pairs are assigned and empty set is created.</p>
+          <font class="cmd">new valuelabel <i>valuelabel<sub>1</sub></i> &lt;type&gt; (&lt;value&gt; , &lt;label&gt;) (...) [!missing := &lt;value&gt;]</font>
+          <p>Create a new value label set with a given <a href="#types">type</a> (boolean not supported) and assign at least one (value, label) pair.
+          Each (value, label) pair will be added to the newly created set. The datatype of the value MUST match the defined datatype for the value label set itself.<br/>
+          It is not possible to create an empty valuelabel set.</p>
           <p><font class="limit">Note:</font> An empty set will restrict data entry to system missing only!</p>
           <ul>
             <li>
@@ -697,7 +697,7 @@ new global g7[10] integer := 10;
 new valuelabel _VL1 integer (1, "Value A") (2, "Value B") (9, "Missing") !missing := 9;
 
 // using expression
-new valuelabel _VL2 integer (0 + 1, "This" + "is" + "value " + 1) (1 + 1, "This" + "is" + "value " + 2) (1 + 2, "This" + "is" + "value " + 2);
+new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "This " + "is " + "value " + 2) (2 + 1, "This " + "is" + "value " + 2);
           </font>
           <p>See <a href="#editvaluelabel">edit valuelabels</a> for more advanced use of variables and loops to create additional valuelabels</p>
           <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>

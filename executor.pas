@@ -9,7 +9,7 @@ uses
   Classes, SysUtils, fgl, ast, ast_types, outputcreator, epidatafiles,
   epidatafilestypes, epidatafilerelations, epivaluelabels, options_hashmap,
   contnrs, select_stack, epiopenfile, epimiscutils, result_variables,
-  epidocument, LazMethodList, parser_types, epicustombase, epiranges;
+  epidocument, LazMethodList, parser_types, epicustombase, epiranges, epiadmin;
 
 type
   TExecutor = class;
@@ -60,6 +60,7 @@ type
     procedure DoUpdateFieldResultVar;
     procedure DoUpdateDatasetResultVar;
     procedure DoUpdateValuelabelsResultVar;
+    procedure DoUpdateDocumentResultVar;
     procedure DoUpdateProjectresultVar;
     function  GetDocument: TEpiDocument;
     procedure OpenFileError(const Msg: string);
@@ -593,6 +594,24 @@ begin
       FVLSets.Add(VL.Name, TExecutorValuelabelsetVariable.Create(VL.Name, VL));
       VLresult.AsStringVector[i] := VL.Name;
       Inc(i);
+    end;
+end;
+
+procedure TExecutor.DoUpdateDocumentResultVar;
+var
+  U: TEpiUser;
+  RV: TExecVarVector;
+  i: Integer;
+begin
+  if (Assigned(Document)) then
+    begin
+      if Document.Admin.Initialized then
+        begin
+          RV := AddResultVector('$user', ftString, Document.Admin.Users.Count);
+          i := 0;
+          for U in Document.Admin.Users do
+            RV.AsStringVector[PostInc(i)] := U.Name;
+        end;
     end;
 end;
 
@@ -1928,6 +1947,7 @@ begin
   FDocFile.Document.Modified := false;
   DoInfo('Loaded file: ' + ExpandFileNameUTF8(FN));
 
+  DoUpdateDocumentResultVar;
   DoUpdateProjectresultVar;
   OutputFileInformation(FDocFile.Document);
   DoGUIInteraction(gaTitle);
