@@ -351,9 +351,14 @@ etc ....</font>
             <li><b>2:</b> In merged dataset only</li>
             <li><b>3:</b> In both datasets</li>
            </ul>
-
+       <font class="limit">Note:</font> if <b>mergevar</b> already exist in the dataset an error will occur and the merge will be stopped. Drop the
+       <b>mergevar</b> variable first.<br/>
        Examples:<br/>
-       <font class="cmd">// A: Internal merge (1 related dataset)
+       <font class="cmd">
+// Load a project
+read "Clinical Example.epx";
+
+// A: Internal merge (1 related dataset)
 // Since the current used dataset only has a single related dataset, there is enough information provided by the key variable to combine to two datasets.
 merge;
 
@@ -894,11 +899,11 @@ edit vl _VL1 (2, "B");
 edit vl _VL1 (2, "Replaced B");
 
 // Create a valuelabel set using a loop.
-new valuelabel _VL2 int;   // create an empty set
-new global i integer;      // we also need a loop variable
+new valuelabel _VL2 int (1, "This is the first value label"); // create a new valuelabel set 
+new global i integer;                                         // we also need a loop variable
 
-// now create 5 pairs (1, "... 1") (2, "... 2") ...
-for i := 1 to 5 do
+// now create 5 pairs (2, "... 2") (3, "... 3") ...
+for i := 2 to 5 do
   edit valuelabel _VL2 (i, "This is valuelabel no: " + i);</font>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
       </td>
@@ -1168,7 +1173,7 @@ v4[1] := Createtime(12, 34, 56);
        <p>If you specify a conditional (depend) rule based on other variables the change only occurs for the subgroup defined by the select statement:</p>
        <font class="cmd">select (v1 = 0) do v17 := 17;
 select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
-        <p><a href="#types">Functions</a> may be used:</p>
+       <p><a href="#functions">Functions</a> may be used:</p>
         <font class="cmd">select (age = .) do age := integer((today() - dateborn)/365.25)    // calculated age 
         </font>    
       </td>
@@ -1619,7 +1624,7 @@ check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age
           Examples:
           <font class="cmd">
 read "bromar.epx"
-check key id                 // checks the variable ID is it represent a unique key</font>
+check key id                 // checks if the variable ID represents a unique key</font>
          <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
         </td>
       </tr>
@@ -1659,9 +1664,7 @@ check study;          // Perform the check</font>
             <li><font class="option">!after:= &lt;var&gt;</font>Places the variables after this variable</li>
             <li><font class="option">!last</font>Places the variables at the end of the list</li>
           </ul>          
-          <p>If no options are specified, the default is to place the variables before all other variables in the list. Use F3 or "list variable" to show the current order of variables.<br/>
-          Using the reorder command only affects the current session of Analysis and is NOT saved with the project. This means that the visual placement of variables will be kept, but<br/>
-          a logical order is kept internally for the currently used dataset.</p>
+          <p>If no options are specified, the default is to place the variables before all other variables in the list. Use F3 or "list variable" to show the current order of variables.</p>
           Examples:
           <font class="cmd">
 read "bromar.epx";               // Load the project
@@ -1811,9 +1814,8 @@ report cby id !fn := filenames !ds := datasets</font>
         </td>
       </tr>
      <tr valign="top">
-        <td>    
-    <a name="erase" id="erase"/><br/>
-         erase
+        <td>
+         <a name="erase" id="erase"/>erase
         </td>
         <td>
           <font class="cmd">erase "&lt;file name&gt;"</font>
@@ -2032,7 +2034,7 @@ for i := 1 to size($variable) do
     freq @{$variable[i]}
   end;
          </font>
-         <p>The Variable inside the @{..} may itself be another reference (with or without index), making it possible to conbime multiple levels of references.</p>
+         <p>The Variable inside the @{..} may itself be another reference (with or without index), making it possible to combine multiple levels of references.</p>
          <font class="cmd">
 new global f    string := "age"         
 new global g[3] string := "f";  // All entries have the value "f", but that is fine for this example.
