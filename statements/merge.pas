@@ -965,7 +965,8 @@ begin
 
   InternalMerge(ST, MergeDF, VarNames);
 
-  if (not ST.HasOption('table')) and
+  if (ST.ExecResult = csrSuccess) and
+     (not ST.HasOption('table')) and
      (FExecutor.Document.DataFiles.IndexOf(MergeDF) >= 0)
   then
     MergeDF.Free;
