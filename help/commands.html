@@ -1067,7 +1067,7 @@ drop data !del ; // drop all observations "marked for deletion"
 
      <tr valign="top">
       <td>
-       <a name="listdataset" id="listdataset">list project</a><br/>
+       <a name="list_project" id="list_project">list project</a><br/>
        list p
       </td>
       <td>
@@ -1722,6 +1722,7 @@ reorder age km !before := agegrp // Moved the variables age and km in front of a
          <li><font class="option">!val</font> All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!</li>
         </ul>
        Examples:<font class="cmd">
+read "bromar.epx";               // Load the project
         
 // Run a report based on the two internal datasets (1st is currently used, 2nd is the one marked with !ds :=...) 
 report val id !ds := ds2;
