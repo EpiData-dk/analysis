@@ -45,7 +45,7 @@ procedure TIntervalDescriptives.FillDescriptor(SIdx, EIdx: Integer; ASum,
   ASumSq: EpiFloat; ST: TCustomVariableCommand);
 var
   Idx, Obs, i: Integer;
-  lMean, lAvgDev, lStdDev, lStdVar, lSkew, lCurt, Val: EpiFloat;
+  lMean, lAvgDev, lStdDev, lStdVar, lStdErr, lSkew, lCurt, Val: EpiFloat;
   lCfiVal: Extended;
 
   function GetPercentile(min, max, d: integer):EpiFloat;
@@ -97,6 +97,7 @@ begin
 
     lAvgDev := 0;
     lStdVar := 0;
+    lStdErr := 0;
     lSkew   := 0;
     lCurt   := 0;
     FOR i := SIdx TO EIdx DO
@@ -116,8 +117,9 @@ begin
         StdVar.AsFloat[Idx]   := lStdVar;
         StdDev.AsFloat[Idx]   := sqrt(lStdVar);
         StdErr.AsFloat[Idx]   := sqrt(lStdVar);
-
-        lCfiVal := PTDISTRINV(Obs - 1, 0.025) * (lStdVar / Obs);
+        lStdErr               := sqrt(lStdVar / Obs);
+        StdErr.AsFloat[Idx]   := lStdErr;
+        lCfiVal := PTDISTRINV(Obs - 1, 0.025) * lStdErr;
         CfiL.AsFloat[Idx]     := lMean - lCfiVal;
         CfiH.AsFloat[Idx]     := lMean + lCfiVal;
       end;
