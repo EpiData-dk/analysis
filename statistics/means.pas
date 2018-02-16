@@ -116,7 +116,6 @@ begin
         lStdVar := lStdVar / (Obs - 1);
         StdVar.AsFloat[Idx]   := lStdVar;
         StdDev.AsFloat[Idx]   := sqrt(lStdVar);
-        StdErr.AsFloat[Idx]   := sqrt(lStdVar);
         lStdErr               := sqrt(lStdVar / Obs);
         StdErr.AsFloat[Idx]   := lStdErr;
         lCfiVal := PTDISTRINV(Obs - 1, 0.025) * lStdErr;
@@ -124,6 +123,82 @@ begin
         CfiH.AsFloat[Idx]     := lMean + lCfiVal;
       end;
   end;
+end;
+// F distribution functions from OpenEpi
+// *** NOT CORRECT ***
+//The following F distribution functions are from John Pezzullo's page at http://members.aol.com/johnp71/pdfs.html
+
+
+function FisherF (f : EpiFloat; n1, n2 : Integer) : EpiFloat;
+    var
+      x, th, a, c, sth, cth, piD2 : EpiFloat;
+      k : Integer;
+   function StatCom (q : EpiFloat; i, j, b : Integer ) : EpiFloat;
+      var
+          zz, z : EpiFloat;
+          k : Integer;
+      begin
+          zz := 1;
+          z := zz;
+          k := i;
+          while (k<=j) do
+            begin
+              zz := zz*q*k/(k-b);
+              z := z+zz;
+              k := k+2;
+              end;
+          StatCom := z;
+      end;
+
+   begin
+         piD2 := Pi / 2;
+         x := n2 / (n1 * f + n2);
+         if ((n1 Mod 2) = 0) then
+            Exit(StatCom(1-x,n2,n1+n2-4,n2-2) * exp(ln(x) * n2/2));
+         if ((n2 Mod 2) = 0) then
+            Exit(1-(StatCom(x,n1,n1+n2-4,n1-2) * exp(ln(1-x) * n1/2)));
+         th := arctan(sqrt(n1*f/n2));
+         a := th / piD2;
+         sth := sin(th);
+         cth := cos(th);
+         if (n2 > 1) then
+               a := a + (sth*cth*StatCom(cth*cth,2,n2-3,-1)/piD2);
+         if (n1=1) then
+            Exit(1-a);
+         c := 4*StatCom(sth*sth,n2+1,n1+n2-4,n2-2)*sth*exp(ln(cth) * n2)/Pi;
+       if (n2=1) then
+            Exit(1 - (a+c/2));
+       k := 2;
+       while(k <= ((n2-1)/2)) do
+         begin
+            c := c*k/(k - 0.5);
+            k := k+1;
+            end;
+       FisherF := 1-a+c;
+   end;
+
+function FfromP (p : EpiFloat; df1, df2 : Integer) : EpiFloat;
+var
+    v, dv, f : EpiFloat;
+begin;
+    v := 0.5;
+    dv := 0.5;
+    f := 0;
+    while(dv>1e-10) do   //was -10
+       begin
+	   f := 1/v-1;
+	   dv := dv/2;
+	   if (FisherF(f,df1,df2) > p) then
+	      v := v-dv
+	   else
+	      v := v+dv;
+	end;
+    FfromP := f;
+end;
+
+function PfromF(p : EpiFloat; df1,df2 : Integer) : EpiFloat;
+begin;
+  PfromF := FisherF(p,df1,df2);
 end;
 
 function TIntervalDescriptives.Anova: TAnovaRecord;
@@ -164,7 +239,7 @@ begin
     MSW := SSW / DFW;
     MST := SST / DFT;
     F   := MSB / MSW;
-//    PROB := FDIST(F, DFB, DFW);
+    PROB := PfromF(F, DFB, DFW);
   end;
 end;
 
@@ -435,5 +510,138 @@ begin
   end;
 end;
 
-end.
 
+//End of F distribution functions
+
+
+{
+// F-test functions from Buxbaum, but missing some inbuilt functions
+function FDIST (F : EpiFloat; f1, f2 : Integer) : EpiFloat;
+
+var N, M          : Integer;
+    S, X, A, B, V : EpiFloat;
+
+
+     function R0 (M, N : Integer; V : EpiFloat) : EpiFloat;
+
+     var G, Summe : EpiFloat;
+         k, Test  : Integer;
+
+     begin
+         k := 1;
+         G := 1;
+         Summe := G;
+         Test := M div 2;
+         while not (k = Test) do
+             begin
+                 k := succ(k);
+                 G := G * V * (N + 2 * k - 4) / (2 * k - 2);
+                 Summe := Summe + G;
+             end;
+         R0 := Summe;
+     end;
+
+
+     function R1 (M : Integer; V : EpiFloat) : EpiFloat;
+
+     var G, Summe : EpiFloat;
+         k, Test  : Integer;
+
+     begin
+         k := 1;
+         G := sqrt(V);
+         Summe := G;
+         Test := (M - 1) div 2;
+         while not (k = Test) do
+             begin
+                 k := succ(k);
+                 G := G * V * (2 * k - 2) / (2 * k - 1);
+                 Summe := Summe + G;
+             end;
+         R1 := Summe;
+     end;
+
+
+     function R2 (f1, f2 : Integer; V : EpiFloat) : EpiFloat;
+
+     var G, Summe : EpiFloat;
+         k, Test  : Integer;
+
+     begin
+         k := 1;
+         G := 1;
+         Summe := G;
+         Test := (f1 - 1) div 2;
+         while not (k = Test) do
+             begin
+                 k := succ(k);
+                 G := G * V * (f2 + 2 * k - 3) / (2 * k - 1);
+                 Summe := Summe + G;
+             end;
+         R2 := Summe;
+     end;
+
+
+     function Q (f2 : Integer) : EpiFloat;
+
+     var k       : Integer;
+         Produkt : EpiFloat;
+
+     begin
+         Produkt := 1;
+         for k := 1 to ((f2 - 1) div 2) do
+            Produkt := Produkt * (k / (k - 0.5));
+         Q := (2 / pi) * Produkt;
+     end;
+
+
+begin
+    if (f1 mod 2) = 0
+      then
+         begin
+             X := f2 / (f2 + f1 * F);
+             S := 1 - (R0(f1, f2, 1-x) * Pot(X, f2/2));
+         end
+      else
+         if (f2 mod 2) = 0
+           then
+              begin
+                  X := f2 / (f2 + f1 * F);
+                  S := Pot(1-x, f1/2) * R0(f2, f1, X);
+              end
+           else
+              if (f1 = 1) and (f2 = 1)
+                then
+                   S := (2 / pi) * arctan(sqrt(F))
+                else
+                   if (f1 = 1) and (f2 > 1)
+                     then
+                        begin
+                            X := sqrt(F / f2);
+                            V := 1 / (1 + sqr(X));
+                            S := (2 / pi) * (arctan(X) + X * R1(f2, V) *
+                                 sqrt(1 / (1 + sqr(X))));
+                        end
+                     else
+                        if (f1 > 1) and (f2 = 1)
+                          then
+                             begin
+                                 X := sqrt(1 / (f1 * F));
+                                 V := 1 / (1 + sqr(X));
+                                 S := 1 - (2 / pi) * (arctan(X) + X * R1(f1, V)
+                                      * sqrt(1 / (1 + sqr(X))));
+                             end
+                          else           {f1 und f2 ungerade und > 1}
+                             begin
+                                 X := sqrt(F * f1 / f2);
+                                 V := 1 / (1 + sqr(X));
+                                 A := (2 / pi) * (arctan(X) + X * R1(f2, V) *
+                                      sqrt(1 / (1 + sqr(X))));
+                                 V := sqr(X) / (1 + sqr(X));
+                                 B := Q(f2) * X * Pot(1/(1+sqr(X)), (f2+1)/2) *
+                                      R2(f1, f2, V);
+                                 S := A - B;
+                             end;
+    FDIST := 1 - S;
+end;  }
+end.
