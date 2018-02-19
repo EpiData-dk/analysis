@@ -31,7 +31,7 @@ type
     function InternalCheckAndOpenFile(ST: TCustomMergeCommand; out
       Docfile: TEpiDocumentFile): boolean;
     procedure InternalAppend(ST: TAppendCommand; AppendDocFile: TEpiDocumentFile);
-    procedure InternalMerge(ST: TMergeCommand; MergeDF: TEpiDataFile; VarNames: TStrings);
+    function InternalMerge(ST: TMergeCommand; MergeDF: TEpiDataFile; VarNames: TStrings): TEpiDataFile;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator); virtual;
     procedure DoAppend(ST: TAppendCommand);
@@ -466,8 +466,8 @@ begin
                            'Use the data validator tool to check for inconsistencies!');
 end;
 
-procedure TMerge.InternalMerge(ST: TMergeCommand; MergeDF: TEpiDataFile;
-  VarNames: TStrings);
+function TMerge.InternalMerge(ST: TMergeCommand; MergeDF: TEpiDataFile;
+  VarNames: TStrings): TEpiDataFile;
 var
   DFvar, V: TCustomVariable;
   MainDF: TEpiDataFile;
