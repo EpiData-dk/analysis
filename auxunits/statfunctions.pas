@@ -196,14 +196,18 @@ VAR
    bt: real;
 BEGIN
    IF ((x < 0.0) OR (x > 1.0)) THEN BEGIN
-      raise exception.create('Invalid value passed to betai');
+//     raise exception.create('Invalid value ' + FloatToStr(x) + ' passed to betai');
+// quiet handling of error - return x and let the calling unit handle it
+     betai := x;
+   END
+   ELSE BEGIN
+     IF ((x = 1.0) OR (x = 1.0)) THEN bt := 0.0
+     ELSE bt := exp(gammln(a+b)-gammln(a)-gammln(b)
+             +a*ln(x)+b*ln(1.0-x));
+     IF (x < ((a+1.0)/(a+b+2.0))) THEN
+        betai := bt*betacf(a,b,x)/a
+     ELSE betai := 1.0-bt*betacf(b,a,1.0-x)/b
    END;
-   IF ((x = 0.0) OR (x = 1.0)) THEN bt := 0.0
-   ELSE bt := exp(gammln(a+b)-gammln(a)-gammln(b)
-           +a*ln(x)+b*ln(1.0-x));
-   IF (x < ((a+1.0)/(a+b+2.0))) THEN
-      betai := bt*betacf(a,b,x)/a
-   ELSE betai := 1.0-bt*betacf(b,a,1.0-x)/b
 END;
 
 

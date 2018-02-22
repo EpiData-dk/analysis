@@ -76,8 +76,8 @@ type
     DFW,       // Degrees of freedom within instruments
     DFT:
       EpiInteger;
-    F,         // F statistics
-    PROB:      //
+    F,         // F statistic or T for single stratum
+    PROB:      // F or T probability
       EpiFloat;
   end;
 

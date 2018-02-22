@@ -31,6 +31,7 @@ type
       out Descriptors: TIntervalDecriptivesDatafile): boolean;
     procedure OutMeans(MeanDataFile: TIntervalDecriptivesDatafile; ST: TCustomVariableCommand);
     procedure OutAnova(AnovaRec: TAnovaRecord);
+    procedure OutTtest(AnovaRec: TAnovaRecord);
   end;
 
 implementation
@@ -45,7 +46,7 @@ procedure TIntervalDescriptives.FillDescriptor(SIdx, EIdx: Integer; ASum,
   ASumSq: EpiFloat; ST: TCustomVariableCommand);
 var
   Idx, Obs, i: Integer;
-  lMean, lAvgDev, lStdDev, lStdVar, lStdErr, lSkew, lCurt, Val: EpiFloat;
+  lMean, lAvgDev, lStdDev, lStdVar, lStdErr, lSkew, lCurt, Val, lTvalue: EpiFloat;
   lCfiVal: Extended;
 
   function GetPercentile(min, max, d: integer):EpiFloat;
@@ -129,10 +130,25 @@ function TIntervalDescriptives.Anova: TAnovaRecord;
 var
   i: Integer;
   Obs: Int64;
-  ASum, ASumSQ, ASSW, ASSB, MPTmp: EpiFloat;
+  ASum, ASumSQ, ASSW, ASSB, MPTmp, Tval: EpiFloat;
 begin
-  if FResultDF.Size < 2 then exit;
+  if FResultDF.Size < 2 then
+  // t-test of mean=0 if only one stratum
+    begin
+      with FResultDF do
+      begin
+        Tval := Mean.AsFloat[0] / (StdErr.AsFloat[0]);
+        Obs  := N.AsInteger[0];
+      end;
+      with Result do
+      begin
+        F    := Tval;     // Making use of F for the t-value
+        PROB := tdist(F,Obs-1);
+      end;
+      exit;
+    end;
 
+  // F-test if more than one stratum
   Obs    := 0;
   ASum   := 0;
   ASumSQ := 0;
@@ -219,7 +235,7 @@ begin
   // Algorithm:
   // * sort according to (Category, Values)
   // * run through datafile
-  // * collect StartIdx, EndIndex, Value, Sum and SumSqaured
+  // * collect StartIdx, EndIndex, Value, Sum and SumSquared
   // * whenever a change in category record values and change
   for i := 1 to DataFile.Size - 1 do
   begin
@@ -247,10 +263,12 @@ begin
   FillDescriptor(StartIdx, DataFile.Size -1, Sum, SumSq, ST);
   OutMeans(FResultDF, ST);
 
-  if ST.Options.HasOption('t', opt) and
-     (FResultDF.Size >= 2)
-  then
-    OutAnova(Anova);
+  if ST.Options.HasOption('t', opt) then
+     if (FResultDF.Size >= 2)
+    then
+      OutAnova(Anova)
+    else
+      OutTtest(Anova);
 
   Descriptors := FResultDF;
   ST.ExecResult := csrSuccess;
@@ -416,6 +434,8 @@ begin
     T.Cell[3,1].Text := Format('%8.6f', [MSB]);
     T.Cell[4,1].Text := Format('%8.6f', [F]);
     T.Cell[5,1].Text := Format('%8.6f', [PROB]);
+    if ((PROB < 0.0) or (PROB > 1.0)) then
+      T.Cell[5,1].Text := ' (Invalid ' + T.Cell[5,1].Text + ' - Program error)';
 
     FExecutor.AddResultConst('$means_DFB', ftInteger).AsIntegerVector[0] := DFB;
     FExecutor.AddResultConst('$means_SSB', ftFloat).AsFloatVector[0]     := SSB;
@@ -434,4 +454,25 @@ begin
   end;
 end;
 
+procedure TIntervalDescriptives.OutTtest(AnovaRec: TAnovaRecord);
+var
+  T: TOutputTable;
+begin
+  T := FOutputCreator.AddTable;
+  T.ColCount := 3;
+  T.RowCount := 2;
+  T.Cell[0,0].Text := 'Test of Ho: mean=zero';
+  T.Cell[1,0].Text := 't';
+  T.Cell[2,0].Text := 'p Value';
+  T.SetRowAlignment(0, taCenter);
+
+  with AnovaRec do
+  begin
+    T.Cell[1,1].Text := Format('%8.6f', [F]);
+    T.Cell[2,1].Text := Format('%8.6f', [PROB]);
+
+    FExecutor.AddResultConst('$means_T', ftFloat).AsFloatVector[0]   := F;
+    FExecutor.AddResultConst('$means_PROB', ftfloat).AsFloatVector[0] := PROB;
+  end;
+end;
 end.
