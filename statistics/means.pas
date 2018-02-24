@@ -21,7 +21,7 @@ type
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
     FResultDF: TIntervalDecriptivesDatafile;
-    procedure FillDescriptor(SIdx, EIdx: Integer; ASum, ASumSq: EpiFloat; ST: TCustomVariableCommand);
+    procedure FillDescriptor(SIdx, EIdx: Integer; ASum: EpiFloat; ST: TCustomVariableCommand);
     function  Anova: TAnovaRecord;
   public
     constructor Create(AExecutor: TExecutor; OutputCreator: TOutputCreator);
@@ -42,11 +42,11 @@ uses
 
 { TIntervalDescriptives }
 
-procedure TIntervalDescriptives.FillDescriptor(SIdx, EIdx: Integer; ASum,
-  ASumSq: EpiFloat; ST: TCustomVariableCommand);
+procedure TIntervalDescriptives.FillDescriptor(SIdx, EIdx: Integer;
+          ASum: EpiFloat; ST: TCustomVariableCommand);
 var
   Idx, Obs, i: Integer;
-  lMean, lAvgDev, lStdDev, lStdVar, lStdErr, lSkew, lCurt, Val, lTvalue: EpiFloat;
+  lMean, lAvgDev, lStdDev, lSSqDev, lStdErr, lSkew, lCurt, Val, lTvalue: EpiFloat;
   lCfiVal: Extended;
 
   function GetPercentile(min, max, d: integer):EpiFloat;
@@ -74,7 +74,6 @@ begin
   begin
     // Category name
     Category.AsString[Idx] := CategVar.GetValueLabel(SIdx, GetGvt(ST));
-
     // Observation found in category
     Obs                    := EIdx - SIdx + 1;
     N.AsInteger[Idx]       := Obs;
@@ -90,36 +89,34 @@ begin
     P95.AsFloat[Idx]       := GetPercentile(SIdx, EIdx, 95);
     Max.AsFloat[Idx]       := CountVar.AsFloat[EIdx];
 
-    // Statistics
+    // Statistics to be saved in FResultDF
     lMean                  := ASum / Obs;
     Mean.AsFloat[Idx]      := lMean;
     Sum.AsFloat[Idx]       := ASum;
-    SumSq.AsFloat[Idx]     := ASumSq;
 
     lAvgDev := 0;
-    lStdVar := 0;
+    lSSqDev := 0;
     lStdErr := 0;
     lSkew   := 0;
     lCurt   := 0;
     FOR i := SIdx TO EIdx DO
     BEGIN
-      Val := CountVar.AsFloat[i] - lMean;
+      Val     := CountVar.AsFloat[i] - lMean;
       lAvgDev := lAvgDev + abs(Val);
-      lStdVar := lStdVar + (Val * Val);
+      lSSqDev := lSSqDev + (Val * Val);
     END;
-    lAvgDev := lAvgDev / Obs;
-
+    lAvgDev                := lAvgDev / Obs;
     AvgDev.AsFloat[Idx]    := lAvgDev;
-    SumSS.AsFloat[Idx]     := lStdVar;
+    SumSS.AsFloat[Idx]     := lSSqDev;
 
     if (Obs >= 2) then
       begin
-        lStdVar := lStdVar / (Obs - 1);
-        StdVar.AsFloat[Idx]   := lStdVar;
-        StdDev.AsFloat[Idx]   := sqrt(lStdVar);
-        lStdErr               := sqrt(lStdVar / Obs);
+        lSSqDev               := lSSqDev / (Obs - 1);
+        StdVar.AsFloat[Idx]   := lSSqDev;
+        StdDev.AsFloat[Idx]   := sqrt(lSSqDev);
+        lStdErr               := sqrt(lSSqDev / Obs);
         StdErr.AsFloat[Idx]   := lStdErr;
-        lCfiVal := PTDISTRINV(Obs - 1, 0.025) * lStdErr;
+        lCfiVal               := PTDISTRINV(Obs - 1, 0.025) * lStdErr;
         CfiL.AsFloat[Idx]     := lMean - lCfiVal;
         CfiH.AsFloat[Idx]     := lMean + lCfiVal;
       end;
@@ -128,12 +125,12 @@ end;
 
 function TIntervalDescriptives.Anova: TAnovaRecord;
 var
-  i: Integer;
+  i, lStrata: Integer;
   Obs: Int64;
-  ASum, ASumSQ, ASSW, ASSB, MPTmp, Tval: EpiFloat;
+  ASum, ASumSQ, ASSW, ASST, MPTmp, Tval: EpiFloat;
 begin
   if FResultDF.Size < 2 then
-  // t-test of mean=0 if only one stratum
+  // t-test of mean=0 if only one result
     begin
       with FResultDF do
       begin
@@ -151,30 +148,27 @@ begin
   // F-test if more than one stratum
   Obs    := 0;
   ASum   := 0;
-  ASumSQ := 0;
   ASSW   := 0;
-  ASSB   := 0;
 
   with FResultDF do
-  for i := 0 to Size -1 do
-    begin
-      Obs    += N.AsInteger[i];
-      MPTmp  := Sum.AsFloat[i];
-
-      ASum   += MPTmp;
-      ASumSQ += SumSq.AsFloat[i];
-      ASSW   += SumSS.AsFloat[i];
-      ASSB   += (MPTmp * MPTmp) / N.AsInteger[i];
-    end;
+  begin
+    lStrata := Size - 2;
+    for i := 0 to lStrata do
+      ASSW += SumSS.AsFloat[i];
+   // now get grand sums from last set of descriptives
+    i    := lStrata + 1;
+    ASST := SumSS.AsFloat[i];
+    Obs  := N.AsInteger[i];
+  end;
 
   with Result do
   begin
+    SST := ASST;
     SSW := ASSW;
-    SSB := ASSB - ((ASum * ASum) / Obs);
-    SST := SSB + SSW;
-    DFB := FResultDF.Size - 1;
-    DFW := Obs - FResultDF.Size;
+    SSB := SST - SSW;
     DFT := Obs - 1;
+    DFB := lStrata;
+    DFW := DFT - DFB;
     MSB := SSB / DFB;
     MSW := SSW / DFW;
     MST := SST / DFT;
@@ -210,57 +204,71 @@ var
   opt: TOption;
   SortList: TEpiFields;
   i, StartIdx, EndIdx: Integer;
-  Val, Sum, SumSq: EpiFloat;
+  Val, Sum, SumSq, Tsum: EpiFloat;
 begin
   FResultDF := TIntervalDecriptivesDatafile.Create(nil, 0);
 
   CountVar := DataFile.Fields.FieldByName[ST.VariableList[0].Ident];
 
   if ST.Options.HasOption('by', opt) then
-    CategVar := DataFile.Fields.FieldByName[Opt.Expr.AsIdent]
-  else
-    CategVar := DataFile.NewField(ftInteger);
+    begin
+// stratified data
+// Algorithm:
+// * sort according to (Category, Values)
+// * run through datafile
+// * collect StartIdx, EndIndex, Value, Sum
+// * whenever a change in category record values and change
+      CategVar := DataFile.Fields.FieldByName[Opt.Expr.AsIdent];
+      SortList := TEpiFields.Create(nil);
+      SortList.AddItem(CategVar);
+      SortList.AddItem(CountVar);
+      DataFile.SortRecords(SortList);
+      SortList.Free;
 
-  SortList := TEpiFields.Create(nil);
-  SortList.AddItem(CategVar);
-  SortList.AddItem(CountVar);
-  DataFile.SortRecords(SortList);
-  SortList.Free;
-
-  StartIdx := 0;
-  Val := CountVar.AsFloat[0];
-  Sum := Val;
-  SumSq := Val * Val;
-
-  // Algorithm:
-  // * sort according to (Category, Values)
-  // * run through datafile
-  // * collect StartIdx, EndIndex, Value, Sum and SumSquared
-  // * whenever a change in category record values and change
-  for i := 1 to DataFile.Size - 1 do
-  begin
-    EndIdx := i - 1;
-
-    if CategVar.Compare(i-1, i) <> 0 then
+      StartIdx := 0;
+      Val      := CountVar.AsFloat[0];
+      Sum      := Val;
+      Tsum     := 0;
+      for i := 1 to DataFile.Size - 1 do
       begin
-        // Fill descriptors
-        FillDescriptor(StartIdx, EndIdx, Sum, SumSq, ST);
+        EndIdx := i - 1;
 
-        // Reset values
-        StartIdx := i;
-        Val := CountVar.AsFloat[i];
-        Sum := Val;
-        SumSq := Val * Val;
-      end
-    else
-      begin
-        Val := CountVar.AsFloat[i];
-        Sum += Val;
-        SumSq += Val * Val;
+        if CategVar.Compare(i-1, i) <> 0 then
+          begin
+            // New category, so fill descriptors
+            FillDescriptor(StartIdx, EndIdx, Sum, ST);
+            // keep running sum for full data set
+            Tsum     += Sum;
+            // Reset values
+            StartIdx := i;
+            Val      := CountVar.AsFloat[i];
+            Sum      := Val;
+          end
+        else
+          begin
+            Val      := CountVar.AsFloat[i];
+            Sum      += Val;
+          end;
       end;
-  end;
+  // final stratum
+    FillDescriptor(StartIdx, DataFile.Size -1, Sum, ST);
+    Tsum += Sum;
+  end
 
-  FillDescriptor(StartIdx, DataFile.Size -1, Sum, SumSq, ST);
+  else
+// no 'by' option - just save sum of data
+    begin
+      CategVar := DataFile.NewField(ftInteger);
+      Tsum := 0;
+      for i := 0 to DataFile.Size -1 do
+        Tsum += CountVar.AsFloat[i];
+    end;
+// Add in Descriptor for full data set (required for Total SS in Anova)
+// In future, could decide to display all data results as well as stratum results
+// However, will have to set appropriate result vars as well
+// Considered adding a boolean parameter to the procedure call to indicate which
+  FillDescriptor(0, DataFile.Size - 1, Tsum, ST);
+
   OutMeans(FResultDF, ST);
 
   if ST.Options.HasOption('t', opt) then
@@ -286,7 +294,8 @@ begin
 
   GVT := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   T.Header.Text := CountVar.GetVariableLabel(GVT);
-  if MeanDataFile.Size = 1 then
+  Sz := MeanDataFile.Size;
+  if Sz = 1 then
     begin
       Offset := 0;
       T.ColCount := 9;
@@ -294,9 +303,11 @@ begin
     end
   else
     begin
-      Offset := 1;
+      // final result set is for all data; don't display for now
+      Sz         := Sz - 1;
+      Offset     := 1;
       T.ColCount := 10;
-      T.RowCount := 3 + (MeanDataFile.Size * 2);
+      T.RowCount := 3 + (Sz * 2);
     end;
 
   // Column headers  (first section)
@@ -314,11 +325,8 @@ begin
 
   with FExecutor do
   begin
-    Sz := MeanDataFile.Size;
-    AddResultConst('$means_size',  ftInteger).AsIntegerVector[0] := Sz;
-    AddResultConst('$means_var',  ftString).AsStringVector[0]    := CountVar.Name;
 
-    if MeanDataFile.Size = 1 then
+    if Sz = 1 then
       begin
         CatV  := AddResultConst('$means_category', ftString);
         ObsV  := AddResultConst('$means_obs',      ftInteger);
@@ -340,12 +348,14 @@ begin
         CfilV := AddResultVector('$means_cfil',     ftFloat, Sz);
         CfihV := AddResultVector('$means_cfih',     ftFloat, Sz);
       end;
+    AddResultConst('$means_size',  ftInteger).AsIntegerVector[0] := Sz;
+    AddResultConst('$means_var',  ftString).AsStringVector[0]    := CountVar.Name;
   end;
 
 
   with MeanDataFile do
   begin
-    for i := 0 to Size - 1 do
+    for i := 0 to Sz - 1 do
       begin
         if Offset > 0 then T.Cell[0, i + 1].Text := Category.AsString[i];
         T.Cell[0 + Offset, i + 1].Text := FormatFloat('0.00', N.AsFloat[i]);
@@ -371,7 +381,7 @@ begin
       end;
   end;
 
-  Idx := MeanDataFile.Size + 1 + 1;
+  Idx := Sz + 1;
 
   if Offset > 0 then
     T.Cell[0, Idx].Text := CategVar.GetVariableLabel(Gvt);
@@ -391,7 +401,7 @@ begin
 
   with MeanDataFile do
   begin
-    for i := 0 to Size - 1 do
+    for i := 0 to Sz - 1 do
       begin
         if Offset > 0 then T.Cell[0, Idx + i].Text := Category.AsString[i];
         T.Cell[0 + Offset, Idx + i].Text := FormatFloat('0.00', Min.AsFloat[i]);

@@ -130,9 +130,9 @@ CONST
    itmax=100;
    eps=3.0e-7;
 VAR
-   tem,qap,qam,qab,em,d: real;
-   bz,bpp,bp,bm,az,app: real;
-   am,aold,ap: real;
+   tem,qap,qam,qab,em,d: EpiFloat;
+   bz,bpp,bp,bm,az,app: EpiFloat;
+   am,aold,ap: EpiFloat;
    m: integer;
 BEGIN
    am := 1.0;
@@ -193,7 +193,7 @@ END;
 
 function betai(a, b, x: EpiFloat): EpiFloat;
 VAR
-   bt: real;
+   bt: EpiFloat;
 BEGIN
    IF ((x < 0.0) OR (x > 1.0)) THEN BEGIN
 //     raise exception.create('Invalid value ' + FloatToStr(x) + ' passed to betai');
@@ -213,12 +213,14 @@ END;
 
 
 function tdist(t : EpiFloat; df : EpiFloat) : EpiFloat;
+// 2-tail p (Student's t, or paired t)
 begin
    Result :=betai(0.5*df,0.5,df/(df+sqr(t)));
 end;
 
 
 function fdist(f : EpiFloat; d1, d2 : EpiFloat) : EpiFloat;
+// 1-tail p for F distribution
 begin
      Result := betai(0.5*d2, 0.5*d1, d2/(d2+d1* f));
 end;
