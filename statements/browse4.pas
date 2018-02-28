@@ -210,6 +210,9 @@ begin
       else
         SetValueLabelType(gvtLabel);
     end;
+
+  if ((Key = VK_ESCAPE) and (Shift = [])) then
+    Close;
 end;
 
 procedure TBrowseForm4.GotoRecordActionExecute(Sender: TObject);
