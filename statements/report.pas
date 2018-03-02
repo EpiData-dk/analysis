@@ -186,7 +186,7 @@ begin
 
   T := FOutputCreator.AddTable;
   T.ColCount := 3;
-  T.RowCount := blockedcount + 1;
+  T.RowCount := (blockedcount * 4) + 1;
 
   T.Header.Text := 'Blocked Login Attempts';
 
@@ -195,6 +195,7 @@ begin
   T.Cell[2, 0].Text := 'Date / Time';
 
   i := 1;
+  Counter := 0;
   for j := 0 to SecurityLog.Size -1 do
   begin
     LogTypeEnum := TEpiLogEntry(SecurityLog.LogType.AsInteger[j]);
@@ -202,6 +203,14 @@ begin
     if (LogTypeEnum = ltBlockedLogin)
     then
       begin
+       { for k := j - 1 downto 0 do
+          begin
+            LogTypeEnum := TEpiLogEntry(SecurityLog.LogType.AsInteger[j]);
+
+          end;     }
+
+
+
         T.Cell[0, i].Text := SecurityLog.LogContent.AsString[j];
         T.Cell[1, i].Text := SecurityLog.UserName.AsString[j];
         T.Cell[2, i].Text := DateTimeToStr(SecurityLog.Date.AsDateTime[j] +
