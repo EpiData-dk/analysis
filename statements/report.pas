@@ -203,11 +203,18 @@ begin
     if (LogTypeEnum = ltBlockedLogin)
     then
       begin
-       { for k := j - 1 downto 0 do
+        for k := j - 1 downto 0 do
           begin
-            LogTypeEnum := TEpiLogEntry(SecurityLog.LogType.AsInteger[j]);
+            LogTypeEnum := TEpiLogEntry(SecurityLog.LogType.AsInteger[k]);
 
-          end;     }
+            if (LogTypeEnum = ltFailedLogin) and
+               (SecurityLog.LogContent[j] = SecurityLog.LogContent[k])
+            then
+              T.Cell[0, i].Text := SecurityLog.LogContent.AsString[j];
+              T.Cell[1, i].Text := SecurityLog.UserName.AsString[j];
+              T.Cell[2, i].Text := DateTimeToStr(SecurityLog.Date.AsDateTime[j] +
+                                                 SecurityLog.Time.AsDateTime[j]);
+          end;
 
 
 
