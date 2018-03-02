@@ -115,7 +115,7 @@ var
   SecurityLog: TEpiSecurityDatafile;
   DataLog: TEpiSecurityDataEventLog;
   KeyLog: TEpiSecurityKeyFieldLog;
-  blockedcount, i, RowCount, j: Integer;
+  blockedcount, i, RowCount, j, Counter, k: Integer;
   LogTypeCount: array[TEpiLogEntry] of integer;
   LogTypeEnum: TEpiLogEntry;
   T: TOutputTable;
@@ -150,12 +150,10 @@ begin
    3 +                                    // Header + Lines numbers + Start date + Blocked count
    Integer(High(TEpiLogEntry));           // Count of each log type
 
-  DumpDatafileRecords(SecurityLog);
-
   T := FOutputCreator.AddTable;
   T.ColCount := 2;
   T.RowCount := RowCount;
-  T.Header.Text := 'Log Overview';
+  T.Header.Text := 'Log Overview (cycle: ' + IntToStr(Document.CycleNo) + ')';
 
   T.Cell[0, 0].Text := 'Task';
   T.Cell[1, 0].Text := 'Content';
@@ -181,49 +179,61 @@ begin
     T.Cell[1, i].Text := IntToStr(LogTypeCount[LogTypeEnum]);
     Inc(i);
   end;
+  T.SetColAlignment(0, taLeftJustify);
+  T.SetColAlignment(1, taRightJustify);
 
   FOutputCreator.DoNormal('');
 
   T := FOutputCreator.AddTable;
-  T.ColCount := 3;
+  T.ColCount := 4;
   T.RowCount := (blockedcount * 4) + 1;
 
   T.Header.Text := 'Blocked Login Attempts';
 
   T.Cell[0, 0].Text := 'Blocked machine';
-  T.Cell[1, 0].Text := 'Latest login';
-  T.Cell[2, 0].Text := 'Date / Time';
+  T.Cell[1, 0].Text := 'User';
+  T.Cell[2, 0].Text := 'Date/Time';
+  T.Cell[3, 0].Text := 'Cause';
 
-  i := 1;
-  Counter := 0;
+  i := EpiAdminLoginAttemps + 1;
   for j := 0 to SecurityLog.Size -1 do
   begin
     LogTypeEnum := TEpiLogEntry(SecurityLog.LogType.AsInteger[j]);
 
-    if (LogTypeEnum = ltBlockedLogin)
-    then
+    if (LogTypeEnum = ltBlockedLogin) then
       begin
-        for k := j - 1 downto 0 do
+        Counter := 0;
+        k := j - 1;
+        while (Counter < EpiAdminLoginAttemps) and
+              (k >= 0)
+        do
           begin
             LogTypeEnum := TEpiLogEntry(SecurityLog.LogType.AsInteger[k]);
 
             if (LogTypeEnum = ltFailedLogin) and
                (SecurityLog.LogContent[j] = SecurityLog.LogContent[k])
             then
-              T.Cell[0, i].Text := SecurityLog.LogContent.AsString[j];
-              T.Cell[1, i].Text := SecurityLog.UserName.AsString[j];
-              T.Cell[2, i].Text := DateTimeToStr(SecurityLog.Date.AsDateTime[j] +
-                                                 SecurityLog.Time.AsDateTime[j]);
+              begin
+                Dec(i);
+                Inc(Counter);
+                T.Cell[0, i].Text := SecurityLog.LogContent.AsString[k];
+                T.Cell[1, i].Text := SecurityLog.UserName.AsString[k];
+                T.Cell[2, i].Text := DateTimeToStr(SecurityLog.Date.AsDateTime[k] +
+                                                   SecurityLog.Time.AsDateTime[k]);
+                T.Cell[3, i].Text := EpiLogEntryText[ltFailedLogin];
+              end;
+
+            Dec(k);
           end;
-
-
+        Inc(i, EpiAdminLoginAttemps);
 
         T.Cell[0, i].Text := SecurityLog.LogContent.AsString[j];
         T.Cell[1, i].Text := SecurityLog.UserName.AsString[j];
         T.Cell[2, i].Text := DateTimeToStr(SecurityLog.Date.AsDateTime[j] +
                                            SecurityLog.Time.AsDateTime[j]);
+        T.Cell[3, i].Text := EpiLogEntryText[ltBlockedLogin];
 
-        Inc(i);
+        Inc(i, EpiAdminLoginAttemps + 1);
       end;
   end;
 
