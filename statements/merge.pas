@@ -484,6 +484,8 @@ var
   Opts: TOptionList;
   NewST: TCustomNew;
   VLList: TValueLabelPairs;
+  RefMap: TEpiReferenceMap;
+  Opt: TOption;
 
   function CompareKeys(MainIdx, MergeIdx: Integer): TValueRelationship;
   var
@@ -504,7 +506,17 @@ var
   end;
 
 begin
-  MainDF  := FExecutor.DataFile;
+  if ST.HasOption('save', Opt) then
+    begin
+      RefMap := TEpiReferenceMap.Create;
+      MainDF := TEpiDataFile(FExecutor.DataFile.Clone(nil, RefMap));
+      if (Assigned(Opt.Expr)) then
+        MainDF.Name := Opt.Expr.AsIdent;
+      RefMap.FixupReferences;
+      RefMap.Free;
+    end
+  else
+    MainDF  := FExecutor.DataFile;
 
   MainKeyFields  := FieldsFromStrings(Varnames, MainDF);
   MergeKeyFields := FieldsFromStrings(Varnames, MergeDF);

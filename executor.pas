@@ -3216,6 +3216,7 @@ end;
 procedure TExecutor.ExecMerge(ST: TMergeCommand);
 var
   MergeModule: TMerge;
+  Opt: TOption;
 begin
   // Sanity checks:
   if (SelectVector.Size <> DataFile.Size) then
@@ -3235,6 +3236,15 @@ begin
       ST.ExecResult := csrFailed;
       Exit;
     end;
+
+  {if (ST.HasOption('save', Opt)) and
+     (assigned(Opt.Expr)) and
+     (not DataFile.ValidateRename(Opt.Expr.AsIdent))
+    begin
+      DoError('"' + Opt.Expr.AsIdent + '" is already used!');
+      ST.ExecResult := csrFailed;
+      Exit;
+    end;     }
 
   MergeModule := TMerge.Create(Self, FOutputCreator);
   MergeModule.DoMerge(ST);

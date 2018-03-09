@@ -1793,6 +1793,7 @@ begin
   result.Insert('update',  [rtUndefined]);
   result.Insert('replace', [rtUndefined]);
   result.Insert('table',   [rtUndefined]);
+  result.Insert('save',    [rtUndefined, rtObject], [], [evfAsObject, evfExternal]);
 end;
 
 function TMergeCommand.GetAcceptedVariableCount: TBoundArray;
