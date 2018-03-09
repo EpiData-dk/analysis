@@ -35,7 +35,7 @@ type
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator); virtual;
     procedure DoAppend(ST: TAppendCommand);
-    procedure DoMerge(ST: TMergeCommand);
+    function  DoMerge(ST: TMergeCommand): TEpiDataFile;
   end;
 
 
@@ -486,6 +486,7 @@ var
   VLList: TValueLabelPairs;
   RefMap: TEpiReferenceMap;
   Opt: TOption;
+  S: UTF8String;
 
   function CompareKeys(MainIdx, MergeIdx: Integer): TValueRelationship;
   var
@@ -506,17 +507,34 @@ var
   end;
 
 begin
-  if ST.HasOption('save', Opt) then
+  RefMap := TEpiReferenceMap.Create;
+  MainDF := TEpiDataFile(FExecutor.DataFile.Clone(nil, RefMap));
+  MainDF.Caption.Text := 'Merged datasets: ' + MainDF.Name + ' and ' + MergeDF.Name;
+  if (ST.HasOption('name', Opt)) then
     begin
-      RefMap := TEpiReferenceMap.Create;
-      MainDF := TEpiDataFile(FExecutor.DataFile.Clone(nil, RefMap));
-      if (Assigned(Opt.Expr)) then
-        MainDF.Name := Opt.Expr.AsIdent;
-      RefMap.FixupReferences;
-      RefMap.Free;
+      S := Opt.Expr.AsIdent;
+      if (not FExecutor.Document.DataFiles.ValidateRename(S, false)) then
+        begin
+          FExecutor.Error('Name already used: ' + S);
+          ST.ExecResult := csrFailed;
+          MainDF.Free;
+          RefMap.Free;
+          Exit;
+        end;
+      MainDF.Name := S;
     end
   else
-    MainDF  := FExecutor.DataFile;
+    begin
+      i := 1;
+      S := '_merge_' + MainDF.Name + '_' + MergeDF.Name + '_' ;
+      while (not FExecutor.Document.DataFiles.ValidateRename(S + IntToStr(i), false)) do
+        inc(i);
+      MainDF.Name := S + IntToStr(i);
+    end;
+  RefMap.FixupReferences;
+  RefMap.Free;
+  FExecutor.Document.DataFiles.AddItem(MainDF);
+  FExecutor.Document.Relations.NewMasterRelation.Datafile := MainDF;
 
   MainKeyFields  := FieldsFromStrings(Varnames, MainDF);
   MergeKeyFields := FieldsFromStrings(Varnames, MergeDF);
@@ -570,16 +588,6 @@ begin
   if ST.HasOption('replace') then
     MergeOpt := moReplace;
 
-  Opts := TOptionList.Create;
-  Opts.Add(TOption.Create(TVariable.Create('label', FExecutor),  TStringLiteral.Create('Source of information for each observation')));
-  Opts.Add(TOption.Create(TVariable.Create('l', FExecutor), TIntegerLiteral.Create(1)));
-  NewST := TNewVariable.Create(TIntegerLiteral.Create(1), ftInteger, TVariable.Create('mergevar', FExecutor), Opts);
-  NewST.AssignToken(TToken.Create(ST.LineNo, ST.ColNo, ST.ByteNo));
-
-  FExecutor.ExecStatement(NewST);
-  NewST.Free;
-  Opts.Free;
-
   if (not MainDf.ValueLabels.ItemExistsByName('_mergevar_lbl')) then
     begin
       VLList := TValueLabelPairs.Create(rtInteger);
@@ -597,7 +605,10 @@ begin
       Opts.Free;
     end;
 
-  CombineVar := MainDF.Fields.FieldByName['mergevar'];
+  CombineVar := MainDF.NewField(ftInteger);
+  CombineVar.Name := 'mergevar';
+  CombineVar.Question.Text := 'Source of information for each observation';
+  CombineVar.Length := 1;
   CombineVar.ValueLabelSet := MainDF.ValueLabels.GetValueLabelSetByName('_mergevar_lbl');
 
   for i := 0 to CombineVar.Size - 1 do
@@ -702,6 +713,7 @@ begin
       end;
 
   MainDF.SortRecords(MainKeyFields);
+  Result := MainDF;
 
   MainKeyFields.Free;
   MergeKeyFields.Free;
@@ -744,7 +756,7 @@ begin
   AppendDocFile.Free;
 end;
 
-procedure TMerge.DoMerge(ST: TMergeCommand);
+function TMerge.DoMerge(ST: TMergeCommand): TEpiDataFile;
 var
   MergeDocFile: TEpiDocumentFile;
   Datafiles: TEpiDataFiles;
@@ -975,13 +987,11 @@ begin
         end;
     end;
 
-  InternalMerge(ST, MergeDF, VarNames);
-
-  if (ST.ExecResult = csrSuccess) and
-     (not ST.HasOption('table')) and
-     (FExecutor.Document.DataFiles.IndexOf(MergeDF) >= 0)
-  then
-    MergeDF.Free;
+  Result := InternalMerge(ST, MergeDF, VarNames);
+  FOutputCreator.DoNormal(
+    'Successfully merged ' + MergeDF.Name + ' into ' + FExecutor.DataFile.Name + LineEnding +
+    'Resulting dataset name: ' + Result.Name
+  );
 
   if (MergeDocFile <> FExecutor.DocFile) then
     MergeDocFile.Free;
