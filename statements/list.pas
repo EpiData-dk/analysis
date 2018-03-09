@@ -75,12 +75,10 @@ begin
   if (not Assigned(FST.Variables)) or
      (FST.Variables.Count = 0)
   then
-    Fields.Assign(FExecutor.SortedFields)
+    Fields.Assign(DF.Fields)
   else
     for V in FST.Variables do
-      Fields.AddItem(FExecutor.SortedFields.FieldByName[V.Ident]);
-
-//  Fields := DF.Fields;
+      Fields.AddItem(DF.Fields.FieldByName[V.Ident]);
 
   T := FOutputCreator.AddTable;
   T.ColCount := Fields.Count + 1;
