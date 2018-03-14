@@ -531,9 +531,9 @@ begin
         inc(i);
       MainDF.Name := S + IntToStr(i);
     end;
+  FExecutor.Document.DataFiles.AddItem(MainDF);
   RefMap.FixupReferences;
   RefMap.Free;
-  FExecutor.Document.DataFiles.AddItem(MainDF);
   FExecutor.Document.Relations.NewMasterRelation.Datafile := MainDF;
 
   MainKeyFields  := FieldsFromStrings(Varnames, MainDF);
