@@ -1295,6 +1295,12 @@ begin
 
   DoInfo('New project created: ' + Doc.Study.Title.Text);
 
+  if (ST.HasOption('pw', Opt)) then
+    begin
+      Doc.PassWord := Opt.Expr.AsString;
+      DoInfo(' -single password encrypted!');
+    end;
+
   if ST.HasOption('size', Opt) then
   begin
     OptList := TOptionList.Create;
@@ -3003,7 +3009,17 @@ begin
           Exit;
       end;
 
-    ccProject,
+    ccProject:
+      begin
+        if (Document.Admin.Initialized) and
+           (ST.HasOption('pw'))
+        then
+          begin
+            DoError('Cannot combine single password with Extended Access');
+            Exit;
+          end;
+      end;
+
     ccData:
       ; // so far no sanity check
 

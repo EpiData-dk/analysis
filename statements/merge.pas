@@ -510,7 +510,7 @@ begin
   RefMap := TEpiReferenceMap.Create;
   MainDF := TEpiDataFile(FExecutor.DataFile.Clone(nil, RefMap));
   MainDF.Caption.Text := 'Merged datasets: ' + MainDF.Name + ' and ' + MergeDF.Name;
-  if (ST.HasOption('name', Opt)) then
+  if (ST.HasOption('r', Opt)) then
     begin
       S := Opt.Expr.AsIdent;
       if (not FExecutor.Document.DataFiles.ValidateRename(S, false)) then

@@ -319,7 +319,7 @@ use datafile_id_2;</font>
       </td>
       <td><font class="cmd">merge [&lt;key<sub>1</sub>&gt; &lt;key<sub>2</sub>&gt; ...] [!fn [:= "&lt;filename&gt;":]] [!ds := &lt;dataset&gt;] [!table] [!combine | !update | !replace] </font>
        <p>
-       Merge the current data file with another dataset file based on <i>key variable(s)</i><br/>
+       Merge the current data file with another dataset file based on <i>key variable(s)</i>. The result is a <b>NEW</b> dataset which is added to the top level of the project.<br/>
        </p>
        Options:
        <ul>
@@ -336,11 +336,13 @@ use datafile_id_2;</font>
         <li><font class="option">!update</font> All non-missing values in the external dataset replaces ALL values for common variables</li>
         <li><font class="option">!replace</font> All values in the external dataset replace all values for common variables</li>
         <li><font class="option">!table</font> The external file is used as a lookup table. <br/>E.g. to add person information to a file with clinical results</li>
+        <li><font class="option">!r</font> Specify a different name for the resulting dataset. Default naming is a concatenation of the two used datasets</li>
        </ul>
         To keep information in variables with an identical name (e.g. mergevar or name) from all files rename (using <a href="#editvariable">edit</a>) the variables <b>before</b> you merge the next file. E.g. <font class="cmd">
 read "pt.epx";
 edit variable name !rename := "ptname";
-merge hospid !filename := "hospital.epx";
+merge hospid !filename := "hospital.epx" !r := MergeDs;
+use MergeDs;
 edit variable name !rename := "hospname";
 etc ....</font>
           <p>
@@ -519,6 +521,10 @@ end;</font>
               <font class="option">!c</font>
               Closes and open project if modified
             </li>
+           <li>
+            <font class="option">!pw := &lt;string&gt;</font>
+            Encrypts the data of the project with a single password. All data is encrypted with the <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES/Rijndael algorithm</a>, but metadata is not encrypted.
+           </li>
           </ul>
         </td>
       </tr>

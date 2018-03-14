@@ -1793,7 +1793,7 @@ begin
   result.Insert('update',  [rtUndefined]);
   result.Insert('replace', [rtUndefined]);
   result.Insert('table',   [rtUndefined]);
-  result.Insert('name',    [rtUndefined, rtObject], [], [evfAsObject, evfExternal]);
+  result.Insert('r',       [rtUndefined, rtObject], [], [evfAsObject, evfExternal]);
 end;
 
 function TMergeCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2141,6 +2141,7 @@ begin
   Result := inherited GetAcceptedOptions;
 
   Result.Insert('title', [rtString]);
+  Result.Insert('pw',    [rtString]);
 end;
 
 constructor TEditProject.Create(AOptionList: TOptionList);
@@ -2610,6 +2611,7 @@ begin
   Result.Insert('size',  [rtInteger]);
   Result.Insert('title', [rtString]);
   Result.Insert('c',     [rtUndefined]);
+  Result.Insert('pw',    [rtString]);
 end;
 
 constructor TNewProject.Create(AOptionList: TOptionList);

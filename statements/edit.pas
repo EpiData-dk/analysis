@@ -43,6 +43,9 @@ begin
   if ST.HasOption('title', Opt) then
     FExecutor.Document.Study.Title.Text := Opt.Expr.AsString;
 
+  if ST.HasOption('pw', Opt) then
+    FExecutor.Document.PassWord := Opt.Expr.AsString;
+
   ST.ExecResult := csrSuccess;
 end;
 
