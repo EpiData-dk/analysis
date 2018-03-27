@@ -47,6 +47,7 @@ type
     FDocFile: TEpiDocumentFile;
     FDataFile: TEpiDataFile;
     FSelectStack: TSelectStack;
+    procedure DocumentModified(Sender: TObject);
     procedure RebuildSelectStack;
     procedure ClearSelectStack;
     procedure ClearFieldVars;
@@ -370,6 +371,12 @@ begin
       TmpSelectVector := TmpSelectStack.Pop;
     end;
 end;
+
+procedure TExecutor.DocumentModified(Sender: TObject);
+begin
+  DoGUIInteraction(gaTitle);
+end;
+
 procedure TExecutor.ClearSelectStack;
 var
   F: TEpiField;
@@ -612,6 +619,8 @@ begin
           for U in Document.Admin.Users do
             RV.AsStringVector[PostInc(i)] := U.Name;
         end;
+
+      Document.OnModified := @DocumentModified;
     end;
 end;
 
@@ -2177,6 +2186,7 @@ begin
 
       FSaveOptions := nil;
       FDocFile.OnWarning := FOldWarning;
+      FDocFile.Document.Modified := false;
     end;
   ExportSetting.Free;
 
@@ -2306,6 +2316,7 @@ begin
   ClearResults;
   ClearVLSetVars;
 
+  Document.OnModified := nil;
   EpiAsyncHandlerGlobal.RemoveDocument(Document);
   FreeAndNil(FDocFile);
   FDataFile := nil;
@@ -3706,6 +3717,8 @@ begin
   FOnBeforeStatements.Free;
 
   FSelectStack.Free;
+
+  FDocFile.Document.OnModified := nil;
   FDocFile.Free;
 end;
 

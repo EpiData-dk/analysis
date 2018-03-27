@@ -507,6 +507,8 @@ var
   end;
 
 begin
+  Result := nil;
+
   RefMap := TEpiReferenceMap.Create;
   MainDF := TEpiDataFile(FExecutor.DataFile.Clone(nil, RefMap));
   MainDF.Caption.Text := 'Merged datasets: ' + MainDF.Name + ' and ' + MergeDF.Name;
@@ -571,6 +573,7 @@ begin
         '"mergevar" already exists in the main dataset!' + LineEnding +
         'Drop or rename the variable before using "merge"'
       );
+      MainDF.Free;
       ST.ExecResult := csrFailed;
       Exit;
     end;
@@ -988,10 +991,12 @@ begin
     end;
 
   Result := InternalMerge(ST, MergeDF, VarNames);
-  FOutputCreator.DoNormal(
-    'Successfully merged ' + MergeDF.Name + ' into ' + FExecutor.DataFile.Name + LineEnding +
-    'Resulting dataset name: ' + Result.Name
-  );
+
+  if (Assigned(Result)) then
+    FOutputCreator.DoNormal(
+      'Successfully merged ' + MergeDF.Name + ' into ' + FExecutor.DataFile.Name + LineEnding +
+      'Resulting dataset name: ' + Result.Name
+    );
 
   if (MergeDocFile <> FExecutor.DocFile) then
     MergeDocFile.Free;
