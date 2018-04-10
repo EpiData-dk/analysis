@@ -156,10 +156,14 @@ BEGIN
       bm := bp/bpp;
       az := app/bpp;
       bz := 1.0;
-      IF ((abs(az-aold)) < (eps*abs(az))) THEN GOTO 1
-   END;
-   raise exception.create('a or b too big, or itmax too small');
-1:   betacf := az
+      IF ((abs(az-aold)) < (eps*abs(az))) THEN
+        begin
+          betacf := az;
+          exit;
+        end;
+   end;
+   raise exception.create('Cannot estimate beta, a or b too big, or itmax too small');
+//   betacf := az
 END;
 
 
