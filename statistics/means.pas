@@ -37,7 +37,7 @@ type
 implementation
 
 uses
-  generalutils, statfunctions, options_utils, epifields_helper;
+  generalutils, Math, statfunctions, options_utils, epifields_helper;
 
 
 { TIntervalDescriptives }
@@ -109,7 +109,8 @@ begin
     AvgDev.AsFloat[Idx]    := lAvgDev;
     SumSS.AsFloat[Idx]     := lSSqDev;
 
-    if (Obs >= 2) then
+    // Cannot calculate these statistics with 1 observation
+    if (Obs > 1) then
       begin
         lSSqDev               := lSSqDev / (Obs - 1);
         StdVar.AsFloat[Idx]   := lSSqDev;
@@ -128,6 +129,7 @@ var
   i, lStrata: Integer;
   Obs: Int64;
   ASum, ASumSQ, ASSW, ASST, MPTmp, Tval: EpiFloat;
+  m,s: EpiFloat;
 begin
   if FResultDF.Size < 2 then
   // t-test of mean=0 if only one result
@@ -140,7 +142,10 @@ begin
       with Result do
       begin
         F    := Tval;     // Making use of F for the t-value
-        PROB := tdist(F,Obs-1);
+        if (Obs < 2) or (isInfinite(Tval) or isNaN(Tval)) then
+          PROB := 1
+        else
+          PROB := tdist(F,Obs-1);
       end;
       exit;
     end;
@@ -152,7 +157,7 @@ begin
 
   with FResultDF do
   begin
-    lStrata := Size - 2;
+    lStrata := Size - 2;  // Size includes the grand sums row
     for i := 0 to lStrata do
       ASSW += SumSS.AsFloat[i];
    // now get grand sums from last set of descriptives
@@ -173,7 +178,10 @@ begin
     MSW := SSW / DFW;
     MST := SST / DFT;
     F   := MSB / MSW;
-    PROB := fdist(F, DFB, DFW);
+    if (isInfinite(F) or isNaN(F)) then
+      PROB := 1
+    else
+      PROB := fdist(F, DFB, DFW);
   end;
 end;
 
@@ -358,14 +366,26 @@ begin
     for i := 0 to Sz - 1 do
       begin
         if Offset > 0 then T.Cell[0, i + 1].Text := Category.AsString[i];
-        T.Cell[0 + Offset, i + 1].Text := FormatFloat('0.00', N.AsFloat[i]);
-        T.Cell[1 + Offset, i + 1].Text := FormatFloat('0.00', Sum.AsFloat[i]);
-        T.Cell[2 + Offset, i + 1].Text := FormatFloat('0.00', Mean.AsFloat[i]);
-        T.Cell[3 + Offset, i + 1].Text := FormatFloat('0.00', StdVar.AsFloat[i]);
-        T.Cell[4 + Offset, i + 1].Text := FormatFloat('0.00', StdDev.AsFloat[i]);
-        T.Cell[5 + Offset, i + 1].Text := FormatFloat('0.00', CfiL.AsFloat[i]);
-        T.Cell[6 + Offset, i + 1].Text := FormatFloat('0.00', CfiH.AsFloat[i]);
-        T.Cell[7 + Offset, i + 1].Text := FormatFloat('0.00', StdErr.AsFloat[i]);
+        T.Cell[0 + Offset, i + 1].Text := FormatFloat('0', N.AsFloat[i]);
+        T.Cell[1 + Offset, i + 1].Text := FormatFloat('#.00', Sum.AsFloat[i]);
+        T.Cell[2 + Offset, i + 1].Text := FormatFloat('#.00', Mean.AsFloat[i]);
+// watch for statistics that could not be calculated
+        if (N.AsInteger[i] < 2) or (isInfinite(Sum.AsFloat[i])) or (isNaN(Sum.AsFloat[i])) then
+          begin
+            T.Cell[3 + Offset, i + 1].Text := 'Cannot';
+            T.Cell[4 + Offset, i + 1].Text := 'estimate';
+            T.Cell[5 + Offset, i + 1].Text := '-';
+            T.Cell[6 + Offset, i + 1].Text := '-';
+            T.Cell[7 + Offset, i + 1].Text := '-';
+          end
+        else
+          begin
+            T.Cell[3 + Offset, i + 1].Text := FormatFloat('0.00', StdVar.AsFloat[i]);
+            T.Cell[4 + Offset, i + 1].Text := FormatFloat('0.00', StdDev.AsFloat[i]);
+            T.Cell[5 + Offset, i + 1].Text := FormatFloat('0.00', CfiL.AsFloat[i]);
+            T.Cell[6 + Offset, i + 1].Text := FormatFloat('0.00', CfiH.AsFloat[i]);
+            T.Cell[7 + Offset, i + 1].Text := FormatFloat('0.00', StdErr.AsFloat[i]);
+          end;
         T.SetRowAlignment(i+1, taRightJustify);
         // Need to set this after the entire row has been set to right justify
         if Offset > 0 then T.Cell[0, i + 1].Alignment := taLeftJustify;
@@ -374,10 +394,20 @@ begin
         ObsV.AsIntegerVector[i] := N.AsInteger[i];
         SumV.AsFloatVector[i]   := Sum.AsFloat[i];
         MeanV.AsFloatVector[i]  := Mean.AsFloat[i];
-        SvV.AsFloatVector[i]    := StdVar.AsFloat[i];
-        SdV.AsFloatVector[i]    := StdDev.AsFloat[i];
-        CfilV.AsFloatVector[i]  := CfiL.AsFloat[i];
-        CfihV.AsFloatVector[i]  := CfiH.AsFloat[i];
+        if (N.AsInteger[i] < 2) then
+          begin
+            SvV.AsFloatVector[i]    := 0/0;
+            SdV.AsFloatVector[i]    := 0/0;
+            CfilV.AsFloatVector[i]  := 0/0;
+            CfihV.AsFloatVector[i]  := 0/0;
+          end
+        else
+        begin
+          SvV.AsFloatVector[i]    := StdVar.AsFloat[i];
+          SdV.AsFloatVector[i]    := StdDev.AsFloat[i];
+          CfilV.AsFloatVector[i]  := CfiL.AsFloat[i];
+          CfihV.AsFloatVector[i]  := CfiH.AsFloat[i];
+        end;
       end;
   end;
 
@@ -425,6 +455,13 @@ var
   T: TOutputTable;
 begin
   T := FOutputCreator.AddTable;
+  if (isNaN(AnovaRec.F)) then
+    begin
+      T.ColCount := 1;
+      T.RowCount := 1;
+      T.Cell[0,0].Text := 'Cannot do ANOVA with these values';
+      exit
+    end;
   T.ColCount := 6;
   T.RowCount := 4;
 
@@ -469,8 +506,15 @@ var
   T: TOutputTable;
 begin
   T := FOutputCreator.AddTable;
-  T.ColCount := 3;
-  T.RowCount := 2;
+  if (isNaN(AnovaRec.F)) then
+    begin
+      T.ColCount := 1;
+      T.RowCount := 1;
+      T.Cell[0,0].Text := 'Cannot do a t-test with these values';
+      exit
+    end;
+  T.ColCount       := 3;
+  T.RowCount       := 2;
   T.Cell[0,0].Text := 'Test of Ho: mean=zero';
   T.Cell[1,0].Text := 't';
   T.Cell[2,0].Text := 'p Value';
