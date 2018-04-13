@@ -177,6 +177,7 @@ type
     procedure CmdEditFontChangeEvent(Sender: TObject);
     procedure DelayCmdEditFocus(Data: PtrInt);
     procedure ApplicationActivate(Sender: TObject);
+    procedure TutorialChange(Sender: TObject);
 
   { Variable List }
   private
@@ -352,6 +353,7 @@ begin
   Executor.SetOptions[ANA_SO_OUTPUT_FONT_STYLE].AddOnChangeHandler(@OutputFontChange);
   Executor.SetOptions[ANA_SO_OUTPUT_BG_COLOR].AddOnChangeHandler(@OutputFontChange);
   Executor.SetOptions[ANA_SO_OUTPUT_FORMAT].AddOnChangeHandler(@OutputViewerChanges);
+  Executor.SetOptions[ANA_SO_TUTORIAL_FOLDER].AddOnChangeHandler(@TutorialChange);
 
   FOutputCreator.SetOptions := Executor.SetOptions;
 
@@ -733,8 +735,6 @@ var
   S: String;
 begin
   HelpLookup(false);
-//  S := 'file://' + ProgramDirectory + DirectorySeparator + 'docs' + DirectorySeparator + 'commands.html';
-//  OpenURL(S);
 end;
 
 procedure TMainForm.ToggleProjectTreeExecute(Sender: TObject);
@@ -821,7 +821,7 @@ end;
 
 procedure TMainForm.TutorialsWebActionExecute(Sender: TObject);
 begin
-  OpenURL('http://epidata.dk/documentation.php');
+  OpenURL(Executor.SetOptionValue[ANA_SO_WEB_URL]);
 end;
 
 procedure TMainForm.TutorialsWikiActionExecute(Sender: TObject);
@@ -1182,21 +1182,10 @@ begin
 
   // Find all .pdf files in the directory set by TutorialsDirUTF8
   FileList := TStringListUTF8.Create;
-  {$IFDEF DARWIN}
-  P := ProgramDirectory + '../../../docs';
-  {$ELSE}
-  P := ProgramDirectory + DirectorySeparator + 'docs';
-  {$ENDIF}
+  P := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER];
   FindAllFiles(FileList, P, '*.pdf', false);
   FindAllFiles(FileList, P, '*.html', false);
   FileList.CustomSort(@EpiStringListSortStr);
-
-  if FileList.Count = 0 then
-  begin
-    TutorialSubMenu.Enabled := false;
-    FileList.Free;
-    Exit;
-  end;
 
   for i := 0 to FileList.Count - 1 do
   begin
@@ -1207,6 +1196,12 @@ begin
 
     TutorialSubMenu.Add(MenuItem);
   end;
+
+  if FileList.Count = 0 then
+    TutorialSubMenu.Enabled := false
+  else
+    TutorialSubMenu.Enabled := true;
+
   FileList.Free;
 end;
 
@@ -1392,6 +1387,11 @@ begin
   FOutputViewer.InvalidateView;
 end;
 
+procedure TMainForm.TutorialChange(Sender: TObject);
+begin
+  LoadTutorials;
+end;
+
 procedure TMainForm.ExecutorStart(Sender: TObject);
 begin
   FStatusbar.Update();
@@ -1412,11 +1412,7 @@ procedure TMainForm.OpenTutorialMenuItemClick(Sender: TObject);
 var
   P: String;
 begin
-  {$IFDEF DARWIN}
-  P := ProgramDirectory + '../../../docs';
-  {$ELSE}
-  P := ProgramDirectory + DirectorySeparator + 'docs';
-  {$ENDIF}
+  P := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER];
   OpenDocument(P + DirectorySeparator + TMenuItem(Sender).Caption);
 end;
 
@@ -1739,11 +1735,11 @@ begin
   else
     S := '';
 
-  {$IFDEF DARWIN}
+{  {$IFDEF DARWIN}
   S := 'file://' + ProgramDirectory + '../../../docs' + DirectorySeparator + 'commands.html' + S;
-  {$ELSE}
-  S := 'file://' + ProgramDirectory + 'docs' + DirectorySeparator + 'commands.html' + S;
-  {$ENDIF}
+  {$ELSE}  }
+  S := 'file://' + Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER] + DirectorySeparator + 'commands.html' + S;
+//  {$ENDIF}
   OpenURL(S);
 end;
 

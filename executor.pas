@@ -304,7 +304,7 @@ uses
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
   RegExpr, ana_globals, browse4, strutils, options_fontoptions,
-  ana_documentfile,
+  ana_documentfile, FileUtil,
 
   // STATEMENTS
   list, edit, drop, systemcmd, merge, integrity_tests, report, save_output,
@@ -1813,6 +1813,16 @@ begin
   FOptions.Insert(ANA_SO_BROWSE_VARIABLE_LABEL, SOpt);
 
   FOptions.Insert(ANA_SO_INCLUDE_DELETED, TSetOption.Create('OFF', rtBoolean));
+
+  FOptions.Insert(ANA_SO_TUTORIAL_FOLDER,
+    TSetOption.Create({$IFDEF DARWIN}
+                        ProgramDirectory + '../../../docs'
+                      {$ELSE}
+                        ProgramDirectory + DirectorySeparator + 'docs'
+                      {$ENDIF},
+                      rtString));
+
+  FOptions.Insert(ANA_SO_WEB_URL, TSetOption.Create('http://epidata.dk/documentation.php', rtString));
 end;
 
 function TExecutor.GetSetOptionValue(const Key: UTF8String): UTF8String;

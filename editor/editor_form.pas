@@ -156,6 +156,7 @@ type
 
     procedure FontChangeEvent(Sender: TObject);
     procedure SearchDlgShow(Sender: TObject);
+    procedure TutorialChange(Sender: TObject);
   private
     function  CloseTab(Index: Integer): boolean;
     function  NewTab: Integer;
@@ -737,6 +738,11 @@ begin
   FActiveDialog.Position := P;
 end;
 
+procedure TEditorForm.TutorialChange(Sender: TObject);
+begin
+  LoadTutorials;
+end;
+
 function TEditorForm.CloseTab(Index: Integer): boolean;
 var
   Res: TModalResult;
@@ -871,21 +877,10 @@ begin
 
   // Find all .pdf files in the directory set by TutorialsDirUTF8
   FileList := TStringListUTF8.Create;
-  {$IFDEF DARWIN}
-  P := ProgramDirectory + '../../../docs';
-  {$ELSE}
-  P := ProgramDirectory + DirectorySeparator + 'docs';
-  {$ENDIF}
+  P := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER];
   FindAllFiles(FileList, P, '*.pdf', false);
   FindAllFiles(FileList, P, '*.html', false);
   FileList.CustomSort(@EpiStringListSortStr);
-
-  if FileList.Count = 0 then
-  begin
-    TutorialSubMenu.Enabled := false;
-    FileList.Free;
-    Exit;
-  end;
 
   for i := 0 to FileList.Count - 1 do
   begin
@@ -896,6 +891,12 @@ begin
 
     TutorialSubMenu.Add(MenuItem);
   end;
+
+  if FileList.Count = 0 then
+    TutorialSubMenu.Enabled := false
+  else
+    TutorialSubMenu.Enabled := true;
+
   FileList.Free;
 end;
 
@@ -909,6 +910,7 @@ begin
 
   FExecutor.SetOptions[ANA_SO_EDITOR_FONT_SIZE].AddOnChangeHandler(@FontChangeEvent);
   FExecutor.SetOptions[ANA_SO_EDITOR_FONT_NAME].AddOnChangeHandler(@FontChangeEvent);
+  FExecutor.SetOptions[ANA_SO_TUTORIAL_FOLDER].AddOnChangeHandler(@TutorialChange);
 
   UpdateFormActions;
 end;

@@ -52,6 +52,8 @@ const
   ANA_SO_SHOW_INFO                     = 'SHOW INFO';
   ANA_SO_SHOW_WARNING                  = 'SHOW WARNING';
 
+  ANA_SO_TUTORIAL_FOLDER               = 'TUTORIAL FOLDER';
+  ANA_SO_WEB_URL                       = 'WEB URL';
 
   //  Executor Field Names
   ANA_EXEC_PREPAREDS_OBSNO_FIELD       = '@obsno';
