@@ -3718,8 +3718,11 @@ begin
 
   FSelectStack.Free;
 
-  FDocFile.Document.OnModified := nil;
-  FDocFile.Free;
+  if Assigned(FDocFile) then
+    begin
+      FDocFile.Document.OnModified := nil;
+      FDocFile.Free;
+    end;
 end;
 
 procedure TExecutor.Execute(TheProgram: TStatementList);
