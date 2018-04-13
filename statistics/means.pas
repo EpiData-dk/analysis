@@ -46,7 +46,7 @@ procedure TIntervalDescriptives.FillDescriptor(SIdx, EIdx: Integer;
           ASum: EpiFloat; ST: TCustomVariableCommand);
 var
   Idx, Obs, i: Integer;
-  lMean, lAvgDev, lStdDev, lSSqDev, lStdErr, lSkew, lCurt, Val, lTvalue: EpiFloat;
+  lMean, lAvgDev, lStdDev, lSSqDev, lStdErr, lSkew, lKurt, Val, lTvalue: EpiFloat;
   lCfiVal: Extended;
 
   function GetPercentile(min, max, d: integer):EpiFloat;
@@ -98,12 +98,15 @@ begin
     lSSqDev := 0;
     lStdErr := 0;
     lSkew   := 0;
-    lCurt   := 0;
+    lKurt   := 0;
+
     FOR i := SIdx TO EIdx DO
     BEGIN
       Val     := CountVar.AsFloat[i] - lMean;
-      lAvgDev := lAvgDev + abs(Val);
-      lSSqDev := lSSqDev + (Val * Val);
+      lAvgDev += abs(Val);
+      lSSqDev += (Val * Val);
+      lSkew   += (Val * Val) * Val;
+      lKurt   += (Val * Val) * (Val * Val);
     END;
     lAvgDev                := lAvgDev / Obs;
     AvgDev.AsFloat[Idx]    := lAvgDev;
@@ -112,6 +115,13 @@ begin
     // Cannot calculate these statistics with 1 observation
     if (Obs > 1) then
       begin
+        if (Obs > 2) then
+          Skew.AsFloat[Idx]   := Obs * sqrt(Obs - 1) * lSkew / ((Obs - 2) * sqrt(lSSqDev * lSSqDev * lSSqDev));
+        if (Obs > 3)  then
+          begin
+            lKurt             := Obs * (Obs + 1) * (Obs - 1) * lKurt / ((Obs - 2) * (Obs - 3) * lSSqDev * lSSqDev);
+            Kurt.AsFloat[Idx] := lKurt - 3 * (Obs - 1) * (Obs - 1) / ((Obs - 2) * (Obs - 3)) // excess kurtosis
+          end;
         lSSqDev               := lSSqDev / (Obs - 1);
         StdVar.AsFloat[Idx]   := lSSqDev;
         StdDev.AsFloat[Idx]   := sqrt(lSSqDev);
@@ -126,9 +136,10 @@ end;
 
 function TIntervalDescriptives.Anova: TAnovaRecord;
 var
-  i, lStrata: Integer;
+  i, k, lStrata: Integer;
   Obs: Int64;
   ASum, ASumSQ, ASSW, ASST, MPTmp, Tval: EpiFloat;
+  BART, pBart, TPoolVar, TSumVar, TSumLogs, TSumNs: EpiFloat;
   m,s: EpiFloat;
 begin
   if FResultDF.Size < 2 then
@@ -183,6 +194,32 @@ begin
     else
       PROB := fdist(F, DFB, DFW);
   end;
+
+// Should use Levene test of homogeneity of variances
+// Bartlett's test is simpler, but is sensitive to non-normality of the data
+// ref: Engineering Statistics Handbook 1.3.5.7
+//      https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm
+  TPoolVar := 0;
+  TSumLogs := 0;
+  TSumNs   := 0;
+  k        := lStrata + 1; // number of strata; lStrata fills in for k-1
+  with FResultDF do
+  begin
+    for i := 0 to lStrata do
+    begin
+      TSumLogs += (N.AsInteger[i] - 1) * ln(StdVar.AsFloat[i]); // (N[i]-1) * var[i]
+      TSumNs   += (1/(N.AsFloat[i] - 1));                       // 1 / (N[i]-1)
+      TPoolVar += (N.AsInteger[i] - 1) * StdVar.AsFloat[i]      // (N[i]-1) * var[i]
+    end;
+    TPoolVar := TPoolVar / (Obs - (Size - 1));                  // sum / (N-k)
+// TODO: BART calculation is not correct
+  with Result do
+    begin
+      BART  := ((Obs - k) * ln(TPoolVar) - TSumLogs) / (1 + (TSumNs - 1/(Obs - k)) / (3*(lStrata)));
+      PBART := ChiPValue(BART , lStrata)
+    end;
+  end;
+
 end;
 
 constructor TIntervalDescriptives.Create(AExecutor: TExecutor;
@@ -294,19 +331,25 @@ procedure TIntervalDescriptives.OutMeans(
   MeanDataFile: TIntervalDecriptivesDatafile; ST: TCustomVariableCommand);
 var
   Offset, i, Idx, Sz: Integer;
-  CatV, ObsV, SumV, MeanV, SvV, SdV, CfilV, CfihV: TCustomExecutorDataVariable;
+  StatFmt: string;
+  CatV, ObsV, SumV, MeanV, SvV, SdV, CfilV, CfihV, SkewV, KurtV: TCustomExecutorDataVariable;
   T: TOutputTable;
   GVT: TEpiGetVariableLabelType;
 begin
   T := FOutputCreator.AddTable;
-
   GVT := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   T.Header.Text := CountVar.GetVariableLabel(GVT);
-  Sz := MeanDataFile.Size;
+  with MeanDataFile do
+    begin;
+      Sz := MeanDataFile.Size;
+      StatFmt := '0.00';   // default format for statistics
+      if (StdVar.AsFloat[Sz-1] < 0.01) then
+        StatFmt := '0.000000'  // for selected stats, if variance < 0.01
+    end;
   if Sz = 1 then
     begin
       Offset := 0;
-      T.ColCount := 9;
+      T.ColCount := 11;
       T.RowCount := 5;
     end
   else
@@ -314,7 +357,7 @@ begin
       // final result set is for all data; don't display for now
       Sz         := Sz - 1;
       Offset     := 1;
-      T.ColCount := 10;
+      T.ColCount := 12;
       T.RowCount := 3 + (Sz * 2);
     end;
 
@@ -328,6 +371,8 @@ begin
   T.Cell[5 + Offset, 0].Text := '( 95% CI';
   T.Cell[6 + Offset, 0].Text := 'mean )';
   T.Cell[7 + Offset, 0].Text := 'Std. Err.';
+  T.Cell[8 + Offset, 0].Text := 'Skewness';
+  T.Cell[9 + Offset, 0].Text := 'Kurtosis';
   T.SetRowAlignment(0, taRightJustify);
   T.SetRowBoxBorder(0);
 
@@ -344,6 +389,10 @@ begin
         SdV   := AddResultConst('$means_sd',       ftFloat);
         CfilV := AddResultConst('$means_cfil',     ftFloat);
         CfihV := AddResultConst('$means_cfih',     ftFloat);
+//        if (ObsV > 2) then
+          SkewV := AddResultConst('$means_skew',   ftFloat);
+//        if (ObsV > 3) then
+          KurtV := AddResultConst('$means_kurt',   ftFloat);
       end
     else
       begin
@@ -355,6 +404,10 @@ begin
         SdV   := AddResultVector('$means_sd',       ftFloat, Sz);
         CfilV := AddResultVector('$means_cfil',     ftFloat, Sz);
         CfihV := AddResultVector('$means_cfih',     ftFloat, Sz);
+//        if (ObsV > 2) then
+          SkewV := AddResultVector('$means_skew',   ftFloat, Sz);
+//        if (ObsV > 3) then
+          KurtV := AddResultVector('$means_kurt',   ftFloat, Sz);
       end;
     AddResultConst('$means_size',  ftInteger).AsIntegerVector[0] := Sz;
     AddResultConst('$means_var',  ftString).AsStringVector[0]    := CountVar.Name;
@@ -367,24 +420,30 @@ begin
       begin
         if Offset > 0 then T.Cell[0, i + 1].Text := Category.AsString[i];
         T.Cell[0 + Offset, i + 1].Text := FormatFloat('0', N.AsFloat[i]);
-        T.Cell[1 + Offset, i + 1].Text := FormatFloat('#.00', Sum.AsFloat[i]);
-        T.Cell[2 + Offset, i + 1].Text := FormatFloat('#.00', Mean.AsFloat[i]);
+        T.Cell[1 + Offset, i + 1].Text := FormatFloat('0.00', Sum.AsFloat[i]);
+        T.Cell[2 + Offset, i + 1].Text := FormatFloat('0.00', Mean.AsFloat[i]);
 // watch for statistics that could not be calculated
         if (N.AsInteger[i] < 2) or (isInfinite(Sum.AsFloat[i])) or (isNaN(Sum.AsFloat[i])) then
           begin
             T.Cell[3 + Offset, i + 1].Text := 'Cannot';
             T.Cell[4 + Offset, i + 1].Text := 'estimate';
-            T.Cell[5 + Offset, i + 1].Text := '-';
-            T.Cell[6 + Offset, i + 1].Text := '-';
-            T.Cell[7 + Offset, i + 1].Text := '-';
+//            T.Cell[5 + Offset, i + 1].Text := '-';
+//            T.Cell[6 + Offset, i + 1].Text := '-';
+//            T.Cell[7 + Offset, i + 1].Text := '-';
           end
         else
           begin
-            T.Cell[3 + Offset, i + 1].Text := FormatFloat('0.00', StdVar.AsFloat[i]);
-            T.Cell[4 + Offset, i + 1].Text := FormatFloat('0.00', StdDev.AsFloat[i]);
+            T.Cell[3 + Offset, i + 1].Text := FormatFloat(StatFmt, StdVar.AsFloat[i]);
+            T.Cell[4 + Offset, i + 1].Text := FormatFloat(StatFmt, StdDev.AsFloat[i]);
             T.Cell[5 + Offset, i + 1].Text := FormatFloat('0.00', CfiL.AsFloat[i]);
             T.Cell[6 + Offset, i + 1].Text := FormatFloat('0.00', CfiH.AsFloat[i]);
-            T.Cell[7 + Offset, i + 1].Text := FormatFloat('0.00', StdErr.AsFloat[i]);
+            T.Cell[7 + Offset, i + 1].Text := FormatFloat(StatFmt, StdErr.AsFloat[i]);
+            if (N.AsInteger[i] > 2) then
+              T.Cell[8 + Offset, i + 1].Text := FormatFloat('0.00', Skew.AsFloat[i]);
+//            else
+//              T.Cell[8 + Offset, i + 1].Text := '-';
+            if (N.AsInteger[i] > 3) then
+              T.Cell[9 + Offset, i + 1].Text := FormatFloat('0.00', Kurt.AsFloat[i]);
           end;
         T.SetRowAlignment(i+1, taRightJustify);
         // Need to set this after the entire row has been set to right justify
@@ -407,6 +466,10 @@ begin
           SdV.AsFloatVector[i]    := StdDev.AsFloat[i];
           CfilV.AsFloatVector[i]  := CfiL.AsFloat[i];
           CfihV.AsFloatVector[i]  := CfiH.AsFloat[i];
+          if (N.AsInteger[i] > 2) then
+            SkewV.AsFloatVector[i]  := Skew.AsFloat[i];
+          if (N.AsInteger[i] > 3) then
+            KurtV.AsFloatVector[i]  := Kurt.AsFloat[i];
         end;
       end;
   end;
@@ -453,8 +516,10 @@ end;
 procedure TIntervalDescriptives.OutAnova(AnovaRec: TAnovaRecord);
 var
   T: TOutputTable;
+  B: TOutputTable;
 begin
   T := FOutputCreator.AddTable;
+  T.Header.Text := 'Analysis of Variance';
   if (isNaN(AnovaRec.F)) then
     begin
       T.ColCount := 1;
@@ -464,7 +529,6 @@ begin
     end;
   T.ColCount := 6;
   T.RowCount := 4;
-
   T.Cell[0,0].Text := 'Source';
   T.Cell[1,0].Text := 'DF';
   T.Cell[2,0].Text := 'SS';
@@ -472,6 +536,15 @@ begin
   T.Cell[4,0].Text := 'F';
   T.Cell[5,0].Text := 'p Value';
   T.SetRowAlignment(0, taCenter);
+
+  B := FOutputCreator.AddTable;
+  B.Header.Text    := 'Bartlett''s Test of homogeneity of variances';
+  B.ColCount       := 3;
+  B.RowCount       := 2;
+  B.Cell[0,0].Text := 'DF';
+  B.Cell[1,0].Text := 'Chi-square';
+  B.Cell[2,0].Text := 'p Value';
+  B.SetRowAlignment(0, taCenter);
 
   with AnovaRec do
   begin
@@ -482,7 +555,7 @@ begin
     T.Cell[4,1].Text := Format('%8.6f', [F]);
     T.Cell[5,1].Text := Format('%8.6f', [PROB]);
     if ((PROB < 0.0) or (PROB > 1.0)) then
-      T.Cell[5,1].Text := ' (Invalid ' + T.Cell[5,1].Text + ' - Program error)';
+      T.Cell[5,1].Text := ' (Invalid p=' + T.Cell[5,1].Text + ' - Program error)';
 
     FExecutor.AddResultConst('$means_DFB', ftInteger).AsIntegerVector[0] := DFB;
     FExecutor.AddResultConst('$means_SSB', ftFloat).AsFloatVector[0]     := SSB;
@@ -495,9 +568,20 @@ begin
     T.Cell[2,2].Text := Format('%8.6f', [SSW]);
     T.Cell[3,2].Text := Format('%8.6f', [MSW]);
 
+    T.Cell[0,3].Text := 'Total';
+    T.Cell[1,3].Text := IntToStr(DFT);
+    T.Cell[2,3].Text := Format('%8.6f', [SST]);
+    T.Cell[3,3].Text := Format('%8.6f', [MST]);
+
+    B.Cell[0,1].Text := IntToStr(DFB);
+    B.Cell[1,1].Text := Format('%8.6f', [BART]);
+    B.Cell[2,1].Text := Format('%8.6f', [PBART]);
+
     FExecutor.AddResultConst('$means_DFW', ftInteger).AsIntegerVector[0] := DFW;
     FExecutor.AddResultConst('$means_SSW', ftFloat).AsFloatVector[0]     := SSW;
     FExecutor.AddResultConst('$means_MSW', ftFloat).AsFloatVector[0]     := MSW;
+    FExecutor.AddResultConst('$means_BART', ftFloat).AsFloatVector[0]    := BART;
+    FExecutor.AddResultConst('$means_pBART', ftFloat).AsFloatVector[0]   := PBART;
   end;
 end;
 
@@ -506,6 +590,7 @@ var
   T: TOutputTable;
 begin
   T := FOutputCreator.AddTable;
+  T.Header.Text := 't-test of Ho: mean=zero';
   if (isNaN(AnovaRec.F)) then
     begin
       T.ColCount := 1;
@@ -515,7 +600,7 @@ begin
     end;
   T.ColCount       := 3;
   T.RowCount       := 2;
-  T.Cell[0,0].Text := 'Test of Ho: mean=zero';
+  T.Cell[0,0].Text := '';
   T.Cell[1,0].Text := 't';
   T.Cell[2,0].Text := 'p Value';
   T.SetRowAlignment(0, taCenter);
@@ -524,7 +609,6 @@ begin
   begin
     T.Cell[1,1].Text := Format('%8.6f', [F]);
     T.Cell[2,1].Text := Format('%8.6f', [PROB]);
-
     FExecutor.AddResultConst('$means_T', ftFloat).AsFloatVector[0]   := F;
     FExecutor.AddResultConst('$means_PROB', ftfloat).AsFloatVector[0] := PROB;
   end;
