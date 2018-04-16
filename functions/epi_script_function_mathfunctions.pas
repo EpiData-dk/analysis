@@ -288,7 +288,7 @@ begin
         t := Param[1].AsFloat;
 
         if (t <> 0) then
-          result := min(15, -log10(abs(c - t) / t))
+          result := min(15, -log10(abs((c - t) / t)))
         else
           result := min(15, -log10(abs(c - t)));
       end;
