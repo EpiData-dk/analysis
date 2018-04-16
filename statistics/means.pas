@@ -271,7 +271,7 @@ begin
       SortList.Free;
 
       StartIdx := 0;
-      Val      := CountVar.AsFloat[0];
+      Val      := CountVar.AsFloat[0];    // why is this coded with Val?
       Sum      := Val;
       Tsum     := 0;
       for i := 1 to DataFile.Size - 1 do
@@ -301,9 +301,14 @@ begin
   end
 
   else
-// no 'by' option - just save sum of data
+// no 'by' option - just sort data by value and save sum of data
     begin
       CategVar := DataFile.NewField(ftInteger);
+      SortList := TEpiFields.Create(nil);
+      SortList.AddItem(CountVar);
+      DataFile.SortRecords(SortList);
+      SortList.Free;
+
       Tsum := 0;
       for i := 0 to DataFile.Size -1 do
         Tsum += CountVar.AsFloat[i];
@@ -312,7 +317,7 @@ begin
 // In future, could decide to display all data results as well as stratum results
 // However, will have to set appropriate result vars as well
 // Considered adding a boolean parameter to the procedure call to indicate which
-  FillDescriptor(0, DataFile.Size - 1, Tsum, ST);
+  FillDescriptor(0, DataFile.Size - 1, Tsum, ST);    // could we move this first, so [0] is always totals?
 
   OutMeans(FResultDF, ST);
 
@@ -332,7 +337,8 @@ procedure TIntervalDescriptives.OutMeans(
 var
   Offset, i, Idx, Sz: Integer;
   StatFmt: string;
-  CatV, ObsV, SumV, MeanV, SvV, SdV, CfilV, CfihV, SkewV, KurtV: TCustomExecutorDataVariable;
+  CatV, ObsV, SumV, MeanV, SvV, SdV, CfilV, CfihV, SkewV, KurtV,
+    MinV, P5V, P10V, P25V, MedV, P75V, P90V, P95V, MaxV: TCustomExecutorDataVariable;
   T: TOutputTable;
   GVT: TEpiGetVariableLabelType;
 begin
@@ -385,6 +391,15 @@ begin
         ObsV  := AddResultConst('$means_obs',      ftInteger);
         SumV  := AddResultConst('$means_sum',      ftFloat);
         MeanV := AddResultConst('$means_mean',     ftFloat);
+        MinV  := AddResultConst('$means_min',      ftFloat);
+        P5V   := AddResultConst('$means_p5',       ftFloat);
+        P10V  := AddResultConst('$means_p10',      ftFloat);
+        P25V  := AddResultConst('$means_p25',      ftFloat);
+        MedV  := AddResultConst('$means_median',   ftFloat);
+        P75V  := AddResultConst('$means_p75',      ftFloat);
+        P90V  := AddResultConst('$means_p90',      ftFloat);
+        P95V  := AddResultConst('$means_p95',      ftFloat);
+        MaxV  := AddResultConst('$means_max',      ftFloat);
         SvV   := AddResultConst('$means_sv',       ftFloat);
         SdV   := AddResultConst('$means_sd',       ftFloat);
         CfilV := AddResultConst('$means_cfil',     ftFloat);
@@ -400,6 +415,15 @@ begin
         ObsV  := AddResultVector('$means_obs',      ftInteger, Sz);
         SumV  := AddResultVector('$means_sum',      ftFloat, Sz);
         MeanV := AddResultVector('$means_mean',     ftFloat, Sz);
+        MinV  := AddResultVector('$means_min',      ftFloat, Sz);
+        P5V   := AddResultVector('$means_p5',       ftFloat, Sz);
+        P10V  := AddResultVector('$means_p10',      ftFloat, Sz);
+        P25V  := AddResultVector('$means_p25',      ftFloat, Sz);
+        MedV  := AddResultVector('$means_median',   ftFloat, Sz);
+        P75V  := AddResultVector('$means_p75',      ftFloat, Sz);
+        P90V  := AddResultVector('$means_p90',      ftFloat, Sz);
+        P95V  := AddResultVector('$means_p95',      ftFloat, Sz);
+        MaxV  := AddResultVector('$means_max',      ftFloat, Sz);
         SvV   := AddResultVector('$means_sv',       ftFloat, Sz);
         SdV   := AddResultVector('$means_sd',       ftFloat, Sz);
         CfilV := AddResultVector('$means_cfil',     ftFloat, Sz);
@@ -453,6 +477,15 @@ begin
         ObsV.AsIntegerVector[i] := N.AsInteger[i];
         SumV.AsFloatVector[i]   := Sum.AsFloat[i];
         MeanV.AsFloatVector[i]  := Mean.AsFloat[i];
+        MinV.AsFloatVector[i]   := Min.AsFloat[i];
+        P5V.AsFloatVector[i]    := P5.AsFloat[i];
+        P10V.AsFloatVector[i]   := P10.AsFloat[i];
+        P25V.AsFloatVector[i]   := P25.AsFloat[i];
+        MedV.AsFloatVector[i]   := Median.AsFloat[i];
+        P75V.AsFloatVector[i]   := P75.AsFloat[i];
+        P90V.AsFloatVector[i]   := P90.AsFloat[i];
+        P95V.AsFloatVector[i]   := P95.AsFloat[i];
+        MaxV.AsFloatVector[i]   := Max.AsFloat[i];
         if (N.AsInteger[i] < 2) then
           begin
             SvV.AsFloatVector[i]    := 0/0;

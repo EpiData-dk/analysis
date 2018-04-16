@@ -450,6 +450,8 @@ begin
     S := Application.GetOptionValue('i')
   else
     {$IFDEF DARWIN}
+  // One possible location of startup.pgm in folder with config files
+  //  S := GetEnvironmentVariableUTF8('HOME')+'/.config/epidata/epidataanalysis/startup.pgm';
     S := ProgramDirectory + '../../../startup.pgm';
     {$ELSE}
     S := ProgramDirectory + DirectorySeparator + 'startup.pgm';
@@ -588,7 +590,9 @@ var
   S: String;
 begin
   {$IFDEF DARWIN}
-  S := ProgramDirectory + '../../../startup.pgm';
+// suggested location of startup.pgm
+//  S := GetEnvironmentVariableUTF8('HOME')+'/.config/epidata/epidataanalysis/startup.pgm';
+  S := ResolveDots(ProgramDirectory + '../../../startup.pgm');
   {$ELSE}
   S := ProgramDirectory + DirectorySeparator + 'startup.pgm';
   {$ENDIF}
@@ -1182,7 +1186,21 @@ begin
 
   // Find all .pdf files in the directory set by TutorialsDirUTF8
   FileList := TStringListUTF8.Create;
+(* suggested change for DARWIN
+  {$IFDEF DARWIN}
+  P := ResolveDots(ProgramDirectory + '../../../docs');
+  {$ELSE}
+  P := ProgramDirectory + DirectorySeparator + 'docs';
+  {$ENDIF}
+*)
+  {$IFDEF DARWIN}
+  P := ProgramDirectory + '../../../docs';
+  {$ELSE}
+  P := ProgramDirectory + DirectorySeparator + 'docs';
+  {$ENDIF}
+
   P := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER];
+
   FindAllFiles(FileList, P, '*.pdf', false);
   FindAllFiles(FileList, P, '*.html', false);
   FileList.CustomSort(@EpiStringListSortStr);
@@ -1253,7 +1271,7 @@ begin
              HelpLookup(true)
            else
              Key := aKey;
-    VK_F1: HelpLookup(false);
+    VK_F1: HelpLookup(true);     // F1 will show context help
     VK_F2: ToggleProjectTreeExecute(nil);
     VK_F3: ToggleVarnamesListActionExecute(nil);
     VK_F4: if (Shift = []) then CmdEditFocusActionExecute(Nil) else Key := aKey;
@@ -1412,7 +1430,21 @@ procedure TMainForm.OpenTutorialMenuItemClick(Sender: TObject);
 var
   P: String;
 begin
+(* suggested change for DARWIN
+  {$IFDEF DARWIN}
+  P := ResolveDots(ProgramDirectory + '../../../docs');
+  {$ELSE}
+  P := ProgramDirectory + DirectorySeparator + 'docs';
+  {$ENDIF}
+*)
+  {$IFDEF DARWIN}
+  P := ProgramDirectory + '../../../docs';
+  {$ELSE}
+  P := ProgramDirectory + DirectorySeparator + 'docs';
+  {$ENDIF}
+
   P := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER];
+
   OpenDocument(P + DirectorySeparator + TMenuItem(Sender).Caption);
 end;
 
@@ -1736,7 +1768,7 @@ begin
     S := '';
 
 {  {$IFDEF DARWIN}
-  S := 'file://' + ProgramDirectory + '../../../docs' + DirectorySeparator + 'commands.html' + S;
+  S := 'file://' + ResolveDots(ProgramDirectory + '../../../docs' + DirectorySeparator + 'commands.html' + S);
   {$ELSE}  }
   S := 'file://' + Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER] + DirectorySeparator + 'commands.html' + S;
 //  {$ENDIF}

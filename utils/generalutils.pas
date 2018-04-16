@@ -9,12 +9,17 @@ uses
   Classes, SysUtils, epidatafilestypes;
 
 function PercentileIndex(const Size: integer; const Percentile: Double; out Factor: EpiFloat): Integer;
+function PercentileIndexNIST(const Size: integer; const Percentile: Double; out Factor: EpiFloat): Integer;
 
 implementation
 
 uses
   Math;
 
+// TODO: why is this 'shortcut' taken? NIST suggests using standard approach
+//       even with small numbers (https://www.itl.nist.gov/div898/handbook/prc/section2/prc262.htm)
+//       can stay with this method (Hyndman & Tan, method R6) or use method R7 as in R or Excel
+//       NIST also suggests using max when p ≥ N/(N+1) and min when p ≤ 1/(N+1)
 const
   SmallPercentileMatrix: Array[1..19] of Array[1..11] of Integer =
 //   N =      P1, P2.5, P5, P10, P25, P50, P75, P90, P95, P97.5, P99
@@ -66,7 +71,7 @@ begin
     Result := SmallPercentileMatrix[Size][GetPercentileIndex(Percentile)];
     Exit;
   end;
-
+  // method R6 of Hyndman and Fan; can apply this to any Size > 1
   FPos := min(max((Size + 1) * (Percentile), 1), Size);
   IPos := max(trunc((Size + 1) * (Percentile)), 1);
 
@@ -75,6 +80,29 @@ begin
     Factor := (FPos - IPos);
 end;
 
+function PercentileIndexNIST(const Size: integer; const Percentile: Double; out Factor: EpiFloat): Integer;
+ var
+   FPos: Extended;
+   IPos: Integer;
+ begin
+   Factor := 0;
+   if Percentile <= 1 / (Size + 1) then
+   begin
+     result := 1;
+     exit
+   end;
+   if Percentile >= Size / (Size + 1) then
+   begin
+     result := Size;
+     exit
+   end;
+   FPos   := (Size + 1) * Percentile;
+   IPos   := trunc(FPos);
+   Factor := FPos-Ipos;
+   if Factor < 1/ (Size + 1) then
+      Factor := 0;
+   result := IPos;
+ end;
 
 end.
 
