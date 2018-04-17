@@ -18,15 +18,15 @@ type
     FCategory: TEpiField;
     FCfiH: TEpiField;
     FCfiL: TEpiField;
-    FCurt: TEpiField;
+    FKurt: TEpiField;
     FMax: TEpiField;
     FMean: TEpiField;
     FMedian: TEpiField;
     FMin: TEpiField;
     FN: TEpiField;
+    FP05: TEpiField;
     FP10: TEpiField;
     FP25: TEpiField;
-    FP5: TEpiField;
     FP75: TEpiField;
     FP90: TEpiField;
     FP95: TEpiField;
@@ -48,9 +48,9 @@ type
     property StdDev:   TEpiField read FStdDev;
     property StdErr:   TEpiField read FStdErr;
     property Skew:     TEpiField read FSkew;
-    property Curt:     TEpiField read FCurt;
+    property Kurt:     TEpiField read FKurt;
     property Min:      TEpiField read FMin;
-    property P5:       TEpiField read FP5;
+    property P05:      TEpiField read FP05;
     property P10:      TEpiField read FP10;
     property P25:      TEpiField read FP25;
     property Median:   TEpiField read FMedian;
@@ -77,7 +77,9 @@ type
     DFT:
       EpiInteger;
     F,         // F statistic or T for single stratum
-    PROB:      // F or T probability
+    PROB,      // F or T probability
+    BART,
+    PBART:
       EpiFloat;
   end;
 
@@ -99,14 +101,14 @@ begin
   FAvgDev   := NewField(ftFloat);
   FCfiH     := NewField(ftFloat);
   FCfiL     := NewField(ftFloat);
-  FCurt     := NewField(ftFloat);
+  FKurt     := NewField(ftFloat);
   FMax      := NewField(ftFloat);
   FMean     := NewField(ftFloat);
   FMedian   := NewField(ftFloat);
   FMin      := NewField(ftFloat);
+  FP05      := NewField(ftFloat);
   FP10      := NewField(ftFloat);
   FP25      := NewField(ftFloat);
-  FP5       := NewField(ftFloat);
   FP75      := NewField(ftFloat);
   FP90      := NewField(ftFloat);
   FP95      := NewField(ftFloat);

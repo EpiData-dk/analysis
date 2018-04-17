@@ -55,7 +55,7 @@ var
     ix: integer;
   begin
     // Try new method.
-    ix := PercentileIndex(max-min+1, d/100, w);
+    ix := PercentileIndexNIST(max-min+1, d/100, w);
     if w = 0 then
       result:= CountVar.AsFloat[ix + min-1]
     else
@@ -80,7 +80,7 @@ begin
 
     // Percentiles
     Min.AsFloat[Idx]       := CountVar.AsFloat[SIdx];
-    P5.AsFloat[Idx]        := GetPercentile(SIdx, EIdx, 5);
+    P05.AsFloat[Idx]       := GetPercentile(SIdx, EIdx, 5);
     P10.AsFloat[Idx]       := GetPercentile(SIdx, EIdx, 10);
     P25.AsFloat[Idx]       := GetPercentile(SIdx, EIdx, 25);
     Median.AsFloat[Idx]    := GetPercentile(SIdx, EIdx, 50);
@@ -212,7 +212,7 @@ begin
       TPoolVar += (N.AsInteger[i] - 1) * StdVar.AsFloat[i]      // (N[i]-1) * var[i]
     end;
     TPoolVar := TPoolVar / (Obs - (Size - 1));                  // sum / (N-k)
-// TODO: BART calculation is not correct
+
   with Result do
     begin
       BART  := ((Obs - k) * ln(TPoolVar) - TSumLogs) / (1 + (TSumNs - 1/(Obs - k)) / (3*(lStrata)));
@@ -338,7 +338,7 @@ var
   Offset, i, Idx, Sz: Integer;
   StatFmt: string;
   CatV, ObsV, SumV, MeanV, SvV, SdV, CfilV, CfihV, SkewV, KurtV,
-    MinV, P5V, P10V, P25V, MedV, P75V, P90V, P95V, MaxV: TCustomExecutorDataVariable;
+    MinV, P05V, P10V, P25V, MedV, P75V, P90V, P95V, MaxV: TCustomExecutorDataVariable;
   T: TOutputTable;
   GVT: TEpiGetVariableLabelType;
 begin
@@ -392,7 +392,7 @@ begin
         SumV  := AddResultConst('$means_sum',      ftFloat);
         MeanV := AddResultConst('$means_mean',     ftFloat);
         MinV  := AddResultConst('$means_min',      ftFloat);
-        P5V   := AddResultConst('$means_p5',       ftFloat);
+        P05V  := AddResultConst('$means_p05',      ftFloat);
         P10V  := AddResultConst('$means_p10',      ftFloat);
         P25V  := AddResultConst('$means_p25',      ftFloat);
         MedV  := AddResultConst('$means_median',   ftFloat);
@@ -416,7 +416,7 @@ begin
         SumV  := AddResultVector('$means_sum',      ftFloat, Sz);
         MeanV := AddResultVector('$means_mean',     ftFloat, Sz);
         MinV  := AddResultVector('$means_min',      ftFloat, Sz);
-        P5V   := AddResultVector('$means_p5',       ftFloat, Sz);
+        P05V  := AddResultVector('$means_p05',      ftFloat, Sz);
         P10V  := AddResultVector('$means_p10',      ftFloat, Sz);
         P25V  := AddResultVector('$means_p25',      ftFloat, Sz);
         MedV  := AddResultVector('$means_median',   ftFloat, Sz);
@@ -478,7 +478,7 @@ begin
         SumV.AsFloatVector[i]   := Sum.AsFloat[i];
         MeanV.AsFloatVector[i]  := Mean.AsFloat[i];
         MinV.AsFloatVector[i]   := Min.AsFloat[i];
-        P5V.AsFloatVector[i]    := P5.AsFloat[i];
+        P05V.AsFloatVector[i]   := P05.AsFloat[i];
         P10V.AsFloatVector[i]   := P10.AsFloat[i];
         P25V.AsFloatVector[i]   := P25.AsFloat[i];
         MedV.AsFloatVector[i]   := Median.AsFloat[i];
@@ -512,7 +512,7 @@ begin
   if Offset > 0 then
     T.Cell[0, Idx].Text := CategVar.GetVariableLabel(Gvt);
   T.Cell[0 + Offset, Idx].Text := 'Min';
-  T.Cell[1 + Offset, Idx].Text := 'p5';
+  T.Cell[1 + Offset, Idx].Text := 'p05';
   T.Cell[2 + Offset, Idx].Text := 'p10';
   T.Cell[3 + Offset, Idx].Text := 'p25';
   T.Cell[4 + Offset, Idx].Text := 'Median';
@@ -531,7 +531,7 @@ begin
       begin
         if Offset > 0 then T.Cell[0, Idx + i].Text := Category.AsString[i];
         T.Cell[0 + Offset, Idx + i].Text := FormatFloat('0.00', Min.AsFloat[i]);
-        T.Cell[1 + Offset, Idx + i].Text := FormatFloat('0.00', P5.AsFloat[i]);
+        T.Cell[1 + Offset, Idx + i].Text := FormatFloat('0.00', P05.AsFloat[i]);
         T.Cell[2 + Offset, Idx + i].Text := FormatFloat('0.00', P10.AsFloat[i]);
         T.Cell[3 + Offset, Idx + i].Text := FormatFloat('0.00', P25.AsFloat[i]);
         T.Cell[4 + Offset, Idx + i].Text := FormatFloat('0.00', Median.AsFloat[i]);

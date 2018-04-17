@@ -682,7 +682,7 @@ VAR  PP,Y,A,B,Y0       :EXTENDED;
 BEGIN
 Y:= 0;  Y0:=1;
 PP:=0.5;
-WHILE Y0>1E-10 DO
+WHILE Y0>1E-12 DO             // increase precision from 1E-10
     BEGIN Y0:=Y;
     A:=-LN(2*PI)/2-Y*Y/2;
     B:=Y;
@@ -756,7 +756,7 @@ ELSE
         END;
     Y0:=1;
     PP:=PBETA(F1,F2,Y);
-    WHILE Y0>1E-8 DO
+    WHILE Y0>1E-12 DO       // increase precision for 1E-8
         BEGIN
         A:=A0+(F1/2-1)*LN(Y)+(F2/2-1)*LN(1-Y);
         B:=(F1/2-1)/Y-(F2/2-1)/(1-Y);
