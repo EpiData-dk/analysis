@@ -2326,7 +2326,8 @@ begin
   ClearResults;
   ClearVLSetVars;
 
-  Document.OnModified := nil;
+  if Assigned(Document) then      // perhaps this check should be at the top
+     Document.OnModified := nil;
   EpiAsyncHandlerGlobal.RemoveDocument(Document);
   FreeAndNil(FDocFile);
   FDataFile := nil;
