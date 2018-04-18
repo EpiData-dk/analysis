@@ -1,11 +1,11 @@
 object MainForm: TMainForm
-  Left = 550
+  Left = 254
   Height = 512
-  Top = 382
+  Top = 152
   Width = 858
   AllowDropFiles = True
   Caption = 'AMainForm'
-  ClientHeight = 487
+  ClientHeight = 491
   ClientWidth = 858
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
@@ -17,7 +17,7 @@ object MainForm: TMainForm
   LCLVersion = '1.9.0.0'
   object PageControl1: TPageControl
     Left = 216
-    Height = 437
+    Height = 441
     Top = 50
     Width = 441
     Align = alClient
@@ -55,7 +55,7 @@ object MainForm: TMainForm
       Left = 307
       Height = 17
       Top = 18
-      Width = 90
+      Width = 76
       Caption = 'Redraw Time:'
       ParentColor = False
     end
@@ -63,25 +63,25 @@ object MainForm: TMainForm
       Left = 400
       Height = 17
       Top = 18
-      Width = 43
+      Width = 37
       Caption = 'Label2'
       ParentColor = False
     end
   end
   object SidebarPanel: TPanel
     Left = 662
-    Height = 437
+    Height = 441
     Top = 50
     Width = 196
     Align = alRight
-    ClientHeight = 437
+    ClientHeight = 441
     ClientWidth = 196
     TabOrder = 1
     Visible = False
     object HistoryListBox: TListBox
       Left = 1
       Height = 195
-      Top = 241
+      Top = 245
       Width = 194
       Align = alBottom
       ItemHeight = 0
@@ -90,7 +90,7 @@ object MainForm: TMainForm
       OnDrawItem = HistoryListBoxDrawItem
       OnKeyDown = HistoryListBoxKeyDown
       PopupMenu = HistoryPopupMenu
-      ScrollWidth = 190
+      ScrollWidth = 192
       Style = lbOwnerDrawFixed
       TabOrder = 0
       TopIndex = -1
@@ -100,7 +100,7 @@ object MainForm: TMainForm
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 236
+      Top = 240
       Width = 194
       Align = alBottom
       AutoSnap = False
@@ -111,7 +111,7 @@ object MainForm: TMainForm
     object VarnamesList: TVirtualStringTree
       Cursor = 63
       Left = 1
-      Height = 235
+      Height = 239
       Top = 1
       Width = 194
       Align = alClient
@@ -123,13 +123,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 232
+          Width = 233
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 192
+          Width = 193
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -147,7 +147,7 @@ object MainForm: TMainForm
   end
   object SidebarSplitter: TSplitter
     Left = 657
-    Height = 437
+    Height = 441
     Top = 50
     Width = 5
     Align = alRight
@@ -159,7 +159,7 @@ object MainForm: TMainForm
   end
   object ProjectPanel: TPanel
     Left = 0
-    Height = 437
+    Height = 441
     Top = 50
     Width = 211
     Align = alLeft
@@ -168,7 +168,7 @@ object MainForm: TMainForm
   end
   object ProjectSplitter: TSplitter
     Left = 211
-    Height = 437
+    Height = 441
     Top = 50
     Width = 5
     Beveled = True
@@ -204,25 +204,35 @@ object MainForm: TMainForm
       object MenuItem16: TMenuItem
         Caption = '-'
       end
-      object MenuItem4: TMenuItem
-        Caption = 'Font'
-        object OutputFontMenuItem: TMenuItem
-          Caption = 'Output...'
-          OnClick = FontChangeClick
-        end
-        object CommandLineFontMenuItem: TMenuItem
-          Caption = 'Command Line...'
-          OnClick = FontChangeClick
-        end
-      end
-      object MenuItem35: TMenuItem
-        Action = ShowEditorStartupAction
-      end
       object MenuItem7: TMenuItem
         Caption = '-'
       end
       object MenuItem8: TMenuItem
         Action = QuitAction
+      end
+    end
+    object MenuItem36: TMenuItem
+      Caption = '&Edit'
+      object MenuItem41: TMenuItem
+        Action = ShowEditorStartupAction
+      end
+      object MenuItem37: TMenuItem
+        Caption = '&Font'
+        object OutputFontMenuItem: TMenuItem
+          Caption = '&Output'
+          OnClick = FontChangeClick
+        end
+        object CommandLineFontMenuItem: TMenuItem
+          Caption = '&Command Line'
+          OnClick = FontChangeClick
+        end
+      end
+      object MenuItem40: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem42: TMenuItem
+        Caption = 'Default Windowing'
+        OnClick = DefaultWindowPositionActionExecute
       end
     end
     object MenuItem12: TMenuItem

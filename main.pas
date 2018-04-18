@@ -24,6 +24,13 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    MenuItem36: TMenuItem;
+    MenuItem37: TMenuItem;
+    OutputFontMenuItem: TMenuItem;
+    CommandLineFontMenuItem: TMenuItem;
+    MenuItem40: TMenuItem;
+    MenuItem41: TMenuItem;
+    MenuItem42: TMenuItem;
     TutorialsWebAction: TAction;
     TutorialsWikiAction: TAction;
     ShowEditorStartupAction: TAction;
@@ -59,7 +66,6 @@ type
     FontDialog1: TFontDialog;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
-    MenuItem4: TMenuItem;
     MenuItem5: TMenuItem;
     MenuItem6: TMenuItem;
     Panel2: TPanel;
@@ -104,9 +110,6 @@ type
     RecentFilesSubMenu: TMenuItem;
     RecentFilesActionList: TActionList;
     PageControl1: TPageControl;
-    MenuItem35: TMenuItem;
-    OutputFontMenuItem: TMenuItem;
-    CommandLineFontMenuItem: TMenuItem;
     procedure CancelExecActionExecute(Sender: TObject);
     procedure CmdEditFocusActionExecute(Sender: TObject);
     procedure CopyAllHistoryActionExecute(Sender: TObject);
@@ -321,6 +324,7 @@ procedure TMainForm.DefaultWindowPositionActionExecute(Sender: TObject);
 begin
   RestoreDefaultPos;
 end;
+
 
 procedure TMainForm.QuitActionExecute(Sender: TObject);
 begin
