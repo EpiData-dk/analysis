@@ -6,7 +6,7 @@ unit means;
 interface
 
 uses
-  Classes, SysUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
+  Classes, SysUtils, StrUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
   executor, result_variables, interval_types,
   outputcreator;
 
@@ -108,16 +108,28 @@ begin
       lSkew   += (Val * Val) * Val;
       lKurt   += (Val * Val) * (Val * Val);
     END;
+
+    // Watch for data where there is no variation (min = max)
+    // because extended precision variables may accumulate rounding errors
+    if  (CountVar.AsFloat[EIdx] = CountVar.AsFloat[SIdx]) then
+    begin
+      lSSqDev := 0;
+      lSkew   := 0;
+      lKurt   := 0;
+      lAvgDev := 0;
+    end;
+
     lAvgDev                := lAvgDev / Obs;
     AvgDev.AsFloat[Idx]    := lAvgDev;
     SumSS.AsFloat[Idx]     := lSSqDev;
 
     // Cannot calculate these statistics with 1 observation
+    // or if all observations are the same (min = max)
     if (Obs > 1) then
       begin
         if (Obs > 2) then
           Skew.AsFloat[Idx]   := Obs * sqrt(Obs - 1) * lSkew / ((Obs - 2) * sqrt(lSSqDev * lSSqDev * lSSqDev));
-        if (Obs > 3)  then
+        if (Obs > 3) then
           begin
             lKurt             := Obs * (Obs + 1) * (Obs - 1) * lKurt / ((Obs - 2) * (Obs - 3) * lSSqDev * lSSqDev);
             Kurt.AsFloat[Idx] := lKurt - 3 * (Obs - 1) * (Obs - 1) / ((Obs - 2) * (Obs - 3)) // excess kurtosis
@@ -250,13 +262,23 @@ var
   SortList: TEpiFields;
   i, StartIdx, EndIdx: Integer;
   Val, Sum, SumSq, Tsum: EpiFloat;
+  stratify: Boolean;
 begin
   FResultDF := TIntervalDecriptivesDatafile.Create(nil, 0);
 
   CountVar := DataFile.Fields.FieldByName[ST.VariableList[0].Ident];
-
-  if ST.Options.HasOption('by', opt) then
+  stratify := ST.Options.HasOption('by', opt);
+  if stratify then
     begin
+// make sure that by field is not the same as means field (Sort will fail)
+      if (ST.VariableList[0].Ident = Opt.Expr.AsIdent) then
+      begin
+        FOutputCreator.DoError('Cannot stratify by the same variable');
+        stratify := FALSE
+      end;
+    end;
+  if stratify then
+  begin
 // stratified data
 // Algorithm:
 // * sort according to (Category, Values)
@@ -335,8 +357,9 @@ end;
 procedure TIntervalDescriptives.OutMeans(
   MeanDataFile: TIntervalDecriptivesDatafile; ST: TCustomVariableCommand);
 var
-  Offset, i, Idx, Sz: Integer;
+  Offset, i, Idx, decimals, Sz: Integer;
   StatFmt: string;
+  variance: float;
   CatV, ObsV, SumV, MeanV, SvV, SdV, CfilV, CfihV, SkewV, KurtV,
     MinV, P05V, P10V, P25V, MedV, P75V, P90V, P95V, MaxV: TCustomExecutorDataVariable;
   T: TOutputTable;
@@ -349,8 +372,16 @@ begin
     begin;
       Sz := MeanDataFile.Size;
       StatFmt := '0.00';   // default format for statistics
-      if (StdVar.AsFloat[Sz-1] < 0.01) then
-        StatFmt := '0.000000'  // for selected stats, if variance < 0.01
+// for small variances, add decimal places as necessary so that we see at least 2 significant digits
+      variance := StdVar.AsFloat[Sz-1];
+      if (variance > 0.0) and (variance < 0.01) then
+      begin
+        decimals := -trunc(log10(variance));
+        if decimals < 8 then
+          StatFmt := '0.000' + DupeString('0',decimals)  // for selected stats, if variance < 0.01
+        else
+          StatFmt := '0.000E+00'
+      end;
     end;
   if Sz = 1 then
     begin
@@ -462,11 +493,11 @@ begin
             T.Cell[5 + Offset, i + 1].Text := FormatFloat('0.00', CfiL.AsFloat[i]);
             T.Cell[6 + Offset, i + 1].Text := FormatFloat('0.00', CfiH.AsFloat[i]);
             T.Cell[7 + Offset, i + 1].Text := FormatFloat(StatFmt, StdErr.AsFloat[i]);
-            if (N.AsInteger[i] > 2) then
+            if (N.AsInteger[i] > 2) and (not isNaN(Skew.AsFloat[i])) then
               T.Cell[8 + Offset, i + 1].Text := FormatFloat('0.00', Skew.AsFloat[i]);
 //            else
 //              T.Cell[8 + Offset, i + 1].Text := '-';
-            if (N.AsInteger[i] > 3) then
+            if (N.AsInteger[i] > 3) and (not isNaN(Kurt.AsFloat[i])) then
               T.Cell[9 + Offset, i + 1].Text := FormatFloat('0.00', Kurt.AsFloat[i]);
           end;
         T.SetRowAlignment(i+1, taRightJustify);
