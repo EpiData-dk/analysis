@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, ComCtrls, SynEdit, outputviewer_types, outputgenerator_base, SynEditHighlighter,
-  executor;
+  executor, Menus;
 
 type
 
@@ -14,8 +14,12 @@ type
 
   TTextPanel = class(TTabSheet, IAnaOutputViewer)
   private
+    FPopupMenu: TPopupMenu;
     FHighlighter: TSynCustomHighlighter;
     FEdit: TSynEdit;
+    procedure CopySelectClipBoardClick(Sender: TObject);
+    procedure CopyAllClipboardClick(Sender: TObject);
+    procedure ClearOutputClick(Sender: TObject);
   public
     procedure InvalidateView;
     procedure Initialize;
@@ -32,7 +36,7 @@ implementation
 
 uses
   Controls, outputgenerator_txt, ana_globals, StdCtrls, LCLType, options_fontoptions, Graphics,
-  options_utils;
+  options_utils, Clipbrd, main;
 
 type
 
@@ -133,6 +137,21 @@ end;
 
 { TTextPanel }
 
+procedure TTextPanel.CopySelectClipBoardClick(Sender: TObject);
+begin
+  Clipboard.AsText := FEdit.SelText;
+end;
+
+procedure TTextPanel.CopyAllClipboardClick(Sender: TObject);
+begin
+  Clipboard.AsText := FEdit.Text;
+end;
+
+procedure TTextPanel.ClearOutputClick(Sender: TObject);
+begin
+  MainForm.InterfaceRunCommand('cls;');
+end;
+
 procedure TTextPanel.InvalidateView;
 begin
   //
@@ -141,6 +160,7 @@ end;
 procedure TTextPanel.Initialize;
 var
   i, Idx: Integer;
+  Item: TMenuItem;
 begin
   FEdit := TSynEdit.Create(Self);
   FEdit.Align := alClient;
@@ -163,6 +183,29 @@ begin
     end;
 
   FEdit.Options := [eoAutoIndent, eoGroupUndo, eoSmartTabs, eoTabsToSpaces];
+
+
+  FPopupMenu := TPopupMenu.Create(Self);
+  FEdit.PopupMenu := FPopupMenu;
+
+  Item := TMenuItem.Create(FPopupMenu);
+  Item.Caption := 'Copy selected to clipboard';
+  Item.OnClick := @CopySelectClipBoardClick;
+  FPopupMenu.Items.Add(Item);
+
+  Item := TMenuItem.Create(FPopupMenu);
+  Item.Caption := 'Copy all to clipboard';
+  Item.OnClick := @CopyAllClipboardClick;
+  FPopupMenu.Items.Add(Item);
+
+  Item := TMenuItem.Create(FPopupMenu);
+  Item.Caption := '-';
+  FPopupMenu.Items.Add(Item);
+
+  Item := TMenuItem.Create(FPopupMenu);
+  Item.Caption := 'Clear Output';
+  Item.OnClick := @ClearOutputClick;
+  FPopupMenu.Items.Add(Item);
 end;
 
 procedure TTextPanel.LoadFromStream(ST: TStream);

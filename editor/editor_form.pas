@@ -886,7 +886,7 @@ begin
   begin
     MenuItem := TMenuItem.Create(TutorialSubMenu);
     MenuItem.Name := 'TutorialMenuItem' + IntToStr(i);
-    MenuItem.Caption := ExtractFileNameOnly(FileList[i]);
+    MenuItem.Caption := ExtractFileName(FileList[i]);
     MenuItem.OnClick := @MainForm.OpenTutorialMenuItemClick;
 
     TutorialSubMenu.Add(MenuItem);

@@ -171,7 +171,6 @@ type
     procedure PrimaryKeyHandler(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure OutputFontChange(Sender: TObject);
-    procedure OutputViewerChanges(Sender: TObject);
     procedure ProjectGetText(Sender: TObject; const AObject: TEpiCustomBase;
       ObjectType: TEpiVTreeNodeObjectType; const StaticText: boolean;
       var NodeText: string);
@@ -242,6 +241,7 @@ type
     procedure OutputRedrawRequest(Sender: TObject);
     procedure RedrawOutput;
     function  HTMLStream: TStream;
+    procedure OutputViewerChanges(Sender: TObject);
 
   { Help }
   public

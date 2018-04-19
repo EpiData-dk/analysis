@@ -6,13 +6,14 @@ unit outputviewer_types;
 interface
 
 uses
-  Classes, SysUtils, outputgenerator_base, executor;
+  Classes, SysUtils, outputgenerator_base, executor, Menus;
 
 type
 
   { IAnaOutputViewer }
 
   IAnaOutputViewer = interface ['IAnaOutputViewer']
+  // Viewing content
     procedure Initialize;
     procedure InvalidateView;
     procedure LoadFromStream(ST: TStream);
@@ -24,7 +25,6 @@ type
     function GetSelectedText: String;
     function GetCaretPos: TPoint;
     function IsFocused: Boolean;
-
   end;
 
 implementation
