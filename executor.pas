@@ -1818,7 +1818,7 @@ begin
     TSetOption.Create({$IFDEF DARWIN}
                         ProgramDirectory + '../../../docs'
                       {$ELSE}
-                        ProgramDirectory + DirectorySeparator + 'docs'
+                        ProgramDirectory + 'docs'
                       {$ENDIF},
                       rtString));
 

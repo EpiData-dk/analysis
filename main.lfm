@@ -1,11 +1,12 @@
 object MainForm: TMainForm
-  Left = 254
+  Left = 533
   Height = 512
-  Top = 152
+  Top = 285
   Width = 858
+  ActiveControl = Panel2
   AllowDropFiles = True
   Caption = 'AMainForm'
-  ClientHeight = 491
+  ClientHeight = 487
   ClientWidth = 858
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
@@ -17,7 +18,7 @@ object MainForm: TMainForm
   LCLVersion = '1.9.0.0'
   object PageControl1: TPageControl
     Left = 216
-    Height = 441
+    Height = 437
     Top = 50
     Width = 441
     Align = alClient
@@ -55,7 +56,7 @@ object MainForm: TMainForm
       Left = 307
       Height = 17
       Top = 18
-      Width = 76
+      Width = 90
       Caption = 'Redraw Time:'
       ParentColor = False
     end
@@ -63,25 +64,25 @@ object MainForm: TMainForm
       Left = 400
       Height = 17
       Top = 18
-      Width = 37
+      Width = 43
       Caption = 'Label2'
       ParentColor = False
     end
   end
   object SidebarPanel: TPanel
     Left = 662
-    Height = 441
+    Height = 437
     Top = 50
     Width = 196
     Align = alRight
-    ClientHeight = 441
+    ClientHeight = 437
     ClientWidth = 196
     TabOrder = 1
     Visible = False
     object HistoryListBox: TListBox
       Left = 1
       Height = 195
-      Top = 245
+      Top = 241
       Width = 194
       Align = alBottom
       ItemHeight = 0
@@ -90,7 +91,7 @@ object MainForm: TMainForm
       OnDrawItem = HistoryListBoxDrawItem
       OnKeyDown = HistoryListBoxKeyDown
       PopupMenu = HistoryPopupMenu
-      ScrollWidth = 192
+      ScrollWidth = 190
       Style = lbOwnerDrawFixed
       TabOrder = 0
       TopIndex = -1
@@ -100,7 +101,7 @@ object MainForm: TMainForm
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 240
+      Top = 236
       Width = 194
       Align = alBottom
       AutoSnap = False
@@ -111,7 +112,7 @@ object MainForm: TMainForm
     object VarnamesList: TVirtualStringTree
       Cursor = 63
       Left = 1
-      Height = 239
+      Height = 235
       Top = 1
       Width = 194
       Align = alClient
@@ -123,13 +124,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 233
+          Width = 235
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 193
+          Width = 195
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -147,7 +148,7 @@ object MainForm: TMainForm
   end
   object SidebarSplitter: TSplitter
     Left = 657
-    Height = 441
+    Height = 437
     Top = 50
     Width = 5
     Align = alRight
@@ -159,7 +160,7 @@ object MainForm: TMainForm
   end
   object ProjectPanel: TPanel
     Left = 0
-    Height = 441
+    Height = 437
     Top = 50
     Width = 211
     Align = alLeft
@@ -168,7 +169,7 @@ object MainForm: TMainForm
   end
   object ProjectSplitter: TSplitter
     Left = 211
-    Height = 441
+    Height = 437
     Top = 50
     Width = 5
     Beveled = True
@@ -204,18 +205,12 @@ object MainForm: TMainForm
       object MenuItem16: TMenuItem
         Caption = '-'
       end
-      object MenuItem7: TMenuItem
-        Caption = '-'
-      end
       object MenuItem8: TMenuItem
         Action = QuitAction
       end
     end
     object MenuItem36: TMenuItem
       Caption = '&Edit'
-      object MenuItem41: TMenuItem
-        Action = ShowEditorStartupAction
-      end
       object MenuItem37: TMenuItem
         Caption = '&Font'
         object OutputFontMenuItem: TMenuItem
@@ -229,6 +224,9 @@ object MainForm: TMainForm
       end
       object MenuItem40: TMenuItem
         Caption = '-'
+      end
+      object MenuItem41: TMenuItem
+        Action = ShowEditorStartupAction
       end
       object MenuItem42: TMenuItem
         Caption = 'Default Windowing'

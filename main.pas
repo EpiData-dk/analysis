@@ -56,7 +56,6 @@ type
     MenuItem25: TMenuItem;
     MenuItem26: TMenuItem;
     MenuItem3: TMenuItem;
-    MenuItem7: TMenuItem;
     MenuItem8: TMenuItem;
     HistoryPopupMenu: TPopupMenu;
     ProjectPanel: TPanel;
