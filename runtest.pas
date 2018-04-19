@@ -218,12 +218,12 @@ begin
   t := ParamList[1].AsFloat;
 
   if (t <> 0) then
-    Result := min(15, -log10(abs(c - t) / t))
+    Result := min(15, -log10(abs((c - t) / t)))     //******
   else
     Result := min(15, -log10(abs(c - t)));
 
   FPrecision.AsFloat[FDatafileIdx] := min(FPrecision.AsFloat[FDatafileIdx], Result);
-  FAbsDiff.AsFloat[FDatafileIdx]   := min(FAbsDiff.AsFloat[FDatafileIdx], (c-t));
+  FAbsDiff.AsFloat[FDatafileIdx]   := min(FAbsDiff.AsFloat[FDatafileIdx], abs(c-t));    //******
 end;
 
 procedure TRunTest.LexError(Sender: TObject; ErrorToken: TToken);
