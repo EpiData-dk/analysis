@@ -1828,6 +1828,8 @@ begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('by', [rtObject], [evtField], [evfInternal, evfAsObject]);
   Result.Insert('t',  [rtUndefined]);
+  Result.Insert('q',  [rtUndefined]);
+  AddDecimalOptions(Result);
 end;
 
 function TMeansCommand.GetAcceptedVariableCount: TBoundArray;
@@ -1874,10 +1876,8 @@ begin
   Result.Insert('m',   [rtUndefined]);
   Result.Insert('cum', [rtUndefined]);
   Result.Insert('r',   [rtUndefined]);
-  Result.Insert('d0',  [rtUndefined]);
-  Result.Insert('d1',  [rtUndefined]);
-  Result.Insert('d2',  [rtUndefined]);
   Result.Insert('ci',  [rtUndefined]);
+  AddDecimalOptions(Result);
 end;
 
 function TFreqCommand.GetAcceptedVariableCount: TBoundArray;

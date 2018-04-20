@@ -20,6 +20,9 @@ function ValueLabelTypeFromOptionList(OptionList: TOptionList; SetOptions: TSetO
 procedure AddVariableLabelOptions(STOptionList: TStatementOptionsMap);
 function VariableLabelTypeFromOptionList(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil; SetOptionVariant: TSetOptionVariant = sovStatistics): TEpiGetVariableLabelType;
 
+procedure AddDecimalOptions(STOptionList: TStatementOptionsMap);
+function DecimalFromOption(OptionList: TOptionList; DefaultValue: Integer = 2): Integer;
+
 procedure AddReadOptions(STOptionList: TStatementOptionsMap);
 
 function FontFromSetOptions(Const FontName, SizeName, ColorName, StyleName: String; SetOptions: TSetOptionsMap): TFont;
@@ -113,6 +116,28 @@ begin
   if OptionList.HasOption('vnl') then Result := gvtVarNameLabel;
   if OptionList.HasOption('vla') then Result := gvtVarLabel;
   if OptionList.HasOption('vln') then Result := gvtVarLabelName;
+end;
+
+procedure AddDecimalOptions(STOptionList: TStatementOptionsMap);
+begin
+  STOptionList.Insert('d0', [rtUndefined]);
+  STOptionList.Insert('d1', [rtUndefined]);
+  STOptionList.Insert('d2', [rtUndefined]);
+  STOptionList.Insert('d3', [rtUndefined]);
+  STOptionList.Insert('d4', [rtUndefined]);
+  STOptionList.Insert('d5', [rtUndefined]);
+end;
+
+function DecimalFromOption(OptionList: TOptionList; DefaultValue: Integer
+  ): Integer;
+begin
+  Result := DefaultValue;
+  if OptionList.HasOption('d0') then Result := 0;
+  if OptionList.HasOption('d1') then Result := 1;
+  if OptionList.HasOption('d2') then Result := 2;
+  if OptionList.HasOption('d3') then Result := 3;
+  if OptionList.HasOption('d4') then Result := 4;
+  if OptionList.HasOption('d5') then Result := 5;
 end;
 
 procedure AddReadOptions(STOptionList: TStatementOptionsMap);

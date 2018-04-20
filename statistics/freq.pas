@@ -173,13 +173,7 @@ begin
   FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
 
-  FDecimals := 2;
-  if ST.HasOption('d0') then
-    FDecimals := 0;
-  if ST.HasOption('d1') then
-    FDecimals := 1;
-  if ST.HasOption('d2') then
-    FDecimals := 2;
+  FDecimals := DecimalFromOption(ST.Options);
 
   ResDF := DoFreqTable(DF);
   DoOutputFreqTable(ResDF, ST);
