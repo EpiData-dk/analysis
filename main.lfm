@@ -124,13 +124,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 237
+          Width = 241
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 197
+          Width = 201
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -177,8 +177,8 @@ object MainForm: TMainForm
   end
   object MainMenu1: TMainMenu
     Images = DM.Icons16
-    left = 213
-    top = 100
+    left = 280
+    top = 188
     object MenuItem1: TMenuItem
       Caption = '&File'
       object MenuItem19: TMenuItem
@@ -283,8 +283,20 @@ object MainForm: TMainForm
       object MenuItem27: TMenuItem
         Action = CommandsHelpAction
       end
+      object MenuItem4: TMenuItem
+        Action = ShowShortcutAction
+      end
+      object MenuItem7: TMenuItem
+        Caption = '-'
+      end
       object MenuItem3: TMenuItem
         Action = CopyVersionInfoAction
+      end
+      object MenuItem35: TMenuItem
+        Action = CheckVersionOnlineAction
+      end
+      object MenuItem38: TMenuItem
+        Action = ReleaseNotesAction
       end
       object MenuItem20: TMenuItem
         Caption = '-'
@@ -441,6 +453,21 @@ object MainForm: TMainForm
       Category = 'Help'
       Caption = 'Tutorials On Web'
       OnExecute = TutorialsWebActionExecute
+    end
+    object CheckVersionOnlineAction: TAction
+      Category = 'Help'
+      Caption = 'Check Version Online'
+      OnExecute = CheckVersionOnlineActionExecute
+    end
+    object ReleaseNotesAction: TAction
+      Category = 'Help'
+      Caption = 'Show Release Notes'
+      OnExecute = ReleaseNotesActionExecute
+    end
+    object ShowShortcutAction: TAction
+      Category = 'Help'
+      Caption = 'Show Shortcuts'
+      OnExecute = ShowShortcutActionExecute
     end
   end
   object HistoryPopupMenu: TPopupMenu

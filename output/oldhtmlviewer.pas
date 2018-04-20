@@ -43,7 +43,7 @@ end;
 
 procedure TOldHtmlSheet.CopyAllClipboardClick(Sender: TObject);
 begin
-  Clipboard.AsText := FHtmlView.DocumentSource;
+  Clipboard.AsText := FHtmlView.GetTextByIndices(0, MaxInt);
 end;
 
 procedure TOldHtmlSheet.InvalidateView;

@@ -109,6 +109,13 @@ type
     RecentFilesSubMenu: TMenuItem;
     RecentFilesActionList: TActionList;
     PageControl1: TPageControl;
+    MenuItem4: TMenuItem;
+    MenuItem7: TMenuItem;
+    MenuItem35: TMenuItem;
+    MenuItem38: TMenuItem;
+    CheckVersionOnlineAction: TAction;
+    ReleaseNotesAction: TAction;
+    ShowShortcutAction: TAction;
     procedure CancelExecActionExecute(Sender: TObject);
     procedure CmdEditFocusActionExecute(Sender: TObject);
     procedure CopyAllHistoryActionExecute(Sender: TObject);
@@ -147,6 +154,9 @@ type
     procedure TutorialsWebActionExecute(Sender: TObject);
     procedure TutorialsWikiActionExecute(Sender: TObject);
     procedure OpenTutorialMenuItemClick(Sender: TObject);
+    procedure CheckVersionOnlineActionExecute(Sender: TObject);
+    procedure ReleaseNotesActionExecute(Sender: TObject);
+    procedure ShowShortcutActionExecute(Sender: TObject);
   { Other internals }
   private
     Executor: TExecutor;
@@ -272,7 +282,7 @@ uses
   outputgenerator_html, about, Clipbrd, epimiscutils, ast_types, epidatafilerelations,
   epiv_custom_statusbar, datamodule, introduction_form, editor_form, LCLIntf, Symbol,
   ana_procs, ana_documentfile, LazFileUtils, LazUTF8Classes, epistringutils, ana_globals,
-  browse4, strutils, epifields_helper, options_utils, options_fontoptions;
+  browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform;
 
 { TMainForm }
 
@@ -1449,6 +1459,40 @@ begin
   P := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER];
 
   OpenDocument(P + DirectorySeparator + TMenuItem(Sender).Caption);
+end;
+
+procedure TMainForm.CheckVersionOnlineActionExecute(Sender: TObject);
+var
+  F: TCheckVersionForm;
+begin
+  F := TCheckVersionForm.Create(Self);
+  F.Caption := 'EpiData Analysis';
+  F.CheckBoxValue := true;
+  F.ShowModal;
+//  ManagerSettings.CheckForUpdates := F.CheckBoxValue;
+  F.Free;
+end;
+
+procedure TMainForm.ReleaseNotesActionExecute(Sender: TObject);
+begin
+  OpenURL('http://epidata.dk/epidataanalysis.changelog.txt');
+end;
+
+procedure TMainForm.ShowShortcutActionExecute(Sender: TObject);
+var
+  Fn: String;
+begin
+  Fn := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER] + '/epidataanalysisshortcuts.pdf';
+  if FileExistsUTF8(Fn) then
+    OpenURL(Fn)
+  else
+  begin
+    ShowMessage(
+      'Shortcut document was not found in tutorial folder:' + LineEnding +
+      Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER]
+    );
+    OpenURL('http://epidata.info/dokuwiki/doku.php?id=documentation:keyboard_shortcuts');
+  end;
 end;
 
 procedure TMainForm.VarnamesListGetImageIndex(Sender: TBaseVirtualTree;
