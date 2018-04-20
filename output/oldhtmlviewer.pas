@@ -15,6 +15,8 @@ type
   TOldHtmlSheet = class(TTabSheet, IAnaOutputViewer)
   private
     FHtmlView: THtmlViewer;
+    procedure CopyAllClipboardClick(Sender: TObject);
+    procedure CopySelectClipBoardClick(Sender: TObject);
   public
     procedure InvalidateView;
     procedure Initialize;
@@ -30,9 +32,19 @@ type
 implementation
 
 uses
-  Controls, Graphics, outputgenerator_html;
+  Controls, Graphics, outputgenerator_html, Clipbrd;
 
 { TOldHtmlSheet }
+
+procedure TOldHtmlSheet.CopySelectClipBoardClick(Sender: TObject);
+begin
+  Clipboard.AsText := FHtmlView.SelText;
+end;
+
+procedure TOldHtmlSheet.CopyAllClipboardClick(Sender: TObject);
+begin
+  Clipboard.AsText := FHtmlView.DocumentSource;
+end;
 
 procedure TOldHtmlSheet.InvalidateView;
 begin
@@ -53,6 +65,10 @@ begin
     DefOverLinkColor := clFuchsia;
     NoSelect := false;
   end;
+
+  FHtmlView.PopupMenu := TOutputViewerPopup.Create(Self);
+  TOutputViewerPopup(FHtmlView.PopupMenu).OnCopySelectedClick := @CopySelectClipBoardClick;
+  TOutputViewerPopup(FHtmlView.PopupMenu).OnCopyAllClick      := @CopyAllClipboardClick;
 end;
 
 procedure TOldHtmlSheet.LoadFromStream(ST: TStream);

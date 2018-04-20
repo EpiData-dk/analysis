@@ -19,7 +19,6 @@ type
     FEdit: TSynEdit;
     procedure CopySelectClipBoardClick(Sender: TObject);
     procedure CopyAllClipboardClick(Sender: TObject);
-    procedure ClearOutputClick(Sender: TObject);
   public
     procedure InvalidateView;
     procedure Initialize;
@@ -147,11 +146,6 @@ begin
   Clipboard.AsText := FEdit.Text;
 end;
 
-procedure TTextPanel.ClearOutputClick(Sender: TObject);
-begin
-  MainForm.InterfaceRunCommand('cls;');
-end;
-
 procedure TTextPanel.InvalidateView;
 begin
   //
@@ -185,27 +179,9 @@ begin
   FEdit.Options := [eoAutoIndent, eoGroupUndo, eoSmartTabs, eoTabsToSpaces];
 
 
-  FPopupMenu := TPopupMenu.Create(Self);
-  FEdit.PopupMenu := FPopupMenu;
-
-  Item := TMenuItem.Create(FPopupMenu);
-  Item.Caption := 'Copy selected to clipboard';
-  Item.OnClick := @CopySelectClipBoardClick;
-  FPopupMenu.Items.Add(Item);
-
-  Item := TMenuItem.Create(FPopupMenu);
-  Item.Caption := 'Copy all to clipboard';
-  Item.OnClick := @CopyAllClipboardClick;
-  FPopupMenu.Items.Add(Item);
-
-  Item := TMenuItem.Create(FPopupMenu);
-  Item.Caption := '-';
-  FPopupMenu.Items.Add(Item);
-
-  Item := TMenuItem.Create(FPopupMenu);
-  Item.Caption := 'Clear Output';
-  Item.OnClick := @ClearOutputClick;
-  FPopupMenu.Items.Add(Item);
+  FEdit.PopupMenu := TOutputViewerPopup.Create(Self);
+  TOutputViewerPopup(FEdit.PopupMenu).OnCopySelectedClick := @CopySelectClipBoardClick;
+  TOutputViewerPopup(FEdit.PopupMenu).OnCopyAllClick      := @CopyAllClipboardClick;
 end;
 
 procedure TTextPanel.LoadFromStream(ST: TStream);
