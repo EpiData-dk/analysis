@@ -21,7 +21,7 @@ procedure AddVariableLabelOptions(STOptionList: TStatementOptionsMap);
 function VariableLabelTypeFromOptionList(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil; SetOptionVariant: TSetOptionVariant = sovStatistics): TEpiGetVariableLabelType;
 
 procedure AddDecimalOptions(STOptionList: TStatementOptionsMap);
-function DecimalFromOption(OptionList: TOptionList; DefaultValue: Integer = 2): Integer;
+function DecimalFromOption(OptionList: TOptionList; DefaultValue: Integer = 1): Integer;
 
 procedure AddReadOptions(STOptionList: TStatementOptionsMap);
 

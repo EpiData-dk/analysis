@@ -363,9 +363,9 @@ end;
 
 procedure TIntervalDescriptives.OutMeans(MeanDataFile: TIntervalDecriptivesDatafile; ST: TCustomVariableCommand);
 var
-  Offset, i, Idx, decimals, Sz: Integer;
-  StatFmt: string;
-  variance: float;
+  Offset, i, Idx, Sz: Integer;
+  StatFmt, SmallNumFmt: string;
+  maxVforDisplay: float;
   CatV, ObsV, SumV, MeanV, SvV, SdV, CfilV, CfihV, SkewV, KurtV,
     MinV, P05V, P10V, P25V, MedV, P75V, P90V, P95V, MaxV: TCustomExecutorDataVariable;
   T: TOutputTable;
@@ -374,7 +374,7 @@ begin
   T := FOutputCreator.AddTable;
   GVT := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   T.Header.Text := CountVar.GetVariableLabel(GVT);
-
+  SmallNumFmt := '%8.2F';
   Sz := MeanDataFile.Size;
 
   if Sz = 1 then
@@ -382,6 +382,7 @@ begin
       Offset := 0;
       T.ColCount := 11;
       T.RowCount := 5;
+      maxVforDisplay := MeanDataFile.Max.AsFloat[0];
     end
   else
     begin
@@ -390,6 +391,7 @@ begin
       Offset     := 1;
       T.ColCount := 12;
       T.RowCount := 3 + (Sz * 2);
+      maxVforDisplay := MeanDataFile.Max.AsFloat[Sz];
     end;
 
   // Column headers  (first section)
@@ -463,6 +465,9 @@ begin
   end;
 
   StatFmt := '%8.' + IntToStr(FDecimals) + 'F';
+// if option !dx was not specified and max value < 10, then show 2 decimal places instead of the default
+  if (maxVforDisplay < 10.0) and (not (ST.HasOption('d'+IntToStr(FDecimals)))) then
+    StatFmt := SmallNumFmt;
 
   with MeanDataFile do
   begin
@@ -477,10 +482,7 @@ begin
         if (N.AsInteger[i] < 2) or (isInfinite(Sum.AsFloat[i])) or (isNaN(Sum.AsFloat[i])) then
           begin
             T.Cell[3 + Offset, i + 1].Text := 'Cannot';
-            T.Cell[4 + Offset, i + 1].Text := 'estimate';
-//            T.Cell[5 + Offset, i + 1].Text := '-';
-//            T.Cell[6 + Offset, i + 1].Text := '-';
-//            T.Cell[7 + Offset, i + 1].Text := '-';
+            T.Cell[4 + Offset, i + 1].Text := 'estimate'; // skip remaining cells
           end
         else
           begin
@@ -491,8 +493,6 @@ begin
             T.Cell[7 + Offset, i + 1].Text := Format(StatFmt, [StdErr.AsFloat[i]]);
             if (N.AsInteger[i] > 2) and (not isNaN(Skew.AsFloat[i])) then
               T.Cell[8 + Offset, i + 1].Text := Format(StatFmt, [Skew.AsFloat[i]]);
-//            else
-//              T.Cell[8 + Offset, i + 1].Text := '-';
             if (N.AsInteger[i] > 3) and (not isNaN(Kurt.AsFloat[i])) then
               T.Cell[9 + Offset, i + 1].Text := Format(StatFmt, [Kurt.AsFloat[i]]);
           end;
@@ -613,7 +613,7 @@ begin
     T.Cell[2,1].Text := Format('%8.2f', [SSB]);
     T.Cell[3,1].Text := Format('%8.2f', [MSB]);
     T.Cell[4,1].Text := Format('%8.2f', [F]);
-    T.Cell[5,1].Text := Format('%8.4f', [PROB]);
+    T.Cell[5,1].Text := Format('%8.3f', [PROB]);
     if ((PROB < 0.0) or (PROB > 1.0)) then
       T.Cell[5,1].Text := ' (Invalid p=' + T.Cell[5,1].Text + ' - Program error)';
 
@@ -635,7 +635,7 @@ begin
 
     B.Cell[0,1].Text := IntToStr(DFB);
     B.Cell[1,1].Text := Format('%8.2f', [BART]);
-    B.Cell[2,1].Text := Format('%8.4f', [PBART]);
+    B.Cell[2,1].Text := Format('%8.3f', [PBART]);
 
     FExecutor.AddResultConst('$means_DFW', ftInteger).AsIntegerVector[0] := DFW;
     FExecutor.AddResultConst('$means_SSW', ftFloat).AsFloatVector[0]     := SSW;
@@ -668,7 +668,7 @@ begin
   with AnovaRec do
   begin
     T.Cell[1,1].Text := Format('%8.2f', [F]);
-    T.Cell[2,1].Text := Format('%8.4f', [PROB]);
+    T.Cell[2,1].Text := Format('%8.3f', [PROB]);
     FExecutor.AddResultConst('$means_T', ftFloat).AsFloatVector[0]   := F;
     FExecutor.AddResultConst('$means_PROB', ftfloat).AsFloatVector[0] := PROB;
   end;
