@@ -161,7 +161,7 @@ begin
         if (Obs > 3) then
           begin
             lKurt             := (Obs * (Obs + 1) * (Obs - 1) * lKurt) / ((Obs - 2) * (Obs - 3) * lSSqDev * lSSqDev);
-            Kurt.AsFloat[Idx] := (lKurt - 3 * (Obs - 1) * (Obs - 1)) / ((Obs - 2) * (Obs - 3)) // excess kurtosis
+            Kurt.AsFloat[Idx] := lKurt - (3 * (Obs - 1) * (Obs - 1)) / ((Obs - 2) * (Obs - 3)) // excess kurtosis
           end;
         lSSqDev               := lSSqDev / (Obs - 1);
         StdVar.AsFloat[Idx]   := lSSqDev;
@@ -179,9 +179,8 @@ procedure TMeans.DoCalcAnova(ResultDF: TMeansDatafile);
 var
   i, k, lStrata: Integer;
   Obs: Int64;
-  ASum, ASumSQ, ASSW, ASST, MPTmp, Tval: EpiFloat;
-  BART, pBart, TPoolVar, TSumVar, TSumLogs, TSumNs: EpiFloat;
-  m,s: EpiFloat;
+  ASSW, ASST, Tval: EpiFloat;
+  TPoolVar, TSumLogs, TSumNs: EpiFloat;
 begin
   if ResultDF.Size < 2 then
     begin
@@ -207,7 +206,6 @@ begin
 
   // F-test if more than one stratum
   Obs    := 0;
-  ASum   := 0;
   ASSW   := 0;
 
   with ResultDF do
@@ -256,14 +254,14 @@ begin
           TSumNs   += (1/(N.AsFloat[i] - 1));                       // 1 / (N[i]-1)
           TPoolVar += (N.AsInteger[i] - 1) * StdVar.AsFloat[i]      // (N[i]-1) * var[i]
         end;
-      TPoolVar := TPoolVar / (Obs - (Size - 1));                  // sum / (N-k)
+      TPoolVar := TPoolVar / (Obs - Size);                  // sum / (N-k)
 
-    with ResultDF.AnovaRecord do
+    with AnovaRecord do
       begin
         BART  := ((Obs - k) * ln(TPoolVar) - TSumLogs) / (1 + (TSumNs - 1/(Obs - k)) / (3*(lStrata)));
         PBART := ChiPValue(BART , lStrata)
       end;
-  end;
+    end;
 end;
 
 function TMeans.DoCalcMeans(InputDF: TEpiDataFile; const CountVarName,
@@ -296,7 +294,7 @@ begin
 
         StartIdx := 0;
         Sum := CountVar.AsFloat[0];
-        TotalSum := Sum;
+        TotalSum := 0;
         for i := 1 to InputDF.Size - 1 do
           begin
             EndIdx := i - 1;
@@ -347,10 +345,11 @@ begin
   Result.FStratifyVarText := CategVar.GetVariableLabel(FVariableLabelOutput);
 
   Obs := InputDF.Size;
+  SSQ := 0;
   for i := 0 to Obs - 1 do
     begin
       Val := CountVar.AsFloat[i] - (TotalSum / Obs);
-      SSQ := (Val * Val);
+      SSQ += (Val * Val);
     end;
 
   Result.FTotalSum  := TotalSum;
