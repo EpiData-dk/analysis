@@ -1877,6 +1877,7 @@ begin
   Result.Insert('cum', [rtUndefined]);
   Result.Insert('r',   [rtUndefined]);
   Result.Insert('ci',  [rtUndefined]);
+  Result.Insert('q',   [rtUndefined]);
   AddDecimalOptions(Result);
 end;
 

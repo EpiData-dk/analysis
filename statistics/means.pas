@@ -7,45 +7,75 @@ interface
 
 uses
   Classes, SysUtils, StrUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
-  executor, result_variables, interval_types,
+  executor, result_variables, interval_types, epifields_helper,
   outputcreator;
 
 type
 
-  { TIntervalDescriptives }
+  { TMeansDatafile }
 
-  TIntervalDescriptives = class
+  TMeansDatafile = class(TIntervalDecriptivesDatafile)
+  private
+    FAnovaRecord: TAnovaRecord;
+    FCountVarText: UTF8String;
+    FStratifyVarText: UTF8String;
+    FTotalSum: EpiFloat;
+  public
+    constructor Create(AOwner: TEpiCustomBase; const ASize: integer = 0); override;
+    property AnovaRecord: TAnovaRecord read FAnovaRecord;
+    property CountVarText: UTF8String read FCountVarText;
+    property StratifyVarText: UTF8String read FStratifyVarText;
+    property TotalSum: EpiFloat read FTotalSum;
+  end;
+
+  { TMeans }
+
+  TMeans = class
   private
     FDecimals: Integer;
+    FValuelabelOutput: TEpiGetValueLabelType;
+    FVariableLabelOutput: TEpiGetVariableLabelType;
+    procedure FillDescriptor(ResultDF: TMeansDatafile; CountVar: TEpiField; SIdx, EIdx: Integer; ASum: EpiFloat);
   protected
-    CategVar: TEpiField;
-    CountVar: TEpiField;
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
-    FResultDF: TIntervalDecriptivesDatafile;
-    procedure FillDescriptor(SIdx, EIdx: Integer; ASum: EpiFloat; ST: TCustomVariableCommand);
     function  Anova: TAnovaRecord;
+
+    function  DoCalcMeans(InputDF: TEpiDataFile; Const CountVarName, StratifyVarName: UTF8String): TMeansDatafile;
+    procedure DoResultVariables(ResultDF: TMeansDatafile);
+    procedure DoOutputMeans(ResultDF: TMeansDatafile);
   public
     constructor Create(AExecutor: TExecutor; OutputCreator: TOutputCreator);
     destructor Destroy; override;
-    function DoMeans(DataFile: TEpiDataFile; ST: TCustomVariableCommand): boolean;
     function DoIntervalDescriptives(DataFile: TEpiDataFile; ST: TCustomVariableCommand;
       out Descriptors: TIntervalDecriptivesDatafile): boolean;
     procedure OutMeans(MeanDataFile: TIntervalDecriptivesDatafile; ST: TCustomVariableCommand);
     procedure OutAnova(AnovaRec: TAnovaRecord);
     procedure OutTtest(AnovaRec: TAnovaRecord);
+
+    // Method called from Executor, does calculation + result vars + output
+    procedure ExecMeans(DataFile: TEpiDataFile; ST: TMeansCommand);
+    // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
+    function CalcMeans(DataFile: TEpiDataFile; ValueLabelOutput: TEpiGetValueLabelType = gvtValue; VariableLabelOutput: TEpiGetVariableLabelType = gvtVarName): TMeansDatafile;
   end;
 
 implementation
 
 uses
-  generalutils, Math, statfunctions, options_utils, epifields_helper;
+  generalutils, Math, statfunctions, options_utils;
+
+{ TMeansDatafile }
+
+constructor TMeansDatafile.Create(AOwner: TEpiCustomBase; const ASize: integer);
+begin
+  inherited Create(AOwner, ASize);
+end;
 
 
-{ TIntervalDescriptives }
+{ TMeans }
 
-procedure TIntervalDescriptives.FillDescriptor(SIdx, EIdx: Integer;
-          ASum: EpiFloat; ST: TCustomVariableCommand);
+procedure TMeans.FillDescriptor(ResultDF: TMeansDatafile; CountVar: TEpiField;
+  SIdx, EIdx: Integer; ASum: EpiFloat);
 var
   Idx, Obs, i: Integer;
   lMean, lAvgDev, lStdDev, lSSqDev, lStdErr, lSkew, lKurt, Val, lTvalue: EpiFloat;
@@ -59,23 +89,16 @@ var
     // Try new method.
     ix := PercentileIndexNIST(max-min+1, d/100, w);
     if w = 0 then
-      result:= CountVar.AsFloat[ix + min-1]
+      result := CountVar.AsFloat[ix + min-1]
     else
       result := CountVar.AsFloat[ix + min-1] + (CountVar.AsFloat[ix+ min]-CountVar.AsFloat[ix+ min-1])*w;
   end;
 
-  function GetGvt(ST: TCustomVariableCommand): TEpiGetValueLabelType;
-  begin
-    result := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-  end;
-
 begin
-  Idx := FResultDF.NewRecords();
+  Idx := ResultDF.NewRecords();
 
-  with FResultDF do
+  with ResultDF do
   begin
-    // Category name
-    Category.AsString[Idx] := CategVar.GetValueLabel(SIdx, GetGvt(ST));
     // Observation found in category
     Obs                    := EIdx - SIdx + 1;
     N.AsInteger[Idx]       := Obs;
@@ -91,7 +114,7 @@ begin
     P95.AsFloat[Idx]       := GetPercentile(SIdx, EIdx, 95);
     Max.AsFloat[Idx]       := CountVar.AsFloat[EIdx];
 
-    // Statistics to be saved in FResultDF
+    // Mean and Sum
     lMean                  := ASum / Obs;
     Mean.AsFloat[Idx]      := lMean;
     Sum.AsFloat[Idx]       := ASum;
@@ -113,13 +136,15 @@ begin
 
     // Watch for data where there is no variation (min = max)
     // because extended precision variables may accumulate rounding errors
-    if  (CountVar.AsFloat[EIdx] = CountVar.AsFloat[SIdx]) then
-    begin
-      lSSqDev := 0;
-      lSkew   := 0;
-      lKurt   := 0;
-      lAvgDev := 0;
-    end;
+    // - please use SameValue when comparing EpiFloat/Extended! TC: 2018-04-23
+//    if CountVar.AsFloat[EIdx] = CountVar.AsFloat[SIdx] then
+    if SameValue(CountVar.AsFloat[EIdx], CountVar.AsFloat[SIdx]) then
+      begin
+        lSSqDev := 0;
+        lSkew   := 0;
+        lKurt   := 0;
+        lAvgDev := 0;
+      end;
 
     lAvgDev                := lAvgDev / Obs;
     AvgDev.AsFloat[Idx]    := lAvgDev;
@@ -130,11 +155,11 @@ begin
     if (Obs > 1) then
       begin
         if (Obs > 2) then
-          Skew.AsFloat[Idx]   := Obs * sqrt(Obs - 1) * lSkew / ((Obs - 2) * sqrt(lSSqDev * lSSqDev * lSSqDev));
+          Skew.AsFloat[Idx]   := (Obs * sqrt(Obs - 1) * lSkew) / ((Obs - 2) * sqrt(lSSqDev * lSSqDev * lSSqDev));
         if (Obs > 3) then
           begin
-            lKurt             := Obs * (Obs + 1) * (Obs - 1) * lKurt / ((Obs - 2) * (Obs - 3) * lSSqDev * lSSqDev);
-            Kurt.AsFloat[Idx] := lKurt - 3 * (Obs - 1) * (Obs - 1) / ((Obs - 2) * (Obs - 3)) // excess kurtosis
+            lKurt             := (Obs * (Obs + 1) * (Obs - 1) * lKurt) / ((Obs - 2) * (Obs - 3) * lSSqDev * lSSqDev);
+            Kurt.AsFloat[Idx] := (lKurt - 3 * (Obs - 1) * (Obs - 1)) / ((Obs - 2) * (Obs - 3)) // excess kurtosis
           end;
         lSSqDev               := lSSqDev / (Obs - 1);
         StdVar.AsFloat[Idx]   := lSSqDev;
@@ -148,7 +173,7 @@ begin
   end;
 end;
 
-function TIntervalDescriptives.Anova: TAnovaRecord;
+function TMeans.Anova: TAnovaRecord;
 var
   i, k, lStrata: Integer;
   Obs: Int64;
@@ -156,7 +181,7 @@ var
   BART, pBart, TPoolVar, TSumVar, TSumLogs, TSumNs: EpiFloat;
   m,s: EpiFloat;
 begin
-  if FResultDF.Size < 2 then
+{  if FResultDF.Size < 2 then
   // t-test of mean=0 if only one result
     begin
       with FResultDF do
@@ -233,34 +258,334 @@ begin
       PBART := ChiPValue(BART , lStrata)
     end;
   end;
-
+               }
 end;
 
-constructor TIntervalDescriptives.Create(AExecutor: TExecutor;
+function TMeans.DoCalcMeans(InputDF: TEpiDataFile; const CountVarName,
+  StratifyVarName: UTF8String): TMeansDatafile;
+var
+  CountVar, CategVar: TEpiField;
+  SortList: TEpiFields;
+  StartIdx, i, EndIdx: Integer;
+  Sum, TotalSum: EpiFloat;
+begin
+  Result := TMeansDatafile.Create(nil, 0);
+
+  CountVar                := InputDF.Fields.FieldByName[CountVarName];
+
+  if (StratifyVarName <> '') then
+    begin
+        // stratified data
+        // Algorithm:
+        // * sort according to (Category, Values)
+        // * run through datafile
+        // * collect StartIdx, EndIndex, Value, Sum
+        // * whenever a change in category record values and change
+        CategVar := InputDF.Fields.FieldByName[StratifyVarName];
+
+        SortList := TEpiFields.Create(nil);
+        SortList.AddItem(CategVar);
+        SortList.AddItem(CountVar);
+        InputDF.SortRecords(SortList);
+        SortList.Free;
+
+        StartIdx := 0;
+        Sum := CountVar.AsFloat[0];
+        TotalSum := Sum;
+        for i := 1 to InputDF.Size - 1 do
+          begin
+            EndIdx := i - 1;
+
+            if CategVar.Compare(i - 1, i) <> 0 then
+              begin
+                // New category, so fill descriptors
+                FillDescriptor(Result, CountVar, StartIdx, EndIdx, Sum);
+
+                // Category name
+                Result.Category.AsString[Result.Size - 1] := CategVar.GetValueLabel(StartIdx, FValuelabelOutput);
+
+                // keep running sum for full data set
+                TotalSum += Sum;
+
+                // Reset values
+                StartIdx := i;
+                Sum      := CountVar.AsFloat[i];
+              end
+            else
+              Sum      += CountVar.AsFloat[i];
+          end;
+
+      // Final stratum
+      FillDescriptor(Result, CountVar, StartIdx, InputDF.Size -1, Sum);
+      TotalSum += Sum;
+    end
+  else
+    begin
+      // no 'by' option - just sort data by value and save sum of data
+      CategVar := InputDF.NewField(ftInteger);
+      SortList := TEpiFields.Create(nil);
+      SortList.AddItem(CountVar);
+      InputDF.SortRecords(SortList);
+      SortList.Free;
+
+      TotalSum := 0;
+      for i := 0 to InputDF.Size -1 do
+        TotalSum += CountVar.AsFloat[i];
+
+      FillDescriptor(Result, CountVar, 0, InputDF.Size - 1, TotalSum);
+
+      // Category name
+      Result.Category.AsString[Result.Size - 1] := CategVar.GetValueLabel(0, FValuelabelOutput);
+    end;
+
+  Result.FCountVarText    := CountVar.GetVariableLabel(FVariableLabelOutput);
+  Result.FStratifyVarText := CategVar.GetVariableLabel(FVariableLabelOutput);
+  Result.FTotalSum        := TotalSum;
+
+  // Add in Descriptor for full data set (required for Total SS in Anova)
+  // In future, could decide to display all data results as well as stratum results
+  // However, will have to set appropriate result vars as well
+  // Considered adding a boolean parameter to the procedure call to indicate which
+
+  // WHY?????
+//  FillDescriptor(Result, CountVar, 0, InputDF.Size - 1, TotalSum);    // could we move this first, so [0] is always totals?
+end;
+
+procedure TMeans.DoResultVariables(ResultDF: TMeansDatafile);
+var
+  CatV, ObsV, SumV, MeanV, SvV, SdV, CfilV, CfihV, SkewV, KurtV,
+  MinV, P05V, P10V, P25V, MedV, P75V, P90V, P95V, MaxV: TCustomExecutorDataVariable;
+  Sz, i: Integer;
+begin
+  Sz := ResultDF.Size;
+
+  with FExecutor do
+  begin
+    if Sz = 1 then
+      begin
+        CatV  := AddResultConst('$means_category', ftString);
+        ObsV  := AddResultConst('$means_obs',      ftInteger);
+        SumV  := AddResultConst('$means_sum',      ftFloat);
+        MeanV := AddResultConst('$means_mean',     ftFloat);
+        MinV  := AddResultConst('$means_min',      ftFloat);
+        P05V  := AddResultConst('$means_p05',      ftFloat);
+        P10V  := AddResultConst('$means_p10',      ftFloat);
+        P25V  := AddResultConst('$means_p25',      ftFloat);
+        MedV  := AddResultConst('$means_median',   ftFloat);
+        P75V  := AddResultConst('$means_p75',      ftFloat);
+        P90V  := AddResultConst('$means_p90',      ftFloat);
+        P95V  := AddResultConst('$means_p95',      ftFloat);
+        MaxV  := AddResultConst('$means_max',      ftFloat);
+        SvV   := AddResultConst('$means_sv',       ftFloat);
+        SdV   := AddResultConst('$means_sd',       ftFloat);
+        CfilV := AddResultConst('$means_cfil',     ftFloat);
+        CfihV := AddResultConst('$means_cfih',     ftFloat);
+        SkewV := AddResultConst('$means_skew',     ftFloat);
+        KurtV := AddResultConst('$means_kurt',     ftFloat);
+      end
+    else
+      begin
+        CatV  := AddResultVector('$means_category', ftString, Sz);
+        ObsV  := AddResultVector('$means_obs',      ftInteger, Sz);
+        SumV  := AddResultVector('$means_sum',      ftFloat, Sz);
+        MeanV := AddResultVector('$means_mean',     ftFloat, Sz);
+        MinV  := AddResultVector('$means_min',      ftFloat, Sz);
+        P05V  := AddResultVector('$means_p05',      ftFloat, Sz);
+        P10V  := AddResultVector('$means_p10',      ftFloat, Sz);
+        P25V  := AddResultVector('$means_p25',      ftFloat, Sz);
+        MedV  := AddResultVector('$means_median',   ftFloat, Sz);
+        P75V  := AddResultVector('$means_p75',      ftFloat, Sz);
+        P90V  := AddResultVector('$means_p90',      ftFloat, Sz);
+        P95V  := AddResultVector('$means_p95',      ftFloat, Sz);
+        MaxV  := AddResultVector('$means_max',      ftFloat, Sz);
+        SvV   := AddResultVector('$means_sv',       ftFloat, Sz);
+        SdV   := AddResultVector('$means_sd',       ftFloat, Sz);
+        CfilV := AddResultVector('$means_cfil',     ftFloat, Sz);
+        CfihV := AddResultVector('$means_cfih',     ftFloat, Sz);
+        SkewV := AddResultVector('$means_skew',     ftFloat, Sz);
+        KurtV := AddResultVector('$means_kurt',     ftFloat, Sz);
+      end;
+
+    AddResultConst('$means_size',  ftInteger).AsIntegerVector[0] := Sz;
+    AddResultConst('$means_var',  ftString).AsStringVector[0]    := ResultDF.Category.Name;
+  end;
+
+  for i := 0 to ResultDF.Size - 1 do
+  with ResultDF do
+    begin
+      CatV.AsStringVector[i]  := Category.AsString[i];
+      ObsV.AsIntegerVector[i] := N.AsInteger[i];
+      SumV.AsFloatVector[i]   := Sum.AsFloat[i];
+      MeanV.AsFloatVector[i]  := Mean.AsFloat[i];
+      MinV.AsFloatVector[i]   := Min.AsFloat[i];
+      P05V.AsFloatVector[i]   := P05.AsFloat[i];
+      P10V.AsFloatVector[i]   := P10.AsFloat[i];
+      P25V.AsFloatVector[i]   := P25.AsFloat[i];
+      MedV.AsFloatVector[i]   := Median.AsFloat[i];
+      P75V.AsFloatVector[i]   := P75.AsFloat[i];
+      P90V.AsFloatVector[i]   := P90.AsFloat[i];
+      P95V.AsFloatVector[i]   := P95.AsFloat[i];
+      MaxV.AsFloatVector[i]   := Max.AsFloat[i];
+
+      if (N.AsInteger[i] < 2) then
+        begin
+          SvV.AsFloatVector[i]    := 0/0;
+          SdV.AsFloatVector[i]    := 0/0;
+          CfilV.AsFloatVector[i]  := 0/0;
+          CfihV.AsFloatVector[i]  := 0/0;
+        end
+      else
+        begin
+          SvV.AsFloatVector[i]    := StdVar.AsFloat[i];
+          SdV.AsFloatVector[i]    := StdDev.AsFloat[i];
+          CfilV.AsFloatVector[i]  := CfiL.AsFloat[i];
+          CfihV.AsFloatVector[i]  := CfiH.AsFloat[i];
+          if (N.AsInteger[i] > 2) then
+            SkewV.AsFloatVector[i]  := Skew.AsFloat[i];
+          if (N.AsInteger[i] > 3) then
+            KurtV.AsFloatVector[i]  := Kurt.AsFloat[i];
+        end;
+  end;
+end;
+
+procedure TMeans.DoOutputMeans(ResultDF: TMeansDatafile);
+var
+  T: TOutputTable;
+  SmallNumFmt, StatFmt: String;
+  Sz, Offset, i, Idx: Integer;
+  maxVforDisplay: Extended;
+begin
+  T := FOutputCreator.AddTable;
+  T.Header.Text := ResultDF.CountVarText;
+  SmallNumFmt := '%8.2F';
+  Sz := ResultDF.Size;
+
+  if Sz = 1 then
+    begin
+      Offset := 0;
+      T.ColCount := 11;
+      T.RowCount := 5;
+      maxVforDisplay := ResultDF.Max.AsFloat[0];
+    end
+  else
+    begin
+      // final result set is for all data; don't display for now
+//      Sz         := Sz - 1;
+      Offset     := 1;
+      T.ColCount := 12;
+      T.RowCount := 3 + (Sz * 2);
+      maxVforDisplay := ResultDF.Max.AsFloat[Sz - 1];
+    end;
+
+  // Column headers  (first section)
+  if Offset > 0 then T.Cell[0,0].Text := ResultDF.StratifyVarText;
+
+  T.Cell[0 + Offset, 0].Text := 'Obs';
+  T.Cell[1 + Offset, 0].Text := 'Sum';
+  T.Cell[2 + Offset, 0].Text := 'Mean';
+  T.Cell[3 + Offset, 0].Text := 'Variance';
+  T.Cell[4 + Offset, 0].Text := 'Std. Dev.';
+  T.Cell[5 + Offset, 0].Text := '( 95% CI';
+  T.Cell[6 + Offset, 0].Text := 'mean )';
+  T.Cell[7 + Offset, 0].Text := 'Std. Err.';
+  T.Cell[8 + Offset, 0].Text := 'Skewness';
+  T.Cell[9 + Offset, 0].Text := 'Kurtosis';
+  T.SetRowAlignment(0, taRightJustify);
+  T.SetRowBoxBorder(0);
+
+  StatFmt := '%8.' + IntToStr(FDecimals) + 'F';
+
+  // if option !dx was not specified and max value < 10, then show 2 decimal places instead of the default
+  {if (maxVforDisplay < 10.0) and
+     (not (ST.HasOption('d' + IntToStr(FDecimals))))
+  then
+    StatFmt := SmallNumFmt;   }
+
+  with ResultDF do
+    begin
+      for i := 0 to Sz - 1 do
+        begin
+          if Offset > 0 then T.Cell[0, i + 1].Text := Category.AsString[i];
+          T.Cell[0 + Offset, i + 1].Text := N.AsString[i];
+          T.Cell[1 + Offset, i + 1].Text := Format(StatFmt, [Sum.AsFloat[i]]);
+          T.Cell[2 + Offset, i + 1].Text := Format(StatFmt, [Mean.AsFloat[i]]);
+
+          // Watch for statistics that could not be calculated
+          if (N.AsInteger[i] < 2) or (isInfinite(Sum.AsFloat[i])) or (isNaN(Sum.AsFloat[i])) then
+            begin
+              T.Cell[3 + Offset, i + 1].Text := 'Cannot';
+              T.Cell[4 + Offset, i + 1].Text := 'estimate'; // skip remaining cells
+            end
+          else
+            begin
+              T.Cell[3 + Offset, i + 1].Text := Format(StatFmt, [StdVar.AsFloat[i]]);
+              T.Cell[4 + Offset, i + 1].Text := Format(StatFmt, [StdDev.AsFloat[i]]);
+              T.Cell[5 + Offset, i + 1].Text := Format(StatFmt, [CfiL.AsFloat[i]]);
+              T.Cell[6 + Offset, i + 1].Text := Format(StatFmt, [CfiH.AsFloat[i]]);
+              T.Cell[7 + Offset, i + 1].Text := Format(StatFmt, [StdErr.AsFloat[i]]);
+              if (N.AsInteger[i] > 2) and (not isNaN(Skew.AsFloat[i])) then
+                T.Cell[8 + Offset, i + 1].Text := Format(StatFmt, [Skew.AsFloat[i]]);
+              if (N.AsInteger[i] > 3) and (not isNaN(Kurt.AsFloat[i])) then
+                T.Cell[9 + Offset, i + 1].Text := Format(StatFmt, [Kurt.AsFloat[i]]);
+            end;
+          T.SetRowAlignment(i+1, taRightJustify);
+          // Need to set this after the entire row has been set to right justify
+          if Offset > 0 then T.Cell[0, i + 1].Alignment := taLeftJustify;
+        end;
+    end;
+
+  Idx := Sz + 1;
+
+  if Offset > 0 then
+    T.Cell[0, Idx].Text := ResultDF.StratifyVarText;
+  T.Cell[0 + Offset, Idx].Text := 'Min';
+  T.Cell[1 + Offset, Idx].Text := 'p05';
+  T.Cell[2 + Offset, Idx].Text := 'p10';
+  T.Cell[3 + Offset, Idx].Text := 'p25';
+  T.Cell[4 + Offset, Idx].Text := 'Median';
+  T.Cell[5 + Offset, Idx].Text := 'p75';
+  T.Cell[6 + Offset, Idx].Text := 'p90';
+  T.Cell[7 + Offset, Idx].Text := 'p95';
+  T.Cell[8 + Offset, Idx].Text := 'Max';
+  T.SetRowAlignment(Idx, taRightJustify);
+  T.SetRowBoxBorder(Idx);
+
+  Inc(Idx);
+
+  with ResultDF do
+  begin
+    for i := 0 to Sz - 1 do
+      begin
+        if Offset > 0 then T.Cell[0, Idx + i].Text := Category.AsString[i];
+        T.Cell[0 + Offset, Idx + i].Text := Format(StatFmt, [Min.AsFloat[i]]);
+        T.Cell[1 + Offset, Idx + i].Text := Format(StatFmt, [P05.AsFloat[i]]);
+        T.Cell[2 + Offset, Idx + i].Text := Format(StatFmt, [P10.AsFloat[i]]);
+        T.Cell[3 + Offset, Idx + i].Text := Format(StatFmt, [P25.AsFloat[i]]);
+        T.Cell[4 + Offset, Idx + i].Text := Format(StatFmt, [Median.AsFloat[i]]);
+        T.Cell[5 + Offset, Idx + i].Text := Format(StatFmt, [P75.AsFloat[i]]);
+        T.Cell[6 + Offset, Idx + i].Text := Format(StatFmt, [P90.AsFloat[i]]);
+        T.Cell[7 + Offset, Idx + i].Text := Format(StatFmt, [P95.AsFloat[i]]);
+        T.Cell[8 + Offset, Idx + i].Text := Format(StatFmt, [Max.AsFloat[i]]);
+        T.SetRowAlignment(Idx + i, taRightJustify);
+        // Need to set this after the entire row has been set to right justify
+        if Offset > 0 then T.Cell[0, Idx + i].Alignment := taLeftJustify;
+      end;
+  end;
+end;
+
+constructor TMeans.Create(AExecutor: TExecutor;
   OutputCreator: TOutputCreator);
 begin
   FExecutor := AExecutor;
   FOutputCreator := OutputCreator;
 end;
 
-destructor TIntervalDescriptives.Destroy;
+destructor TMeans.Destroy;
 begin
   inherited Destroy;
 end;
 
-function TIntervalDescriptives.DoMeans(DataFile: TEpiDataFile;
-  ST: TCustomVariableCommand): boolean;
-var
-  DummyDF: TIntervalDecriptivesDatafile;
-begin
-  FDecimals := DecimalFromOption(ST.Options);
-
-
-  DoIntervalDescriptives(DataFile, ST, DummyDF);
-  DummyDF.Free;
-end;
-
-function TIntervalDescriptives.DoIntervalDescriptives(DataFile: TEpiDataFile; ST: TCustomVariableCommand; out
+function TMeans.DoIntervalDescriptives(DataFile: TEpiDataFile; ST: TCustomVariableCommand; out
   Descriptors: TIntervalDecriptivesDatafile): boolean;
 var
   opt: TOption;
@@ -269,109 +594,19 @@ var
   Val, Sum, SumSq, Tsum: EpiFloat;
   stratify: Boolean;
 begin
-  FResultDF := TIntervalDecriptivesDatafile.Create(nil, 0);
-
-  CountVar := DataFile.Fields.FieldByName[ST.VariableList[0].Ident];
-  stratify := ST.Options.HasOption('by', opt);
-
-  if stratify then
-    begin
-      // make sure that by field is not the same as means field (Sort will fail)
-      if (ST.VariableList[0].Ident = Opt.Expr.AsIdent) then
-      begin
-        FOutputCreator.DoError('Cannot stratify by the same variable');
-        stratify := FALSE
-      end;
-    end;
-
-  if stratify then
-    begin
-        // stratified data
-        // Algorithm:
-        // * sort according to (Category, Values)
-        // * run through datafile
-        // * collect StartIdx, EndIndex, Value, Sum
-        // * whenever a change in category record values and change
-        CategVar := DataFile.Fields.FieldByName[Opt.Expr.AsIdent];
-        SortList := TEpiFields.Create(nil);
-        SortList.AddItem(CategVar);
-        SortList.AddItem(CountVar);
-        DataFile.SortRecords(SortList);
-        SortList.Free;
-
-        StartIdx := 0;
-        Val      := CountVar.AsFloat[0];    // why is this coded with Val?
-        Sum      := Val;
-        Tsum     := 0;
-        for i := 1 to DataFile.Size - 1 do
-        begin
-          EndIdx := i - 1;
-
-          if CategVar.Compare(i-1, i) <> 0 then
-            begin
-              // New category, so fill descriptors
-              FillDescriptor(StartIdx, EndIdx, Sum, ST);
-              // keep running sum for full data set
-              Tsum     += Sum;
-              // Reset values
-              StartIdx := i;
-              Val      := CountVar.AsFloat[i];
-              Sum      := Val;
-            end
-          else
-            begin
-              Val      := CountVar.AsFloat[i];
-              Sum      += Val;
-            end;
-        end;
-    // final stratum
-      FillDescriptor(StartIdx, DataFile.Size -1, Sum, ST);
-      Tsum += Sum;
-    end
-  else
-    begin
-      // no 'by' option - just sort data by value and save sum of data
-      CategVar := DataFile.NewField(ftInteger);
-      SortList := TEpiFields.Create(nil);
-      SortList.AddItem(CountVar);
-      DataFile.SortRecords(SortList);
-      SortList.Free;
-
-      Tsum := 0;
-      for i := 0 to DataFile.Size -1 do
-        Tsum += CountVar.AsFloat[i];
-    end;
-
-  // Add in Descriptor for full data set (required for Total SS in Anova)
-  // In future, could decide to display all data results as well as stratum results
-  // However, will have to set appropriate result vars as well
-  // Considered adding a boolean parameter to the procedure call to indicate which
-  FillDescriptor(0, DataFile.Size - 1, Tsum, ST);    // could we move this first, so [0] is always totals?
-
-  OutMeans(FResultDF, ST);
-
-  if ST.Options.HasOption('t', opt) then
-     if (FResultDF.Size >= 2)
-    then
-      OutAnova(Anova)
-    else
-      OutTtest(Anova);
-
-  Descriptors := FResultDF;
-  ST.ExecResult := csrSuccess;
 end;
 
-procedure TIntervalDescriptives.OutMeans(MeanDataFile: TIntervalDecriptivesDatafile; ST: TCustomVariableCommand);
+procedure TMeans.OutMeans(MeanDataFile: TIntervalDecriptivesDatafile; ST: TCustomVariableCommand);
 var
   Offset, i, Idx, Sz: Integer;
   StatFmt, SmallNumFmt: string;
-  maxVforDisplay: float;
+  maxVforDisplay: EpiFloat;
   CatV, ObsV, SumV, MeanV, SvV, SdV, CfilV, CfihV, SkewV, KurtV,
     MinV, P05V, P10V, P25V, MedV, P75V, P90V, P95V, MaxV: TCustomExecutorDataVariable;
   T: TOutputTable;
   GVT: TEpiGetVariableLabelType;
 begin
-  T := FOutputCreator.AddTable;
+{  T := FOutputCreator.AddTable;
   GVT := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   T.Header.Text := CountVar.GetVariableLabel(GVT);
   SmallNumFmt := '%8.2F';
@@ -570,10 +805,10 @@ begin
         // Need to set this after the entire row has been set to right justify
         if Offset > 0 then T.Cell[0, Idx + i].Alignment := taLeftJustify;
       end;
-  end;
+  end;}
 end;
 
-procedure TIntervalDescriptives.OutAnova(AnovaRec: TAnovaRecord);
+procedure TMeans.OutAnova(AnovaRec: TAnovaRecord);
 var
   T: TOutputTable;
   B: TOutputTable;
@@ -645,7 +880,7 @@ begin
   end;
 end;
 
-procedure TIntervalDescriptives.OutTtest(AnovaRec: TAnovaRecord);
+procedure TMeans.OutTtest(AnovaRec: TAnovaRecord);
 var
   T: TOutputTable;
 begin
@@ -673,4 +908,36 @@ begin
     FExecutor.AddResultConst('$means_PROB', ftfloat).AsFloatVector[0] := PROB;
   end;
 end;
+
+procedure TMeans.ExecMeans(DataFile: TEpiDataFile;
+  ST: TMeansCommand);
+var
+  ResultDF: TMeansDatafile;
+  CountVarName, StratifyVarName: UTF8String;
+  Opt: TOption;
+begin
+  FDecimals := DecimalFromOption(ST.Options);
+  FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+  FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+
+  CountVarName := ST.VariableList[0].Ident;
+  StratifyVarName := '';
+  if ST.HasOption('by', Opt) then
+    StratifyVarName := Opt.Expr.AsIdent;
+
+  ResultDF := DoCalcMeans(DataFile, CountVarName, StratifyVarName);
+  DoResultVariables(ResultDF);
+  DoOutputMeans(ResultDF);
+end;
+
+function TMeans.CalcMeans(DataFile: TEpiDataFile;
+  ValueLabelOutput: TEpiGetValueLabelType;
+  VariableLabelOutput: TEpiGetVariableLabelType): TMeansDatafile;
+begin
+  FValuelabelOutput := ValueLabelOutput;
+  VariableLabelOutput := VariableLabelOutput;
+
+  Result := DoCalcMeans(DataFile, '', '');
+end;
+
 end.

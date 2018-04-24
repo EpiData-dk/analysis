@@ -3148,15 +3148,24 @@ end;
 
 procedure TExecutor.ExecMean(ST: TCustomVariableCommand);
 var
-  M: TIntervalDescriptives;
+  M: TMeans;
   L: TStrings;
   DF: TEpiDataFile;
   opt: TOption;
 begin
+  ST.ExecResult := csrFailed;
   L := ST.VariableList.GetIdentsAsList;
 
   if ST.HasOption('by', opt) then
-    L.Add(Opt.Expr.AsIdent);
+    begin
+      if (L[0] = Opt.Expr.AsIdent) then
+        begin
+          DoError('Cannot stratify by the same variable');
+          Exit;
+        end;
+
+      L.Add(Opt.Expr.AsIdent);
+    end;
 
   M := nil;
   DF := DoPrepareDatafile(L, L);
@@ -3169,8 +3178,8 @@ begin
         Exit;
       end;
 
-    M := TIntervalDescriptives.Create(Self, FOutputCreator);
-    M.DoMeans(DF, ST);
+    M := TMeans.Create(Self, FOutputCreator);
+    M.ExecMeans(DF, TMeansCommand(ST));
   finally
     DF.Free;
     M.Free;
