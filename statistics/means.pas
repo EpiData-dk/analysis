@@ -398,6 +398,7 @@ begin
         CfihV := AddResultConst('$means_cfih',     ftFloat);
         SkewV := AddResultConst('$means_skew',     ftFloat);
         KurtV := AddResultConst('$means_kurt',     ftFloat);
+        AddResultConst('$means_catvar', ftString).AsStringVector[0]  := '';
       end
     else
       begin
@@ -420,11 +421,13 @@ begin
         CfihV := AddResultVector('$means_cfih',     ftFloat, Sz);
         SkewV := AddResultVector('$means_skew',     ftFloat, Sz);
         KurtV := AddResultVector('$means_kurt',     ftFloat, Sz);
-      end;
+
+        AddResultConst('$means_catvar', ftString).AsStringVector[0]  := ResultDF.FStratifyVarText;
+     end;
 
     AddResultConst('$means_size',  ftInteger).AsIntegerVector[0] := Sz;
-    AddResultConst('$means_var',  ftString).AsStringVector[0]    := ResultDF.Category.Name;
-  end;
+    AddResultConst('$means_var',  ftString).AsStringVector[0]    := ResultDF.CountVarText;
+ end;
 
   for i := 0 to ResultDF.Size - 1 do
   with ResultDF do
