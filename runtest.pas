@@ -228,7 +228,7 @@ end;
 
 procedure TRunTest.LexError(Sender: TObject; ErrorToken: TToken);
 begin
-  SyntaxError(SEnder, nil, nil);
+  SyntaxError(Sender, ErrorToken, nil);
 end;
 
 procedure TRunTest.ParseResponse(Sender: TObject;
@@ -401,13 +401,15 @@ begin
   T.SetColAlignment(6, taLeftJustify);
 
   if Halted then
-    T.Footer.Text := 'Runtest was halted during execution: LineNo = ' + IntToStr(FHaltedLine);
+    T.Footer.Text := '{\b Runtest was halted during execution: LineNo = ' + IntToStr(FHaltedLine) + '}';
 end;
 
 procedure TRunTest.SyntaxError(Sender: TObject; ErrorToken: TToken;
   TokenTable: TTokenStack);
 begin
-  raise Exception.Create('SYNTAX ERROR!');
+  FComment.AsString[FDatafileIdx] :=
+    Format('{\b Syntax Error in PGM (line: %d, pos: %d)}',
+           [ErrorToken.LineNum, ErrorToken.CaretNum]);
 end;
 
 

@@ -15,7 +15,7 @@
       <UseVersionInfo Value="True"/>
       <MinorVersionNr Value="9"/>
       <RevisionNr Value="3"/>
-      <BuildNr Value="12"/>
+      <BuildNr Value="13"/>
       <StringTable ProductVersion="0.6.4.0"/>
     </VersionInfo>
     <BuildModes Count="6">
@@ -227,7 +227,7 @@
         <PackageName Value="LCL"/>
       </Item12>
     </RequiredPackages>
-    <Units Count="69">
+    <Units Count="70">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -530,6 +530,10 @@
         <Filename Value="functions/epi_script_function_observations.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit68>
+      <Unit69>
+        <Filename Value="executor/options_filesoptions.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit69>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

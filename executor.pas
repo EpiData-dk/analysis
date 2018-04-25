@@ -303,7 +303,7 @@ uses
   Controls, runtest, Forms, parser, LazUTF8Classes, math,
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
-  RegExpr, ana_globals, browse4, strutils, options_fontoptions,
+  RegExpr, ana_globals, browse4, strutils, options_fontoptions, options_filesoptions,
   ana_documentfile, FileUtil,
 
   // STATEMENTS
@@ -1815,7 +1815,7 @@ begin
   FOptions.Insert(ANA_SO_INCLUDE_DELETED, TSetOption.Create('OFF', rtBoolean));
 
   FOptions.Insert(ANA_SO_TUTORIAL_FOLDER,
-    TSetOption.Create({$IFDEF DARWIN}
+    TFolderOption.Create({$IFDEF DARWIN}
                         ProgramDirectory + '../../../docs'
                       {$ELSE}
                         ProgramDirectory + 'docs'
@@ -3760,8 +3760,9 @@ begin
       on E: Exception do
         begin
           DoError(
-            'EXCEPTION ERROR: ' + E.Message + LineEnding +
-            'TODO: Better message output!'
+            'Unhandled error during execution: ' + LineEnding +
+            '  ' + E.Message + LineEnding +
+            'Please contact EpiData (info@epidata.dk) and if possible include a copy of history and data!'
           );
           FOutputCreator.RequestRedraw;
         end;
