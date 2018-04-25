@@ -150,6 +150,7 @@ procedure TRunTest.RunFile(const FN: UTF8String);
 var
   P: TParser;
   TheProgram: TStatementList;
+  ParseOk: Boolean;
 begin
   FExternalOutputCreator.DoNormal('Running: ' + FN);
   FExternalOutputCreator.RequestRedraw;
@@ -167,10 +168,11 @@ begin
   P.OnLexError      := @LexError;
   P.OnParseResponse := @ParseResponse;
 
-  P.ParseFile(FN, TheProgram);
+  ParseOk := P.ParseFile(FN, TheProgram);
   P.Free;
 
-  FInternalExecutor.Execute(TheProgram);
+  if ParseOk then
+    FInternalExecutor.Execute(TheProgram);
 end;
 
 procedure TRunTest.DoAssert(ST: TAssertCommand);

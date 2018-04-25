@@ -9,8 +9,6 @@ uses
 
 type
 
-  { TCustomFontOption }
-
   { TCustomFileOption }
 
   TCustomFileOption = class(TSetOption)

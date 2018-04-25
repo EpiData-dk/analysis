@@ -3762,7 +3762,7 @@ begin
           DoError(
             'Unhandled error during execution: ' + LineEnding +
             '  ' + E.Message + LineEnding +
-            'Please contact EpiData (info@epidata.dk) and if possible include a copy of history and data!'
+            'Please contact EpiData (info@epidata.dk) and include a copy of history and if possible example data!'
           );
           FOutputCreator.RequestRedraw;
         end;

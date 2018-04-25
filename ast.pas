@@ -1335,6 +1335,7 @@ type
   TSaveCommand = class(TCustomFilecommand)
   protected
     function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetRequireOpenProject: Boolean; override;
   public
     constructor Create(Const AStringExpr: TExpr; AOptionList: TOptionList);
   end;
@@ -1564,6 +1565,14 @@ begin
   result.Insert('fixed',   [rtUndefined]);
   // - ByteOrderMark
   result.Insert('bom',     [rtUndefined]);
+end;
+
+function TSaveCommand.GetRequireOpenProject: Boolean;
+begin
+  if (HasOption('output')) then
+    result := false
+  else
+    Result := inherited GetRequireOpenProject;
 end;
 
 constructor TSaveCommand.Create(const AStringExpr: TExpr;
