@@ -1120,6 +1120,17 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+  { TAggregateCommand }
+
+  TAggregateCommand = class(TCustomVariableCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TBrowseCommand }
 
   TBrowseCommand = class(TCustomVariableCommand)
@@ -1398,6 +1409,61 @@ uses
   epi_script_function_systemfunctions,
   epi_script_function_observations,
   math, variants, LazUTF8, LazFileUtils;
+
+{ TAggregateCommand }
+
+function TAggregateCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('strata', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('q',   [rtUndefined]);
+  Result.Insert('m',   [rtUndefined]);
+  Result.Insert('r',   AllResultDataTypes, [evtDataset], [evfExternal, evfAsObject]);
+  Result.Insert('header', AllResultDataTypes);
+
+  // Summary statistics
+  Result.Insert('des', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('iqr', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('idr', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('isr', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('mci', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('mv',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('n',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('nv',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('mean', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('sd',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('min',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('p1',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('p5',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('p10',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('p25',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('p50',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('med',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('p75',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('p90',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('p95',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('p99',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('max',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('sum',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+end;
+
+function TAggregateCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+end;
+
+function TAggregateCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+end;
+
+constructor TAggregateCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stAggregate);
+end;
 
 { TReportValidateDoubleEntry }
 
@@ -3278,13 +3344,14 @@ class function TCustomVariableCommand.CreateCustomVariableCommand(
 
 begin
   case ST of
-    stMeans:   Result := TMeansCommand.Create(AVariableList, AOptionList);
-    stBrowse:  Result := TBrowseCommand.Create(AVariableList, AOptionList);
-    stFreq:    Result := TFreqCommand.Create(AVariableList, AOptionList);
-    stSort:    Result := TSortCommand.Create(AVariableList, AOptionList);
-    stAppend:  Result := TAppendCommand.Create(AVariableList, AOptionList);
-    stMerge:   Result := TMergeCommand.Create(AVariableList, AOptionList);
-    stReorder: Result := TReorderCommand.Create(AVariableList, AOptionList);
+    stMeans:     Result := TMeansCommand.Create(AVariableList, AOptionList);
+    stBrowse:    Result := TBrowseCommand.Create(AVariableList, AOptionList);
+    stFreq:      Result := TFreqCommand.Create(AVariableList, AOptionList);
+    stSort:      Result := TSortCommand.Create(AVariableList, AOptionList);
+    stAppend:    Result := TAppendCommand.Create(AVariableList, AOptionList);
+    stMerge:     Result := TMergeCommand.Create(AVariableList, AOptionList);
+    stReorder:   Result := TReorderCommand.Create(AVariableList, AOptionList);
+    stAggregate: Result := TAggregateCommand.Create(AVariableList, AOptionList);
   else
     DoError();
   end;

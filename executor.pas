@@ -200,6 +200,7 @@ type
     procedure ExecCheck(ST: TCustomCheckCommand); virtual;
     procedure ExecReport(ST: TCustomReportCommand); virtual;
     procedure ExecReorder(ST: TReorderCommand); virtual;
+    procedure ExecAggregate(ST: TAggregateCommand); virtual;
 
     // String commands
     procedure ExecRead(ST: TCustomStringCommand); virtual;
@@ -308,6 +309,7 @@ uses
 
   // STATEMENTS
   list, edit, drop, systemcmd, merge, integrity_tests, report, save_output,
+  aggregate,
 
   // STATISTICS
   means, freq;
@@ -3481,6 +3483,29 @@ begin
     RV.AsStringVector[i] := SortedFields.Field[i].Name;
 
   DoGUIInteraction(gaProjectTree);
+end;
+
+procedure TExecutor.ExecAggregate(ST: TAggregateCommand);
+var
+  VarList: TStrings;
+  DF: TEpiDataFile;
+begin
+  // Sanity checks
+  VarList := ST.VariableList.GetIdentsAsList;
+
+  if (ST.HasOption('m')) then
+    DF := PrepareDatafile(nil, VarList, [])
+  else
+    DF := PrepareDatafile(nil, nil);
+
+  if DF.Size = 0 then
+    begin
+      DoError('No data!');
+      ST.ExecResult := csrFailed;
+      Exit;
+    end;
+
+
 end;
 
 procedure TExecutor.ExecUse(ST: TUse);
