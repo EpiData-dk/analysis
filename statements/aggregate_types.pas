@@ -71,31 +71,38 @@ type
 
   TAggrMean = class(TAggrFunc)
   private
-    Sum, Stdvar: EpiFloat;
-    Count: EpiInt;
-    MeanType: TAggrMeanType;
-    fLowerCI, fUpperCI: TEpiVector;
+    FSum, FStdvar: EpiFloat;
+    FCount: EpiInteger;
+    FMeanType: TAggrMeanType;
+    FLowerCI, FUpperCI: TEpiField;
   public
-    constructor Create(ResultVar, AggregateVar: string; AMeanType: TAggrMeanType);
+    constructor Create(AResultVarName: UTF8String; AAggregateVector: TEpiField;  AMeanType: TAggrMeanType);
     procedure Execute(Idx: integer); override;
     procedure SetOutput(Idx: integer); override;
-    function ContainVarname(const Varname: string): boolean; override;
     procedure Reset(); override;
-    procedure CreateResultVector(Dataframe: TEpiDataframe); override;
+    procedure CreateResultVector(DataFile: TEpiDataFile; VariableLabelType: TEpiGetVariableLabelType); override;
+    property MeanType: TAggrMeanType read FMeanType;
+    property Sum: EpiFloat read FSum;
+    property StdVar: EpiFloat read FStdvar;
+    property Count: EpiInteger read FCount;
+    property LowerCI: TEpiField read FLowerCI;
+    property UpperCI: TEpiField read FUpperCI;
   end;
 
   { TAggrMinMax }
 
   TAggrMinMax = class(TAggrFunc)
   private
-    Value: EpiFloat;
-    Minimum: Boolean;
+    FValue: EpiFloat;
+    FMinimum: Boolean;
   public
-    constructor Create(ResultVar, AggregateVar: string; FindMin: boolean);
+    constructor Create(AResultVarName: UTF8String; AAggregateVector: TEpiField; FindMin: boolean);
     procedure Execute(Idx: integer); override;
     procedure SetOutput(Idx: integer); override;
     procedure Reset(); override;
-    procedure CreateResultVector(Dataframe: TEpiDataframe); override;
+    procedure CreateResultVector(DataFile: TEpiDataFile; VariableLabelType: TEpiGetVariableLabelType); override;
+    property Value: EpiFloat read FValue;
+    property IsMinimum: Boolean read FMinimum;
   end;
 
   TAggrPercentileType = (ap1, ap5, ap10, ap25, ap50, ap75, ap90, ap95, ap99);
@@ -137,6 +144,9 @@ type
   end;
 
 implementation
+
+uses
+  statfunctions;
 
 
 { TAggrFunc }
@@ -231,63 +241,144 @@ end;
 
 { TAggrMean }
 
-constructor TAggrMean.Create(ResultVar, AggregateVar: string;
-  AMeanType: TAggrMeanType);
+constructor TAggrMean.Create(AResultVarName: UTF8String;
+  AAggregateVector: TEpiField; AMeanType: TAggrMeanType);
 begin
-
+  inherited Create(AResultVarName, AAggregateVector, afMean);
+  FMeanType := AMeanType;
 end;
 
 procedure TAggrMean.Execute(Idx: integer);
+var
+  Val: Extended;
 begin
+  if AggregateVector.IsMissing[Idx] then exit;
+  Val := AggregateVector.AsFloat[Idx];
 
+  FSum := FSum + Val;
+  FStdvar := FStdvar + (Val * Val);
+  Inc(FCount);
 end;
 
 procedure TAggrMean.SetOutput(Idx: integer);
+var
+  Mean, lStdVar, lStdDev, lLCI, lUCI: EpiFloat;
 begin
+  if Count = 0 then
+    FResultVector.IsMissing[idx] := True
+  else
+    begin
+      Mean := Sum / Count;
+      if Count = 1 then
+        begin
+          lStdVar := TEpiFloatField.DefaultMissing;
+          lStdDev := TEpiFloatField.DefaultMissing;
+          lLCI    := TEpiFloatField.DefaultMissing;
+          lUCI    := TEpiFloatField.DefaultMissing;
+        end
+      else
+        begin
+          lStdVar := (lStdVar + (count * (Mean * Mean) - 2 * Mean * Sum)) / (Count - 1);
+          lStdDev := sqrt(lStdVar);
+          F       := PTDISTRINV((Count - 1), 0.025) * System.Sqrt(lStdVar / Count);
+          lLCI    := Mean - F;
+          lUCI    := Mean + F;
+        end;
 
-end;
+      case MeanType of
+        amMCI,
+        amMean:   fResultVector.AsFloat[idx] := Mean;
+        amStdVar: fResultVector.AsFloat[idx] := lStdVar;
+        amStdDev: fResultVector.AsFloat[idx] := lStdDev;
+      end;
 
-function TAggrMean.ContainVarname(const Varname: string): boolean;
-begin
-  Result := inherited ContainVarname(Varname);
+      if MeanType = amMCI then
+      begin
+        fLowerCI.AsFloat[Idx] := lLCI;
+        fUpperCI.AsFloat[Idx] := lUCI;
+      end;
+    end;
 end;
 
 procedure TAggrMean.Reset();
 begin
-
+  FSum    := 0.0;
+  FCount  := 0;
+  FStdVar := 0;
 end;
 
-procedure TAggrMean.CreateResultVector(Dataframe: TEpiDataframe);
+procedure TAggrMean.CreateResultVector(DataFile: TEpiDataFile;
+  VariableLabelType: TEpiGetVariableLabelType);
 begin
+  FResultVector := DataFile.NewField(ftFloat);
+  FResultVector.Name := ResultVariableName;
 
+  Case MeanType of
+    amMean,
+    amMCI:
+      FResultVector.Question.Text := '(Mean) ' + FAggregateVector.GetVariableLabel(VariableLabelType);
+
+    amStdVar:
+      FResultVector.Question.Text := '(Variance) ' + FAggregateVector.GetVariableLabel(VariableLabelType);
+
+    amStdDev:
+      FResultVector.Question.Text := '(Deviance) ' + FAggregateVector.GetVariableLabel(VariableLabelType);
+  end;
+
+  if (MeanType = amMCI) then
+    begin
+      FLowerCI := DataFile.NewField(ftFloat);
+      FLowerCI.Name := 'LowCi' + ResultVariableName;
+      FLowerCI.Question.Text := '(Lower 95% CI - Mean) ' + FAggregateVector.GetVariableLabel(VariableLabelType);
+
+      FUpperCI := DataFile.NewField(ftFloat);
+      FUpperCI.Name := 'UpperCi' + ResultVariableName;
+      FUpperCI.Question.Text := '(Upper95% CI - Mean) ' + FAggregateVector.GetVariableLabel(VariableLabelType);
+    end;
 end;
 
 { TAggrMinMax }
 
-constructor TAggrMinMax.Create(ResultVar, AggregateVar: string; FindMin: boolean
-  );
+constructor TAggrMinMax.Create(AResultVarName: UTF8String;
+  AAggregateVector: TEpiField; FindMin: boolean);
 begin
-
+  inherited Create(AResultVarName, AAggregateVector, afMinMax);
+  FMinimum := FindMin;
 end;
 
 procedure TAggrMinMax.Execute(Idx: integer);
 begin
+  if fAggregateVector.IsMissing[idx] then exit;
 
+  if TEpiFloatField.CheckMissing(Value) then
+    FValue := FAggregateVector.AsFloat[Idx]
+  else
+    if Minimum then
+      FValue := Math.Min(FAggregateVector.AsFloat[Idx], Value)
+    else
+      FValue := Math.Max(FAggregateVector.AsFloat[Idx], Value);
 end;
 
 procedure TAggrMinMax.SetOutput(Idx: integer);
 begin
-
+  FResultVector.AsFloat[Idx] := Value;
 end;
 
 procedure TAggrMinMax.Reset();
 begin
-
+  Value := TEpiFloatField.DefaultMissing;
 end;
 
-procedure TAggrMinMax.CreateResultVector(Dataframe: TEpiDataframe);
+procedure TAggrMinMax.CreateResultVector(DataFile: TEpiDataFile;
+  VariableLabelType: TEpiGetVariableLabelType);
 begin
+  FResultVector := DataFile.NewField(AggregateVector.FieldType);
+  FResultVector.Name := ResultVariableName;
 
+  if IsMinimum then
+    FResultVector.Question.Text := '(MIN) '+ fAggregateVector.GetVariableLabel(VariableLabelType)
+  else
+    FResultVector.Question.Text := '(MAX) '+ fAggregateVector.GetVariableLabel(VariableLabelType);
 end;
 
 { TAggrPercentile }
