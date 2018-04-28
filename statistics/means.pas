@@ -157,12 +157,16 @@ begin
     if (Obs > 1) then
       begin
         if (Obs > 2) then
-          Skew.AsFloat[Idx]   := (Obs * sqrt(Obs - 1) * lSkew) / ((Obs - 2) * sqrt(lSSqDev * lSSqDev * lSSqDev));
+          Skew.AsFloat[Idx]   := (Obs * sqrt(Obs - 1) * lSkew) / ((Obs - 2) * sqrt(lSSqDev * lSSqDev * lSSqDev))
+        else
+          Skew.AsFloat[Idx]   := TEpiFloatField.DefaultMissing;
         if (Obs > 3) then
           begin
             lKurt             := (Obs * (Obs + 1) * (Obs - 1) * lKurt) / ((Obs - 2) * (Obs - 3) * lSSqDev * lSSqDev);
             Kurt.AsFloat[Idx] := lKurt - (3 * (Obs - 1) * (Obs - 1)) / ((Obs - 2) * (Obs - 3)) // excess kurtosis
-          end;
+          end
+        else
+          Kurt.AsFloat[Idx]   := TEpiFloatField.DefaultMissing;
         lSSqDev               := lSSqDev / (Obs - 1);
         StdVar.AsFloat[Idx]   := lSSqDev;
         StdDev.AsFloat[Idx]   := sqrt(lSSqDev);
@@ -171,6 +175,14 @@ begin
         lCfiVal               := PTDISTRINV(Obs - 1, 0.025) * lStdErr;
         CfiL.AsFloat[Idx]     := lMean - lCfiVal;
         CfiH.AsFloat[Idx]     := lMean + lCfiVal;
+      end
+    else
+      begin
+        StdVar.AsFloat[Idx]   := TEpiFloatField.DefaultMissing;
+        StdDev.AsFloat[Idx]   := TEpiFloatField.DefaultMissing;
+        StdErr.AsFloat[Idx]   := TEpiFloatField.DefaultMissing;
+        CfiL.AsFloat[Idx]   := TEpiFloatField.DefaultMissing;
+        CfiH.AsFloat[Idx]   := TEpiFloatField.DefaultMissing;
       end;
   end;
 end;
@@ -320,6 +332,7 @@ begin
 
       // Final stratum
       FillDescriptor(Result, CountVar, StartIdx, InputDF.Size -1, Sum);
+      Result.Category.AsString[Result.Size - 1] := CategVar.GetValueLabel(StartIdx, FValuelabelOutput);
       TotalSum += Sum;
     end
   else
@@ -446,25 +459,14 @@ begin
       P95V.AsFloatVector[i]   := P95.AsFloat[i];
       MaxV.AsFloatVector[i]   := Max.AsFloat[i];
 
-      if (N.AsInteger[i] < 2) then
-        begin
-          SvV.AsFloatVector[i]    := 0/0;
-          SdV.AsFloatVector[i]    := 0/0;
-          CfilV.AsFloatVector[i]  := 0/0;
-          CfihV.AsFloatVector[i]  := 0/0;
-        end
-      else
-        begin
-          SvV.AsFloatVector[i]    := StdVar.AsFloat[i];
-          SdV.AsFloatVector[i]    := StdDev.AsFloat[i];
-          CfilV.AsFloatVector[i]  := CfiL.AsFloat[i];
-          CfihV.AsFloatVector[i]  := CfiH.AsFloat[i];
-          if (N.AsInteger[i] > 2) then
-            SkewV.AsFloatVector[i]  := Skew.AsFloat[i];
-          if (N.AsInteger[i] > 3) then
-            KurtV.AsFloatVector[i]  := Kurt.AsFloat[i];
-        end;
-  end;
+      SvV.AsFloatVector[i]    := StdVar.AsFloat[i];
+      SdV.AsFloatVector[i]    := StdDev.AsFloat[i];
+      CfilV.AsFloatVector[i]  := CfiL.AsFloat[i];
+      CfihV.AsFloatVector[i]  := CfiH.AsFloat[i];
+      SkewV.AsFloatVector[i]  := Skew.AsFloat[i];
+      KurtV.AsFloatVector[i]  := Kurt.AsFloat[i];
+
+    end;
 
   With ResultDF.AnovaRecord do
     if ResultDF.TotalObs > 1 then
@@ -493,6 +495,15 @@ var
   SmallNumFmt, StatFmt: String;
   Sz, Offset, i, Idx: Integer;
   maxVforDisplay: Extended;
+
+  function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;
+  begin
+    if (SameValue(val, TEpiFloatField.DefaultMissing)) then
+      Result := '.'
+    else
+      Result := Format(fmt, [val]);
+  end;
+
 begin
   T := FOutputCreator.AddTable;
   T.Header.Text := ResultDF.CountVarText;
@@ -549,24 +560,13 @@ begin
           T.Cell[1 + Offset, i + 1].Text := Format(StatFmt, [Sum.AsFloat[i]]);
           T.Cell[2 + Offset, i + 1].Text := Format(StatFmt, [Mean.AsFloat[i]]);
 
-          // Watch for statistics that could not be calculated
-          if (N.AsInteger[i] < 2) or (isInfinite(Sum.AsFloat[i])) or (isNaN(Sum.AsFloat[i])) then
-            begin
-              T.Cell[3 + Offset, i + 1].Text := 'Cannot';
-              T.Cell[4 + Offset, i + 1].Text := 'estimate'; // skip remaining cells
-            end
-          else
-            begin
-              T.Cell[3 + Offset, i + 1].Text := Format(StatFmt, [StdVar.AsFloat[i]]);
-              T.Cell[4 + Offset, i + 1].Text := Format(StatFmt, [StdDev.AsFloat[i]]);
-              T.Cell[5 + Offset, i + 1].Text := Format(StatFmt, [CfiL.AsFloat[i]]);
-              T.Cell[6 + Offset, i + 1].Text := Format(StatFmt, [CfiH.AsFloat[i]]);
-              T.Cell[7 + Offset, i + 1].Text := Format(StatFmt, [StdErr.AsFloat[i]]);
-              if (N.AsInteger[i] > 2) and (not isNaN(Skew.AsFloat[i])) then
-                T.Cell[8 + Offset, i + 1].Text := Format(StatFmt, [Skew.AsFloat[i]]);
-              if (N.AsInteger[i] > 3) and (not isNaN(Kurt.AsFloat[i])) then
-                T.Cell[9 + Offset, i + 1].Text := Format(StatFmt, [Kurt.AsFloat[i]]);
-            end;
+          T.Cell[3 + Offset, i + 1].Text := StatFloatDisplay(StatFmt, StdVar.AsFloat[i]);
+          T.Cell[4 + Offset, i + 1].Text := StatFloatDisplay(StatFmt, StdDev.AsFloat[i]);
+          T.Cell[5 + Offset, i + 1].Text := StatFloatDisplay(StatFmt, CfiL.AsFloat[i]);
+          T.Cell[6 + Offset, i + 1].Text := StatFloatDisplay(StatFmt, CfiH.AsFloat[i]);
+          T.Cell[7 + Offset, i + 1].Text := StatFloatDisplay(StatFmt, StdErr.AsFloat[i]);
+          T.Cell[8 + Offset, i + 1].Text := StatFloatDisplay(StatFmt, Skew.AsFloat[i]);
+          T.Cell[9 + Offset, i + 1].Text := StatFloatDisplay(StatFmt, Kurt.AsFloat[i]);
           T.SetRowAlignment(i+1, taRightJustify);
           // Need to set this after the entire row has been set to right justify
           if Offset > 0 then T.Cell[0, i + 1].Alignment := taLeftJustify;
