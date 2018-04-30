@@ -499,7 +499,7 @@ var
   function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;
   begin
     if (SameValue(val, TEpiFloatField.DefaultMissing)) then
-      Result := '.'
+      Result := TEpiStringField.DefaultMissing
     else
       Result := Format(fmt, [val]);
   end;
