@@ -3495,9 +3495,9 @@ begin
   VarList := ST.VariableList.GetIdentsAsList;
 
   if (ST.HasOption('m')) then
-    DF := PrepareDatafile(nil, VarList, [])
+    DF := PrepareDatafile(nil, nil, [])
   else
-    DF := PrepareDatafile(nil, nil);
+    DF := PrepareDatafile(nil, VarList);
 
   if DF.Size = 0 then
     begin

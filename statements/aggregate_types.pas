@@ -15,16 +15,20 @@ type
                    afSD, afSV, afIQR, afISR, afIDR, afDES, afMV, afUNKNOWN);
 
 
+  TAggrFuncList = class;
+
   { TAggrFunc }
 
   TAggrFunc = class(TObject)
   private
+    FOwnerList: TAggrFuncList;
     FResultVariableName: UTF8String;
     FAggregateVector: TEpiField;
     FFuncType: TAggrFuncType;
     FResultVector: TEpiField;
   protected
     constructor Create(AResultVarName: UTF8String; AAggregateVector: TEpiField; AFuncType: TAggrFuncType); virtual;
+    procedure DoCreateResultVector(DataFile: TEpiDataFile; FieldType: TEpiFieldType); virtual;
   public
     procedure Execute(Idx: integer); virtual; abstract;
     procedure SetOutput(Idx: integer); virtual; abstract;
@@ -166,6 +170,29 @@ begin
   FFuncType := AFuncType;
 end;
 
+procedure TAggrFunc.DoCreateResultVector(DataFile: TEpiDataFile;
+  FieldType: TEpiFieldType);
+var
+  S: String;
+  I: Integer;
+begin
+  FResultVector := DataFile.NewField(FieldType);
+  S := ResultVariableName;
+{//  if (Assigned(AggregateVector)) then
+//    S := S + AggregateVector.Name;
+
+  I := 0;
+  while (not FResultVector.ValidateRename(S, false)) do
+    begin
+      Inc(I);
+      S := ResultVariableName;
+      if (Assigned(AggregateVector)) then
+        S := S + AggregateVector.Name;
+      S := S + IntToStr(I);
+    end;    }
+  FResultVector.Name := S;
+end;
+
 { TAggrSum }
 
 constructor TAggrSum.Create(AResultVarName: UTF8String;
@@ -193,7 +220,7 @@ end;
 procedure TAggrSum.CreateResultVector(DataFile: TEpiDataFile;
   VariableLabelType: TEpiGetVariableLabelType);
 begin
-  FResultVector := DataFile.NewField(AggregateVector.FieldType);
+  DoCreateResultVector(DataFile, AggregateVector.FieldType);
   FResultVector.Question.Text := '(SUM) ' + AggregateVector.GetVariableLabel(VariableLabelType);
 end;
 
@@ -243,14 +270,10 @@ procedure TAggrCount.CreateResultVector(DataFile: TEpiDataFile;
 var
   S: String;
 begin
-  FResultVector := DataFile.NewField(ftInteger);
-  FResultVector.Name := FResultVariableName;
+  DoCreateResultVector(DataFile, ftInteger);
 
-  S := '(N)';
   if Assigned(AggregateVector) then
-    S := S + AggregateVector.GetVariableLabel(VariableLabelType);
-
-  FResultVector.Question.Text := S;
+    FResultVector.Question.Text := '(N)' + AggregateVector.GetVariableLabel(VariableLabelType);
 end;
 
 { TAggrMean }
@@ -325,8 +348,7 @@ end;
 procedure TAggrMean.CreateResultVector(DataFile: TEpiDataFile;
   VariableLabelType: TEpiGetVariableLabelType);
 begin
-  FResultVector := DataFile.NewField(ftFloat);
-  FResultVector.Name := ResultVariableName;
+  DoCreateResultVector(DataFile, ftFloat);
 
   Case MeanType of
     amMean,
@@ -387,8 +409,7 @@ end;
 procedure TAggrMinMax.CreateResultVector(DataFile: TEpiDataFile;
   VariableLabelType: TEpiGetVariableLabelType);
 begin
-  FResultVector := DataFile.NewField(AggregateVector.FieldType);
-  FResultVector.Name := ResultVariableName;
+  DoCreateResultVector(DataFile, AggregateVector.FieldType);
 
   if IsMinimum then
     FResultVector.Question.Text := '(MIN) '+ fAggregateVector.GetVariableLabel(VariableLabelType)
@@ -458,7 +479,7 @@ end;
 procedure TAggrPercentile.CreateResultVector(DataFile: TEpiDataFile;
   VariableLabelType: TEpiGetVariableLabelType);
 begin
-  FResultVector := DataFile.NewField(ftFloat);
+  DoCreateResultVector(DataFile, ftFloat);
   case PercentileType of
     ap1 : FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 1% Percentile';
     ap5 : FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 5% Percentile ';
@@ -540,8 +561,9 @@ end;
 
 function TAggrFuncList.IndexOf(const Name: string): Integer;
 begin
-{  for result := 0 to fList.Count -1 do
-    if Items[result].ContainVarname(Name) then exit; }
+  for result := 0 to fList.Count -1 do
+    if Items[result].ResultVariableName = Name then
+       Exit;
   result := -1;
 end;
 

@@ -13,6 +13,10 @@ type
   { TAggregateDatafile }
 
   TAggregateDatafile = class(TEpiDataFile)
+  private
+    procedure AddFieldChange(const Sender: TEpiCustomBase;
+      const Initiator: TEpiCustomBase; EventGroup: TEpiEventGroup;
+      EventType: Word; Data: Pointer);
   public
     constructor Create(AOwner: TEpiCustomBase; const ASize: integer = 0); override;
   end;
@@ -25,7 +29,7 @@ type
   protected
     // Takes the option and creates function(s) if the idens matches a function, return true - else return false
     function OptionToFunctions(InputDF: TEpiDataFile; Opt: TOption; FunctionList: TAggrFuncList): boolean; virtual;
-    function DoCalcAggregate(InputDF: TEpiDataFile; Variables: TStrings; FunctionList: TAggrFuncList): TAggregateDatafile;
+    function DoCalcAggregate(InputDF: TEpiDataFile; Variables: TStrings; FunctionList: TAggrFuncList; Out RefMap: TEpiReferenceMap): TAggregateDatafile;
     procedure DoOutputAggregate(ResultDF: TAggregateDatafile; ST: TAggregateCommand);
   public
     constructor Create(AExecutor: TExecutor; OutputCreator: TOutputCreator); virtual;
@@ -46,13 +50,37 @@ uses
 
 { TAggregateDatafile }
 
+procedure TAggregateDatafile.AddFieldChange(const Sender: TEpiCustomBase;
+  const Initiator: TEpiCustomBase; EventGroup: TEpiEventGroup; EventType: Word;
+  Data: Pointer);
+var
+  F, PrevF: TEpiField;
+begin
+  if (EventGroup <> eegCustomBase) then exit;
+  if (TEpiCustomChangeEventType(EventType) <> ecceAddItem) then exit;
+
+  if (Fields.Count = 1) then
+    begin
+      Fields[0].Left := 200;
+      Fields[0].Top  := 30;
+      Exit;
+    end;
+
+  PrevF := Fields[Fields.Count - 2];
+  F := Fields[Fields.Count - 1];
+  F.Left := 50;
+  F.Top := PrevF.Top + 30;
+end;
+
 constructor TAggregateDatafile.Create(AOwner: TEpiCustomBase;
   const ASize: integer);
 begin
   inherited Create(AOwner, ASize);
+  Fields.RegisterOnChangeHook(@AddFieldChange, true);
 end;
 
 { TAggregate }
+
 
 function TAggregate.OptionToFunctions(InputDF: TEpiDataFile; Opt: TOption;
   FunctionList: TAggrFuncList): boolean;
@@ -65,6 +93,10 @@ begin
 
   S := Opt.Expr.AsIdent;
   AggregateVariable := InputDF.Fields.FieldByName[S];
+
+  // Create a count vector for the aggregation variable. But only create one!
+  if (FunctionList.IndexOf('N' + AggregateVariable.Name) = -1) then
+    FunctionList.Add(TAggrCount.Create('N'  + AggregateVariable.Name, AggregateVariable, acNotMissing));
 
   Result := true;
   case Opt.Ident of
@@ -118,7 +150,7 @@ begin
       FunctionList.Add(TAggrPercentile.Create('P1', AggregateVariable, ap1));
 
     'p5':
-      FunctionList.Add(TAggrPercentile.Create('P%', AggregateVariable, ap5));
+      FunctionList.Add(TAggrPercentile.Create('P5', AggregateVariable, ap5));
 
     'p10':
       FunctionList.Add(TAggrPercentile.Create('P10', AggregateVariable, ap10));
@@ -154,33 +186,38 @@ begin
 end;
 
 function TAggregate.DoCalcAggregate(InputDF: TEpiDataFile; Variables: TStrings;
-  FunctionList: TAggrFuncList): TAggregateDatafile;
+  FunctionList: TAggrFuncList; out RefMap: TEpiReferenceMap
+  ): TAggregateDatafile;
 var
-  SortList: TEpiFields;
+  SortList, CountVariables: TEpiFields;
   V: String;
   F, NewF: TEpiField;
-  RefMap: TEpiReferenceMap;
   Func: TAggrFunc;
   PercList: TAggrFuncList;
   Runner, i, Index: Integer;
 
 begin
-  SortList := TEpiFields(InputDF.Fields.GetItemFromList(Variables, TEpiFields));
-  InputDF.SortRecords(SortList);
+  if (Variables.Count > 0) then
+    begin
+      SortList := TEpiFields(InputDF.Fields.GetItemFromList(Variables, TEpiFields));
+      InputDF.SortRecords(SortList);
+    end
+  else
+    SortList := TEpiFields.Create(nil);
 
   // Create the resulting datafile
   Result := TAggregateDatafile.Create(nil);
 
   // Create a copy of the variables
+  CountVariables := TEpiFields.Create(nil);
   RefMap := TEpiReferenceMap.Create;
   for V in Variables do
     begin
       F := InputDF.Fields.FieldByName[V];
       NewF := TEpiField(F.Clone(nil, RefMap));
       Result.MainSection.Fields.AddItem(NewF);
+      CountVariables.AddItem(NewF);
     end;
-//  RefMap.FixupReferences;
-//  RefMap.Free;
 
   for i := 0 to FunctionList.Count - 1 do
     begin
@@ -191,6 +228,8 @@ begin
   // Percentile calculations not correct yet... :(
   PercList := FunctionList.ExtractPercentiles();
 
+  // AGGREGATE!!! Yeeeha.
+  // Do "normal" aggregate operations (this means without any percentile calc.
   Runner := 0;
   while Runner < InputDF.Size do
     begin
@@ -199,6 +238,10 @@ begin
       then
         begin
           Index := Result.NewRecords();
+
+          for F in CountVariables do
+            F.CopyValue(InputDF.Fields.FieldByName[F.Name], Runner - 1, Index);
+
           FunctionList.SetOutputs(Index);
           FunctionList.ResetAll;
         end;
@@ -209,8 +252,45 @@ begin
       Inc(Runner);
     end;
   Index := Result.NewRecords();
+  for F in CountVariables do
+    F.CopyValue(InputDF.Fields.FieldByName[F.Name], Runner - 1, Index);
   FunctionList.SetOutputs(Index);
   FunctionList.ResetAll;
+
+  for i := 0 to PercList.Count - 1 do
+    begin
+      Func := PercList[i];
+
+      // Sort by "normal" variables AND the current percentile vector
+      SortList.AddItem(Func.AggregateVector);
+      InputDF.SortRecords(SortList);
+      SortList.RemoveItem(Func.AggregateVector);
+
+      Runner := 0;
+      Index := 0;
+      while Runner < InputDF.Size do
+        begin
+          if (Runner > 0 ) and
+             (SortList.CompareRecords(Runner, Runner - 1) <> 0)
+          then
+            begin
+//              for F in CountVariables do
+//                F.CopyValue(InputDF.Fields.FieldByName[F.Name], Runner - 1, Index);
+
+              Func.SetOutput(Index);
+              Func.Reset();
+
+              Inc(Index);
+            end;
+          Func.Execute(Runner);
+          Inc(Runner);
+        end;
+
+//      for F in CountVariables do
+//        F.CopyValue(InputDF.Fields.FieldByName[F.Name], Runner - 1, Index);
+      Func.SetOutput(Index);
+      Func.Reset();
+    end;
 end;
 
 procedure TAggregate.DoOutputAggregate(ResultDF: TAggregateDatafile;
@@ -226,11 +306,13 @@ begin
   T.Footer.Text := 'This is NOT a final version, but at least it outputs something...';
 
   for Col := 0 to ResultDF.Fields.Count - 1 do
-    T.Cell[Col, 0].Text := ResultDF.Field[Col].Question.Text;
+    T.Cell[Col, 0].Text := ResultDF.Field[Col].GetVariableLabel();
+  T.SetRowBorders(0, [cbBottom]);
 
   for Row := 0 to ResultDF.Size - 1 do
     for Col := 0 to ResultDF.Fields.Count - 1 do
-      T.Cell[Col, Row + 1].Text := ResultDF.Field[Col].AsString[Row];
+      T.Cell[Col, Row + 1].Text := ResultDF.Field[Col].GetValueLabel(Row);
+  T.SetRowBorders(T.RowCount - 1, [cbBottom]);
 end;
 
 constructor TAggregate.Create(AExecutor: TExecutor;
@@ -255,6 +337,7 @@ var
   i: Integer;
   F: TEpiField;
   TempDF: TAggregateDatafile;
+  RefMap: TEpiReferenceMap;
 begin
   VarNames := ST.VariableList.GetIdentsAsList;
 
@@ -268,11 +351,7 @@ begin
 
         // If this options is a function, create it/them and continue to next option.
         if OptionToFunctions(InputDF, Opt, FunctionList) then
-          begin
-            F := InputDF.Fields.FieldByName[Opt.Expr.AsIdent];
-            FunctionList.Add(TAggrCount.Create('N', F, acNotMissing));
-            Continue;
-          end;
+          Continue;
 
         //TODO: Check for !by options
       end;
@@ -289,7 +368,12 @@ begin
       Raise;
   end;
 
-  TempDF := DoCalcAggregate(InputDF, Varnames, FunctionList);
+  TempDF := DoCalcAggregate(InputDF, Varnames, FunctionList, RefMap);
+
+  FExecutor.Document.DataFiles.AddItem(TempDF);
+  RefMap.FixupReferences;
+  RefMap.Free;
+
   DoOutputAggregate(TempDF, ST);
   TempDF.Free;
 end;
