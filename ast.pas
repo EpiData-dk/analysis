@@ -6337,6 +6337,7 @@ begin
 
   case S of
     '!':   Result := stTerm;
+    'agg': Result := stAggregate;
     'app': Result := stAppend;
     'ass': Result := stAssert;
     'bro': Result := stBrowse;

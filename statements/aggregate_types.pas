@@ -9,6 +9,8 @@ uses
 
 type
 
+  EAggrFunc = class(Exception);
+
   TAggrFuncType = (afCount, afSum, afMean, afMinMax, afPercentile,
                    afSD, afSV, afIQR, afISR, afIDR, afDES, afMV, afUNKNOWN);
 
@@ -111,14 +113,18 @@ type
 
   TAggrPercentile = class(TAggrFunc)
   private
-    Count, LastCount, MissingCount: EpiInt;
-    PercentileType: TAggrPercentileType;
+    FCount, FLastCount, FMissingCount: EpiInteger;
+    FPercentileType: TAggrPercentileType;
   public
-    constructor Create(ResultVar, AggregateVar: string; APercentileType: TAggrPercentileType);
+    constructor Create(AResultVarName: UTF8String; AAggregateVector: TEpiField; APercentileType: TAggrPercentileType);
     procedure Execute(Idx: integer); override;
     procedure SetOutput(Idx: integer); override;
     procedure Reset(); override;
-    procedure CreateResultVector(Dataframe: TEpiDataframe); override;
+    procedure CreateResultVector(DataFile: TEpiDataFile; VariableLabelType: TEpiGetVariableLabelType); override;
+    property Count: EpiInteger read FCount;
+    property LastCount: EpiInteger read FLastCount;
+    property MissingCount: EpiInteger read FMissingCount;
+    property PercentileType: TAggrPercentileType read FPercentileType;
   end;
 
   { TAggrFuncList }
@@ -129,24 +135,25 @@ type
     function GetItem(const index: integer): TAggrFunc;
     function Unique(Func: TAggrFunc): boolean;
     function Extract(Index: Integer): TAggrFunc;
+    procedure DoError(Const Msg: UTF8String);
   public
-    constructor Create();
-    destructor Destroy(); override;
+    constructor Create;
+    destructor Destroy; override;
     procedure Add(Func: TAggrFunc);
-    function ExtractPercentiles(): TAggrFuncList;
+    function ExtractPercentiles: TAggrFuncList;
     function IndexOf(const Name: string): Integer;
     procedure Insert(const Index: integer; Func: TAggrFunc);
     procedure SetOutputs(Idx: integer);
-    procedure ResetAll();
-    function Count(): integer;
-    function GetVarList(): TStrings;
-    property Items[const Index: integer]: TAggrFunc read GetItem;
+    procedure ResetAll;
+    function Count: integer;
+    function GetVarList: TStrings;
+    property Items[const Index: integer]: TAggrFunc read GetItem; default;
   end;
 
 implementation
 
 uses
-  statfunctions;
+  statfunctions, math, generalutils, LazUTF8;
 
 
 { TAggrFunc }
@@ -154,7 +161,7 @@ uses
 constructor TAggrFunc.Create(AResultVarName: UTF8String;
   AAggregateVector: TEpiField; AFuncType: TAggrFuncType);
 begin
-  FAggregateVector := AggregateVector;
+  FAggregateVector := AAggregateVector;
   FResultVariableName := AResultVarName;
   FFuncType := AFuncType;
 end;
@@ -233,10 +240,17 @@ end;
 
 procedure TAggrCount.CreateResultVector(DataFile: TEpiDataFile;
   VariableLabelType: TEpiGetVariableLabelType);
+var
+  S: String;
 begin
   FResultVector := DataFile.NewField(ftInteger);
   FResultVector.Name := FResultVariableName;
-  FResultVector.Question.Text := '(N) ' + AggregateVector.GetVariableLabel(VariableLabelType);
+
+  S := '(N)';
+  if Assigned(AggregateVector) then
+    S := S + AggregateVector.GetVariableLabel(VariableLabelType);
+
+  FResultVector.Question.Text := S;
 end;
 
 { TAggrMean }
@@ -263,6 +277,7 @@ end;
 procedure TAggrMean.SetOutput(Idx: integer);
 var
   Mean, lStdVar, lStdDev, lLCI, lUCI: EpiFloat;
+  F: Extended;
 begin
   if Count = 0 then
     FResultVector.IsMissing[idx] := True
@@ -353,7 +368,7 @@ begin
   if TEpiFloatField.CheckMissing(Value) then
     FValue := FAggregateVector.AsFloat[Idx]
   else
-    if Minimum then
+    if FMinimum then
       FValue := Math.Min(FAggregateVector.AsFloat[Idx], Value)
     else
       FValue := Math.Max(FAggregateVector.AsFloat[Idx], Value);
@@ -366,7 +381,7 @@ end;
 
 procedure TAggrMinMax.Reset();
 begin
-  Value := TEpiFloatField.DefaultMissing;
+  FValue := TEpiFloatField.DefaultMissing;
 end;
 
 procedure TAggrMinMax.CreateResultVector(DataFile: TEpiDataFile;
@@ -383,97 +398,195 @@ end;
 
 { TAggrPercentile }
 
-constructor TAggrPercentile.Create(ResultVar, AggregateVar: string;
-  APercentileType: TAggrPercentileType);
+constructor TAggrPercentile.Create(AResultVarName: UTF8String;
+  AAggregateVector: TEpiField; APercentileType: TAggrPercentileType);
 begin
-
+  inherited Create(AResultVarName, AAggregateVector, afPercentile);
+  FPercentileType := APercentileType;
+  FLastCount := 0;
+  FMissingCount := 0;
 end;
 
 procedure TAggrPercentile.Execute(Idx: integer);
 begin
-
+  Inc(FCount);
+  if not (FAggregateVector.IsMissing[Idx] or FAggregateVector.IsMissingValue[Idx]) then
+    Inc(FMissingCount);
 end;
 
 procedure TAggrPercentile.SetOutput(Idx: integer);
+var
+  d, ix, offset: integer;
+  w: EpiFloat;
 begin
+  if MissingCount = 0 then
+  begin
+    FResultVector.IsMissing[Idx] := true;
+    Exit;
+  end;
 
+  offset := LastCount;
+  case PercentileType of
+    ap1 : d := 1;
+    ap5 : d := 5;
+    ap10: d := 10;
+    ap25: d := 25;
+    ap50: d := 50;
+    ap75: d := 75;
+    ap90: d := 90;
+    ap95: d := 95;
+    ap99: d := 99;
+  else
+    d := 0;
+  end;
+
+  ix := PercentileIndexNIST(MissingCount, d/100, w);
+  if w = 0 then
+    FResultVector.AsFloat[idx] := FAggregateVector.AsFloat[ix + offset]
+  else
+    FResultVector.AsFloat[idx] := FAggregateVector.AsFloat[ix + offset] +
+                                  (FAggregateVector.AsFloat[ix+offset+1] - FAggregateVector.AsFloat[ix+offset]) * (w);
 end;
 
 procedure TAggrPercentile.Reset();
 begin
-
+  FLastCount := LastCount + Count;
+  FMissingCount := 0;
+  FCount := 0;
 end;
 
-procedure TAggrPercentile.CreateResultVector(Dataframe: TEpiDataframe);
+procedure TAggrPercentile.CreateResultVector(DataFile: TEpiDataFile;
+  VariableLabelType: TEpiGetVariableLabelType);
 begin
-
+  FResultVector := DataFile.NewField(ftFloat);
+  case PercentileType of
+    ap1 : FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 1% Percentile';
+    ap5 : FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 5% Percentile ';
+    ap10: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 10% Percentile ';
+    ap25: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 25% Percentile ';
+    ap50: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' Median ';
+    ap75: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 75% Percentile ';
+    ap90: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 90% Percentile ';
+    ap95: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 95% Percentile ';
+    ap99: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 99% Percentile ';
+  end;
 end;
 
 { TAggrFuncList }
 
 function TAggrFuncList.GetItem(const index: integer): TAggrFunc;
 begin
-
+  result := TAggrFunc(fList[index]);
 end;
 
 function TAggrFuncList.Unique(Func: TAggrFunc): boolean;
+var
+  i: Integer;
 begin
+  result := true;
 
+  for i := 0 to Count -1 do
+    if UTF8CompareStr(Items[i].ResultVariableName, Func.ResultVariableName) = 0 then
+      begin
+        Result := false;
+        Break;
+      end;
 end;
 
 function TAggrFuncList.Extract(Index: Integer): TAggrFunc;
 begin
-
+  Result := TAggrFunc(fList.Extract(fList.Items[Index]));
 end;
 
-constructor TAggrFuncList.Create();
+procedure TAggrFuncList.DoError(const Msg: UTF8String);
 begin
-
+  raise EAggrFunc.Create(Msg);
 end;
 
-destructor TAggrFuncList.Destroy();
+constructor TAggrFuncList.Create;
 begin
+  fList := TList.Create;
+end;
+
+destructor TAggrFuncList.Destroy;
+var
+  i: Integer;
+begin
+  for i := fList.Count - 1 downto 0 do
+    Items[i].Free;
+  fList.Free;
+
   inherited Destroy();
 end;
 
 procedure TAggrFuncList.Add(Func: TAggrFunc);
 begin
-
+  if Unique(Func) then
+    fList.Add(Func)
+  else
+    DoError(Format('Aggregate function already used for %s', [Func.AggregateVector.Name]));
 end;
 
-function TAggrFuncList.ExtractPercentiles(): TAggrFuncList;
+function TAggrFuncList.ExtractPercentiles: TAggrFuncList;
+var
+  i: Integer;
 begin
+  Result := TAggrFuncList.Create;
 
+  for i := Count - 1 downto 0 do
+    if Items[i].FuncType = afPercentile then
+      result.Add(Extract(i));
 end;
 
 function TAggrFuncList.IndexOf(const Name: string): Integer;
 begin
-
+{  for result := 0 to fList.Count -1 do
+    if Items[result].ContainVarname(Name) then exit; }
+  result := -1;
 end;
 
 procedure TAggrFuncList.Insert(const Index: integer; Func: TAggrFunc);
 begin
-
+  if Unique(Func) then
+    fList.Insert(index, Func)
+  else
+    DoError(Format('Aggregate function already used for %s', [Func.AggregateVector.Name]));
 end;
 
 procedure TAggrFuncList.SetOutputs(Idx: integer);
+var
+  i: Integer;
 begin
-
+  for i := 0 to Count - 1 do
+    Items[i].SetOutput(Idx);
 end;
 
-procedure TAggrFuncList.ResetAll();
+procedure TAggrFuncList.ResetAll;
+var
+  i: Integer;
 begin
-
+  for i := 0 to Count - 1 do
+    Items[i].Reset();
 end;
 
-function TAggrFuncList.Count(): integer;
+function TAggrFuncList.Count: integer;
 begin
-
+  Result := fList.Count;
 end;
 
-function TAggrFuncList.GetVarList(): TStrings;
+function TAggrFuncList.GetVarList: TStrings;
+var
+  i: Integer;
 begin
+  Result := TStringList.Create;
 
+  for i := 0 to Count - 1 do
+  begin
+    if Items[i].AggregateVector.Name = '' then continue;
+
+    if Result.IndexOf(Items[i].AggregateVector.Name) = -1 then
+      Result.Add(Items[i].AggregateVector.Name);
+  end;
 end;
 
 end.

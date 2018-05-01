@@ -3489,6 +3489,7 @@ procedure TExecutor.ExecAggregate(ST: TAggregateCommand);
 var
   VarList: TStrings;
   DF: TEpiDataFile;
+  Aggr: TAggregate;
 begin
   // Sanity checks
   VarList := ST.VariableList.GetIdentsAsList;
@@ -3506,6 +3507,9 @@ begin
     end;
 
 
+  Aggr := TAggregate.Create(Self, FOutputCreator);
+  Aggr.ExecAggregate(DF, ST);
+  Aggr.Free;
 end;
 
 procedure TExecutor.ExecUse(ST: TUse);
@@ -3640,6 +3644,9 @@ begin
 
         stReorder:
           ExecReorder(TReorderCommand(ST));
+
+        stAggregate:
+          ExecAggregate(TAggregateCommand(ST));
 
       // String Commands
         stRead:
