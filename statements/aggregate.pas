@@ -102,83 +102,83 @@ begin
   case Opt.Ident of
     'des':
       begin
-        FunctionList.Add(TAggrMinMax.Create('MIN', AggregateVariable, true));
-        FunctionList.Add(TAggrPercentile.Create('MED', AggregateVariable, ap50));
-        FunctionList.Add(TAggrMinMax.Create('MAX', AggregateVariable, false));
+        FunctionList.Add(TAggrMinMax.Create('MIN' + AggregateVariable.Name, AggregateVariable, true));
+        FunctionList.Add(TAggrPercentile.Create('MED' + AggregateVariable.Name, AggregateVariable, ap50));
+        FunctionList.Add(TAggrMinMax.Create('MAX' + AggregateVariable.Name, AggregateVariable, false));
       end;
 
     'iqr':
       begin
-        FunctionList.Add(TAggrPercentile.Create('P25', AggregateVariable, ap25));
-        FunctionList.Add(TAggrPercentile.Create('P75', AggregateVariable, ap75));
+        FunctionList.Add(TAggrPercentile.Create('P25' + AggregateVariable.Name, AggregateVariable, ap25));
+        FunctionList.Add(TAggrPercentile.Create('P75' + AggregateVariable.Name, AggregateVariable, ap75));
       end;
 
     'idr':
       begin
-        FunctionList.Add(TAggrPercentile.Create('P10', AggregateVariable, ap10));
-        FunctionList.Add(TAggrPercentile.Create('P90', AggregateVariable, ap90));
+        FunctionList.Add(TAggrPercentile.Create('P10' + AggregateVariable.Name, AggregateVariable, ap10));
+        FunctionList.Add(TAggrPercentile.Create('P90' + AggregateVariable.Name, AggregateVariable, ap90));
       end;
 
     'isr':
       begin
         FunctionList.Add(TAggrPercentile.Create('P5',  AggregateVariable, ap5));
-        FunctionList.Add(TAggrPercentile.Create('P95', AggregateVariable, ap95));
+        FunctionList.Add(TAggrPercentile.Create('P95' + AggregateVariable.Name, AggregateVariable, ap95));
       end;
 
     'mci':
-      FunctionList.Add(TAggrMean.Create('MEAN', AggregateVariable, amMCI));
+      FunctionList.Add(TAggrMean.Create('MEAN' + AggregateVariable.Name, AggregateVariable, amMCI));
 
     'mv':
       begin
-        FunctionList.Add(TAggrCount.Create('MIS', AggregateVariable, acMissing));
-        FunctionList.Add(TAggrCount.Create('MVD', AggregateVariable, acMissingValue));
+        FunctionList.Add(TAggrCount.Create('MIS' + AggregateVariable.Name, AggregateVariable, acMissing));
+        FunctionList.Add(TAggrCount.Create('MVD' + AggregateVariable.Name, AggregateVariable, acMissingValue));
       end;
 
     'mean':
-      FunctionList.Add(TAggrMean.Create('MEAN', AggregateVariable, amMean));
+      FunctionList.Add(TAggrMean.Create('MEAN' + AggregateVariable.Name, AggregateVariable, amMean));
 
     'sd':
-      FunctionList.Add(TAggrMean.Create('SD', AggregateVariable, amStdDev));
+      FunctionList.Add(TAggrMean.Create('SD' + AggregateVariable.Name, AggregateVariable, amStdDev));
 
     'sv':
-      FunctionList.Add(TAggrMean.Create('SV', AggregateVariable, amStdVar));
+      FunctionList.Add(TAggrMean.Create('SV' + AggregateVariable.Name, AggregateVariable, amStdVar));
 
     'min':
-      FunctionList.Add(TAggrMinMax.Create('MIN', AggregateVariable, True));
+      FunctionList.Add(TAggrMinMax.Create('MIN' + AggregateVariable.Name, AggregateVariable, True));
 
     'p1':
-      FunctionList.Add(TAggrPercentile.Create('P1', AggregateVariable, ap1));
+      FunctionList.Add(TAggrPercentile.Create('P1' + AggregateVariable.Name, AggregateVariable, ap1));
 
     'p5':
-      FunctionList.Add(TAggrPercentile.Create('P5', AggregateVariable, ap5));
+      FunctionList.Add(TAggrPercentile.Create('P5' + AggregateVariable.Name, AggregateVariable, ap5));
 
     'p10':
-      FunctionList.Add(TAggrPercentile.Create('P10', AggregateVariable, ap10));
+      FunctionList.Add(TAggrPercentile.Create('P10' + AggregateVariable.Name, AggregateVariable, ap10));
 
     'p25':
-      FunctionList.Add(TAggrPercentile.Create('P25', AggregateVariable, ap25));
+      FunctionList.Add(TAggrPercentile.Create('P25' + AggregateVariable.Name, AggregateVariable, ap25));
 
     'p50',
     'med':
-      FunctionList.Add(TAggrPercentile.Create('MED', AggregateVariable, ap50));
+      FunctionList.Add(TAggrPercentile.Create('MED' + AggregateVariable.Name, AggregateVariable, ap50));
 
     'p75':
-      FunctionList.Add(TAggrPercentile.Create('P75', AggregateVariable, ap75));
+      FunctionList.Add(TAggrPercentile.Create('P75' + AggregateVariable.Name, AggregateVariable, ap75));
 
     'p90':
-      FunctionList.Add(TAggrPercentile.Create('P90', AggregateVariable, ap90));
+      FunctionList.Add(TAggrPercentile.Create('P90' + AggregateVariable.Name, AggregateVariable, ap90));
 
     'p95':
-      FunctionList.Add(TAggrPercentile.Create('P95', AggregateVariable, ap95));
+      FunctionList.Add(TAggrPercentile.Create('P95' + AggregateVariable.Name, AggregateVariable, ap95));
 
     'p99':
-      FunctionList.Add(TAggrPercentile.Create('P99', AggregateVariable, ap99));
+      FunctionList.Add(TAggrPercentile.Create('P99' + AggregateVariable.Name, AggregateVariable, ap99));
 
     'max':
-      FunctionList.Add(TAggrMinMax.Create('MAX', AggregateVariable, True));
+      FunctionList.Add(TAggrMinMax.Create('MAX' + AggregateVariable.Name, AggregateVariable, False));
 
     'sum':
-      FunctionList.Add(TAggrSum.Create('SUM', AggregateVariable));
+      FunctionList.Add(TAggrSum.Create('SUM' + AggregateVariable.Name, AggregateVariable));
 
   else
     Result := false
@@ -307,7 +307,7 @@ begin
 
   for Col := 0 to ResultDF.Fields.Count - 1 do
     T.Cell[Col, 0].Text := ResultDF.Field[Col].GetVariableLabel();
-  T.SetRowBorders(0, [cbBottom]);
+  T.SetRowBorders(0, [cbTop, cbBottom]);
 
   for Row := 0 to ResultDF.Size - 1 do
     for Col := 0 to ResultDF.Fields.Count - 1 do

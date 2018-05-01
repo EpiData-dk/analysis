@@ -99,6 +99,7 @@ type
 
   TAggrMinMax = class(TAggrFunc)
   private
+    FInitialized: boolean;
     FValue: EpiFloat;
     FMinimum: Boolean;
   public
@@ -381,14 +382,18 @@ constructor TAggrMinMax.Create(AResultVarName: UTF8String;
 begin
   inherited Create(AResultVarName, AAggregateVector, afMinMax);
   FMinimum := FindMin;
+  FInitialized := false;
 end;
 
 procedure TAggrMinMax.Execute(Idx: integer);
 begin
   if fAggregateVector.IsMissing[idx] then exit;
 
-  if TEpiFloatField.CheckMissing(Value) then
-    FValue := FAggregateVector.AsFloat[Idx]
+  if (not FInitialized) then
+    begin
+      FValue := FAggregateVector.AsFloat[Idx];
+      FInitialized := true;;
+    end
   else
     if FMinimum then
       FValue := Math.Min(FAggregateVector.AsFloat[Idx], Value)
@@ -403,7 +408,7 @@ end;
 
 procedure TAggrMinMax.Reset();
 begin
-  FValue := TEpiFloatField.DefaultMissing;
+  FInitialized := false;
 end;
 
 procedure TAggrMinMax.CreateResultVector(DataFile: TEpiDataFile;
