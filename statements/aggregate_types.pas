@@ -317,7 +317,7 @@ begin
         end
       else
         begin
-          lStdVar := (lStdVar + (count * (Mean * Mean) - 2 * Mean * Sum)) / (Count - 1);
+          lStdVar := (StdVar + (count * (Mean * Mean) - 2 * Mean * Sum)) / (Count - 1);
           lStdDev := sqrt(lStdVar);
           F       := PTDISTRINV((Count - 1), 0.025) * System.Sqrt(lStdVar / Count);
           lLCI    := Mean - F;
@@ -471,7 +471,7 @@ begin
     FResultVector.AsFloat[idx] := FAggregateVector.AsFloat[ix + offset]
   else
     FResultVector.AsFloat[idx] := FAggregateVector.AsFloat[ix + offset] +
-                                  (FAggregateVector.AsFloat[ix+offset+1] - FAggregateVector.AsFloat[ix+offset]) * (w);
+                                  (FAggregateVector.AsFloat[ix+offset+1] - FAggregateVector.AsFloat[ix+offset]) * w;
 end;
 
 procedure TAggrPercentile.Reset();
