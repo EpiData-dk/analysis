@@ -199,14 +199,16 @@ var
 begin
   if (Variables.Count > 0) then
     begin
-      SortList := TEpiFields(InputDF.Fields.GetItemFromList(Variables, TEpiFields));
+      SortList := TEpiFields(InputDF.Fields.GetItemFromList(Variables));
       InputDF.SortRecords(SortList);
     end
   else
     SortList := TEpiFields.Create(nil);
 
+
   // Create the resulting datafile
   Result := TAggregateDatafile.Create(nil);
+  Result.SetLanguage(InputDF.DefaultLang, true);
 
   // Create a copy of the variables
   CountVariables := TEpiFields.Create(nil);
@@ -262,9 +264,15 @@ begin
       Func := PercList[i];
 
       // Sort by "normal" variables AND the current percentile vector
-      SortList.AddItem(Func.AggregateVector);
-      InputDF.SortRecords(SortList);
-      SortList.RemoveItem(Func.AggregateVector);
+      // - but only add the percentile vector if it is not already a by-variable
+      if (not SortList.FieldExists(Func.AggregateVector)) then
+        begin
+          SortList.AddItem(Func.AggregateVector);
+          InputDF.SortRecords(SortList);
+          SortList.RemoveItem(Func.AggregateVector);
+        end
+      else
+        InputDF.SortRecords(SortList);
 
       Runner := 0;
       Index := 0;
@@ -274,20 +282,14 @@ begin
              (SortList.CompareRecords(Runner, Runner - 1) <> 0)
           then
             begin
-//              for F in CountVariables do
-//                F.CopyValue(InputDF.Fields.FieldByName[F.Name], Runner - 1, Index);
-
               Func.SetOutput(Index);
               Func.Reset();
-
               Inc(Index);
             end;
           Func.Execute(Runner);
           Inc(Runner);
         end;
 
-//      for F in CountVariables do
-//        F.CopyValue(InputDF.Fields.FieldByName[F.Name], Runner - 1, Index);
       Func.SetOutput(Index);
       Func.Reset();
     end;

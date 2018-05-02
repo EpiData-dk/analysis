@@ -222,7 +222,7 @@ procedure TAggrSum.CreateResultVector(DataFile: TEpiDataFile;
   VariableLabelType: TEpiGetVariableLabelType);
 begin
   DoCreateResultVector(DataFile, AggregateVector.FieldType);
-  FResultVector.Question.Text := '(SUM) ' + AggregateVector.GetVariableLabel(VariableLabelType);
+  FResultVector.Question.Text := AggregateVector.GetVariableLabel(VariableLabelType) + ' (sum)';
 end;
 
 { TAggrCount }
@@ -268,13 +268,11 @@ end;
 
 procedure TAggrCount.CreateResultVector(DataFile: TEpiDataFile;
   VariableLabelType: TEpiGetVariableLabelType);
-var
-  S: String;
 begin
   DoCreateResultVector(DataFile, ftInteger);
 
   if Assigned(AggregateVector) then
-    FResultVector.Question.Text := '(N)' + AggregateVector.GetVariableLabel(VariableLabelType);
+    FResultVector.Question.Text := AggregateVector.GetVariableLabel(VariableLabelType) + ' (n)';
 end;
 
 { TAggrMean }
@@ -354,24 +352,24 @@ begin
   Case MeanType of
     amMean,
     amMCI:
-      FResultVector.Question.Text := '(Mean) ' + FAggregateVector.GetVariableLabel(VariableLabelType);
+      FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Mean)';
 
     amStdVar:
-      FResultVector.Question.Text := '(Variance) ' + FAggregateVector.GetVariableLabel(VariableLabelType);
+      FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Variance)';
 
     amStdDev:
-      FResultVector.Question.Text := '(Deviance) ' + FAggregateVector.GetVariableLabel(VariableLabelType);
+      FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Deviance)';
   end;
 
   if (MeanType = amMCI) then
     begin
       FLowerCI := DataFile.NewField(ftFloat);
       FLowerCI.Name := 'LowCi' + ResultVariableName;
-      FLowerCI.Question.Text := '(Lower 95% CI - Mean) ' + FAggregateVector.GetVariableLabel(VariableLabelType);
+      FLowerCI.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Lower 95% CI - Mean)';
 
       FUpperCI := DataFile.NewField(ftFloat);
       FUpperCI.Name := 'UpperCi' + ResultVariableName;
-      FUpperCI.Question.Text := '(Upper95% CI - Mean) ' + FAggregateVector.GetVariableLabel(VariableLabelType);
+      FUpperCI.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Upper95% CI - Mean)';
     end;
 end;
 
@@ -417,9 +415,9 @@ begin
   DoCreateResultVector(DataFile, AggregateVector.FieldType);
 
   if IsMinimum then
-    FResultVector.Question.Text := '(MIN) '+ fAggregateVector.GetVariableLabel(VariableLabelType)
+    FResultVector.Question.Text := fAggregateVector.GetVariableLabel(VariableLabelType) + ' (Min)'
   else
-    FResultVector.Question.Text := '(MAX) '+ fAggregateVector.GetVariableLabel(VariableLabelType);
+    FResultVector.Question.Text := fAggregateVector.GetVariableLabel(VariableLabelType) + ' (Max)';
 end;
 
 { TAggrPercentile }
@@ -468,10 +466,10 @@ begin
 
   ix := PercentileIndexNIST(MissingCount, d/100, w);
   if w = 0 then
-    FResultVector.AsFloat[idx] := FAggregateVector.AsFloat[ix + offset]
+    FResultVector.AsFloat[idx] := FAggregateVector.AsFloat[ix + offset - 1]
   else
-    FResultVector.AsFloat[idx] := FAggregateVector.AsFloat[ix + offset] +
-                                  (FAggregateVector.AsFloat[ix+offset+1] - FAggregateVector.AsFloat[ix+offset]) * w;
+    FResultVector.AsFloat[idx] := FAggregateVector.AsFloat[ix + offset - 1] +
+                                  (FAggregateVector.AsFloat[ix + offset] - FAggregateVector.AsFloat[ix + offset - 1]) * w;
 end;
 
 procedure TAggrPercentile.Reset();
@@ -486,15 +484,15 @@ procedure TAggrPercentile.CreateResultVector(DataFile: TEpiDataFile;
 begin
   DoCreateResultVector(DataFile, ftFloat);
   case PercentileType of
-    ap1 : FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 1% Percentile';
-    ap5 : FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 5% Percentile ';
-    ap10: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 10% Percentile ';
-    ap25: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 25% Percentile ';
-    ap50: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' Median ';
-    ap75: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 75% Percentile ';
-    ap90: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 90% Percentile ';
-    ap95: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 95% Percentile ';
-    ap99: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' 99% Percentile ';
+    ap1 : FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (1% percentile)';
+    ap5 : FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (5% percentile)';
+    ap10: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (10% percentile)';
+    ap25: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (25% percentile)';
+    ap50: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Median ';
+    ap75: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (75% percentile)';
+    ap90: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (90% percentile)';
+    ap95: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (95% percentile)';
+    ap99: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (99% percentile)';
   end;
 end;
 
