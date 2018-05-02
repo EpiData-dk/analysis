@@ -1415,22 +1415,27 @@ uses
 function TAggregateCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('strata', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('q',   [rtUndefined]);
-  Result.Insert('m',   [rtUndefined]);
-  Result.Insert('r',   AllResultDataTypes, [evtDataset], [evfExternal, evfAsObject]);
+  Result.Insert('q',       [rtUndefined]);
+  Result.Insert('m',       [rtUndefined]);
+  Result.Insert('nc',     [rtUndefined]);
+  Result.Insert('nt',     [rtUndefined]);
+  Result.Insert('save',    AllResultDataTypes, [evtDataset], [evfInternal, evfExternal, evfAsObject]);
+  Result.Insert('replace', [rtUndefined]);
   Result.Insert('header', AllResultDataTypes);
 
+  AddDecimalOptions(Result);
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+
   // Summary statistics
-  Result.Insert('des', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('iqr', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('idr', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('isr', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('mci', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('mv',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('n',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('nv',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('des',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('iqr',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('idr',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('isr',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('mci',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('mv',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('n',    AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('nv',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('mean', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('sd',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('min',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);

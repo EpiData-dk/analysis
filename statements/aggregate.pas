@@ -28,7 +28,7 @@ type
     FOutputCreator: TOutputCreator;
   protected
     // Takes the option and creates function(s) if the idens matches a function, return true - else return false
-    function OptionToFunctions(InputDF: TEpiDataFile; Opt: TOption; FunctionList: TAggrFuncList): boolean; virtual;
+    function OptionToFunctions(InputDF: TEpiDataFile; Opt: TOption; CreateCountFunction: boolean; FunctionList: TAggrFuncList): boolean; virtual;
     function DoCalcAggregate(InputDF: TEpiDataFile; Variables: TStrings; FunctionList: TAggrFuncList; Out RefMap: TEpiReferenceMap): TAggregateDatafile;
     procedure DoOutputAggregate(ResultDF: TAggregateDatafile; ST: TAggregateCommand);
   public
@@ -83,7 +83,7 @@ end;
 
 
 function TAggregate.OptionToFunctions(InputDF: TEpiDataFile; Opt: TOption;
-  FunctionList: TAggrFuncList): boolean;
+  CreateCountFunction: boolean; FunctionList: TAggrFuncList): boolean;
 var
   S: UTF8String;
   AggregateVariable: TEpiField;
@@ -95,7 +95,9 @@ begin
   AggregateVariable := InputDF.Fields.FieldByName[S];
 
   // Create a count vector for the aggregation variable. But only create one!
-  if (FunctionList.IndexOf('N' + AggregateVariable.Name) = -1) then
+  if (CreateCountFunction) and
+     (FunctionList.IndexOf('N' + AggregateVariable.Name) = -1)
+  then
     FunctionList.Add(TAggrCount.Create('N'  + AggregateVariable.Name, AggregateVariable, acNotMissing));
 
   Result := true;
@@ -300,11 +302,16 @@ procedure TAggregate.DoOutputAggregate(ResultDF: TAggregateDatafile;
 var
   T: TOutputTable;
   Col, Row: Integer;
+  Opt: TOption;
 begin
   T := FOutputCreator.AddTable;
   T.ColCount := ResultDF.Fields.Count;
   T.RowCount := ResultDF.Size + 1;
-  T.Header.Text := 'AGGREGATE TABLE (PROTOTYPE)';
+
+  if ST.HasOption('header', Opt) then
+    T.Header.Text := Opt.Expr.AsString
+  else
+    T.Header.Text := 'AGGREGATE TABLE (PROTOTYPE)';
   T.Footer.Text := 'This is NOT a final version, but at least it outputs something...';
 
   for Col := 0 to ResultDF.Fields.Count - 1 do
@@ -340,22 +347,24 @@ var
   F: TEpiField;
   TempDF: TAggregateDatafile;
   RefMap: TEpiReferenceMap;
+  CreateSumOnStatFunctions: Boolean;
 begin
   VarNames := ST.VariableList.GetIdentsAsList;
+  CreateSumOnStatFunctions := (not ST.HasOption('nc'));
 
   try
     FunctionList := TAggrFuncList.Create;
-    FunctionList.Add(TAggrCount.Create('N', nil, acAll));
+
+    if (not ST.HasOption('nt')) then
+      FunctionList.Add(TAggrCount.Create('N', nil, acAll));
 
     for i := 0 to ST.Options.Count - 1 do
       begin
         Opt := ST.Options[i];
 
         // If this options is a function, create it/them and continue to next option.
-        if OptionToFunctions(InputDF, Opt, FunctionList) then
+        if OptionToFunctions(InputDF, Opt, CreateSumOnStatFunctions, FunctionList) then
           Continue;
-
-        //TODO: Check for !by options
       end;
   except
     On E: EAggrFunc do
@@ -369,6 +378,14 @@ begin
     else
       Raise;
   end;
+
+  if (FunctionList.Count = 0) then
+    begin
+      FExecutor.Error('No aggregate functions selected!');
+      ST.ExecResult := csrFailed;
+      FunctionList.Free;
+      Exit;
+    end;
 
   TempDF := DoCalcAggregate(InputDF, Varnames, FunctionList, RefMap);
 
