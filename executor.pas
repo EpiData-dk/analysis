@@ -46,6 +46,10 @@ type
     FOutputCreator: TOutputCreator;
     FDocFile: TEpiDocumentFile;
     FDataFile: TEpiDataFile;
+    // FSelectStack always have a least 1 vector. It is empty (size = 0) and is never removed
+    // - it is needed when there is no active dataset.
+    // If a project is loaded and a dataset is in active use, there are always at least 2 vectors
+    // active, the above empty one and a complete vector containing every obs. no.
     FSelectStack: TSelectStack;
     procedure DocumentModified(Sender: TObject);
     procedure RebuildSelectStack;
@@ -65,6 +69,15 @@ type
     procedure DoUpdateProjectresultVar;
     function  GetDocument: TEpiDocument;
     procedure OpenFileError(const Msg: string);
+
+  { Selection Stack }
+  protected
+    function GetHasActiveSelect: boolean; virtual;
+    function GetSelectVector: TEpiIntField; virtual;
+  public
+    property HasActiveSelect: boolean read GetHasActiveSelect;
+    property SelectVector: TEpiIntField read GetSelectVector;
+
   private
     // Save handling - for handling .lock files diffently than in Manager/EntryClient
     FOldWarning: TOpenEpiWarningEvent;
@@ -167,7 +180,6 @@ type
     FPostLoopNotification: TMethodList;
     FNestedLoopCounter: Integer;
 
-
   // EXEC's
   protected
     // FCurrentRecNo is NO offset into current SelectVector. However it will never exceed
@@ -257,11 +269,9 @@ type
     FCancelled: Boolean;
     FExecuting: boolean;
     function  GetCancelled: Boolean; virtual;
-    function  GetSelectVector: TEpiIntField; virtual;
   public
     property Executing: Boolean read FExecuting;
     property Cancelled: Boolean read GetCancelled write FCancelled;
-    property SelectVector: TEpiIntField read GetSelectVector;
 
   { Events }
   private
@@ -651,6 +661,11 @@ end;
 procedure TExecutor.OpenFileError(const Msg: string);
 begin
   DoError(Msg);
+end;
+
+function TExecutor.GetHasActiveSelect: boolean;
+begin
+  result := (FSelectStack.Count > 2);
 end;
 
 procedure TExecutor.DMDocFileCreated(Sender: TObject; DocFile: TEpiDocumentFile
@@ -2703,7 +2718,7 @@ begin
               rtTime:    V.AsTimeVector[Idx]    := AVal.ExprList[i].AsTime;
               rtString:  V.AsStringVector[Idx]  := AVal.ExprList[i].AsString;
             else
-              DoError('Datatype "' + ASTResultTypeString[AVal.ResultSubType] + '" not implemented in "for <variable> in <array>"..."');
+              DoError('Datatype "' + ASTResultTypeString[AVal.ResultSubType] + '" not implemented in "for <variable> in <array>..."');
               ST.ExecResult := csrFailed;
               Exit;
             end;
@@ -3269,13 +3284,6 @@ var
   NewDF: TEpiDataFile;
 begin
   // Sanity checks:
-  if (SelectVector.Size <> DataFile.Size) then
-    begin
-      DoError('do NOT combine MERGE with SELECT - Cannot perform merge on a reduces dataset!');
-      ST.ExecResult := csrFailed;
-      Exit;
-    end;
-
   if (ST.HasOption('combine') and
       (ST.HasOption('update') or ST.HasOption('replace'))
      ) or
@@ -3490,9 +3498,24 @@ var
   VarList: TStrings;
   DF: TEpiDataFile;
   Aggr: TAggregate;
+  Opt: TOption;
+  EV: TCustomExecutorVariable;
+  S: UTF8String;
+  ResultDF: TAggregateDatafile;
+  UseCmd: TUse;
 begin
   // Sanity checks
   VarList := ST.VariableList.GetIdentsAsList;
+
+  if (ST.HasOption('u')) then
+    begin
+      if (not ST.HasOption('keep')) then
+        begin
+          Error('It is not possible to use the dataset if not kept in the project. Please use !keep := <name> to preserve the dataset!');
+          ST.ExecResult := csrFailed;
+          Exit;
+        end;
+    end;
 
   if (ST.HasOption('m')) then
     DF := PrepareDatafile(nil, nil, [])
@@ -3506,10 +3529,40 @@ begin
       Exit;
     end;
 
+  if (ST.HasOption('keep', Opt)) then
+    begin
+      S := Opt.Expr.AsIdent;
+      EV := GetExecVariable(S);
+
+      if (Assigned(EV)) then
+        begin
+          if (EV.VarType <> evtDataset) then
+            begin
+              DoError('Cannot create "' + S + '", name already used as a ' + ExecutorVariableTypeString[EV.VarType] + '!');
+              ST.ExecResult := csrFailed;
+              DF.Free;
+              Exit;
+            end;
+
+          if (not ST.HasOption('replace')) then
+            begin
+              DoError('Cannot create "' + S + '", name already used as a ' + ExecutorVariableTypeString[EV.VarType] + '!');
+              ST.ExecResult := csrFailed;
+              DF.Free;
+              Exit;
+            end;
+        end;
+    end;
 
   Aggr := TAggregate.Create(Self, FOutputCreator);
-  Aggr.ExecAggregate(DF, ST);
+  Aggr.ExecAggregate(DF, ST, ResultDF);
   Aggr.Free;
+
+  if (ST.HasOption('u')) then
+    begin
+      UseCmd := TUse.Create(TVariable.Create(ResultDF.Name, Self), TOptionList.Create);
+      DoStatement(UseCmd);
+    end;
 end;
 
 procedure TExecutor.ExecUse(ST: TUse);
@@ -3565,6 +3618,26 @@ begin
               Exit;
             end;
         end;
+
+      // Check for Select/Loop flags
+      if (sefNoSelect in ST.ExecFlags) and
+         (HasActiveSelect)
+      then
+        begin
+          DoError(ST.ExecFlagsErrorMsg[sefNoSelect]);
+          ST.ExecResult := csrFailed;
+          Exit;
+        end;
+
+      if (sefNoLoop in ST.ExecFlags) and
+         (FNestedLoopCounter > 0)
+      then
+        begin
+          DoError(ST.ExecFlagsErrorMsg[sefNoLoop]);
+          ST.ExecResult := csrFailed;
+          Exit;
+        end;
+
 
       if (not St.TypeCheck(Self)) then
         begin

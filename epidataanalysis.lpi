@@ -15,7 +15,7 @@
       <UseVersionInfo Value="True"/>
       <MinorVersionNr Value="9"/>
       <RevisionNr Value="4"/>
-      <BuildNr Value="17"/>
+      <BuildNr Value="18"/>
       <StringTable ProductName="AGGREGATE" ProductVersion="0.6.4.0"/>
     </VersionInfo>
     <BuildModes Count="6">

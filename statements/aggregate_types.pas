@@ -33,7 +33,8 @@ type
     procedure Execute(Idx: integer); virtual; abstract;
     procedure SetOutput(Idx: integer); virtual; abstract;
     procedure Reset(); virtual; abstract;
-    procedure CreateResultVector(DataFile: TEpiDataFile; VariableLabelType: TEpiGetVariableLabelType); virtual; abstract;
+    procedure CreateResultVector(DataFile: TEpiDataFile); virtual; abstract;
+    procedure UpdateResultVectorLabel(VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer); virtual;
     property  ResultVariableName: UTF8String read FResultVariableName;
     property  AggregateVector: TEpiField read FAggregateVector;
     property  ResultVector: TEpiField read FResultVector;
@@ -50,7 +51,8 @@ type
     procedure Execute(Idx: integer); override;
     procedure SetOutput(Idx: integer); override;
     procedure Reset(); override;
-    procedure CreateResultVector(DataFile: TEpiDataFile; VariableLabelType: TEpiGetVariableLabelType); override;
+    procedure CreateResultVector(DataFile: TEpiDataFile); override;
+    procedure UpdateResultVectorLabel(VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer); override;
   end;
 
   TAggrCountType = (acMissing, acMissingValue, acNotMissing, acAll);
@@ -66,7 +68,8 @@ type
     procedure Execute(Idx: integer); override;
     procedure SetOutput(Idx: integer); override;
     procedure Reset(); override;
-    procedure CreateResultVector(DataFile: TEpiDataFile; VariableLabelType: TEpiGetVariableLabelType); override;
+    procedure CreateResultVector(DataFile: TEpiDataFile); override;
+    procedure UpdateResultVectorLabel(VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer); override;
     property  CountType: TAggrCountType read FCountType;
     property  Count: EpiInteger read FCount;
   end;
@@ -86,7 +89,8 @@ type
     procedure Execute(Idx: integer); override;
     procedure SetOutput(Idx: integer); override;
     procedure Reset(); override;
-    procedure CreateResultVector(DataFile: TEpiDataFile; VariableLabelType: TEpiGetVariableLabelType); override;
+    procedure CreateResultVector(DataFile: TEpiDataFile); override;
+    procedure UpdateResultVectorLabel(VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer); override;
     property MeanType: TAggrMeanType read FMeanType;
     property Sum: EpiFloat read FSum;
     property StdVar: EpiFloat read FStdvar;
@@ -107,7 +111,8 @@ type
     procedure Execute(Idx: integer); override;
     procedure SetOutput(Idx: integer); override;
     procedure Reset(); override;
-    procedure CreateResultVector(DataFile: TEpiDataFile; VariableLabelType: TEpiGetVariableLabelType); override;
+    procedure CreateResultVector(DataFile: TEpiDataFile); override;
+    procedure UpdateResultVectorLabel(VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer); override;
     property Value: EpiFloat read FValue;
     property IsMinimum: Boolean read FMinimum;
   end;
@@ -125,7 +130,8 @@ type
     procedure Execute(Idx: integer); override;
     procedure SetOutput(Idx: integer); override;
     procedure Reset(); override;
-    procedure CreateResultVector(DataFile: TEpiDataFile; VariableLabelType: TEpiGetVariableLabelType); override;
+    procedure CreateResultVector(DataFile: TEpiDataFile); override;
+    procedure UpdateResultVectorLabel(VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer); override;
     property Count: EpiInteger read FCount;
     property LastCount: EpiInteger read FLastCount;
     property MissingCount: EpiInteger read FMissingCount;
@@ -150,6 +156,7 @@ type
     procedure Insert(const Index: integer; Func: TAggrFunc);
     procedure SetOutputs(Idx: integer);
     procedure ResetAll;
+    procedure UpdateAllResultLabels(VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer);
     function Count: integer;
     function GetVarList: TStrings;
     property Items[const Index: integer]: TAggrFunc read GetItem; default;
@@ -194,6 +201,13 @@ begin
   FResultVector.Name := S;
 end;
 
+procedure TAggrFunc.UpdateResultVectorLabel(
+  VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer);
+begin
+  if FResultVector.FieldType in FloatFieldTypes then
+    FResultVector.Decimals := Decimals;
+end;
+
 { TAggrSum }
 
 constructor TAggrSum.Create(AResultVarName: UTF8String;
@@ -218,10 +232,15 @@ begin
   Sum := 0.0;
 end;
 
-procedure TAggrSum.CreateResultVector(DataFile: TEpiDataFile;
-  VariableLabelType: TEpiGetVariableLabelType);
+procedure TAggrSum.CreateResultVector(DataFile: TEpiDataFile);
 begin
   DoCreateResultVector(DataFile, AggregateVector.FieldType);
+end;
+
+procedure TAggrSum.UpdateResultVectorLabel(
+  VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer);
+begin
+  inherited UpdateResultVectorLabel(VariableLabelType, Decimals);
   FResultVector.Question.Text := AggregateVector.GetVariableLabel(VariableLabelType) + ' (sum)';
 end;
 
@@ -266,13 +285,20 @@ begin
   FCount := 0;
 end;
 
-procedure TAggrCount.CreateResultVector(DataFile: TEpiDataFile;
-  VariableLabelType: TEpiGetVariableLabelType);
+procedure TAggrCount.CreateResultVector(DataFile: TEpiDataFile);
 begin
   DoCreateResultVector(DataFile, ftInteger);
+end;
+
+procedure TAggrCount.UpdateResultVectorLabel(
+  VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer);
+begin
+  inherited UpdateResultVectorLabel(VariableLabelType, Decimals);
 
   if Assigned(AggregateVector) then
-    FResultVector.Question.Text := AggregateVector.GetVariableLabel(VariableLabelType) + ' (n)';
+    FResultVector.Question.Text := AggregateVector.GetVariableLabel(VariableLabelType) + ' (n)'
+  else
+    FResultVector.Question.Text := 'N';
 end;
 
 { TAggrMean }
@@ -344,10 +370,24 @@ begin
   FStdVar := 0;
 end;
 
-procedure TAggrMean.CreateResultVector(DataFile: TEpiDataFile;
-  VariableLabelType: TEpiGetVariableLabelType);
+procedure TAggrMean.CreateResultVector(DataFile: TEpiDataFile);
 begin
   DoCreateResultVector(DataFile, ftFloat);
+
+  if (MeanType = amMCI) then
+    begin
+      FLowerCI := DataFile.NewField(ftFloat);
+      FLowerCI.Name := 'LowCi' + ResultVariableName;
+
+      FUpperCI := DataFile.NewField(ftFloat);
+      FUpperCI.Name := 'UpperCi' + ResultVariableName;
+    end;
+end;
+
+procedure TAggrMean.UpdateResultVectorLabel(
+  VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer);
+begin
+  inherited UpdateResultVectorLabel(VariableLabelType, Decimals);
 
   Case MeanType of
     amMean,
@@ -363,12 +403,7 @@ begin
 
   if (MeanType = amMCI) then
     begin
-      FLowerCI := DataFile.NewField(ftFloat);
-      FLowerCI.Name := 'LowCi' + ResultVariableName;
       FLowerCI.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Lower 95% CI - Mean)';
-
-      FUpperCI := DataFile.NewField(ftFloat);
-      FUpperCI.Name := 'UpperCi' + ResultVariableName;
       FUpperCI.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Upper95% CI - Mean)';
     end;
 end;
@@ -409,10 +444,15 @@ begin
   FInitialized := false;
 end;
 
-procedure TAggrMinMax.CreateResultVector(DataFile: TEpiDataFile;
-  VariableLabelType: TEpiGetVariableLabelType);
+procedure TAggrMinMax.CreateResultVector(DataFile: TEpiDataFile);
 begin
   DoCreateResultVector(DataFile, AggregateVector.FieldType);
+end;
+
+procedure TAggrMinMax.UpdateResultVectorLabel(
+  VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer);
+begin
+  inherited UpdateResultVectorLabel(VariableLabelType, Decimals);
 
   if IsMinimum then
     FResultVector.Question.Text := fAggregateVector.GetVariableLabel(VariableLabelType) + ' (Min)'
@@ -479,10 +519,16 @@ begin
   FCount := 0;
 end;
 
-procedure TAggrPercentile.CreateResultVector(DataFile: TEpiDataFile;
-  VariableLabelType: TEpiGetVariableLabelType);
+procedure TAggrPercentile.CreateResultVector(DataFile: TEpiDataFile);
 begin
   DoCreateResultVector(DataFile, ftFloat);
+end;
+
+procedure TAggrPercentile.UpdateResultVectorLabel(
+  VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer);
+begin
+  inherited UpdateResultVectorLabel(VariableLabelType, Decimals);
+
   case PercentileType of
     ap1 : FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (1% percentile)';
     ap5 : FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (5% percentile)';
@@ -592,6 +638,15 @@ var
 begin
   for i := 0 to Count - 1 do
     Items[i].Reset();
+end;
+
+procedure TAggrFuncList.UpdateAllResultLabels(
+  VariableLabelType: TEpiGetVariableLabelType; Decimals: Integer);
+var
+  i: Integer;
+begin
+  for i := 0 to Count - 1 do
+    Items[i].UpdateResultVectorLabel(VariableLabelType, Decimals);
 end;
 
 function TAggrFuncList.Count: integer;

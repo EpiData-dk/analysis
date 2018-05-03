@@ -5,8 +5,9 @@ unit aggregate;
 interface
 
 uses
-  Classes, SysUtils, epidatafiles, executor, outputcreator, ast, epicustombase,
-  aggregate_types, epifields_helper;
+  Classes, SysUtils, epidatafiles, executor, outputcreator, ast,
+  result_variables, epicustombase, aggregate_types, epifields_helper,
+  epidatafilerelations;
 
 type
 
@@ -23,9 +24,9 @@ type
 
   TAggregate = class(TObject)
   private
-    FVariableLabelType: TEpiGetVariableLabelType;
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
+    procedure DoCaptionHeadersAndLabels(ResultDF: TAggregateDatafile; FunctionList: TAggrFuncList; ST: TAggregateCommand);
   protected
     // Takes the option and creates function(s) if the idens matches a function, return true - else return false
     function OptionToFunctions(InputDF: TEpiDataFile; Opt: TOption; CreateCountFunction: boolean; FunctionList: TAggrFuncList): boolean; virtual;
@@ -36,17 +37,16 @@ type
     destructor Destroy; override;
 
     // Method called from Executor, does calculation + result vars + output
-    procedure ExecAggregate(InputDF: TEpiDataFile; ST: TAggregateCommand);
+    procedure ExecAggregate(InputDF: TEpiDataFile; ST: TAggregateCommand; Out ResultDF: TAggregateDatafile);
 
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
     function  CalcAggregate(InputDF: TEpiDataFile{; FunctionList: TAggrFuncList}): TAggregateDatafile;
-    property  VariableLabelType: TEpiGetVariableLabelType read FVariableLabelType write FVariableLabelType;
   end;
 
 implementation
 
 uses
-  epicustomlist_helper;
+  epicustomlist_helper, options_utils;
 
 { TAggregateDatafile }
 
@@ -81,6 +81,38 @@ end;
 
 { TAggregate }
 
+procedure TAggregate.DoCaptionHeadersAndLabels(ResultDF: TAggregateDatafile;
+  FunctionList: TAggrFuncList; ST: TAggregateCommand);
+var
+  Opt: TOption;
+  VariableType: TEpiGetVariableLabelType;
+  GV: TExecVarGlobalVector;
+  F: TEpiField;
+  I, Decimals: Integer;
+begin
+  if (ST.HasOption('caption', opt)) then
+    ResultDF.Caption.Text := Opt.Expr.AsString
+  else
+    ResultDF.Caption.Text := 'Aggregated Table';
+
+  VariableType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions, sovStatistics);
+  Decimals     := DecimalFromOption(ST.Options);
+  FunctionList.UpdateAllResultLabels(VariableType, Decimals);
+
+  if (ST.HasOption('headers', Opt)) then
+    begin
+      GV := TExecVarGlobalVector(FExecutor.GetExecDataVariable(Opt.Expr.AsIdent));
+      I := 0;
+      for F in ResultDF.Fields do
+        begin
+          if (I >= GV.Length) then
+            break;
+
+          F.Question.Text := GV.AsStringVector[I];
+          Inc(I);
+        end;
+    end;
+end;
 
 function TAggregate.OptionToFunctions(InputDF: TEpiDataFile; Opt: TOption;
   CreateCountFunction: boolean; FunctionList: TAggrFuncList): boolean;
@@ -93,6 +125,9 @@ begin
 
   S := Opt.Expr.AsIdent;
   AggregateVariable := InputDF.Fields.FieldByName[S];
+
+  if (not Assigned(AggregateVariable)) then
+    Exit(false);
 
   // Create a count vector for the aggregation variable. But only create one!
   if (CreateCountFunction) and
@@ -226,14 +261,14 @@ begin
   for i := 0 to FunctionList.Count - 1 do
     begin
       Func := FunctionList[i];
-      Func.CreateResultVector(Result, VariableLabelType);
+      Func.CreateResultVector(Result);
     end;
 
   // Percentile calculations not correct yet... :(
   PercList := FunctionList.ExtractPercentiles();
 
   // AGGREGATE!!! Yeeeha.
-  // Do "normal" aggregate operations (this means without any percentile calc.
+  // Do "normal" aggregate operations (this means without any percentile calc.)
   Runner := 0;
   while Runner < InputDF.Size do
     begin
@@ -303,24 +338,25 @@ var
   T: TOutputTable;
   Col, Row: Integer;
   Opt: TOption;
+  ValueLabelType: TEpiGetValueLabelType;
+  GV: TExecVarGlobalVector;
 begin
   T := FOutputCreator.AddTable;
   T.ColCount := ResultDF.Fields.Count;
   T.RowCount := ResultDF.Size + 1;
-
-  if ST.HasOption('header', Opt) then
-    T.Header.Text := Opt.Expr.AsString
-  else
-    T.Header.Text := 'AGGREGATE TABLE (PROTOTYPE)';
-  T.Footer.Text := 'This is NOT a final version, but at least it outputs something...';
+  T.Header.Text := ResultDF.Caption.Text;
+//  T.Footer.Text := 'This is NOT a final version, but at least it outputs something...';
 
   for Col := 0 to ResultDF.Fields.Count - 1 do
-    T.Cell[Col, 0].Text := ResultDF.Field[Col].GetVariableLabel();
+    T.Cell[Col, 0].Text := ResultDF.Field[Col].Question.Text;
+
   T.SetRowBorders(0, [cbTop, cbBottom]);
+
+  ValueLabelType := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
 
   for Row := 0 to ResultDF.Size - 1 do
     for Col := 0 to ResultDF.Fields.Count - 1 do
-      T.Cell[Col, Row + 1].Text := ResultDF.Field[Col].GetValueLabel(Row);
+      T.Cell[Col, Row + 1].Text := ResultDF.Field[Col].GetValueLabelFormatted(Row, ValueLabelType);
   T.SetRowBorders(T.RowCount - 1, [cbBottom]);
 end;
 
@@ -329,7 +365,6 @@ constructor TAggregate.Create(AExecutor: TExecutor;
 begin
   FExecutor := AExecutor;
   FOutputCreator := OutputCreator;
-  FVariableLabelType := gvtVarName;
 end;
 
 destructor TAggregate.Destroy;
@@ -337,17 +372,17 @@ begin
   inherited Destroy;
 end;
 
-procedure TAggregate.ExecAggregate(InputDF: TEpiDataFile; ST: TAggregateCommand
-  );
+procedure TAggregate.ExecAggregate(InputDF: TEpiDataFile;
+  ST: TAggregateCommand; out ResultDF: TAggregateDatafile);
 var
   VarNames: TStrings;
   Opt: TOption;
   FunctionList: TAggrFuncList;
   i: Integer;
   F: TEpiField;
-  TempDF: TAggregateDatafile;
   RefMap: TEpiReferenceMap;
-  CreateSumOnStatFunctions: Boolean;
+  CreateSumOnStatFunctions, PrevModified: Boolean;
+  MR: TEpiMasterRelation;
 begin
   VarNames := ST.VariableList.GetIdentsAsList;
   CreateSumOnStatFunctions := (not ST.HasOption('nc'));
@@ -387,14 +422,30 @@ begin
       Exit;
     end;
 
-  TempDF := DoCalcAggregate(InputDF, Varnames, FunctionList, RefMap);
-
-  FExecutor.Document.DataFiles.AddItem(TempDF);
+  ResultDF := DoCalcAggregate(InputDF, Varnames, FunctionList, RefMap);
+  PrevModified := FExecutor.Document.Modified;
+  FExecutor.Document.DataFiles.AddItem(ResultDF);
   RefMap.FixupReferences;
   RefMap.Free;
 
-  DoOutputAggregate(TempDF, ST);
-  TempDF.Free;
+  DoCaptionHeadersAndLabels(ResultDF, FunctionList, ST);
+
+
+  if (not ST.HasOption('q')) then
+    DoOutputAggregate(ResultDF, ST);
+
+  if (ST.HasOption('keep', Opt)) then
+    begin
+      MR := FExecutor.Document.Relations.NewMasterRelation;
+      MR.Datafile := ResultDF;
+      ResultDF.Name := Opt.Expr.AsIdent;
+      FExecutor.UpdateDatasetResultVar;
+    end
+  else
+    begin
+      FreeAndNil(ResultDF);
+      FExecutor.Document.Modified := PrevModified;
+    end;
 end;
 
 function TAggregate.CalcAggregate(InputDF: TEpiDataFile): TAggregateDatafile;

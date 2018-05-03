@@ -137,6 +137,12 @@ type
     csrCustom     // The statement returned a custom result. See actual implementation for details.
   );
 
+  TCustomStatementExecutionFlag = (
+    sefNoSelect,  // Cannot execute during an active select
+    sefNoLoop     // Cannot execure during a loop
+  );
+  TCustomStatementExecutionFlags = set of TCustomStatementExecutionFlag;
+
   { TCustomStatement }
 
   TCustomStatement = class(TAbstractSyntaxTreeBase)
@@ -148,11 +154,15 @@ type
     function DoOptionsCheck(OptionsChecker: IOptionCheck; TypeChecker: IEpiTypeChecker): Boolean; virtual;
     function DoVarialeCheck(VariableChecker: IVariableCheck; TypeChecker: IEpiTypeChecker): Boolean; virtual;
     function GetRequireOpenProject: Boolean; virtual;
+    function GetExecFlags: TCustomStatementExecutionFlags; virtual;
+    function GetExecFlagsErrorMsg(Flag: TCustomStatementExecutionFlag): UTF8String; virtual;
   public
     function TypeCheck(Parser: IEpiTypeChecker): boolean; override;
     property StatementType: TASTStatementType read FStatementType;
     property RequireOpenProject: Boolean read GetRequireOpenProject;
     property ExecResult: TCustomStatementExecutionResult read FExecResult write FExecResult;
+    property ExecFlags: TCustomStatementExecutionFlags read GetExecFlags;
+    property ExecFlagsErrorMsg[Flag: TCustomStatementExecutionFlag]: UTF8String read GetExecFlagsErrorMsg;
   end;
 
   { TEmptyStatement }
@@ -1124,6 +1134,8 @@ type
 
   TAggregateCommand = class(TCustomVariableCommand)
   protected
+    function GetExecFlags: TCustomStatementExecutionFlags; override;
+    function GetExecFlagsErrorMsg(Flag: TCustomStatementExecutionFlag): UTF8String; override;
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
     function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
@@ -1166,6 +1178,7 @@ type
   private
     FFilename: UTF8String;
   protected
+    function GetExecFlags: TCustomStatementExecutionFlags; override;
     function GetAcceptedOptions: TStatementOptionsMap; override;
   public
     property Filename: UTF8String read FFilename write FFilename;
@@ -1177,6 +1190,7 @@ type
   TAppendCommand = class(TCustomMergeCommand)
   protected
     function GetAcceptedVariableCount: TBoundArray; override;
+    function GetExecFlagsErrorMsg(Flag: TCustomStatementExecutionFlag): UTF8String; override;
   public
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
@@ -1188,6 +1202,7 @@ type
   protected
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
+    function GetExecFlagsErrorMsg(Flag: TCustomStatementExecutionFlag): UTF8String; override;
   public
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
@@ -1412,16 +1427,37 @@ uses
 
 { TAggregateCommand }
 
+function TAggregateCommand.GetExecFlags: TCustomStatementExecutionFlags;
+begin
+  Result := inherited GetExecFlags;
+
+  if HasOption('u') then
+    Result := Result + [sefNoSelect];
+end;
+
+function TAggregateCommand.GetExecFlagsErrorMsg(
+  Flag: TCustomStatementExecutionFlag): UTF8String;
+begin
+  Result := inherited GetExecFlagsErrorMsg(Flag);
+
+  case Flag of
+    sefNoSelect:
+      Result := 'It is not possible to use the option !u in aggregate during an active select!';
+  end;
+end;
+
 function TAggregateCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('q',       [rtUndefined]);
   Result.Insert('m',       [rtUndefined]);
-  Result.Insert('nc',     [rtUndefined]);
-  Result.Insert('nt',     [rtUndefined]);
-  Result.Insert('save',    AllResultDataTypes, [evtDataset], [evfInternal, evfExternal, evfAsObject]);
+  Result.Insert('nc',      [rtUndefined]);
+  Result.Insert('nt',      [rtUndefined]);
   Result.Insert('replace', [rtUndefined]);
-  Result.Insert('header', AllResultDataTypes);
+  Result.Insert('caption', AllResultDataTypes);
+  Result.Insert('headers', [rtObject], [evtGlobalVector], [evfInternal, evfAsObject]);
+  Result.Insert('keep',    [rtObject], [evtDataset],      [evfInternal, evfExternal, evfAsObject]);
+  Result.Insert('u',       [rtUndefined]);
 
   AddDecimalOptions(Result);
   AddVariableLabelOptions(Result);
@@ -1885,6 +1921,17 @@ begin
     result[0] := 0;
 end;
 
+function TMergeCommand.GetExecFlagsErrorMsg(Flag: TCustomStatementExecutionFlag
+  ): UTF8String;
+begin
+  Result := inherited GetExecFlagsErrorMsg(Flag);
+
+  case Flag of
+    sefNoSelect:
+      Result := 'Cannot merge with an active select!';
+  end;
+end;
+
 constructor TMergeCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
@@ -1893,11 +1940,17 @@ end;
 
 { TCustomMergeCommand }
 
+function TCustomMergeCommand.GetExecFlags: TCustomStatementExecutionFlags;
+begin
+  Result := [sefNoSelect];
+end;
+
 function TCustomMergeCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  // Common options used for loading files - mostly when importing CSV files.
   result.Insert('ds',       [rtObject], [evtDataset], [evfInternal, evfExternal, evfAsObject]);
+
+  // Common options used for loading files - mostly when importing CSV files.
   AddReadOptions(Result);
 end;
 
@@ -2000,6 +2053,17 @@ function TAppendCommand.GetAcceptedVariableCount: TBoundArray;
 begin
   Result := inherited GetAcceptedVariableCount;
   Result[0] := 0;
+end;
+
+function TAppendCommand.GetExecFlagsErrorMsg(Flag: TCustomStatementExecutionFlag
+  ): UTF8String;
+begin
+  Result := inherited GetExecFlagsErrorMsg(Flag);
+
+  case Flag of
+    sefNoSelect:
+      Result := 'Cannot append with an active select!';
+  end;
 end;
 
 constructor TAppendCommand.Create(AVariableList: TVariableList;
@@ -3695,6 +3759,17 @@ end;
 function TCustomStatement.GetRequireOpenProject: Boolean;
 begin
   result := true;
+end;
+
+function TCustomStatement.GetExecFlags: TCustomStatementExecutionFlags;
+begin
+  result := [];
+end;
+
+function TCustomStatement.GetExecFlagsErrorMsg(
+  Flag: TCustomStatementExecutionFlag): UTF8String;
+begin
+  result := '';
 end;
 
 function TCustomStatement.TypeCheck(Parser: IEpiTypeChecker): boolean;
