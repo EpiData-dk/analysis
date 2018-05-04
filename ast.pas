@@ -1470,10 +1470,9 @@ begin
   Result.Insert('isr',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('mci',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('mv',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('n',    AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('nv',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('mean', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('sd',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('sv',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('min',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('p1',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('p5',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);

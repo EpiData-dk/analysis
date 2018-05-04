@@ -40,7 +40,7 @@ type
     procedure ExecAggregate(InputDF: TEpiDataFile; ST: TAggregateCommand; Out ResultDF: TAggregateDatafile);
 
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
-    function  CalcAggregate(InputDF: TEpiDataFile{; FunctionList: TAggrFuncList}): TAggregateDatafile;
+    function  CalcAggregate(InputDF: TEpiDataFile; ByVariables: TStrings; FunctionList: TAggrFuncList; Out RefMap: TEpiReferenceMap): TAggregateDatafile;
   end;
 
 implementation
@@ -230,7 +230,7 @@ var
   V: String;
   F, NewF: TEpiField;
   Func: TAggrFunc;
-  PercList: TAggrFuncList;
+  PercList, TempFuncList: TAggrFuncList;
   Runner, i, Index: Integer;
 
 begin
@@ -264,8 +264,8 @@ begin
       Func.CreateResultVector(Result);
     end;
 
-  // Percentile calculations not correct yet... :(
-  PercList := FunctionList.ExtractPercentiles();
+  // First run through "normal" statistic. Those that don't need a particular sort order.
+  TempFuncList := FunctionList.GetFunctions(AllAggrFuncTypes - [afPercentile]);
 
   // AGGREGATE!!! Yeeeha.
   // Do "normal" aggregate operations (this means without any percentile calc.)
@@ -281,24 +281,26 @@ begin
           for F in CountVariables do
             F.CopyValue(InputDF.Fields.FieldByName[F.Name], Runner - 1, Index);
 
-          FunctionList.SetOutputs(Index);
-          FunctionList.ResetAll;
+          TempFuncList.SetOutputs(Index);
+          TempFuncList.ResetAll;
         end;
 
-      for i := 0 to FunctionList.Count - 1 do
-        FunctionList[i].Execute(Runner);
+      for i := 0 to TempFuncList.Count - 1 do
+        TempFuncList[i].Execute(Runner);
 
       Inc(Runner);
     end;
   Index := Result.NewRecords();
   for F in CountVariables do
     F.CopyValue(InputDF.Fields.FieldByName[F.Name], Runner - 1, Index);
-  FunctionList.SetOutputs(Index);
-  FunctionList.ResetAll;
+  TempFuncList.SetOutputs(Index);
+  TempFuncList.ResetAll;
+  TempFuncList.Free;
 
-  for i := 0 to PercList.Count - 1 do
+  TempFuncList := FunctionList.GetFunctions([afPercentile]);
+  for i := 0 to TempFuncList.Count - 1 do
     begin
-      Func := PercList[i];
+      Func := TempFuncList[i];
 
       // Sort by "normal" variables AND the current percentile vector
       // - but only add the percentile vector if it is not already a by-variable
@@ -330,6 +332,7 @@ begin
       Func.SetOutput(Index);
       Func.Reset();
     end;
+  TempFuncList.Free;
 end;
 
 procedure TAggregate.DoOutputAggregate(ResultDF: TAggregateDatafile;
@@ -383,12 +386,13 @@ var
   RefMap: TEpiReferenceMap;
   CreateSumOnStatFunctions, PrevModified: Boolean;
   MR: TEpiMasterRelation;
+  DF: TEpiCustomItem;
 begin
   VarNames := ST.VariableList.GetIdentsAsList;
   CreateSumOnStatFunctions := (not ST.HasOption('nc'));
 
   try
-    FunctionList := TAggrFuncList.Create;
+    FunctionList := TAggrFuncList.Create(true);
 
     if (not ST.HasOption('nt')) then
       FunctionList.Add(TAggrCount.Create('N', nil, acAll));
@@ -436,6 +440,10 @@ begin
 
   if (ST.HasOption('keep', Opt)) then
     begin
+      DF := FExecutor.Document.DataFiles.GetItemByName(Opt.Expr.AsIdent);
+      if (Assigned(DF)) then
+        DF.Free;
+
       MR := FExecutor.Document.Relations.NewMasterRelation;
       MR.Datafile := ResultDF;
       ResultDF.Name := Opt.Expr.AsIdent;
@@ -448,9 +456,11 @@ begin
     end;
 end;
 
-function TAggregate.CalcAggregate(InputDF: TEpiDataFile): TAggregateDatafile;
+function TAggregate.CalcAggregate(InputDF: TEpiDataFile; ByVariables: TStrings;
+  FunctionList: TAggrFuncList; out RefMap: TEpiReferenceMap
+  ): TAggregateDatafile;
 begin
-
+  Result := DoCalcAggregate(InputDF, ByVariables, FunctionList, RefMap);
 end;
 
 end.

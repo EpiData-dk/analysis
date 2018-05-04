@@ -11,9 +11,13 @@ type
 
   EAggrFunc = class(Exception);
 
-  TAggrFuncType = (afCount, afSum, afMean, afMinMax, afPercentile,
-                   afSD, afSV, afIQR, afISR, afIDR, afDES, afMV, afUNKNOWN);
+  TAggrFuncType = (afCount, afSum, afMean, afMinMax, afPercentile);
+  TAggrFuncTypes = set of TAggrFuncType;
 
+const
+  AllAggrFuncTypes = [afCount, afSum, afMean, afMinMax, afPercentile];
+
+type
 
   TAggrFuncList = class;
 
@@ -142,16 +146,17 @@ type
 
   TAggrFuncList = class
   private
+    FFreeItems: boolean;
     fList: TList;
     function GetItem(const index: integer): TAggrFunc;
     function Unique(Func: TAggrFunc): boolean;
     function Extract(Index: Integer): TAggrFunc;
     procedure DoError(Const Msg: UTF8String);
   public
-    constructor Create;
+    constructor Create(AFreeItems: boolean);
     destructor Destroy; override;
     procedure Add(Func: TAggrFunc);
-    function ExtractPercentiles: TAggrFuncList;
+    function GetFunctions(AggrFuncTypes: TAggrFuncTypes): TAggrFuncList;
     function IndexOf(const Name: string): Integer;
     procedure Insert(const Index: integer; Func: TAggrFunc);
     procedure SetOutputs(Idx: integer);
@@ -160,6 +165,7 @@ type
     function Count: integer;
     function GetVarList: TStrings;
     property Items[const Index: integer]: TAggrFunc read GetItem; default;
+    property FreeItems: Boolean read FFreeItems;
   end;
 
 implementation
@@ -296,7 +302,12 @@ begin
   inherited UpdateResultVectorLabel(VariableLabelType, Decimals);
 
   if Assigned(AggregateVector) then
-    FResultVector.Question.Text := AggregateVector.GetVariableLabel(VariableLabelType) + ' (n)'
+    case CountType of
+      acMissing:      FResultVector.Question.Text := AggregateVector.GetVariableLabel(VariableLabelType) + ' (m)';
+      acMissingValue: FResultVector.Question.Text := AggregateVector.GetVariableLabel(VariableLabelType) + ' (mv)';
+      acNotMissing:   FResultVector.Question.Text := AggregateVector.GetVariableLabel(VariableLabelType) + ' (nm)';
+      acAll:          FResultVector.Question.Text := AggregateVector.GetVariableLabel(VariableLabelType) + ' (n)';
+    end
   else
     FResultVector.Question.Text := 'N';
 end;
@@ -403,8 +414,10 @@ begin
 
   if (MeanType = amMCI) then
     begin
-      FLowerCI.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Lower 95% CI - Mean)';
-      FUpperCI.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Upper95% CI - Mean)';
+      FLowerCI.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Lower 95%)';
+      FLowerCI.Decimals := Decimals;
+      FUpperCI.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Upper 95%)';
+      FUpperCI.Decimals := Decimals;
     end;
 end;
 
@@ -534,7 +547,7 @@ begin
     ap5 : FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (5% percentile)';
     ap10: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (10% percentile)';
     ap25: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (25% percentile)';
-    ap50: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Median ';
+    ap50: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (Median)';
     ap75: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (75% percentile)';
     ap90: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (90% percentile)';
     ap95: FResultVector.Question.Text := FAggregateVector.GetVariableLabel(VariableLabelType) + ' (95% percentile)';
@@ -573,17 +586,19 @@ begin
   raise EAggrFunc.Create(Msg);
 end;
 
-constructor TAggrFuncList.Create;
+constructor TAggrFuncList.Create(AFreeItems: boolean);
 begin
   fList := TList.Create;
+  FFreeItems := AFreeItems;
 end;
 
 destructor TAggrFuncList.Destroy;
 var
   i: Integer;
 begin
-  for i := fList.Count - 1 downto 0 do
-    Items[i].Free;
+  if FreeItems then
+    for i := fList.Count - 1 downto 0 do
+      Items[i].Free;
   fList.Free;
 
   inherited Destroy();
@@ -597,15 +612,16 @@ begin
     DoError(Format('Aggregate function already used for %s', [Func.AggregateVector.Name]));
 end;
 
-function TAggrFuncList.ExtractPercentiles: TAggrFuncList;
+function TAggrFuncList.GetFunctions(AggrFuncTypes: TAggrFuncTypes
+  ): TAggrFuncList;
 var
   i: Integer;
 begin
-  Result := TAggrFuncList.Create;
+  Result := TAggrFuncList.Create(false);
 
   for i := Count - 1 downto 0 do
-    if Items[i].FuncType = afPercentile then
-      result.Add(Extract(i));
+    if Items[i].FuncType in AggrFuncTypes then
+      result.Add(Items[i]);
 end;
 
 function TAggrFuncList.IndexOf(const Name: string): Integer;
