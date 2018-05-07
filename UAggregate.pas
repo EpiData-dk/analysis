@@ -2,7 +2,7 @@ unit UAggregate;
 
 interface
 
-uses UVectors, SysUtils, Classes, AnsDatatypes, UCommands;
+//uses UVectors, SysUtils, Classes, AnsDatatypes, UCommands;
 
 type
   TAggrFuncType = (afCount, afSum, afMean, afMinMax, afPercentile,
@@ -144,8 +144,8 @@ var
 
 implementation
 
-uses Math, UFrames, UEpiDatatypes, UOutput, UCmdProcessor, UDebug, UAnaToken, GeneralUtils,
-     UStatFunctions;
+//uses Math, UFrames, UEpiDatatypes, UOutput, UCmdProcessor, UDebug, UAnaToken, GeneralUtils,
+//     UStatFunctions;
 
 const
   UnitName = 'UAggregate';
