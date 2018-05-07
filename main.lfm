@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 533
+  Left = 2146
   Height = 682
-  Top = 285
+  Top = 255
   Width = 1159
   ActiveControl = Panel2
   AllowDropFiles = True
@@ -91,7 +91,7 @@ object MainForm: TMainForm
       OnDrawItem = HistoryListBoxDrawItem
       OnKeyDown = HistoryListBoxKeyDown
       PopupMenu = HistoryPopupMenu
-      ScrollWidth = 190
+      ScrollWidth = 192
       Style = lbOwnerDrawFixed
       TabOrder = 0
       TopIndex = -1
@@ -124,13 +124,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 241
+          Width = 243
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 201
+          Width = 203
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -389,7 +389,7 @@ object MainForm: TMainForm
     end
     object ChangeDirAction: TAction
       Category = 'File'
-      Caption = 'Change Directory'
+      Caption = 'Change Working Folder'
       OnExecute = ChangeDirActionExecute
     end
     object BrowseAction: TAction

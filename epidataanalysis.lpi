@@ -13,9 +13,7 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MinorVersionNr Value="9"/>
-      <RevisionNr Value="3"/>
-      <BuildNr Value="13"/>
+      <MajorVersionNr Value="1"/>
       <StringTable ProductVersion="0.6.4.0"/>
     </VersionInfo>
     <BuildModes Count="6">
