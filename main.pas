@@ -1242,8 +1242,10 @@ begin
     gaClearScreen:
       begin
         FOutputCreator.Clear;
+        {$IFDEF EPI_BETA}
         FOutputCreator.DoWarning('WARNING - Testversion. Confirm results with Public release!');
         FOutputCreator.DoNormal('');
+        {$ENDIF}
 //        FOutputCreator.DoNormal('<a href="http://www.epidata.dk> TEST </a>');
         FOutputCreator.DoInfoAll(GetProgramInfo);
         FOutputCreator.DoNormal('');
