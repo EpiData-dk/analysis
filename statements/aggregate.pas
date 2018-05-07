@@ -85,7 +85,6 @@ procedure TAggregate.DoCaptionHeadersAndLabels(ResultDF: TAggregateDatafile;
   FunctionList: TAggrFuncList; ST: TAggregateCommand);
 var
   Opt: TOption;
-  VariableType: TEpiGetVariableLabelType;
   GV: TExecVarGlobalVector;
   F: TEpiField;
   I, Decimals: Integer;
@@ -95,12 +94,19 @@ begin
   else
     ResultDF.Caption.Text := 'Aggregated Table';
 
-  VariableType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions, sovStatistics);
   Decimals     := DecimalFromOption(ST.Options);
-  FunctionList.UpdateAllResultLabels(VariableType, Decimals);
+  FunctionList.UpdateAllResultLabels(Decimals);
 
   if (ST.HasOption('headers', Opt)) then
     begin
+      // If not value is assigned to !headers - this is a flag to delete all variable labels
+      if (not Assigned(Opt.Expr)) then
+        begin
+          for F in ResultDF.Fields do
+            F.Question.Text := '';
+          Exit;
+        end;
+
       GV := TExecVarGlobalVector(FExecutor.GetExecDataVariable(Opt.Expr.AsIdent));
       I := 0;
       for F in ResultDF.Fields do
@@ -343,15 +349,16 @@ var
   Opt: TOption;
   ValueLabelType: TEpiGetValueLabelType;
   GV: TExecVarGlobalVector;
+  VariableLabelType: TEpiGetVariableLabelType;
 begin
   T := FOutputCreator.AddTable;
   T.ColCount := ResultDF.Fields.Count;
   T.RowCount := ResultDF.Size + 1;
   T.Header.Text := ResultDF.Caption.Text;
-//  T.Footer.Text := 'This is NOT a final version, but at least it outputs something...';
 
+  VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   for Col := 0 to ResultDF.Fields.Count - 1 do
-    T.Cell[Col, 0].Text := ResultDF.Field[Col].Question.Text;
+    T.Cell[Col, 0].Text := ResultDF.Field[Col].GetVariableLabel(VariableLabelType);
 
   T.SetRowBorders(0, [cbTop, cbBottom]);
 

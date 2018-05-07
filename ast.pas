@@ -1455,8 +1455,8 @@ begin
   Result.Insert('nt',      [rtUndefined]);
   Result.Insert('replace', [rtUndefined]);
   Result.Insert('caption', AllResultDataTypes);
-  Result.Insert('headers', [rtObject], [evtGlobalVector], [evfInternal, evfAsObject]);
-  Result.Insert('keep',    [rtObject], [evtDataset],      [evfInternal, evfExternal, evfAsObject]);
+  Result.Insert('headers', [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
+  Result.Insert('keep',    [rtObject],               [evtDataset],      [evfInternal, evfExternal, evfAsObject]);
   Result.Insert('u',       [rtUndefined]);
 
   AddDecimalOptions(Result);
