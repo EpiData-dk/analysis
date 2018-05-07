@@ -58,7 +58,6 @@ type
     MenuItem3: TMenuItem;
     MenuItem8: TMenuItem;
     HistoryPopupMenu: TPopupMenu;
-    ProjectPanel: TPanel;
     ShowAboutAction: TAction;
     ActionList1: TActionList;
     Button2: TButton;
@@ -68,7 +67,6 @@ type
     MenuItem5: TMenuItem;
     MenuItem6: TMenuItem;
     Panel2: TPanel;
-    ProjectSplitter: TSplitter;
     Button3: TButton;
     SaveDialog1: TSaveDialog;
     SidebarPanel: TPanel;
@@ -282,7 +280,8 @@ uses
   outputgenerator_html, about, Clipbrd, epimiscutils, ast_types, epidatafilerelations,
   epiv_custom_statusbar, datamodule, introduction_form, editor_form, LCLIntf, Symbol,
   ana_procs, ana_documentfile, LazFileUtils, LazUTF8Classes, epistringutils, ana_globals,
-  browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform;
+  browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform,
+  AnchorDocking, AnchorDockOptionsDlg, projecttree, varnames;
 
 { TMainForm }
 
@@ -342,6 +341,9 @@ end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+  DockMaster.MakeDockSite(Self, [akBottom, akRight, akLeft], admrpChild);
+  DockMaster.OnShowOptions := @ShowAnchorDockOptions;
+
   FLastCreatorCount := 0;
   FOutputCreator := TOutputCreator.Create;
   FOutputCreator.OnRedrawRequest := @OutputRedrawRequest;
@@ -370,6 +372,10 @@ begin
 
   FOutputCreator.SetOptions := Executor.SetOptions;
 
+  ProjectTreeForm2 := TProjectTreeForm2.Create(Self, Executor);
+  ProjectTreeForm2.DisableAutoSizing;
+
+{
   FProjectTree := TEpiVProjectTreeViewFrame.Create(Self);
   FProjectTree.Visible := true;
   FProjectTree.Parent := ProjectPanel;
@@ -386,9 +392,12 @@ begin
   FProjectTree.ShowHint := true;
   FProjectTree.OnGetHint := @ProjectTreeHint;
   FProjectTree.OnTreeNodeDoubleClick := @ProjectTreeDoubleClick;
-  FProjectTree.OnGetText := @ProjectGetText;
+  FProjectTree.OnGetText := @ProjectGetText;  }
 
-  with VarnamesList do
+  VarNamesForm := TVarNamesForm.Create(Self, Executor);
+  VarNamesForm.DisableAutoSizing;
+
+{  with VarnamesList do
   begin
     Images := DM.Icons16;
 
@@ -397,7 +406,7 @@ begin
     OnKeyDown                := @VarnamesListKeyDown;
     OnNodeDblClick           := @VarnamesListNodeDblClick;
     OnGetImageIndex          := @VarnamesListGetImageIndex;
-  end;
+  end;    }
 
 
   FStatusbar := TAnalysisStatusbar.Create(Self, Executor);
@@ -454,7 +463,7 @@ begin
   LoadTutorials;
 
   LoadFormPosition(Self, 'MainForm');
-  LoadSplitterPosition(ProjectSplitter, 'ProjectSplitter');
+//  LoadSplitterPosition(ProjectSplitter, 'ProjectSplitter');
   LoadSplitterPosition(SidebarSplitter, 'SidebarSplitter');
   LoadSplitterPosition(SidebarBottomSplitter, 'SidebarBottomSplitter');
 
@@ -619,7 +628,8 @@ end;
 
 procedure TMainForm.ToggleVarnamesListActionExecute(Sender: TObject);
 begin
-  ToggleSidebar(2);
+  DockMaster.MakeDockable(VarNamesForm, true, true);
+//  ToggleSidebar(2);
 end;
 
 procedure TMainForm.ToggleHistoryListActionExecute(Sender: TObject);
@@ -756,8 +766,9 @@ end;
 
 procedure TMainForm.ToggleProjectTreeExecute(Sender: TObject);
 begin
-  ProjectPanel.Visible := not ProjectPanel.Visible;
-  ProjectSplitter.Visible := ProjectPanel.Visible;
+  //ProjectPanel.Visible := not ProjectPanel.Visible;
+  //ProjectSplitter.Visible := ProjectPanel.Visible;
+  DockMaster.MakeDockable(ProjectTreeForm2, true, true);
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -787,8 +798,8 @@ begin
     begin
       SaveFormPosition(Self, 'MainForm');
 
-      if ProjectSplitter.Visible then
-        SaveSplitterPosition(ProjectSplitter, 'ProjectSplitter');
+//      if ProjectSplitter.Visible then
+//        SaveSplitterPosition(ProjectSplitter, 'ProjectSplitter');
 
       if SidebarSplitter.Visible then
         SaveSplitterPosition(SidebarSplitter, 'SidebarSplitter');
@@ -856,7 +867,7 @@ begin
       EditorForm.OutputCreator := FOutputCreator;
     end;
 
-  EditorForm.Show;
+  DockMaster.MakeDockable(EditorForm, true, true);
 
   if (Filename <> '') then
     EditorForm.OpenPgm(Filename);
@@ -913,7 +924,7 @@ begin
          (TCustomNew(Statement).SubCommand = ccProject)
       then
         begin
-          FProjectTree.AddDocument(Executor.Document);
+//          FProjectTree.AddDocument(Executor.Document);
           FStatusbar.DocFile  := Executor.DocFile;
           FStatusbar.Datafile := Executor.DataFile;
           UpdateSetOptions;
@@ -923,7 +934,7 @@ begin
       if (Statement.ExecResult = csrSuccess)
       then
         begin
-          FProjectTree.AddDocument(Executor.Document);
+//          FProjectTree.AddDocument(Executor.Document);
           FStatusbar.DocFile  := Executor.DocFile;
           FStatusbar.Datafile := Executor.DataFile;
           UpdateSetOptions;
@@ -934,7 +945,7 @@ begin
       if (Statement.ExecResult = csrSuccess)
       then
         begin
-          ProjectPanel.Visible := false;
+//          ProjectPanel.Visible := false;
 
           FStatusbar.DocFile  := nil;
           FStatusbar.Datafile := nil;
@@ -958,7 +969,7 @@ begin
   end;
 
   FStatusbar.Update();
-  ProjectSplitter.Visible := ProjectPanel.Visible;
+//  ProjectSplitter.Visible := ProjectPanel.Visible;
 end;
 
 procedure TMainForm.DialogFilenameHack(const S: string);
@@ -1256,7 +1267,7 @@ begin
       end;
 
     gaProjectTree:
-      FProjectTree.UpdateTree;
+      ProjectTreeForm2.UpdateTree;
 
     gaVariableList:
       DoUpdateVarnames;
@@ -1606,13 +1617,14 @@ end;
 
 procedure TMainForm.DoUpdateVarnames;
 begin
-  if (not Assigned(Executor.DataFile)) then
+  VarNamesForm.UpdateVarnames;
+{  if (not Assigned(Executor.DataFile)) then
     VarnamesList.RootNodeCount := 0
   else
     VarnamesList.RootNodeCount := Executor.SortedFields.Count;
 
   VarnamesList.InvalidateChildren(nil, true);
-  VarnamesList.Header.AutoFitColumns(false);
+  VarnamesList.Header.AutoFitColumns(false);    }
 end;
 
 procedure TMainForm.DoUpdateHistory;

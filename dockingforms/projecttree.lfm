@@ -1,0 +1,11 @@
+object ProjectTreeForm2: TProjectTreeForm2
+  Left = 2451
+  Height = 444
+  Top = 407
+  Width = 295
+  Caption = 'ProjectTreeForm2'
+  OnCreate = FormCreate
+  ParentBiDiMode = False
+  Position = poMainFormCenter
+  LCLVersion = '1.9.0.0'
+end
