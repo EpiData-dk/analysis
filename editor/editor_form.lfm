@@ -1,7 +1,7 @@
 object EditorForm: TEditorForm
-  Left = 2670
+  Left = 627
   Height = 662
-  Top = 236
+  Top = 305
   Width = 823
   ActiveControl = SynEdit1
   AllowDropFiles = True
@@ -51,8 +51,8 @@ object EditorForm: TEditorForm
     TabOrder = 1
     inline SynEdit1: TSynEdit
       Left = 2
-      Height = 582
-      Top = 32
+      Height = 588
+      Top = 26
       Width = 819
       Align = alClient
       Font.Height = 13

@@ -13,11 +13,8 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MinorVersionNr Value="9"/>
-      <RevisionNr Value="4"/>
-      <BuildNr Value="19"/>
-      <Attributes pvaSpecialBuild="True"/>
-      <StringTable ProductName="AGGREGATE" ProductVersion="0.6.4.0" SpecialBuild="DOCKING FORMS"/>
+      <MajorVersionNr Value="1"/>
+      <StringTable ProductVersion="0.6.4.0"/>
     </VersionInfo>
     <BuildModes Count="6">
       <Item1 Name="Default" Default="True"/>
@@ -188,50 +185,47 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="13">
+    <RequiredPackages Count="12">
       <Item1>
-        <PackageName Value="AnchorDocking"/>
+        <PackageName Value="ChsDet"/>
       </Item1>
       <Item2>
-        <PackageName Value="ChsDet"/>
+        <PackageName Value="lnetbase"/>
       </Item2>
       <Item3>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="lclextensions_package"/>
       </Item3>
       <Item4>
-        <PackageName Value="lclextensions_package"/>
+        <PackageName Value="dcpcrypt"/>
       </Item4>
       <Item5>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="CEF3"/>
       </Item5>
       <Item6>
-        <PackageName Value="CEF3"/>
+        <PackageName Value="BGRABitmapPack"/>
       </Item6>
       <Item7>
-        <PackageName Value="BGRABitmapPack"/>
+        <PackageName Value="FrameViewer09"/>
       </Item7>
       <Item8>
-        <PackageName Value="FrameViewer09"/>
+        <PackageName Value="virtualtreeview_package"/>
       </Item8>
       <Item9>
-        <PackageName Value="virtualtreeview_package"/>
+        <PackageName Value="epidatacore_visuals"/>
+        <MinVersion Major="2" Valid="True"/>
       </Item9>
       <Item10>
-        <PackageName Value="epidatacore_visuals"/>
+        <PackageName Value="epidatacore"/>
         <MinVersion Major="2" Valid="True"/>
       </Item10>
       <Item11>
-        <PackageName Value="epidatacore"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="SynEdit"/>
       </Item11>
       <Item12>
-        <PackageName Value="SynEdit"/>
-      </Item12>
-      <Item13>
         <PackageName Value="LCL"/>
-      </Item13>
+      </Item12>
     </RequiredPackages>
-    <Units Count="74">
+    <Units Count="72">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -546,19 +540,6 @@
         <Filename Value="statements/aggregate_types.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit71>
-      <Unit72>
-        <Filename Value="dockingforms/projecttree.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="ProjectTreeForm2"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-      </Unit72>
-      <Unit73>
-        <Filename Value="dockingforms/varnames.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="VarNamesForm"/>
-        <ResourceBaseClass Value="Form"/>
-      </Unit73>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -568,7 +549,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);grammar"/>
-      <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;dockingforms"/>
+      <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
