@@ -13,10 +13,8 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MinorVersionNr Value="9"/>
-      <RevisionNr Value="4"/>
-      <BuildNr Value="19"/>
-      <StringTable ProductName="AGGREGATE" ProductVersion="0.6.4.0"/>
+      <MajorVersionNr Value="1"/>
+      <StringTable ProductVersion="0.6.4.0"/>
     </VersionInfo>
     <BuildModes Count="6">
       <Item1 Name="Default" Default="True"/>
