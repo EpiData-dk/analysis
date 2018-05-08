@@ -188,6 +188,7 @@ begin
   if ST.HasOption('r') then   T.Cell[PostInc(Col), 0].Text := '%';
   if ST.HasOption('ci') then  T.Cell[PostInc(Col), 0].Text := '(95% CI)';
   if ST.HasOption('cum') then T.Cell[PostInc(Col), 0].Text := 'Cum %';
+  T.SetRowBorders(0, [cbTop, cbBottom]);
 
   for i := 0 to ResultDF.Size - 1 do
     begin
@@ -211,6 +212,8 @@ begin
 
   if ST.HasOption('r') then
     T.Cell[2, T.RowCount-1].Text := Format('%8.' + IntToStr(FDecimals) + 'F', [100.00]);
+
+  T.SetRowBorders(T.RowCount - 1, [cbTop, cbBottom]);
 end;
 
 constructor TFreqCommand.Create(AExecutor: TExecutor;

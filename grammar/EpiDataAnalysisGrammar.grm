@@ -52,6 +52,7 @@ opSort        = 'sor'('t')?
 opAppend      = 'app'('end')?
 opMerge       = 'mer'('ge')?
 opReorder     = 'reo'('rder')?
+opAggregate   = 'agg'('regate')?
 
 ! -- String commands
 opRunTest     = 'runtest'
@@ -132,6 +133,7 @@ opSet         = 'set'
                                            |   opAppend
                                            |   opMerge
                                            |   opReorder
+                                           |   opAggregate
 
 <String Command>                           ::= opRead
                                            |   opRuntest

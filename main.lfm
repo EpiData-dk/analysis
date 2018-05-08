@@ -389,7 +389,7 @@ object MainForm: TMainForm
     end
     object ChangeDirAction: TAction
       Category = 'File'
-      Caption = 'Change Working Folder'
+      Caption = 'Change Directory'
       OnExecute = ChangeDirActionExecute
     end
     object BrowseAction: TAction

@@ -225,7 +225,7 @@
         <PackageName Value="LCL"/>
       </Item12>
     </RequiredPackages>
-    <Units Count="70">
+    <Units Count="72">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -532,6 +532,14 @@
         <Filename Value="executor/options_filesoptions.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit69>
+      <Unit70>
+        <Filename Value="statements/aggregate.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit70>
+      <Unit71>
+        <Filename Value="statements/aggregate_types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit71>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -569,7 +577,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="10">
+    <Exceptions Count="11">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -601,6 +609,9 @@
         <Name Value="Exception"/>
         <Enabled Value="False"/>
       </Item10>
+      <Item11>
+        <Name Value="EAggrFunc"/>
+      </Item11>
     </Exceptions>
   </Debugging>
 </CONFIG>
