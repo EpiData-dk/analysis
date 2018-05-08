@@ -39,8 +39,6 @@ type
     CancelExecAction: TAction;
     CopySelectedHistoryAction: TAction;
     CopyAllHistoryAction: TAction;
-    Label1: TLabel;
-    Label2: TLabel;
     MenuItem21: TMenuItem;
     MenuItem30: TMenuItem;
     MenuItem31: TMenuItem;
@@ -61,15 +59,12 @@ type
     ProjectPanel: TPanel;
     ShowAboutAction: TAction;
     ActionList1: TActionList;
-    Button2: TButton;
     FontDialog1: TFontDialog;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     MenuItem5: TMenuItem;
     MenuItem6: TMenuItem;
-    Panel2: TPanel;
     ProjectSplitter: TSplitter;
-    Button3: TButton;
     SaveDialog1: TSaveDialog;
     SidebarPanel: TPanel;
     HistoryListBox: TListBox;
@@ -108,7 +103,6 @@ type
     ClearHistoryAction: TAction;
     RecentFilesSubMenu: TMenuItem;
     RecentFilesActionList: TActionList;
-    PageControl1: TPageControl;
     MenuItem4: TMenuItem;
     MenuItem7: TMenuItem;
     MenuItem35: TMenuItem;
@@ -116,6 +110,7 @@ type
     CheckVersionOnlineAction: TAction;
     ReleaseNotesAction: TAction;
     ShowShortcutAction: TAction;
+    PageControl1: TPageControl;
     procedure CancelExecActionExecute(Sender: TObject);
     procedure CmdEditFocusActionExecute(Sender: TObject);
     procedure CopyAllHistoryActionExecute(Sender: TObject);
@@ -282,7 +277,8 @@ uses
   outputgenerator_html, about, Clipbrd, epimiscutils, ast_types, epidatafilerelations,
   epiv_custom_statusbar, datamodule, introduction_form, editor_form, LCLIntf, Symbol,
   ana_procs, ana_documentfile, LazFileUtils, LazUTF8Classes, epistringutils, ana_globals,
-  browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform;
+  browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform,
+  AnchorDocking, AnchorDockOptionsDlg, projecttree, history_form, varnames;
 
 { TMainForm }
 
@@ -342,6 +338,13 @@ end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+  DockMaster.MakeDockSite(Self, [akBottom], admrpChild);
+  DockMaster.OnShowOptions := @ShowAnchorDockOptions;
+
+  ProjectTreeForm := TProjectTreeForm.Create(Self);
+  HistoryForm := THistoryForm.Create(self);
+  VarnamesForm := TVarnamesForm.Create(Self);
+
   FLastCreatorCount := 0;
   FOutputCreator := TOutputCreator.Create;
   FOutputCreator.OnRedrawRequest := @OutputRedrawRequest;
@@ -620,11 +623,13 @@ end;
 procedure TMainForm.ToggleVarnamesListActionExecute(Sender: TObject);
 begin
   ToggleSidebar(2);
+  DockMaster.MakeDockable(VarnamesForm, true, true);
 end;
 
 procedure TMainForm.ToggleHistoryListActionExecute(Sender: TObject);
 begin
   ToggleSidebar(3);
+  DockMaster.MakeDockable(HistoryForm, true, true);
 end;
 
 procedure TMainForm.VarnamesListGetText(Sender: TBaseVirtualTree;
@@ -758,6 +763,8 @@ procedure TMainForm.ToggleProjectTreeExecute(Sender: TObject);
 begin
   ProjectPanel.Visible := not ProjectPanel.Visible;
   ProjectSplitter.Visible := ProjectPanel.Visible;
+
+  DockMaster.MakeDockable(ProjectTreeForm, true, true);
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -1669,7 +1676,6 @@ begin
     end;
   T2 := Now;
 
-  Label2.Caption := FormatDateTime('SS:ZZZZ', T2 - T1);
   DoUpdateHistory;
 end;
 

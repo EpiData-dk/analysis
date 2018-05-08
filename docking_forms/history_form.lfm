@@ -1,0 +1,25 @@
+object HistoryForm: THistoryForm
+  Left = 693
+  Height = 415
+  Top = 367
+  Width = 430
+  Caption = 'History'
+  ClientHeight = 415
+  ClientWidth = 430
+  LCLVersion = '1.9.0.0'
+  object ListBox1: TListBox
+    Left = 0
+    Height = 415
+    Top = 0
+    Width = 430
+    Align = alClient
+    Items.Strings = (
+      'cls;'
+      'read;'
+      'list v;'
+    )
+    ItemHeight = 23
+    ScrollWidth = 426
+    TabOrder = 0
+  end
+end
