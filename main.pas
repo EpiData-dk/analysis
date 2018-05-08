@@ -342,7 +342,7 @@ end;
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
   DockMaster.MakeDockSite(Self, [akBottom, akRight, akLeft], admrpChild);
-  DockMaster.OnShowOptions := @ShowAnchorDockOptions;
+//  DockMaster.OnShowOptions := @ShowAnchorDockOptions;
 
   FLastCreatorCount := 0;
   FOutputCreator := TOutputCreator.Create;
@@ -374,6 +374,7 @@ begin
 
   ProjectTreeForm2 := TProjectTreeForm2.Create(Self, Executor);
   ProjectTreeForm2.DisableAutoSizing;
+  DockMaster.MakeDockable(ProjectTreeForm2, true, true);
 
 {
   FProjectTree := TEpiVProjectTreeViewFrame.Create(Self);
@@ -396,6 +397,7 @@ begin
 
   VarNamesForm := TVarNamesForm.Create(Self, Executor);
   VarNamesForm.DisableAutoSizing;
+  DockMaster.MakeDockable(VarNamesForm, true, true);
 
 {  with VarnamesList do
   begin
