@@ -23,7 +23,7 @@ type
     FHighCI: TEpiField;
     FSum: Integer;
   public
-    constructor Create(AOwner: TEpiCustomBase);
+    constructor Create(AOwner: TEpiCustomBase; const ASize: integer = 0); override;
     property Categ: TEpiField read FCateg;
     property Count: TEpiField read FCount;
     property Percent: TEpiField read FPercent;
@@ -43,7 +43,8 @@ type
     FValuelabelOutput: TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
     FDecimals: Integer;
-    function  DoFreqTable(InputDF: TEpiDataFile): TFreqDatafile;
+    function  DoCalcFreqTable(InputDF: TEpiDataFile): TFreqDatafile;
+    function  DoCalcFreqTable2(InputDF: TEpiDataFile): TFreqDatafile;
     procedure DoResultVariables(ResultDF: TFreqDatafile);
     procedure DoOutputFreqTable(ResultDF: TFreqDatafile; ST: TCustomVariableCommand);
   public
@@ -58,16 +59,16 @@ type
 implementation
 
 uses
-  epimiscutils, options_utils, statfunctions;
+  epimiscutils, options_utils, statfunctions, aggregate, aggregate_types;
 
 { TFreqDatafile }
 
-constructor TFreqDatafile.Create(AOwner: TEpiCustomBase);
+constructor TFreqDatafile.Create(AOwner: TEpiCustomBase; const ASize: integer);
 begin
-  inherited Create(AOwner, 0);
+  inherited Create(AOwner, ASize);
 
-  FCateg      := NewField(ftString);
-  FCateg.Name := 'categ';
+//  FCateg      := NewField(ftString);
+//  FCateg.Name := 'categ';
 
   FCount      := NewField(ftInteger);
   FCount.Name := 'count';
@@ -80,7 +81,7 @@ end;
 
 { TFreqCommand }
 
-function TFreqCommand.DoFreqTable(InputDF: TEpiDataFile): TFreqDatafile;
+function TFreqCommand.DoCalcFreqTable(InputDF: TEpiDataFile): TFreqDatafile;
 var
   CountV, CategV, RunV, PercV, CumV, LowCIV, HighCIV: TEpiField;
   Runner, RIdx, i, RunSum, Sum: Integer;
@@ -136,6 +137,95 @@ begin
   Result.FSum := Sum;
 end;
 
+type
+
+  { TFreqAggrFunc }
+
+  TFreqAggrFunc = class(TAggrFunc)
+  private
+    FTotalCount: EpiInteger;
+    FCount: EpiInteger;
+    FCumCount: EpiInteger;
+    FCategV: TEpiField;
+    FCountV: TEpiField;
+    FPercV: TEpiField;
+    FCumV: TEpiField;
+    FLowCIV: TEpiField;
+    FHighCIV: TEpiField;
+  public
+    constructor Create(AResultVarName: UTF8String; AAggregateVector: TEpiField);
+    procedure Execute(Idx: integer); override;
+    procedure SetOutput(Idx: integer); override;
+    procedure Reset(); override;
+    procedure CreateResultVector(DataFile: TEpiDataFile); override;
+  end;
+
+constructor TFreqAggrFunc.Create(AResultVarName: UTF8String;
+  AAggregateVector: TEpiField);
+begin
+  inherited Create(AResultVarName, AAggregateVector, afCount);
+end;
+
+procedure TFreqAggrFunc.Execute(Idx: integer);
+begin
+  Inc(FCount);
+  Inc(FCumCount);
+end;
+
+procedure TFreqAggrFunc.SetOutput(Idx: integer);
+var
+  CIHigh, CILow: EpiFloat;
+begin
+
+  FCountV.AsInteger[Idx] := FCount;
+  FPercV.AsFloat[Idx]    := (FCount / FTotalCount) * 100;
+  FCumV.AsFloat[Idx]        := (FCumCount / FTotalCount) * 100;
+
+  EpiProportionCI(FCount, FTotalCount, CIHigh, CILow);
+  FLowCIV.AsFloat[Idx]      := CILow * 100;
+  FHighCIV.AsFloat[Idx]     := CIHigh * 100;
+end;
+
+procedure TFreqAggrFunc.Reset();
+begin
+  FCount := 0;
+end;
+
+procedure TFreqAggrFunc.CreateResultVector(DataFile: TEpiDataFile);
+begin
+  //inherited DoCreateResultVector(DataFile, ftInteger);
+  FCountV  := TFreqDatafile(DataFile).Count;
+  FPercV   := TFreqDatafile(DataFile).Percent;
+  FCumV    := TFreqDatafile(DataFile).CumPercent;
+  FLowCIV  := TFreqDatafile(DataFile).LowCI;
+  FHighCIV := TFreqDatafile(DataFile).HighCI;
+end;
+
+function TFreqCommand.DoCalcFreqTable2(InputDF: TEpiDataFile): TFreqDatafile;
+var
+  FunctionList: TAggrFuncList;
+  Aggregator: TAggregate;
+  Varnames: TStringList;
+  RefMap: TEpiReferenceMap;
+  Func: TFreqAggrFunc;
+begin
+  Varnames := TStringList.Create;
+  VarNames.Add(InputDF.Field[0].Name);
+
+  FunctionList := TAggrFuncList.Create(true);
+  Func := TFreqAggrFunc.Create('', InputDF.Field[0]);
+  Func.FTotalCount := InputDF.Size;
+  FunctionList.Add(Func);
+
+  Aggregator := TAggregate.Create(FExecutor, FOutputCreator);
+  Aggregator.ResultDataFileClass := TFreqDatafile;
+  Result := TFreqDatafile(Aggregator.CalcAggregate(InputDF, Varnames, FunctionList, RefMap));
+  Result.FCateg := Result.Field[Result.Fields.Count - 1];
+  Result.FSum := InputDF.Size;
+  FExecutor.Document.DataFiles.AddItem(Result);
+  RefMap.FixupReferences;
+end;
+
 procedure TFreqCommand.DoResultVariables(ResultDF: TFreqDatafile);
 var
   RCount, RCateg, RPerc, RCum, RLowCI, RHighCI: TExecVarVector;
@@ -167,12 +257,15 @@ var
   T: TOutputTable;
   CategV, CountV: TEpiField;
   i, CCount, Col: Integer;
+  VariableLabelType: TEpiGetVariableLabelType;
+  ValueLabelType: TEpiGetValueLabelType;
 begin
   CategV := ResultDF.Categ;
   CountV := ResultDF.Count;
 
+  VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   T := FOutputCreator.AddTable;
-  T.Header.Text := CategV.Question.Text;
+  T.Header.Text := CategV.GetVariableLabel(VariableLabelType);
 
   CCount := 2;
   if ST.HasOption('r') then   inc(CCount);
@@ -190,10 +283,11 @@ begin
   if ST.HasOption('cum') then T.Cell[PostInc(Col), 0].Text := 'Cum %';
   T.SetRowBorders(0, [cbTop, cbBottom]);
 
+  ValueLabelType := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   for i := 0 to ResultDF.Size - 1 do
     begin
       Col := 0;
-      T.Cell[PostInc(Col), i + 1].Text := CategV.AsString[i];
+      T.Cell[PostInc(Col), i + 1].Text := CategV.GetValueLabel(i, ValueLabelType);
       T.Cell[PostInc(Col), i + 1].Text := CountV.AsString[i];
 
       if ST.HasOption('r') then
@@ -231,25 +325,29 @@ end;
 procedure TFreqCommand.ExecFreq(DF: TEpiDataFile; ST: TCustomVariableCommand);
 var
   ResDF: TFreqDatafile;
+  OldModified: Boolean;
 begin
   FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
 
   FDecimals := DecimalFromOption(ST.Options);
 
-  ResDF := DoFreqTable(DF);
+  OldModified := FExecutor.Document.Modified;
+//  ResDF := DoCalcFreqTable(DF);
+  ResDF := DoCalcFreqTable2(DF);
   DoResultVariables(ResDF);
 
   if (not ST.HasOption('q')) then
     DoOutputFreqTable(ResDF, ST);
   ResDF.Free;
+  FExecutor.Document.Modified := OldModified;
 end;
 
 function TFreqCommand.CalcFreq(DF: TEpiDataFile;
   VariableLabelOutput: TEpiGetVariableLabelType): TFreqDatafile;
 begin
   FVariableLabelOutput := VariableLabelOutput;
-  Result := DoFreqTable(DF);
+  Result := DoCalcFreqTable(DF);
 end;
 
 end.

@@ -13,34 +13,33 @@ type
 
   { TAggregateDatafile }
 
-  TAggregateDatafile = class(TEpiDataFile)
-  private
-    procedure AddFieldChange(const Sender: TEpiCustomBase;
-      const Initiator: TEpiCustomBase; EventGroup: TEpiEventGroup;
-      EventType: Word; Data: Pointer);
-  public
-    constructor Create(AOwner: TEpiCustomBase; const ASize: integer = 0); override;
-  end;
 
   TAggregate = class(TObject)
   private
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
-    procedure DoCaptionHeadersAndLabels(ResultDF: TAggregateDatafile; FunctionList: TAggrFuncList; ST: TAggregateCommand);
+    FResultDataFileClass: TEpiDataFileClass;
+    procedure AddFieldChange(const Sender: TEpiCustomBase;
+      const Initiator: TEpiCustomBase; EventGroup: TEpiEventGroup;
+      EventType: Word; Data: Pointer);
+    procedure DoCaptionHeadersAndLabels(ResultDF: TEpiDataFile; FunctionList: TAggrFuncList; ST: TAggregateCommand);
   protected
     // Takes the option and creates function(s) if the idens matches a function, return true - else return false
-    function OptionToFunctions(InputDF: TEpiDataFile; Opt: TOption; CreateCountFunction: boolean; FunctionList: TAggrFuncList): boolean; virtual;
-    function DoCalcAggregate(InputDF: TEpiDataFile; Variables: TStrings; FunctionList: TAggrFuncList; Out RefMap: TEpiReferenceMap): TAggregateDatafile;
-    procedure DoOutputAggregate(ResultDF: TAggregateDatafile; ST: TAggregateCommand);
+    function  OptionToFunctions(InputDF: TEpiDataFile; Opt: TOption; CreateCountFunction: boolean; FunctionList: TAggrFuncList): boolean; virtual;
+    function  DoCalcAggregate(InputDF: TEpiDataFile; Variables: TStrings; FunctionList: TAggrFuncList; Out RefMap: TEpiReferenceMap): TEpiDataFile;
+    procedure DoOutputAggregate(ResultDF: TEpiDataFile; ST: TAggregateCommand);
   public
     constructor Create(AExecutor: TExecutor; OutputCreator: TOutputCreator); virtual;
     destructor Destroy; override;
 
+    // If Assigned, the resulting datafile from the aggregate will be of this class
+    property  ResultDataFileClass: TEpiDataFileClass read FResultDataFileClass write FResultDataFileClass;
+
     // Method called from Executor, does calculation + result vars + output
-    procedure ExecAggregate(InputDF: TEpiDataFile; ST: TAggregateCommand; Out ResultDF: TAggregateDatafile);
+    procedure ExecAggregate(InputDF: TEpiDataFile; ST: TAggregateCommand; Out ResultDF: TEpiDataFile);
 
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
-    function  CalcAggregate(InputDF: TEpiDataFile; ByVariables: TStrings; FunctionList: TAggrFuncList; Out RefMap: TEpiReferenceMap): TAggregateDatafile;
+    function  CalcAggregate(InputDF: TEpiDataFile; ByVariables: TStrings; FunctionList: TAggrFuncList; Out RefMap: TEpiReferenceMap): TEpiDataFile;
   end;
 
 implementation
@@ -48,12 +47,13 @@ implementation
 uses
   epicustomlist_helper, options_utils;
 
-{ TAggregateDatafile }
+{ TAggregate }
 
-procedure TAggregateDatafile.AddFieldChange(const Sender: TEpiCustomBase;
+procedure TAggregate.AddFieldChange(const Sender: TEpiCustomBase;
   const Initiator: TEpiCustomBase; EventGroup: TEpiEventGroup; EventType: Word;
   Data: Pointer);
 var
+  Fields: TEpiFields absolute Sender;
   F, PrevF: TEpiField;
 begin
   if (EventGroup <> eegCustomBase) then exit;
@@ -72,16 +72,7 @@ begin
   F.Top := PrevF.Top + 30;
 end;
 
-constructor TAggregateDatafile.Create(AOwner: TEpiCustomBase;
-  const ASize: integer);
-begin
-  inherited Create(AOwner, ASize);
-  Fields.RegisterOnChangeHook(@AddFieldChange, true);
-end;
-
-{ TAggregate }
-
-procedure TAggregate.DoCaptionHeadersAndLabels(ResultDF: TAggregateDatafile;
+procedure TAggregate.DoCaptionHeadersAndLabels(ResultDF: TEpiDataFile;
   FunctionList: TAggrFuncList; ST: TAggregateCommand);
 var
   Opt: TOption;
@@ -229,8 +220,7 @@ begin
 end;
 
 function TAggregate.DoCalcAggregate(InputDF: TEpiDataFile; Variables: TStrings;
-  FunctionList: TAggrFuncList; out RefMap: TEpiReferenceMap
-  ): TAggregateDatafile;
+  FunctionList: TAggrFuncList; out RefMap: TEpiReferenceMap): TEpiDataFile;
 var
   SortList, CountVariables: TEpiFields;
   V: String;
@@ -248,10 +238,14 @@ begin
   else
     SortList := TEpiFields.Create(nil);
 
-
   // Create the resulting datafile
-  Result := TAggregateDatafile.Create(nil);
+  if (Assigned(ResultDataFileClass)) then
+    Result := ResultDataFileClass.Create(nil, 0)
+  else
+    Result := TEpiDataFile.Create(nil, 0);
   Result.SetLanguage(InputDF.DefaultLang, true);
+
+  Result.Fields.RegisterOnChangeHook(@AddFieldChange, True);
 
   // Create a copy of the variables
   CountVariables := TEpiFields.Create(nil);
@@ -269,6 +263,7 @@ begin
       Func := FunctionList[i];
       Func.CreateResultVector(Result);
     end;
+  Result.Fields.UnRegisterOnChangeHook(@AddFieldChange);
 
   // First run through "normal" statistic. Those that don't need a particular sort order.
   TempFuncList := FunctionList.GetFunctions(AllAggrFuncTypes - [afPercentile]);
@@ -341,7 +336,7 @@ begin
   TempFuncList.Free;
 end;
 
-procedure TAggregate.DoOutputAggregate(ResultDF: TAggregateDatafile;
+procedure TAggregate.DoOutputAggregate(ResultDF: TEpiDataFile;
   ST: TAggregateCommand);
 var
   T: TOutputTable;
@@ -383,7 +378,7 @@ begin
 end;
 
 procedure TAggregate.ExecAggregate(InputDF: TEpiDataFile;
-  ST: TAggregateCommand; out ResultDF: TAggregateDatafile);
+  ST: TAggregateCommand; out ResultDF: TEpiDataFile);
 var
   VarNames: TStrings;
   Opt: TOption;
@@ -464,8 +459,7 @@ begin
 end;
 
 function TAggregate.CalcAggregate(InputDF: TEpiDataFile; ByVariables: TStrings;
-  FunctionList: TAggrFuncList; out RefMap: TEpiReferenceMap
-  ): TAggregateDatafile;
+  FunctionList: TAggrFuncList; out RefMap: TEpiReferenceMap): TEpiDataFile;
 begin
   Result := DoCalcAggregate(InputDF, ByVariables, FunctionList, RefMap);
 end;

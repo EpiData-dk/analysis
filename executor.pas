@@ -3501,7 +3501,7 @@ var
   Opt: TOption;
   EV: TCustomExecutorVariable;
   S: UTF8String;
-  ResultDF: TAggregateDatafile;
+  ResultDF: TEpiDataFile;
   UseCmd: TUse;
 begin
   // Sanity checks

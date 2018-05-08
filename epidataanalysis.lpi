@@ -14,7 +14,7 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
-      <StringTable ProductVersion="0.6.4.0"/>
+      <MinorVersionNr Value="1"/>
     </VersionInfo>
     <BuildModes Count="6">
       <Item1 Name="Default" Default="True"/>
@@ -225,7 +225,7 @@
         <PackageName Value="LCL"/>
       </Item12>
     </RequiredPackages>
-    <Units Count="72">
+    <Units Count="73">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -540,6 +540,10 @@
         <Filename Value="statements/aggregate_types.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit71>
+      <Unit72>
+        <Filename Value="statistics/tables.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit72>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
