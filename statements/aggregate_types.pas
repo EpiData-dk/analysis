@@ -84,7 +84,7 @@ type
 
   TAggrMean = class(TAggrFunc)
   private
-    FSum, FStdvar: EpiFloat;
+    FSum, FStdvar, FShift: EpiFloat;
     FCount: EpiInteger;
     FMeanType: TAggrMeanType;
     FLowerCI, FUpperCI: TEpiField;
@@ -97,6 +97,7 @@ type
     procedure UpdateResultVectorLabel(Decimals: Integer); override;
     property MeanType: TAggrMeanType read FMeanType;
     property Sum: EpiFloat read FSum;
+    property Shift: EpiFloat read FShift;
     property StdVar: EpiFloat read FStdvar;
     property Count: EpiInteger read FCount;
     property LowerCI: TEpiField read FLowerCI;
@@ -324,9 +325,9 @@ var
 begin
   if AggregateVector.IsMissing[Idx] then exit;
   Val := AggregateVector.AsFloat[Idx];
-
+  if FCount = 0 then FShift := Val;  // use first non-missing value as shift value
   FSum := FSum + Val;
-  FStdvar := FStdvar + (Val * Val);
+  FStdvar := FStdvar + (Val - FShift) * (Val - FShift);
   Inc(FCount);
 end;
 
@@ -349,7 +350,9 @@ begin
         end
       else
         begin
-          lStdVar := (StdVar + (count * (Mean * Mean) - 2 * Mean * Sum)) / (Count - 1);
+          // calculation of variance based on shifted values
+          lStdVar := (StdVar - (Mean - Shift) * (Mean - Shift) * Count) / (Count - 1);
+//          lStdVar := (StdVar + (count * (Mean * Mean) - 2 * Mean * Sum)) / (Count - 1);
           lStdDev := sqrt(lStdVar);
           F       := PTDISTRINV((Count - 1), 0.025) * System.Sqrt(lStdVar / Count);
           lLCI    := Mean - F;
@@ -679,4 +682,3 @@ begin
 end;
 
 end.
-
