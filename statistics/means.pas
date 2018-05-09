@@ -611,7 +611,7 @@ var
 begin
   T := FOutputCreator.AddTable;
   T.Header.Text := 'Analysis of Variance';
-  if (isNaN(AnovaRec.F)) then
+  if (isNaN(AnovaRec.F) or isInfinite(AnovaRec.F)) then
     begin
       T.ColCount := 1;
       T.RowCount := 1;
@@ -671,7 +671,7 @@ var
 begin
   T := FOutputCreator.AddTable;
   T.Header.Text := 'T-Test of Ho: mean=zero';
-  if (isNaN(AnovaRec.F)) then
+  if (isNaN(AnovaRec.F) or isInfinite(AnovaRec.F)) then
     begin
       T.ColCount := 1;
       T.RowCount := 1;
