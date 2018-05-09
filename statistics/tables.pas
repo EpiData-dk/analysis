@@ -40,14 +40,24 @@ var
   Aggr: TAggregate;
   ResultDF: TEpiDataFile;
   RefMap: TEpiReferenceMap;
+  AggrVars: TStringList;
 begin
   Result := TEpiDataFiles.Create(nil);
 
   FuncList := TAggrFuncList.Create(true);
   FuncList.Add(TAggrCount.Create('n', nil, acAll));
 
+  AggrVars := TStringList.Create;
+  AggrVars.AddStrings(Varnames);
+  AggrVars.AddStrings(StratifyNames);
+
   Aggr := TAggregate.Create(FExecutor, FOutputCreator);
-  ResultDF := Aggr.CalcAggregate(InputDF, VarNames, FuncList, RefMap);
+  ResultDF := Aggr.CalcAggregate(InputDF, AggrVars, FuncList, RefMap);
+
+  AggrVars.Free;
+
+
+  InternalOutputTable(ResultDF);
 
 end;
 

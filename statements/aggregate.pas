@@ -27,6 +27,7 @@ type
     // Takes the option and creates function(s) if the idens matches a function, return true - else return false
     function  OptionToFunctions(InputDF: TEpiDataFile; Opt: TOption; CreateCountFunction: boolean; FunctionList: TAggrFuncList): boolean; virtual;
     function  DoCalcAggregate(InputDF: TEpiDataFile; Variables: TStrings; FunctionList: TAggrFuncList; Out RefMap: TEpiReferenceMap): TEpiDataFile;
+    procedure DoExpandDatafile(InputDF, ResultDF: TEpiDataFile; Variables: TStrings);
     procedure DoOutputAggregate(ResultDF: TEpiDataFile; ST: TAggregateCommand);
   public
     constructor Create(AExecutor: TExecutor; OutputCreator: TOutputCreator); virtual;
@@ -39,7 +40,13 @@ type
     procedure ExecAggregate(InputDF: TEpiDataFile; ST: TAggregateCommand; Out ResultDF: TEpiDataFile);
 
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
-    function  CalcAggregate(InputDF: TEpiDataFile; ByVariables: TStrings; FunctionList: TAggrFuncList; Out RefMap: TEpiReferenceMap): TEpiDataFile;
+    // - InputDf: The datafile to run aggregate on
+    // - ByVariables: The variable names to stratify by
+    // - FunctionList: The list of aggregate functions.
+    // - out RefMap: During aggregate the ByVariables are cloned to the resulting data, this is the RefMap from the cloning.
+    //               it has NOT fixed the references
+    // - ExpandedDatafile: The result datafile will contain ALL combinations of the ByVariables, even if no such entries exists.
+    function  CalcAggregate(InputDF: TEpiDataFile; ByVariables: TStrings; FunctionList: TAggrFuncList; Out RefMap: TEpiReferenceMap; ExpandedDataFile: boolean = false): TEpiDataFile;
   end;
 
 implementation
@@ -342,6 +349,40 @@ begin
   TempFuncList.Free;
 end;
 
+procedure TAggregate.DoExpandDatafile(InputDF, ResultDF: TEpiDataFile;
+  Variables: TStrings);
+var
+  V: TStringList;
+  S: String;
+  FuncList: TAggrFuncList;
+  RefMap: TEpiReferenceMap;
+  TempDF: TEpiDataFile;
+  Fields: TEpiFields;
+begin
+  V := TStringList.Create;
+
+  Fields := TEpiFields.Create(nil);
+
+  for S in Variables do
+    begin
+      V.Clear;
+      V.Add(S);
+
+      FuncList := TAggrFuncList.Create(true);
+      FuncList.Add(TAggrCount.Create('n', nil, acAll));
+      TempDF := DoCalcAggregate(InputDF, V, FuncList, RefMap);
+      RefMap.Free;
+      FuncList.Free;
+
+      Fields.AddItem(TempDF.Fields.DeleteItem(0));
+    end;
+
+{  for i := 0 to ResultDF.Size -1 do
+    begin
+
+    end;}
+end;
+
 procedure TAggregate.DoOutputAggregate(ResultDF: TEpiDataFile;
   ST: TAggregateCommand);
 var
@@ -465,7 +506,8 @@ begin
 end;
 
 function TAggregate.CalcAggregate(InputDF: TEpiDataFile; ByVariables: TStrings;
-  FunctionList: TAggrFuncList; out RefMap: TEpiReferenceMap): TEpiDataFile;
+  FunctionList: TAggrFuncList; out RefMap: TEpiReferenceMap;
+  ExpandedDataFile: boolean): TEpiDataFile;
 begin
   Result := DoCalcAggregate(InputDF, ByVariables, FunctionList, RefMap);
 end;
