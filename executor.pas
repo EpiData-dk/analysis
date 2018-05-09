@@ -2233,7 +2233,7 @@ var
   FN: UTF8String;
   P: TParser;
   TheProgram: TStatementList;
-  OldCurrentDir: String;
+  OldCurrentDir, RunCurrentDir: String;
 begin
   FN := '';
 
@@ -2266,8 +2266,10 @@ begin
     begin
       OldCurrentDir := GetCurrentDirUTF8;
       SetCurrentDirUTF8(ExtractFilePath(FN));
+      RunCurrentDir := GetCurrentDirUTF8;
       Execute(TheProgram);
-      SetCurrentDirUTF8(OldCurrentDir);
+      if (RunCurrentDir = GetCurrentDirUTF8) then
+        SetCurrentDirUTF8(OldCurrentDir); // restore original if directory not changed by the program
     end;
 
     P.Free;
@@ -3817,10 +3819,10 @@ end;
 
 procedure TExecutor.DoStatementList(L: TStatementList);
 var
-  i: Integer;
+  i,j: Integer;
 begin
   I := 0;
-
+  j := L.Count;
   while (I < L.Count) and
         (not Cancelled)
   do
