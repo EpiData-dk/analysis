@@ -1,12 +1,10 @@
 object MainForm: TMainForm
-  Left = 363
-  Height = 682
-  Top = 220
-  Width = 1159
+  Left = 2015
+  Height = 30
+  Top = 271
+  Width = 1036
   AllowDropFiles = True
   Caption = 'AMainForm'
-  ClientHeight = 657
-  ClientWidth = 1159
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -15,124 +13,10 @@ object MainForm: TMainForm
   OnShow = FormShow
   Position = poDefault
   LCLVersion = '1.9.0.0'
-  object SidebarPanel: TPanel
-    Left = 963
-    Height = 657
-    Top = 0
-    Width = 196
-    Align = alRight
-    ClientHeight = 657
-    ClientWidth = 196
-    TabOrder = 0
-    Visible = False
-    object HistoryListBox: TListBox
-      Left = 1
-      Height = 195
-      Top = 461
-      Width = 194
-      Align = alBottom
-      ItemHeight = 0
-      MultiSelect = True
-      OnDblClick = HistoryListBoxDblClick
-      OnDrawItem = HistoryListBoxDrawItem
-      OnKeyDown = HistoryListBoxKeyDown
-      PopupMenu = HistoryPopupMenu
-      ScrollWidth = 190
-      Style = lbOwnerDrawFixed
-      TabOrder = 0
-      TopIndex = -1
-      Visible = False
-    end
-    object SidebarBottomSplitter: TSplitter
-      Cursor = crVSplit
-      Left = 1
-      Height = 5
-      Top = 456
-      Width = 194
-      Align = alBottom
-      AutoSnap = False
-      Beveled = True
-      ResizeAnchor = akBottom
-      Visible = False
-    end
-    object VarnamesList: TVirtualStringTree
-      Cursor = 63
-      Left = 1
-      Height = 455
-      Top = 1
-      Width = 194
-      Align = alClient
-      Colors.UnfocusedColor = clMedGray
-      DefaultText = 'Node'
-      Header.AutoSizeIndex = 2
-      Header.Columns = <      
-        item
-          Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
-          Position = 0
-          Text = 'Name'
-          Width = 245
-        end      
-        item
-          Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
-          Position = 1
-          Text = 'Type'
-          Width = 205
-        end      
-        item
-          Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
-          Position = 2
-          Text = 'Label'
-          Width = 10
-        end>
-      Header.Options = [hoAutoResize, hoColumnResize, hoDblClickResize, hoDrag, hoShowImages, hoShowSortGlyphs, hoVisible, hoAutoSpring]
-      TabOrder = 2
-      TreeOptions.MiscOptions = [toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning]
-      TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowVertGridLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection]
-      TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
-      Visible = False
-    end
-  end
-  object SidebarSplitter: TSplitter
-    Left = 958
-    Height = 657
-    Top = 0
-    Width = 5
-    Align = alRight
-    AutoSnap = False
-    Beveled = True
-    MinSize = 40
-    ResizeAnchor = akRight
-    Visible = False
-  end
-  object ProjectPanel: TPanel
-    Left = 0
-    Height = 657
-    Top = 0
-    Width = 211
-    Align = alLeft
-    TabOrder = 1
-    Visible = False
-  end
-  object ProjectSplitter: TSplitter
-    Left = 211
-    Height = 657
-    Top = 0
-    Width = 5
-    Beveled = True
-    Visible = False
-  end
-  object PageControl1: TPageControl
-    Left = 216
-    Height = 657
-    Top = 0
-    Width = 742
-    Align = alClient
-    TabOrder = 4
-  end
   object MainMenu1: TMainMenu
     Images = DM.Icons16
-    left = 280
-    top = 188
+    left = 256
+    top = 16
     object MenuItem1: TMenuItem
       Caption = '&File'
       object MenuItem19: TMenuItem
@@ -263,17 +147,17 @@ object MainForm: TMainForm
   object FontDialog1: TFontDialog
     MinFontSize = 0
     MaxFontSize = 0
-    left = 524
-    top = 313
+    left = 464
+    top = 16
   end
   object SaveDialog1: TSaveDialog
-    left = 240
-    top = 16
+    left = 96
+    top = 8
   end
   object ActionList1: TActionList
     Images = DM.Icons16
-    left = 376
-    top = 192
+    left = 352
+    top = 20
     object ShowAboutAction: TAction
       Category = 'Help'
       Caption = 'About'
@@ -425,8 +309,8 @@ object MainForm: TMainForm
     end
   end
   object HistoryPopupMenu: TPopupMenu
-    left = 864
-    top = 504
+    left = 816
+    top = 20
     object MenuItem23: TMenuItem
       Action = CopySelectedHistoryAction
     end
@@ -441,7 +325,7 @@ object MainForm: TMainForm
     end
   end
   object RecentFilesActionList: TActionList
-    left = 660
-    top = 188
+    left = 636
+    top = 16
   end
 end

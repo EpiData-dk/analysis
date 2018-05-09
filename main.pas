@@ -56,7 +56,6 @@ type
     MenuItem3: TMenuItem;
     MenuItem8: TMenuItem;
     HistoryPopupMenu: TPopupMenu;
-    ProjectPanel: TPanel;
     ShowAboutAction: TAction;
     ActionList1: TActionList;
     FontDialog1: TFontDialog;
@@ -64,16 +63,10 @@ type
     MenuItem1: TMenuItem;
     MenuItem5: TMenuItem;
     MenuItem6: TMenuItem;
-    ProjectSplitter: TSplitter;
     SaveDialog1: TSaveDialog;
-    SidebarPanel: TPanel;
-    HistoryListBox: TListBox;
-    SidebarBottomSplitter: TSplitter;
     ToggleCmdTreeAction: TAction;
     ToggleVarnamesListAction: TAction;
     ToggleHistoryListAction: TAction;
-    SidebarSplitter: TSplitter;
-    VarnamesList: TVirtualStringTree;
     MenuItem9: TMenuItem;
     MenuItem10: TMenuItem;
     MenuItem11: TMenuItem;
@@ -110,7 +103,6 @@ type
     CheckVersionOnlineAction: TAction;
     ReleaseNotesAction: TAction;
     ShowShortcutAction: TAction;
-    PageControl1: TPageControl;
     procedure CancelExecActionExecute(Sender: TObject);
     procedure CmdEditFocusActionExecute(Sender: TObject);
     procedure CopyAllHistoryActionExecute(Sender: TObject);
@@ -187,6 +179,7 @@ type
 
   { Variable List }
   private
+    FVarnamesList: TVirtualStringTree;
     procedure VarnamesListGetImageIndex(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var ImageIndex: Integer);
@@ -198,15 +191,21 @@ type
       const HitInfo: THitInfo);
     procedure VarnamesListAfterGetMaxColumnWidth(Sender: TVTHeader;
       Column: TColumnIndex; var MaxWidth: Integer);
+  private
+    procedure DoUpdateVarnames;
+  public
+    procedure UpdateVarnamesList;
 
   { History / CmdEdit }
   private
+    FHistoryListBox: TListBox;
     FHistory: THistory;
     FCmdEdit: TCmdEdit;
     function  CmdEditRunCommand(Sender: TObject; const S: UTF8String): boolean;
+    procedure DoUpdateHistory;
   public
+    procedure UpdateHistoryList;
     procedure InterfaceRunCommand(const S: UTF8String);
-
 
   { ProjectPanel }
   private
@@ -219,11 +218,6 @@ type
   { Sidebar }
   private
     procedure ToggleSidebar(Item: Integer);
-    procedure DoUpdateVarnames;
-    procedure DoUpdateHistory;
-  public
-    procedure UpdateVarnamesList;
-    procedure UpdateHistoryList;
 
   { Statusbar }
   private
@@ -239,6 +233,7 @@ type
 
   { Output }
   private
+    FPageControl: TPageControl;
     FOutputViewer: IAnaOutputViewer;
     FLastCreatorCount: Integer;
     FOutputCreator: TOutputCreator;
@@ -278,7 +273,8 @@ uses
   epiv_custom_statusbar, datamodule, introduction_form, editor_form, LCLIntf, Symbol,
   ana_procs, ana_documentfile, LazFileUtils, LazUTF8Classes, epistringutils, ana_globals,
   browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform,
-  AnchorDocking, AnchorDockOptionsDlg, projecttree, history_form, varnames;
+  AnchorDocking, AnchorDockOptionsDlg, XMLPropStorage;
+//, projecttree, history_form, varnames;
 
 { TMainForm }
 
@@ -309,9 +305,9 @@ var
   i: Integer;
 begin
   S := '';
-  for i := 0 to HistoryListBox.Count - 1 do
-    if HistoryListBox.Selected[i] then
-      S := S + HistoryListBox.Items[i] + LineEnding;
+  for i := 0 to FHistoryListBox.Count - 1 do
+    if FHistoryListBox.Selected[i] then
+      S := S + FHistoryListBox.Items[i] + LineEnding;
 
   Clipboard.AsText := S;
 end;
@@ -341,9 +337,8 @@ begin
   DockMaster.MakeDockSite(Self, [akBottom], admrpChild);
   DockMaster.OnShowOptions := @ShowAnchorDockOptions;
 
-  ProjectTreeForm := TProjectTreeForm.Create(Self);
-  HistoryForm := THistoryForm.Create(self);
-  VarnamesForm := TVarnamesForm.Create(Self);
+//  ProjectTreeForm := TProjectTreeForm.Create(Self);
+//  VarnamesForm := TVarnamesForm.Create(Self);
 
   FLastCreatorCount := 0;
   FOutputCreator := TOutputCreator.Create;
@@ -374,9 +369,9 @@ begin
   FOutputCreator.SetOptions := Executor.SetOptions;
 
   FProjectTree := TEpiVProjectTreeViewFrame.Create(Self);
-  FProjectTree.Visible := true;
-  FProjectTree.Parent := ProjectPanel;
-  FProjectTree.Align := alClient;
+//  FProjectTree.Visible := true;
+//  FProjectTree.Parent := ProjectPanel;
+//  FProjectTree.Align := alClient;
   FProjectTree.ShowProtected := true;
 
   FProjectTree.AllowSelectProject := false;
@@ -391,31 +386,92 @@ begin
   FProjectTree.OnTreeNodeDoubleClick := @ProjectTreeDoubleClick;
   FProjectTree.OnGetText := @ProjectGetText;
 
-  with VarnamesList do
-  begin
-    Images := DM.Icons16;
+  DockMaster.MakeDockable(FProjectTree, false, false);
 
-    OnAfterGetMaxColumnWidth := @VarnamesListAfterGetMaxColumnWidth;
-    OnGetText                := @VarnamesListGetText;
-    OnKeyDown                := @VarnamesListKeyDown;
-    OnNodeDblClick           := @VarnamesListNodeDblClick;
-    OnGetImageIndex          := @VarnamesListGetImageIndex;
-  end;
+  FVarnamesList := TVirtualStringTree.Create(Self);
+  with FVarnamesList do
+    begin
+      Name := 'VariableList';
+      Colors.UnfocusedColor := clMedGray;
+      Header.AutoSizeIndex := 2;
+      with Header.Columns.Add do
+        begin
+          Options := [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable];
+          Position := 0;
+          Text := 'Name';
+          Width := 248;
+        end;
+
+      with Header.Columns.Add do
+        begin
+          Options := [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable];
+          Position := 1;
+          Text := 'Type';
+          Width := 208;
+        end;
+
+      with Header.Columns.Add do
+        begin
+          Options := [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable];
+          Position := 2;
+          Text := 'Label';
+          Width := 10;
+        end;
+
+      Header.Options := [hoAutoResize, hoColumnResize, hoDblClickResize, hoDrag, hoShowImages, hoShowSortGlyphs, hoVisible, hoAutoSpring];
+      TreeOptions.MiscOptions := [toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning];
+      TreeOptions.PaintOptions := [toShowButtons, toShowDropmark, toShowVertGridLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection];
+      TreeOptions.SelectionOptions := [toFullRowSelect, toMultiSelect];
+      Images := DM.Icons16;
+
+      OnAfterGetMaxColumnWidth := @VarnamesListAfterGetMaxColumnWidth;
+      OnGetText                := @VarnamesListGetText;
+      OnKeyDown                := @VarnamesListKeyDown;
+      OnNodeDblClick           := @VarnamesListNodeDblClick;
+      OnGetImageIndex          := @VarnamesListGetImageIndex;
+    end;
+  DockMaster.MakeDockable(FVarnamesList, false, false);
+
+  FHistoryListBox := TListBox.Create(Self);
+  with FHistoryListBox do
+    begin
+      Name        := 'HistoryListBox';
+      MultiSelect := True;
+      OnDblClick  := @HistoryListBoxDblClick;
+      OnDrawItem  := @HistoryListBoxDrawItem;
+      OnKeyDown   := @HistoryListBoxKeyDown;
+      PopupMenu   := HistoryPopupMenu;
+      Style       := lbOwnerDrawFixed;
+    end;
+  DockMaster.MakeDockable(FHistoryListBox, false, false);
 
 
   FStatusbar := TAnalysisStatusbar.Create(Self, Executor);
-  FStatusbar.Parent := Self;
-  FStatusbar.Align := alBottom;
+  FStatusbar.Name := 'AnalysisStatusbar';
+//  FStatusbar.Parent := Self;
+//  FStatusbar.Align := alBottom;
   FStatusbar.Update(sucDocFile);
+  DockMaster.MakeDockable(FStatusbar, true, true);
+
+
+  FPageControl := TPageControl.Create(Self);
+  FPageControl.Name := 'OutputPageControl';
+  FPageControl.ShowTabs := false;
+  DockMaster.MakeDockable(FPageControl, false, false);
 
   FHistory := THistory.Create(Executor, FOutputCreator);
 
+  //HistoryForm := THistoryForm.Create(self, FHistory);
+
   FCmdEdit := TCmdEdit.Create(Self);
-  FCmdEdit.Parent := Self;//CenterPanel;
-  FCmdEdit.Align := alBottom;
+  FCmdEdit.Name := 'CmdEdit';
+  FCmdEdit.Text := '';
   FCmdEdit.OnRunCommand := @CmdEditRunCommand;
   FCmdEdit.Executor := Executor;
   FCmdEdit.History := FHistory;
+//  FCmdEdit.Parent := Self;//CenterPanel;
+//  FCmdEdit.Align := alBottom;
+  DockMaster.MakeDockable(FCmdEdit, true, true);
 
   aDM.OnProgress := @ReadDataProgress;
   aDM.OutputCreator := FOutputCreator;
@@ -441,9 +497,19 @@ var
   Lst: TStringList;
   S: String;
   i: Integer;
+  HS: TAnchorDockHostSite;
+  XMLConfig: TXMLConfigStorage;
 begin
+  HS := DockMaster.GetAnchorSite(FStatusbar);
+  HS.ChangeBounds(Self.Left, Self.Top + Self.Height, FStatusbar.Width, FStatusbar.Height, false);
+  HS.Caption := '';
+
+  HS := DockMaster.GetAnchorSite(FCmdEdit);
+  HS.ChangeBounds(Self.Left, Self.Top + Self.Height, FCmdEdit.Width, FCmdEdit.Height, false);
+  HS.Caption := '';
+
   DoUpdateTitle;
-  ActiveControl := FCmdEdit;
+//  ActiveControl := FCmdEdit;
 
   // This creates the output viewer (Html, Text)
   OutputViewerChanges(nil);
@@ -456,10 +522,17 @@ begin
   UpdateRecentFiles;
   LoadTutorials;
 
-  LoadFormPosition(Self, 'MainForm');
-  LoadSplitterPosition(ProjectSplitter, 'ProjectSplitter');
-  LoadSplitterPosition(SidebarSplitter, 'SidebarSplitter');
-  LoadSplitterPosition(SidebarBottomSplitter, 'SidebarBottomSplitter');
+  {if FileExistsUTF8('layout.xml') then
+    begin
+      XMLConfig := TXMLConfigStorage.Create('layout.xml', true);
+      DockMaster.LoadLayoutFromConfig(XMLConfig, true);
+      XMLConfig.Free;
+    end;   }
+
+//  LoadFormPosition(Self, 'MainForm');
+//  LoadSplitterPosition(ProjectSplitter, 'ProjectSplitter');
+//  LoadSplitterPosition(SidebarSplitter, 'SidebarSplitter');
+//  LoadSplitterPosition(SidebarBottomSplitter, 'SidebarBottomSplitter');
 
   // At this point it is possible to run the first commands
   if Application.HasOption('i') then
@@ -499,9 +572,9 @@ end;
 
 procedure TMainForm.HistoryListBoxDblClick(Sender: TObject);
 begin
-  if HistoryListBox.ItemIndex <> -1 then
+  if FHistoryListBox.ItemIndex <> -1 then
     begin
-      FCmdEdit.Text := HistoryListBox.Items[HistoryListBox.ItemIndex];
+      FCmdEdit.Text := FHistoryListBox.Items[FHistoryListBox.ItemIndex];
 
       Application.QueueAsyncCall(@DelayCmdEditFocus, 0);
     end;
@@ -516,9 +589,9 @@ begin
   if (Key = VK_RETURN) and
      (Shift = [])
   then
-    if HistoryListBox.ItemIndex <> -1 then
+    if FHistoryListBox.ItemIndex <> -1 then
       begin
-        FCmdEdit.Text := HistoryListBox.Items[HistoryListBox.ItemIndex];
+        FCmdEdit.Text := FHistoryListBox.Items[FHistoryListBox.ItemIndex];
         if FCmdEdit.CanFocus then
           FCmdEdit.SetFocus;
       end;
@@ -526,12 +599,12 @@ begin
   if (Key = VK_C) and
      (Shift = [ssCtrlOS])
   then
-    if HistoryListBox.ItemIndex <> -1 then
+    if FHistoryListBox.ItemIndex <> -1 then
       begin
         S := '';
-        for i := 0 to HistoryListBox.Count - 1 do
-          if (HistoryListBox.Selected[i]) then
-            S := S + LineEnding + HistoryListBox.Items[i];
+        for i := 0 to FHistoryListBox.Count - 1 do
+          if (FHistoryListBox.Selected[i]) then
+            S := S + LineEnding + FHistoryListBox.Items[i];
 
         S := TrimLeft(S);
         Clipboard.AsText := S;
@@ -617,19 +690,19 @@ end;
 
 procedure TMainForm.ToggleCmdTreeActionExecute(Sender: TObject);
 begin
-  ToggleSidebar(1);
+//  ToggleSidebar(1);
 end;
 
 procedure TMainForm.ToggleVarnamesListActionExecute(Sender: TObject);
 begin
-  ToggleSidebar(2);
-  DockMaster.MakeDockable(VarnamesForm, true, true);
+//  ToggleSidebar(2);
+  DockMaster.MakeDockable(FVarnamesList, true, true);
 end;
 
 procedure TMainForm.ToggleHistoryListActionExecute(Sender: TObject);
 begin
-  ToggleSidebar(3);
-  DockMaster.MakeDockable(HistoryForm, true, true);
+//  ToggleSidebar(3);
+  DockMaster.MakeDockable(FHistoryListBox, true, true);
 end;
 
 procedure TMainForm.VarnamesListGetText(Sender: TBaseVirtualTree;
@@ -659,7 +732,7 @@ begin
     Exit;
 
   S := '';
-  for Node in VarnamesList.SelectedNodes() do
+  for Node in FVarnamesList.SelectedNodes() do
     begin
       F := Executor.SortedFields[Node^.Index];
       S := S + ' ' + F.Name;
@@ -684,10 +757,10 @@ procedure TMainForm.VarnamesListAfterGetMaxColumnWidth(Sender: TVTHeader;
 var
   W: Integer;
 begin
-  W := VarnamesList.Canvas.GetTextWidth(Sender.Columns[Column].Text) +
+  W := FVarnamesList.Canvas.GetTextWidth(Sender.Columns[Column].Text) +
        // apparently Margin and TextMargin are cummulative...
-       (VarnamesList.TextMargin * 2) +
-       (VarnamesList.Margin * 2);
+       (FVarnamesList.TextMargin * 2) +
+       (FVarnamesList.Margin * 2);
 
   if (W > MaxWidth) then
     MaxWidth := W;
@@ -735,10 +808,10 @@ var
   TS: TTextStyle;
 begin
   //  FHistory.Lines.Objects[Index];//
-  ACanvas := HistoryListBox.Canvas;
+  ACanvas := FHistoryListBox.Canvas;
   ACanvas.FillRect(ARect);
 
-  if (Index < 0) or (Index > HistoryListBox.Count) then exit;
+  if (Index < 0) or (Index > FHistoryListBox.Count) then exit;
 
   if FHistory.Custom[Index] then
     ACanvas.Font.Color := clBlue;
@@ -749,7 +822,7 @@ begin
   TS := ACanvas.TextStyle;
   TS.Layout := tlCenter;
   ACanvas.TextStyle := TS;
-  ACanvas.TextRect(ARect, ARect.Left + 2, ARect.Top, HistoryListBox.Items[Index]);
+  ACanvas.TextRect(ARect, ARect.Left + 2, ARect.Top, FHistoryListBox.Items[Index]);
 end;
 
 procedure TMainForm.CommandsHelpActionExecute(Sender: TObject);
@@ -761,15 +834,16 @@ end;
 
 procedure TMainForm.ToggleProjectTreeExecute(Sender: TObject);
 begin
-  ProjectPanel.Visible := not ProjectPanel.Visible;
-  ProjectSplitter.Visible := ProjectPanel.Visible;
+//  ProjectPanel.Visible := not ProjectPanel.Visible;
+//  ProjectSplitter.Visible := ProjectPanel.Visible;
 
-  DockMaster.MakeDockable(ProjectTreeForm, true, true);
+  DockMaster.MakeDockable(FProjectTree, true, true);
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 var
   Res: TModalResult;
+  XMLConfig: TXMLConfigStorage;
 begin
   if Assigned(EditorForm) then
     CanClose := EditorForm.CloseQuery;
@@ -792,16 +866,20 @@ begin
 
   if (CanClose) then
     begin
-      SaveFormPosition(Self, 'MainForm');
+//      SaveFormPosition(Self, 'MainForm');
+   {   XMLConfig := TXMLConfigStorage.Create('layout.xml', false);
+      DockMaster.SaveLayoutToConfig(XMLConfig);
+      XMLConfig.WriteToDisk;
+      XMLConfig.Free;  }
 
-      if ProjectSplitter.Visible then
-        SaveSplitterPosition(ProjectSplitter, 'ProjectSplitter');
+//      if ProjectSplitter.Visible then
+//        SaveSplitterPosition(ProjectSplitter, 'ProjectSplitter');
 
-      if SidebarSplitter.Visible then
-        SaveSplitterPosition(SidebarSplitter, 'SidebarSplitter');
+//      if SidebarSplitter.Visible then
+//        SaveSplitterPosition(SidebarSplitter, 'SidebarSplitter');
 
-      if SidebarBottomSplitter.Visible then
-        SaveSplitterPosition(SidebarBottomSplitter, 'SidebarBottomSplitter');
+//      if SidebarBottomSplitter.Visible then
+//        SaveSplitterPosition(SidebarBottomSplitter, 'SidebarBottomSplitter');
     end;
 end;
 
@@ -941,7 +1019,7 @@ begin
       if (Statement.ExecResult = csrSuccess)
       then
         begin
-          ProjectPanel.Visible := false;
+          //ProjectPanel.Visible := false;
 
           FStatusbar.DocFile  := nil;
           FStatusbar.Datafile := nil;
@@ -965,7 +1043,7 @@ begin
   end;
 
   FStatusbar.Update();
-  ProjectSplitter.Visible := ProjectPanel.Visible;
+  //ProjectSplitter.Visible := ProjectPanel.Visible;
 end;
 
 procedure TMainForm.DialogFilenameHack(const S: string);
@@ -1316,12 +1394,12 @@ var
   Sheet: TTabSheet;
   S: String;
 begin
-  DisableAutoSizing;
+//  DisableAutoSizing;
 
-  if (PageControl1.PageCount > 0) and
-     (Assigned(PageControl1.ActivePage))
+  if (FPageControl.PageCount > 0) and
+     (Assigned(FPageControl.ActivePage))
   then
-    PageControl1.ActivePage.Free;
+    FPageControl.ActivePage.Free;
 
 
   S := UTF8UpperCase(Executor.SetOptions[ANA_SO_OUTPUT_FORMAT].Value);
@@ -1357,15 +1435,17 @@ begin
       Sheet := TOldHtmlSheet.Create(Self);
   end;
 
-  Sheet.Parent := PageControl1;
-  PageControl1.ActivePage := Sheet;
+  Sheet.Parent := FPageControl;
+  FPageControl.ActivePage := Sheet;
   Supports(Sheet, IAnaOutputViewer, FOutputViewer);
 
   FOutputViewer.Initialize;
   FOutputViewer.UpdateFontAndSize(Executor);
   RedrawOutput;
 
-  EnableAutoSizing;
+  DockMaster.MakeDockable(FPageControl, true, false);
+
+//  EnableAutoSizing;
 end;
 
 procedure TMainForm.ProjectGetText(Sender: TObject;
@@ -1560,15 +1640,15 @@ procedure TMainForm.ToggleSidebar(Item: Integer);
 var
   Ctrl: TWinControl;
 begin
-  // 1 = CmdTree
+{  // 1 = CmdTree
   // 2 = VarList
   // 3 = History
   // 4 = Project Tree
 
   case Item of
 //    1: Ctrl := CmdTree;
-    2: Ctrl := VarnamesList;
-    3: Ctrl := HistoryListBox;
+    2: Ctrl := FVarnamesList;
+    3: Ctrl := FHistoryListBox;
     4:
       begin
 
@@ -1597,42 +1677,44 @@ begin
         end;
     end;
 
-  if (HistoryListBox.Visible) then
+  if (FHistoryListBox.Visible) then
     begin
-      if (not VarnamesList.Visible) then
-        HistoryListBox.Align := alClient
+      if (not FVarnamesList.Visible) then
+        FHistoryListBox.Align := alClient
       else
-        HistoryListBox.Align := alBottom;
+        FHistoryListBox.Align := alBottom;
 
-      HistoryListBox.TopIndex := HistoryListBox.Count - 1;
+      FHistoryListBox.TopIndex := FHistoryListBox.Count - 1;
     end;
 
-  SidebarBottomSplitter.Visible := (VarnamesList.Visible) and (HistoryListBox.Visible);
+  SidebarBottomSplitter.Visible := (FVarnamesList.Visible) and (FHistoryListBox.Visible);
 
-  SidebarPanel.Visible := (VarnamesList.Visible or HistoryListBox.Visible);
-  SidebarSplitter.Visible := SidebarPanel.Visible;
+  SidebarPanel.Visible := (FVarnamesList.Visible or FHistoryListBox.Visible);
+  SidebarSplitter.Visible := SidebarPanel.Visible;        }
 end;
 
 procedure TMainForm.DoUpdateVarnames;
 begin
   if (not Assigned(Executor.DataFile)) then
-    VarnamesList.RootNodeCount := 0
+    FVarnamesList.RootNodeCount := 0
   else
-    VarnamesList.RootNodeCount := Executor.SortedFields.Count;
+    FVarnamesList.RootNodeCount := Executor.SortedFields.Count;
 
-  VarnamesList.InvalidateChildren(nil, true);
-  VarnamesList.Header.AutoFitColumns(false);
+  FVarnamesList.InvalidateChildren(nil, true);
+  FVarnamesList.Header.AutoFitColumns(false);
 end;
 
 procedure TMainForm.DoUpdateHistory;
 begin
-  HistoryListBox.Items.BeginUpdate;
+  FHistoryListBox.Items.BeginUpdate;
 
-  HistoryListBox.Clear;
-  HistoryListBox.Items.Assign(FHistory.Lines);
+  FHistoryListBox.Clear;
+  FHistoryListBox.Items.Assign(FHistory.Lines);
 
-  HistoryListBox.Items.EndUpdate;
-  HistoryListBox.TopIndex := HistoryListBox.Items.Count - 1;
+  FHistoryListBox.Items.EndUpdate;
+  FHistoryListBox.TopIndex := FHistoryListBox.Items.Count - 1;
+
+  //HistoryForm.UpdateHistory;
 end;
 
 procedure TMainForm.UpdateVarnamesList;
@@ -1662,12 +1744,12 @@ begin
     begin
       ST := TMemoryStreamUTF8.Create;
 
-      FOutputGenerator := (PageControl1.ActivePage as IAnaOutputViewer).GetOutputGeneratorClass.Create(FOutputCreator, ST);
+      FOutputGenerator := (FPageControl.ActivePage as IAnaOutputViewer).GetOutputGeneratorClass.Create(FOutputCreator, ST);
       FOutputGenerator.GenerateReport;
       FOutputGenerator.Free;
       ST.Position := 0;
 
-      (PageControl1.ActivePage as IAnaOutputViewer).LoadFromStream(ST);
+      (FPageControl.ActivePage as IAnaOutputViewer).LoadFromStream(ST);
 
       ST.Free;
       Application.ProcessMessages;
@@ -1799,12 +1881,12 @@ begin
       P   := EditorForm.SynEdit1.CaretXY;
     end;
 
-  if (HistoryListBox.Focused) and
-     (HistoryListBox.ItemIndex > -1)
+  if (FHistoryListBox.Focused) and
+     (FHistoryListBox.ItemIndex > -1)
   then
     begin
       S := '';
-      Txt := HistoryListBox.Items[HistoryListBox.ItemIndex];
+      Txt := FHistoryListBox.Items[FHistoryListBox.ItemIndex];
       P   := Point(1,1);
     end;
 

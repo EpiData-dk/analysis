@@ -30,7 +30,7 @@ uses
   textviewer, outputviewer_types, oldhtmlviewer, options_utils, ana_globals,
   browse4, report, options_fontoptions, save_output,
   epi_script_function_observations, options_filesoptions, aggregate,
-  aggregate_types, projecttree, varnames, history_form, outputviewer_form;
+  aggregate_types; //, projecttree, varnames, history_form, outputviewer_form;
 
 {$R *.res}
 

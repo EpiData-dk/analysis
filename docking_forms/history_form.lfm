@@ -1,25 +1,40 @@
 object HistoryForm: THistoryForm
-  Left = 693
-  Height = 415
-  Top = 367
-  Width = 430
+  Left = 2704
+  Height = 477
+  Top = 356
+  Width = 347
   Caption = 'History'
-  ClientHeight = 415
-  ClientWidth = 430
+  ClientHeight = 477
+  ClientWidth = 347
   LCLVersion = '1.9.0.0'
-  object ListBox1: TListBox
+  object HistoryListBox: TListBox
     Left = 0
-    Height = 415
+    Height = 477
     Top = 0
-    Width = 430
+    Width = 347
     Align = alClient
-    Items.Strings = (
-      'cls;'
-      'read;'
-      'list v;'
-    )
-    ItemHeight = 23
-    ScrollWidth = 426
+    ItemHeight = 0
+    MultiSelect = True
+    OnDblClick = HistoryListBoxDblClick
+    OnDrawItem = HistoryListBoxDrawItem
+    OnKeyDown = HistoryListBoxKeyDown
+    PopupMenu = HistoryPopupMenu
+    ScrollWidth = 345
+    Style = lbOwnerDrawFixed
     TabOrder = 0
+    TopIndex = -1
+  end
+  object HistoryPopupMenu: TPopupMenu
+    left = 192
+    top = 208
+    object MenuItem23: TMenuItem
+    end
+    object MenuItem24: TMenuItem
+    end
+    object MenuItem28: TMenuItem
+      Caption = '-'
+    end
+    object MenuItem29: TMenuItem
+    end
   end
 end
