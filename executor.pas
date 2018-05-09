@@ -213,6 +213,7 @@ type
     procedure ExecReport(ST: TCustomReportCommand); virtual;
     procedure ExecReorder(ST: TReorderCommand); virtual;
     procedure ExecAggregate(ST: TAggregateCommand); virtual;
+    procedure ExecTables(ST: TTablesCommand); virtual;
 
     // String commands
     procedure ExecRead(ST: TCustomStringCommand); virtual;
@@ -322,7 +323,7 @@ uses
   aggregate,
 
   // STATISTICS
-  means, freq;
+  means, freq, tables;
 
 type
   EExecutorException = class(Exception);
@@ -3565,6 +3566,46 @@ begin
     end;
 end;
 
+procedure TExecutor.ExecTables(ST: TTablesCommand);
+var
+  Table: TTables;
+  DF: TEpiDataFile;
+  Opt: TOption;
+  S: UTF8String;
+  VarNames: TStrings;
+begin
+  VarNames := ST.VariableList.GetIdentsAsList;
+
+  // Get the by variables out too
+  for Opt in ST.Options do
+    begin
+      if (Opt.Ident <> 'by') then
+        Continue;
+
+      S := Opt.Expr.AsIdent;
+      if (Varnames.IndexOf(S) > -1) then
+        begin
+          Error('By variables cannot overlap table variables: ' + S);
+          ST.ExecResult := csrFailed;
+          Varnames.Free;
+          Exit;
+        end;
+
+      VarNames.Add(Opt.Expr.AsIdent)
+    end;
+
+  if ST.HasOption('m') then
+    DF := PrepareDatafile(VarNames, nil)
+  else
+    DF := PrepareDatafile(VarNames, VarNames);
+
+  Table := TTables.Create(Self, FOutputCreator);
+  Table.ExecTables(DF, ST);
+  Table.Free;
+
+  DF.Free;
+end;
+
 procedure TExecutor.ExecUse(ST: TUse);
 var
   Idx: LongInt;
@@ -3705,6 +3746,9 @@ begin
 
         stAppend:
           ExecAppend(TAppendCommand(ST));
+
+        stTables:
+          ExecTables(TTablesCommand(ST));
 
         stMerge:
           ExecMerge(TMergeCommand(ST));

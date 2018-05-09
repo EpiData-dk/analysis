@@ -245,19 +245,25 @@ begin
     Result := TEpiDataFile.Create(nil, 0);
   Result.SetLanguage(InputDF.DefaultLang, true);
 
+  // The AddFieldChange makes sure that each new added variable is positioned sequentially
+  // after eachother.
   Result.Fields.RegisterOnChangeHook(@AddFieldChange, True);
 
-  // Create a copy of the variables
+  // Create a clone of the stratefication variables
   CountVariables := TEpiFields.Create(nil);
   RefMap := TEpiReferenceMap.Create;
   for V in Variables do
     begin
       F := InputDF.Fields.FieldByName[V];
       NewF := TEpiField(F.Clone(nil, RefMap));
+      // Manually assign the valuelabelset, such that RefMap only needs to be run
+      // in case more advanced assignments are needed
+      NewF.ValueLabelSet := F.ValueLabelSet;
       Result.MainSection.Fields.AddItem(NewF);
       CountVariables.AddItem(NewF);
     end;
 
+  // Let each function create the result variables they need
   for i := 0 to FunctionList.Count - 1 do
     begin
       Func := FunctionList[i];
@@ -268,8 +274,7 @@ begin
   // First run through "normal" statistic. Those that don't need a particular sort order.
   TempFuncList := FunctionList.GetFunctions(AllAggrFuncTypes - [afPercentile]);
 
-  // AGGREGATE!!! Yeeeha.
-  // Do "normal" aggregate operations (this means without any percentile calc.)
+  // Do "normal" aggregate operations (this is without any percentile calc.)
   Runner := 0;
   while Runner < InputDF.Size do
     begin
@@ -298,6 +303,7 @@ begin
   TempFuncList.ResetAll;
   TempFuncList.Free;
 
+  // Now run through each percentile calculation, since they need sorting
   TempFuncList := FunctionList.GetFunctions([afPercentile]);
   for i := 0 to TempFuncList.Count - 1 do
     begin

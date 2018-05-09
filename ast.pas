@@ -1019,6 +1019,8 @@ type
   end;
 
 
+  TOptionListEnumerator = class;
+
   { TOptionList }
 
   TOptionList = class(TAbstractSyntaxTreeBase)
@@ -1037,9 +1039,27 @@ type
     procedure   Remove(Option: TOption);
     function    HasOption(Const Ident: UTF8String; out AOption: TOption): boolean; overload;
     function    HasOption(Const Ident: UTF8String): boolean; overload;
+    function    GetEnumerator: TOptionListEnumerator;
     property    Options[Const Index: Integer]: TOption read GetOptions; default;
     property    Option[Const Ident: UTF8String]: TOption read GetOption;
     property    Count: Integer read GetCount;
+  end;
+
+  { TOptionListEnumerator }
+
+  TOptionListEnumerator = class
+  private
+    FCurrentIndex: Integer;
+    FOptionList: TOptionList;
+    FListCount: Integer;
+    procedure RaiseCountError;
+    procedure CheckListCount;
+  protected
+    function GetCurrent: TOption;
+  public
+    constructor Create(OptionList: TOptionList);
+    function MoveNext: Boolean;
+    property Current: TOption read GetCurrent;
   end;
 
   { TCustomCommand }
@@ -1117,6 +1137,17 @@ type
     class function CreateCustomVariableCommand(AVariableList: TVariableList;
       AOptionList: TOptionList; ST: TASTStatementType): TCustomVariableCommand;
     property VariableList: TVariableList read GetVariableList;
+  end;
+
+  { TTablesCommand }
+
+  TTablesCommand = class(TCustomVariableCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
   { TMeansCommand }
@@ -1424,6 +1455,74 @@ uses
   epi_script_function_systemfunctions,
   epi_script_function_observations,
   math, variants, LazUTF8, LazFileUtils;
+
+{ TOptionListEnumerator }
+
+procedure TOptionListEnumerator.RaiseCountError;
+begin
+  raise Exception.CreateFmt(
+      'Enumeration error!' + LineEnding +
+      'Expected %d items in list, but MoveNext found %d!' + LineEnding +
+      'Deleting/Inserting items during iteration is NOT supported!',
+      [FListCount, FOptionList.Count]
+    );
+end;
+
+procedure TOptionListEnumerator.CheckListCount;
+begin
+  if FOptionList.Count <> FListCount then
+    RaiseCountError;
+end;
+
+function TOptionListEnumerator.GetCurrent: TOption;
+begin
+  result := FOptionList[FCurrentIndex];
+end;
+
+constructor TOptionListEnumerator.Create(OptionList: TOptionList);
+begin
+  FOptionList := OptionList;
+  FCurrentIndex := -1;
+  FListCount := OptionList.Count;
+end;
+
+function TOptionListEnumerator.MoveNext: Boolean;
+begin
+  CheckListCount;
+  Inc(FCurrentIndex);
+  Result := (FCurrentIndex < FOptionList.Count);
+end;
+
+{ TTablesCommand }
+
+function TTablesCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  AddDecimalOptions(Result);
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+
+  Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+end;
+
+function TTablesCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  result := inherited GetAcceptedVariableCount;
+  result[0] := 2;
+end;
+
+function TTablesCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  result.ResultTypes := [rtFloat, rtInteger];
+end;
+
+constructor TTablesCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stTables);
+end;
 
 { TAggregateCommand }
 
@@ -3420,6 +3519,7 @@ begin
     stMerge:     Result := TMergeCommand.Create(AVariableList, AOptionList);
     stReorder:   Result := TReorderCommand.Create(AVariableList, AOptionList);
     stAggregate: Result := TAggregateCommand.Create(AVariableList, AOptionList);
+    stTables:    Result := TTablesCommand.Create(AVariableList, AOptionList);
   else
     DoError();
   end;
@@ -3891,6 +3991,11 @@ var
   Dummy: TOption;
 begin
   result := HasOption(Ident, Dummy);
+end;
+
+function TOptionList.GetEnumerator: TOptionListEnumerator;
+begin
+  result := TOptionListEnumerator.Create(Self);
 end;
 
 { TOption }
@@ -6443,6 +6548,7 @@ begin
     'sav': Result := stSave;
     'set': Result := stSet;
     'sor': Result := stSort;
+    'tab': Result := stTables;
     'use': Result := stUse;
   else
     DoError();
