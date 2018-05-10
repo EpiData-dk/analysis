@@ -475,7 +475,7 @@ var
   T: TOutputTable;
   SmallNumFmt, StatFmt: String;
   Sz, Offset, i, Idx: Integer;
-  maxVforDisplay: Extended;
+//  maxVforDisplay: Extended;
 
   function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;
   begin
@@ -496,7 +496,7 @@ begin
       Offset := 0;
       T.ColCount := 11;
       T.RowCount := 5;
-      maxVforDisplay := ResultDF.Max.AsFloat[0];
+//      maxVforDisplay := ResultDF.Max.AsFloat[0];
     end
   else
     begin
@@ -504,7 +504,7 @@ begin
       Offset     := 1;
       T.ColCount := 12;
       T.RowCount := 3 + (Sz * 2);
-      maxVforDisplay := ResultDF.Max.AsFloat[Sz - 1];
+//      maxVforDisplay := ResultDF.Max.AsFloat[Sz - 1];
     end;
 
   // Column headers  (first section)
@@ -721,6 +721,7 @@ begin
         else
           DoOutputTTest(ResultDF.AnovaRecord);
     end;
+  ResultDF.Free;
 end;
 
 function TMeans.CalcMeans(DataFile: TEpiDataFile; const CountVarName,
