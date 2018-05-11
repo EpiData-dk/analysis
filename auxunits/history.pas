@@ -76,7 +76,6 @@ begin
   if (not Enabled) then exit;
 
   Idx := Statement.LineNo - 1;
-
   Case Statement.ExecResult of
     csrSuccess:
       begin
@@ -108,7 +107,8 @@ begin
             FCurrentIdx := FStrings.Count - 1;
             Exit;
           end;
-
+ // Jamie: the following statement may fail with out of bounds Idx when running a pgm
+ //        that ends with csrFailed. I have no idea why. It happened with means x; but not with means x !t;
         FStrings.Objects[Idx] := TObject(1);
       end;
 
