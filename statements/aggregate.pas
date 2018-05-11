@@ -5,7 +5,7 @@ unit aggregate;
 interface
 
 uses
-  Classes, SysUtils, epidatafiles, executor, outputcreator, ast,
+  Classes, SysUtils, math, epidatafiles, executor, outputcreator, ast,
   result_variables, epicustombase, aggregate_types, epifields_helper,
   epidatafilerelations;
 
@@ -27,7 +27,10 @@ type
     // Takes the option and creates function(s) if the idens matches a function, return true - else return false
     function  OptionToFunctions(InputDF: TEpiDataFile; Opt: TOption; CreateCountFunction: boolean; FunctionList: TAggrFuncList): boolean; virtual;
     function  DoCalcAggregate(InputDF: TEpiDataFile; Variables: TStrings; FunctionList: TAggrFuncList; Out RefMap: TEpiReferenceMap): TEpiDataFile;
-    procedure DoExpandDatafile(InputDF, ResultDF: TEpiDataFile; Variables: TStrings);
+    // AggregateVariables is a list of each stratification variable aggregated by itself,
+    // such that all unique values for that variable is present. This has the implication
+    // that the size of the AggregateVariables may vary.
+    procedure DoExpandDatafile(InputDF, ResultDF: TEpiDataFile; Variables: TStrings; Out AggregateVariables: TEpiFields);
     procedure DoOutputAggregate(ResultDF: TEpiDataFile; ST: TAggregateCommand);
   public
     constructor Create(AExecutor: TExecutor; OutputCreator: TOutputCreator); virtual;
@@ -40,19 +43,27 @@ type
     procedure ExecAggregate(InputDF: TEpiDataFile; ST: TAggregateCommand; Out ResultDF: TEpiDataFile);
 
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
-    // - InputDf: The datafile to run aggregate on
-    // - ByVariables: The variable names to stratify by
-    // - FunctionList: The list of aggregate functions.
-    // - out RefMap: During aggregate the ByVariables are cloned to the resulting data, this is the RefMap from the cloning.
-    //               it has NOT fixed the references
-    // - ExpandedDatafile: The result datafile will contain ALL combinations of the ByVariables, even if no such entries exists.
-    function  CalcAggregate(InputDF: TEpiDataFile; ByVariables: TStrings; FunctionList: TAggrFuncList; Out RefMap: TEpiReferenceMap; ExpandedDataFile: boolean = false): TEpiDataFile;
+    // - InputDf:
+    //     The datafile to run aggregate on
+    // - ByVariables:
+    //     The variable names to stratify by
+    // - FunctionList:
+    //     The list of aggregate functions.
+    // - ExpandedDatafile:
+    //     The result datafile will contain ALL combinations of the ByVariables, even if no such entries exists.
+    // - out AggregateVariable:
+    //     See DoExpandDatafile() above!
+    // - out RefMap:
+    //     During aggregate the ByVariables are cloned to the resulting data, this is the RefMap from the cloning.
+    //     It has NOT fixed the references (fixupReferences)
+    function  CalcAggregate(InputDF: TEpiDataFile; ByVariables: TStrings; FunctionList: TAggrFuncList; ExpandedDataFile: boolean;
+      Out AggregateVariables: TEpiFields; Out RefMap: TEpiReferenceMap): TEpiDataFile;
   end;
 
 implementation
 
 uses
-  epicustomlist_helper, options_utils;
+  epicustomlist_helper, options_utils, epidatafileutils;
 
 { TAggregate }
 
@@ -350,19 +361,42 @@ begin
 end;
 
 procedure TAggregate.DoExpandDatafile(InputDF, ResultDF: TEpiDataFile;
-  Variables: TStrings);
+  Variables: TStrings; out AggregateVariables: TEpiFields);
 var
   V: TStringList;
   S: String;
   FuncList: TAggrFuncList;
   RefMap: TEpiReferenceMap;
   TempDF: TEpiDataFile;
-  Fields: TEpiFields;
+  SortFields: TEpiFields;
+  Runners: TBoundArray;
+  ResultIdx, i, ResultSize, Idx: Integer;
+  InputVar, ResultVar: TEpiField;
+
+
+  function ProperLevelChange(): Boolean;
+  var
+    InputVar, ResultVar: TEpiField;
+    i: Integer;
+    Cmp: TValueSign;
+  begin
+    result := true;
+
+    i := 0;
+    for InputVar in AggregateVariables do
+      begin
+        ResultVar := ResultDF.Fields.FieldByName[InputVar.Name];
+
+        CompareFieldRecords(Cmp, InputVar, ResultVar, Runners[i], ResultIdx);
+        result := result and (Cmp = ZeroValue);
+        Inc(i);
+      end;
+  end;
+
 begin
+  AggregateVariables := TEpiFields.Create(nil);
+  AggregateVariables.ItemOwner := true;
   V := TStringList.Create;
-
-  Fields := TEpiFields.Create(nil);
-
   for S in Variables do
     begin
       V.Clear;
@@ -374,13 +408,62 @@ begin
       RefMap.Free;
       FuncList.Free;
 
-      Fields.AddItem(TempDF.Fields.DeleteItem(0));
+      AggregateVariables.AddItem(TempDF.Fields[0].Section.Fields.DeleteItem(0));
+      TempDF.Free;
+    end;
+  V.Free;
+
+  // Runners - indices into the variables stored in "AggregateVariables".
+  // Used to run sequencial from Last -> First
+  SetLength(Runners, AggregateVariables.Count);
+  for i := Low(Runners) to High(Runners) do
+    Runners[i] := 0;
+
+  // Idea:
+  //   Loop over the entire dataset.
+  //   Compare each entry of ResultDF's stratification variables with the
+  //   entries in "AggregateVariables". If an entry is missing, then add a new observation
+  //   and copy the value. All additional data is set to missing.
+  ResultIdx := 0;
+  ResultSize := ResultDF.Size;
+  while ResultIdx < ResultSize do
+    begin
+      // Check that levels have change properly
+      if (not ProperLevelChange()) then
+        begin
+          // This was not the case, then we must insert the missing record into the
+          // resulting dataset.
+          Idx := ResultDF.NewRecords();
+
+          i := 0;
+          for InputVar in AggregateVariables do
+            begin
+              ResultVar := ResultDF.Fields.FieldByName[InputVar.Name];
+              ResultVar.CopyValue(InputVar, Runners[i], Idx);
+              Inc(i);
+            end;
+        end
+      else
+        // The level change was accepted - bump index on ResultDF
+        Inc(ResultIdx);
+
+      // Bump the runners sequencially (last -> first)
+      for i := High(Runners) downto Low(Runners) do
+        begin
+          Runners[i] := Runners[i] + 1;
+
+          // Have we reach "end-of-size" for current runner?
+          if (Runners[i] < AggregateVariables[i].Size) then
+            break;
+
+          // Yes - then reset it back to 0
+          Runners[i] := 0;
+        end;
     end;
 
-{  for i := 0 to ResultDF.Size -1 do
-    begin
-
-    end;}
+  SortFields := TEpiFields(ResultDF.Fields.GetItemFromList(Variables));
+  ResultDF.SortRecords(SortFields);
+  SortFields.Free;
 end;
 
 procedure TAggregate.DoOutputAggregate(ResultDF: TEpiDataFile;
@@ -506,10 +589,13 @@ begin
 end;
 
 function TAggregate.CalcAggregate(InputDF: TEpiDataFile; ByVariables: TStrings;
-  FunctionList: TAggrFuncList; out RefMap: TEpiReferenceMap;
-  ExpandedDataFile: boolean): TEpiDataFile;
+  FunctionList: TAggrFuncList; ExpandedDataFile: boolean; out
+  AggregateVariables: TEpiFields; out RefMap: TEpiReferenceMap): TEpiDataFile;
 begin
   Result := DoCalcAggregate(InputDF, ByVariables, FunctionList, RefMap);
+
+  if ExpandedDataFile then
+    DoExpandDatafile(InputDF, Result, ByVariables, AggregateVariables);
 end;
 
 end.

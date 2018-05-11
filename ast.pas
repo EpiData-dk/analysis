@@ -1503,6 +1503,7 @@ begin
   AddValueLabelOptions(Result);
 
   Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('m', [rtUndefined]);
 end;
 
 function TTablesCommand.GetAcceptedVariableCount: TBoundArray;

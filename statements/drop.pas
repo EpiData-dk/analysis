@@ -21,7 +21,7 @@ type
     // Drop data things
     FDropDataExpr: TExpr;
     FReverseSelectVector: TEpiField;
-    function  DropPackFunction(Sender: TEpiDataFile; Index: Integer): boolean;
+    function  DropPackFunction(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
   protected
     procedure DoDropData(ST: TDropCommand);
     procedure DoDroptVar(ST: TDropCommand);
@@ -41,8 +41,8 @@ uses
 
 { TExecDrop }
 
-function TExecDrop.DropPackFunction(Sender: TEpiDataFile; Index: Integer
-  ): boolean;
+function TExecDrop.DropPackFunction(Sender: TEpiDataFile; Index: Integer;
+  Data: Pointer): boolean;
 begin
   result := (not FReverseSelectVector.IsMissing[Index]);
 end;

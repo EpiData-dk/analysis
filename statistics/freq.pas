@@ -145,6 +145,7 @@ var
   Aggregator: TAggregate;
   Varnames: TStringList;
   Func: TFreqAggrFunc;
+  Dummy: TEpiFields;
 begin
   Varnames := TStringList.Create;
   VarNames.Add(InputDF.Field[0].Name);
@@ -156,8 +157,10 @@ begin
 
   Aggregator := TAggregate.Create(FExecutor, FOutputCreator);
   Aggregator.ResultDataFileClass := TFreqDatafile;
-  Result := TFreqDatafile(Aggregator.CalcAggregate(InputDF, Varnames, FunctionList, RefMap));
+  Result := TFreqDatafile(Aggregator.CalcAggregate(InputDF, Varnames, FunctionList, False, Dummy, RefMap));
   Result.FSum := InputDF.Size;
+
+  Dummy.Free;
 end;
 
 procedure TFreqCommand.DoResultVariables(ResultDF: TFreqDatafile);

@@ -93,7 +93,7 @@ type
     FDropDeleted: Boolean;
     FPrepareDFOptions: TPrepareDatasetOptions;
     function GetDataFile: TEpiDataFile;
-    function PrepareDatafilePack(Sender: TEpiDataFile; Index: Integer): boolean;
+    function PrepareDatafilePack(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
   protected
     function DoPrepareDatafile(SelectField: TStrings; MissingFields: TStrings; Options: TPrepareDatasetOptions = []): TEpiDataFile; virtual;
 
@@ -709,8 +709,8 @@ begin
     end;
 end;
 
-function TExecutor.PrepareDatafilePack(Sender: TEpiDataFile; Index: Integer
-  ): boolean;
+function TExecutor.PrepareDatafilePack(Sender: TEpiDataFile; Index: Integer;
+  Data: Pointer): boolean;
 var
   F: TEpiField;
   S: String;
@@ -3574,9 +3574,10 @@ var
   DF: TEpiDataFile;
   Opt: TOption;
   S: UTF8String;
-  VarNames: TStrings;
+  MissingVarNames, AllVarNames: TStrings;
 begin
-  VarNames := ST.VariableList.GetIdentsAsList;
+  AllVarNames := ST.VariableList.GetIdentsAsList;
+  MissingVarNames := ST.VariableList.GetIdentsAsList;
 
   // Get the by variables out too
   for Opt in ST.Options do
@@ -3585,21 +3586,22 @@ begin
         Continue;
 
       S := Opt.Expr.AsIdent;
-      if (Varnames.IndexOf(S) > -1) then
+      if (AllVarNames.IndexOf(S) > -1) then
         begin
           Error('By variables cannot overlap table variables: ' + S);
           ST.ExecResult := csrFailed;
-          Varnames.Free;
+          AllVarNames.Free;
+          MissingVarNames.Free;
           Exit;
         end;
 
-      VarNames.Add(Opt.Expr.AsIdent)
+      AllVarNames.Add(Opt.Expr.AsIdent)
     end;
 
   if ST.HasOption('m') then
-    DF := PrepareDatafile(VarNames, nil)
+    DF := PrepareDatafile(AllVarNames, nil)
   else
-    DF := PrepareDatafile(VarNames, VarNames);
+    DF := PrepareDatafile(AllVarNames, MissingVarNames);
 
   Table := TTables.Create(Self, FOutputCreator);
   Table.ExecTables(DF, ST);
