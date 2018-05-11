@@ -3173,7 +3173,7 @@ var
   DF: TEpiDataFile;
   opt: TOption;
 begin
-  ST.ExecResult := csrFailed;
+//  ST.ExecResult := csrFailed;   // Why?? will only fail on conditions below
   L := ST.VariableList.GetIdentsAsList;
 
   if ST.HasOption('by', opt) then
@@ -3181,6 +3181,7 @@ begin
       if (L[0] = Opt.Expr.AsIdent) then
         begin
           DoError('Cannot stratify by the same variable');
+          ST.ExecResult := csrFailed;
           Exit;
         end;
 
@@ -3821,10 +3822,9 @@ end;
 
 procedure TExecutor.DoStatementList(L: TStatementList);
 var
-  i,j: Integer;
+  i: Integer;
 begin
   I := 0;
-  j := L.Count;
   while (I < L.Count) and
         (not Cancelled)
   do
