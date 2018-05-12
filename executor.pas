@@ -3173,7 +3173,11 @@ var
   DF: TEpiDataFile;
   opt: TOption;
 begin
-//  ST.ExecResult := csrFailed;   // Why?? will only fail on conditions below
+  // Jamie: Why?? will only fail on conditions belowW
+  // Torsten: It is good practice to set the initial value to failed, such that only
+  //          when all things have executed correctly, the result is set to succeed.
+  //          In this case M.ExecMean - did not correctly set the ExecResult to csrSuccess.
+  ST.ExecResult := csrFailed;
   L := ST.VariableList.GetIdentsAsList;
 
   if ST.HasOption('by', opt) then
@@ -3181,7 +3185,6 @@ begin
       if (L[0] = Opt.Expr.AsIdent) then
         begin
           DoError('Cannot stratify by the same variable');
-          ST.ExecResult := csrFailed;
           Exit;
         end;
 
@@ -3195,7 +3198,6 @@ begin
     if DF.Size = 0 then
       begin
         DoError('No data!');
-        ST.ExecResult := csrFailed;
         Exit;
       end;
 

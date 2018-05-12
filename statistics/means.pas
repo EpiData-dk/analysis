@@ -721,6 +721,7 @@ begin
         else
           DoOutputTTest(ResultDF.AnovaRecord);
     end;
+  ST.ExecResult := csrSuccess;
   ResultDF.Free;
 end;
 
