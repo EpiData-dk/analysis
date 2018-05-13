@@ -2194,14 +2194,21 @@ begin
   Result := inherited TypeCheck(TypeChecker, TypesAndFlags);
 //  and ExprList.TypeCheck(TypeChecker, options_hashmap.TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData));
 
-  FResultSubType := ExprList[0].ResultType;
+  FResultSubType := rtUndefined;
+
   for i := 0 to ExprList.Count - 1 do
     begin
       E := ExprList[i];
 
       Result := E.TypeCheck(TypeChecker, options_hashmap.TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData)) and result;
 
-      if (ExprList[i].ResultType <> FResultSubType) then
+      if (FResultSubType = rtUndefined) then
+        begin
+          FResultSubType := E.ResultType;
+          Continue;
+        end;
+
+      if (E.ResultType <> FResultSubType) then
         begin
           DoTypeCheckError(
             'Ambigious array items (no: %d)' + LineEnding +
