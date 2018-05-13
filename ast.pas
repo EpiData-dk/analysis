@@ -2192,14 +2192,12 @@ var
   E: TExpr;
 begin
   Result := inherited TypeCheck(TypeChecker, TypesAndFlags);
-//  and ExprList.TypeCheck(TypeChecker, options_hashmap.TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData));
 
   FResultSubType := rtUndefined;
 
   for i := 0 to ExprList.Count - 1 do
     begin
       E := ExprList[i];
-
       Result := E.TypeCheck(TypeChecker, options_hashmap.TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData)) and result;
 
       if (FResultSubType = rtUndefined) then

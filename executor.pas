@@ -3580,7 +3580,7 @@ var
   MissingVarNames, AllVarNames: TStrings;
 begin
   AllVarNames := ST.VariableList.GetIdentsAsList;
-  MissingVarNames := ST.VariableList.GetIdentsAsList;
+//  MissingVarNames := ST.VariableList.GetIdentsAsList;
 
   // Get the by variables out too
   for Opt in ST.Options do
@@ -3594,7 +3594,7 @@ begin
           Error('By variables cannot overlap table variables: ' + S);
           ST.ExecResult := csrFailed;
           AllVarNames.Free;
-          MissingVarNames.Free;
+//          MissingVarNames.Free;
           Exit;
         end;
 
@@ -3604,7 +3604,8 @@ begin
   if ST.HasOption('m') then
     DF := PrepareDatafile(AllVarNames, nil)
   else
-    DF := PrepareDatafile(AllVarNames, MissingVarNames);
+    DF := PrepareDatafile(AllVarNames, AllVarNames);
+//    DF := PrepareDatafile(AllVarNames, MissingVarNames);
 
   Table := TTables.Create(Self, FOutputCreator);
   Table.ExecTables(DF, ST);

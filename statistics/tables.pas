@@ -10,15 +10,49 @@ uses
 
 type
 
+  TTwoWayDatafile = class;
+
+  { TTwoWayDataFiles }
+
+  TTwoWayDataFiles = class(TEpiDataFiles)
+  protected
+    function GetItems(Index: integer): TTwoWayDatafile;
+  public
+    property Items[Const Index: Integer]: TTwoWayDatafile read GetItems;
+  end;
+
+  { TTwoWayDatafile }
+
+  TTwoWayDatafile = class(TEpiDataFile)
+  private
+    // Aggregated two way variables
+    FColVar: TEpiField;
+    FRowVar: TEpiField;
+  private
+    procedure CheckIndex(Col, Row: Integer);
+    function GetColCount: Integer;
+    function GetCounts(const Col, Row: Integer): Integer;
+    function GetNVar: TEpiField;
+    function GetRowCount: Integer;
+  protected
+    property NVar: TEpiField read GetNVar;
+  public
+    property Counts[Const Col, Row: Integer]: Integer read GetCounts;
+    property ColCount: Integer read GetColCount;
+    property RowCount: Integer read GetRowCount;
+    property ColVariable: TEpiField read FColVar;
+    property RowVariable: TEpiField read FRowVar;
+  end;
+
   { TTables }
 
   TTables = class
   private
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
-    function  DoCalcTables(InputDF: TEpiDataFile; Varnames, StratifyNames: TStrings): TEpiDataFiles;
-    procedure InternalOutputTable(DF: TEpiDataFile);
-    function PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
+    function  DoCalcTables(InputDF: TEpiDataFile; Varnames, StratifyNames: TStrings): TTwoWayDataFiles;
+    procedure InternalOutputTable(DF: TTwoWayDataFile; ST: TTablesCommand);
+    function  PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
     destructor Destroy; override;
@@ -31,7 +65,7 @@ type
 implementation
 
 uses
-  aggregate, aggregate_types, epimiscutils, epidatafileutils;
+  aggregate, aggregate_types, epimiscutils, epidatafileutils, epifields_helper, options_utils;
 
 type
   PBoundArray = ^TBoundArray;
@@ -40,10 +74,54 @@ type
     Variables: TEpiFields;
   end;
 
+{ TTwoWayDataFiles }
+
+function TTwoWayDataFiles.GetItems(Index: integer): TTwoWayDatafile;
+begin
+  result := TTwoWayDatafile(inherited GetItems(Index));
+end;
+
+{ TTwoWayDatafile }
+
+procedure TTwoWayDatafile.CheckIndex(Col, Row: Integer);
+begin
+  if (Col < 0) or (Col >= ColCount) or
+     (Row < 0) or (Row >= RowCount)
+  then
+    raise Exception.Create('TTwoWayDatafile: Index out of bounds!');
+end;
+
+function TTwoWayDatafile.GetColCount: Integer;
+begin
+  result := FColVar.Size;
+end;
+
+function TTwoWayDatafile.GetCounts(const Col, Row: Integer): Integer;
+var
+  Index: Integer;
+begin
+  CheckIndex(Col, Row);
+  Index := Col * RowCount + Row;
+  if NVar.IsMissing[Index] then
+    Result := 0
+  else
+    Result := NVar.AsInteger[Index];
+end;
+
+function TTwoWayDatafile.GetNVar: TEpiField;
+begin
+  result := Fields[Fields.Count - 1];
+end;
+
+function TTwoWayDatafile.GetRowCount: Integer;
+begin
+  result := FRowVar.Size;
+end;
+
 { TTables }
 
 function TTables.DoCalcTables(InputDF: TEpiDataFile; Varnames,
-  StratifyNames: TStrings): TEpiDataFiles;
+  StratifyNames: TStrings): TTwoWayDataFiles;
 var
   FuncList: TAggrFuncList;
   Aggr: TAggregate;
@@ -57,7 +135,7 @@ var
   PackRecord: TPackRecord;
 
 begin
-  Result := TEpiDataFiles.Create(nil);
+  Result := TTwoWayDataFiles.Create(nil);
 
   // Create counts of the Stratification variables.
   FuncList := TAggrFuncList.Create(true);
@@ -70,13 +148,16 @@ begin
   AggrVars.AddStrings(StratifyNames);
 
   Aggr := TAggregate.Create(FExecutor, FOutputCreator);
+  Aggr.ResultDataFileClass := TTwoWayDatafile;
   ResultDF := Aggr.CalcAggregate(InputDF, AggrVars, FuncList, True, AggregatedVariables, RefMap);
   AggrVars.Free;
 
   TwoWayVariables := TEpiFields.Create(nil);
-  TwoWayVariables.ItemOwner := true;
   TwoWayVariables.AddItem(AggregatedVariables.DeleteItem(0));
   TwoWayVariables.AddItem(AggregatedVariables.DeleteItem(0));
+
+  TTwoWayDatafile(ResultDF).FColVar := TwoWayVariables.Field[0];
+  TTwoWayDatafile(ResultDF).FRowVar := TwoWayVariables.Field[1];
 
   StratifyVariables := TEpiFields.Create(nil);
   StratifyVariables.ItemOwner := true;
@@ -100,6 +181,9 @@ begin
           TempDF.Name := '@tab' + IntToStr(Result.Count);
           TempDF.Pack(@PackStratifiedDataset, @PackRecord);
 
+          TTwoWayDatafile(TempDF).FColVar := TwoWayVariables.Field[0];
+          TTwoWayDatafile(TempDF).FRowVar := TwoWayVariables.Field[1];
+
           Result.AddItem(TempDF);
 
           for i := High(Runners) downto Low(Runners) do
@@ -115,36 +199,47 @@ begin
                 Runners[i] := 0;
             end;
         end;
+
+      ResultDF := Aggr.CalcAggregate(InputDF, Varnames, FuncList, True, AggregatedVariables, RefMap);
+      TTwoWayDatafile(ResultDF).FColVar := TwoWayVariables.Field[0];
+      TTwoWayDatafile(ResultDF).FRowVar := TwoWayVariables.Field[1];
+      Result.InsertItem(0, ResultDF);
     end
   else
     Result.AddItem(ResultDF);
+
+  Aggr.Free;
+  FuncList.Free;
 end;
 
-procedure TTables.InternalOutputTable(DF: TEpiDataFile);
+procedure TTables.InternalOutputTable(DF: TTwoWayDataFile; ST: TTablesCommand);
 var
   T: TOutputTable;
   F: TEpiField;
-  i, j: Integer;
+  i, j, Col, Row: Integer;
+  VariableLabelType: TEpiGetVariableLabelType;
+  ValueLabelType: TEpiGetValueLabelType;
 begin
   // Just output something
   T := FOutputCreator.AddTable;
   T.Header.Text := DF.Caption.Text;
-  T.ColCount := DF.Fields.Count;
-  T.RowCount := DF.Size + 1;
+  T.ColCount := DF.ColCount + 1;
+  T.RowCount := DF.RowCount + 1;
 
   i := 0;
-  for F in DF.Fields do
-    begin
-      T.Cell[i, 0].Text := F.Name;
 
-      for j := 0 to DF.Size - 1 do
-        if F.IsMissing[j] then
-          T.Cell[i, j + 1].Text := '0'
-        else
-          T.Cell[i, j + 1].Text := F.AsString[j];
+  VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+  ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
 
-      Inc(i);
-    end;
+  for Col := 0 to DF.ColCount - 1 do
+    T.Cell[Col + 1, 0].Text := DF.ColVariable.GetValueLabel(Col, ValueLabelType);
+
+  for Row := 0 to DF.RowCount - 1 do
+    T.Cell[0, Row + 1].Text := DF.RowVariable.GetValueLabel(Row, ValueLabelType);
+
+  for Col := 0 to DF.ColCount - 1 do
+    for Row := 0 to DF.RowCount - 1 do
+      T.Cell[Col + 1, Row + 1].Text := IntToStr(DF.Counts[Col, Row]);
 end;
 
 
@@ -190,7 +285,7 @@ var
   VarNames: TStrings;
   Opt: TOption;
   StratifyVarnames: TStringList;
-  ResultDFs: TEpiDataFiles;
+  ResultDFs: TTwoWayDataFiles;
   TempDF: TEpiDataFile;
 begin
   Varnames := ST.VariableList.GetIdentsAsList;
@@ -207,7 +302,7 @@ begin
   ResultDFs := DoCalcTables(DF, VarNames, StratifyVarnames);
 
   for TempDF in ResultDFs do
-    InternalOutputTable(TempDF);
+    InternalOutputTable(TTwoWayDataFile(TempDF), ST);
 end;
 
 function TTables.CalcTables(DF: TEpiDataFile; out RefMap: TEpiReferenceMap
