@@ -107,13 +107,16 @@ begin
             FCurrentIdx := FStrings.Count - 1;
             Exit;
           end;
- // Jamie: the following statement may fail with out of bounds Idx when running a pgm
- //        that ends with csrFailed. I have no idea why. It happened with means x; but not with means x !t;
-        FStrings.Objects[Idx] := TObject(1);
+ // Jamie: the FStrings statement may fail with out of bounds Idx when
+ //        running a pgm statement that completes with csrFailed.
+ //        Same below with csrCustom
+        if (not FExecutor.Executing) then
+            FStrings.Objects[Idx] := TObject(1);
       end;
 
     csrCustom:
-      FStrings.Objects[Idx] := TObject(2);
+      if (not FExecutor.Executing) then
+        FStrings.Objects[Idx] := TObject(2);
   end;
 end;
 
