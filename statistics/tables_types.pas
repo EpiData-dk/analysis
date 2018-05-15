@@ -74,6 +74,7 @@ type
   TTwoWayTable = class;
   TTwoWaySortCompare = function(I1, I2: Integer; const index: integer): Integer of object;
   TTwoWaySortExchange = procedure(Index1, Index2: Integer) of object;
+  ETwoWaySortException = class(Exception);
 
   TTwoWayTable = class
   private
@@ -82,6 +83,7 @@ type
     FCells: Array of Array of TTableCell;
     FRowAggrVariable: TEpiField;
     FColAggrVariable: TEpiField;
+    FStratifyIndices: TBoundArray;
     function GetRowCount: Integer;
     function GetColumnCount: Integer;
     function GetTotal: EpiInteger;
@@ -90,8 +92,11 @@ type
     function GetRowTotal(const Index: Integer): EpiInteger;
     function GetCols(const Index: Integer): TTableVector;
     function GetRows(const Index: Integer): TTableVector;
+  protected
+    procedure DoError(Const Msg: UTF8String; EClass: ExceptClass);
   public
-    constructor Create(TableCounts: ITableCounts);
+    constructor Create(TableCounts: ITableCounts; AStratifyIndices: TBoundArray);
+    property StratifyIndices: TBoundArray read FStratifyIndices;
     property ColVariable: TEpiField read FColAggrVariable;
     property RowVariable: TEpiField read FRowAggrVariable;
     property RowCount: Integer read FRowCount;
@@ -106,7 +111,11 @@ type
   { Sorting }
   private
     // Compare functions
+    function  CompareColValue(I1, I2: Integer; const index: integer): Integer;
+    function  CompareColLabel(I1, I2: Integer; const index: integer): Integer;
     function  CompareCols(I1, I2: Integer; const index: integer): Integer;
+    function  CompareRowValue(I1, I2: Integer; const index: integer): Integer;
+    function  CompareRowLabel(I1, I2: Integer; const index: integer): Integer;
     function  CompareRows(I1, I2: Integer; const index: integer): Integer;
     function  CompareColTotals(I1, I2: Integer; const index: integer): Integer;
     function  CompareRowTotals(I1, I2: Integer; const index: integer): Integer;
@@ -117,9 +126,13 @@ type
     procedure InternalSortGeneric(CompareFunction: TTwoWaySortCompare; ExchangeFunction: TTwoWaySortExchange; L, R: integer; const Index: integer; Desc: boolean);
   public
     procedure Sort(CompareFunction: TTwoWaySortCompare; ExchangeFunction: TTwoWaySortExchange; StartIndex, EndIndex: integer; const CustomIndex: integer; Descending: boolean);
-    procedure SortByColumn(const Index: Integer; Desc: boolean);
+    procedure SortByColValue(Desc: boolean);
+    procedure SortByColLabel(Desc: boolean);
+    procedure SortByCol(const Index: Integer; Desc: boolean);
+    procedure SortByColTotal(Desc: boolean);
+    procedure SortByRowValue(Desc: boolean);
+    procedure SortByRowLabel(Desc: boolean);
     procedure SortByRow(const Index: Integer; Desc: boolean);
-    procedure SortByColumnTotal(Desc: boolean);
     procedure SortByRowTotal(Desc: boolean);
   end;
 
@@ -127,17 +140,22 @@ type
 
   TTwoWayTables = class
   private
+    FStratifyVariables: TEpiFields;
     FList: TList;
     function GetTables(const Index: Integer): TTwoWayTable;
     function GetCount: Integer;
   public
-    constructor Create;
+    constructor Create(AStratifyVariables: TEpiFields = nil);
     procedure AddTable(Table: TTwoWayTable; GrandTable: Boolean = false);
-    property Tables[Const Index: Integer]: TTwoWayTable read GetTables;
+    property Tables[Const Index: Integer]: TTwoWayTable read GetTables; default;
     property Count: Integer read GetCount;
+    property StratifyVariables: TEpiFields read FStratifyVariables;
   end;
 
 implementation
+
+uses
+  epifields_helper, LazUTF8;
 
 { TTableVectorEnumerator }
 
@@ -254,6 +272,11 @@ begin
     Result.FCells.Add(Cell[Col, Index]);
 end;
 
+procedure TTwoWayTable.DoError(const Msg: UTF8String; EClass: ExceptClass);
+begin
+  raise EClass.Create(Msg);
+end;
+
 function TTwoWayTable.GetTotal: EpiInteger;
 var
   Col, Row: Integer;
@@ -264,7 +287,7 @@ begin
       Result := Result + Cell[Col, Row].N;
 end;
 
-constructor TTwoWayTable.Create(TableCounts: ITableCounts);
+constructor TTwoWayTable.Create(TableCounts: ITableCounts; AStratifyIndices: TBoundArray);
 var
   Col, Row: Integer;
   C: TTableCell;
@@ -294,12 +317,37 @@ begin
         C.FColPct := (C.N / ColTotal[Col]);
         C.FRowPct := (C.N / RowTotal[Row]);
       end;
+
+  FStratifyIndices := Copy(AStratifyIndices);
+end;
+
+function TTwoWayTable.CompareColValue(I1, I2: Integer; const index: integer): Integer;
+begin
+  result := ColVariable.Compare(I1, I2);
+end;
+
+function TTwoWayTable.CompareColLabel(I1, I2: Integer; const index: integer
+  ): Integer;
+begin
+  result := UTF8CompareStr(ColVariable.GetValueLabel(I1), ColVariable.GetValueLabel(I2));
 end;
 
 function TTwoWayTable.CompareCols(I1, I2: Integer; const index: integer
   ): Integer;
 begin
   result := Cell[Index, I1].N - Cell[Index, I2].N;
+end;
+
+function TTwoWayTable.CompareRowValue(I1, I2: Integer; const index: integer
+  ): Integer;
+begin
+  result := RowVariable.Compare(I1, I2);
+end;
+
+function TTwoWayTable.CompareRowLabel(I1, I2: Integer; const index: integer
+  ): Integer;
+begin
+  result := UTF8CompareStr(RowVariable.GetValueLabel(I1), RowVariable.GetValueLabel(I2));
 end;
 
 function TTwoWayTable.CompareRows(I1, I2: Integer; const index: integer
@@ -311,13 +359,13 @@ end;
 function TTwoWayTable.CompareColTotals(I1, I2: Integer; const index: integer
   ): Integer;
 begin
-  result := RowTotal[I1] - RowTotal[I2];
+  result := ColTotal[I1] - ColTotal[I2];
 end;
 
 function TTwoWayTable.CompareRowTotals(I1, I2: Integer; const index: integer
   ): Integer;
 begin
-  result := ColTotal[I1] - ColTotal[I2];
+  result := RowTotal[I1] - RowTotal[I2];
 end;
 
 procedure TTwoWayTable.ExchangeRows(Index1, Index2: Integer);
@@ -328,8 +376,8 @@ begin
   for Col := 0 to ColCount - 1 do
     begin
       TempCell := Cell[Col, Index1];
-      FCells[Col - 1, Index1 - 1] := Cell[Col, Index2];
-      FCells[Col - 1, Index2 - 1] := TempCell;
+      FCells[Col, Index1] := Cell[Col, Index2];
+      FCells[Col, Index2] := TempCell;
     end;
   RowVariable.Exchange(Index1, Index2);
 end;
@@ -341,9 +389,9 @@ var
 begin
   for Row := 0 to RowCount - 1 do
     begin
-      TempCell := Cell[Row, Index1];
-      FCells[Row - 1, Index1 - 1] := Cell[Row, Index2];
-      FCells[Row - 1, Index2 - 1] := TempCell;
+      TempCell := Cell[Index1, Row];
+      FCells[Index1, Row] := Cell[Index2, Row];
+      FCells[Index2, Row] := TempCell;
     end;
   ColVariable.Exchange(Index1, Index2);
 end;
@@ -390,19 +438,41 @@ begin
   InternalSortGeneric(CompareFunction, ExchangeFunction, StartIndex, EndIndex, CustomIndex, Descending);
 end;
 
-procedure TTwoWayTable.SortByColumn(const Index: Integer; Desc: boolean);
+procedure TTwoWayTable.SortByColValue(Desc: boolean);
 begin
-  Sort(@CompareCols, @ExchangeRows,    0, RowCount - 1,    index, desc);
+  Sort(@CompareColValue, @ExchangeColumns, 0, ColCount - 1, 0, Desc);
+end;
+
+procedure TTwoWayTable.SortByColLabel(Desc: boolean);
+begin
+  Sort(@CompareColLabel, @ExchangeColumns, 0, ColCount - 1, 0, Desc);
+end;
+
+procedure TTwoWayTable.SortByCol(const Index: Integer; Desc: boolean);
+begin
+  if (Index < 0) or (Index >= ColCount) then DoError('Sorting index out of bounds', ETwoWaySortException);
+  Sort(@CompareCols, @ExchangeRows, 0, RowCount - 1,    index, desc);
+end;
+
+procedure TTwoWayTable.SortByColTotal(Desc: boolean);
+begin
+  Sort(@CompareColTotals, @ExchangeColumns, 0, ColCount - 1, 0, desc);
+end;
+
+procedure TTwoWayTable.SortByRowValue(Desc: boolean);
+begin
+  Sort(@CompareRowValue, @ExchangeRows, 0, RowCount - 1, 0, Desc);
+end;
+
+procedure TTwoWayTable.SortByRowLabel(Desc: boolean);
+begin
+  Sort(@CompareRowLabel, @ExchangeRows, 0, RowCount - 1, 0, Desc);
 end;
 
 procedure TTwoWayTable.SortByRow(const Index: Integer; Desc: boolean);
 begin
+  if (Index < 0) or (Index >= RowCount) then DoError('Sorting index out of bounds', ETwoWaySortException);
   Sort(@CompareRows, @ExchangeColumns, 0, ColCount - 1, index, desc);
-end;
-
-procedure TTwoWayTable.SortByColumnTotal(Desc: boolean);
-begin
-  Sort(@CompareColTotals, @ExchangeColumns, 0, ColCount - 1, 0, desc);
 end;
 
 procedure TTwoWayTable.SortByRowTotal(Desc: boolean);
@@ -422,9 +492,10 @@ begin
   result := FList.Count;
 end;
 
-constructor TTwoWayTables.Create;
+constructor TTwoWayTables.Create(AStratifyVariables: TEpiFields);
 begin
   FList := TList.Create;
+  FStratifyVariables := AStratifyVariables;
 end;
 
 procedure TTwoWayTables.AddTable(Table: TTwoWayTable; GrandTable: Boolean);

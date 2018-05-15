@@ -16,7 +16,7 @@
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="1"/>
       <RevisionNr Value="1"/>
-      <BuildNr Value="2"/>
+      <BuildNr Value="3"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -589,7 +589,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="11">
+    <Exceptions Count="12">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -624,6 +624,9 @@
       <Item11>
         <Name Value="EAggrFunc"/>
       </Item11>
+      <Item12>
+        <Name Value="ETwoWaySortException"/>
+      </Item12>
     </Exceptions>
   </Debugging>
 </CONFIG>

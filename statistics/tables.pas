@@ -38,11 +38,11 @@ type
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
     function  DoCalcTables(InputDF: TEpiDataFile; Varnames, StratifyNames: TStrings; WeightVariable: UTF8String = ''): TTwoWayTables;
-    procedure InternalOutputTable(Table: TTwoWayTable; ST: TTablesCommand; IsGrandTable: boolean);
+    procedure InternalOutputTable(Table: TTwoWayTable; StratifyVariables: TEpiFields; ST: TTablesCommand; IsGrandTable: boolean);
     function  PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
   protected
     procedure DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
-    procedure DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand);
+    function  DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand): boolean;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
     destructor Destroy; override;
@@ -121,8 +121,6 @@ var
   TempDF, AggregatedDF: TTwoWayDatafile;
 
 begin
-  Result := TTwoWayTables.Create;
-
   // Create counts of the Stratification variables.
   FuncList := TAggrFuncList.Create(true);
   if (WeightVariable <> '') then
@@ -153,6 +151,8 @@ begin
   for i := AggregatedVariables.Count - 1 downto 0 do
     StratifyVariables.AddItem(AggregatedVariables.DeleteItem(i));
 
+  Result := TTwoWayTables.Create(StratifyVariables);
+
   AggregatedVariables.Free;
 
   // Create a series of Datafiles for each stratum
@@ -166,28 +166,17 @@ begin
 
       while (Runners[0] < StratifyVariables[0].Size) do
         begin
-          TempDF := TTwoWayDatafile(ResultDF.Clone(nil, RefMap));
+          TempDF := TTwoWayDatafile(AggregatedDF.Clone(nil, RefMap));
           TempDF.Name := '@tab' + IntToStr(Result.Count);
           TempDF.Pack(@PackStratifiedDataset, @PackRecord);
 
-//          TempDF.Free;
-          With TTwoWayDatafile(TempDF) do
-            begin
-              FColVar := TwoWayVariables.Field[0];
-              FRowVar := TwoWayVariables.Field[1];
+          TempDF.FColVar := TwoWayVariables.Field[0];
+          TempDF.FRowVar := TwoWayVariables.Field[1];
 
- {              for F in StratifyVariables do
-                FStratifyVariables.AddItem(F);}
-
-{              SetLength(FStratifyIndices, Length(Runners));
-              for i := Low(Runners) to High(Runners) do
-                FStratifyIndices[i] := Runners[i];     }
-            end;
-
-          SubTable := TTwoWayTable.Create(TempDF, TwoWayVariables.Field[0], TwoWayVariables.Field[1]);
+          SubTable := TTwoWayTable.Create(TempDF, Runners);
+          TempDF.Free;
 
           Result.AddTable(SubTable);
-//          Result.AddItem(TempDF);
 
           for i := High(Runners) downto Low(Runners) do
             begin
@@ -206,12 +195,12 @@ begin
       TempDF := TTwoWayDatafile(Aggr.CalcAggregate(InputDF, Varnames, FuncList, True, AggregatedVariables, RefMap));
       TempDF.FColVar := TwoWayVariables.Field[0];
       TempDF.FRowVar := TwoWayVariables.Field[1];
-      SubTable := TTwoWayTable.Create(TempDF, TwoWayVariables.Field[0], TwoWayVariables.Field[1]);
+      SubTable := TTwoWayTable.Create(TempDF, nil);
       Result.AddTable(SubTable, true);
-    end;
+    end
   else
     begin
-      SubTable := TTwoWayTable.Create(AggregatedDF);
+      SubTable := TTwoWayTable.Create(AggregatedDF, nil);
       Result.AddTable(SubTable, true);
     end;
 
@@ -220,17 +209,24 @@ begin
   FuncList.Free;
 end;
 
-procedure TTables.InternalOutputTable(Table: TTwoWayTable; ST: TTablesCommand;
-  IsGrandTable: boolean);
+procedure TTables.InternalOutputTable(Table: TTwoWayTable;
+  StratifyVariables: TEpiFields; ST: TTablesCommand; IsGrandTable: boolean);
 var
   T: TOutputTable;
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
-  Col, Row: Integer;
+  Col, Row, i: Integer;
+  S: String;
+  Opt: TOption;
 begin
   T := FOutputCreator.AddTable;
   T.ColCount    := Table.ColCount + 2;
   T.RowCount    := Table.RowCount + 2;
+  if (ST.HasOption('w', Opt)) then
+    begin
+      T.Footer.Text := 'Weight: ' + Opt.Expr.AsIdent;
+      T.Footer.Alignment := taLeftJustify;
+    end;
 
   VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
@@ -239,11 +235,11 @@ begin
     T.Header.Text := Table.ColVariable.GetVariableLabel(VariableLabelType)
   else
     begin
-{      S := '';
-      for i := Low(DF.StratifyIndices) to High(DF.StratifyIndices) do
-        S := S + DF.StratifyVariable[i].GetVariableLabel(VariableLabelType) + ': ' + DF.StratifyVariable[i].GetValueLabel(DF.StratifyIndices[i], ValueLabelType) + LineEnding;
-                                                                           }
-      T.Header.Text := {S + }Table.ColVariable.GetVariableLabel(VariableLabelType);
+      S := '';
+      for i := Low(Table.StratifyIndices) to High(Table.StratifyIndices) do
+        S := S + StratifyVariables[i].GetVariableLabel(VariableLabelType) + ': ' + StratifyVariables[i].GetValueLabel(Table.StratifyIndices[i], ValueLabelType) + LineEnding;
+
+      T.Header.Text := S + Table.ColVariable.GetVariableLabel(VariableLabelType);
     end;
 
   T.Cell[0, 0].Text := Table.RowVariable.GetVariableLabel(VariableLabelType);
@@ -308,20 +304,70 @@ var
   i: Integer;
 begin
   for i := 0 to Tables.Count - 1 do
-    InternalOutputTable(Tables.Tables[i], ST, (I = 0));
+    InternalOutputTable(Tables.Tables[i], Tables.StratifyVariables, ST, (I = 0));
 end;
 
-procedure TTables.DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand);
+function TTables.DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand
+  ): boolean;
+var
+  T: TTwoWayTable;
+  i: Integer;
+  Opt: TOption;
 begin
-{  for DF in Tables do
-    begin
-      SortFields := TEpiFields.Create(nil);
-      SortFields.AddItem(DF.Field[0]);
-      SortFields.AddItem(DF.Field[1]);
+  result := false;
 
-      if ST.HasOption('sa') then DF.SortRecords(SortFields, false);
-      if ST.HasOption('sd') then DF.SortRecords(SortFields, true);
-    end;    }
+  for i := 0 to Tables.Count -1 do
+    begin
+      T := Tables[i];
+
+      if ST.HasOption('sa') then
+        begin
+          T.SortByRowValue(false);
+          T.SortByColValue(false);
+        end;
+
+      if ST.HasOption('sd') then
+        begin
+          T.SortByRowValue(true);
+          T.SortByColValue(true);
+        end;
+
+      if ST.HasOption('sla') then
+        begin
+          T.SortByRowLabel(false);
+          T.SortByColLabel(false);
+        end;
+
+      if ST.HasOption('sld') then
+        begin
+          T.SortByRowLabel(true);
+          T.SortByColLabel(true);
+        end;
+
+      try
+        if ST.HasOption('sra', Opt) then T.SortByRow(Opt.Expr.AsInteger - 1, false);
+        if ST.HasOption('srd', Opt) then T.SortByRow(Opt.Expr.AsInteger - 1, true);
+        if ST.HasOption('sca', Opt) then T.SortByCol(Opt.Expr.AsInteger - 1, false);
+        if ST.HasOption('scd', Opt) then T.SortByCol(Opt.Expr.AsInteger - 1, true);
+      except
+        On E: ETwoWaySortException do
+          begin
+            FExecutor.Error(E.Message);
+            ST.ExecResult := csrFailed;
+            Exit;
+          end;
+
+        else
+          raise;
+      end;
+
+      if ST.HasOption('srta')     then T.SortByRowTotal(false);
+      if ST.HasOption('srtd')     then T.SortByRowTotal(true);
+      if ST.HasOption('scta')     then T.SortByColTotal(false);
+      if ST.HasOption('sctd')     then T.SortByColTotal(true);
+    end;
+
+  Result := true;
 end;
 
 constructor TTables.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator
@@ -341,8 +387,6 @@ var
   VarNames: TStrings;
   Opt: TOption;
   StratifyVarnames: TStringList;
-  ResultDFs: TTwoWayDataFiles;
-  TempDF: TEpiDataFile;
   AllTables: TTwoWayTables;
   WeightName: String;
 begin
@@ -362,10 +406,11 @@ begin
     WeightName := Opt.Expr.AsIdent;
 
   AllTables := DoCalcTables(DF, VarNames, StratifyVarnames, WeightName);
-//  DoSortTables(ResultDFs, ST);
+
+  if (not DoSortTables(AllTables, ST)) then
+    Exit;
 
   DoOutputTables(AllTables, ST);
-  //DoOutputTables(ResultDFs, ST);
 end;
 
 function TTables.CalcTables(DF: TEpiDataFile; out RefMap: TEpiReferenceMap

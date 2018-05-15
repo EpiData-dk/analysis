@@ -1503,11 +1503,24 @@ begin
   AddValueLabelOptions(Result);
 
   Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('w',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('m', [rtUndefined]);
 
   // Sorting options
-  Result.Insert('sd', [rtUndefined]);
-  Result.Insert('sa', [rtUndefined]);
+  Result.Insert('sa',  [rtUndefined]);
+  Result.Insert('sd',  [rtUndefined]);
+  Result.Insert('sla', [rtUndefined]);
+  Result.Insert('sld', [rtUndefined]);
+
+  Result.Insert('sra', [rtInteger]);
+  Result.Insert('srd', [rtInteger]);
+  Result.Insert('sca', [rtInteger]);
+  Result.Insert('scd', [rtInteger]);
+
+  Result.Insert('srta', [rtUndefined]);
+  Result.Insert('srtd', [rtUndefined]);
+  Result.Insert('scta', [rtUndefined]);
+  Result.Insert('sctd', [rtUndefined]);
 end;
 
 function TTablesCommand.GetAcceptedVariableCount: TBoundArray;
@@ -4012,7 +4025,8 @@ end;
 
 function TOption.GetIdent: UTF8String;
 begin
-  result := FVariable.Ident;
+//  result := FVariable.Ident;
+  result := UTF8LowerString(FVariable.Ident);
 end;
 
 constructor TOption.Create(AVariable: TCustomVariable; AExpr: TExpr);
