@@ -3577,10 +3577,9 @@ var
   DF: TEpiDataFile;
   Opt: TOption;
   S: UTF8String;
-  MissingVarNames, AllVarNames: TStrings;
+  AllVarNames: TStrings;
 begin
   AllVarNames := ST.VariableList.GetIdentsAsList;
-//  MissingVarNames := ST.VariableList.GetIdentsAsList;
 
   // Get the by variables out too
   for Opt in ST.Options do
@@ -3594,18 +3593,20 @@ begin
           Error('By variables cannot overlap table variables: ' + S);
           ST.ExecResult := csrFailed;
           AllVarNames.Free;
-//          MissingVarNames.Free;
           Exit;
         end;
 
       AllVarNames.Add(Opt.Expr.AsIdent)
     end;
 
+  // Weighted counts
+  if (ST.HasOption('w', Opt)) then
+    AllVarNames.Add(Opt.Expr.AsIdent);
+
   if ST.HasOption('m') then
     DF := PrepareDatafile(AllVarNames, nil)
   else
     DF := PrepareDatafile(AllVarNames, AllVarNames);
-//    DF := PrepareDatafile(AllVarNames, MissingVarNames);
 
   Table := TTables.Create(Self, FOutputCreator);
   Table.ExecTables(DF, ST);

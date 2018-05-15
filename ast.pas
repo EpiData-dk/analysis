@@ -1504,6 +1504,10 @@ begin
 
   Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('m', [rtUndefined]);
+
+  // Sorting options
+  Result.Insert('sd', [rtUndefined]);
+  Result.Insert('sa', [rtUndefined]);
 end;
 
 function TTablesCommand.GetAcceptedVariableCount: TBoundArray;
@@ -1516,7 +1520,7 @@ function TTablesCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
   ): TTypesAndFlagsRec;
 begin
   Result := inherited GetAcceptedVariableTypesAndFlags(Index);
-  result.ResultTypes := [rtFloat, rtInteger];
+//  result.ResultTypes := [rtFloat, rtInteger];
 end;
 
 constructor TTablesCommand.Create(AVariableList: TVariableList;
