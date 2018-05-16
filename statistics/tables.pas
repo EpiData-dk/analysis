@@ -141,10 +141,11 @@ begin
   AggregatedDF := TTwoWayDatafile(Aggr.CalcAggregate(InputDF, AggrVars, FuncList, True, AggregatedVariables, RefMap));
   AggrVars.Free;
 
-  for F in AggregatedVariables do
-    FOutputCreator.DoNormal('DoCalcTables: ' + F.GetVariableLabel());
+  FExecutor.Document.DataFiles.AddItem(AggregatedDF);
+  RefMap.FixupReferences;
 
   TwoWayVariables := TEpiFields.Create(nil);
+  TwoWayVariables.SetLanguage(AggregatedVariables.DefaultLang, true);
   TwoWayVariables.AddItem(AggregatedVariables.DeleteItem(0));
   TwoWayVariables.AddItem(AggregatedVariables.DeleteItem(0));
 
@@ -153,6 +154,7 @@ begin
 
   StratifyVariables := TEpiFields.Create(nil);
   StratifyVariables.ItemOwner := true;
+  StratifyVariables.SetLanguage(AggregatedVariables.DefaultLang, true);
   for i := AggregatedVariables.Count - 1 downto 0 do
     StratifyVariables.AddItem(AggregatedVariables.DeleteItem(i));
 
@@ -297,6 +299,7 @@ begin
   T := FOutputCreator.AddTable;
   T.ColCount := 2;
   T.RowCount := (Tables.Count - 1) + 3;
+  T.SetColAlignment(0, taLeftJustify);
 
   // Collect header information
   S := Tables[0].ColVariable.GetVariableLabel(VariableLabelType) + ' by ' +
@@ -310,7 +313,6 @@ begin
   T.Header.Text := S;
 
   // Basic summary information
-  T.Cell[0, 0].Text := Format('N = %d', [Tables[0].Total]);
   T.Cell[1, 0].Text := 'N';
   T.Cell[0, 1].Text := 'Crude';
   T.Cell[1, 1].Text := IntToStr(Tables[0].Total);
@@ -335,6 +337,11 @@ begin
       T.Cell[1, RowIdx].Text := IntToStr(Tab.Total);
       Inc(RowIdx);
     end;
+
+
+  // Setting up borders
+  T.SetRowBorders(0, [cbBottom, cbTop]);
+  T.SetRowBorders(T.RowCount - 1, [cbBottom]);
 end;
 
 function TTables.PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer;
@@ -371,12 +378,12 @@ begin
     OutputStratifyTable(Tables[0], Tables.StratifyVariables, ST, true);
 
   // Sub table output
-  if (not ST.HasOption('nt')) then
+  if (not ST.HasOption('nb')) then
     for i := 1 to Tables.Count - 1 do
       OutputStratifyTable(Tables.Tables[i], Tables.StratifyVariables, ST, False);
 
-
-//  OutputSummaryTable(Tables, ST);
+  if (not ST.HasOption('ns')) then
+    OutputSummaryTable(Tables, ST);
 end;
 
 function TTables.DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand

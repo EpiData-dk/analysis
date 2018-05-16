@@ -395,6 +395,7 @@ var
 
 begin
   AggregateVariables := TEpiFields.Create(nil);
+  AggregateVariables.SetLanguage(InputDF.DefaultLang, true);
   AggregateVariables.ItemOwner := true;
   V := TStringList.Create;
   for S in Variables do

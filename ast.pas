@@ -1506,6 +1506,12 @@ begin
   Result.Insert('w',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('m', [rtUndefined]);
 
+  // Output silencing options
+  Result.Insert('q',  [rtUndefined]);
+  Result.Insert('nc', [rtUndefined]);
+  Result.Insert('nb', [rtUndefined]);
+  Result.Insert('ns', [rtUndefined]);
+
   // Sorting options
   Result.Insert('sa',  [rtUndefined]);
   Result.Insert('sd',  [rtUndefined]);
