@@ -317,7 +317,7 @@ begin
   T.Cell[0, 1].Text := 'Crude';
   T.Cell[1, 1].Text := IntToStr(Tables[0].Total);
   T.Cell[0, 2].Text := 'Adjusted';
-  T.Cell[1, 2].Text := 'no available yet';
+  T.Cell[1, 2].Text := '-';
 
   RowIdx := 3;
   for Tab in Tables do

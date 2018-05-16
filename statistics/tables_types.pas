@@ -108,6 +108,12 @@ type
     property Cols[Const Index: Integer]: TTableVector read GetCols;
     property Rows[Const Index: Integer]: TTableVector read GetRows;
 
+  { Simple Statistics }
+  private
+    FDf: Integer;
+  public
+    property DF: Integer read FDf;
+
   { Sorting }
   private
     // Compare functions
@@ -157,6 +163,7 @@ type
   private
     FStratifyVariables: TEpiFields;
     FList: TList;
+    function GetDFZeroCount: Integer;
     function GetTables(const Index: Integer): TTwoWayTable;
     function GetCount: Integer;
   public
@@ -166,6 +173,7 @@ type
     property Tables[Const Index: Integer]: TTwoWayTable read GetTables; default;
     property Count: Integer read GetCount;
     property StratifyVariables: TEpiFields read FStratifyVariables;
+    property DFZeroCount: Integer read GetDFZeroCount;
   end;
 
 implementation
@@ -334,6 +342,7 @@ begin
         C.FRowPct := (C.N / RowTotal[Row]);
       end;
 
+  FDf := (RowCount - 1) * (ColCount - 1);
   FStratifyIndices := Copy(AStratifyIndices);
 end;
 
@@ -520,6 +529,18 @@ end;
 function TTwoWayTables.GetTables(const Index: Integer): TTwoWayTable;
 begin
   result := TTwoWayTable(FList[Index]);
+end;
+
+function TTwoWayTables.GetDFZeroCount: Integer;
+var
+  Tab: TTwoWayTable;
+begin
+  Result := 0;
+  for Tab in Self do
+    if (Tab <> Tables[0]) and
+       (Tab.DF = 0)
+    then
+      Inc(Result);
 end;
 
 function TTwoWayTables.GetCount: Integer;
