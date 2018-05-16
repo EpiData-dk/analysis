@@ -136,6 +136,21 @@ type
     procedure SortByRowTotal(Desc: boolean);
   end;
 
+  TTwoWayTables = class;
+
+  { TTwoWayTablesEnumerator }
+
+  TTwoWayTablesEnumerator = class
+  private
+    FTables: TTwoWayTables;
+    FCurrentIndex: Integer;
+    function GetCurrent: TTwoWayTable;
+  public
+    constructor Create(Tables: TTwoWayTables);
+    function MoveNext: Boolean;
+    property Current: TTwoWayTable read GetCurrent;
+  end;
+
   { TTwoWayTables }
 
   TTwoWayTables = class
@@ -147,6 +162,7 @@ type
   public
     constructor Create(AStratifyVariables: TEpiFields = nil);
     procedure AddTable(Table: TTwoWayTable; GrandTable: Boolean = false);
+    function GetEnumerator: TTwoWayTablesEnumerator;
     property Tables[Const Index: Integer]: TTwoWayTable read GetTables; default;
     property Count: Integer read GetCount;
     property StratifyVariables: TEpiFields read FStratifyVariables;
@@ -480,6 +496,25 @@ begin
   Sort(@CompareRowTotals, @ExchangeRows, 0, RowCount - 1, 0, desc);
 end;
 
+{ TTwoWayTablesEnumerator }
+
+function TTwoWayTablesEnumerator.GetCurrent: TTwoWayTable;
+begin
+  Result := FTables[FCurrentIndex];
+end;
+
+constructor TTwoWayTablesEnumerator.Create(Tables: TTwoWayTables);
+begin
+  FTables := Tables;
+  FCurrentIndex := -1;
+end;
+
+function TTwoWayTablesEnumerator.MoveNext: Boolean;
+begin
+  Inc(FCurrentIndex);
+  result := (FCurrentIndex < FTables.Count);
+end;
+
 { TTwoWayTables }
 
 function TTwoWayTables.GetTables(const Index: Integer): TTwoWayTable;
@@ -504,6 +539,11 @@ begin
     FList.Insert(0, Table)
   else
     FList.Add(Table);
+end;
+
+function TTwoWayTables.GetEnumerator: TTwoWayTablesEnumerator;
+begin
+  result := TTwoWayTablesEnumerator.Create(Self);
 end;
 
 end.

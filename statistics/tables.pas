@@ -38,7 +38,8 @@ type
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
     function  DoCalcTables(InputDF: TEpiDataFile; Varnames, StratifyNames: TStrings; WeightVariable: UTF8String = ''): TTwoWayTables;
-    procedure InternalOutputTable(Table: TTwoWayTable; StratifyVariables: TEpiFields; ST: TTablesCommand; IsGrandTable: boolean);
+    procedure OutputStratifyTable(Table: TTwoWayTable; StratifyVariables: TEpiFields; ST: TTablesCommand; IsGrandTable: boolean);
+    procedure OutputSummaryTable(Tables: TTwoWayTables; ST: TTablesCommand);
     function  PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
   protected
     procedure DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
@@ -55,7 +56,8 @@ type
 implementation
 
 uses
-  aggregate, aggregate_types, epimiscutils, epidatafileutils, epifields_helper, options_utils;
+  aggregate, aggregate_types, epimiscutils, epidatafileutils, epifields_helper,
+  options_utils, LazUTF8;
 
 type
   PBoundArray = ^TBoundArray;
@@ -139,6 +141,9 @@ begin
   AggregatedDF := TTwoWayDatafile(Aggr.CalcAggregate(InputDF, AggrVars, FuncList, True, AggregatedVariables, RefMap));
   AggrVars.Free;
 
+  for F in AggregatedVariables do
+    FOutputCreator.DoNormal('DoCalcTables: ' + F.GetVariableLabel());
+
   TwoWayVariables := TEpiFields.Create(nil);
   TwoWayVariables.AddItem(AggregatedVariables.DeleteItem(0));
   TwoWayVariables.AddItem(AggregatedVariables.DeleteItem(0));
@@ -209,7 +214,7 @@ begin
   FuncList.Free;
 end;
 
-procedure TTables.InternalOutputTable(Table: TTwoWayTable;
+procedure TTables.OutputStratifyTable(Table: TTwoWayTable;
   StratifyVariables: TEpiFields; ST: TTablesCommand; IsGrandTable: boolean);
 var
   T: TOutputTable;
@@ -274,6 +279,64 @@ begin
   T.SetRowBorders(T.RowCount - 1, [cbBottom]);
 end;
 
+procedure TTables.OutputSummaryTable(Tables: TTwoWayTables; ST: TTablesCommand);
+var
+  T: TOutputTable;
+  VariableLabelType: TEpiGetVariableLabelType;
+  ValueLabelType: TEpiGetValueLabelType;
+  S: UTF8String;
+  F: TEpiField;
+  Tab: TTwoWayTable;
+  RowIdx, i: Integer;
+begin
+  // Formatting of variables and values
+  VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+  ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+
+  // Create basic summary table
+  T := FOutputCreator.AddTable;
+  T.ColCount := 2;
+  T.RowCount := (Tables.Count - 1) + 3;
+
+  // Collect header information
+  S := Tables[0].ColVariable.GetVariableLabel(VariableLabelType) + ' by ' +
+       Tables[0].ColVariable.GetVariableLabel(VariableLabelType);
+  if (Assigned(Tables.StratifyVariables)) then
+    begin
+      S := S + ' adjusted for: ';
+      for F in Tables.StratifyVariables do
+        S := S + F.GetVariableLabel(VariableLabelType);
+    end;
+  T.Header.Text := S;
+
+  // Basic summary information
+  T.Cell[0, 0].Text := Format('N = %d', [Tables[0].Total]);
+  T.Cell[1, 0].Text := 'N';
+  T.Cell[0, 1].Text := 'Crude';
+  T.Cell[1, 1].Text := IntToStr(Tables[0].Total);
+  T.Cell[0, 2].Text := 'Adjusted';
+  T.Cell[1, 2].Text := 'no available yet';
+
+  RowIdx := 3;
+  for Tab in Tables do
+    begin
+      if Tab = Tables[0] then continue;
+
+      S := '';
+
+      for i := 0 to Tables.StratifyVariables.Count - 1 do
+        begin
+          F := Tables.StratifyVariables[i];
+          S := S + F.GetVariableLabel(VariableLabelType) + ': ' + F.GetValueLabel(Tab.StratifyIndices[i], ValueLabelType) + LineEnding;
+        end;
+      S := UTF8Trim(S);
+
+      T.Cell[0, RowIdx].Text := S;
+      T.Cell[1, RowIdx].Text := IntToStr(Tab.Total);
+      Inc(RowIdx);
+    end;
+end;
+
 function TTables.PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer;
   Data: Pointer): boolean;
 var
@@ -303,8 +366,17 @@ procedure TTables.DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
 var
   i: Integer;
 begin
-  for i := 0 to Tables.Count - 1 do
-    InternalOutputTable(Tables.Tables[i], Tables.StratifyVariables, ST, (I = 0));
+
+  if (not ST.HasOption('nc')) then
+    OutputStratifyTable(Tables[0], Tables.StratifyVariables, ST, true);
+
+  // Sub table output
+  if (not ST.HasOption('nt')) then
+    for i := 1 to Tables.Count - 1 do
+      OutputStratifyTable(Tables.Tables[i], Tables.StratifyVariables, ST, False);
+
+
+//  OutputSummaryTable(Tables, ST);
 end;
 
 function TTables.DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand
@@ -410,7 +482,8 @@ begin
   if (not DoSortTables(AllTables, ST)) then
     Exit;
 
-  DoOutputTables(AllTables, ST);
+  if (not ST.HasOption('q')) then
+    DoOutputTables(AllTables, ST);
 end;
 
 function TTables.CalcTables(DF: TEpiDataFile; out RefMap: TEpiReferenceMap
