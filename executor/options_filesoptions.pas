@@ -5,20 +5,13 @@ unit options_filesoptions;
 interface
 
 uses
-  Classes, SysUtils, options_hashmap, Graphics;
+  Classes, SysUtils, options_hashmap;
 
 type
 
-  { TCustomFileOption }
-
-  TCustomFileOption = class(TSetOption)
-  protected
-    procedure DoOptionError(Const S: String);
-  end;
-
   { TFolderOption }
 
-  TFolderOption = class(TCustomFileOption)
+  TFolderOption = class(TSetOption)
   protected
     procedure SetValue(AValue: UTF8String); override;
   end;
@@ -34,18 +27,11 @@ uses
 procedure TFolderOption.SetValue(AValue: UTF8String);
 begin
    if (not DirectoryExistsUTF8(AValue)) then
-     DoOptionError('Folder: ' + AValue + LineEnding +
-                   'Does not exist!'
+     DoError('Folder: ' + AValue + LineEnding +
+             'Does not exist!'
      );
 
   inherited SetValue(AValue);
-end;
-
-{ TCustomFileOption }
-
-procedure TCustomFileOption.DoOptionError(const S: String);
-begin
-  raise ESetOption.Create(S);
 end;
 
 end.

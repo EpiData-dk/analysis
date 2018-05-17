@@ -37,7 +37,7 @@ type
   private
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
-    function  DoCalcTables(InputDF: TEpiDataFile; Varnames, StratifyNames: TStrings; WeightVariable: UTF8String = ''): TTwoWayTables;
+    function  DoCalcTables(InputDF: TEpiDataFile; Varnames, StratifyNames: TStrings; Const WeightVariable: UTF8String = ''): TTwoWayTables;
     procedure OutputStratifyTable(Table: TTwoWayTable; StratifyVariables: TEpiFields; ST: TTablesCommand; IsGrandTable: boolean);
     procedure OutputSummaryTable(Tables: TTwoWayTables; ST: TTablesCommand);
     function  PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
@@ -57,7 +57,7 @@ implementation
 
 uses
   aggregate, aggregate_types, epimiscutils, epidatafileutils, epifields_helper,
-  options_utils, LazUTF8;
+  options_utils, LazUTF8, ana_globals, epidatafilestypes, options_table, strutils;
 
 type
   PBoundArray = ^TBoundArray;
@@ -107,7 +107,7 @@ end;
 { TTables }
 
 function TTables.DoCalcTables(InputDF: TEpiDataFile; Varnames,
-  StratifyNames: TStrings; WeightVariable: UTF8String): TTwoWayTables;
+  StratifyNames: TStrings; const WeightVariable: UTF8String): TTwoWayTables;
 var
   FuncList: TAggrFuncList;
   Aggr: TAggregate;
@@ -156,7 +156,7 @@ begin
   StratifyVariables.ItemOwner := true;
   StratifyVariables.SetLanguage(AggregatedVariables.DefaultLang, true);
   for i := AggregatedVariables.Count - 1 downto 0 do
-    StratifyVariables.AddItem(AggregatedVariables.DeleteItem(i));
+    StratifyVariables.InsertItem(0, AggregatedVariables.DeleteItem(i));
 
   Result := TTwoWayTables.Create(StratifyVariables);
 
@@ -222,22 +222,26 @@ var
   T: TOutputTable;
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
-  Col, Row, i: Integer;
+  Col, Row, i, ColumnFactor, Idx: Integer;
   S: String;
   Opt: TOption;
-begin
-  T := FOutputCreator.AddTable;
-  T.ColCount    := Table.ColCount + 2;
-  T.RowCount    := Table.RowCount + 2;
-  if (ST.HasOption('w', Opt)) then
-    begin
-      T.Footer.Text := 'Weight: ' + Opt.Expr.AsIdent;
-      T.Footer.Alignment := taLeftJustify;
-    end;
+  ShowRowPercent, ShowColPercent, ShowTotPercent: Boolean;
 
+  function FormatPercent(Value: EpiFloat; SetOption: TTablePercentFormatOption): UTF8String;
+  begin
+    Result := StringsReplace(SetOption.LeftChar, ['{', '}'], ['{{', '}}'], [rfReplaceAll]) +
+              Format('%.1f', [Value * 100]) +
+              StringsReplace(SetOption.RigthChar, ['{', '}'], ['{{', '}}'], [rfReplaceAll]);
+  end;
+
+begin
   VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
 
+  // Table setup
+  T := FOutputCreator.AddTable;
+
+  // Header
   if IsGrandTable then
     T.Header.Text := Table.ColVariable.GetVariableLabel(VariableLabelType)
   else
@@ -249,11 +253,39 @@ begin
       T.Header.Text := S + Table.ColVariable.GetVariableLabel(VariableLabelType);
     end;
 
+  // Footer
+  if (ST.HasOption('w', Opt)) then
+    begin
+      T.Footer.Text := 'Weight: ' + Opt.Expr.AsIdent;
+      T.Footer.Alignment := taLeftJustify;
+    end;
+
+  // Add percentages?
+  ColumnFactor := 1;
+  ShowRowPercent := ST.HasOption('pr');
+  ShowColPercent := ST.HasOption('pc');
+  ShowTotPercent := ST.HasOption('pt');
+  if ShowRowPercent then Inc(ColumnFactor);
+  if ShowColPercent then Inc(ColumnFactor);
+  if ShowTotPercent then Inc(ColumnFactor);
+
+  //               Row header   + Table colums (and percents)     + Row totals
+  T.ColCount    := 1 +            (Table.ColCount * ColumnFactor) + 1;
+  //               Col header   + Table colums                    + Col totals
+  T.RowCount    := 1            + Table.RowCount                  + 1;
+
   T.Cell[0, 0].Text := Table.RowVariable.GetVariableLabel(VariableLabelType);
 
   // Col headers
   for Col := 0 to Table.ColCount - 1 do
-    T.Cell[Col + 1, 0].Text := Table.ColVariable.GetValueLabel(Col, ValueLabelType);
+    begin
+      Idx := (Col * ColumnFactor) + 1;
+
+      T.Cell[PostInc(Idx), 0].Text                        := Table.ColVariable.GetValueLabel(Col, ValueLabelType);
+      if ShowRowPercent then T.Cell[PostInc(Idx), 0].Text := FExecutor.SetOptionValue[ANA_SO_TABLE_PERCENT_HEADER];
+      if ShowColPercent then T.Cell[PostInc(Idx), 0].Text := FExecutor.SetOptionValue[ANA_SO_TABLE_PERCENT_HEADER];
+      if ShowTotPercent then T.Cell[PostInc(Idx), 0].Text := FExecutor.SetOptionValue[ANA_SO_TABLE_PERCENT_HEADER];
+    end;
   T.Cell[T.ColCount - 1, 0].Text := 'Total';
   T.SetRowBorders(0, [cbBottom, cbTop]);
 
@@ -265,11 +297,26 @@ begin
   // Counts
   for Col := 0 to Table.ColCount - 1 do
     for Row := 0 to Table.RowCount - 1 do
-      T.Cell[Col + 1, Row + 1].Text := IntToStr(Table.Cell[Col, Row].N);
+      begin
+        Idx := (Col * ColumnFactor) + 1;
+
+        T.Cell[PostInc(Idx), Row + 1].Text                        := IntToStr(Table.Cell[Col, Row].N);
+        if ShowRowPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].RowPct,   TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]));
+        if ShowColPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].ColPct,   TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]));
+        if ShowTotPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].TotalPct, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_TOTAL]));
+      end;
 
   // Col Totals
   for Col := 0 to Table.ColCount - 1 do
-    T.Cell[Col + 1, T.RowCount - 1].Text := IntToStr(Table.ColTotal[Col]);
+    begin
+      Idx := (Col * ColumnFactor) + 1;
+      Row := T.RowCount - 1;
+
+      T.Cell[PostInc(Idx), T.RowCount - 1].Text             := IntToStr(Table.ColTotal[Col]);
+//      if ShowRowPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(1, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]));
+//      if ShowColPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(1, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]));
+//      if ShowTotPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(1, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_TOTAL]));
+    end;
 
   // Row Totals
   for Row := 0 to Table.RowCount - 1 do
@@ -298,17 +345,17 @@ begin
   // Create basic summary table
   T := FOutputCreator.AddTable;
   T.ColCount := 2;
-  T.RowCount := (Tables.Count - 1) + 3;
+  T.RowCount := (Tables.Count - 1) * 2 + 3;
   T.SetColAlignment(0, taLeftJustify);
 
   // Collect header information
   S := Tables[0].ColVariable.GetVariableLabel(VariableLabelType) + ' by ' +
-       Tables[0].ColVariable.GetVariableLabel(VariableLabelType);
+       Tables[0].RowVariable.GetVariableLabel(VariableLabelType);
   if (Assigned(Tables.StratifyVariables)) then
     begin
-      S := S + ' adjusted for: ';
+      S := S + ' adjusted for:';
       for F in Tables.StratifyVariables do
-        S := S + F.GetVariableLabel(VariableLabelType);
+        S := S + ' ' + F.GetVariableLabel(VariableLabelType);
     end;
   T.Header.Text := S;
 
@@ -322,20 +369,20 @@ begin
   RowIdx := 3;
   for Tab in Tables do
     begin
-      if Tab = Tables[0] then continue;
+      if (Tab = Tables[0]) then continue;
 
       S := '';
 
       for i := 0 to Tables.StratifyVariables.Count - 1 do
         begin
           F := Tables.StratifyVariables[i];
-          S := S + F.GetVariableLabel(VariableLabelType) + ': ' + F.GetValueLabel(Tab.StratifyIndices[i], ValueLabelType) + LineEnding;
+          S := S + ' ' + F.GetVariableLabel(VariableLabelType) + ': ' + F.GetValueLabel(Tab.StratifyIndices[i], ValueLabelType) + LineEnding;
         end;
-      S := UTF8Trim(S);
+      S := UTF8Trim(S, [u8tKeepStart]);
 
-      T.Cell[0, RowIdx].Text := S;
-      T.Cell[1, RowIdx].Text := IntToStr(Tab.Total);
-      Inc(RowIdx);
+      T.Cell[0, RowIdx + 1].Text := S;
+      T.Cell[1, RowIdx + 1].Text := IntToStr(Tab.Total);
+      Inc(RowIdx, 2);
     end;
 
 

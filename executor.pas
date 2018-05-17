@@ -315,8 +315,10 @@ uses
   Controls, runtest, Forms, parser, LazUTF8Classes, math,
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
-  RegExpr, ana_globals, browse4, strutils, options_fontoptions, options_filesoptions,
-  ana_documentfile, FileUtil,
+  RegExpr, ana_globals, browse4, strutils, ana_documentfile, FileUtil,
+
+  // Set options
+  options_fontoptions, options_filesoptions, options_table,
 
   // STATEMENTS
   list, edit, drop, systemcmd, merge, integrity_tests, report, save_output,
@@ -1839,6 +1841,12 @@ begin
                         ProgramDirectory + 'docs'
                       {$ENDIF},
                       rtString));
+
+  // TABLES:
+  FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_COL,   TTablePercentFormatOption.Create('{}', rtString));
+  FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_ROW,   TTablePercentFormatOption.Create('()', rtString));
+  FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_TOTAL, TTablePercentFormatOption.Create('[]', rtString));
+  FOptions.Insert(ANA_SO_TABLE_PERCENT_HEADER,       TSetOption.Create('%', rtString));
 
   FOptions.Insert(ANA_SO_WEB_URL, TSetOption.Create('http://epidata.dk/documentation.php', rtString));
 end;
@@ -3515,7 +3523,7 @@ begin
 
   if (ST.HasOption('u')) then
     begin
-      if (not ST.HasOption('keep')) then
+      if (not ST.HasOption('ds')) then
         begin
           Error('It is not possible to use the dataset if not kept in the project. Please use !keep := <name> to preserve the dataset!');
           ST.ExecResult := csrFailed;
@@ -3535,7 +3543,7 @@ begin
       Exit;
     end;
 
-  if (ST.HasOption('keep', Opt)) then
+  if (ST.HasOption('ds', Opt)) then
     begin
       S := Opt.Expr.AsIdent;
       EV := GetExecVariable(S);

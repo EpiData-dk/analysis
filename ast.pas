@@ -1512,6 +1512,11 @@ begin
   Result.Insert('nb', [rtUndefined]);
   Result.Insert('ns', [rtUndefined]);
 
+  // Percents options
+  Result.Insert('pr', [rtUndefined]);
+  Result.Insert('pc', [rtUndefined]);
+  Result.Insert('pt', [rtUndefined]);
+
   // Sorting options
   Result.Insert('sa',  [rtUndefined]);
   Result.Insert('sd',  [rtUndefined]);
@@ -1578,8 +1583,8 @@ begin
   Result.Insert('nt',      [rtUndefined]);
   Result.Insert('replace', [rtUndefined]);
   Result.Insert('caption', AllResultDataTypes);
-  Result.Insert('headers', [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
-  Result.Insert('keep',    [rtObject],               [evtDataset],      [evfInternal, evfExternal, evfAsObject]);
+  Result.Insert('h',       [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
+  Result.Insert('ds',      [rtObject],               [evtDataset],      [evfInternal, evfExternal, evfAsObject]);
   Result.Insert('u',       [rtUndefined]);
 
   AddDecimalOptions(Result);
@@ -5458,45 +5463,69 @@ var
   VarT: TASTResultType;
   ExpT: TASTResultType;
   EFlags: TTypesAndFlagsRec;
+  EV: TCustomExecutorVariable;
 begin
-  Result := FVariable.TypeCheck(
-              Parser,
-              TypesAndFlags(
-                AllResultDataTypes,
-                [evtField, evtGlobal, evtGlobalVector],
-                [evfInternal, evfAsValue, evfAsObject]
-              )
-            );
+  // Since assignment vary greatly, we need to make diffent check for combination.
+  // eg. evtField may be AsValue and AsObject.
+  // but evtGlobalVector can only be AsValue. Otherwise assignment fails.
+  Parser.SetTypeCheckErrorOutput(false);
 
+  // Check field
+  EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject]);
+  Result := FVariable.TypeCheck(Parser, EFlags);
+
+  // Check globals
+  EFlags := TypesAndFlags(AllResultDataTypes, [evtGlobal, evtGlobalVector], [evfInternal, evfAsValue]);
+  Result := result or FVariable.TypeCheck(Parser, EFlags);
+
+  Parser.SetTypeCheckErrorOutput(true);
+
+  EV := Parser.GetExecVariable(FVAriable.Ident);
+
+  // Just make sure we output the error.
   if (not Result) then
-    Exit;
+    begin
+      if (EV.VarType = evtField) then
+        begin
+          EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject]);
+          Result := FVariable.TypeCheck(Parser, EFlags);
+          Exit;
+        end
+      else
+        begin
+          EFlags := TypesAndFlags(AllResultDataTypes, [evtGlobal, evtGlobalVector], [evfInternal, evfAsValue]);
+          Result := FVariable.TypeCheck(Parser, EFlags);
+          Exit;
+        end;
+    end;
+
 
   EFlags := TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData);
-  if Parser.GetVariableExecType(FVAriable.Ident) = evtField then
+  if (EV.VarType = evtField) then
     Include(EFlags.Flags, evfAsObject);
 
   if (not FExpr.TypeCheck(Parser, EFlags)) then
-  begin
-    result := false;
-    Exit;
-  end;
+    begin
+      result := false;
+      Exit;
+    end;
 
   if Result then
-  begin
-    VarT := FVAriable.ResultType;
-    ExpT := FExpr.ResultType;
-    Result := (Ord(VarT) >= Ord(ExpT)) or
-              ((VarT in [rtInteger, rtDate]) and (ExpT in [rtInteger, rtDate])) or
-              ((VarT in [rtFloat,   rtTime]) and (ExpT in [rtFloat,   rtTime]));
+    begin
+      VarT := FVAriable.ResultType;
+      ExpT := FExpr.ResultType;
+      Result := (Ord(VarT) >= Ord(ExpT)) or
+                ((VarT in [rtInteger, rtDate]) and (ExpT in [rtInteger, rtDate])) or
+                ((VarT in [rtFloat,   rtTime]) and (ExpT in [rtFloat,   rtTime]));
 
-    if not result then
-      DoTypeCheckError(
-        'Incompatible types: ' + LineEnding +
-        'Variable ' + FVAriable.FIdent + ' expect result to be of type ' +  ASTResultTypeString[VarT] + LineEnding +
-        'but expression is of type ' + ASTResultTypeString[ExpT],
-        Parser
-      );
-  end;
+      if not result then
+        DoTypeCheckError(
+          'Incompatible types: ' + LineEnding +
+          'Variable ' + FVAriable.FIdent + ' expect result to be of type ' +  ASTResultTypeString[VarT] + LineEnding +
+          'but expression is of type ' + ASTResultTypeString[ExpT],
+          Parser
+        );
+    end;
 end;
 
 { TIfThen }

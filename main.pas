@@ -1108,7 +1108,8 @@ begin
     FOutputCreator.DoError(Format('Line %d: Syntax error at pos %d  (%s: Reserved word)', [ErrorToken.LineNum, ErrorToken.CaretNum, ErrorToken.DataVar]))
   else
     begin
-      FOutputCreator.DoError(Format('Line %d: Syntax error at pos %d  (%s)', [ErrorToken.LineNum, ErrorToken.CaretNum, ErrorToken.DataVar]));
+      T := StringsReplace(ErrorToken.DataVar, ['{','}'], ['{{','}}'], [rfReplaceAll]);
+      FOutputCreator.DoError(Format('Line %d: Syntax error at pos %d  (%s)', [ErrorToken.LineNum, ErrorToken.CaretNum, T]));
 
       if (ErrorToken.ParentSymbol.Kind = SymbolTypeEnd) then
         begin

@@ -106,7 +106,7 @@ begin
   Decimals     := DecimalFromOption(ST.Options);
   FunctionList.UpdateAllResultLabels(Decimals);
 
-  if (ST.HasOption('headers', Opt)) then
+  if (ST.HasOption('h', Opt)) then
     begin
       // If not value is assigned to !headers - this is a flag to delete all variable labels
       if (not Assigned(Opt.Expr)) then
@@ -598,7 +598,7 @@ begin
   if (not ST.HasOption('q')) then
     DoOutputAggregate(ResultDF, ST);
 
-  if (ST.HasOption('keep', Opt)) then
+  if (ST.HasOption('ds', Opt)) then
     begin
       DF := FExecutor.Document.DataFiles.GetItemByName(Opt.Expr.AsIdent);
       if (Assigned(DF)) then

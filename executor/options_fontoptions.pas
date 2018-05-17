@@ -9,17 +9,9 @@ uses
 
 type
 
-  { TCustomFontOption }
-
-  TCustomFontOption = class(TSetOption)
-  protected
-    procedure DoOptionError(Const S: String);
-  end;
-
-
   { TFontColorOption }
 
-  TFontColorOption = class(TCustomFontOption)
+  TFontColorOption = class(TSetOption)
   protected
     procedure SetValue(AValue: UTF8String); override;
   public
@@ -29,7 +21,7 @@ type
 
   { TFontStyleOption }
 
-  TFontStyleOption = class(TCustomFontOption)
+  TFontStyleOption = class(TSetOption)
   protected
     procedure SetValue(AValue: UTF8String); override;
   public
@@ -41,13 +33,6 @@ implementation
 uses
   typinfo, options_utils;
 
-{ TCustomFontOption }
-
-procedure TCustomFontOption.DoOptionError(const S: String);
-begin
-  raise ESetOption.Create(S);
-end;
-
 { TFontColorOption }
 
 procedure TFontColorOption.SetValue(AValue: UTF8String);
@@ -56,14 +41,14 @@ var
   S: String;
 begin
   if (AValue[1] <> '#') then
-    DoOptionError('"' + AValue + '" is not a valid color (hexadecimal)! Eg. #000000 = black');
+    DoError('"' + AValue + '" is not a valid color (hexadecimal)! Eg. #000000 = black');
 
   if (Length(AValue) <> 7) then
-    DoOptionError('"' + AValue + '" is not a valid color (hexadecimal)! Eg. #000000 = black');
+    DoError('"' + AValue + '" is not a valid color (hexadecimal)! Eg. #000000 = black');
 
   S := '$' + Copy(AValue, 2, 6);
   if (not TryStrToInt(S, Dummy)) then
-    DoOptionError('"' + AValue + '" is not a valid color (hexadecimal)! Eg. #000000 = black');
+    DoError('"' + AValue + '" is not a valid color (hexadecimal)! Eg. #000000 = black');
 
   inherited SetValue(AValue);
 end;
@@ -88,7 +73,7 @@ begin
   try
     Val := StringToSet(PTypeInfo(TypeInfo(TFontStyles)), AValue);
   except
-    DoOptionError('"' + AValue + '" is not a valid font style! Eg. "fsBold,fsUnderline"');
+    DoError('"' + AValue + '" is not a valid font style! Eg. "fsBold,fsUnderline"');
   end;
 
   inherited SetValue(AValue);

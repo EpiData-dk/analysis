@@ -315,6 +315,7 @@ constructor TTwoWayTable.Create(TableCounts: ITableCounts; AStratifyIndices: TBo
 var
   Col, Row: Integer;
   C: TTableCell;
+  TotalVal: EpiInteger;
 begin
   FRowAggrVariable := TEpiField(TableCounts.RowVariable.Clone(nil));
   FRowAggrVariable.ValueLabelSet := TableCounts.RowVariable.ValueLabelSet;
@@ -334,12 +335,14 @@ begin
         FCells[Col, Row].Fn := TableCounts.Counts[Col, Row];
       end;
 
+  TotalVal := Total;
   for Col := 0 to ColCount - 1 do
     for Row := 0 to RowCount - 1 do
       begin
-        C := Cell[Col, Row];
-        C.FColPct := (C.N / ColTotal[Col]);
-        C.FRowPct := (C.N / RowTotal[Row]);
+        C           := Cell[Col, Row];
+        C.FColPct   := (C.N / ColTotal[Col]);
+        C.FRowPct   := (C.N / RowTotal[Row]);
+        C.FTotalPct := (C.N / Total);
       end;
 
   FDf := (RowCount - 1) * (ColCount - 1);
