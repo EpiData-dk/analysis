@@ -1957,6 +1957,9 @@ begin
     aDM.OnOpenFileError := @OpenFileError;
     aDm.OnDocFileCreated := @DMDocFileCreated;
     FSaveOptions := ST.Options;
+    {$IFDEF DARWIN}
+    Screen.Cursor := crDefault; // set default cursor for file dialog since Carbon Framework mishandles it?
+    {$ENDIF}
     case aDM.OpenFile(ST, TmpDocFile) of
       dfrCanceled:
         begin
@@ -3181,10 +3184,6 @@ var
   DF: TEpiDataFile;
   opt: TOption;
 begin
-  // Jamie: Why?? will only fail on conditions belowW
-  // Torsten: It is good practice to set the initial value to failed, such that only
-  //          when all things have executed correctly, the result is set to succeed.
-  //          In this case M.ExecMean - did not correctly set the ExecResult to csrSuccess.
   ST.ExecResult := csrFailed;
   L := ST.VariableList.GetIdentsAsList;
 
@@ -3585,9 +3584,10 @@ var
   DF: TEpiDataFile;
   Opt: TOption;
   S: UTF8String;
-  AllVarNames: TStrings;
+  MissingVarNames, AllVarNames: TStrings;
 begin
   AllVarNames := ST.VariableList.GetIdentsAsList;
+  MissingVarNames := ST.VariableList.GetIdentsAsList;
 
   // Get the by variables out too
   for Opt in ST.Options do
@@ -3601,20 +3601,17 @@ begin
           Error('By variables cannot overlap table variables: ' + S);
           ST.ExecResult := csrFailed;
           AllVarNames.Free;
+          MissingVarNames.Free;
           Exit;
         end;
 
       AllVarNames.Add(Opt.Expr.AsIdent)
     end;
 
-  // Weighted counts
-  if (ST.HasOption('w', Opt)) then
-    AllVarNames.Add(Opt.Expr.AsIdent);
-
   if ST.HasOption('m') then
     DF := PrepareDatafile(AllVarNames, nil)
   else
-    DF := PrepareDatafile(AllVarNames, AllVarNames);
+    DF := PrepareDatafile(AllVarNames, MissingVarNames);
 
   Table := TTables.Create(Self, FOutputCreator);
   Table.ExecTables(DF, ST);
