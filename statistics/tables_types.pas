@@ -11,45 +11,54 @@ uses
 type
 
   { ITableCounts }
-
   ITableCounts = interface['ITableCounts']
     function GetCounts(Const Col, Row: Integer): Integer;
+    property Counts[Const Col, Row: Integer]: Integer read GetCounts;
+  end;
+
+  ITableVariables = interface(ITableCounts)['ITableVariables']
     function GetColVar: TEpiField;
     function GetRowVar: TEpiField;
-    property Counts[Const Col, Row: Integer]: Integer read GetCounts;
     property ColVariable: TEpiField read GetColVar;
     property RowVariable: TEpiField read GetRowVar;
   end;
 
+  TTwoWayTable = class;
 
   { TTableCell }
 
   TTableCell = class
   private
     Fn: EpiInteger;
-    FRowPct: EpiFloat;
-    FColPct: EpiFloat;
-    FTotalPct: EpiFloat;
+    FCol, FRow: Integer;
+    FTable: TTwoWayTable;
+    function GetColPct: EpiFloat;
+    function GetRowPct: EpiFloat;
+    function GetTotalPct: EpiFloat;
+    procedure SetN(AValue: EpiInteger);
   public
-    constructor Create;
-    property N:        EpiInteger read Fn;
-    property RowPct:   EpiFloat   read FRowPct;
-    property ColPct:   EpiFloat   read FColPct;
-    property TotalPct: EpiFloat   read FTotalPct;
+    constructor Create(TwoWayTable: TTwoWayTable; Col, Row: Integer);
+    property N:        EpiInteger read Fn write SetN;
+    property ColPct:   EpiFloat   read GetColPct;
+    property RowPct:   EpiFloat   read GetRowPct;
+    property TotalPct: EpiFloat   read GetTotalPct;
   end;
 
 
   { TTableVector }
 
+  TTableVectorType = (tvtColumn, tvtRow);
   TTableVectorEnumerator = class;
   TTableVector = class
   private
-    FCells: TList;
+    FTable: TTwoWayTable;
+    FIndex: Integer;
+    FVectorType: TTableVectorType;
     function GetCells(const Index: Integer): TTableCell;
     function GetTotal: EpiInteger;
     function GetCount: Integer;
   public
-    constructor Create;
+    constructor Create(TwoWayTable: TTwoWayTable; Index: Integer; VectorType: TTableVectorType);
     function GetEnumerator: TTableVectorEnumerator;
     property Cells[Const Index: Integer]: TTableCell read GetCells;
     property Total: EpiInteger read GetTotal;
@@ -71,12 +80,11 @@ type
 
   { TTwoWayTable }
 
-  TTwoWayTable = class;
   TTwoWaySortCompare = function(I1, I2: Integer; const index: integer): Integer of object;
   TTwoWaySortExchange = procedure(Index1, Index2: Integer) of object;
   ETwoWaySortException = class(Exception);
 
-  TTwoWayTable = class
+  TTwoWayTable = class(ITableCounts)
   private
     FRowCount: Integer;
     FColCount: Integer;
@@ -84,24 +92,35 @@ type
     FRowAggrVariable: TEpiField;
     FColAggrVariable: TEpiField;
     FStratifyIndices: TBoundArray;
+
+  { Housekeeping for totals }
+  private
+    FTotal: EpiInteger;
+    FColTotals: TBoundArray;
+    FRowTotals: TBoundArray;
     function GetRowCount: Integer;
     function GetColumnCount: Integer;
-    function GetTotal: EpiInteger;
     function GetCell(const Col, Row: Cardinal): TTableCell;
     function GetColTotal(const Index: Integer): EpiInteger;
     function GetRowTotal(const Index: Integer): EpiInteger;
     function GetCols(const Index: Integer): TTableVector;
     function GetRows(const Index: Integer): TTableVector;
+    function GetCounts(Const Col, Row: Integer): Integer;
+    function GetTotal: EpiInteger;
+    procedure CalcTotals;
   protected
     procedure DoError(Const Msg: UTF8String; EClass: ExceptClass);
+    procedure MarkDirty(Col, Row: Integer);
   public
-    constructor Create(TableCounts: ITableCounts; AStratifyIndices: TBoundArray);
+    constructor Create(AggregatedTable: ITableVariables; AStratifyIndices: TBoundArray); overload;
+    constructor Create(Cols, Rows: Integer); overload;
     property StratifyIndices: TBoundArray read FStratifyIndices;
     property ColVariable: TEpiField read FColAggrVariable;
     property RowVariable: TEpiField read FRowAggrVariable;
     property RowCount: Integer read FRowCount;
     property ColCount: Integer read FColCount;
     property Total: EpiInteger read GetTotal;
+    property Counts[Const Col, Row: Integer]: Integer read GetCounts;
     property Cell[const Col, Row: Cardinal]: TTableCell read GetCell;
     property ColTotal[const Index: Integer]: EpiInteger read GetColTotal;
     property RowTotal[const Index: Integer]: EpiInteger read GetRowTotal;
@@ -202,38 +221,68 @@ end;
 
 { TTableCell }
 
-constructor TTableCell.Create;
+function TTableCell.GetColPct: EpiFloat;
+begin
+  result := N / FTable.ColTotal[FCol];
+end;
+
+function TTableCell.GetRowPct: EpiFloat;
+begin
+  result := N / FTable.RowTotal[FRow];
+end;
+
+function TTableCell.GetTotalPct: EpiFloat;
+begin
+  result := N / FTable.Total;
+end;
+
+procedure TTableCell.SetN(AValue: EpiInteger);
+begin
+  if Fn = AValue then Exit;
+  Fn := AValue;
+  FTable.MarkDirty(FCol, FRow);
+end;
+
+constructor TTableCell.Create(TwoWayTable: TTwoWayTable; Col, Row: Integer);
 begin
   Fn := 0;
-  FRowPct   := 0;
-  FColPct   := 0;
-  FTotalPct := 0;
+  FTable := TwoWayTable;
+  FCol := Col;
+  FRow := Row;
 end;
 
 { TTableVector }
 
 function TTableVector.GetCells(const Index: Integer): TTableCell;
 begin
-  Result := TTableCell(FCells[Index]);
+  case FVectorType of
+    tvtColumn: result := FTable.Cell[FIndex, Index];
+    tvtRow:    result := FTable.Cell[Index, FIndex];
+  end;
 end;
 
 function TTableVector.GetTotal: EpiInteger;
-var
-  C: TTableCell;
 begin
-  Result := 0;
-  for C in Self do
-    Result := Result + C.N;
+  case FVectorType of
+    tvtColumn: Result := FTable.ColTotal[FIndex];
+    tvtRow:    Result := FTable.RowTotal[FIndex];
+  end;
 end;
 
 function TTableVector.GetCount: Integer;
 begin
-  result := FCells.Count;
+  case FVectorType of
+    tvtColumn: Result := FTable.ColCount;
+    tvtRow:    Result := FTable.RowCount;
+  end;
 end;
 
-constructor TTableVector.Create;
+constructor TTableVector.Create(TwoWayTable: TTwoWayTable; Index: Integer;
+  VectorType: TTableVectorType);
 begin
-  FCells := TList.Create;
+  FTable := TwoWayTable;
+  FIndex := Index;
+  FVectorType := VectorType;
 end;
 
 function TTableVector.GetEnumerator: TTableVectorEnumerator;
@@ -249,13 +298,10 @@ begin
 end;
 
 function TTwoWayTable.GetColTotal(const Index: Integer): EpiInteger;
-var
-  Row: Integer;
 begin
-  Result := 0;
-
-  for Row := 0 to RowCount - 1 do
-    Result := Result + Cell[Index, Row].N;
+  if (FColTotals[Index] < 0) then
+    CalcTotals;
+  Result := FColTotals[Index];
 end;
 
 function TTwoWayTable.GetColumnCount: Integer;
@@ -269,31 +315,52 @@ begin
 end;
 
 function TTwoWayTable.GetRowTotal(const Index: Integer): EpiInteger;
-var
-  Col: Integer;
 begin
-  Result := 0;
-
-  for Col := 0 to ColCount - 1 do
-    Result := Result + Cell[Col, Index].N;
+  if (FRowTotals[Index] < 0) then
+    CalcTotals;
+  Result := FRowTotals[Index];
 end;
 
 function TTwoWayTable.GetCols(const Index: Integer): TTableVector;
-var
-  Row: Integer;
 begin
-  Result := TTableVector.Create;
-  for Row := 0 to RowCount - 1 do
-    Result.FCells.Add(Cell[Index, Row]);
+  Result := TTableVector.Create(Self, Index, tvtColumn);
 end;
 
 function TTwoWayTable.GetRows(const Index: Integer): TTableVector;
-var
-  Col: Integer;
 begin
-  Result := TTableVector.Create;
+  Result := TTableVector.Create(Self, Index, tvtRow);
+end;
+
+function TTwoWayTable.GetCounts(const Col, Row: Integer): Integer;
+begin
+  result := Cell[Col, Row].N;
+end;
+
+function TTwoWayTable.GetTotal: EpiInteger;
+begin
+  if (FTotal < 0) then
+    CalcTotals;
+
+  Result := FTotal;
+end;
+
+procedure TTwoWayTable.CalcTotals;
+var
+  Val: EpiInteger;
+  Col, Row: Integer;
+begin
+  FTotal := 0;
+  FillDWord(FColTotals[0], ColCount, 0);
+  FillDWord(FRowTotals[0], ColCount, 0);
+
   for Col := 0 to ColCount - 1 do
-    Result.FCells.Add(Cell[Col, Index]);
+    for Row := 0 to RowCount - 1 do
+      begin
+        Val := Cell[Col, Row].N;
+        FTotal += Val;
+        FColTotals[Col] += Val;
+        FRowTotals[Row] += Val;
+      end;
 end;
 
 procedure TTwoWayTable.DoError(const Msg: UTF8String; EClass: ExceptClass);
@@ -301,52 +368,51 @@ begin
   raise EClass.Create(Msg);
 end;
 
-function TTwoWayTable.GetTotal: EpiInteger;
-var
-  Col, Row: Integer;
+procedure TTwoWayTable.MarkDirty(Col, Row: Integer);
 begin
-  Result := 0;
-  for Col := 0 to ColCount - 1 do
-    for Row := 0 to RowCount - 1 do
-      Result := Result + Cell[Col, Row].N;
+  FTotal          := -1;
+  FColTotals[Col] := -1;
+  FRowTotals[Row] := -1;
 end;
 
-constructor TTwoWayTable.Create(TableCounts: ITableCounts; AStratifyIndices: TBoundArray);
+constructor TTwoWayTable.Create(AggregatedTable: ITableVariables;
+  AStratifyIndices: TBoundArray);
 var
   Col, Row: Integer;
   C: TTableCell;
   TotalVal: EpiInteger;
+  Val: LongInt;
 begin
-  FRowAggrVariable := TEpiField(TableCounts.RowVariable.Clone(nil));
-  FRowAggrVariable.ValueLabelSet := TableCounts.RowVariable.ValueLabelSet;
+  FColAggrVariable := TEpiField(AggregatedTable.ColVariable.Clone(nil));
+  FColAggrVariable.ValueLabelSet := AggregatedTable.ColVariable.ValueLabelSet;
 
-  FColAggrVariable := TEpiField(TableCounts.ColVariable.Clone(nil));
-  FColAggrVariable.ValueLabelSet := TableCounts.ColVariable.ValueLabelSet;
+  FRowAggrVariable := TEpiField(AggregatedTable.RowVariable.Clone(nil));
+  FRowAggrVariable.ValueLabelSet := AggregatedTable.RowVariable.ValueLabelSet;
 
-  FRowCount := FRowAggrVariable.Size;
-  FColCount := FColAggrVariable.Size;
-
-  SetLength(FCells, FColCount, FRowCount);
+  Create(FColAggrVariable.Size, FRowAggrVariable.Size);
 
   for Col := 0 to ColCount - 1 do
     for Row := 0 to RowCount - 1 do
-      begin
-        FCells[Col, Row] := TTableCell.Create;
-        FCells[Col, Row].Fn := TableCounts.Counts[Col, Row];
-      end;
+      Cell[Col, Row].N := AggregatedTable.Counts[Col, Row];
 
-  TotalVal := Total;
-  for Col := 0 to ColCount - 1 do
-    for Row := 0 to RowCount - 1 do
-      begin
-        C           := Cell[Col, Row];
-        C.FColPct   := (C.N / ColTotal[Col]);
-        C.FRowPct   := (C.N / RowTotal[Row]);
-        C.FTotalPct := (C.N / Total);
-      end;
-
-  FDf := (RowCount - 1) * (ColCount - 1);
   FStratifyIndices := Copy(AStratifyIndices);
+end;
+
+constructor TTwoWayTable.Create(Cols, Rows: Integer);
+var
+  Col, Row: Integer;
+begin
+  FColCount := Cols;
+  FRowCount := Rows;
+
+  FTotal := 0;
+  SetLength(FCells, FColCount, FRowCount);
+  SetLength(FColTotals, FColCount);
+  SetLength(FRowTotals, FRowCount);
+
+  for Col := 0 to ColCount - 1 do
+    for Row := 0 to RowCount - 1 do
+      FCells[Col, Row] := TTableCell.Create(Self, Col, Row);
 end;
 
 function TTwoWayTable.CompareColValue(I1, I2: Integer; const index: integer): Integer;
@@ -403,8 +469,10 @@ var
 begin
   for Col := 0 to ColCount - 1 do
     begin
-      TempCell := Cell[Col, Index1];
+      TempCell      := Cell[Col, Index1];
+      TempCell.FRow := Index2;
       FCells[Col, Index1] := Cell[Col, Index2];
+      FCells[Col, Index1].FRow := Index1;
       FCells[Col, Index2] := TempCell;
     end;
   RowVariable.Exchange(Index1, Index2);
@@ -418,7 +486,9 @@ begin
   for Row := 0 to RowCount - 1 do
     begin
       TempCell := Cell[Index1, Row];
+      TempCell.FCol := Index2;
       FCells[Index1, Row] := Cell[Index2, Row];
+      FCells[Index1, Row].FCol := Index1;
       FCells[Index2, Row] := TempCell;
     end;
   ColVariable.Exchange(Index1, Index2);

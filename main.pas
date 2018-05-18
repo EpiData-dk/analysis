@@ -1006,7 +1006,7 @@ begin
     Exit;
   end;
 
-  FOutputCreator.DoCommand('.' + StringsReplace(S, ['{','}'], ['{{','}}'], [rfReplaceAll]));
+  FOutputCreator.DoCommand('.' + OutputCreatorNormalizeText(S));
 
   result := DoParseContent(S);
   FOutputCreator.DoNormal('');
@@ -1108,7 +1108,7 @@ begin
     FOutputCreator.DoError(Format('Line %d: Syntax error at pos %d  (%s: Reserved word)', [ErrorToken.LineNum, ErrorToken.CaretNum, ErrorToken.DataVar]))
   else
     begin
-      T := StringsReplace(ErrorToken.DataVar, ['{','}'], ['{{','}}'], [rfReplaceAll]);
+      T := OutputCreatorNormalizeText(ErrorToken.DataVar);
       FOutputCreator.DoError(Format('Line %d: Syntax error at pos %d  (%s)', [ErrorToken.LineNum, ErrorToken.CaretNum, T]));
 
       if (ErrorToken.ParentSymbol.Kind = SymbolTypeEnd) then
@@ -1125,7 +1125,7 @@ begin
             for i := 1 to TokenTable.Count - 1 do
               T := T + ', ' + '"' + TokenTable[i].Name + '"';
 
-            FOutputCreator.DoInfoAll('Expected tokens: ' + StringsReplace(T, ['{','}'], ['{{','}}'], [rfReplaceAll]));
+            FOutputCreator.DoInfoAll('Expected tokens: ' + OutputCreatorNormalizeText(T));
           end;
     end;
 

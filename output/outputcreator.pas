@@ -215,6 +215,8 @@ type
     constructor Create(AOutputCreator: TOutputCreator);
   end;
 
+  function OutputCreatorNormalizeText(Const InputTxt: UTF8String): UTF8String;
+
 const
   cbAll = [cbTop, cbLeft, cbRight, cbBottom];
 
@@ -222,6 +224,11 @@ implementation
 
 uses
   math, ana_globals, LazUTF8, strutils;
+
+function OutputCreatorNormalizeText(const InputTxt: UTF8String): UTF8String;
+begin
+  result := StringsReplace(InputTxt, ['{', '}'], ['{{', '}}'], [rfReplaceAll]);
+end;
 
 { TCoreReportGeneratorToOutputCreator }
 

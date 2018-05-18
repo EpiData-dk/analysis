@@ -1957,9 +1957,6 @@ begin
     aDM.OnOpenFileError := @OpenFileError;
     aDm.OnDocFileCreated := @DMDocFileCreated;
     FSaveOptions := ST.Options;
-    {$IFDEF DARWIN}
-    Screen.Cursor := crDefault; // set default cursor for file dialog since Carbon Framework mishandles it?
-    {$ENDIF}
     case aDM.OpenFile(ST, TmpDocFile) of
       dfrCanceled:
         begin
@@ -2863,7 +2860,7 @@ end;
 procedure TExecutor.ExecEval(ST: TEvalExpression);
 begin
   ST.ExecResult := csrFailed;
-  DoInfo(StringsReplace(ST.Expr.AsString, ['{','}'], ['{{','}}'], [rfReplaceAll]), 0);
+  DoInfo(OutputCreatorNormalizeText(ST.Expr.AsString));
   ST.ExecResult := csrSuccess;
 end;
 
@@ -2953,7 +2950,7 @@ begin
 
         Tab.Cell[0, Idx].Text := Key;
         Tab.Cell[1, Idx].Text := ASTResultTypeString[Data.ASTType];
-        Tab.Cell[2, Idx].Text := Data.Value;
+        Tab.Cell[2, Idx].Text := OutputCreatorNormalizeText(Data.Value);
         Inc(Idx);
       until (not Iter.Next);
 
@@ -3184,6 +3181,10 @@ var
   DF: TEpiDataFile;
   opt: TOption;
 begin
+  // Jamie: Why?? will only fail on conditions belowW
+  // Torsten: It is good practice to set the initial value to failed, such that only
+  //          when all things have executed correctly, the result is set to succeed.
+  //          In this case M.ExecMean - did not correctly set the ExecResult to csrSuccess.
   ST.ExecResult := csrFailed;
   L := ST.VariableList.GetIdentsAsList;
 
@@ -3584,10 +3585,9 @@ var
   DF: TEpiDataFile;
   Opt: TOption;
   S: UTF8String;
-  MissingVarNames, AllVarNames: TStrings;
+  AllVarNames: TStrings;
 begin
   AllVarNames := ST.VariableList.GetIdentsAsList;
-  MissingVarNames := ST.VariableList.GetIdentsAsList;
 
   // Get the by variables out too
   for Opt in ST.Options do
@@ -3601,17 +3601,20 @@ begin
           Error('By variables cannot overlap table variables: ' + S);
           ST.ExecResult := csrFailed;
           AllVarNames.Free;
-          MissingVarNames.Free;
           Exit;
         end;
 
       AllVarNames.Add(Opt.Expr.AsIdent)
     end;
 
+  // Weighted counts
+  if (ST.HasOption('w', Opt)) then
+    AllVarNames.Add(Opt.Expr.AsIdent);
+
   if ST.HasOption('m') then
     DF := PrepareDatafile(AllVarNames, nil)
   else
-    DF := PrepareDatafile(AllVarNames, MissingVarNames);
+    DF := PrepareDatafile(AllVarNames, AllVarNames);
 
   Table := TTables.Create(Self, FOutputCreator);
   Table.ExecTables(DF, ST);

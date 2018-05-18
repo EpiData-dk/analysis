@@ -12,7 +12,7 @@ type
 
   { TTwoWayDatafile }
 
-  TTwoWayDatafile = class(TEpiDataFile, ITableCounts)
+  TTwoWayDatafile = class(TEpiDataFile, ITableVariables)
   private
     // Aggregated two way variables
     FColVar: TEpiField;
@@ -43,6 +43,7 @@ type
     function  PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
   protected
     procedure DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
+    procedure DoTableStatistics(Tables: TTwoWayTables; ST: TTablesCommand);
     function  DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand): boolean;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
@@ -229,9 +230,9 @@ var
 
   function FormatPercent(Value: EpiFloat; SetOption: TTablePercentFormatOption): UTF8String;
   begin
-    Result := StringsReplace(SetOption.LeftChar, ['{', '}'], ['{{', '}}'], [rfReplaceAll]) +
+    Result := OutputCreatorNormalizeText(SetOption.LeftChar) +
               Format('%.1f', [Value * 100]) +
-              StringsReplace(SetOption.RigthChar, ['{', '}'], ['{{', '}}'], [rfReplaceAll]);
+              OutputCreatorNormalizeText(SetOption.RigthChar);
   end;
 
 begin
@@ -269,9 +270,9 @@ begin
   if ShowColPercent then Inc(ColumnFactor);
   if ShowTotPercent then Inc(ColumnFactor);
 
-  //               Row header   + Table colums (and percents)     + Row totals
-  T.ColCount    := 1 +            (Table.ColCount * ColumnFactor) + 1;
-  //               Col header   + Table colums                    + Col totals
+  //               Row header   + Table colums (and percents)     + Row totals (and percentes)
+  T.ColCount    := 1 +            (Table.ColCount * ColumnFactor) + (1 * ColumnFactor);
+  //               Col header   + Table rows                      + Col totals
   T.RowCount    := 1            + Table.RowCount                  + 1;
 
   T.Cell[0, 0].Text := Table.RowVariable.GetVariableLabel(VariableLabelType);
@@ -301,8 +302,8 @@ begin
         Idx := (Col * ColumnFactor) + 1;
 
         T.Cell[PostInc(Idx), Row + 1].Text                        := IntToStr(Table.Cell[Col, Row].N);
-        if ShowRowPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].RowPct,   TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]));
-        if ShowColPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].ColPct,   TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]));
+        if ShowRowPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].RowPct,   TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]));
+        if ShowColPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].ColPct,   TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]));
         if ShowTotPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].TotalPct, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_TOTAL]));
       end;
 
@@ -313,17 +314,24 @@ begin
       Row := T.RowCount - 1;
 
       T.Cell[PostInc(Idx), T.RowCount - 1].Text             := IntToStr(Table.ColTotal[Col]);
-//      if ShowRowPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(1, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]));
-//      if ShowColPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(1, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]));
-//      if ShowTotPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(1, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_TOTAL]));
+      if ShowRowPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(Table.ColTotal[Col] / Table.Total, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]));
+      if ShowColPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(1, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]));
+      if ShowTotPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(Table.ColTotal[Col] / Table.Total, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_TOTAL]));
     end;
 
   // Row Totals
   for Row := 0 to Table.RowCount - 1 do
-    T.Cell[T.ColCount - 1, Row + 1].Text := IntToStr(Table.RowTotal[Row]);
+    begin
+      Idx := T.ColCount - (1 * ColumnFactor);
+
+      T.Cell[PostInc(Idx), Row + 1].Text := IntToStr(Table.RowTotal[Row]);
+      if ShowRowPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(1, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]));
+      if ShowColPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.RowTotal[Row] / Table.Total, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]));
+      if ShowTotPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.RowTotal[Row] / Table.Total, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_TOTAL]));
+    end;
 
   // Grand total
-  T.Cell[T.ColCount - 1, T.RowCount - 1].Text := IntToStr(Table.Total);
+  T.Cell[T.ColCount - (1 * ColumnFactor), T.RowCount - 1].Text := IntToStr(Table.Total);
 
   T.SetRowBorders(T.RowCount - 1, [cbBottom]);
 end;
@@ -431,6 +439,11 @@ begin
 
   if (not ST.HasOption('ns')) then
     OutputSummaryTable(Tables, ST);
+end;
+
+procedure TTables.DoTableStatistics(Tables: TTwoWayTables; ST: TTablesCommand);
+begin
+
 end;
 
 function TTables.DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand
