@@ -160,7 +160,7 @@ begin
   Result := TFreqDatafile(Aggregator.CalcAggregate(InputDF, Varnames, FunctionList, False, Dummy, RefMap));
   Result.FSum := InputDF.Size;
 
-  Dummy.Free;
+//  Dummy.Free;    // Fails here; Dummy.State is [EBDESTROYING] ?nothing to free?
 end;
 
 procedure TFreqCommand.DoResultVariables(ResultDF: TFreqDatafile);
