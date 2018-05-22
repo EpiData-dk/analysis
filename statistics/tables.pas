@@ -58,7 +58,8 @@ implementation
 
 uses
   aggregate, aggregate_types, epimiscutils, epidatafileutils, epifields_helper,
-  options_utils, LazUTF8, ana_globals, epidatafilestypes, options_table, strutils;
+  options_utils, LazUTF8, ana_globals, epidatafilestypes, options_table, strutils,
+  tables_stat_chi2;
 
 type
   PBoundArray = ^TBoundArray;
@@ -334,6 +335,9 @@ begin
   T.Cell[T.ColCount - (1 * ColumnFactor), T.RowCount - 1].Text := IntToStr(Table.Total);
 
   T.SetRowBorders(T.RowCount - 1, [cbBottom]);
+
+  for i := 0 to Table.OutputInterfaceCount - 1 do
+    Table.OutputInterfaces[i].AddToOutput(T);
 end;
 
 procedure TTables.OutputSummaryTable(Tables: TTwoWayTables; ST: TTablesCommand);
@@ -426,24 +430,32 @@ end;
 
 procedure TTables.DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
 var
-  i: Integer;
+  Tab: TTwoWayTable;
 begin
-
   if (not ST.HasOption('nc')) then
     OutputStratifyTable(Tables[0], Tables.StratifyVariables, ST, true);
 
   // Sub table output
   if (not ST.HasOption('nb')) then
-    for i := 1 to Tables.Count - 1 do
-      OutputStratifyTable(Tables.Tables[i], Tables.StratifyVariables, ST, False);
+    for Tab in Tables do
+      OutputStratifyTable(Tab, Tables.StratifyVariables, ST, False);
 
   if (not ST.HasOption('ns')) then
     OutputSummaryTable(Tables, ST);
 end;
 
 procedure TTables.DoTableStatistics(Tables: TTwoWayTables; ST: TTablesCommand);
+var
+  Tab: TTwoWayTable;
+  Stat: TTableStatChi2;
 begin
+  for Tab in Tables do
+    begin
+      Stat := TTableStatChi2.Create;
+      Stat.CalcTable(Tab);
 
+      Tab.AddOutputInterface(Stat);
+    end;
 end;
 
 function TTables.DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand
@@ -545,6 +557,8 @@ begin
     WeightName := Opt.Expr.AsIdent;
 
   AllTables := DoCalcTables(DF, VarNames, StratifyVarnames, WeightName);
+
+  DoTableStatistics(AllTables, ST);
 
   if (not DoSortTables(AllTables, ST)) then
     Exit;

@@ -29,7 +29,7 @@ uses
   textviewer, outputviewer_types, oldhtmlviewer, options_utils, ana_globals,
   browse4, report, options_fontoptions, save_output,
   epi_script_function_observations, options_filesoptions, aggregate,
-  aggregate_types, tables, tables_types, options_table;
+  aggregate_types, tables, tables_types, options_table, tables_stat_chi2;
 
 {$R *.res}
 

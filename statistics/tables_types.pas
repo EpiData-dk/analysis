@@ -6,24 +6,21 @@ unit tables_types;
 interface
 
 uses
-  Classes, SysUtils, epidatafilestypes, epidatafiles;
+  Classes, SysUtils, epidatafilestypes, epidatafiles, outputcreator;
 
 type
 
-  { ITableCounts }
-  ITableCounts = interface['ITableCounts']
-    function GetCounts(Const Col, Row: Integer): Integer;
-    property Counts[Const Col, Row: Integer]: Integer read GetCounts;
-  end;
-
-  ITableVariables = interface(ITableCounts)['ITableVariables']
-    function GetColVar: TEpiField;
-    function GetRowVar: TEpiField;
-    property ColVariable: TEpiField read GetColVar;
-    property RowVariable: TEpiField read GetRowVar;
-  end;
-
   TTwoWayTable = class;
+
+  TTableStatistic  = (
+    tsChi2
+  );
+
+  ITwoWayStatistic = Interface['ITwoWayStatistic']
+    function  GetTableStatistic: TTableStatistic;
+    procedure CalcTable(Table: TTwoWayTable);
+    procedure AddToOutput(OutputTable: TOutputTable);
+  end;
 
   { TTableCell }
 
@@ -36,14 +33,18 @@ type
     function GetRowPct: EpiFloat;
     function GetTotalPct: EpiFloat;
     procedure SetN(AValue: EpiInteger);
+  protected
+    property Table: TTwoWayTable read FTable;
+    property Col: Integer read FCol;
+    property Row: Integer read FRow;
   public
-    constructor Create(TwoWayTable: TTwoWayTable; Col, Row: Integer);
+    constructor Create(TwoWayTable: TTwoWayTable; ACol, ARow: Integer);
     property N:        EpiInteger read Fn write SetN;
     property ColPct:   EpiFloat   read GetColPct;
     property RowPct:   EpiFloat   read GetRowPct;
     property TotalPct: EpiFloat   read GetTotalPct;
   end;
-
+  TTableCellClass = class of TTableCell;
 
   { TTableVector }
 
@@ -78,6 +79,20 @@ type
     property Current: TTableCell read GetCurrent;
   end;
 
+  { ITableCounts }
+
+  ITableCounts = interface['ITableCounts']
+    function GetCounts(Const Col, Row: Integer): Integer;
+    property Counts[Const Col, Row: Integer]: Integer read GetCounts;
+  end;
+
+  ITableVariables = interface(ITableCounts)['ITableVariables']
+    function GetColVar: TEpiField;
+    function GetRowVar: TEpiField;
+    property ColVariable: TEpiField read GetColVar;
+    property RowVariable: TEpiField read GetRowVar;
+  end;
+
   { TTwoWayTable }
 
   TTwoWaySortCompare = function(I1, I2: Integer; const index: integer): Integer of object;
@@ -110,10 +125,11 @@ type
     procedure CalcTotals;
   protected
     procedure DoError(Const Msg: UTF8String; EClass: ExceptClass);
-    procedure MarkDirty(Col, Row: Integer);
+    procedure DoMarkDirty(Col, Row: Integer); virtual;
   public
     constructor Create(AggregatedTable: ITableVariables; AStratifyIndices: TBoundArray); overload;
-    constructor Create(Cols, Rows: Integer); overload;
+    constructor Create(Cols, Rows: Integer; CellClass: TTableCellClass); overload;
+    procedure MarkDirty(Col, Row: Integer);
     property StratifyIndices: TBoundArray read FStratifyIndices;
     property ColVariable: TEpiField read FColAggrVariable;
     property RowVariable: TEpiField read FRowAggrVariable;
@@ -132,6 +148,16 @@ type
     FDf: Integer;
   public
     property DF: Integer read FDf;
+
+  { Advanced Statistics Inteface }
+  private
+    FInterfaceList: TList;
+    function GetOutputInterfaces(Const Index: Integer): ITwoWayStatistic;
+    function GetOutputInterfaceCount: Integer;
+  public
+    procedure AddOutputInterface(OutputInteface: ITwoWayStatistic);
+    property OutputInterfaces[Const Index: Integer]: ITwoWayStatistic read GetOutputInterfaces;
+    property OutputInterfaceCount: Integer read GetOutputInterfaceCount;
 
   { Sorting }
   private
@@ -243,12 +269,12 @@ begin
   FTable.MarkDirty(FCol, FRow);
 end;
 
-constructor TTableCell.Create(TwoWayTable: TTwoWayTable; Col, Row: Integer);
+constructor TTableCell.Create(TwoWayTable: TTwoWayTable; ACol, ARow: Integer);
 begin
   Fn := 0;
   FTable := TwoWayTable;
-  FCol := Col;
-  FRow := Row;
+  FCol := ACol;
+  FRow := ARow;
 end;
 
 { TTableVector }
@@ -368,11 +394,16 @@ begin
   raise EClass.Create(Msg);
 end;
 
-procedure TTwoWayTable.MarkDirty(Col, Row: Integer);
+procedure TTwoWayTable.DoMarkDirty(Col, Row: Integer);
 begin
   FTotal          := -1;
   FColTotals[Col] := -1;
   FRowTotals[Row] := -1;
+end;
+
+procedure TTwoWayTable.MarkDirty(Col, Row: Integer);
+begin
+  DoMarkDirty(Col, Row);
 end;
 
 constructor TTwoWayTable.Create(AggregatedTable: ITableVariables;
@@ -389,7 +420,7 @@ begin
   FRowAggrVariable := TEpiField(AggregatedTable.RowVariable.Clone(nil));
   FRowAggrVariable.ValueLabelSet := AggregatedTable.RowVariable.ValueLabelSet;
 
-  Create(FColAggrVariable.Size, FRowAggrVariable.Size);
+  Create(FColAggrVariable.Size, FRowAggrVariable.Size, TTableCell);
 
   for Col := 0 to ColCount - 1 do
     for Row := 0 to RowCount - 1 do
@@ -398,7 +429,8 @@ begin
   FStratifyIndices := Copy(AStratifyIndices);
 end;
 
-constructor TTwoWayTable.Create(Cols, Rows: Integer);
+constructor TTwoWayTable.Create(Cols, Rows: Integer; CellClass: TTableCellClass
+  );
 var
   Col, Row: Integer;
 begin
@@ -412,7 +444,25 @@ begin
 
   for Col := 0 to ColCount - 1 do
     for Row := 0 to RowCount - 1 do
-      FCells[Col, Row] := TTableCell.Create(Self, Col, Row);
+      FCells[Col, Row] := CellClass.Create(Self, Col, Row);
+
+  FInterfaceList := TList.Create;
+end;
+
+function TTwoWayTable.GetOutputInterfaces(const Index: Integer
+  ): ITwoWayStatistic;
+begin
+  result := ITwoWayStatistic(FInterfaceList[Index]);
+end;
+
+function TTwoWayTable.GetOutputInterfaceCount: Integer;
+begin
+  result := FInterfaceList.Count;
+end;
+
+procedure TTwoWayTable.AddOutputInterface(OutputInteface: ITwoWayStatistic);
+begin
+  FInterfaceList.Add(OutputInteface);
 end;
 
 function TTwoWayTable.CompareColValue(I1, I2: Integer; const index: integer): Integer;
