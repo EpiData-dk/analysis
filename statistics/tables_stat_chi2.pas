@@ -73,7 +73,7 @@ procedure TTableStatChi2.AddToOutput(OutputTable: TOutputTable);
 var
   S: String;
 begin
-  S := 'Chi{\S 2}: ' + Format('%8.2f', [FChi2]); // FloatToStr(FChi2);
+  S := 'Chi{\S 2}: ' + Format('%8.2f', [FChi2]); // FloatToStr(FChi2) - always two decimals on Chi2 value;
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
 end;
 

@@ -1847,6 +1847,8 @@ begin
   FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_ROW,   TTablePercentFormatOption.Create('()', rtString));
   FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_TOTAL, TTablePercentFormatOption.Create('[]', rtString));
   FOptions.Insert(ANA_SO_TABLE_PERCENT_HEADER,       TSetOption.Create('%', rtString));
+  FOptions.Insert(ANA_SO_TABLE_SEPARATOR_COL,        TSetOption.Create(';', rtString));
+
 
   FOptions.Insert(ANA_SO_WEB_URL, TSetOption.Create('http://epidata.dk/documentation.php', rtString));
 end;
