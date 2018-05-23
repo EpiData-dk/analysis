@@ -5,7 +5,7 @@ unit tables_stat_chi2;
 interface
 
 uses
-  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes;
+  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, statfunctions;
 
 type
 
@@ -26,6 +26,8 @@ type
     FOrgTable: TTwoWayTable;
     FExpected: TTwoWayTable;
     FChi2: EpiFloat;
+    FChiP: EpiFloat;
+    FChiDF: Integer;
   public
     procedure CalcTable(Table: TTwoWayTable); override;
     procedure AddToOutput(OutputTable: TOutputTable); override;
@@ -74,6 +76,7 @@ var
   Row, Col: Integer;
   C: TTableCellChi2Expected;
   Val: EpiFloat;
+  Val: EpiFloat;
 begin
   FOrgTable := Table;
   FExpected := TTwoWayTable.Create(FOrgTable.ColCount, FOrgTable.RowCount, TTableCellChi2Expected);
@@ -85,9 +88,12 @@ begin
         C   := TTableCellChi2Expected(FExpected.Cell[Col, Row]);
         C.N := (FOrgTable.RowTotal[Row] * FOrgTable.ColTotal[Col]) / FOrgTable.Total;
         Val := (FOrgTable.Cell[Col, Row].N - C.N);
-
+        // for Yates' correction:
+        // Val := (abs(FOrgTable.Cell[Col, Row].N - C.N) - 0.05);
         FChi2 := FChi2 + ((Val * Val) / C.N);
       end;
+  FChiDF := (FExpected.RowCount - 1) * (FExpected.ColCount - 1);
+  FChiP  := ChiPValue(FChi2 , FChiDF);
 end;
 
 procedure TTwoWayStatisticChi2.AddToOutput(OutputTable: TOutputTable);
@@ -96,6 +102,10 @@ var
 begin
   S := 'Chi{\S 2}: ' + Format('%.2f', [FChi2]) + LineEnding +
        'Df: ' + IntToStr(FOrgTable.DF);
+  if (FChiP < 0.001) then
+    S := S + ' (p<0.001)'
+  else
+    S := S + ' (p=' + Format('%.3f', [FChiP]) + ')';
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
 end;
 
