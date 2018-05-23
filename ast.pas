@@ -1532,6 +1532,9 @@ begin
   Result.Insert('srtd', [rtUndefined]);
   Result.Insert('scta', [rtUndefined]);
   Result.Insert('sctd', [rtUndefined]);
+
+  // Statistics
+  Result.Insert('t',    [rtUndefined]);  // Chi2
 end;
 
 function TTablesCommand.GetAcceptedVariableCount: TBoundArray;

@@ -6,21 +6,43 @@ unit tables_types;
 interface
 
 uses
-  Classes, SysUtils, epidatafilestypes, epidatafiles, outputcreator;
+  Classes, SysUtils, epidatafilestypes, epidatafiles, outputcreator, fgl;
 
 type
 
   TTwoWayTable = class;
+  TTwoWayTables = class;
 
   TTableStatistic  = (
     tsChi2
   );
+  TTableStatistics = set of TTableStatistic;
 
-  ITwoWayStatistic = Interface['ITwoWayStatistic']
-    function  GetTableStatistic: TTableStatistic;
-    procedure CalcTable(Table: TTwoWayTable);
-    procedure AddToOutput(OutputTable: TOutputTable);
+  { TTwoWayStatistic }
+
+  TTwoWayStatistic = class
+  public
+    procedure CalcTable(Table: TTwoWayTable); virtual; abstract;
+    procedure AddToOutput(OutputTable: TOutputTable); virtual; abstract;
+    procedure DebugOutput(OutputCreator: TOutputCreator); virtual;
   end;
+  TTwoWayStatisticClass = class of TTwoWayStatistic;
+
+  { TTwoWayStatistics }
+
+  TTwoWayStatistics = class
+  private
+    FStatistics: TList;
+  protected
+    function GetTwoWayStatisticClass: TTwoWayStatisticClass; virtual; abstract;
+  public
+    constructor Create; virtual;
+    procedure CalcTables(Tables: TTwoWayTables);
+    procedure AddToSummaryTable(OutputTable: TOutputTable); virtual; abstract;
+    property TwoWayStatisticClass: TTwoWayStatisticClass read GetTwoWayStatisticClass;
+  end;
+  TTwoWayStatisticsClass = class of TTwoWayStatistics;
+
 
   { TTableCell }
 
@@ -144,20 +166,20 @@ type
     property Rows[Const Index: Integer]: TTableVector read GetRows;
 
   { Simple Statistics }
-  private
-    FDf: Integer;
+  protected
+    function GetDf: Integer;
   public
-    property DF: Integer read FDf;
+    property DF: Integer read GetDf;
 
   { Advanced Statistics Inteface }
   private
-    FInterfaceList: TList;
-    function GetOutputInterfaces(Const Index: Integer): ITwoWayStatistic;
-    function GetOutputInterfaceCount: Integer;
+    FStatisticsList: TList;
+    function GetStatisticsCount: Integer;
+    function GetStatistics(const Index: Integer): TTwoWayStatistic;
   public
-    procedure AddOutputInterface(OutputInteface: ITwoWayStatistic);
-    property OutputInterfaces[Const Index: Integer]: ITwoWayStatistic read GetOutputInterfaces;
-    property OutputInterfaceCount: Integer read GetOutputInterfaceCount;
+    procedure AddStatistic(Stat: TTwoWayStatistic);
+    property Statistics[Const Index: Integer]: TTwoWayStatistic read GetStatistics;
+    property StatisticsCount: Integer read GetStatisticsCount;
 
   { Sorting }
   private
@@ -187,8 +209,6 @@ type
     procedure SortByRowTotal(Desc: boolean);
   end;
 
-  TTwoWayTables = class;
-
   { TTwoWayTablesEnumerator }
 
   TTwoWayTablesEnumerator = class
@@ -207,24 +227,74 @@ type
   TTwoWayTables = class
   private
     FStratifyVariables: TEpiFields;
-    FList: TList;
+    FStratifiedTables: TList;
+    FUnstratifiedTable: TTwoWayTable;
     function GetDFZeroCount: Integer;
     function GetTables(const Index: Integer): TTwoWayTable;
     function GetCount: Integer;
+    procedure DoError(Const Msg: UTF8String);
+
+  { Advanced Statistics Inteface }
+  private
+    FStatisticsList: TList;
+    function GetStatisticsCount: Integer;
+    function GetStatistics(const Index: Integer): TTwoWayStatistics;
+  public
+    procedure AddStatistic(Stat: TTwoWayStatistics);
+    property Statistics[Const Index: Integer]: TTwoWayStatistics read GetStatistics;
+    property StatisticsCount: Integer read GetStatisticsCount;
+
   public
     constructor Create(AStratifyVariables: TEpiFields = nil);
-    procedure AddTable(Table: TTwoWayTable; GrandTable: Boolean = false);
+    procedure AddTable(Table: TTwoWayTable; StratifiedTable: Boolean = false);
     function GetEnumerator: TTwoWayTablesEnumerator;
+    property UnstratifiedTable: TTwoWayTable read FUnstratifiedTable;
     property Tables[Const Index: Integer]: TTwoWayTable read GetTables; default;
     property Count: Integer read GetCount;
     property StratifyVariables: TEpiFields read FStratifyVariables;
     property DFZeroCount: Integer read GetDFZeroCount;
   end;
 
+  TStatisticsMap = specialize TFPGMap<TTableStatistic, TTwoWayStatisticsClass>;
+
 implementation
 
 uses
   epifields_helper, LazUTF8;
+
+{ TTwoWayStatistic }
+
+procedure TTwoWayStatistic.DebugOutput(OutputCreator: TOutputCreator);
+begin
+  // Do nothing...
+end;
+
+{ TTwoWayStatistics }
+
+constructor TTwoWayStatistics.Create;
+begin
+  FStatistics := TList.Create;
+end;
+
+procedure TTwoWayStatistics.CalcTables(Tables: TTwoWayTables);
+var
+  Stat: TTwoWayStatistic;
+  Tab: TTwoWayTable;
+begin
+  // First do calculations on the unstratified table
+  Tab := Tables.UnstratifiedTable;
+  Stat := TwoWayStatisticClass.Create;
+  Stat.CalcTable(Tab);
+  Tab.AddStatistic(Stat);
+
+  // Then do same calculation on each stratified table
+  for Tab in Tables do
+    begin
+      Stat := TwoWayStatisticClass.Create;
+      Stat.CalcTable(Tab);
+      Tab.AddStatistic(Stat);
+    end;
+end;
 
 { TTableVectorEnumerator }
 
@@ -406,6 +476,11 @@ begin
   DoMarkDirty(Col, Row);
 end;
 
+function TTwoWayTable.GetDf: Integer;
+begin
+  result := (ColCount - 1) * (RowCount - 1);
+end;
+
 constructor TTwoWayTable.Create(AggregatedTable: ITableVariables;
   AStratifyIndices: TBoundArray);
 var
@@ -446,23 +521,22 @@ begin
     for Row := 0 to RowCount - 1 do
       FCells[Col, Row] := CellClass.Create(Self, Col, Row);
 
-  FInterfaceList := TList.Create;
+  FStatisticsList := TList.Create;
 end;
 
-function TTwoWayTable.GetOutputInterfaces(const Index: Integer
-  ): ITwoWayStatistic;
+function TTwoWayTable.GetStatisticsCount: Integer;
 begin
-  result := ITwoWayStatistic(FInterfaceList[Index]);
+  result := FStatisticsList.Count;
 end;
 
-function TTwoWayTable.GetOutputInterfaceCount: Integer;
+function TTwoWayTable.GetStatistics(const Index: Integer): TTwoWayStatistic;
 begin
-  result := FInterfaceList.Count;
+  result := TTwoWayStatistic(FStatisticsList[Index]);
 end;
 
-procedure TTwoWayTable.AddOutputInterface(OutputInteface: ITwoWayStatistic);
+procedure TTwoWayTable.AddStatistic(Stat: TTwoWayStatistic);
 begin
-  FInterfaceList.Add(OutputInteface);
+  FStatisticsList.Add(Stat);
 end;
 
 function TTwoWayTable.CompareColValue(I1, I2: Integer; const index: integer): Integer;
@@ -651,7 +725,7 @@ end;
 
 function TTwoWayTables.GetTables(const Index: Integer): TTwoWayTable;
 begin
-  result := TTwoWayTable(FList[Index]);
+  result := TTwoWayTable(FStratifiedTables[Index]);
 end;
 
 function TTwoWayTables.GetDFZeroCount: Integer;
@@ -668,21 +742,48 @@ end;
 
 function TTwoWayTables.GetCount: Integer;
 begin
-  result := FList.Count;
+  result := FStratifiedTables.Count;
+end;
+
+procedure TTwoWayTables.DoError(const Msg: UTF8String);
+begin
+  raise Exception.Create(Msg);
+end;
+
+function TTwoWayTables.GetStatisticsCount: Integer;
+begin
+  result := FStatisticsList.Count;
+end;
+
+function TTwoWayTables.GetStatistics(const Index: Integer): TTwoWayStatistics;
+begin
+  Result := TTwoWayStatistics(FStatisticsList[Index]);
+end;
+
+procedure TTwoWayTables.AddStatistic(Stat: TTwoWayStatistics);
+begin
+  FStatisticsList.Add(Stat);
 end;
 
 constructor TTwoWayTables.Create(AStratifyVariables: TEpiFields);
 begin
-  FList := TList.Create;
+  FStratifiedTables := TList.Create;
   FStratifyVariables := AStratifyVariables;
+  FUnstratifiedTable := nil;
+  FStatisticsList    := TList.Create;
 end;
 
-procedure TTwoWayTables.AddTable(Table: TTwoWayTable; GrandTable: Boolean);
+procedure TTwoWayTables.AddTable(Table: TTwoWayTable; StratifiedTable: Boolean);
 begin
-  if GrandTable then
-    FList.Insert(0, Table)
+  if StratifiedTable then
+    begin
+      if Assigned(FUnstratifiedTable) then
+        DoError('Unstratified table already assigned');
+
+      FUnstratifiedTable := Table;
+    end
   else
-    FList.Add(Table);
+    FStratifiedTables.Add(Table);
 end;
 
 function TTwoWayTables.GetEnumerator: TTwoWayTablesEnumerator;

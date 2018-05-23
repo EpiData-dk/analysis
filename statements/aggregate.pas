@@ -622,6 +622,7 @@ function TAggregate.CalcAggregate(InputDF: TEpiDataFile; ByVariables: TStrings;
 begin
   Result := DoCalcAggregate(InputDF, ByVariables, FunctionList, RefMap);
 
+  AggregateVariables := nil;
   if ExpandedDataFile then
     DoExpandDatafile(InputDF, Result, ByVariables, AggregateVariables);
 end;

@@ -160,7 +160,9 @@ begin
   Result := TFreqDatafile(Aggregator.CalcAggregate(InputDF, Varnames, FunctionList, False, Dummy, RefMap));
   Result.FSum := InputDF.Size;
 
-//  Dummy.Free;    // Fails here; Dummy.State is [EBDESTROYING] ?nothing to free?
+  // Dummy MUST be freed - otherwise we may get a memory leak.
+  //  if Dummy = nil, then nothing will happen since .Free also work with nil pointer
+  Dummy.Free;
 end;
 
 procedure TFreqCommand.DoResultVariables(ResultDF: TFreqDatafile);

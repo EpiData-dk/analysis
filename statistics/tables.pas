@@ -41,9 +41,10 @@ type
     procedure OutputStratifyTable(Table: TTwoWayTable; StratifyVariables: TEpiFields; ST: TTablesCommand; IsGrandTable: boolean);
     procedure OutputSummaryTable(Tables: TTwoWayTables; ST: TTablesCommand);
     function  PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
+    function  GetStatisticOptions(ST: TTablesCommand): TTableStatistics;
   protected
     procedure DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
-    procedure DoTableStatistics(Tables: TTwoWayTables; ST: TTablesCommand);
+    procedure DoTableStatistics(Tables: TTwoWayTables; Statistics: TTableStatistics);
     function  DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand): boolean;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
@@ -51,8 +52,10 @@ type
     // Method called from Executor, does calculation + result vars + output
     procedure ExecTables(DF: TEpiDataFile; ST: TTablesCommand);
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
-    function  CalcTables(DF: TEpiDataFile; Out RefMap: TEpiReferenceMap): TEpiDataFile;
+    function  CalcTables(DF: TEpiDataFile; Out RefMap: TEpiReferenceMap; Statistics: TTableStatistics): TTwoWayTables;
   end;
+
+procedure RegisterTableStatistic(Statistic: TTableStatistic; StatClass: TTwoWayStatisticsClass);
 
 implementation
 
@@ -67,6 +70,18 @@ type
     Runners: PBoundArray;
     Variables: TEpiFields;
   end;
+
+var
+  StatisticsMap: TStatisticsMap;
+
+procedure RegisterTableStatistic(Statistic: TTableStatistic;
+  StatClass: TTwoWayStatisticsClass);
+begin
+  if (not Assigned(StatisticsMap)) then
+    StatisticsMap := TStatisticsMap.Create;
+
+  StatisticsMap.Add(Statistic, StatClass);
+end;
 
 { TTwoWayDatafile }
 
@@ -228,6 +243,7 @@ var
   S: String;
   Opt: TOption;
   ShowRowPercent, ShowColPercent, ShowTotPercent: Boolean;
+  Stat: TTwoWayStatistic;
 
   function FormatPercent(Value: EpiFloat; SetOption: TTablePercentFormatOption): UTF8String;
   begin
@@ -336,8 +352,12 @@ begin
 
   T.SetRowBorders(T.RowCount - 1, [cbBottom]);
 
-  for i := 0 to Table.OutputInterfaceCount - 1 do
-    Table.OutputInterfaces[i].AddToOutput(T);
+  for i := 0 to Table.StatisticsCount - 1 do
+    begin
+      Stat := Table.Statistics[i];
+      Stat.AddToOutput(T);
+//      Stat.DebugOutput(FOutputCreator);
+    end;
 end;
 
 procedure TTables.OutputSummaryTable(Tables: TTwoWayTables; ST: TTablesCommand);
@@ -357,12 +377,12 @@ begin
   // Create basic summary table
   T := FOutputCreator.AddTable;
   T.ColCount := 2;
-  T.RowCount := (Tables.Count - 1) * 2 + 3;
+  T.RowCount := (Tables.Count * 2) + 3;
   T.SetColAlignment(0, taLeftJustify);
 
   // Collect header information
-  S := Tables[0].ColVariable.GetVariableLabel(VariableLabelType) + ' by ' +
-       Tables[0].RowVariable.GetVariableLabel(VariableLabelType);
+  S := Tables.UnstratifiedTable.ColVariable.GetVariableLabel(VariableLabelType) + ' by ' +
+       Tables.UnstratifiedTable.RowVariable.GetVariableLabel(VariableLabelType);
   if (Assigned(Tables.StratifyVariables)) then
     begin
       S := S + ' adjusted for:';
@@ -374,15 +394,13 @@ begin
   // Basic summary information
   T.Cell[1, 0].Text := 'N';
   T.Cell[0, 1].Text := 'Crude';
-  T.Cell[1, 1].Text := IntToStr(Tables[0].Total);
+  T.Cell[1, 1].Text := IntToStr(Tables.UnstratifiedTable.Total);
   T.Cell[0, 2].Text := 'Adjusted';
   T.Cell[1, 2].Text := '-';
 
   RowIdx := 3;
   for Tab in Tables do
     begin
-      if (Tab = Tables[0]) then continue;
-
       S := '';
 
       for i := 0 to Tables.StratifyVariables.Count - 1 do
@@ -396,6 +414,9 @@ begin
       T.Cell[1, RowIdx + 1].Text := IntToStr(Tab.Total);
       Inc(RowIdx, 2);
     end;
+
+  for i := 0 to Tables.StatisticsCount -1  do
+    Tables.Statistics[i].AddToSummaryTable(T);
 
 
   // Setting up borders
@@ -428,12 +449,19 @@ begin
     end;
 end;
 
+function TTables.GetStatisticOptions(ST: TTablesCommand): TTableStatistics;
+begin
+  result := [];
+
+  if (ST.HasOption('t')) then Include(Result, tsChi2);
+end;
+
 procedure TTables.DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
 var
   Tab: TTwoWayTable;
 begin
   if (not ST.HasOption('nc')) then
-    OutputStratifyTable(Tables[0], Tables.StratifyVariables, ST, true);
+    OutputStratifyTable(Tables.UnstratifiedTable, Tables.StratifyVariables, ST, true);
 
   // Sub table output
   if (not ST.HasOption('nb')) then
@@ -444,17 +472,29 @@ begin
     OutputSummaryTable(Tables, ST);
 end;
 
-procedure TTables.DoTableStatistics(Tables: TTwoWayTables; ST: TTablesCommand);
+procedure TTables.DoTableStatistics(Tables: TTwoWayTables; Statistics: TTableStatistics);
 var
   Tab: TTwoWayTable;
-  Stat: TTableStatChi2;
-begin
-  for Tab in Tables do
-    begin
-      Stat := TTableStatChi2.Create;
-      Stat.CalcTable(Tab);
+  Stat: TTableStatistic;
+  StatObj: TTwoWayStatistics;
+  Index: Integer;
 
-      Tab.AddOutputInterface(Stat);
+  procedure RaiseError;
+  begin
+    raise Exception.Create('A table statistic was not correctly registered!');
+  end;
+
+begin
+  for Stat in Statistics do
+    begin
+      // This should only happen if a statistic unit did not call
+      // RegisterTableStatistic in the initialization part!
+      if (not StatisticsMap.Find(Stat, Index)) then
+        RaiseError;
+
+      StatObj := StatisticsMap.Data[Index].Create;
+      StatObj.CalcTables(Tables);
+      Tables.AddStatistic(StatObj);
     end;
 end;
 
@@ -558,7 +598,7 @@ begin
 
   AllTables := DoCalcTables(DF, VarNames, StratifyVarnames, WeightName);
 
-  DoTableStatistics(AllTables, ST);
+  DoTableStatistics(AllTables, GetStatisticOptions(ST));
 
   if (not DoSortTables(AllTables, ST)) then
     Exit;
@@ -567,11 +607,14 @@ begin
     DoOutputTables(AllTables, ST);
 end;
 
-function TTables.CalcTables(DF: TEpiDataFile; out RefMap: TEpiReferenceMap
-  ): TEpiDataFile;
+function TTables.CalcTables(DF: TEpiDataFile; out RefMap: TEpiReferenceMap;
+  Statistics: TTableStatistics): TTwoWayTables;
 begin
 
 end;
+
+finalization
+  StatisticsMap.Free;
 
 end.
 
