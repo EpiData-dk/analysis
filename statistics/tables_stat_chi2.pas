@@ -28,6 +28,7 @@ type
     FChi2: EpiFloat;
     FChiP: EpiFloat;
     FChiDF: Integer;
+    FClt5: Integer;
   public
     procedure CalcTable(Table: TTwoWayTable); override;
     procedure AddToOutput(OutputTable: TOutputTable); override;
@@ -57,7 +58,7 @@ end;
 
 procedure TTwoWayStatisticsChi2.AddToSummaryTable(OutputTable: TOutputTable);
 begin
-  OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + 'JUST TESTINGS!!!';
+  OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + 'JUST TESTING!!!';
 end;
 
 { TTableCellChi2Expected }
@@ -76,21 +77,23 @@ var
   Row, Col: Integer;
   C: TTableCellChi2Expected;
   Val: EpiFloat;
-  Val: EpiFloat;
+  // Val: EpiFloat;
 begin
   FOrgTable := Table;
   FExpected := TTwoWayTable.Create(FOrgTable.ColCount, FOrgTable.RowCount, TTableCellChi2Expected);
   FChi2     := 0;
+  FClt5     := 0;  // should this be a property N5 of object  TTableCellChi2Expected  instead ??
 
   for Row := 0 to FExpected.RowCount - 1 do
     for Col := 0 to FExpected.ColCount - 1 do
       begin
+        if (FExpected.Cell[Col, Row].N < 5) then  FClt5 := FClt5 +1;  // gives always
         C   := TTableCellChi2Expected(FExpected.Cell[Col, Row]);
         C.N := (FOrgTable.RowTotal[Row] * FOrgTable.ColTotal[Col]) / FOrgTable.Total;
         Val := (FOrgTable.Cell[Col, Row].N - C.N);
         // for Yates' correction:
         // Val := (abs(FOrgTable.Cell[Col, Row].N - C.N) - 0.05);
-        FChi2 := FChi2 + ((Val * Val) / C.N);
+        if C.N > 0 then FChi2 := FChi2 + ((Val * Val) / C.N); // No contribution if C.N = 0  or impose Yates !!
       end;
   FChiDF := (FExpected.RowCount - 1) * (FExpected.ColCount - 1);
   FChiP  := ChiPValue(FChi2 , FChiDF);
@@ -100,12 +103,16 @@ procedure TTwoWayStatisticChi2.AddToOutput(OutputTable: TOutputTable);
 var
   S: String;
 begin
-  S := 'Chi{\S 2}: ' + Format('%.2f', [FChi2]) + LineEnding +
-       'Df: ' + IntToStr(FOrgTable.DF);
-  if (FChiP < 0.001) then
-    S := S + ' (p<0.001)'
+  S := 'Chi{\S 2}: ' + Format('%.3f', [FChi2]) +
+       ' Df(' + IntToStr(FOrgTable.DF)+') ';   // removed LineEnding +
+  if (FChiP < 0.0001) then
+    S := S + ' p<0.0001'
   else
-    S := S + ' (p=' + Format('%.3f', [FChiP]) + ')';
+    if (FChiP < 0.001) then
+      S := S + ' p<0.001'
+  else
+    S := S + ' p=' + Format('%.3f', [FChiP]) ;
+  if (FClt5 > 5) then  S:= s +  LineEnding + '(Warning: Cells - expected<5:' + IntToStr(FClt5) + ')';
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
 end;
 
