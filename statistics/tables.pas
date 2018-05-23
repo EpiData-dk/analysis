@@ -227,7 +227,7 @@ var
   Col, Row, i, ColumnFactor, Idx: Integer;
   S: String;
   Opt: TOption;
-  ShowRowPercent, ShowColPercent, ShowTotPercent : Boolean;   // ShowColSeparator
+  ShowRowPercent, ShowColPercent, ShowTotPercent: Boolean;
 
   function FormatPercent(Value: EpiFloat; SetOption: TTablePercentFormatOption): UTF8String;
   begin
@@ -267,8 +267,6 @@ begin
   ShowRowPercent := ST.HasOption('pr');
   ShowColPercent := ST.HasOption('pc');
   ShowTotPercent := ST.HasOption('pt');
-  // ShowColSeparator := ST.HasOption('cs');   // SHOWCS
-
   if ShowRowPercent then Inc(ColumnFactor);
   if ShowColPercent then Inc(ColumnFactor);
   if ShowTotPercent then Inc(ColumnFactor);
@@ -331,8 +329,6 @@ begin
       if ShowRowPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(1, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]));
       if ShowColPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.RowTotal[Row] / Table.Total, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]));
       if ShowTotPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.RowTotal[Row] / Table.Total, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_TOTAL]));
-      // SHOWCS if ShowColSeparator then T.Cell[PostInc(Idx), Row + 1].Text := FExecutor.SetOptions[ANA_SO_TABLE_SEPARATOR_COL];
-
     end;
 
   // Grand total

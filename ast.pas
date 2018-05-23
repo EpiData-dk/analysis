@@ -1517,9 +1517,6 @@ begin
   Result.Insert('pc', [rtUndefined]);
   Result.Insert('pt', [rtUndefined]);
 
-  // Output column separator
-  Result.Insert('cs', [rtUndefined]);
-
   // Sorting options
   Result.Insert('sa',  [rtUndefined]);
   Result.Insert('sd',  [rtUndefined]);
@@ -1535,12 +1532,6 @@ begin
   Result.Insert('srtd', [rtUndefined]);
   Result.Insert('scta', [rtUndefined]);
   Result.Insert('sctd', [rtUndefined]);
-
-  // Statistics calculations
-  Result.Insert('t', [rtUndefined]);   // standard Chi2
-
-
-
 end;
 
 function TTablesCommand.GetAcceptedVariableCount: TBoundArray;
