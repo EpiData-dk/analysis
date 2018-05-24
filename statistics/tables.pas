@@ -567,16 +567,26 @@ end;
 procedure TTables.DoResultVariables(Tables: TTwoWayTables);
 var
   i, Cols, Rows: Integer;
-  RTableNames: TExecVarVector;
+  RTableNames, RStratNames: TExecVarVector;
   S: UTF8String;
   Tab: TTwoWayTable;
+  F: TEpiField;
 
   procedure AddResultTable(Table: TTwoWayTable; Const Name: UTF8String);
   var
     RTable: TExecVarMatrix;
     Col, Row: Integer;
+    RStratValues: TExecVarVector;
   begin
     RTable := FExecutor.AddResultMatrix(Name, ftInteger, Table.ColCount + 1, Table.RowCount + 1);
+
+    if Length(Table.StratifyIndices) > 0 then
+      begin
+        RStratValues := FExecutor.AddResultVector(Name + '_stratvalues', ftString, Length(Table.StratifyIndices));
+
+        for Col := Low(TAble.StratifyIndices) to High(Table.StratifyIndices) do
+          RStratValues.AsStringVector[Col] := Tables.StratifyVariables[Col].AsString[Table.StratifyIndices[Col]];
+      end;
 
     // Fill data
     for Col := 0 to Table.ColCount - 1 do
@@ -595,23 +605,31 @@ var
   end;
 
 begin
-  // TODO : Standard variables for the regular tables.
-  Cols := Tables.UnstratifiedTable.ColCount;
-  Rows := Tables.UnstratifiedTable.RowCount;
-  FExecutor.AddResultConst('$tables_cols', ftInteger).AsIntegerVector[0] := Cols;
-  FExecutor.AddResultConst('$tables_rows', ftInteger).AsIntegerVector[0] := Rows;
+  FExecutor.AddResultConst('$tables_cols', ftInteger).AsIntegerVector[0] := Tables.UnstratifiedTable.ColCount + 1;
+  FExecutor.AddResultConst('$tables_rows', ftInteger).AsIntegerVector[0] := Tables.UnstratifiedTable.RowCount + 1;
+
+  i := 0;
+  if (Assigned(Tables.StratifyVariables)) and
+     (Tables.StratifyVariables.Count > 0)
+  then
+    begin
+      RStratNames := FExecutor.AddResultVector('$tables_stratifynames', ftString, Tables.StratifyVariables.Count);
+      for F in Tables.StratifyVariables do
+        RStratNames.AsStringVector[PostInc(i)] := F.Name;
+    end;
 
   RTableNames := FExecutor.AddResultVector('$tables_tablenames', ftString,  Tables.Count + 1);
 
-  i := 1;
-  S := '$tables_tab' + IntToStr(i);
+  S := '$tables_table_unstratified';
   AddResultTable(Tables.UnstratifiedTable, S);
-  Inc(i);
+  RTableNames.AsStringVector[0] := S;
 
+  i := 1;
   for Tab in Tables do
     begin
-      S := '$tables_tab' + IntToStr(i);
+      S := '$tables_table' + IntToStr(i);
       AddResultTable(Tab, S);
+      RTableNames.AsStringVector[i] := S;
       Inc(i);
     end;
 
