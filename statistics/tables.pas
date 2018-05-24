@@ -356,7 +356,9 @@ begin
     begin
       Stat := Table.Statistics[i];
       Stat.AddToOutput(T);
-//      Stat.DebugOutput(FOutputCreator);
+
+      if (ST.HasOption('debug')) then
+        Stat.DebugOutput(FOutputCreator);
     end;
 end;
 

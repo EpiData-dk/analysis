@@ -33,8 +33,12 @@ type
   TTwoWayStatistics = class
   private
     FStatistics: TList;
+    function GetStatisticsCount: Integer;
   protected
+    function GetStatistics(const Index: Integer): TTwoWayStatistic; virtual;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; virtual; abstract;
+    property Statistics[Const Index: Integer]: TTwoWayStatistic read GetStatistics;
+    property StatisticsCount: Integer read GetStatisticsCount;
   public
     constructor Create; virtual;
     procedure CalcTables(Tables: TTwoWayTables);
@@ -271,6 +275,17 @@ end;
 
 { TTwoWayStatistics }
 
+function TTwoWayStatistics.GetStatistics(const Index: Integer
+  ): TTwoWayStatistic;
+begin
+  result := TTwoWayStatistic(FStatistics[Index]);
+end;
+
+function TTwoWayStatistics.GetStatisticsCount: Integer;
+begin
+  result := FStatistics.Count;
+end;
+
 constructor TTwoWayStatistics.Create;
 begin
   FStatistics := TList.Create;
@@ -285,6 +300,7 @@ begin
   Tab := Tables.UnstratifiedTable;
   Stat := TwoWayStatisticClass.Create;
   Stat.CalcTable(Tab);
+  FStatistics.Add(Stat);
   Tab.AddStatistic(Stat);
 
   // Then do same calculation on each stratified table
@@ -292,6 +308,7 @@ begin
     begin
       Stat := TwoWayStatisticClass.Create;
       Stat.CalcTable(Tab);
+      FStatistics.Add(Stat);
       Tab.AddStatistic(Stat);
     end;
 end;

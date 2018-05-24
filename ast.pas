@@ -1534,7 +1534,8 @@ begin
   Result.Insert('sctd', [rtUndefined]);
 
   // Statistics
-  Result.Insert('t',    [rtUndefined]);  // Chi2
+  Result.Insert('debug', [rtUndefined]);  // Special debug option for statistics
+  Result.Insert('t',     [rtUndefined]);  // Chi2
 end;
 
 function TTablesCommand.GetAcceptedVariableCount: TBoundArray;
