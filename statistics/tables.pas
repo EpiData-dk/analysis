@@ -5,8 +5,8 @@ unit tables;
 interface
 
 uses
-  Classes, SysUtils, math, epidatafiles, ast, executor, outputcreator,
-  epicustombase, tables_types;
+  Classes, SysUtils, math, epidatafiles, ast, executor, result_variables,
+  outputcreator, epicustombase, tables_types;
 
 type
 
@@ -46,6 +46,7 @@ type
     procedure DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
     procedure DoTableStatistics(Tables: TTwoWayTables; Statistics: TTableStatistics);
     function  DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand): boolean;
+    procedure DoResultVariables(Tables: TTwoWayTables);
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
     destructor Destroy; override;
@@ -563,6 +564,62 @@ begin
   Result := true;
 end;
 
+procedure TTables.DoResultVariables(Tables: TTwoWayTables);
+var
+  i, Cols, Rows: Integer;
+  RTableNames: TExecVarVector;
+  S: UTF8String;
+  Tab: TTwoWayTable;
+
+  procedure AddResultTable(Table: TTwoWayTable; Const Name: UTF8String);
+  var
+    RTable: TExecVarMatrix;
+    Col, Row: Integer;
+  begin
+    RTable := FExecutor.AddResultMatrix(Name, ftInteger, Table.ColCount + 1, Table.RowCount + 1);
+
+    // Fill data
+    for Col := 0 to Table.ColCount - 1 do
+      for Row := 0 to Table.RowCount - 1 do
+        RTable.AsIntegerMatrix[Col, Row] := Table.Cell[Col, Row].N;
+
+    // Fill col totals
+    for Col := 0 to Table.ColCount - 1 do
+      RTable.AsIntegerMatrix[Col, RTable.Rows - 1] := Table.ColTotal[Col];
+
+    // Fill row totals
+    for Row := 0 to Table.RowCount - 1 do
+      RTable.AsIntegerMatrix[RTable.Cols - 1, Row] := Table.RowTotal[Row];
+
+    RTable.AsIntegerMatrix[RTable.Cols - 1, RTable.Rows - 1] := Table.Total;
+  end;
+
+begin
+  // TODO : Standard variables for the regular tables.
+  Cols := Tables.UnstratifiedTable.ColCount;
+  Rows := Tables.UnstratifiedTable.RowCount;
+  FExecutor.AddResultConst('$tables_cols', ftInteger).AsIntegerVector[0] := Cols;
+  FExecutor.AddResultConst('$tables_rows', ftInteger).AsIntegerVector[0] := Rows;
+
+  RTableNames := FExecutor.AddResultVector('$tables_tablenames', ftString,  Tables.Count + 1);
+
+  i := 1;
+  S := '$tables_tab' + IntToStr(i);
+  AddResultTable(Tables.UnstratifiedTable, S);
+  Inc(i);
+
+  for Tab in Tables do
+    begin
+      S := '$tables_tab' + IntToStr(i);
+      AddResultTable(Tab, S);
+      Inc(i);
+    end;
+
+
+  for i := 0 to Tables.StatisticsCount - 1 do
+    Tables.Statistics[i].CreateResultVariables(Tables, FExecutor);
+end;
+
 constructor TTables.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator
   );
 begin
@@ -604,6 +661,8 @@ begin
 
   if (not DoSortTables(AllTables, ST)) then
     Exit;
+
+  DoResultVariables(AllTables);
 
   if (not ST.HasOption('q')) then
     DoOutputTables(AllTables, ST);

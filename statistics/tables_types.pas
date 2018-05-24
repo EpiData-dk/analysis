@@ -6,7 +6,7 @@ unit tables_types;
 interface
 
 uses
-  Classes, SysUtils, epidatafilestypes, epidatafiles, outputcreator, fgl;
+  Classes, SysUtils, epidatafilestypes, epidatafiles, outputcreator, fgl, executor;
 
 type
 
@@ -24,6 +24,7 @@ type
   public
     procedure CalcTable(Table: TTwoWayTable); virtual; abstract;
     procedure AddToOutput(OutputTable: TOutputTable); virtual; abstract;
+    procedure CreateResultVariables(Executor: TExecutor); virtual;
     procedure DebugOutput(OutputCreator: TOutputCreator); virtual;
   end;
   TTwoWayStatisticClass = class of TTwoWayStatistic;
@@ -42,6 +43,7 @@ type
   public
     constructor Create; virtual;
     procedure CalcTables(Tables: TTwoWayTables);
+    procedure CreateResultVariables(Tables: TTwoWayTables; Executor: TExecutor); virtual;
     procedure AddToSummaryTable(OutputTable: TOutputTable); virtual; abstract;
     property TwoWayStatisticClass: TTwoWayStatisticClass read GetTwoWayStatisticClass;
   end;
@@ -268,6 +270,11 @@ uses
 
 { TTwoWayStatistic }
 
+procedure TTwoWayStatistic.CreateResultVariables(Executor: TExecutor);
+begin
+  // Create nothing
+end;
+
 procedure TTwoWayStatistic.DebugOutput(OutputCreator: TOutputCreator);
 begin
   // Do nothing...
@@ -311,6 +318,15 @@ begin
       FStatistics.Add(Stat);
       Tab.AddStatistic(Stat);
     end;
+end;
+
+procedure TTwoWayStatistics.CreateResultVariables(Tables: TTwoWayTables;
+  Executor: TExecutor);
+var
+  i: Integer;
+begin
+  for i := 0 to StatisticsCount - 1 do
+    Statistics[i].CreateResultVariables(Executor);
 end;
 
 { TTableVectorEnumerator }
