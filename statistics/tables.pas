@@ -471,7 +471,7 @@ begin
     for Tab in Tables do
       OutputStratifyTable(Tab, Tables.StratifyVariables, ST, False);
 
-  if (not ST.HasOption('ns')) then
+  if ((not ST.HasOption('ns')) and (Tables.Count > 1)) then
     OutputSummaryTable(Tables, ST);
 end;
 

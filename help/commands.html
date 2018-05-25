@@ -395,12 +395,13 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
          <ul>
           <li><font class="option">!m</font> Include observations with missing data (.)</li>
           <li><font class="option">!q</font> Hides all output</li>
-          <li><font class="option">!nc</font> ??</li>
-          <li><font class="option">!nt</font> ??</li>
+          <li><font class="option">!nc</font>Do not show counts of observations for each variable</li>
+          <li><font class="option">!nt</font>Do not show total counts of observations</li>
           <li><font class="option">!ds := &lt;dataset&gt;</font> Save the aggregated dataset as it's own dataset with given name</li>
           <li><font class="option">!replace</font> use in combination with !ds to replace an existing dataset</li>
           <li><font class="option">!caption := "&gt;string&gt;"</font> give the dataset a caption (used both in output and with !ds)</li>
-          <li><font class="option">!h := &gt;global string vector&gt;</font> give a custom label for the generated variables</li>
+          <li><font class="option">!h := &gt;global string vector&gt;</font> give a custom label for the generated variables<br>
+                                   and show these as column descriptors in table head</li>
           <li><font class="option">!u</font> use in comvination with !ds. Use the generated dataset after this command completes. Cannot be used with an active select!</li>
           <li><font class="option">!full</font> Expands the resulting dataset with ALL possible value-combinations from &lt;var1&gt; &lt;var2&gt;...<br/>
           All entries with no data will contain system missing!</li>
@@ -428,7 +429,17 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
          </ul>
         </li>
        </ul>
-      </td>
+       <font class="cmd">
+Example </br>
+// define a global vectore for column texts: 
+new global columnhead[5] string;
+columntxt[1] := "Group";
+columntxt[2] := "N Total";
+columntxt[3] := "n (observed)";
+columntxt[4] := "Mean";
+columntxt[5] := .; 
+agg sex age !by:=family !header:=columntxt  !mci:=economy !mci:=children ;
+          </font>
      </tr>
      
 
@@ -795,14 +806,14 @@ new global g7[10] integer := 10;
           new vl<br/>
         </td>
         <td>
-          <font class="cmd">new valuelabel <i>valuelabel<sub>1</sub></i> &lt;type&gt; (&lt;value&gt; , &lt;label&gt;) (...) [!missing := &lt;value&gt;]</font>
+          <font class="cmd">new valuelabel <i>valuelabel<sub>1</sub></i> &lt;type&gt; (&lt;value&gt; , &lt;label&gt;) (...) [!m := &lt;value&gt;]</font>
           <p>Create a new value label set with a given <a href="#types">type</a> (boolean not supported) and assign at least one (value, label) pair.
           Each (value, label) pair will be added to the newly created set. The datatype of the value MUST match the defined datatype for the value label set itself.<br/>
           It is not possible to create an empty valuelabel set.</p>
           <p><font class="limit">Note:</font> An empty set will restrict data entry to system missing only!</p>
           <ul>
             <li>
-              <font class="option">!missing := &lt;value&gt;</font>
+              <font class="option">!m := &lt;value&gt;</font>
               Marks the given value in the value label set as missing. If the value is not part of the (value, label) pairs or the datatype does not match an error will be reported.<br/>
               This option can be used multiple times with different values.
             </li>
@@ -810,7 +821,7 @@ new global g7[10] integer := 10;
           Examples:
           <font class="cmd">
 // "normal" value label             
-new valuelabel _VL1 integer (1, "Value A") (2, "Value B") (9, "Missing") !missing := 9;
+new valuelabel _VL1 integer (1, "Value A") (2, "Value B") (9, "Missing") !m := 9;
 
 // using expression
 new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "This " + "is " + "value " + 2) (2 + 1, "This " + "is" + "value " + 2);
@@ -973,7 +984,7 @@ new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "Thi
        edit vl<br/>
       </td>
       <td>
-       <font class="cmd">edit valuelabel <i>valuelabel<sub>1</sub></i> [(&lt;value&gt; , &lt;text&gt;) ...] [!missing := &lt;value&gt;] [!delete := &lt;value&gt;] [!nomissing := &lt;value&gt;]</font>
+       <font class="cmd">edit valuelabel <i>valuelabel<sub>1</sub></i> [(&lt;value&gt; , &lt;text&gt;) ...] [!m := &lt;value&gt;] [!delete := &lt;value&gt;] [!nomissing := &lt;value&gt;]</font>
        <p>Edits an existing value label set and optionally assign any number of (value, label) pairs.<br/>
         If a (value, label) pair already exist, the new label will replace the old label. Otherwise the (value, label) pair will be added to the set. The datatype of the value MUST match the datatype for the value label set itself.</p>
        <ul>
