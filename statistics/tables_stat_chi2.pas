@@ -5,7 +5,7 @@ unit tables_stat_chi2;
 interface
 
 uses
-  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes;
+  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, executor;
 
 type
 
@@ -31,6 +31,7 @@ type
   public
     procedure CalcTable(Table: TTwoWayTable); override;
     procedure AddToOutput(OutputTable: TOutputTable); override;
+    procedure CreateResultVariables(Executor: TExecutor; const NamePrefix: UTF8String); override;
     procedure DebugOutput(OutputCreator: TOutputCreator); override;
   end;
 
@@ -115,6 +116,15 @@ begin
     end;
 
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
+end;
+
+procedure TTwoWayStatisticChi2.CreateResultVariables(Executor: TExecutor;
+  const NamePrefix: UTF8String);
+begin
+  inherited CreateResultVariables(Executor, NamePrefix);
+
+  Executor.AddResultConst(NamePrefix + 'chi2', ftFloat).AsFloatVector[0] := FChi2;
+  Executor.AddResultConst(NamePrefix + 'p',    ftFloat).AsFloatVector[0] := FChiP;
 end;
 
 procedure TTwoWayStatisticChi2.DebugOutput(OutputCreator: TOutputCreator);

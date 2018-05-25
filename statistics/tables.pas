@@ -578,6 +578,7 @@ var
     Col, Row: Integer;
     RStratValues: TExecVarVector;
   begin
+    FExecutor.AddResultConst(Name + '_df', ftInteger).AsIntegerVector[0] := Table.DF;
     RTable := FExecutor.AddResultMatrix(Name, ftInteger, Table.ColCount + 1, Table.RowCount + 1);
 
     if Length(Table.StratifyIndices) > 0 then
@@ -620,7 +621,7 @@ begin
 
   RTableNames := FExecutor.AddResultVector('$tables_tablenames', ftString,  Tables.Count + 1);
 
-  S := '$tables_table_unstratified';
+  S := '$tables_unstratified';
   AddResultTable(Tables.UnstratifiedTable, S);
   RTableNames.AsStringVector[0] := S;
 

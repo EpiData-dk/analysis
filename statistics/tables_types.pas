@@ -24,7 +24,7 @@ type
   public
     procedure CalcTable(Table: TTwoWayTable); virtual; abstract;
     procedure AddToOutput(OutputTable: TOutputTable); virtual; abstract;
-    procedure CreateResultVariables(Executor: TExecutor); virtual;
+    procedure CreateResultVariables(Executor: TExecutor; Const NamePrefix: UTF8String); virtual;
     procedure DebugOutput(OutputCreator: TOutputCreator); virtual;
   end;
   TTwoWayStatisticClass = class of TTwoWayStatistic;
@@ -270,7 +270,8 @@ uses
 
 { TTwoWayStatistic }
 
-procedure TTwoWayStatistic.CreateResultVariables(Executor: TExecutor);
+procedure TTwoWayStatistic.CreateResultVariables(Executor: TExecutor;
+  const NamePrefix: UTF8String);
 begin
   // Create nothing
 end;
@@ -324,9 +325,18 @@ procedure TTwoWayStatistics.CreateResultVariables(Tables: TTwoWayTables;
   Executor: TExecutor);
 var
   i: Integer;
+  S: UTF8String;
 begin
+  S := '';
   for i := 0 to StatisticsCount - 1 do
-    Statistics[i].CreateResultVariables(Executor);
+    begin
+      if (i = 0) then
+        S := '$tables_unstratified_'
+      else
+        S := '$tables_table' + IntToStr(i) + '_';
+
+      Statistics[i].CreateResultVariables(Executor, S);
+    end;
 end;
 
 { TTableVectorEnumerator }
