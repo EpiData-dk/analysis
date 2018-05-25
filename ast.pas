@@ -1590,6 +1590,7 @@ begin
   Result.Insert('h',       [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
   Result.Insert('ds',      [rtObject],               [evtDataset],      [evfInternal, evfExternal, evfAsObject]);
   Result.Insert('u',       [rtUndefined]);
+  Result.Insert('full',    [rtUndefined]);
 
   AddDecimalOptions(Result);
   AddVariableLabelOptions(Result);

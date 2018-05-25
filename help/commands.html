@@ -381,7 +381,56 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
       </td>
      </tr>
-
+     <tr valign="top">
+      <td>
+       <a name="aggregate" id="aggregate"></a><a name="agg" id="agg"></a>aggregate<br/>
+       agg
+      </td>
+      <td>
+       <font class="cmd">agg [&lt;var1&gt; &lt;var2&gt;...] [!options]</font><br/>
+       <p>Aggregate - collapse - combine - data when you wish to change from individual to group level. Options:</p>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+       <ul>
+        <li> Overall options:
+         <ul>
+          <li><font class="option">!m</font> Include observations with missing data (.)</li>
+          <li><font class="option">!q</font> Hides all output</li>
+          <li><font class="option">!nc</font> ??</li>
+          <li><font class="option">!nt</font> ??</li>
+          <li><font class="option">!ds := &lt;dataset&gt;</font> Save the aggregated dataset as it's own dataset with given name</li>
+          <li><font class="option">!replace</font> use in combination with !ds to replace an existing dataset</li>
+          <li><font class="option">!caption := "&gt;string&gt;"</font> give the dataset a caption (used both in output and with !ds)</li>
+          <li><font class="option">!h := &gt;global string vector&gt;</font> give a custom label for the generated variables</li>
+          <li><font class="option">!u</font> use in comvination with !ds. Use the generated dataset after this command completes. Cannot be used with an active select!</li>
+          <li><font class="option">!full</font> Expands the resulting dataset with ALL possible value-combinations from &lt;var1&gt; &lt;var2&gt;...<br/>
+          All entries with no data will contain system missing!</li>
+          <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
+          <li>See <a href="#formatting">formatting</a> for options on formatting percentages</li>
+         </ul>
+        </li>
+        <li> Summary statistics:<br/>
+         All options must have exactly one variable, but each option can be used multiple times with different variables
+         <ul>
+          <li><font class="option">!mv</font> Count of missing values (system and user defined)</li>
+          <li><font class="option">!mean</font> Calculates mean of the variable</li>
+          <li><font class="option">!sd</font> Calculates standard deviation</li>
+          <li><font class="option">!sv</font> Calculates standard variance</li>
+          <li><font class="option">!min</font> Calculates minimum value</li>
+          <li><font class="option">!med</font> Calculates median value</li>
+          <li><font class="option">!max</font> Calculates maximum value</li>
+          <li><font class="option">!pXX</font> Calculates XX percentile (XX = 1, 5, 10, 25, 50, 75, 90, 95, 99)</li>
+          <li><font class="option">!sum</font> Calculatest the sum of values</li>
+          <li><font class="option">!des</font> = Min, Median and Max</li>
+          <li><font class="option">!iqr</font> = p25 and p75</li>
+          <li><font class="option">!idr</font> = p10 and p90</li>
+          <li><font class="option">!isr</font> = p5 and p95</li>
+          <li><font class="option">!mci</font> = mean and 95% CI (low + high)</li>
+         </ul>
+        </li>
+       </ul>
+      </td>
+     </tr>
+     
 
      <!--
       ######################################################3
@@ -431,8 +480,8 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
       Tables
       ######################################################3
      -->
-     <tr>
-        <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="tablegrp" id="tablegrp"></a> Tables</td>
+      <tr>
+        <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="tablegrp" id="tablegrp"></a> Tables &amp; Frequencies</td>
       </tr>
       <tr valign="top">
         <td><a name="freq" id="freq"></a>freq<br/>
@@ -450,7 +499,63 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
          </ul>
         </td>
       </tr>
-
+     <tr valign="top">
+      <td><a name="tables" id="tables"></a>tables<br/>
+       <a name="tab" id="tab">tab</a></td>
+      <td>
+       <font class="cmd">tab <i>&lt;column variable&gt; &lt;row variable&gt;</i> [!&lt;option&gt; ...]</font><br/>
+       <p>The tables (brief: tab) command shows a cross tables for the variables chosen.</p>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+       <p>The default sorting for the cross tables is increasing value, regardsless of any valuelabel for the variables. Use options below to change the sort order!</p>
+       <ul>
+        <li> Data and output:
+         <ul>
+          <li><font class="option">!m</font> Include observations with missing data (.)</li>
+          <li><font class="option">!w := &lt;variable&gt;</font> Use number of observations in the variable as frequency weight</li>
+          <li><font class="option">!by := &lt;variable&gt;</font> Stratify the data by this variable.<br/>
+          If multiple !by options are used, each unique combination of values from the by-variables will have it's own sub-table.</li>
+          <li><font class="option">!q</font> Hide all output! Result variable are still calculated</li>
+          <li><font class="option">!nc</font> Hide combined/unstratified tables</li>
+          <li><font class="option">!nb</font> Hide sub/stratified tables</li>
+          <li><font class="option">!ns</font> Hide summary table</li>
+          <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
+          <li>See <a href="#formatting">formatting</a> for options on formatting percentages</li>
+         </ul>
+        </li>
+        <li> Percentages:
+         <ul>
+          <li><font class="option">!pr</font> Show row percents for each table cell and col/row totals</li>
+          <li><font class="option">!pc</font> Show col percents for each table cell and col/row totals</li>
+          <li><font class="option">!pt</font> Show total percents for each table cell and col/row totals</li>
+         </ul>
+        </li>
+        <li> Sorting: 
+         <ul>
+          <li>Indicate by !Sxxx where the x indicate:<br/>
+           R:row C:Column A:Ascending D:Descending T:Total L:label (else numerical)</li>
+          <li><font class="option">!sa</font> Sort col &amp; row in ascending value order</li>
+          <li><font class="option">!sd</font> Sort col &amp; row in descending value order</li>
+          <li><font class="option">!sla</font> Sort col &amp; row in ascending label order</li>
+          <li><font class="option">!sld</font> Sort col &amp; row in descending label order</li>
+          <li><font class="option">!sca := &lt;integer&gt;</font> Sort col ascending value order in given index</li>
+          <li><font class="option">!scd := &lt;integer&gt;</font> Sort col descending value order in given index</li>
+          <li><font class="option">!sra := &lt;integer&gt;</font> Sort row ascending value order in given index</li>
+          <li><font class="option">!srd := &lt;integer&gt;</font> Sort row descending value order in given index</li>
+          <li><font class="option">!scta</font> Sort on col totals ascending order</li>
+          <li><font class="option">!scta</font> Sort on col totals descending order</li>
+          <li><font class="option">!srta</font> Sort on row totals ascending order</li>
+          <li><font class="option">!srtd</font> Sort on row totals descending order</li>
+         </ul>
+        </li>
+        <li> Estimation and testing:
+         <ul>
+          <li><font class="option">!t</font> Chi<sup>2</sup></li>
+          </ul>
+        </li>
+       </ul>
+      </td>
+     </tr>
+     
      <!--
       ######################################################3
       Select observations

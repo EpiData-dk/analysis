@@ -547,6 +547,7 @@ var
   CreateSumOnStatFunctions, PrevModified: Boolean;
   MR: TEpiMasterRelation;
   DF: TEpiCustomItem;
+  Dummy: TEpiFields;
 begin
   VarNames := ST.VariableList.GetIdentsAsList;
   CreateSumOnStatFunctions := (not ST.HasOption('nc'));
@@ -593,6 +594,12 @@ begin
   RefMap.Free;
 
   DoCaptionHeadersAndLabels(ResultDF, FunctionList, ST);
+
+  if (ST.HasOption('full')) then
+    begin
+      DoExpandDatafile(InputDF, ResultDF, Varnames, Dummy);
+      Dummy.Free;
+    end;
 
 
   if (not ST.HasOption('q')) then
