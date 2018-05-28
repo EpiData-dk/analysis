@@ -16,7 +16,7 @@
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="1"/>
       <RevisionNr Value="1"/>
-      <BuildNr Value="7"/>
+      <BuildNr Value="8"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
