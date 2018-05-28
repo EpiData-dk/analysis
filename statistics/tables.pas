@@ -243,7 +243,7 @@ var
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
   Col, Row, i, ColumnFactor, Idx, Decimals: Integer;
-  S: String;
+  S, ColSeparator: String;
   Opt: TOption;
   ShowRowPercent, ShowColPercent, ShowTotPercent: Boolean;
   Stat: TTwoWayStatistic;
@@ -261,6 +261,9 @@ var
   end;
 
 begin
+  ColSeparator      := '';
+  if (ST.HasOption('cs', Opt)) then
+    ColSeparator    := Opt.Expr.AsString;
   Decimals          := DecimalFromOption(ST.Options);
   VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
@@ -308,7 +311,12 @@ begin
     begin
       Idx := (Col * ColumnFactor) + 1;
 
-      T.Cell[PostInc(Idx), 0].Text                        := Table.ColVariable.GetValueLabel(Col, ValueLabelType);
+      S := '';
+{      if Col > 0 then
+        S := S + ColSeparator;}
+      S := S + Table.ColVariable.GetValueLabel(Col, ValueLabelType);
+
+      T.Cell[PostInc(Idx), 0].Text                        := S;
       if ShowRowPercent then T.Cell[PostInc(Idx), 0].Text := FExecutor.SetOptionValue[ANA_SO_TABLE_PERCENT_HEADER];
       if ShowColPercent then T.Cell[PostInc(Idx), 0].Text := FExecutor.SetOptionValue[ANA_SO_TABLE_PERCENT_HEADER];
       if ShowTotPercent then T.Cell[PostInc(Idx), 0].Text := FExecutor.SetOptionValue[ANA_SO_TABLE_PERCENT_HEADER];
@@ -327,7 +335,9 @@ begin
       begin
         Idx := (Col * ColumnFactor) + 1;
 
-        T.Cell[PostInc(Idx), Row + 1].Text                        := IntToStr(Table.Cell[Col, Row].N);
+        S := ColSeparator + IntToStr(Table.Cell[Col, Row].N);
+
+        T.Cell[PostInc(Idx), Row + 1].Text                        := S;
         if ShowRowPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].RowPct,   TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]));
         if ShowColPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].ColPct,   TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]));
         if ShowTotPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].TotalPct, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_TOTAL]));

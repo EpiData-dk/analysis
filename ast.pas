@@ -1505,6 +1505,7 @@ begin
   Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('w',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('m', [rtUndefined]);
+  Result.Insert('cs', AllResultDataTypes);
 
   // Output silencing options
   Result.Insert('q',  [rtUndefined]);
