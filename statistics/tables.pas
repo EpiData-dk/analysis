@@ -242,7 +242,7 @@ var
   T: TOutputTable;
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
-  Col, Row, i, ColumnFactor, Idx: Integer;
+  Col, Row, i, ColumnFactor, Idx, Decimals: Integer;
   S: String;
   Opt: TOption;
   ShowRowPercent, ShowColPercent, ShowTotPercent: Boolean;
@@ -256,11 +256,12 @@ var
       Result := '-'
     else
       Result := OutputCreatorNormalizeText(SetOption.LeftChar) +
-                Format('%.1f', [Value * 100]) +
+                Format('%.' + IntToStr(Decimals) + 'f', [Value * 100]) +
                 OutputCreatorNormalizeText(SetOption.RigthChar);
   end;
 
 begin
+  Decimals          := DecimalFromOption(ST.Options);
   VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
 
