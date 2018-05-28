@@ -490,7 +490,7 @@ var
 begin
   FTotal := 0;
   FillDWord(FColTotals[0], ColCount, 0);
-  FillDWord(FRowTotals[0], ColCount, 0);
+  FillDWord(FRowTotals[0], RowCount, 0);
 
   for Col := 0 to ColCount - 1 do
     for Row := 0 to RowCount - 1 do
@@ -631,7 +631,7 @@ end;
 
 procedure TTwoWayTable.ExchangeRows(Index1, Index2: Integer);
 var
-  Col: Integer;
+  Col, Val: Integer;
   TempCell: TTableCell;
 begin
   for Col := 0 to ColCount - 1 do
@@ -642,12 +642,17 @@ begin
       FCells[Col, Index1].FRow := Index1;
       FCells[Col, Index2] := TempCell;
     end;
+
+  Val := FRowTotals[Index1];
+  FRowTotals[Index1] := FRowTotals[Index2];
+  FRowTotals[Index2] := Val;
+
   RowVariable.Exchange(Index1, Index2);
 end;
 
 procedure TTwoWayTable.ExchangeColumns(Index1, Index2: Integer);
 var
-  Row: Integer;
+  Row, Val: Integer;
   TempCell: TTableCell;
 begin
   for Row := 0 to RowCount - 1 do
@@ -658,6 +663,11 @@ begin
       FCells[Index1, Row].FCol := Index1;
       FCells[Index2, Row] := TempCell;
     end;
+
+  Val := FColTotals[Index1];
+  FColTotals[Index1] := FColTotals[Index2];
+  FColTotals[Index2] := Val;
+
   ColVariable.Exchange(Index1, Index2);
 end;
 

@@ -38,7 +38,7 @@ type
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
     function  DoCalcTables(InputDF: TEpiDataFile; Varnames, StratifyNames: TStrings; Const WeightVariable: UTF8String = ''): TTwoWayTables;
-    procedure OutputStratifyTable(Table: TTwoWayTable; StratifyVariables: TEpiFields; ST: TTablesCommand; IsGrandTable: boolean);
+    procedure OutputTwoWayTable(Table: TTwoWayTable; StratifyVariables: TEpiFields; ST: TTablesCommand; IsUnstratifiedTable: boolean);
     procedure OutputSummaryTable(Tables: TTwoWayTables; ST: TTablesCommand);
     function  PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
     function  GetStatisticOptions(ST: TTablesCommand): TTableStatistics;
@@ -53,7 +53,9 @@ type
     // Method called from Executor, does calculation + result vars + output
     procedure ExecTables(DF: TEpiDataFile; ST: TTablesCommand);
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
-    function  CalcTables(DF: TEpiDataFile; Out RefMap: TEpiReferenceMap; Statistics: TTableStatistics): TTwoWayTables;
+    function  CalcTables(InputDF: TEpiDataFile; VariableNames: TStrings;
+      StratifyNames: TStrings; Const WeightName: UTF8String;
+      Out RefMap: TEpiReferenceMap; Statistics: TTableStatistics = []): TTwoWayTables;
   end;
 
 procedure RegisterTableStatistic(Statistic: TTableStatistic; StatClass: TTwoWayStatisticsClass);
@@ -234,8 +236,8 @@ begin
   FuncList.Free;
 end;
 
-procedure TTables.OutputStratifyTable(Table: TTwoWayTable;
-  StratifyVariables: TEpiFields; ST: TTablesCommand; IsGrandTable: boolean);
+procedure TTables.OutputTwoWayTable(Table: TTwoWayTable;
+  StratifyVariables: TEpiFields; ST: TTablesCommand; IsUnstratifiedTable: boolean);
 var
   T: TOutputTable;
   VariableLabelType: TEpiGetVariableLabelType;
@@ -248,9 +250,14 @@ var
 
   function FormatPercent(Value: EpiFloat; SetOption: TTablePercentFormatOption): UTF8String;
   begin
-    Result := OutputCreatorNormalizeText(SetOption.LeftChar) +
-              Format('%.1f', [Value * 100]) +
-              OutputCreatorNormalizeText(SetOption.RigthChar);
+    if IsNan(Value) or
+       IsInfinite(Value)
+    then
+      Result := '-'
+    else
+      Result := OutputCreatorNormalizeText(SetOption.LeftChar) +
+                Format('%.1f', [Value * 100]) +
+                OutputCreatorNormalizeText(SetOption.RigthChar);
   end;
 
 begin
@@ -261,7 +268,7 @@ begin
   T := FOutputCreator.AddTable;
 
   // Header
-  if IsGrandTable then
+  if IsUnstratifiedTable then
     T.Header.Text := Table.ColVariable.GetVariableLabel(VariableLabelType)
   else
     begin
@@ -464,20 +471,21 @@ var
   Tab: TTwoWayTable;
 begin
   if (not ST.HasOption('nc')) then
-    OutputStratifyTable(Tables.UnstratifiedTable, Tables.StratifyVariables, ST, true);
+    OutputTwoWayTable(Tables.UnstratifiedTable, Tables.StratifyVariables, ST, true);
 
   // Sub table output
   if (not ST.HasOption('nb')) then
     for Tab in Tables do
-      OutputStratifyTable(Tab, Tables.StratifyVariables, ST, False);
+      OutputTwoWayTable(Tab, Tables.StratifyVariables, ST, False);
 
-  if ((not ST.HasOption('ns')) and (Tables.Count > 1)) then
+  if (not ST.HasOption('ns')) and
+     (Tables.Count > 0)
+  then
     OutputSummaryTable(Tables, ST);
 end;
 
 procedure TTables.DoTableStatistics(Tables: TTwoWayTables; Statistics: TTableStatistics);
 var
-  Tab: TTwoWayTable;
   Stat: TTableStatistic;
   StatObj: TTwoWayStatistics;
   Index: Integer;
@@ -504,64 +512,73 @@ end;
 function TTables.DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand
   ): boolean;
 var
-  T: TTwoWayTable;
-  i: Integer;
-  Opt: TOption;
-begin
-  result := false;
+  Tab: TTwoWayTable;
 
-  for i := 0 to Tables.Count -1 do
-    begin
-      T := Tables[i];
+  function SortTable(T: TTwoWayTable): boolean;
+  var
+    Opt: TOption;
+  begin
+    Result := false;
 
-      if ST.HasOption('sa') then
-        begin
-          T.SortByRowValue(false);
-          T.SortByColValue(false);
-        end;
-
-      if ST.HasOption('sd') then
-        begin
-          T.SortByRowValue(true);
-          T.SortByColValue(true);
-        end;
-
-      if ST.HasOption('sla') then
-        begin
-          T.SortByRowLabel(false);
-          T.SortByColLabel(false);
-        end;
-
-      if ST.HasOption('sld') then
-        begin
-          T.SortByRowLabel(true);
-          T.SortByColLabel(true);
-        end;
-
-      try
-        if ST.HasOption('sra', Opt) then T.SortByRow(Opt.Expr.AsInteger - 1, false);
-        if ST.HasOption('srd', Opt) then T.SortByRow(Opt.Expr.AsInteger - 1, true);
-        if ST.HasOption('sca', Opt) then T.SortByCol(Opt.Expr.AsInteger - 1, false);
-        if ST.HasOption('scd', Opt) then T.SortByCol(Opt.Expr.AsInteger - 1, true);
-      except
-        On E: ETwoWaySortException do
-          begin
-            FExecutor.Error(E.Message);
-            ST.ExecResult := csrFailed;
-            Exit;
-          end;
-
-        else
-          raise;
+    if ST.HasOption('sa') then
+      begin
+        T.SortByRowValue(false);
+        T.SortByColValue(false);
       end;
 
-      if ST.HasOption('srta')     then T.SortByRowTotal(false);
-      if ST.HasOption('srtd')     then T.SortByRowTotal(true);
-      if ST.HasOption('scta')     then T.SortByColTotal(false);
-      if ST.HasOption('sctd')     then T.SortByColTotal(true);
+    if ST.HasOption('sd') then
+      begin
+        T.SortByRowValue(true);
+        T.SortByColValue(true);
+      end;
+
+    if ST.HasOption('sla') then
+      begin
+        T.SortByRowLabel(false);
+        T.SortByColLabel(false);
+      end;
+
+    if ST.HasOption('sld') then
+      begin
+        T.SortByRowLabel(true);
+        T.SortByColLabel(true);
+      end;
+
+    try
+      if ST.HasOption('sra', Opt) then T.SortByRow(Opt.Expr.AsInteger - 1, false);
+      if ST.HasOption('srd', Opt) then T.SortByRow(Opt.Expr.AsInteger - 1, true);
+      if ST.HasOption('sca', Opt) then T.SortByCol(Opt.Expr.AsInteger - 1, false);
+      if ST.HasOption('scd', Opt) then T.SortByCol(Opt.Expr.AsInteger - 1, true);
+    except
+      On E: ETwoWaySortException do
+        begin
+          FExecutor.Error(E.Message);
+          ST.ExecResult := csrFailed;
+          Exit;
+        end;
+
+      else
+        raise;
     end;
 
-  Result := true;
+    if ST.HasOption('srta') then T.SortByRowTotal(false);
+    if ST.HasOption('srtd') then T.SortByRowTotal(true);
+    if ST.HasOption('scta') then T.SortByColTotal(false);
+    if ST.HasOption('sctd') then T.SortByColTotal(true);
+
+    Result := True;
+  end;
+
+begin
+  Result := SortTable(Tables.UnstratifiedTable);
+
+  for Tab in Tables do
+    begin
+      if (not Result) then
+        exit;
+
+      Result := SortTable(Tab);
+    end;
 end;
 
 procedure TTables.DoResultVariables(Tables: TTwoWayTables);
@@ -606,6 +623,7 @@ var
   end;
 
 begin
+  FExecutor.ClearResults('$tables_');
   FExecutor.AddResultConst('$tables_cols', ftInteger).AsIntegerVector[0] := Tables.UnstratifiedTable.ColCount + 1;
   FExecutor.AddResultConst('$tables_rows', ftInteger).AsIntegerVector[0] := Tables.UnstratifiedTable.RowCount + 1;
 
@@ -687,10 +705,12 @@ begin
     DoOutputTables(AllTables, ST);
 end;
 
-function TTables.CalcTables(DF: TEpiDataFile; out RefMap: TEpiReferenceMap;
-  Statistics: TTableStatistics): TTwoWayTables;
+function TTables.CalcTables(InputDF: TEpiDataFile; VariableNames: TStrings;
+  StratifyNames: TStrings; const WeightName: UTF8String; out
+  RefMap: TEpiReferenceMap; Statistics: TTableStatistics): TTwoWayTables;
 begin
-
+  Result := DoCalcTables(InputDF, VariableNames, StratifyNames, WeightName);
+  DoTableStatistics(Result, Statistics);
 end;
 
 finalization

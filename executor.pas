@@ -137,7 +137,7 @@ type
       Cols, Rows: Integer): TExecVarMatrix; virtual;
     function  GetExecVariable(Const Ident: UTF8String): TCustomExecutorVariable;
     function  GetExecDataVariable(Const Ident: UTF8String): TCustomExecutorDataVariable;
-    procedure ClearResults;
+    procedure ClearResults(const Prefix: UTF8String = '');
     property  Valuelabels: TExecutorValuelabelsets read FVLSets;
     property  Datasets: TExecutorDatasetVariables read FDataSets;
     property  SortedFields: TEpiFields read GetSortedFields;
@@ -845,10 +845,12 @@ begin
     result := FResults.Data[Idx];
 end;
 
-procedure TExecutor.ClearResults;
+procedure TExecutor.ClearResults(const Prefix: UTF8String);
 var
   V: TCustomExecutorVariable;
   i: LongInt;
+  ILen, PLen: PtrInt;
+  S: String;
 begin
   for i := FResults.Count - 1 downto 0 do
     begin
@@ -856,6 +858,17 @@ begin
 
       if (V.InheritsFrom(TExecVarSystem)) then
         Continue;
+
+      if (Prefix <> '') then
+        begin
+          PLen := UTF8Length(Prefix);
+
+          S := UTF8LeftStr(V.Ident, PLen);
+          ILen := UTF8Length(S);
+
+          if (UTF8CompareStr(@S[1], ILen, @Prefix[1], PLen) <> 0) then
+            Continue;
+        end;
 
       V.Free;
       FResults.Delete(i);

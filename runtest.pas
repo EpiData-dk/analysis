@@ -86,6 +86,19 @@ type
 
 { TRunTestMathFunction }
 
+function SortRuntestFiles(List: TStringList; Index1, Index2: Integer): Integer;
+var
+  S1, S2: String;
+begin
+  S1 := List[Index1];
+  S2 := List[Index2];
+
+//  FileIsInPath();
+
+  ExtractFilePath(S1)
+//  FileIsInPath();
+end;
+
 constructor TRunTestMathFunction.Create(ARunTest: TRunTest;
   const ParamList: TParamList);
 begin
@@ -265,41 +278,30 @@ end;
 
 procedure TRunTest.InternalRunTest(const RunDir: UTF8String);
 var
-  lCurrentDir: String;
-  Dirs, Files: TStringListUTF8;
-  DS: TListDirectoriesSearcher;
-  i, j: Integer;
+  lCurrentDir, Fn: String;
+  Files: TStringListUTF8;
   FS: TListFileSearcher;
 begin
   lCurrentDir := GetCurrentDirUTF8;
   SetCurrentDirUTF8(RunDir);
 
-  Dirs := TStringListUTF8.Create;
-  Dirs.Add('.');
-
-  DS := TListDirectoriesSearcher.Create(Dirs);
-  DS.Search('.');
-  DS.Free;
-  Dirs.Sort;
-
   try
     Files := TStringListUTF8.Create;
+    Files.CaseSensitive := true;
     FS := TListFileSearcher.Create(Files);
-    for i := 0 to Dirs.Count - 1 do
+
+    Files.Clear;
+    FS.Search('.', '*.pgm', true, true);
+    Files.Sort;
+
+    for Fn in Files do
       begin
-        Files.Clear;
-        FS.Search(Dirs[i], '*.pgm', false, true);
-        Files.Sort;
+        RunFile(Fn);
 
-        for j := 0 to Files.Count -1 do
-          begin
-            RunFile(Files[j]);
-
-            if (FExternalExecutor.Cancelled) or
-               (Halted)
-            then
-              Exit;
-          end;
+        if (FExternalExecutor.Cancelled) or
+           (Halted)
+        then
+          Exit;
       end;
 
   finally
