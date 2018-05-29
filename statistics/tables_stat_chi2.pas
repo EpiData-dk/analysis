@@ -49,7 +49,19 @@ type
 implementation
 
 uses
-  tables, statfunctions;
+  tables, statfunctions, epimiscutils;
+
+
+function FormatPChi2(Val: EpiFloat): UTF8String;
+begin
+  if (Val < 0.0001) then
+    Result := ' p < 0.0001'
+  else
+    if (Val < 0.001) then
+      Result := ' p < 0.001'
+  else
+    Result := ' p = ' + Format('%.3f', [Val]) ;
+end;
 
 { TTableCellChi2Expected }
 
@@ -64,7 +76,7 @@ end;
 
 procedure TTwoWayStatisticChi2.CalcTable(Table: TTwoWayTable);
 var
-  Row, Col: Integer;
+  Row, Col, I: Integer;
   C: TTableCellChi2Expected;
   Val: EpiFloat;
   O: TTableCell;
@@ -79,7 +91,10 @@ begin
       begin
         O   := FOrgTable.Cell[Col, Row];
         C   := TTableCellChi2Expected(FExpected.Cell[Col, Row]);
-        C.N := (FOrgTable.RowTotal[Row] * FOrgTable.ColTotal[Col]) / FOrgTable.Total;
+        if FOrgTable.Total > 0 then
+          C.N := (FOrgTable.RowTotal[Row] * FOrgTable.ColTotal[Col]) / FOrgTable.Total
+        else
+          C.N := 0;
 
         if (C.N < 5) then Inc(FExpectedCellsLessThan5);
 
@@ -100,13 +115,7 @@ var
 begin
   S := 'Chi{\S 2}: ' + Format('%.2f', [FChi2]) + ' Df(' + IntToStr(FOrgTable.DF)+')';
 
-  if (FChiP < 0.0001) then
-    S := S + ' p < 0.0001'
-  else
-    if (FChiP < 0.001) then
-      S := S + ' p < 0.001'
-  else
-    S := S + ' p = ' + Format('%.3f', [FChiP]) ;
+  S := S + FormatPChi2(FChiP);
 
   if (FExpectedCellsLessThan5 > 5) then
     begin
@@ -170,7 +179,7 @@ begin
   Stat := Statistics[0];
   OutputTable.Cell[ColIdx    , 1].Text := Format('%.2f', [Stat.FChi2]);
   OutputTable.Cell[ColIdx + 1, 1].Text := IntToStr(Stat.FOrgTable.DF);
-  OutputTable.Cell[ColIdx + 2, 1].Text := Format('%.3f', [Stat.FChiP]);
+  OutputTable.Cell[ColIdx + 2, 1].Text := FormatPChi2(Stat.FChiP);
 
   OutputTable.Cell[ColIdx    , 2].Text := '-';
   OutputTable.Cell[ColIdx + 1, 2].Text := '-';
@@ -180,9 +189,9 @@ begin
     begin
       Stat := Statistics[i];
 
-      OutputTable.Cell[ColIdx    , (i * 2) + 2].Text := Format('%.2f', [Stat.FChi2]);
-      OutputTable.Cell[ColIdx + 1, (i * 2) + 2].Text := IntToStr(Stat.FOrgTable.DF);
-      OutputTable.Cell[ColIdx + 2, (i * 2) + 2].Text := Format('%.2f', [Stat.FChiP]);
+      OutputTable.Cell[ColIdx    , i + 2].Text := Format('%.2f', [Stat.FChi2]);
+      OutputTable.Cell[ColIdx + 1, i + 2].Text := IntToStr(Stat.FOrgTable.DF);
+      OutputTable.Cell[ColIdx + 2, i + 2].Text := FormatPChi2(Stat.FChiP);
     end;
 end;
 

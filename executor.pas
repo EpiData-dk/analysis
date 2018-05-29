@@ -3629,11 +3629,22 @@ begin
   else
     DF := PrepareDatafile(AllVarNames, AllVarNames);
 
-  Table := TTables.Create(Self, FOutputCreator);
-  Table.ExecTables(DF, ST);
-  Table.Free;
+  try
+    if (DF.Size = 0) then
+      begin
+        DoError('No data!');
+        ST.ExecResult := csrFailed;
+        Exit;
+      end;
 
-  DF.Free;
+    Table := TTables.Create(Self, FOutputCreator);
+    Table.ExecTables(DF, ST);
+    Table.Free;
+
+  finally
+    AllVarNames.Free;
+    DF.Free;
+  end;
 end;
 
 procedure TExecutor.ExecUse(ST: TUse);

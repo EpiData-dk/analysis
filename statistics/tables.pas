@@ -278,6 +278,7 @@ begin
   else
     begin
       S := '';
+
       for i := Low(Table.StratifyIndices) to High(Table.StratifyIndices) do
         S := S + StratifyVariables[i].GetVariableLabel(VariableLabelType) + ': ' + StratifyVariables[i].GetValueLabel(Table.StratifyIndices[i], ValueLabelType) + LineEnding;
 
@@ -397,7 +398,7 @@ var
   T: TOutputTable;
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
-  S: UTF8String;
+  S, S1: UTF8String;
   F: TEpiField;
   Tab: TTwoWayTable;
   RowIdx, i: Integer;
@@ -409,17 +410,23 @@ begin
   // Create basic summary table
   T := FOutputCreator.AddTable;
   T.ColCount := 2;
-  T.RowCount := (Tables.Count * 2) + 3;
+  T.RowCount := Tables.Count + 3;
   T.SetColAlignment(0, taLeftJustify);
 
   // Collect header information
   S := Tables.UnstratifiedTable.ColVariable.GetVariableLabel(VariableLabelType) + ' by ' +
        Tables.UnstratifiedTable.RowVariable.GetVariableLabel(VariableLabelType);
+
   if (Assigned(Tables.StratifyVariables)) then
     begin
       S := S + ' adjusted for:';
+
+      S1 := ' ';
+      if (VariableLabelType <> gvtVarName) then
+        S1 := LineEnding;
+
       for F in Tables.StratifyVariables do
-        S := S + ' ' + F.GetVariableLabel(VariableLabelType);
+        S := S + S1 + F.GetVariableLabel(VariableLabelType);
     end;
   T.Header.Text := S;
 
@@ -440,11 +447,14 @@ begin
           F := Tables.StratifyVariables[i];
           S := S + ' ' + F.GetVariableLabel(VariableLabelType) + ': ' + F.GetValueLabel(Tab.StratifyIndices[i], ValueLabelType) + LineEnding;
         end;
-      S := UTF8Trim(S, [u8tKeepStart]);
+      if (Tables.StratifyVariables.Count = 1) then
+        S := UTF8Trim(S, [u8tKeepStart])
+      else
+        S := S + ' ';
 
-      T.Cell[0, RowIdx + 1].Text := S;
-      T.Cell[1, RowIdx + 1].Text := IntToStr(Tab.Total);
-      Inc(RowIdx, 2);
+      T.Cell[0, RowIdx].Text := S;
+      T.Cell[1, RowIdx].Text := IntToStr(Tab.Total);
+      Inc(RowIdx);
     end;
 
   for i := 0 to Tables.StatisticsCount -1  do
