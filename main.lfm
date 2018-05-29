@@ -6,7 +6,7 @@ object MainForm: TMainForm
   ActiveControl = Panel2
   AllowDropFiles = True
   Caption = 'AMainForm'
-  ClientHeight = 661
+  ClientHeight = 657
   ClientWidth = 1159
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
@@ -18,7 +18,7 @@ object MainForm: TMainForm
   LCLVersion = '1.9.0.0'
   object PageControl1: TPageControl
     Left = 216
-    Height = 611
+    Height = 607
     Top = 50
     Width = 742
     Align = alClient
@@ -56,7 +56,7 @@ object MainForm: TMainForm
       Left = 307
       Height = 17
       Top = 18
-      Width = 76
+      Width = 90
       Caption = 'Redraw Time:'
       ParentColor = False
     end
@@ -64,25 +64,25 @@ object MainForm: TMainForm
       Left = 400
       Height = 17
       Top = 18
-      Width = 37
+      Width = 43
       Caption = 'Label2'
       ParentColor = False
     end
   end
   object SidebarPanel: TPanel
     Left = 963
-    Height = 611
+    Height = 607
     Top = 50
     Width = 196
     Align = alRight
-    ClientHeight = 611
+    ClientHeight = 607
     ClientWidth = 196
     TabOrder = 1
     Visible = False
     object HistoryListBox: TListBox
       Left = 1
       Height = 195
-      Top = 415
+      Top = 411
       Width = 194
       Align = alBottom
       ItemHeight = 0
@@ -91,7 +91,7 @@ object MainForm: TMainForm
       OnDrawItem = HistoryListBoxDrawItem
       OnKeyDown = HistoryListBoxKeyDown
       PopupMenu = HistoryPopupMenu
-      ScrollWidth = 192
+      ScrollWidth = 190
       Style = lbOwnerDrawFixed
       TabOrder = 0
       TopIndex = -1
@@ -101,7 +101,7 @@ object MainForm: TMainForm
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 410
+      Top = 406
       Width = 194
       Align = alBottom
       AutoSnap = False
@@ -112,7 +112,7 @@ object MainForm: TMainForm
     object VarnamesList: TVirtualStringTree
       Cursor = 63
       Left = 1
-      Height = 409
+      Height = 405
       Top = 1
       Width = 194
       Align = alClient
@@ -124,13 +124,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 245
+          Width = 246
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 205
+          Width = 206
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -148,7 +148,7 @@ object MainForm: TMainForm
   end
   object SidebarSplitter: TSplitter
     Left = 958
-    Height = 611
+    Height = 607
     Top = 50
     Width = 5
     Align = alRight
@@ -160,7 +160,7 @@ object MainForm: TMainForm
   end
   object ProjectPanel: TPanel
     Left = 0
-    Height = 611
+    Height = 607
     Top = 50
     Width = 211
     Align = alLeft
@@ -169,7 +169,7 @@ object MainForm: TMainForm
   end
   object ProjectSplitter: TSplitter
     Left = 211
-    Height = 611
+    Height = 607
     Top = 50
     Width = 5
     Beveled = True

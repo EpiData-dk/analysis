@@ -247,6 +247,7 @@ var
   Opt: TOption;
   ShowRowPercent, ShowColPercent, ShowTotPercent: Boolean;
   Stat: TTwoWayStatistic;
+  ColOption, RowOption, TotOption: TTablePercentFormatOption;
 
   function FormatPercent(Value: EpiFloat; SetOption: TTablePercentFormatOption): UTF8String;
   begin
@@ -283,13 +284,6 @@ begin
       T.Header.Text := S + Table.ColVariable.GetVariableLabel(VariableLabelType);
     end;
 
-  // Footer
-  if (ST.HasOption('w', Opt)) then
-    begin
-      T.Footer.Text := 'Weight: ' + Opt.Expr.AsIdent;
-      T.Footer.Alignment := taLeftJustify;
-    end;
-
   // Add percentages?
   ColumnFactor := 1;
   ShowRowPercent := ST.HasOption('pr');
@@ -298,6 +292,9 @@ begin
   if ShowRowPercent then Inc(ColumnFactor);
   if ShowColPercent then Inc(ColumnFactor);
   if ShowTotPercent then Inc(ColumnFactor);
+  ColOption := TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]);
+  RowOption := TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]);
+  TotOption := TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_TOTAL]);
 
   //               Row header   + Table colums (and percents)     + Row totals (and percentes)
   T.ColCount    := 1 +            (Table.ColCount * ColumnFactor) + (1 * ColumnFactor);
@@ -338,9 +335,9 @@ begin
         S := ColSeparator + IntToStr(Table.Cell[Col, Row].N);
 
         T.Cell[PostInc(Idx), Row + 1].Text                        := S;
-        if ShowRowPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].RowPct,   TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]));
-        if ShowColPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].ColPct,   TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]));
-        if ShowTotPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].TotalPct, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_TOTAL]));
+        if ShowRowPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].RowPct,   RowOption);
+        if ShowColPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].ColPct,   ColOption);
+        if ShowTotPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.Cell[Col, Row].TotalPct, TotOption);
       end;
 
   // Col Totals
@@ -350,9 +347,9 @@ begin
       Row := T.RowCount - 1;
 
       T.Cell[PostInc(Idx), T.RowCount - 1].Text             := IntToStr(Table.ColTotal[Col]);
-      if ShowRowPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(Table.ColTotal[Col] / Table.Total, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]));
-      if ShowColPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(1, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]));
-      if ShowTotPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(Table.ColTotal[Col] / Table.Total, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_TOTAL]));
+      if ShowRowPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(Table.ColTotal[Col] / Table.Total, RowOption);
+      if ShowColPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(1, ColOption);
+      if ShowTotPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(Table.ColTotal[Col] / Table.Total, TotOption);
     end;
 
   // Row Totals
@@ -361,15 +358,29 @@ begin
       Idx := T.ColCount - (1 * ColumnFactor);
 
       T.Cell[PostInc(Idx), Row + 1].Text := IntToStr(Table.RowTotal[Row]);
-      if ShowRowPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(1, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_ROW]));
-      if ShowColPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.RowTotal[Row] / Table.Total, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_COL]));
-      if ShowTotPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.RowTotal[Row] / Table.Total, TTablePercentFormatOption(FExecutor.SetOptions[ANA_SO_TABLE_PERCENT_FORMAT_TOTAL]));
+      if ShowRowPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(1, RowOption);
+      if ShowColPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.RowTotal[Row] / Table.Total, ColOption);
+      if ShowTotPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.RowTotal[Row] / Table.Total, TotOption);
     end;
 
   // Grand total
   T.Cell[T.ColCount - (1 * ColumnFactor), T.RowCount - 1].Text := IntToStr(Table.Total);
 
   T.SetRowBorders(T.RowCount - 1, [cbBottom]);
+
+  // Footer
+  T.Footer.Alignment := taLeftJustify;
+  S := '';
+  if (ST.HasOption('pc')) then S := S + RowOption.LeftChar + 'Row'   + RowOption.RigthChar;
+  if (ST.HasOption('pr')) then S := S + ColOption.LeftChar + 'Col'   + ColOption.RigthChar;
+  if (ST.HasOption('pt')) then S := S + TotOption.LeftChar + 'Total' + TotOption.RigthChar;
+  if (S <> '') then
+    T.Footer.Text := T.Footer.Text + 'Percents: ' + OutputCreatorNormalizeText(S) + LineEnding;
+
+  if (ST.HasOption('w', Opt)) then
+    T.Footer.Text := T.Footer.Text + 'Weight: ' + Opt.Expr.AsIdent;
+
+
 
   for i := 0 to Table.StatisticsCount - 1 do
     begin

@@ -1036,7 +1036,10 @@ begin
   if (ObjectType <> otRelation) then
     Exit;
 
-  FCmdEdit.Text := FCmdEdit.Text + ' ' + TEpiMasterRelation(AObject).Datafile.Name;
+  InterfaceRunCommand('use ' + TEpiMasterRelation(AObject).Datafile.Name + ';');
+  DelayCmdEditFocus(0);
+
+//  FCmdEdit.Text := FCmdEdit.Text + ' ' + TEpiMasterRelation(AObject).Datafile.Name;
 end;
 
 function TMainForm.DoParseContent(const S: UTF8String): boolean;
