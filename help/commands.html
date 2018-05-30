@@ -44,60 +44,88 @@
       <tr valign="top">
         <td>
           <ul>
-           <li><a href="#readgrp">Read &amp; Save Data, sorting</a></li>
-           <li><a href="#listgrp">List project, dataset, variables, labels, data </a><br/><br/></li>
-           <li><a href="#tablegrp">Frequency, Cross and Summary Statistics Tables</a></li>
-           <li><a href="#analysisgrp">Descriptive analysis &amp; testing</a></li>
-           <li><a href="#lifetabgrp">Life table &amp; Kaplan Meier plot</a></li>
-           <li><a href="#graphgrp">Graphs</a></li>
-           <li><a href="#spcgraph">SPC graphs - Pareto Charts, Ichart etc.</a><br/><br/></li>
-		         <li><a href="#selectgrp">Select observations</a></li>
-           <li><a href="#flowgrp">Change Flow and Repetitive commands</a></li>
+           <li><a href="#readgrp">Reading &amp; Saving Data</a></li>
+           <li><a href="#mergegrp">Append, Merge &amp; Aggregate</a></li>
+           <li><a href="#usegrp">Using Datasets &amp; Sort</a></li>
           </ul>
         </td>
         <td>
          <ul>
-      	   <li><a href="#creategrp">Create new (datasets, variables, labels)</a></li>
-          <li><a href="#editgrp">Modify (datasets, variables, labels, values)</a></li>
-          <li><a href="#deletegrp">Delete (datasets, variables, labels)</a>
-              <br/>
-              <br/></li>
-          <li><a href="#stopgrp">Clean up &amp; stop</a></li>
-          <li><a href="#infogrp">Information / Calculator </a></li>
-          <li><a href="#reportsgrp">Reports</a><br/><br/></li>
-          <li><a href="#programgrp">Run scripts</a></li>
+      	   <li><a href="#creategrp">Create new content</a></li>
+          <li><a href="#listgrp">List contest</a></li>
+          <li><a href="#editgrp">Modify content </a></li>
+          <li><a href="#deletegrp">Delete content</a></li>
          </ul>
         </td>
         <td>
          <ul>
-          <li><a href="#diskgrp">Disk and file commands</a></li>
-          <li><a href="#setgrp">Setup parameters</a></li>
-          <li><a href="#programgrp">Programming commands</a></li>
-          <!-- <li><a href="analysisversioninfo.htm">Changes in this version</a></li>  -->
-          <li><a href="#oldcommandgrp">Obsolete Commands</a></li>
+          <li><a href="#selectgrp">Select observations</a></li>
+          <li><a href="#flowgrp">Changing Flow</a></li>
+          <li><a href="#reordergrp">Reordering and ?</a></li>
+          <li><a href="#changedata">Change variable content</a></li>
          </ul>
         </td>
       </tr>
-      <tr>
+     <tr>
+      <td>
+       <ul>
+        <li><a href="#tablegrp">Tables and Frequencies</a></li>
+        <li><a href="#analysisgrp">Means and Count</a></li>
+       </ul>
+      </td>
+      <td>
+       <ul>
+        <li><a href="#checkgrp"> Consistency Checks</a></li>
+        <li><a href="#reportsgrp">Reports</a></li>
+       </ul>
+      </td>
+      <td>
+       <ul>
+        <li><a href="#diskgrp">Disk and file commands</a></li>
+        <li><a href="#setgrp">Setup parameters</a></li>
+       </ul>
+      </td>
+     </tr>
+     <tr>
        <td>
         <ul>
-         <li><a href="#labeling">Common options for commands</a></li>
+         <li><a href="#options">Labeling and formatting data</a></li>
          <li><a href="#types">Types of variables</a></li>
+         <li><a href="#referencedvars">Using Variables and references</a></li>
         </ul>
        </td>
        <td>
-          <ul>
-           <li><a href="#functions">Functions</a></li>
-           <li><a href="#operators">Operators</a></li>
-          </ul>
-        </td>
+        <ul>
+         <li><a href="#programgrp">Run scripts</a></li>
+         <li><a href="#stopgrp">Clean up &amp; stop</a></li>
+        </ul>
+       </td>
         <td>
          <ul>
-          <li><a href="howto.html">Howto solutions</a></li>
+          <li><a href="#functions">Functions</a></li>
+          <li><a href="#operators">Operators</a></li>
          </ul>
         </td>
       </tr>
-      <tr>
+     <tr>
+      <td>
+       Commands available in EpiData Analysis Classic:<br/>
+       <a href="http://epidata.dk/download.php#ea">Download</a>
+      </td>
+      <td>
+       <ul>
+        <li>Descriptive analysis &amp; testing</li>
+        <li>Life table &amp; Kaplan Meier plot</li>
+       </ul>
+      </td>
+      <td>
+       <ul>
+        <li>Graphs</li>
+        <li>SPC graphs - Pareto Charts, Ichart etc.<br/></li>
+       </ul>
+      </td>
+     </tr>
+     <tr>
         <td colspan="4" >
          <p>
           Syntax for all commands: <font class="cmd">command &lt;variables&gt; [!option] [!option := a|b]</font><br/>
@@ -119,11 +147,11 @@
     <tbody>
      <!--
         ######################################################3
-        Read Data, Save Data etc
+        Reading & Saving Data
         ######################################################3
      -->
       <tr>
-        <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="readgrp" id="readgrp"></a> Read Data, Save Data etc.</td>
+       <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="readgrp" id="readgrp"></a> Reading &amp; Saving Data</td>
       </tr>
       <tr valign="top">
         <td>
@@ -275,19 +303,14 @@ read fn;                               // expression where the variable fn is us
           </ul>
         </td>
       </tr>
-     <tr valign="top">
-      <td>
-       <a name="use" id="use">use</a>
-      </td>
-      <td>
-       <font class="cmd">use &lt;dataset&gt;</font>
-       <p>Change the active dataset of a project.</p>
-         <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-         <font class="cmd">
-read "Clinical Example.epx";
-list dataset;
-use datafile_id_2;</font>
-      </td>
+     
+     <!--
+      ######################################################3
+      Merge, Append & Aggregate
+      ######################################################3
+     -->
+     <tr>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="mergegrp" id="mergegrp"></a> Append, Merge &amp; Aggregate</td>
      </tr>
      <tr valign="top">
       <td>
@@ -400,7 +423,7 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
           <li><font class="option">!ds := &lt;dataset&gt;</font> Save the aggregated dataset as it's own dataset with given name</li>
           <li><font class="option">!replace</font> use in combination with !ds to replace an existing dataset</li>
           <li><font class="option">!caption := "&gt;string&gt;"</font> give the dataset a caption (used both in output and with !ds)</li>
-          <li><font class="option">!h := &gt;global string vector&gt;</font> give a custom label for the generated variables<br>
+          <li><font class="option">!h := &gt;global string vector&gt;</font> give a custom label for the generated variables<br/>
                                    and show these as column descriptors in table head</li>
           <li><font class="option">!u</font> use in comvination with !ds. Use the generated dataset after this command completes. Cannot be used with an active select!</li>
           <li><font class="option">!full</font> Expands the resulting dataset with ALL possible value-combinations from &lt;var1&gt; &lt;var2&gt;...<br/>
@@ -430,7 +453,7 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
         </li>
        </ul>
        <font class="cmd">
-Example </br>
+Example <br/>
 // define a global vectore for column texts: 
 new global columnhead[5] string;
 columntxt[1] := "Group";
@@ -439,173 +462,43 @@ columntxt[3] := "n (observed)";
 columntxt[4] := "Mean";
 columntxt[5] := .; 
 agg sex age !by:=family !header:=columntxt  !mci:=economy !mci:=children ;
-          </font>
+       </font>
+       </td>
      </tr>
      
-
      <!--
       ######################################################3
-      Common analysis commands
+      Using datasets & Sorting
       ######################################################3
      -->
      <tr>
-        <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="analysisgrp" id="analysisgrp"></a> Common analysis commands</td>
-      </tr>
-      <tr valign="top">
-        <td>
-         <a name="count" id="count"></a>count<br/>
-        </td>
-        <td>
-         <font class="cmd">count</font><br/>
-         <p>Counts number of observations. Count may be used with select to count within a subgroup</p>
-         <br/>
-         Result variable: <font class="cmd">$count</font>. Use <font class="cmd">list results</font> for details<br/>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-         <a name="means" id="means"/><a name="t-test" id="t-test"/><a name="ttest" id="ttest"/><a name="ftest" id="ftest"/>
-         means
-        </td>
-        <td>
-         <font class="cmd">means <i>variable<sub>1</sub></i> [!by=<i>variable<sub>2</sub></i>] [!t]</font><br/>
-         <p>Basic descriptive statistics for variable1, optionally stratified by variable2<br/></p>
-         <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-
-         <ul>
-          <li><font class="option">!by:</font> Stratify by this variable</li>
-           <li><font class="option">!t:</font> Test for homogeneity of the mean across strata (same or different mean)<br/>
-          Including Bartletts test for homogeneity of variance with more than two strata<br/>
-          F-test is provided, can be interpreted as T-test with two strata</li>
-          <li>Without <font class="option">!by</font> and with <font class="option">!t</font> : Test that mean=0<br/>
-          (e.g. as a paired T-test for difference in before and after measure)</li>
-          <li>Estimates are saved as result variables. Use <font class="cmd">list results</font> for details<br/></li>
-          <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
-         </ul>
-         <font class="limit">Note:</font> Confidence Intervals given are based on the T-distribution with N-1 degrees of freedom.
-        </td>
-      </tr>
-
-     <!--
-      ######################################################3
-      Tables
-      ######################################################3
-     -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="tablegrp" id="tablegrp"></a> Tables &amp; Frequencies</td>
-      </tr>
-      <tr valign="top">
-        <td><a name="freq" id="freq"></a>freq<br/>
-        <a name="fre" id="fre">fre</a></td>
-        <td>
-         <font class="cmd">freq <i>variable<sub>1</sub></i> [!&lt;option&gt; ...]</font><br/>
-          <p>Frequency distribution for variable<sub>1</sub></p>
-          <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-          <ul>
-            <li><font class="option">!m</font> Include observations with missing data (.)</li>
-            <li><font class="option">!cum</font> Add cumulative percentage</li>
-            <li><font class="option">!r</font> Add row percentage</li>
-            <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
-            <li>See <a href="#formatting">formatting</a> for options on formatting percentages</li>
-         </ul>
-        </td>
-      </tr>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="usegrp" id="usegrp"></a> Using datasets &amp; Sorting</td>
+     </tr>
      <tr valign="top">
-      <td><a name="tables" id="tables"></a>tables<br/>
-       <a name="tab" id="tab">tab</a></td>
       <td>
-       <font class="cmd">tab <i>&lt;column variable&gt; &lt;row variable&gt;</i> [!&lt;option&gt; ...]</font><br/>
-       <p>The tables (brief: tab) command shows a cross tables for the variables chosen.</p>
+       <a name="use" id="use">use</a>
+      </td>
+      <td>
+       <font class="cmd">use &lt;dataset&gt;</font>
+       <p>Change the active dataset of a project.</p>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-       <p>The default sorting for the cross tables is increasing value, regardsless of any valuelabel for the variables. Use options below to change the sort order!</p>
-       <ul>
-        <li> Data and output:
-         <ul>
-          <li><font class="option">!m</font> Include observations with missing data (.)</li>
-          <li><font class="option">!w := &lt;variable&gt;</font> Use number of observations in the variable as frequency weight</li>
-          <li><font class="option">!by := &lt;variable&gt;</font> Stratify the data by this variable.<br/>
-          If multiple !by options are used, each unique combination of values from the by-variables will have it's own sub-table.</li>
-          <li><font class="option">!q</font> Hide all output! Result variable are still calculated</li>
-          <li><font class="option">!nc</font> Hide combined/unstratified tables</li>
-          <li><font class="option">!nb</font> Hide sub/stratified tables</li>
-          <li><font class="option">!ns</font> Hide summary table</li>
-          <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
-          <li>See <a href="#formatting">formatting</a> for options on formatting percentages</li>
-         </ul>
-        </li>
-        <li> Percentages:
-         <ul>
-          <li><font class="option">!pr</font> Show row percents for each table cell and col/row totals</li>
-          <li><font class="option">!pc</font> Show col percents for each table cell and col/row totals</li>
-          <li><font class="option">!pt</font> Show total percents for each table cell and col/row totals</li>
-         </ul>
-        </li>
-        <li> Sorting: 
-         <ul>
-          <li>Indicate by !Sxxx where the x indicate:<br/>
-           R:row C:Column A:Ascending D:Descending T:Total L:label (else numerical)</li>
-          <li><font class="option">!sa</font> Sort col &amp; row in ascending value order</li>
-          <li><font class="option">!sd</font> Sort col &amp; row in descending value order</li>
-          <li><font class="option">!sla</font> Sort col &amp; row in ascending label order</li>
-          <li><font class="option">!sld</font> Sort col &amp; row in descending label order</li>
-          <li><font class="option">!sca := &lt;integer&gt;</font> Sort col ascending value order in given index</li>
-          <li><font class="option">!scd := &lt;integer&gt;</font> Sort col descending value order in given index</li>
-          <li><font class="option">!sra := &lt;integer&gt;</font> Sort row ascending value order in given index</li>
-          <li><font class="option">!srd := &lt;integer&gt;</font> Sort row descending value order in given index</li>
-          <li><font class="option">!scta</font> Sort on col totals ascending order</li>
-          <li><font class="option">!scta</font> Sort on col totals descending order</li>
-          <li><font class="option">!srta</font> Sort on row totals ascending order</li>
-          <li><font class="option">!srtd</font> Sort on row totals descending order</li>
-         </ul>
-        </li>
-        <li> Estimation and testing:
-         <ul>
-          <li><font class="option">!t</font> Chi<sup>2</sup></li>
-          </ul>
-        </li>
-       </ul>
+       <font class="cmd">
+        read "Clinical Example.epx";
+        list dataset;
+        use datafile_id_2;</font>
       </td>
      </tr>
-     
-     <!--
-      ######################################################3
-      Select observations
-      ######################################################3
-     -->
-     <tr>
-        <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="selectgrp" id="selectgrp"></a> Select observations</td>
-      </tr>
-      <tr valign="top">
-        <td><a name="select" id="select">select ... do</a><br/></td>
-        <td><font class="cmd">select &lt;logical expression&gt; do &lt;statement&gt;</font><br/>
-         <p>Work with selected observations (subgroup of data)</p>
-         <p>Select requires a <span style="font-weight: bold;">command</span> or a <span style="font-weight: bold;">begin ... end</span> segment following the expression.
-         After the command(s) are executed, the dataset is no longer reduced.</p>
-		 <font class="limit">Note:</font> The commands <font class="cmd">merge, append, save </font> cannot be used with the <font class="cmd">select ...do ...;</font> statement.<br/>
-         <p>It is possible to make nested selects which will combine the selects. Example: </p>
-         <font class="cmd">select (V1 &gt; 3) do
-begin
-  count;  // This command counts number of observations where (v1 is &gt; 3)
-  select (V1 &lt; 4) do
-  begin
-    count;  // This command counts number of observations where ((v1 is &gt; 3) and (V1 &lt; 4)).
-  end;
-end;</font>
-       </td>
-      </tr>
-      <tr valign="top">
-        <td><a name="sort" id="sort">sort</a><br/></td>
-        <td><font class="cmd">sort <i>variable<sub>1</sub></i> [<i>variable<sub>2</sub></i> ...] [!<u>d</u>escending] </font><br/>
-          <p>Sorts the current dataset based on the given variables. Sort respects current select! </p>
-          <ul>
-            <li><font class="option">!descending</font>Sorts the dataset in decending order</li>
-            <li><font class="option">!d</font>Same as above</li>
-          </ul>
-         <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-        </td>
-      </tr>
-
-
+     <tr valign="top">
+      <td><a name="sort" id="sort">sort</a><br/></td>
+      <td><font class="cmd">sort <i>variable<sub>1</sub></i> [<i>variable<sub>2</sub></i> ...] [!<u>d</u>escending] </font><br/>
+       <p>Sorts the current dataset based on the given variables. Sort respects current select! </p>
+       <ul>
+        <li><font class="option">!descending</font>Sorts the dataset in decending order</li>
+        <li><font class="option">!d</font>Same as above</li>
+       </ul>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+      </td>
+     </tr>
 
       <!--
         ######################################################3
@@ -831,7 +724,127 @@ new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "Thi
         </td>
       </tr>
 
-      <!--
+     <!--
+      ######################################################3
+      Listing content
+      ######################################################3
+     -->
+     <tr>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="listgrp" id="listgrp"></a><a name="list"></a>List content</td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="browse" id="browse">browse</a>
+      </td>
+      <td>
+       <font class="cmd">browse [<i>variable<sub>1</sub></i> [variable<sub>2</sub> ...] ] [options]</font><br/>
+       <p>Show the variables mentioned in a spreadsheet grid<br/>
+        - without parameters, browse all variables <br/>
+        - after browse has started you may Right Click and see how to close or adapt columns<br/>
+        - browse will as a default follow the show formats setting</p>
+       <ul>
+        <li><font class="option">!caption := "&lt;string&gt;"</font> Give the browser window a custom caption!</li>
+        <li><font class="option">!c </font> Close all currently open browsers</li>
+        <li><font class="option">!a </font> Arrange all browsers in a cascade</li>
+        <li><font class="option">!vn </font>Show variable names instead of following the <br/>
+         <font class="cmd"> set "FORMAT VALUE LABEL"</font> and <font class="cmd">set "FORMAT VARIABLE LABEL"</font> setting</li>		
+       </ul>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+       <p><b>Note that browse is much faster than list</b></p>
+      </td>
+     </tr>
+     
+     <tr valign="top">
+      <td>
+       <a name="listdata" id="listdata">list data</a><br/>
+       list d
+      </td>
+      <td>
+       <font class="cmd">list data [<i>variable1</i> [variable2 ...]]</font>
+       <p>Show values on the screen for all variables mentioned, with one observation per line (not limited by the width of the display)<br/>
+        - without variable names: list all variables.</p>
+       <ul>
+        <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
+       </ul>
+       <p>Note that browse is much faster than list.</p>
+       <font class="limit">Select:</font> the sequence number is within the current select if you used a select statement, not for the whole dataset. 
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+      </td>
+     </tr>
+     
+     <tr valign="top">
+      <td>
+       <a name="list_project" id="list_project">list project</a><br/>
+       list p
+      </td>
+      <td>
+       <font class="cmd">list project</font>
+       <p>Shows a brief overview of the project</p>
+       <ul>
+        <li><font class="option">!info</font> Also outputs the study information</li>
+       </ul>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="listdataset" id="listdataset">list dataset</a><br/>
+       list ds
+      </td>
+      <td>
+       <font class="cmd">list dataset</font>
+       <p>Shows a list of datasets for the project</p>
+       <ul>
+        <li><font class="option">!all</font> Outputs additional information about the listed datasets</li>
+       </ul>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="listvariable" id="listvariable">list variable</a><br/>
+       list var<br/>
+       list v
+      </td>
+      <td>
+       <font class="cmd">list variable</font>
+       <p>List currently defined variable names, types, formats and labels</p>       
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="listvaluelabel" id="listvaluelabel">list valuelabel</a><br/>
+       list vl
+      </td>
+      <td>
+       <font class="cmd">list valuelabel</font>
+       <p>Shows the full list of all valuelabel sets. Each set is listed individually as value/label pair and marked whether a value is considered missing or not.</p>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="listresults" id="listresults">list results</a><br/>
+       list res<br/>
+       list r
+      </td>
+      <td>
+       <font class="cmd">list results</font>
+       <p>List all current result variables and their values
+        - means, describe, tables and other estimation commands create result variables, e.g. $mean1 or $count<br/>
+        All result variables are cleared when running a new command.
+       </p>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="listglobal" id="listglobal">list global</a><br/>
+       list g
+      </td>
+      <td>
+       <font class="cmd">list global</font>
+       <p>List currently defined global parameters and their types and value. Global parameters can only contain a single value. But you may give them varying values and use functions to create content values.</p>
+      </td>
+     </tr>
+     
+     <!--
       ######################################################3
       Editing definitions
       ######################################################3
@@ -1144,290 +1157,525 @@ drop data !del ; // drop all observations "marked for deletion"
       </td>
     </tr>
 
-      <!--
-        ######################################################3
-        Listing content
-        ######################################################3
-      -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="listgrp" id="listgrp"></a><a name="list"></a>List content</td>
-      </tr>
-         <tr valign="top">
-        <td>
-          <a name="browse" id="browse">browse</a>
-        </td>
-        <td>
-          <font class="cmd">browse [<i>variable<sub>1</sub></i> [variable<sub>2</sub> ...] ] [options]</font><br/>
-          <p>Show the variables mentioned in a spreadsheet grid<br/>
-            - without parameters, browse all variables <br/>
-	    - after browse has started you may Right Click and see how to close or adapt columns<br/>
-	    - browse will as a default follow the show formats setting</p>
-          <ul>
-            <li><font class="option">!caption := "&lt;string&gt;"</font> Give the browser window a custom caption!</li>
-            <li><font class="option">!c </font> Close all currently open browsers</li>
-            <li><font class="option">!a </font> Arrange all browsers in a cascade</li>
-            <li><font class="option">!vn </font>Show variable names instead of following the <br/>
-		<font class="cmd"> set "FORMAT VALUE LABEL"</font> and <font class="cmd">set "FORMAT VARIABLE LABEL"</font> setting</li>		
-          </ul>
-          <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-          <p><b>Note that browse is much faster than list</b></p>
-        </td>
-      </tr>
-
-    <tr valign="top">
-        <td>
-          <a name="listdata" id="listdata">list data</a><br/>
-          list d
-        </td>
-        <td>
-          <font class="cmd">list data [<i>variable1</i> [variable2 ...]]</font>
-          <p>Show values on the screen for all variables mentioned, with one observation per line (not limited by the width of the display)<br/>
-            - without variable names: list all variables.</p>
-          <ul>
-            <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
-          </ul>
-          <p>Note that browse is much faster than list.</p>
-          <font class="limit">Select:</font> the sequence number is within the current select if you used a select statement, not for the whole dataset. 
-         <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-        </td>
-      </tr>
-
-     <tr valign="top">
-      <td>
-       <a name="list_project" id="list_project">list project</a><br/>
-       list p
-      </td>
-      <td>
-       <font class="cmd">list project</font>
-       <p>Shows a brief overview of the project</p>
-       <ul>
-        <li><font class="option">!info</font> Also outputs the study information</li>
-       </ul>
-      </td>
-     </tr>
-     <tr valign="top">
-        <td>
-          <a name="listdataset" id="listdataset">list dataset</a><br/>
-          list ds
-        </td>
-        <td>
-         <font class="cmd">list dataset</font>
-         <p>Shows a list of datasets for the project</p>
-         <ul>
-          <li><font class="option">!all</font> Outputs additional information about the listed datasets</li>
-         </ul>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-          <a name="listvariable" id="listvariable">list variable</a><br/>
-          list var<br/>
-          list v
-        </td>
-        <td>
-          <font class="cmd">list variable</font>
-          <p>List currently defined variable names, types, formats and labels</p>       
-        </td>
-      </tr>
-    <tr valign="top">
-        <td>
-          <a name="listvaluelabel" id="listvaluelabel">list valuelabel</a><br/>
-          list vl
-        </td>
-        <td>
-          <font class="cmd">list valuelabel</font>
-          <p>Shows the full list of all valuelabel sets. Each set is listed individually as value/label pair and marked whether a value is considered missing or not.</p>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-          <a name="listresults" id="listresults">list results</a><br/>
-          list res<br/>
-          list r
-        </td>
-        <td>
-          <font class="cmd">list results</font>
-          <p>List all current result variables and their values
-            - means, describe, tables and other estimation commands create result variables, e.g. $mean1 or $count<br/>
-            All result variables are cleared when running a new command.
-          </p>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-          <a name="listglobal" id="listglobal">list global</a><br/>
-          list g
-        </td>
-        <td>
-          <font class="cmd">list global</font>
-          <p>List currently defined global parameters and their types and value. Global parameters can only contain a single value. But you may give them varying values and use functions to create content values.</p>
-        </td>
-      </tr>
-       
-<!--
+     <!--
       ######################################################3
-      change content of variables 
+      Select observations
       ######################################################3
      -->
-    <tr valign="top">
-      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="changedata" id="changedata"></a> Change variable content</td>
-	  </tr>
-    <tr valign="top">
-      <td>&nbsp;</td>
-      <td>
-	     Assign the value given in an expression. The variable <a href="#types">type</a> and expressions must be compatible otherwise an error will occur.<br/>
-       <br/> 
-	     Here all observations get the same value:
-	     <font class="cmd">
-v1 := 1 + 2 * 3 - 4;
-v2 := (2 * pi) * 5;
-v3 := "Hello World!";
-v4 := now();
-v5 := (2 > 3);
-v6 := today();
-       </font>
-        <p>It is also possible to assign a value to individual entries of a variable:</p>
-        <font class="cmd">v1[1] := 3;
-v2[2] := 31.41596;
-v3[3] := "It works!";
-v4[1] := Createtime(12, 34, 56);
-       </font>
-       <p>If you specify a conditional (depend) rule based on other variables the change only occurs for the subgroup defined by the select statement:</p>
-       <font class="cmd">select (v1 = 0) do v17 := 17;
-select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
-       <p><a href="#functions">Functions</a> may be used:</p>
-        <font class="cmd">select (age = .) do age := integer((today() - dateborn)/365.25)    // calculated age 
-        </font>    
+     <tr>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="selectgrp" id="selectgrp"></a> Select observations</td>
+     </tr>
+     <tr valign="top">
+      <td><a name="select" id="select">select ... do</a><br/></td>
+      <td><font class="cmd">select &lt;logical expression&gt; do &lt;statement&gt;</font><br/>
+       <p>Work with selected observations (subgroup of data)</p>
+       <p>Select requires a <span style="font-weight: bold;">command</span> or a <span style="font-weight: bold;">begin ... end</span> segment following the expression.
+        After the command(s) are executed, the dataset is no longer reduced.</p>
+       <font class="limit">Note:</font> The commands <font class="cmd">merge, append, save </font> cannot be used with the <font class="cmd">select ...do ...;</font> statement.<br/>
+       <p>It is possible to make nested selects which will combine the selects. Example: </p>
+       <font class="cmd">select (V1 &gt; 3) do
+        begin
+        count;  // This command counts number of observations where (v1 is &gt; 3)
+        select (V1 &lt; 4) do
+        begin
+        count;  // This command counts number of observations where ((v1 is &gt; 3) and (V1 &lt; 4)).
+        end;
+        end;</font>
       </td>
-    </tr>
-
-	 
+     </tr>
+     
      <!--
       ######################################################3
       change flow If ... Then, for 
       ######################################################3
      -->
      <tr>
-       <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="flowgrp" id="flowgrp"></a> Adopt flow and special assignments</td>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="flowgrp" id="flowgrp"></a> Changing flow of the script</td>
      </tr>
-      <tr valign="top">
-        <td>
-         <a name="ifthen" id="ifthen"/><a name="if"/><a name="then"/><a name="else"/>if ... then ... else ...
-        </td>
-        <td>
-         <font class="cmd">if &lt;logical_expression&gt; then &lt;statement or command&gt; [else &lt;statement or command&gt;]</font><br/>
-           <p>This is a "flow" control statement - which will evaluate <i>logical_expression</i> <b>once</b> and execute the command(s) following <i>then</i>
- 		      when the logical expression is true. <font class="limit">Note: </font> This statement is not normally used to change values of variables (see the example below).
-            The <i>else</i> clause is optional and is only executed if evaluation of the logical expression is false.<br/>
-          - for complex logical expressions, use parentheses for clarity.<br/>
-           <font class="limit">Note: </font> The if is changing flow of programming NOT values in variables unless the logic in the if ... ; defines this. 
-         </p>
-         Examples:<br/>
-         <font class="cmd">
-if (dayofweek(today()) = 1) then
-  freq v12   // will show variable v12 on mondays
-else
-  freq v13;  // will show variable v13 on other days of week.
-</font>
-<p><font class="limit">Note: </font> The flow control of "if ... then .... was completely different in EpiData Analysis Classic v2.2.</p>
-              <font class="cmd">// In Analysis 2.2 to change all system missing values in V1 with the value 99
-if (V1 = .) then V1 := 99;  
-
-// To do the same in current Analysis use this syntax: 
-select (V1 = .) do V1 := 99;
-         </font>
-       </td>
-      </tr>
-      <tr valign="top">
-        <td>
-         <a name="loop" id="loop"/><a name="for"/>for .. to .. do<br/>
-        </td>
-        <td>
-         <font class="cmd">for &lt;var&gt; := &lt;start value&gt; to|downto &lt;end value&gt; do &lt;statements&gt;;</font><br/>
-          <p>Loops through the integer values from start to end either in ascending order (to) or descending order (downto).<br/>
-If the values are in the wrong order (e.g. start value &gt; end value, and the order is ascending) then the statements are not executed.<br/>
-         
-           <i>&lt;var&gt;</i>: Must be global variable (single or vector) and integer datatype!<br/>
-           The result of &lt;start value&gt; and &lt;end value&gt; must be an integer value</p>
-          Examples:<br/>
-          <font class="cmd">new variable ID integer;   // this creates the new ID variable
-new global i integer;  
-for i := 1 to size(@dataset[1]) do
-  ID := i;  // This gives the ID variable the sequential number that each observation has in a dataset. You may sort the data before doing so. 
-          </font>
-         <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-        </td>       
-      </tr>
+     <tr valign="top">
+      <td>
+       <a name="ifthen" id="ifthen"/><a name="if"/><a name="then"/><a name="else"/>if ... then ... else ...
+      </td>
+      <td>
+       <font class="cmd">if &lt;logical_expression&gt; then &lt;statement or command&gt; [else &lt;statement or command&gt;]</font><br/>
+       <p>This is a "flow" control statement - which will evaluate <i>logical_expression</i> <b>once</b> and execute the command(s) following <i>then</i>
+        when the logical expression is true. <font class="limit">Note: </font> This statement is not normally used to change values of variables (see the example below).
+        The <i>else</i> clause is optional and is only executed if evaluation of the logical expression is false.<br/>
+        - for complex logical expressions, use parentheses for clarity.<br/>
+        <font class="limit">Note: </font> The if is changing flow of programming NOT values in variables unless the logic in the if ... ; defines this. 
+       </p>
+       Examples:<br/>
+       <font class="cmd">
+        if (dayofweek(today()) = 1) then
+        freq v12   // will show variable v12 on mondays
+        else
+        freq v13;  // will show variable v13 on other days of week.
+       </font>
+       <p><font class="limit">Note: </font> The flow control of "if ... then .... was completely different in EpiData Analysis Classic v2.2.</p>
+       <font class="cmd">// In Analysis 2.2 to change all system missing values in V1 with the value 99
+        if (V1 = .) then V1 := 99;  
+        
+        // To do the same in current Analysis use this syntax: 
+        select (V1 = .) do V1 := 99;
+       </font>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="loop" id="loop"/><a name="for"/>for .. to .. do<br/>
+      </td>
+      <td>
+       <font class="cmd">for &lt;var&gt; := &lt;start value&gt; to|downto &lt;end value&gt; do &lt;statements&gt;;</font><br/>
+       <p>Loops through the integer values from start to end either in ascending order (to) or descending order (downto).<br/>
+        If the values are in the wrong order (e.g. start value &gt; end value, and the order is ascending) then the statements are not executed.<br/>
+        
+        <i>&lt;var&gt;</i>: Must be global variable (single or vector) and integer datatype!<br/>
+        The result of &lt;start value&gt; and &lt;end value&gt; must be an integer value</p>
+       Examples:<br/>
+       <font class="cmd">new variable ID integer;   // this creates the new ID variable
+        new global i integer;  
+        for i := 1 to size(@dataset[1]) do
+        ID := i;  // This gives the ID variable the sequential number that each observation has in a dataset. You may sort the data before doing so. 
+       </font>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+      </td>       
+     </tr>
      <tr valign="top">
       <td>
        for .. in .. do<br/>
       </td>
       <td>
-        <font class="cmd">for &lt;var&gt; in [&lt;value<sub>1</sub>&gt;, &lt;value<sub>2</sub>&gt;, ...]  do statements;</font><br/>
-        <p>Loops through the values one by one, assigning it to &lt;var&gt;</p>
-        <p>The only restriction in this loop is that the datatype of &lt;var&gt; and &lt;value&gt; must be the same!</p>
-        Examples:<font class="cmd">
-new global I integer;
-for I in [1, 3, 5, 7, 9] do ? I &lt; 10;       // "regular" integer loop.
-
-new global F float;
-for F in [1.1, 3.3, 5.5] do ? fraction(F);  // Looping with floating values
-
-new global S string;
-for S in ["Denmark", "Norway", "Sweden", "Finland"] do
- ? S + " is a nordic country"; 
-</font>
+       <font class="cmd">for &lt;var&gt; in [&lt;value<sub>1</sub>&gt;, &lt;value<sub>2</sub>&gt;, ...]  do statements;</font><br/>
+       <p>Loops through the values one by one, assigning it to &lt;var&gt;</p>
+       <p>The only restriction in this loop is that the datatype of &lt;var&gt; and &lt;value&gt; must be the same!</p>
+       Examples:<font class="cmd">
+        new global I integer;
+        for I in [1, 3, 5, 7, 9] do ? I &lt; 10;       // "regular" integer loop.
+        
+        new global F float;
+        for F in [1.1, 3.3, 5.5] do ? fraction(F);  // Looping with floating values
+        
+        new global S string;
+        for S in ["Denmark", "Norway", "Sweden", "Finland"] do
+        ? S + " is a nordic country"; 
+       </font>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
       </td>       
      </tr>
      
-
      <!--
       ######################################################3
-      Clean up - stop
+      Reordering variables and ? 
       ######################################################3
      -->
      <tr>
-        <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="stopgrp" id="stopgrp"></a> Clean up - clear screen and history</td>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="reordergrp" id="reordergrp"></a> Reordering variables and ?</td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="reorder" id="reorder">reorder</a></td>
+      <td>
+       <font class="cmd">reorder var<sub>1</sub> [var<sub>2</sub> ...] [!options]</font><br/>
+       <p>Reorders the variables specified. This can be used to place specific variable together and used with <a href="#referencedvars">variable expansion</a></p>
+       <ul>
+        <li><font class="option">!before := &lt;var&gt;</font>Places the variables before this variable</li>
+        <li><font class="option">!after:= &lt;var&gt;</font>Places the variables after this variable</li>
+        <li><font class="option">!last</font>Places the variables at the end of the list</li>
+       </ul>          
+       <p>If no options are specified, the default is to place the variables before all other variables in the list. Use F3 or "list variable" to show the current order of variables.</p>
+       Examples:
+       <font class="cmd">
+        read "bromar.epx";               // Load the project
+        reorder kmgrp agegrp decgrp;     // Moves the variables kmgrpm, agegrp, and decgrp to the front of the list
+        reorder age km !before := agegrp // Moved the variables age and km in front of agegrp</font>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="calculate" id="calculate"/><a name="eval"/>?</td>
+      <td>
+       <font class="cmd">? &lt;expression&gt;</font><br/>
+       <p>Show result of an expression. It is posible to use all types of variables (standard, results or global) in the expression.<br/>
+        <font class="limit">Note:</font> if you are using standard variables it is possible to change a given specific observation with [x] (x is an integer).<br/>
+        Examples:</p>
+       <font class="cmd">? v1[5] + 10 // this will use the 5th observation in the standard variable v1
+        ? g1 - 10    // this will use the content of the global variable g1
+        ? 241/34
+        ? (23 &gt; 19)
+        ? "a " + "b " + "c"
+       </font>
+      </td>
+     </tr>
+
+     <!--
+      ######################################################3
+      change content of variables 
+      ######################################################3
+     -->
+     <tr valign="top">
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="changedata" id="changedata"></a> Change variable content</td>
+     </tr>
+     <tr valign="top">
+      <td>&nbsp;</td>
+      <td>
+       Assign the value given in an expression. The variable <a href="#types">type</a> and expressions must be compatible otherwise an error will occur.<br/>
+       <br/> 
+       Here all observations get the same value:
+       <font class="cmd">
+        v1 := 1 + 2 * 3 - 4;
+        v2 := (2 * pi) * 5;
+        v3 := "Hello World!";
+        v4 := now();
+        v5 := (2 > 3);
+        v6 := today();
+       </font>
+       <p>It is also possible to assign a value to individual entries of a variable:</p>
+       <font class="cmd">v1[1] := 3;
+        v2[2] := 31.41596;
+        v3[3] := "It works!";
+        v4[1] := Createtime(12, 34, 56);
+       </font>
+       <p>If you specify a conditional (depend) rule based on other variables the change only occurs for the subgroup defined by the select statement:</p>
+       <font class="cmd">select (v1 = 0) do v17 := 17;
+        select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
+       <p><a href="#functions">Functions</a> may be used:</p>
+       <font class="cmd">select (age = .) do age := integer((today() - dateborn)/365.25)    // calculated age 
+       </font>    
+      </td>
+     </tr>
+
+     <!--
+      ######################################################3
+      Tables
+      ######################################################3
+     -->
+      <tr>
+        <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="tablegrp" id="tablegrp"></a> Tables &amp; Frequencies</td>
       </tr>
       <tr valign="top">
+        <td><a name="freq" id="freq"></a>freq<br/>
+        <a name="fre" id="fre">fre</a></td>
         <td>
-         <a name="close" id="close"></a>close
-        </td>
-        <td>
-         <font class="cmd">close</font><br/>
-          Stop using a project<br/>
-         - all unsaved variables and changes to existing variables and labels will be lost<br/>
-         - global variables will remain in memory<br/>
-               </td>       
-      </tr>
-      <tr valign="top">
-        <td><a name="cls" id="cls"></a>cls</td>
-          <td><font class="cmd">cls</font><br/>
-            Clear the output screen<br/>
-          </td>
-      </tr>
-      <tr valign="top">
-        <td><a name="clh" id="clh"></a>clh</td>
-        <td><font class="cmd">clh</font><br/>
-          Clear the history of commands<br/>
+         <font class="cmd">freq <i>variable<sub>1</sub></i> [!&lt;option&gt; ...]</font><br/>
+          <p>Frequency distribution for variable<sub>1</sub></p>
+          <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+          <ul>
+            <li><font class="option">!m</font> Include observations with missing data (.)</li>
+            <li><font class="option">!cum</font> Add cumulative percentage</li>
+            <li><font class="option">!r</font> Add row percentage</li>
+            <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
+            <li>See <a href="#formatting">formatting</a> for options on formatting percentages</li>
+         </ul>
         </td>
       </tr>
-      <tr valign="top">
-        <td><a name="reset" id="reset"></a>reset</td>
-        <td><font class="cmd">reset</font><br/>
-          <p>Complete reset of all parameters of the program!<br/>
-          This is almost equivalent of doing:</p>
-          <font class="cmd">close;
-drop global !all;
-cls;
-clh;
-</font>
-          <br/>But this also clears all result variables!
-        </td>
-      </tr>
-      
-   
+     <tr valign="top">
+      <td><a name="tables" id="tables"></a>tables<br/>
+       <a name="tab" id="tab">tab</a></td>
+      <td>
+       <font class="cmd">tab <i>&lt;column variable&gt; &lt;row variable&gt;</i> [!&lt;option&gt; ...]</font><br/>
+       <p>The tables (brief: tab) command shows a cross tables for the variables chosen.</p>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+       <p>The default sorting for the cross tables is increasing value, regardsless of any valuelabel for the variables. Use options below to change the sort order!</p>
+       <ul>
+        <li> Data and output:
+         <ul>
+          <li><font class="option">!m</font> Include observations with missing data (.)</li>
+          <li><font class="option">!w := &lt;variable&gt;</font> Use number of observations in the variable as frequency weight</li>
+          <li><font class="option">!by := &lt;variable&gt;</font> Stratify the data by this variable.<br/>
+          If multiple !by options are used, each unique combination of values from the by-variables will have it's own sub-table.</li>
+          <li><font class="option">!q</font> Hide all output! Result variable are still calculated</li>
+          <li><font class="option">!nc</font> Hide combined/unstratified tables</li>
+          <li><font class="option">!nb</font> Hide sub/stratified tables</li>
+          <li><font class="option">!ns</font> Hide summary table</li>
+          <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
+          <li>See <a href="#formatting">formatting</a> for options on formatting percentages</li>
+         </ul>
+        </li>
+        <li> Percentages:
+         <ul>
+          <li><font class="option">!pr</font> Show row percents for each table cell and col/row totals</li>
+          <li><font class="option">!pc</font> Show col percents for each table cell and col/row totals</li>
+          <li><font class="option">!pt</font> Show total percents for each table cell and col/row totals</li>
+         </ul>
+        </li>
+        <li> Sorting: 
+         <ul>
+          <li>Indicate by !Sxxx where the x indicate:<br/>
+           R:row C:Column A:Ascending D:Descending T:Total L:label (else numerical)</li>
+          <li><font class="option">!sa</font> Sort col &amp; row in ascending value order</li>
+          <li><font class="option">!sd</font> Sort col &amp; row in descending value order</li>
+          <li><font class="option">!sla</font> Sort col &amp; row in ascending label order</li>
+          <li><font class="option">!sld</font> Sort col &amp; row in descending label order</li>
+          <li><font class="option">!sca := &lt;integer&gt;</font> Sort col ascending value order in given index</li>
+          <li><font class="option">!scd := &lt;integer&gt;</font> Sort col descending value order in given index</li>
+          <li><font class="option">!sra := &lt;integer&gt;</font> Sort row ascending value order in given index</li>
+          <li><font class="option">!srd := &lt;integer&gt;</font> Sort row descending value order in given index</li>
+          <li><font class="option">!scta</font> Sort on col totals ascending order</li>
+          <li><font class="option">!scta</font> Sort on col totals descending order</li>
+          <li><font class="option">!srta</font> Sort on row totals ascending order</li>
+          <li><font class="option">!srtd</font> Sort on row totals descending order</li>
+         </ul>
+        </li>
+        <li> Estimation and testing:
+         <ul>
+          <li><font class="option">!t</font> Chi<sup>2</sup></li>
+          </ul>
+        </li>
+       </ul>
+      </td>
+     </tr>
+    
+     <!--
+      ######################################################3
+      Means and Count
+      ######################################################3
+     -->
+     <tr>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="analysisgrp" id="analysisgrp"></a> Means and Count</td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="count" id="count"></a>count<br/>
+      </td>
+      <td>
+       <font class="cmd">count</font><br/>
+       <p>Counts number of observations. Count may be used with select to count within a subgroup</p>
+       <br/>
+       Result variable: <font class="cmd">$count</font>. Use <font class="cmd">list results</font> for details<br/>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="means" id="means"/><a name="t-test" id="t-test"/><a name="ttest" id="ttest"/><a name="ftest" id="ftest"/>
+       means
+      </td>
+      <td>
+       <font class="cmd">means <i>variable<sub>1</sub></i> [!by=<i>variable<sub>2</sub></i>] [!t]</font><br/>
+       <p>Basic descriptive statistics for variable1, optionally stratified by variable2<br/></p>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+       
+       <ul>
+        <li><font class="option">!by:</font> Stratify by this variable</li>
+        <li><font class="option">!t:</font> Test for homogeneity of the mean across strata (same or different mean)<br/>
+         Including Bartletts test for homogeneity of variance with more than two strata<br/>
+         F-test is provided, can be interpreted as T-test with two strata</li>
+        <li>Without <font class="option">!by</font> and with <font class="option">!t</font> : Test that mean=0<br/>
+         (e.g. as a paired T-test for difference in before and after measure)</li>
+        <li>Estimates are saved as result variables. Use <font class="cmd">list results</font> for details<br/></li>
+        <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
+       </ul>
+       <font class="limit">Note:</font> Confidence Intervals given are based on the T-distribution with N-1 degrees of freedom.
+      </td>
+     </tr>
+     
+     <!--
+      ######################################################3
+      Data and Structural Consistency Checks
+      ######################################################3
+     -->
+     <tr>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="checkgrp" id="checkgrp"></a> Data and Structural Consistency Checks</td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="checkdata" id="checkdata"/><a name="check"/>check data</td>
+      <td>
+       <font class="cmd">check data [var<sub>1</sub> ...]</font><br/>
+       <p>Use this command to perform a check of the data in selected variables (if no variable are specified, then ALL variable are checked).<br/>
+        The data is checked for:</p>
+       <ul>
+        <li>Data length: Is the number of characters used in data within the length specified for the variable</li>
+        <li>Range/Valuelabel: Is the data within the specified range and/or is it a legal value label</li>
+        <li>Must Enter: Does the variable have data for all observations if it is marked as Must Enter</li>
+        <li>Jumps: If a variable has jumps assigned, do the skipped fields have the correct values</li>
+        <li>Comparison: If a variable is compared to another variable, is the comparison uphold.</li>
+       </ul>
+       Examples:
+       <font class="cmd">
+        read "bromar.epx"
+        check data                   // checks all variable
+        check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age</font>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="checkkey" id="checkkey">check key</a></td>
+      <td>
+       <font class="cmd">check key [var<sub>1</sub> ...]</font><br/>
+       <p>Use this command to perform a check of the data in specified variables whether the data is unique and represent a key.<br/>
+        If no variables are specified and a key is already present in the current dataset, this key is check.</p>
+       Examples:
+       <font class="cmd">
+        read "bromar.epx"
+        check key id                 // checks if the variable ID represents a unique key</font>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="checkrelate" id="checkrelate">check relate</a></td>
+      <td>
+       <font class="cmd">check relate</font><br/>
+       <p>Performs a check on data and whether all observations have a valid parent observation</p>
+       Examples:
+       <font class="cmd">
+        read "related_data.epx";  // Load the project
+        use child_dataset;        // Change dataset to a related dataset 
+        check relate;             // Perform the check from the child dataset "upwards" to the parent. Must be repeated if you have more levels</font>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="checkstudy" id="checkstudy">check study</a></td>
+      <td>
+       <font class="cmd">check study</font><br/>
+       <p>Performs a check on the study information of whether it is filled or not.</p>
+       Examples:
+       <font class="cmd">
+        read "samplev3.epx";  // Load the project
+        check study;          // Perform the check</font>
+      </td>
+     </tr>
+     
+     <!--
+      ######################################################3
+      REPORTS
+      ######################################################3
+     -->
+     <tr>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="reportsgrp" id="reportsgrp"></a> Reports</td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="report" id="report_users"/>report users</td>
+      <td>
+       <font class="cmd">report users</font><br/>
+       <p>If a project is using Extended Access control, this command will show a condensed report of the log entries and a list of failed login attempts.</p>
+       If the project is not using Extended Access control, an error will be displayed. 
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="report" id="report_validate"/>report val</td>
+      <td>
+       <font class="cmd">report validate [var<sub>1</sub> var<sub>2</sub> ...] [!options]</font><br/>
+       Compares two dataset / projects against eachother, validating the data content and outputs a report of diffenrences based on the comparison.<br/>
+       The variables var<sub>1</sub> .. var<sub>n</sub> denotes the sorting variables. This is required if not comparing whole projects OR if the datasets does not contain and key variables.    
+       <ul>
+        <li><font class="option">!fn := "&lt;string&gt;"</font> Opens an external file to compare with.</li>
+        <li><font class="option">!ds := &lt;dataset id&gt;</font> Specifies a single dataset (internal/external) to compare with.</li>
+        <li><font class="option">!nos</font> Excludes all string types from comparison</li>
+        <li><font class="option">!nodt</font> Excludes all date and time types from comparison</li>
+        <li><font class="option">!noauto</font> Excludes all auto types from comparison</li>
+        <li><font class="option">!noc</font> All text comparisons are done case in-sensitive</li>
+        <li><font class="option">!nol</font> Only show the condensed report - do not show the list of observations</li>
+        <li><font class="option">!val</font> All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!</li>
+       </ul>
+       Examples:<font class="cmd">
+        read "bromar.epx";               // Load the project
+        
+        // Run a report based on the two internal datasets (1st is currently used, 2nd is the one marked with !ds :=...) 
+        report val id !ds := ds2;
+        
+        // Run a report based on the two datasets, one internal and one external (1st is currently used, 2nd is the one marked with !ds :=...) 
+        report val id !fn := "double_entry.epx" !ds := ds1
+        
+        // If you have two projects there are two ways compare there. If you wish to compare individual dataset, use the options above.
+        // If you have two project you wish to make a complete validation on, use following:
+        
+        // Run a report based on the two complete projects, one internal and one external
+        report val !fn := "double_entry.epx"
+        
+        // The last example is a special case where both the internal and external project only contains a single dataset each.
+        // In this case you only need to specify the sorting variable(s) and the external file. The dataset option is not need
+        // since the external project only has a single dataset.
+        report val id !fn := "double_entry.epx"</font>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="report" id="report_countby"/>report cby</td>
+      <td>
+       <font class="cmd">report cby [var<sub>1</sub> var<sub>2</sub> ...] [!options]</font><br/>
+       Compares the combination of variables across several datasets. The variables var<sub>1</sub> .. var<sub>n</sub> is considere a "key" and each unique combination of this key is counted across all the specified datasets.<br/>
+       The output is a report with a condensed table of the found keys and a complete table with the found unique key values and the count of these in each dataset.
+       <ul>
+        <li><font class="option">!fn := &lt;global string vector&gt;</font> This option accepts a global vector with the filenames that is included in the report</li>
+        <li><font class="option">!ds := &lt;global string vector&gt;</font> This option accepts a global vector with the dataset name that is included in the report</li>
+        <li><font class="option">!nol</font> Only show the condensed report - do not show the list of observations</li>
+       </ul>
+       Examples:<font class="cmd">
+        
+        // Setup the input for the report:
+        new global filenames[5] string;
+        filenames[1] := "count_file_1.epx";
+        filenames[2] := "count_file_2.rec";
+        filenames[3] := "count_file_3.dta";
+        filenames[4] := "count_file_4.csv";
+        filenames[5] := .;
+        // NOTE: the filename are not required to be the same format, only the variable names MUST be the same
+        //       if an entry in the vector is sys.missing, the command assumes the dataset is in the currently opened project.
+        
+        // The number of entries in the dataset variable MUST be the same as the filenames
+        new global datasets[5] string;
+        datasets[1] := "ds1";
+        datasets[2] := "ds1";
+        datasets[3] := "ds1";
+        datasets[4] := "ds1";
+        datasets[5] := "ds1";
+        
+        // Run the report:
+        report cby id !fn := filenames !ds := datasets</font> 
+      </td>
+     </tr>
+
+     <!--
+      ######################################################3
+      Disk commands
+      ######################################################3
+     -->
+     <tr>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="diskgrp" id="diskgrp"></a> Disk commands</td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="cd"/>cd
+      </td>
+      <td>
+       <font class="cmd">cd ["&lt;directory path&gt;"]</font><br/>
+       <p>Change the working directory (folder) to the specified path.<br/>
+        If no path is given a dialog is shown to select the working directory.</p>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="dir" id="dir"/><a name="ls"/>ls<br/>
+       dir
+      </td>
+      <td>
+       <font class="cmd">ls ["&lt;directory path&gt;"]</font>
+       <p>
+        list files in a directory<br/>
+        - <i>directory name</i> may include wild cards (* or ?)<br/>
+        If no path is given a dialog is shown to select the working directory</p>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="erase" id="erase"/>erase
+      </td>
+      <td>
+       <font class="cmd">erase "&lt;file name&gt;"</font>
+       <p>
+        Delete the file from disk. <br/>
+        - <i>directory name</i> use of wild cards is restrictive due to operating systems (* or ?)<br/>
+        If no path is given current working directory is used.<br/><br/>
+        <font class="limit">Warning: </font>The file is deleted (if the file exist) with no confirmatory question</p>
+      </td>
+     </tr>
+     
      <!--
       ######################################################3
       SET
@@ -1705,278 +1953,14 @@ clh;
           </table>
         </td>
         </tr>      
-     
+    
      <!--
-      ######################################################3
-      Information
-      ######################################################3
+      ######################################################
+      Labeling and formatting data
+      ######################################################
      -->
      <tr>
-        <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="infogrp" id="infogrp"></a> Information</td>
-      </tr>
-      <tr valign="top">
-        <td>
-         <a name="checkdata" id="checkdata"/><a name="check"/>check data</td>
-        <td>
-          <font class="cmd">check data [var<sub>1</sub> ...]</font><br/>
-          <p>Use this command to perform a check of the data in selected variables (if no variable are specified, then ALL variable are checked).<br/>
-            The data is checked for:</p>
-            <ul>
-              <li>Data length: Is the number of characters used in data within the length specified for the variable</li>
-              <li>Range/Valuelabel: Is the data within the specified range and/or is it a legal value label</li>
-              <li>Must Enter: Does the variable have data for all observations if it is marked as Must Enter</li>
-              <li>Jumps: If a variable has jumps assigned, do the skipped fields have the correct values</li>
-              <li>Comparison: If a variable is compared to another variable, is the comparison uphold.</li>
-            </ul>
-            Examples:
-          <font class="cmd">
-read "bromar.epx"
-check data                   // checks all variable
-check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age</font>
-         <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-          <a name="checkkey" id="checkkey">check key</a></td>
-        <td>
-          <font class="cmd">check key [var<sub>1</sub> ...]</font><br/>
-          <p>Use this command to perform a check of the data in specified variables whether the data is unique and represent a key.<br/>
-            If no variables are specified and a key is already present in the current dataset, this key is check.</p>
-          Examples:
-          <font class="cmd">
-read "bromar.epx"
-check key id                 // checks if the variable ID represents a unique key</font>
-         <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-          <a name="checkrelate" id="checkrelate">check relate</a></td>
-        <td>
-          <font class="cmd">check relate</font><br/>
-          <p>Performs a check on data and whether all observations have a valid parent observation</p>
-          Examples:
-          <font class="cmd">
-read "related_data.epx";  // Load the project
-use child_dataset;        // Change dataset to a related dataset 
-check relate;             // Perform the check from the child dataset "upwards" to the parent. Must be repeated if you have more levels</font>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-          <a name="checkstudy" id="checkstudy">check study</a></td>
-        <td>
-          <font class="cmd">check study</font><br/>
-          <p>Performs a check on the study information of whether it is filled or not.</p>
-          Examples:
-          <font class="cmd">
-read "samplev3.epx";  // Load the project
-check study;          // Perform the check</font>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-          <a name="reorder" id="reorder">reorder</a></td>
-        <td>
-          <font class="cmd">reorder var<sub>1</sub> [var<sub>2</sub> ...] [!options]</font><br/>
-          <p>Reorders the variables specified. This can be used to place specific variable together and used with <a href="#referencedvars">variable expansion</a></p>
-          <ul>
-            <li><font class="option">!before := &lt;var&gt;</font>Places the variables before this variable</li>
-            <li><font class="option">!after:= &lt;var&gt;</font>Places the variables after this variable</li>
-            <li><font class="option">!last</font>Places the variables at the end of the list</li>
-          </ul>          
-          <p>If no options are specified, the default is to place the variables before all other variables in the list. Use F3 or "list variable" to show the current order of variables.</p>
-          Examples:
-          <font class="cmd">
-read "bromar.epx";               // Load the project
-reorder kmgrp agegrp decgrp;     // Moves the variables kmgrpm, agegrp, and decgrp to the front of the list
-reorder age km !before := agegrp // Moved the variables age and km in front of agegrp</font>
-         <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-         <a name="calculate" id="calculate"/><a name="eval"/>?</td>
-        <td>
-         <font class="cmd">? &lt;expression&gt;</font><br/>
-         <p>Show result of an expression. It is posible to use all types of variables (standard, results or global) in the expression.<br/>
-         <font class="limit">Note:</font> if you are using standard variables it is possible to change a given specific observation with [x] (x is an integer).<br/>
-         Examples:</p>
-         <font class="cmd">? v1[5] + 10 // this will use the 5th observation in the standard variable v1
-? g1 - 10    // this will use the content of the global variable g1
-? 241/34
-? (23 &gt; 19)
-? "a " + "b " + "c"
-         </font>
-       </td>
-      </tr>
-
-     <!--
-      ######################################################3
-      REPORTS
-      ######################################################3
-     -->
-     <tr>
-      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="reportsgrp" id="reportsgrp"></a> Reports</td>
-     </tr>
-     <tr valign="top">
-      <td>
-       <a name="report" id="report_users"/>report users</td>
-      <td>
-       <font class="cmd">report users</font><br/>
-       <p>If a project is using Extended Access control, this command will show a condensed report of the log entries and a list of failed login attempts.</p>
-       If the project is not using Extended Access control, an error will be displayed. 
-      </td>
-     </tr>
-     <tr valign="top">
-      <td>
-       <a name="report" id="report_validate"/>report val</td>
-      <td>
-       <font class="cmd">report validate [var<sub>1</sub> var<sub>2</sub> ...] [!options]</font><br/>
-       Compares two dataset / projects against eachother, validating the data content and outputs a report of diffenrences based on the comparison.<br/>
-       The variables var<sub>1</sub> .. var<sub>n</sub> denotes the sorting variables. This is required if not comparing whole projects OR if the datasets does not contain and key variables.    
-        <ul>
-         <li><font class="option">!fn := "&lt;string&gt;"</font> Opens an external file to compare with.</li>
-         <li><font class="option">!ds := &lt;dataset id&gt;</font> Specifies a single dataset (internal/external) to compare with.</li>
-         <li><font class="option">!nos</font> Excludes all string types from comparison</li>
-         <li><font class="option">!nodt</font> Excludes all date and time types from comparison</li>
-         <li><font class="option">!noauto</font> Excludes all auto types from comparison</li>
-         <li><font class="option">!noc</font> All text comparisons are done case in-sensitive</li>
-         <li><font class="option">!nol</font> Only show the condensed report - do not show the list of observations</li>
-         <li><font class="option">!val</font> All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!</li>
-        </ul>
-       Examples:<font class="cmd">
-read "bromar.epx";               // Load the project
-        
-// Run a report based on the two internal datasets (1st is currently used, 2nd is the one marked with !ds :=...) 
-report val id !ds := ds2;
-
-// Run a report based on the two datasets, one internal and one external (1st is currently used, 2nd is the one marked with !ds :=...) 
-report val id !fn := "double_entry.epx" !ds := ds1
-
-// If you have two projects there are two ways compare there. If you wish to compare individual dataset, use the options above.
-// If you have two project you wish to make a complete validation on, use following:
-
-// Run a report based on the two complete projects, one internal and one external
-report val !fn := "double_entry.epx"
-
-// The last example is a special case where both the internal and external project only contains a single dataset each.
-// In this case you only need to specify the sorting variable(s) and the external file. The dataset option is not need
-// since the external project only has a single dataset.
-report val id !fn := "double_entry.epx"</font>
-      </td>
-     </tr>
-     <tr valign="top">
-      <td>
-       <a name="report" id="report_countby"/>report cby</td>
-      <td>
-       <font class="cmd">report cby [var<sub>1</sub> var<sub>2</sub> ...] [!options]</font><br/>
-       Compares the combination of variables across several datasets. The variables var<sub>1</sub> .. var<sub>n</sub> is considere a "key" and each unique combination of this key is counted across all the specified datasets.<br/>
-       The output is a report with a condensed table of the found keys and a complete table with the found unique key values and the count of these in each dataset.
-       <ul>
-        <li><font class="option">!fn := &lt;global string vector&gt;</font> This option accepts a global vector with the filenames that is included in the report</li>
-        <li><font class="option">!ds := &lt;global string vector&gt;</font> This option accepts a global vector with the dataset name that is included in the report</li>
-        <li><font class="option">!nol</font> Only show the condensed report - do not show the list of observations</li>
-       </ul>
-       Examples:<font class="cmd">
-        
-// Setup the input for the report:
-new global filenames[5] string;
-filenames[1] := "count_file_1.epx";
-filenames[2] := "count_file_2.rec";
-filenames[3] := "count_file_3.dta";
-filenames[4] := "count_file_4.csv";
-filenames[5] := .;
-// NOTE: the filename are not required to be the same format, only the variable names MUST be the same
-//       if an entry in the vector is sys.missing, the command assumes the dataset is in the currently opened project.
-
-// The number of entries in the dataset variable MUST be the same as the filenames
-new global datasets[5] string;
-datasets[1] := "ds1";
-datasets[2] := "ds1";
-datasets[3] := "ds1";
-datasets[4] := "ds1";
-datasets[5] := "ds1";
-
-// Run the report:
-report cby id !fn := filenames !ds := datasets</font> 
-      </td>
-     </tr>
-     
-     <!--
-      ######################################################3
-      Disk commands
-      ######################################################3
-     -->
-     <tr>
-        <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="diskgrp" id="diskgrp"></a> Disk commands</td>
-      </tr>
-      <tr valign="top">
-        <td>
-         <a name="cd"/>cd
-        </td>
-        <td>
-         <font class="cmd">cd ["&lt;directory path&gt;"]</font><br/>
-         <p>Change the working directory (folder) to the specified path.<br/>
-         If no path is given a dialog is shown to select the working directory.</p>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-         <a name="dir" id="dir"/><a name="ls"/>ls<br/>
-         dir
-        </td>
-        <td>
-          <font class="cmd">ls ["&lt;directory path&gt;"]</font>
-         <p>
-          list files in a directory<br/>
-           - <i>directory name</i> may include wild cards (* or ?)<br/>
-           If no path is given a dialog is shown to select the working directory</p>
-        </td>
-      </tr>
-     <tr valign="top">
-        <td>
-         <a name="erase" id="erase"/>erase
-        </td>
-        <td>
-          <font class="cmd">erase "&lt;file name&gt;"</font>
-         <p>
-          Delete the file from disk. <br/>
-           - <i>directory name</i> use of wild cards is restrictive due to operating systems (* or ?)<br/>
-           If no path is given current working directory is used.<br/><br/>
-           <font class="limit">Warning: </font>The file is deleted (if the file exist) with no confirmatory question</p>
-        </td>
-      </tr>
-
-     <tr>
-      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="comment" id="comment"></a><a name="programgrp" id="programgrp"></a> Programming aids - not normally used in interactive mode</td>
-     </tr>
-      <tr valign="top">
-        <td>
-         <a name="runtest" id="runtest">runtest</a>
-        </td>
-        <td>
-          <font class="cmd">runtest ["&lt;directory path&gt;"]</font><br/>
-         <p>
-          Run all pgm's in a given directory (folder) to verify function.<br/>
-           - suited for testing of correct estimation etc.<br/>
-           If no path is given, a dialog is shown to select the working directory.
-         </p>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-          <a name="run">run</a>
-        </td>
-        <td>
-          <font class="cmd">run ["&lt;filename.pgm&gt;"]</font><br/>
-          <p>Execute sequence of commands saved in a pgm file<br/>
-          - without parameters, the open file dialogue is started</p>
-       </td>
-      </tr>
-      <tr>
-      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="options" id="options"></a>Common options </td>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="options" id="options"></a>Labeling and formatting data</td>
      </tr>
      <tr valign="top">
       <td>
@@ -2019,6 +2003,12 @@ report cby id !fn := filenames !ds := datasets</font>
        </ul>
       </td>
      </tr>
+
+     <!--
+      ######################################################3
+      Variable types 
+      ######################################################3
+     -->
      <tr>
       <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="types" id="types"></a>Variable types</td>
      </tr>
@@ -2200,43 +2190,85 @@ for i:= 2 to 5 do
 </font> 
         </td>
       </tr>
-      <!--<tr valign="top">
-        <td>
-          <i>Referenced Indexed Variable</i><br/>
-          @variable<sub>1</sub>[&lt;integer expression&gt;]
-        </td>
-        <td>
-	 <p>With a referenced indexed variable, you use the content of another vector (global vector, regular variable, result vector) as a variable.</p>
-           <p>E.g. when reading a file, a number of result variable are provided ($dataset, $variable, ...) which contains the names of the datasets, variables and so forth.<br/>
-           These can then be used with the reference operator "@" to use the variables without prior knowledge of the variable names of the file.</p>
-          
-Example:<font class="cmd">
-// This example reads the provided example file "Clinical Example"
-// and for each dataset/dataform it prints:
-//  1: The name of the dataform
-//  2: The number of variables in the dataform
-//  3: A list of the variables and their datatypes
-
-read "Clinical Example.epx";            
             
-new global i integer;
-new global j integer;
-
-for i := 1 to size($dataset) do
-begin
-  use @$dataset[i];
-  ? "List of varibles for: " + $dataset[i];
-  ? "Number of variables: " + size($variable);
-
-  for j := 1 to size($variable) do
-  begin
-    ? $variable[j] + ": (" + datatype( @$variable[j] ) + ")";
-  end;
-end;
-          </font>
-        </td>
-      </tr>-->
-      
+     <!--
+      ######################################################3
+      Programming aids - not normally used in interactive mode
+      ######################################################3
+     -->
+     <tr>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="comment" id="comment"></a><a name="programgrp" id="programgrp"></a> Programming aids - not normally used in interactive mode</td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="runtest" id="runtest">runtest</a>
+      </td>
+      <td>
+       <font class="cmd">runtest ["&lt;directory path&gt;"]</font><br/>
+       <p>
+        Run all pgm's in a given directory (folder) to verify function.<br/>
+        - suited for testing of correct estimation etc.<br/>
+        If no path is given, a dialog is shown to select the working directory.
+       </p>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="run">run</a>
+      </td>
+      <td>
+       <font class="cmd">run ["&lt;filename.pgm&gt;"]</font><br/>
+       <p>Execute sequence of commands saved in a pgm file<br/>
+        - without parameters, the open file dialogue is started</p>
+      </td>
+     </tr>
+     
+     <!--
+      ######################################################3
+      Clean up - stop
+      ######################################################3
+     -->
+     <tr>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="stopgrp" id="stopgrp"></a> Clean up - clear screen and history</td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="close" id="close"></a>close
+      </td>
+      <td>
+       <font class="cmd">close</font><br/>
+       Stop using a project<br/>
+       - all unsaved variables and changes to existing variables and labels will be lost<br/>
+       - global variables will remain in memory<br/>
+      </td>       
+     </tr>
+     <tr valign="top">
+      <td><a name="cls" id="cls"></a>cls</td>
+      <td><font class="cmd">cls</font><br/>
+       Clear the output screen<br/>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td><a name="clh" id="clh"></a>clh</td>
+      <td><font class="cmd">clh</font><br/>
+       Clear the history of commands<br/>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td><a name="reset" id="reset"></a>reset</td>
+      <td><font class="cmd">reset</font><br/>
+       <p>Complete reset of all parameters of the program!<br/>
+        This is almost equivalent of doing:</p>
+       <font class="cmd">close;
+        drop global !all;
+        cls;
+        clh;
+       </font>
+       <br/>But this also clears all result variables!
+      </td>
+     </tr>
+     
+     
     </tbody>
   </table>
  
