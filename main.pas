@@ -1091,7 +1091,7 @@ begin
     Exit;
   end;
 
-  FOutputCreator.DoCommand('.' + StringsReplace(S, ['{','}'], ['{{','}}'], [rfReplaceAll]));
+  FOutputCreator.DoCommand('.' + OutputCreatorNormalizeText(S));
 
   result := DoParseContent(S);
   FOutputCreator.DoNormal('');
@@ -1121,7 +1121,10 @@ begin
   if (ObjectType <> otRelation) then
     Exit;
 
-  FCmdEdit.Text := FCmdEdit.Text + ' ' + TEpiMasterRelation(AObject).Datafile.Name;
+  InterfaceRunCommand('use ' + TEpiMasterRelation(AObject).Datafile.Name + ';');
+  DelayCmdEditFocus(0);
+
+//  FCmdEdit.Text := FCmdEdit.Text + ' ' + TEpiMasterRelation(AObject).Datafile.Name;
 end;
 
 function TMainForm.DoParseContent(const S: UTF8String): boolean;
@@ -1193,7 +1196,8 @@ begin
     FOutputCreator.DoError(Format('Line %d: Syntax error at pos %d  (%s: Reserved word)', [ErrorToken.LineNum, ErrorToken.CaretNum, ErrorToken.DataVar]))
   else
     begin
-      FOutputCreator.DoError(Format('Line %d: Syntax error at pos %d  (%s)', [ErrorToken.LineNum, ErrorToken.CaretNum, ErrorToken.DataVar]));
+      T := OutputCreatorNormalizeText(ErrorToken.DataVar);
+      FOutputCreator.DoError(Format('Line %d: Syntax error at pos %d  (%s)', [ErrorToken.LineNum, ErrorToken.CaretNum, T]));
 
       if (ErrorToken.ParentSymbol.Kind = SymbolTypeEnd) then
         begin
@@ -1209,7 +1213,7 @@ begin
             for i := 1 to TokenTable.Count - 1 do
               T := T + ', ' + '"' + TokenTable[i].Name + '"';
 
-            FOutputCreator.DoInfoAll('Expected tokens: ' + StringsReplace(T, ['{','}'], ['{{','}}'], [rfReplaceAll]));
+            FOutputCreator.DoInfoAll('Expected tokens: ' + OutputCreatorNormalizeText(T));
           end;
     end;
 

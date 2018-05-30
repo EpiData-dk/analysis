@@ -1019,6 +1019,8 @@ type
   end;
 
 
+  TOptionListEnumerator = class;
+
   { TOptionList }
 
   TOptionList = class(TAbstractSyntaxTreeBase)
@@ -1037,9 +1039,27 @@ type
     procedure   Remove(Option: TOption);
     function    HasOption(Const Ident: UTF8String; out AOption: TOption): boolean; overload;
     function    HasOption(Const Ident: UTF8String): boolean; overload;
+    function    GetEnumerator: TOptionListEnumerator;
     property    Options[Const Index: Integer]: TOption read GetOptions; default;
     property    Option[Const Ident: UTF8String]: TOption read GetOption;
     property    Count: Integer read GetCount;
+  end;
+
+  { TOptionListEnumerator }
+
+  TOptionListEnumerator = class
+  private
+    FCurrentIndex: Integer;
+    FOptionList: TOptionList;
+    FListCount: Integer;
+    procedure RaiseCountError;
+    procedure CheckListCount;
+  protected
+    function GetCurrent: TOption;
+  public
+    constructor Create(OptionList: TOptionList);
+    function MoveNext: Boolean;
+    property Current: TOption read GetCurrent;
   end;
 
   { TCustomCommand }
@@ -1117,6 +1137,17 @@ type
     class function CreateCustomVariableCommand(AVariableList: TVariableList;
       AOptionList: TOptionList; ST: TASTStatementType): TCustomVariableCommand;
     property VariableList: TVariableList read GetVariableList;
+  end;
+
+  { TTablesCommand }
+
+  TTablesCommand = class(TCustomVariableCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
   { TMeansCommand }
@@ -1425,6 +1456,108 @@ uses
   epi_script_function_observations,
   math, variants, LazUTF8, LazFileUtils;
 
+{ TOptionListEnumerator }
+
+procedure TOptionListEnumerator.RaiseCountError;
+begin
+  raise Exception.CreateFmt(
+      'Enumeration error!' + LineEnding +
+      'Expected %d items in list, but MoveNext found %d!' + LineEnding +
+      'Deleting/Inserting items during iteration is NOT supported!',
+      [FListCount, FOptionList.Count]
+    );
+end;
+
+procedure TOptionListEnumerator.CheckListCount;
+begin
+  if FOptionList.Count <> FListCount then
+    RaiseCountError;
+end;
+
+function TOptionListEnumerator.GetCurrent: TOption;
+begin
+  result := FOptionList[FCurrentIndex];
+end;
+
+constructor TOptionListEnumerator.Create(OptionList: TOptionList);
+begin
+  FOptionList := OptionList;
+  FCurrentIndex := -1;
+  FListCount := OptionList.Count;
+end;
+
+function TOptionListEnumerator.MoveNext: Boolean;
+begin
+  CheckListCount;
+  Inc(FCurrentIndex);
+  Result := (FCurrentIndex < FOptionList.Count);
+end;
+
+{ TTablesCommand }
+
+function TTablesCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  AddDecimalOptions(Result);
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+
+  Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('w',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('m', [rtUndefined]);
+  Result.Insert('cs', AllResultDataTypes);
+
+  // Output silencing options
+  Result.Insert('q',  [rtUndefined]);
+  Result.Insert('nc', [rtUndefined]);
+  Result.Insert('nb', [rtUndefined]);
+  Result.Insert('ns', [rtUndefined]);
+
+  // Percents options
+  Result.Insert('pr', [rtUndefined]);
+  Result.Insert('pc', [rtUndefined]);
+  Result.Insert('pt', [rtUndefined]);
+
+  // Sorting options
+  Result.Insert('sa',  [rtUndefined]);
+  Result.Insert('sd',  [rtUndefined]);
+  Result.Insert('sla', [rtUndefined]);
+  Result.Insert('sld', [rtUndefined]);
+
+  Result.Insert('sra', [rtInteger]);
+  Result.Insert('srd', [rtInteger]);
+  Result.Insert('sca', [rtInteger]);
+  Result.Insert('scd', [rtInteger]);
+
+  Result.Insert('srta', [rtUndefined]);
+  Result.Insert('srtd', [rtUndefined]);
+  Result.Insert('scta', [rtUndefined]);
+  Result.Insert('sctd', [rtUndefined]);
+
+  // Statistics
+  Result.Insert('debug', [rtUndefined]);  // Special debug option for statistics
+  Result.Insert('t',     [rtUndefined]);  // Chi2
+end;
+
+function TTablesCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  result := inherited GetAcceptedVariableCount;
+  result[0] := 2;
+end;
+
+function TTablesCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+//  result.ResultTypes := [rtFloat, rtInteger];
+end;
+
+constructor TTablesCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stTables);
+end;
+
 { TAggregateCommand }
 
 function TAggregateCommand.GetExecFlags: TCustomStatementExecutionFlags;
@@ -1455,9 +1588,10 @@ begin
   Result.Insert('nt',      [rtUndefined]);
   Result.Insert('replace', [rtUndefined]);
   Result.Insert('caption', AllResultDataTypes);
-  Result.Insert('headers', [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
-  Result.Insert('keep',    [rtObject],               [evtDataset],      [evfInternal, evfExternal, evfAsObject]);
+  Result.Insert('h',       [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
+  Result.Insert('ds',      [rtObject],               [evtDataset],      [evfInternal, evfExternal, evfAsObject]);
   Result.Insert('u',       [rtUndefined]);
+  Result.Insert('full',    [rtUndefined]);
 
   AddDecimalOptions(Result);
   AddVariableLabelOptions(Result);
@@ -2092,16 +2226,21 @@ var
   E: TExpr;
 begin
   Result := inherited TypeCheck(TypeChecker, TypesAndFlags);
-//  and ExprList.TypeCheck(TypeChecker, options_hashmap.TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData));
 
-  FResultSubType := ExprList[0].ResultType;
+  FResultSubType := rtUndefined;
+
   for i := 0 to ExprList.Count - 1 do
     begin
       E := ExprList[i];
-
       Result := E.TypeCheck(TypeChecker, options_hashmap.TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData)) and result;
 
-      if (ExprList[i].ResultType <> FResultSubType) then
+      if (FResultSubType = rtUndefined) then
+        begin
+          FResultSubType := E.ResultType;
+          Continue;
+        end;
+
+      if (E.ResultType <> FResultSubType) then
         begin
           DoTypeCheckError(
             'Ambigious array items (no: %d)' + LineEnding +
@@ -3420,6 +3559,7 @@ begin
     stMerge:     Result := TMergeCommand.Create(AVariableList, AOptionList);
     stReorder:   Result := TReorderCommand.Create(AVariableList, AOptionList);
     stAggregate: Result := TAggregateCommand.Create(AVariableList, AOptionList);
+    stTables:    Result := TTablesCommand.Create(AVariableList, AOptionList);
   else
     DoError();
   end;
@@ -3893,11 +4033,17 @@ begin
   result := HasOption(Ident, Dummy);
 end;
 
+function TOptionList.GetEnumerator: TOptionListEnumerator;
+begin
+  result := TOptionListEnumerator.Create(Self);
+end;
+
 { TOption }
 
 function TOption.GetIdent: UTF8String;
 begin
-  result := FVariable.Ident;
+//  result := FVariable.Ident;
+  result := UTF8LowerString(FVariable.Ident);
 end;
 
 constructor TOption.Create(AVariable: TCustomVariable; AExpr: TExpr);
@@ -5323,45 +5469,69 @@ var
   VarT: TASTResultType;
   ExpT: TASTResultType;
   EFlags: TTypesAndFlagsRec;
+  EV: TCustomExecutorVariable;
 begin
-  Result := FVariable.TypeCheck(
-              Parser,
-              TypesAndFlags(
-                AllResultDataTypes,
-                [evtField, evtGlobal, evtGlobalVector],
-                [evfInternal, evfAsValue, evfAsObject]
-              )
-            );
+  // Since assignment vary greatly, we need to make diffent check for combination.
+  // eg. evtField may be AsValue and AsObject.
+  // but evtGlobalVector can only be AsValue. Otherwise assignment fails.
+  Parser.SetTypeCheckErrorOutput(false);
 
+  // Check field
+  EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject]);
+  Result := FVariable.TypeCheck(Parser, EFlags);
+
+  // Check globals
+  EFlags := TypesAndFlags(AllResultDataTypes, [evtGlobal, evtGlobalVector], [evfInternal, evfAsValue]);
+  Result := result or FVariable.TypeCheck(Parser, EFlags);
+
+  Parser.SetTypeCheckErrorOutput(true);
+
+  EV := Parser.GetExecVariable(FVAriable.Ident);
+
+  // Just make sure we output the error.
   if (not Result) then
-    Exit;
+    begin
+      if (EV.VarType = evtField) then
+        begin
+          EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject]);
+          Result := FVariable.TypeCheck(Parser, EFlags);
+          Exit;
+        end
+      else
+        begin
+          EFlags := TypesAndFlags(AllResultDataTypes, [evtGlobal, evtGlobalVector], [evfInternal, evfAsValue]);
+          Result := FVariable.TypeCheck(Parser, EFlags);
+          Exit;
+        end;
+    end;
+
 
   EFlags := TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData);
-  if Parser.GetVariableExecType(FVAriable.Ident) = evtField then
+  if (EV.VarType = evtField) then
     Include(EFlags.Flags, evfAsObject);
 
   if (not FExpr.TypeCheck(Parser, EFlags)) then
-  begin
-    result := false;
-    Exit;
-  end;
+    begin
+      result := false;
+      Exit;
+    end;
 
   if Result then
-  begin
-    VarT := FVAriable.ResultType;
-    ExpT := FExpr.ResultType;
-    Result := (Ord(VarT) >= Ord(ExpT)) or
-              ((VarT in [rtInteger, rtDate]) and (ExpT in [rtInteger, rtDate])) or
-              ((VarT in [rtFloat,   rtTime]) and (ExpT in [rtFloat,   rtTime]));
+    begin
+      VarT := FVAriable.ResultType;
+      ExpT := FExpr.ResultType;
+      Result := (Ord(VarT) >= Ord(ExpT)) or
+                ((VarT in [rtInteger, rtDate]) and (ExpT in [rtInteger, rtDate])) or
+                ((VarT in [rtFloat,   rtTime]) and (ExpT in [rtFloat,   rtTime]));
 
-    if not result then
-      DoTypeCheckError(
-        'Incompatible types: ' + LineEnding +
-        'Variable ' + FVAriable.FIdent + ' expect result to be of type ' +  ASTResultTypeString[VarT] + LineEnding +
-        'but expression is of type ' + ASTResultTypeString[ExpT],
-        Parser
-      );
-  end;
+      if not result then
+        DoTypeCheckError(
+          'Incompatible types: ' + LineEnding +
+          'Variable ' + FVAriable.FIdent + ' expect result to be of type ' +  ASTResultTypeString[VarT] + LineEnding +
+          'but expression is of type ' + ASTResultTypeString[ExpT],
+          Parser
+        );
+    end;
 end;
 
 { TIfThen }
@@ -6443,6 +6613,7 @@ begin
     'sav': Result := stSave;
     'set': Result := stSet;
     'sor': Result := stSort;
+    'tab': Result := stTables;
     'use': Result := stUse;
   else
     DoError();

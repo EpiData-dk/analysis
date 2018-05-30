@@ -1181,7 +1181,7 @@ begin
   Statement.AddCustomData(EDITOR_COMMAND_OUTPUT, TObject(1));
 
   Idx := FOldLineNo + Statement.LineNo - 1;
-  FOutputCreator.DoCommand('.' + StringsReplace(FHistory.Lines[Idx], ['{','}'], ['{{','}}'], [rfReplaceAll]));
+  FOutputCreator.DoCommand('.' + OutputCreatorNormalizeText(FHistory.Lines[Idx]));
 end;
 
 procedure TEditorForm.StartSearch(const SearchText: UTF8String; Dlg: TFindDialog

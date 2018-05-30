@@ -1,8 +1,9 @@
 object MainForm: TMainForm
-  Left = 2015
-  Height = 30
-  Top = 271
-  Width = 1036
+  Left = 382
+  Height = 682
+  Top = 238
+  Width = 1159
+  ActiveControl = Panel2
   AllowDropFiles = True
   Caption = 'AMainForm'
   Menu = MainMenu1

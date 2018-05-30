@@ -14,9 +14,9 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="1"/>
+      <MinorVersionNr Value="2"/>
       <Attributes pvaSpecialBuild="True"/>
-      <StringTable ProductVersion="0.6.4.0" SpecialBuild="DOCKING FORMS"/>
+      <StringTable SpecialBuild="DOCKING FORMS"/>
     </VersionInfo>
     <BuildModes Count="6">
       <Item1 Name="Default" Default="True"/>
@@ -171,6 +171,11 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
+      <environment>
+        <UserOverrides Count="1">
+          <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
+        </UserOverrides>
+      </environment>
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
@@ -225,7 +230,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="76">
+    <Units Count="80">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -541,32 +546,49 @@
         <IsPartOfProject Value="True"/>
       </Unit71>
       <Unit72>
+        <Filename Value="statistics/tables.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit72>
+      <Unit73>
+        <Filename Value="statistics/tables_types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit73>
+      <Unit74>
+        <Filename Value="executor/options_table.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit74>
+      <Unit75>
+        <Filename Value="statistics/tables_stat_chi2.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit75>
+      <Unit76>
         <Filename Value="docking_forms/projecttree.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="ProjectTreeForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit72>
-      <Unit73>
+      </Unit76>
+      <Unit77>
         <Filename Value="docking_forms/varnames.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="VarnamesForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit73>
-      <Unit74>
+      </Unit77>
+      <Unit78>
         <Filename Value="docking_forms/history_form.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="HistoryForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit74>
-      <Unit75>
+      </Unit78>
+      <Unit79>
         <Filename Value="docking_forms/outputviewer_form.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="OutputViewerForm"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit75>
+      </Unit79>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -600,11 +622,12 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dEPI_CHROMIUM_HTML1"/>
+      <CustomOptions Value="-dEPI_CHROMIUM_HTML1
+-dEPI_BETA"/>
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="11">
+    <Exceptions Count="12">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -639,6 +662,9 @@
       <Item11>
         <Name Value="EAggrFunc"/>
       </Item11>
+      <Item12>
+        <Name Value="ETwoWaySortException"/>
+      </Item12>
     </Exceptions>
   </Debugging>
 </CONFIG>

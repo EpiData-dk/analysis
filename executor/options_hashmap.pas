@@ -23,6 +23,7 @@ type
     FLegalValues: TStrings;
     procedure SetASTType(AValue: TASTResultType);
   protected
+    procedure DoError(Const Msg: String); virtual;
     procedure SetValue(AValue: UTF8String); virtual;
   private
     FLowRange: UTF8String;
@@ -271,6 +272,11 @@ begin
   FASTType := AValue;
 end;
 
+procedure TSetOption.DoError(const Msg: String);
+begin
+  raise ESetOption.Create(Msg);
+end;
+
 procedure TSetOption.DoErrorLegals(const AValue: UTF8String);
 var
   S, T: String;
@@ -284,7 +290,7 @@ begin
   T := 'Not a legal Set Option: ' + AValue + LineEnding +
        'Possible values are: ' + T;
 
-  raise ESetOption.Create(T);
+  DoError(T);
 end;
 
 procedure TSetOption.DoErrorType(const AValue: UTF8String);
@@ -294,7 +300,7 @@ begin
   T := '"' + AValue + '" is not the correct type!' + LineEnding +
        'Expected type: "' + ASTResultTypeString[ASTType];
 
-  raise ESetOption.Create(T);
+  DoError(T);
 end;
 
 procedure TSetOption.DoErrorRange(const AValue: UTF8String);
@@ -304,7 +310,7 @@ begin
   T := '"' + AValue + '" is not within correct range!' + LineEnding +
        'Values must be within: ' + LowRange + ' - ' + HighRange;
 
-  raise ESetOption.Create(T);
+  DoError(T);
 end;
 
 procedure TSetOption.SetHighRange(AValue: UTF8String);

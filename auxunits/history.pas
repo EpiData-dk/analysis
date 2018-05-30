@@ -76,7 +76,6 @@ begin
   if (not Enabled) then exit;
 
   Idx := Statement.LineNo - 1;
-
   Case Statement.ExecResult of
     csrSuccess:
       begin
@@ -108,12 +107,16 @@ begin
             FCurrentIdx := FStrings.Count - 1;
             Exit;
           end;
-
-        FStrings.Objects[Idx] := TObject(1);
+ // Jamie: the FStrings statement may fail with out of bounds Idx when
+ //        running a pgm statement that completes with csrFailed.
+ //        Same below with csrCustom
+        if (not FExecutor.Executing) then
+            FStrings.Objects[Idx] := TObject(1);
       end;
 
     csrCustom:
-      FStrings.Objects[Idx] := TObject(2);
+      if (not FExecutor.Executing) then
+        FStrings.Objects[Idx] := TObject(2);
   end;
 end;
 

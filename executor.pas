@@ -93,7 +93,7 @@ type
     FDropDeleted: Boolean;
     FPrepareDFOptions: TPrepareDatasetOptions;
     function GetDataFile: TEpiDataFile;
-    function PrepareDatafilePack(Sender: TEpiDataFile; Index: Integer): boolean;
+    function PrepareDatafilePack(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
   protected
     function DoPrepareDatafile(SelectField: TStrings; MissingFields: TStrings; Options: TPrepareDatasetOptions = []): TEpiDataFile; virtual;
 
@@ -137,7 +137,7 @@ type
       Cols, Rows: Integer): TExecVarMatrix; virtual;
     function  GetExecVariable(Const Ident: UTF8String): TCustomExecutorVariable;
     function  GetExecDataVariable(Const Ident: UTF8String): TCustomExecutorDataVariable;
-    procedure ClearResults;
+    procedure ClearResults(const Prefix: UTF8String = '');
     property  Valuelabels: TExecutorValuelabelsets read FVLSets;
     property  Datasets: TExecutorDatasetVariables read FDataSets;
     property  SortedFields: TEpiFields read GetSortedFields;
@@ -213,6 +213,7 @@ type
     procedure ExecReport(ST: TCustomReportCommand); virtual;
     procedure ExecReorder(ST: TReorderCommand); virtual;
     procedure ExecAggregate(ST: TAggregateCommand); virtual;
+    procedure ExecTables(ST: TTablesCommand); virtual;
 
     // String commands
     procedure ExecRead(ST: TCustomStringCommand); virtual;
@@ -314,15 +315,17 @@ uses
   Controls, runtest, Forms, parser, LazUTF8Classes, math,
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
-  RegExpr, ana_globals, browse4, strutils, options_fontoptions, options_filesoptions,
-  ana_documentfile, FileUtil,
+  RegExpr, ana_globals, browse4, strutils, ana_documentfile, FileUtil,
+
+  // Set options
+  options_fontoptions, options_filesoptions, options_table,
 
   // STATEMENTS
   list, edit, drop, systemcmd, merge, integrity_tests, report, save_output,
   aggregate,
 
   // STATISTICS
-  means, freq;
+  means, freq, tables;
 
 type
   EExecutorException = class(Exception);
@@ -708,8 +711,8 @@ begin
     end;
 end;
 
-function TExecutor.PrepareDatafilePack(Sender: TEpiDataFile; Index: Integer
-  ): boolean;
+function TExecutor.PrepareDatafilePack(Sender: TEpiDataFile; Index: Integer;
+  Data: Pointer): boolean;
 var
   F: TEpiField;
   S: String;
@@ -842,10 +845,12 @@ begin
     result := FResults.Data[Idx];
 end;
 
-procedure TExecutor.ClearResults;
+procedure TExecutor.ClearResults(const Prefix: UTF8String);
 var
   V: TCustomExecutorVariable;
   i: LongInt;
+  ILen, PLen: PtrInt;
+  S: String;
 begin
   for i := FResults.Count - 1 downto 0 do
     begin
@@ -853,6 +858,17 @@ begin
 
       if (V.InheritsFrom(TExecVarSystem)) then
         Continue;
+
+      if (Prefix <> '') then
+        begin
+          PLen := UTF8Length(Prefix);
+
+          S := UTF8LeftStr(V.Ident, PLen);
+          ILen := UTF8Length(S);
+
+          if (UTF8CompareStr(@S[1], ILen, @Prefix[1], PLen) <> 0) then
+            Continue;
+        end;
 
       V.Free;
       FResults.Delete(i);
@@ -1839,6 +1855,12 @@ begin
                       {$ENDIF},
                       rtString));
 
+  // TABLES:
+  FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_COL,   TTablePercentFormatOption.Create('{}', rtString));
+  FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_ROW,   TTablePercentFormatOption.Create('()', rtString));
+  FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_TOTAL, TTablePercentFormatOption.Create('[]', rtString));
+  FOptions.Insert(ANA_SO_TABLE_PERCENT_HEADER,       TSetOption.Create('%', rtString));
+
   FOptions.Insert(ANA_SO_WEB_URL, TSetOption.Create('http://epidata.dk/documentation.php', rtString));
 end;
 
@@ -2232,7 +2254,7 @@ var
   FN: UTF8String;
   P: TParser;
   TheProgram: TStatementList;
-  OldCurrentDir: String;
+  OldCurrentDir, RunCurrentDir: String;
 begin
   FN := '';
 
@@ -2265,8 +2287,10 @@ begin
     begin
       OldCurrentDir := GetCurrentDirUTF8;
       SetCurrentDirUTF8(ExtractFilePath(FN));
+      RunCurrentDir := GetCurrentDirUTF8;
       Execute(TheProgram);
-      SetCurrentDirUTF8(OldCurrentDir);
+      if (RunCurrentDir = GetCurrentDirUTF8) then
+        SetCurrentDirUTF8(OldCurrentDir); // restore original if directory not changed by the program
     end;
 
     P.Free;
@@ -2849,7 +2873,7 @@ end;
 procedure TExecutor.ExecEval(ST: TEvalExpression);
 begin
   ST.ExecResult := csrFailed;
-  DoInfo(StringsReplace(ST.Expr.AsString, ['{','}'], ['{{','}}'], [rfReplaceAll]), 0);
+  DoInfo(OutputCreatorNormalizeText(ST.Expr.AsString));
   ST.ExecResult := csrSuccess;
 end;
 
@@ -2939,7 +2963,7 @@ begin
 
         Tab.Cell[0, Idx].Text := Key;
         Tab.Cell[1, Idx].Text := ASTResultTypeString[Data.ASTType];
-        Tab.Cell[2, Idx].Text := Data.Value;
+        Tab.Cell[2, Idx].Text := OutputCreatorNormalizeText(Data.Value);
         Inc(Idx);
       until (not Iter.Next);
 
@@ -3170,6 +3194,10 @@ var
   DF: TEpiDataFile;
   opt: TOption;
 begin
+  // Jamie: Why?? will only fail on conditions belowW
+  // Torsten: It is good practice to set the initial value to failed, such that only
+  //          when all things have executed correctly, the result is set to succeed.
+  //          In this case M.ExecMean - did not correctly set the ExecResult to csrSuccess.
   ST.ExecResult := csrFailed;
   L := ST.VariableList.GetIdentsAsList;
 
@@ -3191,7 +3219,6 @@ begin
     if DF.Size = 0 then
       begin
         DoError('No data!');
-        ST.ExecResult := csrFailed;
         Exit;
       end;
 
@@ -3501,7 +3528,7 @@ var
   Opt: TOption;
   EV: TCustomExecutorVariable;
   S: UTF8String;
-  ResultDF: TAggregateDatafile;
+  ResultDF: TEpiDataFile;
   UseCmd: TUse;
 begin
   // Sanity checks
@@ -3509,7 +3536,7 @@ begin
 
   if (ST.HasOption('u')) then
     begin
-      if (not ST.HasOption('keep')) then
+      if (not ST.HasOption('ds')) then
         begin
           Error('It is not possible to use the dataset if not kept in the project. Please use !keep := <name> to preserve the dataset!');
           ST.ExecResult := csrFailed;
@@ -3529,7 +3556,7 @@ begin
       Exit;
     end;
 
-  if (ST.HasOption('keep', Opt)) then
+  if (ST.HasOption('ds', Opt)) then
     begin
       S := Opt.Expr.AsIdent;
       EV := GetExecVariable(S);
@@ -3563,6 +3590,61 @@ begin
       UseCmd := TUse.Create(TVariable.Create(ResultDF.Name, Self), TOptionList.Create);
       DoStatement(UseCmd);
     end;
+end;
+
+procedure TExecutor.ExecTables(ST: TTablesCommand);
+var
+  Table: TTables;
+  DF: TEpiDataFile;
+  Opt: TOption;
+  S: UTF8String;
+  AllVarNames: TStrings;
+begin
+  AllVarNames := ST.VariableList.GetIdentsAsList;
+
+  // Get the by variables out too
+  for Opt in ST.Options do
+    begin
+      if (Opt.Ident <> 'by') then
+        Continue;
+
+      S := Opt.Expr.AsIdent;
+      if (AllVarNames.IndexOf(S) > -1) then
+        begin
+          Error('By variables cannot overlap table variables: ' + S);
+          ST.ExecResult := csrFailed;
+          AllVarNames.Free;
+          Exit;
+        end;
+
+      AllVarNames.Add(Opt.Expr.AsIdent)
+    end;
+
+  // Weighted counts
+  if (ST.HasOption('w', Opt)) then
+    AllVarNames.Add(Opt.Expr.AsIdent);
+
+  if ST.HasOption('m') then
+    DF := PrepareDatafile(AllVarNames, nil)
+  else
+    DF := PrepareDatafile(AllVarNames, AllVarNames);
+
+  try
+    if (DF.Size = 0) then
+      begin
+        DoError('No data!');
+        ST.ExecResult := csrFailed;
+        Exit;
+      end;
+
+    Table := TTables.Create(Self, FOutputCreator);
+    Table.ExecTables(DF, ST);
+    Table.Free;
+
+  finally
+    AllVarNames.Free;
+    DF.Free;
+  end;
 end;
 
 procedure TExecutor.ExecUse(ST: TUse);
@@ -3706,6 +3788,9 @@ begin
         stAppend:
           ExecAppend(TAppendCommand(ST));
 
+        stTables:
+          ExecTables(TTablesCommand(ST));
+
         stMerge:
           ExecMerge(TMergeCommand(ST));
 
@@ -3776,7 +3861,6 @@ var
   i: Integer;
 begin
   I := 0;
-
   while (I < L.Count) and
         (not Cancelled)
   do

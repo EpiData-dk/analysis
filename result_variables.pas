@@ -951,8 +951,8 @@ begin
   inherited Create(AIdent, ADataType);
 
   FFields := TEpiFields.Create(nil);
-  for i := 0 to Cols -1 do
-    FFields.NewField(DataType).Size := Rows;
+  for i := 0 to ACols -1 do
+    FFields.NewField(DataType).Size := ARows;
 end;
 end.
 

@@ -79,7 +79,7 @@ type
     stSet,
 
   // Variable Commands
-    stTab,
+    stTables,
     stBrowse,
     stList,
     stEdit,
