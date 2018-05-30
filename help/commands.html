@@ -44,24 +44,24 @@
       <tr valign="top">
         <td>
           <ul>
-           <li><a href="#readgrp">Reading &amp; Saving Data</a></li>
+           <li><a href="#readgrp">Read &amp; Save Data</a></li>
            <li><a href="#mergegrp">Append, Merge &amp; Aggregate</a></li>
-           <li><a href="#usegrp">Using Datasets &amp; Sort</a></li>
+           <li><a href="#usegrp">Use Datasets &amp; Sort Data</a></li>
           </ul>
         </td>
         <td>
          <ul>
       	   <li><a href="#creategrp">Create new content</a></li>
-          <li><a href="#listgrp">List contest</a></li>
-          <li><a href="#editgrp">Modify content </a></li>
+          <li><a href="#listgrp">List content</a></li>
+          <li><a href="#editgrp">Modify content</a></li>
           <li><a href="#deletegrp">Delete content</a></li>
          </ul>
         </td>
         <td>
          <ul>
           <li><a href="#selectgrp">Select observations</a></li>
-          <li><a href="#flowgrp">Changing Flow</a></li>
-          <li><a href="#reordergrp">Reordering and ?</a></li>
+          <li><a href="#flowgrp">Change Flow (if-then)</a></li>
+          <li><a href="#reordergrp">Reorder and display info (?)</a></li>
           <li><a href="#changedata">Change variable content</a></li>
          </ul>
         </td>
@@ -75,7 +75,7 @@
       </td>
       <td>
        <ul>
-        <li><a href="#checkgrp"> Consistency Checks</a></li>
+        <li><a href="#checkgrp"> Consistency and Validity Checks</a></li>
         <li><a href="#reportsgrp">Reports</a></li>
        </ul>
       </td>
@@ -89,9 +89,9 @@
      <tr>
        <td>
         <ul>
-         <li><a href="#options">Labeling and formatting data</a></li>
-         <li><a href="#types">Types of variables</a></li>
-         <li><a href="#referencedvars">Using Variables and references</a></li>
+         <li><a href="#options">Labels, Values and format in output</a></li>
+         <li><a href="#types">Types of Variables</a></li>
+         <li><a href="#referencedvars">How to use Variables and References</a></li>
         </ul>
        </td>
        <td>
@@ -102,19 +102,19 @@
        </td>
         <td>
          <ul>
-          <li><a href="#functions">Functions</a></li>
+          <li><a href="#functions">Functions Available</a></li>
           <li><a href="#operators">Operators</a></li>
          </ul>
         </td>
       </tr>
      <tr>
       <td>
-       Commands available in EpiData Analysis Classic:<br/>
-       <a href="http://epidata.dk/download.php#ea">Download</a>
+       Commands only available in EpiData Analysis Classic:<br/>
+       <a href="http://epidata.dk/download.php#ea">Download Software</a>
       </td>
       <td>
        <ul>
-        <li>Descriptive analysis &amp; testing</li>
+        <li>Descriptive analysis &amp; further Statistical Tests</li>
         <li>Life table &amp; Kaplan Meier plot</li>
        </ul>
       </td>
@@ -151,7 +151,7 @@
         ######################################################3
      -->
       <tr>
-       <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="readgrp" id="readgrp"></a> Reading &amp; Saving Data</td>
+       <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="readgrp" id="readgrp"></a> Read &amp; Save Data</td>
       </tr>
       <tr valign="top">
         <td>
@@ -160,7 +160,7 @@
         <td>
           <font class="cmd">read [{"&lt;filename&gt;" | &lt;expression&gt;}.{rec|csv|epx|epz|dta}" ] [!options ...]</font><br/>
           Read a copy of the data file into memory. <font class="limit">Note: </font>name must be contained in " " and extension must be supplied.<br/>
-          If you use a case sensitive operating system (MAC or Linux) then case of name and extension is important.<br/>
+          If you use a case sensitive operating system (MAC or Linux) then case of filename and extension is important.<br/>
          <ul class="options">
            <li>
             <font class="option">&lt;filename&gt;</font>
@@ -1475,7 +1475,7 @@ drop data !del ; // drop all observations "marked for deletion"
       ######################################################3
      -->
      <tr>
-      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="checkgrp" id="checkgrp"></a> Data and Structural Consistency Checks</td>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="checkgrp" id="checkgrp"></a> Consistency and Validity Check of data</td>
      </tr>
      <tr valign="top">
       <td>
