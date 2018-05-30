@@ -1849,7 +1849,7 @@ begin
 
   FOptions.Insert(ANA_SO_TUTORIAL_FOLDER,
     TFolderOption.Create({$IFDEF DARWIN}
-                        ProgramDirectory + '../../../docs'
+                        ResolveDots(ProgramDirectory + '../../../docs')
                       {$ELSE}
                         ProgramDirectory + 'docs'
                       {$ENDIF},

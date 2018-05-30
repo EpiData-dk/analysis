@@ -465,7 +465,7 @@ begin
     {$IFDEF DARWIN}
   // One possible location of startup.pgm in folder with config files
   //  S := GetEnvironmentVariableUTF8('HOME')+'/.config/epidata/epidataanalysis/startup.pgm';
-    S := ProgramDirectory + '../../../startup.pgm';
+    S := ResolveDots(ProgramDirectory + '../../../startup.pgm');
     {$ELSE}
     S := ProgramDirectory + DirectorySeparator + 'startup.pgm';
     {$ENDIF}
@@ -1203,15 +1203,8 @@ begin
 
   // Find all .pdf files in the directory set by TutorialsDirUTF8
   FileList := TStringListUTF8.Create;
-(* suggested change for DARWIN
   {$IFDEF DARWIN}
   P := ResolveDots(ProgramDirectory + '../../../docs');
-  {$ELSE}
-  P := ProgramDirectory + DirectorySeparator + 'docs';
-  {$ENDIF}
-*)
-  {$IFDEF DARWIN}
-  P := ProgramDirectory + '../../../docs';
   {$ELSE}
   P := ProgramDirectory + DirectorySeparator + 'docs';
   {$ENDIF}
@@ -1449,15 +1442,8 @@ procedure TMainForm.OpenTutorialMenuItemClick(Sender: TObject);
 var
   P: String;
 begin
-(* suggested change for DARWIN
   {$IFDEF DARWIN}
   P := ResolveDots(ProgramDirectory + '../../../docs');
-  {$ELSE}
-  P := ProgramDirectory + DirectorySeparator + 'docs';
-  {$ENDIF}
-*)
-  {$IFDEF DARWIN}
-  P := ProgramDirectory + '../../../docs';
   {$ELSE}
   P := ProgramDirectory + DirectorySeparator + 'docs';
   {$ENDIF}
@@ -1820,11 +1806,11 @@ begin
   else
     S := '';
 
-{  {$IFDEF DARWIN}
+  {$IFDEF DARWIN}
   S := 'file://' + ResolveDots(ProgramDirectory + '../../../docs' + DirectorySeparator + 'commands.html' + S);
   {$ELSE}  }
   S := 'file://' + Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER] + DirectorySeparator + 'commands.html' + S;
-//  {$ENDIF}
+  {$ENDIF}
   OpenURL(S);
 end;
 
