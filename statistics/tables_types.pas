@@ -14,7 +14,8 @@ type
   TTwoWayTables = class;
 
   TTableStatistic  = (
-    tsChi2
+    tsChi2,
+    tsFExP
   );
   TTableStatistics = set of TTableStatistic;
 

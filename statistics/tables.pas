@@ -65,7 +65,7 @@ implementation
 uses
   aggregate, aggregate_types, epimiscutils, epidatafileutils, epifields_helper,
   options_utils, LazUTF8, ana_globals, epidatafilestypes, options_table, strutils,
-  tables_stat_chi2;
+  tables_stat_chi2, tables_stat_fexp;
 
 type
   PBoundArray = ^TBoundArray;
@@ -495,7 +495,10 @@ function TTables.GetStatisticOptions(ST: TTablesCommand): TTableStatistics;
 begin
   result := [];
 
-  if (ST.HasOption('t')) then Include(Result, tsChi2);
+  if (ST.HasOption('t')) then begin
+  Include(Result, tsChi2);
+  Include(Result, tsFExP);
+  end;
 end;
 
 procedure TTables.DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
