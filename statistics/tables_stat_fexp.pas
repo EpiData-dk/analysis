@@ -5,7 +5,7 @@ unit tables_stat_fexp;
 interface
 
 uses
-  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, statfunctions;
+  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, executor;
 
 type
 
@@ -18,32 +18,39 @@ type
   public
     procedure CalcTable(Table: TTwoWayTable); override;
     procedure AddToOutput(OutputTable: TOutputTable); override;
+    procedure CreateResultVariables(Executor: TExecutor; const NamePrefix: UTF8String); override;
   end;
 
   { TTwoWayStatisticsFExP }
 
   TTwoWayStatisticsFExP = class(TTwoWayStatistics)
   protected
+    function GetStatistics(const Index: Integer): TTwoWayStatisticFExP; override;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable); override;
+    property Statistics[Const Index: Integer]: TTwoWayStatisticFExP read GetStatistics;
   end;
 
 implementation
 
 uses
-  tables;
+  tables, epimiscutils;
 
-{ TTwoWayStatisticsFExP }
-
-function TTwoWayStatisticsFExP.GetTwoWayStatisticClass: TTwoWayStatisticClass;
+function FormatFExP(Val: EpiFloat; ShowP: Boolean): UTF8String;
+// this should probably be a standard function in table_types
+var
+  prefix: string = '';
 begin
-  result := TTwoWayStatisticFExP;
-end;
-
-procedure TTwoWayStatisticsFExP.AddToSummaryTable(OutputTable: TOutputTable);
-begin
-  OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + 'JUST TESTINGS!!!';
+  if (ShowP) then prefix := ' p';
+  if (Val < 0.0001) then
+    Result := prefix + ' < 0.0001'
+  else
+    if (Val < 0.001) then
+      Result := prefix + ' < 0.001'
+  else
+    if (ShowP) then prefix += ' =';
+    Result := prefix + Format('%.3f', [Val]) ;
 end;
 
 { TTwoWayStatisticFExP }
@@ -119,12 +126,51 @@ procedure TTwoWayStatisticFExP.AddToOutput(OutputTable: TOutputTable);
 var
   S: String;
 begin
-  S := 'Fisher Exact ';
-  if (FFExP < 0.001) then
-    S := S + 'p<0.001'
-  else
-    S := S + 'p=' + Format('%5.3f', [FFExP]);
+  S := 'Fisher Exact '+ FormatFExp(FFExP, true);
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
+end;
+
+procedure TTwoWayStatisticFExP.CreateResultVariables(Executor: TExecutor;
+  const NamePrefix: UTF8String);
+begin
+  inherited CreateResultVariables(Executor, NamePrefix);
+
+  Executor.AddResultConst(NamePrefix + 'fexp', ftFloat).AsFloatVector[0] := FFExP;
+end;
+
+function TTwoWayStatisticsFExP.GetStatistics(const Index: Integer
+  ): TTwoWayStatisticFExP;
+begin
+  result := TTwoWayStatisticFExP(inherited GetStatistics(Index));
+end;
+
+function TTwoWayStatisticsFExP.GetTwoWayStatisticClass: TTwoWayStatisticClass;
+begin
+  result := TTwoWayStatisticFExP;
+end;
+
+procedure TTwoWayStatisticsFExP.AddToSummaryTable(OutputTable: TOutputTable);
+var
+  ColIdx, i: Integer;
+  Stat: TTwoWayStatisticFExP;
+begin
+  ColIdx := OutputTable.ColCount;
+
+  OutputTable.ColCount := OutputTable.ColCount + 1;
+
+  OutputTable.Cell[ColIdx    , 0].Text := 'Fisher Exact p';
+
+  Stat := Statistics[0];
+  OutputTable.Cell[ColIdx    , 1].Text := FormatFExP(Stat.FFExP, false);
+
+  OutputTable.Cell[ColIdx    , 2].Text := '-';
+
+  for i := 1 to StatisticsCount - 1 do
+    begin
+      Stat := Statistics[i];
+
+      OutputTable.Cell[ColIdx    , i + 2].Text := FormatFExP(Stat.FFExP, false);
+    end;
 end;
 
 initialization

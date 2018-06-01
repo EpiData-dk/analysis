@@ -52,15 +52,19 @@ uses
   tables, statfunctions, epimiscutils;
 
 
-function FormatPChi2(Val: EpiFloat): UTF8String;
+function FormatPChi2(Val: EpiFloat; ShowP: Boolean): UTF8String;
+var
+  prefix: string = '';
 begin
+  if (ShowP) then prefix := ' p';
   if (Val < 0.0001) then
-    Result := ' p < 0.0001'
+    Result := prefix + ' < 0.0001'
   else
     if (Val < 0.001) then
-      Result := ' p < 0.001'
+      Result := prefix + ' < 0.001'
   else
-    Result := ' p = ' + Format('%.3f', [Val]) ;
+    if (ShowP) then prefix += ' =';
+    Result := prefix + Format('%.3f', [Val]) ;
 end;
 
 { TTableCellChi2Expected }
@@ -115,7 +119,7 @@ var
 begin
   S := 'Chi{\S 2}: ' + Format('%.2f', [FChi2]) + ' Df(' + IntToStr(FOrgTable.DF)+')';
 
-  S := S + FormatPChi2(FChiP);
+  S := S + FormatPChi2(FChiP, true);
 
   if (FExpectedCellsLessThan5 > 5) then
     begin
@@ -179,7 +183,7 @@ begin
   Stat := Statistics[0];
   OutputTable.Cell[ColIdx    , 1].Text := Format('%.2f', [Stat.FChi2]);
   OutputTable.Cell[ColIdx + 1, 1].Text := IntToStr(Stat.FOrgTable.DF);
-  OutputTable.Cell[ColIdx + 2, 1].Text := FormatPChi2(Stat.FChiP);
+  OutputTable.Cell[ColIdx + 2, 1].Text := FormatPChi2(Stat.FChiP, false);
 
   OutputTable.Cell[ColIdx    , 2].Text := '-';
   OutputTable.Cell[ColIdx + 1, 2].Text := '-';
@@ -191,7 +195,7 @@ begin
 
       OutputTable.Cell[ColIdx    , i + 2].Text := Format('%.2f', [Stat.FChi2]);
       OutputTable.Cell[ColIdx + 1, i + 2].Text := IntToStr(Stat.FOrgTable.DF);
-      OutputTable.Cell[ColIdx + 2, i + 2].Text := FormatPChi2(Stat.FChiP);
+      OutputTable.Cell[ColIdx + 2, i + 2].Text := FormatPChi2(Stat.FChiP, false);
     end;
 end;
 
