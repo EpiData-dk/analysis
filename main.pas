@@ -404,7 +404,9 @@ begin
   FStatusbar.Parent := Self;
   FStatusbar.Align := alBottom;
   FStatusbar.Update(sucDocFile);
-
+  {IFDEF DARWIN}
+  SetCurrentDirUTF8(ResolveDots(ProgramDirectory + '../../..'));
+  {ENDIF}
   FHistory := THistory.Create(Executor, FOutputCreator);
 
   FCmdEdit := TCmdEdit.Create(Self);
