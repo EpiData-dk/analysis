@@ -62,6 +62,7 @@ Var
   X, SN, ON, DEN : EpiFloat;
 Begin
   FOrgTable := Table;
+  FFExP     := -1; // default value that will suppress output (could use Missing value)
   if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then exit;
   if ((FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0)) then exit;
   If (FOrgTable.Cell[0,0].N * FOrgTable.RowTotal[1]) < (FOrgTable.Cell[0,1].N * FOrgTable.RowTotal[0]) then
@@ -126,6 +127,7 @@ procedure TTwoWayStatisticFExP.AddToOutput(OutputTable: TOutputTable);
 var
   S: String;
 begin
+  if (FFExP < 0) then exit;
   S := 'Fisher Exact '+ FormatFExp(FFExP, true);
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
 end;
@@ -133,6 +135,7 @@ end;
 procedure TTwoWayStatisticFExP.CreateResultVariables(Executor: TExecutor;
   const NamePrefix: UTF8String);
 begin
+  if (FFExP < 0) then exit;
   inherited CreateResultVariables(Executor, NamePrefix);
 
   Executor.AddResultConst(NamePrefix + 'fexp', ftFloat).AsFloatVector[0] := FFExP;
@@ -161,14 +164,15 @@ begin
   OutputTable.Cell[ColIdx    , 0].Text := 'Fisher Exact p';
 
   Stat := Statistics[0];
-  OutputTable.Cell[ColIdx    , 1].Text := FormatFExP(Stat.FFExP, false);
+  if (Stat.FFExP >= 0) then
+     OutputTable.Cell[ColIdx , 1].Text := FormatFExP(Stat.FFExP, false);
 
   OutputTable.Cell[ColIdx    , 2].Text := '-';
 
   for i := 1 to StatisticsCount - 1 do
     begin
       Stat := Statistics[i];
-
+      if (Stat.FFExP >= 0) then
       OutputTable.Cell[ColIdx    , i + 2].Text := FormatFExP(Stat.FFExP, false);
     end;
 end;
