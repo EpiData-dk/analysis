@@ -260,7 +260,7 @@ var
                 Format('%.' + IntToStr(Decimals) + 'f', [Value * 100]) +
                 OutputCreatorNormalizeText(SetOption.RigthChar);
   end;
-
+ // TODO: Do not display a row if row total is zero; should be same for columns
 begin
   ColSeparator      := '';
   if (ST.HasOption('cs', Opt)) then
@@ -495,10 +495,15 @@ function TTables.GetStatisticOptions(ST: TTablesCommand): TTableStatistics;
 begin
   result := [];
 
-  if (ST.HasOption('t')) then begin
-  Include(Result, tsChi2);
-  Include(Result, tsFExP);
-  end;
+  if (ST.HasOption('t')) then
+     Include(Result, tsChi2);
+  if (ST.HasOption('ex')) then
+     Include(Result, tsFExP);
+  if (ST.HasOption('odds')) then
+     Include(Result, tsOR);
+  if (ST.HasOption('rr')) then
+     Include(Result, tsRR);
+
 end;
 
 procedure TTables.DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);

@@ -5,7 +5,7 @@ unit tables_stat_fexp;
 interface
 
 uses
-  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, executor;
+  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles, executor;
 
 type
 
@@ -35,23 +35,7 @@ type
 implementation
 
 uses
-  tables, epimiscutils;
-
-function FormatFExP(Val: EpiFloat; ShowP: Boolean): UTF8String;
-// this should probably be a standard function in table_types
-var
-  prefix: string = '';
-begin
-  if (ShowP) then prefix := ' p';
-  if (Val < 0.0001) then
-    Result := prefix + ' < 0.0001'
-  else
-    if (Val < 0.001) then
-      Result := prefix + ' < 0.001'
-  else
-    if (ShowP) then prefix += ' =';
-    Result := prefix + Format('%.3f', [Val]) ;
-end;
+  tables, epimiscutils, generalutils;
 
 { TTwoWayStatisticFExP }
 
@@ -62,7 +46,7 @@ Var
   X, SN, ON, DEN : EpiFloat;
 Begin
   FOrgTable := Table;
-  FFExP     := -1; // default value that will suppress output (could use Missing value)
+  FFExP     := TEpiFloatField.DefaultMissing; // Missing value will suppress output
   if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then exit;
   if ((FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0)) then exit;
   If (FOrgTable.Cell[0,0].N * FOrgTable.RowTotal[1]) < (FOrgTable.Cell[0,1].N * FOrgTable.RowTotal[0]) then
@@ -127,15 +111,15 @@ procedure TTwoWayStatisticFExP.AddToOutput(OutputTable: TOutputTable);
 var
   S: String;
 begin
-  if (FFExP < 0) then exit;
-  S := 'Fisher Exact '+ FormatFExp(FFExP, true);
+  if (FFExP = TEpiFloatField.DefaultMissing) then exit;
+  S := 'Fisher Exact '+ FormatP(FFExP, true);
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
 end;
 
 procedure TTwoWayStatisticFExP.CreateResultVariables(Executor: TExecutor;
   const NamePrefix: UTF8String);
 begin
-  if (FFExP < 0) then exit;
+  if (FFExP = TEpiFloatField.DefaultMissing) then exit;
   inherited CreateResultVariables(Executor, NamePrefix);
 
   Executor.AddResultConst(NamePrefix + 'fexp', ftFloat).AsFloatVector[0] := FFExP;
@@ -157,23 +141,19 @@ var
   ColIdx, i: Integer;
   Stat: TTwoWayStatisticFExP;
 begin
-  ColIdx := OutputTable.ColCount;
-
-  OutputTable.ColCount := OutputTable.ColCount + 1;
-
-  OutputTable.Cell[ColIdx    , 0].Text := 'Fisher Exact p';
-
   Stat := Statistics[0];
-  if (Stat.FFExP >= 0) then
-     OutputTable.Cell[ColIdx , 1].Text := FormatFExP(Stat.FFExP, false);
+  if (Stat.FFExP = TEpiFloatField.DefaultMissing) then exit;
 
+  ColIdx := OutputTable.ColCount;
+  OutputTable.ColCount := OutputTable.ColCount + 1;
+  OutputTable.Cell[ColIdx    , 0].Text := 'Fisher Exact p';
+  OutputTable.Cell[ColIdx , 1].Text := FormatP(Stat.FFExP, false);
   OutputTable.Cell[ColIdx    , 2].Text := '-';
 
   for i := 1 to StatisticsCount - 1 do
     begin
       Stat := Statistics[i];
-      if (Stat.FFExP >= 0) then
-      OutputTable.Cell[ColIdx    , i + 2].Text := FormatFExP(Stat.FFExP, false);
+      OutputTable.Cell[ColIdx    , i + 2].Text := FormatP(Stat.FFExP, false);
     end;
 end;
 

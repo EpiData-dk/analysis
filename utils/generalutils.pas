@@ -10,6 +10,7 @@ uses
 
 function PercentileIndex(const Size: integer; const Percentile: Double; out Factor: EpiFloat): Integer;
 function PercentileIndexNIST(const Size: integer; const Percentile: Double; out Factor: EpiFloat): Integer;
+function FormatP(Val: EpiFloat; ShowP: Boolean): UTF8String;
 
 implementation
 
@@ -103,6 +104,22 @@ function PercentileIndexNIST(const Size: integer; const Percentile: Double; out 
       Factor := 0;
    result := IPos;
  end;
+
+function FormatP(Val: EpiFloat; ShowP: Boolean): UTF8String;
+// this should probably be a standard function in table_types
+var
+  prefix: string = '';
+begin
+  if (ShowP) then prefix := ' p';
+  if (Val < 0.0001) then
+    Result := prefix + ' < 0.0001'
+  else
+    if (Val < 0.001) then
+      Result := prefix + ' < 0.001'
+  else
+    if (ShowP) then prefix += ' =';
+    Result := prefix + Format('%.3f', [Val]) ;
+end;
 
 end.
 
