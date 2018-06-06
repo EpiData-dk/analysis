@@ -15,7 +15,9 @@ type
 
   TTableStatistic  = (
     tsChi2,
-    tsFExP
+    tsFExP,
+    tsOR,
+    tsRR
   );
   TTableStatistics = set of TTableStatistic;
 
@@ -46,6 +48,8 @@ type
     procedure CalcTables(Tables: TTwoWayTables);
     procedure CreateResultVariables(Tables: TTwoWayTables; Executor: TExecutor); virtual;
     procedure AddToSummaryTable(OutputTable: TOutputTable); virtual; abstract;
+//    procedure CalcSummaryStatistics(Statistics: TTwoWayStatistics); virtual;
+//    procedure CreateSummaryResultVariables(Executor: TExecutor; Const NamePrefix: UTF8STRING); virtual;
     property TwoWayStatisticClass: TTwoWayStatisticClass read GetTwoWayStatisticClass;
   end;
   TTwoWayStatisticsClass = class of TTwoWayStatistics;
