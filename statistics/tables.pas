@@ -519,7 +519,7 @@ begin
       OutputTwoWayTable(Tab, Tables.StratifyVariables, ST, False);
 
   if (not ST.HasOption('ns')) and
-     (Tables.Count > 0)
+     (Tables.Count > 1)   // no summary if only one table
   then
     OutputSummaryTable(Tables, ST);
 end;
@@ -692,9 +692,10 @@ begin
       Inc(i);
     end;
 
-
+  // Need to treat summary statistics differently
   for i := 0 to Tables.StatisticsCount - 1 do
     Tables.Statistics[i].CreateResultVariables(Tables, FExecutor);
+
 end;
 
 constructor TTables.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator
@@ -734,10 +735,10 @@ begin
 
   AllTables := DoCalcTables(DF, VarNames, StratifyVarnames, WeightName);
 
-  DoTableStatistics(AllTables, GetStatisticOptions(ST));
-
   if (not DoSortTables(AllTables, ST)) then
     Exit;
+
+  DoTableStatistics(AllTables, GetStatisticOptions(ST));
 
   DoResultVariables(AllTables);
 
