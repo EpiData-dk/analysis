@@ -5,7 +5,8 @@ unit tables_stat_or;
 interface
 
 uses
-  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles, executor;
+  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles,
+  result_variables, executor;
 
 type
 
@@ -31,9 +32,10 @@ type
   protected
     function GetStatistics(const Index: Integer): TTwoWayStatisticOR; override;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
-    procedure CalcMHOR;
+    procedure CalcMHOR; // rename to CalcSummaryStatistics
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable); override;
+//    procedure CreateSummaryResultVariables(Executor: TExecutor); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticOR read GetStatistics;
   end;
 
@@ -41,25 +43,26 @@ type
 implementation
 
 uses
-  tables, epimiscutils, generalutils;
+  tables, epimiscutils;
 
 { CalcTable}
 
 procedure TTwoWayStatisticOR.CalcTable(Table: TTwoWayTable);
 
-var
-  a, b, c, d : EpiFloat;
 Begin
   FOrgTable := Table;
   FOddsRatio := TEpiFloatField.DefaultMissing; // Missing value will suppress output
   if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then exit;
-  if ((FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0)) then exit;
+
   Fa := FOrgTable.Cell[0,0].N;
-  Fb := FOrgTable.Cell[0,1].N;
-  Fc := FOrgTable.Cell[1,0].N;
+  Fb := FOrgTable.Cell[1,0].N;
+  Fc := FOrgTable.Cell[0,1].N;
   Fd := FOrgTable.Cell[1,1].N;
 
-  FOddsRatio := (Fa * Fd) / (Fb * Fc);
+  if ((Fa * Fd) = 0) and ((Fb * Fc) = 0) then
+     FOddsRatio := TEpiFloatField.DefaultMissing
+  else
+    FOddsRatio := (Fa * Fd) / (Fb * Fc);
   Ftotal := FOrgTable.Total;
 end;
 
@@ -96,6 +99,7 @@ procedure TTwoWayStatisticsOR.AddToSummaryTable(OutputTable: TOutputTable);
 var
   ColIdx, i: Integer;
   Stat: TTwoWayStatisticOR;
+  S: string;
 begin
   Stat := Statistics[0];
   if (Stat.FOddsRatio = TEpiFloatField.DefaultMissing) then exit;
@@ -108,20 +112,43 @@ begin
      OutputTable.Cell[ColIdx    , 2].Text := '-';   // will be replaced by M-H OR
      exit;
   end;
+  CalcMHOR; // Mantel-Haenzel Odds ratio and CI
+  // We need a way to create summary output variables as this is the only point
+  // where we have all the tables. However, I'm missing something here.
+
+
+
   for i := 1 to StatisticsCount - 1 do
     begin
       Stat := Statistics[i];
-      OutputTable.Cell[ColIdx    , i + 2].Text := Format('%.2f', [Stat.FOddsRatio]);
+      if (Stat.FOddsRatio = TEpiFloatField.DefaultMissing) then
+        S := '-'
+      else
+        S := Format('%.2f', [Stat.FOddsRatio]);
+      OutputTable.Cell[ColIdx    , i + 2].Text := S;
     end;
-  CalcMHOR;
   OutputTable.ColCount := OutputTable.ColCount + 2;
-  OutputTable.Cell[ColIdx + 1, 0].Text := 'Conf.';
+  OutputTable.Cell[ColIdx + 1, 0].Text := '95% Conf.';
   OutputTable.Cell[ColIdx + 2, 0].Text := 'Interval';
-  OutputTable.Cell[ColIdx, 2].Text := Format('%.2f', [FMHOR]);
+  OutputTable.Cell[ColIdx,     2].Text := Format('%.2f', [FMHOR]);
   OutputTable.Cell[ColIdx + 1, 2].Text := Format('%.2f', [FORLL]);
   OutputTable.Cell[ColIdx + 2, 2].Text := Format('%.2f', [FORUL]);
 end;
+{
+procedure TTwoWayStatisticsOR.CreateSummaryResultVariables(Executor: TExecutor;
+  const NamePrefix: UTF8String);
 
+begin
+  if (Statistics.Count = 1) then exit;
+  inherited CreateResultVariables(Executor, NamePrefix);
+
+  FExecutor.AddResultConst(NamePrefix + 'MHOR',   ftFloat).AsFloatVector[0] := FMHOR;
+  FExecutor.AddResultConst(NamePrefix + 'MHORLL', ftFloat).AsFloatVector[0] := FORLL;
+  FExecutor.AddResultConst(NamePrefix + 'MHORUL', ftFloat).AsFloatVector[0] := FORUL;
+
+end;
+}
+// rename this as CalcSummaryStatistics(Statistics: ...) // do we need parameters? to be called from tables unit
 procedure TTwoWayStatisticsOR.CalcMHOR;
 var
   i: Integer;
