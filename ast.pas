@@ -1539,7 +1539,8 @@ begin
   Result.Insert('debug', [rtUndefined]);  // Special debug option for statistics
   Result.Insert('t',     [rtUndefined]);  // Chi2
   Result.Insert('ex',    [rtUndefined]);  // Exact tests for 2x2 tables
-  Result.Insert('odds',    [rtUndefined]);  // Odds ratio, including M-H adjusted
+  Result.Insert('odds',  [rtUndefined]);  // Odds ratio, including M-H adjusted
+  Result.Insert('rr',    [rtUndefined]);  // Risk ratio, including M-H adjusted
 end;
 
 function TTablesCommand.GetAcceptedVariableCount: TBoundArray;

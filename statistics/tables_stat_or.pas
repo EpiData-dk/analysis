@@ -32,10 +32,10 @@ type
   protected
     function GetStatistics(const Index: Integer): TTwoWayStatisticOR; override;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
-    procedure CalcMHOR; // rename to CalcSummaryStatistics
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable); override;
-//    procedure CreateSummaryResultVariables(Executor: TExecutor); override;
+    procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
+    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticOR read GetStatistics;
   end;
 
@@ -112,13 +112,14 @@ begin
      OutputTable.Cell[ColIdx    , 2].Text := '-';   // will be replaced by M-H OR
      exit;
   end;
-  CalcMHOR; // Mantel-Haenzel Odds ratio and CI
+//  CalcSummaryStatistics; // Mantel-Haenzel Odds ratio and CI
+  // This is the wrong place for summary stat calculation
   // We need a way to create summary output variables as this is the only point
-  // where we have all the tables. However, I'm missing something here.
+  // where we have all the tables. i.e. requires change to tables unit
 
 
 
-  for i := 1 to StatisticsCount - 1 do
+  for i := 1 to StatisticsCount - 1 do   // skips unstratified table
     begin
       Stat := Statistics[i];
       if (Stat.FOddsRatio = TEpiFloatField.DefaultMissing) then
@@ -134,22 +135,21 @@ begin
   OutputTable.Cell[ColIdx + 1, 2].Text := Format('%.2f', [FORLL]);
   OutputTable.Cell[ColIdx + 2, 2].Text := Format('%.2f', [FORUL]);
 end;
-{
+
 procedure TTwoWayStatisticsOR.CreateSummaryResultVariables(Executor: TExecutor;
   const NamePrefix: UTF8String);
 
 begin
-  if (Statistics.Count = 1) then exit;
-  inherited CreateResultVariables(Executor, NamePrefix);
+  if (StatisticsCount = 1) then exit;   // No stratified tables
+//  inherited CreateResultVariables(Executor, NamePrefix);
 
-  FExecutor.AddResultConst(NamePrefix + 'MHOR',   ftFloat).AsFloatVector[0] := FMHOR;
-  FExecutor.AddResultConst(NamePrefix + 'MHORLL', ftFloat).AsFloatVector[0] := FORLL;
-  FExecutor.AddResultConst(NamePrefix + 'MHORUL', ftFloat).AsFloatVector[0] := FORUL;
+  Executor.AddResultConst(NamePrefix + 'MHOR',   ftFloat).AsFloatVector[0] := FMHOR;
+  Executor.AddResultConst(NamePrefix + 'MHORLL', ftFloat).AsFloatVector[0] := FORLL;
+  Executor.AddResultConst(NamePrefix + 'MHORUL', ftFloat).AsFloatVector[0] := FORUL;
 
 end;
-}
-// rename this as CalcSummaryStatistics(Statistics: ...) // do we need parameters? to be called from tables unit
-procedure TTwoWayStatisticsOR.CalcMHOR;
+
+procedure TTwoWayStatisticsOR.CalcSummaryStatistics(Tables: TTwoWayTables);
 var
   i: Integer;
   Stat: TTwoWayStatisticOR;
@@ -157,7 +157,9 @@ var
   SumR, SumS, SumRS, SumPR, SumPSQR, SumSQ: EpiFloat;
   MantelNum, MantelDen: EpiFloat;
   conf, variance: EpiFloat;
-begin
+  // TODO: use actual tables to do this, rather than stored data in Statistics
+  begin
+  if (StatisticsCount = 1) then exit;   // No stratified tables
   conf      := 1.96;
   MantelNum := 0;
   MantelDen := 0;
@@ -168,7 +170,7 @@ begin
   SumPSQR   := 0;
   SumSQ     := 0;
 
-  for i := 1 to StatisticsCount - 1 do
+  for i := 1 to StatisticsCount - 1 do   // skips unstratified table
     begin
       Stat := Statistics[i];
       with Stat do begin

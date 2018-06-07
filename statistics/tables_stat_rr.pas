@@ -33,8 +33,8 @@ type
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable); override;
-    procedure CalcSummaryStatistics;
-//    procedure CreateSummaryResultVariables(Executor: TExecutor); override;
+    procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
+    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring);
     property Statistics[Const Index: Integer]: TTwoWayStatisticRR read GetStatistics;
   end;
 
@@ -111,7 +111,7 @@ begin
      OutputTable.Cell[ColIdx    , 2].Text := '-';   // will be replaced by M-H OR
      exit;
   end;
-  CalcSummaryStatistics; // Mantel-Haenzel Odds ratio and CI
+//  CalcSummaryStatistics; // Mantel-Haenzel Odds ratio and CI
   // This is the wrong place for summary stat calculation
   // We need a way to create summary output variables as this is the only point
   // where we have all the tables. i.e. requires change to tables unit
@@ -134,22 +134,21 @@ begin
   OutputTable.Cell[ColIdx + 1, 2].Text := Format('%.2f', [FRRLL]);
   OutputTable.Cell[ColIdx + 2, 2].Text := Format('%.2f', [FRRUL]);
 end;
-{
+
 procedure TTwoWayStatisticsRR.CreateSummaryResultVariables(Executor: TExecutor;
   const NamePrefix: UTF8String);
 
 begin
-  if (Statistics.Count = 1) then exit;
-  inherited CreateResultVariables(Executor, NamePrefix);
+  if (StatisticsCount = 1) then exit;
+//  inherited CreateResultVariables(Executor, NamePrefix);
 
-  FExecutor.AddResultConst(NamePrefix + 'MHOR',   ftFloat).AsFloatVector[0] := FMHRR;
-  FExecutor.AddResultConst(NamePrefix + 'MHORLL', ftFloat).AsFloatVector[0] := FRRLL;
-  FExecutor.AddResultConst(NamePrefix + 'MHORUL', ftFloat).AsFloatVector[0] := FRRUL;
+  Executor.AddResultConst(NamePrefix + 'MHOR',   ftFloat).AsFloatVector[0] := FMHRR;
+  Executor.AddResultConst(NamePrefix + 'MHORLL', ftFloat).AsFloatVector[0] := FRRLL;
+  Executor.AddResultConst(NamePrefix + 'MHORUL', ftFloat).AsFloatVector[0] := FRRUL;
 
 end;
-}
-// rename this as CalcSummaryStatistics // do we need parameters? to be called from tables_types unit
-procedure TTwoWayStatisticsRR.CalcSummaryStatistics;
+
+procedure TTwoWayStatisticsRR.CalcSummaryStatistics(Tables: TTwoWayTables);
 var
   i: Integer;
   Stat: TTwoWayStatisticRR;
@@ -158,6 +157,7 @@ var
   SumV: EpiFloat;
   conf, variance: EpiFloat;
 begin
+  if (StatisticsCount = 1) then exit;   // No stratified tables
   conf := 1.96;
   SumV := 0;
   SumR := 0;

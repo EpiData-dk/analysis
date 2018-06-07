@@ -47,9 +47,9 @@ type
     constructor Create; virtual;
     procedure CalcTables(Tables: TTwoWayTables);
     procedure CreateResultVariables(Tables: TTwoWayTables; Executor: TExecutor); virtual;
-    procedure AddToSummaryTable(OutputTable: TOutputTable); virtual; abstract;
-//    procedure CalcSummaryStatistics(Statistics: TTwoWayStatistics); virtual;
-//    procedure CreateSummaryResultVariables(Executor: TExecutor; Const NamePrefix: UTF8STRING); virtual;
+    procedure AddToSummaryTable(OutputTable: TOutputTable); virtual;  abstract;
+    procedure CalcSummaryStatistics(Tables: TTwoWayTables); virtual;
+    procedure CreateSummaryResultVariables(Executor: TExecutor; Const NamePrefix: UTF8STRING); virtual;
     property TwoWayStatisticClass: TTwoWayStatisticClass read GetTwoWayStatisticClass;
   end;
   TTwoWayStatisticsClass = class of TTwoWayStatistics;
@@ -324,6 +324,14 @@ begin
       FStatistics.Add(Stat);
       Tab.AddStatistic(Stat);
     end;
+
+  // Finally do any summary calculations that depend on stratified table calculations
+
+//   Stat := TwoWayStatisticClass.Create;
+   CalcSummaryStatistics(Tables);
+//   FStatistics.Add(Stat);
+//   Tab.AddStatistic(Stat);
+
 end;
 
 procedure TTwoWayStatistics.CreateResultVariables(Tables: TTwoWayTables;
@@ -342,6 +350,9 @@ begin
 
       Statistics[i].CreateResultVariables(Executor, S);
     end;
+  S := '$tables_table_';
+  CreateSummaryResultVariables(Executor, S);
+
 end;
 
 { TTableVectorEnumerator }
@@ -847,6 +858,16 @@ end;
 function TTwoWayTables.GetEnumerator: TTwoWayTablesEnumerator;
 begin
   result := TTwoWayTablesEnumerator.Create(Self);
+end;
+
+procedure TTwoWayStatistics.CalcSummaryStatistics(Tables: TTwoWayTables);
+begin
+  // do nothing
+end;
+
+procedure TTwoWayStatistics.CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring);
+begin
+  // do nothing
 end;
 
 end.

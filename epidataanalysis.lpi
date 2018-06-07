@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="11"/>
+    <Version Value="10"/>
     <General>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
@@ -14,7 +14,9 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="2"/>
+      <MinorVersionNr Value="1"/>
+      <RevisionNr Value="1"/>
+      <BuildNr Value="11"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -171,21 +173,14 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+      </local>
       <environment>
         <UserOverrides Count="1">
           <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
         </UserOverrides>
       </environment>
-      <FormatVersion Value="2"/>
-      <Modes Count="1">
-        <Mode0 Name="default">
-          <environment>
-            <UserOverrides Count="1">
-              <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
-            </UserOverrides>
-          </environment>
-        </Mode0>
-      </Modes>
     </RunParams>
     <RequiredPackages Count="12">
       <Item1>
@@ -227,7 +222,7 @@
         <PackageName Value="LCL"/>
       </Item12>
     </RequiredPackages>
-    <Units Count="76">
+    <Units Count="79">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -558,6 +553,18 @@
         <Filename Value="statistics/tables_stat_chi2.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit75>
+      <Unit76>
+        <Filename Value="statistics/tables_stat_fexp.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit76>
+      <Unit77>
+        <Filename Value="statistics/tables_stat_or.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit77>
+      <Unit78>
+        <Filename Value="statistics/tables_stat_rr.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit78>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -591,8 +598,7 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dEPI_CHROMIUM_HTML1
--dEPI_BETA"/>
+      <CustomOptions Value="-dEPI_CHROMIUM_HTML1"/>
     </Other>
   </CompilerOptions>
   <Debugging>

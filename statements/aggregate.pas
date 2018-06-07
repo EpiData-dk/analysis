@@ -337,7 +337,6 @@ begin
         end
       else
         InputDF.SortRecords(SortList);
-
       Runner := 0;
       Index := 0;
       while Runner < InputDF.Size do

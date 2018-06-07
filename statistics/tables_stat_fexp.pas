@@ -29,6 +29,8 @@ type
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable); override;
+//    procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
+//    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticFExP read GetStatistics;
   end;
 
@@ -156,6 +158,7 @@ begin
       OutputTable.Cell[ColIdx    , i + 2].Text := FormatP(Stat.FFExP, false);
     end;
 end;
+
 
 initialization
   RegisterTableStatistic(tsFExP, TTwoWayStatisticsFExP);
