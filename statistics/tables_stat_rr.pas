@@ -15,7 +15,6 @@ type
   private
     FOrgTable: TTwoWayTable;
     FRelativeRisk: EpiFloat;
-    Fa, Fab, Fc, Fcd, Ftotal: Integer;  // save table contents for Mantel-Haenzel estimate
   public
     procedure CalcTable(Table: TTwoWayTable); override;
     procedure AddToOutput(OutputTable: TOutputTable); override;
@@ -34,7 +33,7 @@ type
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
-    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring);
+    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticRR read GetStatistics;
   end;
 
@@ -47,22 +46,22 @@ uses
 { CalcTable}
 
 procedure TTwoWayStatisticRR.CalcTable(Table: TTwoWayTable);
-
+var
+  a, ab, c, cd: Integer;
 Begin
   FOrgTable := Table;
   FRelativeRisk := TEpiFloatField.DefaultMissing; // Missing value will suppress output
   if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then exit;
 
-  Fa := FOrgTable.Cell[0,0].N;
-  Fab := FOrgTable.RowTotal[0];
-  Fc := FOrgTable.Cell[0,1].N;
-  Fcd := FOrgTable.RowTotal[1];
+  a := FOrgTable.Cell[0,0].N;
+  ab := FOrgTable.RowTotal[0];
+  c := FOrgTable.Cell[0,1].N;
+  cd := FOrgTable.RowTotal[1];
 
-  if (Fc = 0) or (Fab = 0) then // or (Fcd = 0) then
+  if (c = 0) or (ab = 0) then // or (cd = 0) then
      FRelativeRisk := TEpiFloatField.DefaultMissing
   else
-    FRelativeRisk := (Fa * Fcd) / (Fab * Fc);
-  Ftotal := FOrgTable.Total;
+    FRelativeRisk := (a * cd) / (ab * c);
 end;
 
 procedure TTwoWayStatisticRR.AddToOutput(OutputTable: TOutputTable);
@@ -142,38 +141,40 @@ begin
   if (StatisticsCount = 1) then exit;
 //  inherited CreateResultVariables(Executor, NamePrefix);
 
-  Executor.AddResultConst(NamePrefix + 'MHOR',   ftFloat).AsFloatVector[0] := FMHRR;
-  Executor.AddResultConst(NamePrefix + 'MHORLL', ftFloat).AsFloatVector[0] := FRRLL;
-  Executor.AddResultConst(NamePrefix + 'MHORUL', ftFloat).AsFloatVector[0] := FRRUL;
+  Executor.AddResultConst(NamePrefix + 'MHRR',   ftFloat).AsFloatVector[0] := FMHRR;
+  Executor.AddResultConst(NamePrefix + 'MHRRLL', ftFloat).AsFloatVector[0] := FRRLL;
+  Executor.AddResultConst(NamePrefix + 'MHRRUL', ftFloat).AsFloatVector[0] := FRRUL;
 
 end;
 
 procedure TTwoWayStatisticsRR.CalcSummaryStatistics(Tables: TTwoWayTables);
 var
-  i: Integer;
-  Stat: TTwoWayStatisticRR;
-  p, q, r, s,
-  SumR, SumS: EpiFloat;
-  SumV: EpiFloat;
+  a, ab, c, cd, n: Integer;
+  Tab: TTwoWayTable;
+  r, s, SumR, SumS, SumV: EpiFloat;
   conf, variance: EpiFloat;
 begin
   if (StatisticsCount = 1) then exit;   // No stratified tables
-  conf := 1.96;
+  conf := 1.96;  // this really should be an option (e.g. !sig:=.05)
   SumV := 0;
   SumR := 0;
   SumS := 0;
 
-  for i := 1 to StatisticsCount - 1 do   // skips unstratified table
+  for Tab in Tables do   // skips unstratified table
     begin
-      Stat := Statistics[i];
-      with Stat do begin
-        if ((Fa + Fc) > 0) then
+      with Tab do begin
+        a := Tab.Cell[0,0].N;
+        ab := Tab.RowTotal[0];
+        c := Tab.Cell[0,1].N;
+        cd := Tab.RowTotal[1];
+        n := Tab.Total;
+        if ((a + c) > 0) then
         begin
-          r    := (Fa * Fcd) / Ftotal;
-          s    := (Fc * Fab) / Ftotal;
+          r    := (a * cd) / n;
+          s    := (c * ab) / n;
           SumR += r;
           SumS += s;
-          SumV += ((Fcd * Fab * (Fa + Fc)) - (Fa * Fc * FTotal)) / (FTotal * FTotal);
+          SumV += ((cd * ab * (a + c)) - (a * c * n)) / (n * n);
         end;
       end;
     end;

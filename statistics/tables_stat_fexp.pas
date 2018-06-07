@@ -57,36 +57,36 @@ Begin
     BF := FOrgTable.Cell[1,0].N; //B
     CF := FOrgTable.Cell[0,1].N; //C
     DF := FOrgTable.Cell[1,1].N; //D
-    End (*If*)
+    End
   Else
     Begin
     AF := FOrgTable.Cell[0,1].N; //C;
     BF := FOrgTable.Cell[1,1].N; //D;
     CF := FOrgTable.Cell[0,0].N; //A;
     DF := FOrgTable.Cell[1,0].N; //B
-  End (*Else*);
+  End;
   N1F := AF + BF;
   N0F := CF + DF;
   M1F := AF + CF;
   M0F := BF + DF;
-  TF := N1F + N0F;
-  SN := 1;
-  ON := 0;
+  TF  := N1F + N0F;
+  SN  := 1;
+  ON  := 0;
   DEN := 1;
-  A2 := AF;
-  D2 := DF;
-  B2 := BF + 1;
-  C2 := CF + 1;
-  X := 1;
+  A2  := AF;
+  D2  := DF;
+  B2  := BF + 1;
+  C2  := CF + 1;
+  X   := 1;
   While (X > 9.999999e-21) Do
       Begin
-      X := X * A2 * D2 / (B2 * C2);
-      SN := X + SN;
+      X   := X * A2 * D2 / (B2 * C2);
+      SN  := X + SN;
       DEN := X + DEN;
-      A2 := A2 - 1;
-      D2 := D2 - 1;
-      B2 := B2 + 1;
-      C2 := C2 + 1
+      A2  := A2 - 1;
+      D2  := D2 - 1;
+      B2  := B2 + 1;
+      C2  := C2 + 1
       End (*While*);
   B2 := BF;
   C2 := CF;

@@ -245,7 +245,7 @@ type
     function GetCount: Integer;
     procedure DoError(Const Msg: UTF8String);
 
-  { Advanced Statistics Inteface }
+  { Advanced Statistics Interface }
   private
     FStatisticsList: TList;
     function GetStatisticsCount: Integer;
@@ -327,10 +327,7 @@ begin
 
   // Finally do any summary calculations that depend on stratified table calculations
 
-//   Stat := TwoWayStatisticClass.Create;
    CalcSummaryStatistics(Tables);
-//   FStatistics.Add(Stat);
-//   Tab.AddStatistic(Stat);
 
 end;
 
@@ -350,7 +347,7 @@ begin
 
       Statistics[i].CreateResultVariables(Executor, S);
     end;
-  S := '$tables_table_';
+  S := '$tables_adjusted_';
   CreateSummaryResultVariables(Executor, S);
 
 end;

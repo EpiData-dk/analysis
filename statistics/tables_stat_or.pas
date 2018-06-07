@@ -16,7 +16,6 @@ type
   private
     FOrgTable: TTwoWayTable;
     FOddsRatio: EpiFloat;
-    Fa, Fb, Fc, Fd, Ftotal: Integer;  // save table contents for Mantel-Haenzel estimate
   public
     procedure CalcTable(Table: TTwoWayTable); override;
     procedure AddToOutput(OutputTable: TOutputTable); override;
@@ -49,21 +48,22 @@ uses
 
 procedure TTwoWayStatisticOR.CalcTable(Table: TTwoWayTable);
 
-Begin
+var
+  a, b, c, d: Integer;
+begin
   FOrgTable := Table;
   FOddsRatio := TEpiFloatField.DefaultMissing; // Missing value will suppress output
   if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then exit;
 
-  Fa := FOrgTable.Cell[0,0].N;
-  Fb := FOrgTable.Cell[1,0].N;
-  Fc := FOrgTable.Cell[0,1].N;
-  Fd := FOrgTable.Cell[1,1].N;
+  a := FOrgTable.Cell[0,0].N;
+  b := FOrgTable.Cell[1,0].N;
+  c := FOrgTable.Cell[0,1].N;
+  d := FOrgTable.Cell[1,1].N;
 
-  if ((Fa * Fd) = 0) and ((Fb * Fc) = 0) then
+  if ((a * d) = 0) and ((b * c) = 0) then
      FOddsRatio := TEpiFloatField.DefaultMissing
   else
-    FOddsRatio := (Fa * Fd) / (Fb * Fc);
-  Ftotal := FOrgTable.Total;
+    FOddsRatio := (a * d) / (b * c);
 end;
 
 procedure TTwoWayStatisticOR.AddToOutput(OutputTable: TOutputTable);
@@ -112,12 +112,6 @@ begin
      OutputTable.Cell[ColIdx    , 2].Text := '-';   // will be replaced by M-H OR
      exit;
   end;
-//  CalcSummaryStatistics; // Mantel-Haenzel Odds ratio and CI
-  // This is the wrong place for summary stat calculation
-  // We need a way to create summary output variables as this is the only point
-  // where we have all the tables. i.e. requires change to tables unit
-
-
 
   for i := 1 to StatisticsCount - 1 do   // skips unstratified table
     begin
@@ -151,16 +145,16 @@ end;
 
 procedure TTwoWayStatisticsOR.CalcSummaryStatistics(Tables: TTwoWayTables);
 var
-  i: Integer;
-  Stat: TTwoWayStatisticOR;
+  a, b, c, d, n: Integer;
+  Tab: TTwoWayTable;
   p, q, r, s,
   SumR, SumS, SumRS, SumPR, SumPSQR, SumSQ: EpiFloat;
   MantelNum, MantelDen: EpiFloat;
   conf, variance: EpiFloat;
-  // TODO: use actual tables to do this, rather than stored data in Statistics
+
   begin
   if (StatisticsCount = 1) then exit;   // No stratified tables
-  conf      := 1.96;
+  conf      := 1.96;     // this really should be an option (e.g. !sig:=.05)
   MantelNum := 0;
   MantelDen := 0;
   SumR      := 0;
@@ -170,18 +164,22 @@ var
   SumPSQR   := 0;
   SumSQ     := 0;
 
-  for i := 1 to StatisticsCount - 1 do   // skips unstratified table
+  for Tab in Tables do
     begin
-      Stat := Statistics[i];
-      with Stat do begin
-        MantelNum += ((Fa * Fd) / Ftotal);
-        MantelDen += ((Fb * Fc) / Ftotal);
-        if (Ftotal > 0) and ((Fb * Fc) > 0) then
+      with Tab do begin
+        a := Tab.Cell[0,0].N;
+        b := Tab.Cell[1,0].N;
+        c := Tab.Cell[0,1].N;
+        d := Tab.Cell[1,1].N;
+        n := Tab.Total;
+        MantelNum += ((a * d) / n);
+        MantelDen += ((b * c) / n);
+        if (n > 0) and ((b * c) > 0) then
         begin
-          p := (Fa + Fd) / Ftotal;
-          q := (Fb + Fc) / Ftotal;
-          r := (Fa * Fd);
-          s := (Fb * Fc);
+          p := (a + d) / n;
+          q := (b + c) / n;
+          r := (a * d);
+          s := (b * c);
           SumR    += r;
           SumS    += s;
           SumRS   += r*s;
