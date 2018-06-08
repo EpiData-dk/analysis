@@ -174,7 +174,7 @@ var
         n := Tab.Total;
         MantelNum += ((a * d) / n);
         MantelDen += ((b * c) / n);
-        if (n > 0) and ((b * c) > 0) then
+        if (n > 0) and ((b * c) > 0) then  // why this restriction?
         begin
           p := (a + d) / n;
           q := (b + c) / n;
@@ -192,7 +192,9 @@ var
   FMHOR := MantelNum / MantelDen;
 
   // Estimate upper and lower confidence limits
-
+  { NIST reference has same formula
+    https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/mantel.htm
+  }
   if ((SumR * SumS) = 0) then exit;
 
   variance := abs(SumPR / (2 * (SumR * SumR)) + (SumPSQR / (2 * SumR * SumS)) + (SumSQ / (2 * SumS * SumS)));

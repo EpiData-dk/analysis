@@ -25,8 +25,7 @@ type
   private
     FOrgTable: TTwoWayTable;
     FExpected: TTwoWayTable;
-    FChi2: EpiFloat;
-    FChiP: EpiFloat;
+    FChi2, FChiP: EpiFloat;
     FExpectedCellsLessThan5: Integer;
   public
     procedure CalcTable(Table: TTwoWayTable); override;
@@ -38,12 +37,14 @@ type
   { TTwoWayStatisticsChi2 }
 
   TTwoWayStatisticsChi2 = class(TTwoWayStatistics)
+  private
+    FMHChi2, FMHChiP: EpiFloat;
   protected
     function GetStatistics(const Index: Integer): TTwoWayStatisticChi2; override;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable); override;
-//    procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
+    procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
 //    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring);
     property Statistics[Const Index: Integer]: TTwoWayStatisticChi2 read GetStatistics;
   end;
@@ -91,7 +92,7 @@ begin
         Val := (O.N - C.N);
 
         // for Yates' correction:
-        // Val := (abs(FOrgTable.Cell[Col, Row].N - C.N) - 0.05);
+        // Val := (abs(O.N - C.N) - 0.05);
         if (C.N > 0) then
           FChi2 := FChi2 + ((Val * Val) / C.N); // No contribution if C.N = 0  or impose Yates !!
       end;
@@ -171,9 +172,17 @@ begin
   OutputTable.Cell[ColIdx + 1, 1].Text := IntToStr(Stat.FOrgTable.DF);
   OutputTable.Cell[ColIdx + 2, 1].Text := FormatP(Stat.FChiP, false);
 
-  OutputTable.Cell[ColIdx    , 2].Text := '-';
-  OutputTable.Cell[ColIdx + 1, 2].Text := '-';
-  OutputTable.Cell[ColIdx + 2, 2].Text := '-';
+  if (Stat.FOrgTable.DF = 1) then // 2x2 table
+  begin
+    OutputTable.Cell[ColIdx    , 2].Text := Format('%.2f', [FMHChi2]);
+    OutputTable.Cell[ColIdx + 1, 2].Text := '1';
+    OutputTable.Cell[ColIdx + 2, 2].Text := FormatP(FMHChiP, false);
+  end
+  else begin
+    OutputTable.Cell[ColIdx    , 2].Text := '-';
+    OutputTable.Cell[ColIdx + 1, 2].Text := '-';
+    OutputTable.Cell[ColIdx + 2, 2].Text := '-';
+  end;
 
   for i := 1 to StatisticsCount - 1 do
     begin
@@ -184,6 +193,56 @@ begin
       OutputTable.Cell[ColIdx + 2, i + 2].Text := FormatP(Stat.FChiP, false);
     end;
 end;
+// M-H Chi-square for 2x2 stratified tables
+procedure TTwoWayStatisticsChi2.CalcSummaryStatistics(Tables: TTwoWayTables);
+var
+  a, b, c, d, i, n: Integer;
+  Tab: TTwoWayTable;
+  p, q, r, s,
+  SumP, SumQ, SumR, SumS, SumN, MeanP, MeanQ: EpiFloat;
+  conf, variance: EpiFloat;
+
+  begin
+  if (StatisticsCount = 1) then exit;   // No stratified tables
+  // need to exit if not 2x2!
+  conf      := 1.96;     // this really should be an option (e.g. !sig:=.05)
+  SumP      := 0;
+  SumQ      := 0;
+  SumR      := 0;
+  SumS      := 0;
+  SumN      := 0;
+  i         := 0;
+  for Tab in Tables do
+    begin
+      with Tab do begin
+        i += 1;
+        a := Tab.Cell[0,0].N;
+        b := Tab.Cell[1,0].N;
+        c := Tab.Cell[0,1].N;
+        d := Tab.Cell[1,1].N;
+        n := Tab.Total;
+        p := (a + c) / n;
+        q := (b + d) / n;
+        r := abs((a + d) * (c + d) * ((a / (a + b)) - (c / (c + d)))/n) - 0.5;
+        s := ((a + b) * (c + d) / (n - 1));
+        SumP    += p;
+        SumQ    += q;
+        SumR    += r * r;
+        SumS    += s;
+        SumN    += n;
+      end;
+    end;
+  MeanP   := SumP / i;
+  MeanQ   := SumQ / i;
+  FMHChi2 := SumR / (SumS * MeanP * MeanQ);
+  FMHChiP := ChiPValue(FMHChi2,1);
+
+  // Estimate variance for MH Chi square
+  { NIST reference:
+    https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/mantel.htm
+  }
+end;
+
 
 initialization
   RegisterTableStatistic(tsChi2, TTwoWayStatisticsChi2);
