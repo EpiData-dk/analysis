@@ -37,7 +37,8 @@ type
   private
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
-    function  DoCalcTables(InputDF: TEpiDataFile; Varnames, StratifyNames: TStrings; Const WeightVariable: UTF8String = ''): TTwoWayTables;
+    function  DoCalcTables(InputDF: TEpiDataFile;
+      Varnames, StratifyNames: TStrings; Const WeightVariable: UTF8String = ''): TTwoWayTables;
     procedure OutputTwoWayTable(Table: TTwoWayTable; StratifyVariables: TEpiFields; ST: TTablesCommand; IsUnstratifiedTable: boolean);
     procedure OutputSummaryTable(Tables: TTwoWayTables; ST: TTablesCommand);
     function  PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
@@ -55,6 +56,7 @@ type
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
     function  CalcTables(InputDF: TEpiDataFile; VariableNames: TStrings;
       StratifyNames: TStrings; Const WeightName: UTF8String;
+
       Out RefMap: TEpiReferenceMap; Statistics: TTableStatistics = []): TTwoWayTables;
   end;
 
@@ -126,8 +128,8 @@ end;
 
 { TTables }
 
-function TTables.DoCalcTables(InputDF: TEpiDataFile; Varnames,
-  StratifyNames: TStrings; const WeightVariable: UTF8String): TTwoWayTables;
+function TTables.DoCalcTables(InputDF: TEpiDataFile;
+  Varnames, StratifyNames: TStrings; const WeightVariable: UTF8String): TTwoWayTables;
 var
   FuncList: TAggrFuncList;
   Aggr: TAggregate;
@@ -524,18 +526,19 @@ begin
     OutputSummaryTable(Tables, ST);
 end;
 
-procedure TTables.DoTableStatistics(Tables: TTwoWayTables; Statistics: TTableStatistics);
+procedure TTables.DoTableStatistics(Tables: TTwoWayTables;
+          Statistics: TTableStatistics);
 var
   Stat: TTableStatistic;
   StatObj: TTwoWayStatistics;
   Index: Integer;
-
   procedure RaiseError;
   begin
     raise Exception.Create('A table statistic was not correctly registered!');
   end;
 
 begin
+
   for Stat in Statistics do
     begin
       // This should only happen if a statistic unit did not call

@@ -326,7 +326,6 @@ begin
     end;
 
   // Finally do any summary calculations that depend on stratified table calculations
-
    CalcSummaryStatistics(Tables);
 
 end;
@@ -862,7 +861,8 @@ begin
   // do nothing
 end;
 
-procedure TTwoWayStatistics.CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring);
+procedure TTwoWayStatistics.CreateSummaryResultVariables(Executor: TExecutor;
+  const NamePrefix: UTF8STRING);
 begin
   // do nothing
 end;

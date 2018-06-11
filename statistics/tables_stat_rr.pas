@@ -5,7 +5,7 @@ unit tables_stat_rr;
 interface
 uses
   Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles,
-  result_variables, executor;
+  result_variables, executor, statfunctions;
 
 type
 
@@ -15,6 +15,7 @@ type
   private
     FOrgTable: TTwoWayTable;
     FRelativeRisk: EpiFloat;
+    FMessage: String;
   public
     procedure CalcTable(Table: TTwoWayTable); override;
     procedure AddToOutput(OutputTable: TOutputTable); override;
@@ -25,6 +26,7 @@ type
 
   TTwoWayStatisticsRR = class(TTwoWayStatistics)
   private
+    FConf: Integer;
     FMHRR: EpiFloat;
     FRRLL, FRRUL: EpiFloat;
   protected
@@ -41,7 +43,7 @@ type
 implementation
 
 uses
-  tables, epimiscutils;
+  tables, epimiscutils, Math;
 
 { CalcTable}
 
@@ -50,16 +52,21 @@ var
   a, ab, c, cd: Integer;
 Begin
   FOrgTable := Table;
-  FRelativeRisk := TEpiFloatField.DefaultMissing; // Missing value will suppress output
-  if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then exit;
+  FRelativeRisk := TEpiFloatField.DefaultMissing;
+
+  if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then
+  begin
+    FMessage := 'Table is not 2x2.';
+    exit;
+  end;
 
   a := FOrgTable.Cell[0,0].N;
   ab := FOrgTable.RowTotal[0];
   c := FOrgTable.Cell[0,1].N;
   cd := FOrgTable.RowTotal[1];
 
-  if (c = 0) or (ab = 0) then // or (cd = 0) then
-     FRelativeRisk := TEpiFloatField.DefaultMissing
+  if (cd = 0) or (ab = 0) or (FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0) then
+    FMessage := 'Table has a zero marginal.'
   else
     FRelativeRisk := (a * cd) / (ab * c);
 end;
@@ -68,8 +75,10 @@ procedure TTwoWayStatisticRR.AddToOutput(OutputTable: TOutputTable);
 var
   S: String;
 begin
-  if (FRelativeRisk = TEpiFloatField.DefaultMissing) then exit;
-  S := 'Risk Ratio: '+ Format('%.2f', [FRelativeRisk]);
+  if (FRelativeRisk = TEpiFloatField.DefaultMissing) then
+     S := 'Cannot estimate Risk Ratio. ' + FMessage
+  else
+    S := 'Risk Ratio: '+ Format('%.2f', [FRelativeRisk]);
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
 end;
 
@@ -110,12 +119,6 @@ begin
      OutputTable.Cell[ColIdx    , 2].Text := '-';   // will be replaced by M-H OR
      exit;
   end;
-//  CalcSummaryStatistics; // Mantel-Haenzel Odds ratio and CI
-  // This is the wrong place for summary stat calculation
-  // We need a way to create summary output variables as this is the only point
-  // where we have all the tables. i.e. requires change to tables unit
-
-
 
   for i := 1 to StatisticsCount - 1 do   // skips unstratified table
     begin
@@ -127,7 +130,9 @@ begin
       OutputTable.Cell[ColIdx    , i + 2].Text := S;
     end;
   OutputTable.ColCount := OutputTable.ColCount + 2;
-  OutputTable.Cell[ColIdx + 1, 0].Text := '95% Conf.';
+
+  if (isInfinite(FMHRR) or (FMHRR = TEpiFLoatField.DefaultMissing)) then exit;
+  OutputTable.Cell[ColIdx + 1, 0].Text := IntToStr(FConf) + '% Conf.';
   OutputTable.Cell[ColIdx + 2, 0].Text := 'Interval';
   OutputTable.Cell[ColIdx,     2].Text := Format('%.2f', [FMHRR]);
   OutputTable.Cell[ColIdx + 1, 2].Text := Format('%.2f', [FRRLL]);
@@ -138,7 +143,7 @@ procedure TTwoWayStatisticsRR.CreateSummaryResultVariables(Executor: TExecutor;
   const NamePrefix: UTF8String);
 
 begin
-  if (StatisticsCount = 1) then exit;
+  if (StatisticsCount = 1) or (isInfinite(FMHRR)) or (FMHRR = TEpiFLoatField.DefaultMissing) then exit;
 //  inherited CreateResultVariables(Executor, NamePrefix);
 
   Executor.AddResultConst(NamePrefix + 'MHRR',   ftFloat).AsFloatVector[0] := FMHRR;
@@ -155,7 +160,8 @@ var
   conf, variance: EpiFloat;
 begin
   if (StatisticsCount = 1) then exit;   // No stratified tables
-  conf := 1.96;  // this really should be an option (e.g. !sig:=.05)
+  FConf     := 95;  // this should get set by option
+  conf      := PNormalInv((1 - (FConf / 100)) / 2);
   SumV := 0;
   SumR := 0;
   SumS := 0;
@@ -179,8 +185,8 @@ begin
       end;
     end;
 
-  if (SumR = 0 ) then FMHRR := 0
-  else if (Sums = 0) then FMHRR := TEpiFloatField.DefaultMissing
+  if (SumR = 0) and (SumS > 0) then FMHRR := 0
+  else if (SumS = 0) then FMHRR := TEpiFloatField.DefaultMissing
   else FMHRR := SumR / SumS;
 
   // Estimate upper and lower confidence limits

@@ -200,12 +200,13 @@ var
   Tab: TTwoWayTable;
   p, q, r, s,
   SumP, SumQ, SumR, SumS, SumN, MeanP, MeanQ: EpiFloat;
-  conf, variance: EpiFloat;
+  variance: EpiFloat;
 
   begin
   if (StatisticsCount = 1) then exit;   // No stratified tables
   // need to exit if not 2x2!
-  conf      := 1.96;     // this really should be an option (e.g. !sig:=.05)
+  Tab := Tables.UnstratifiedTable;
+  if (Tab.ColCount <> 2) or (Tab.RowCount <> 2) then exit;
   SumP      := 0;
   SumQ      := 0;
   SumR      := 0;

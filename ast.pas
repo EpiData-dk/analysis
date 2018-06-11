@@ -1541,6 +1541,9 @@ begin
   Result.Insert('ex',    [rtUndefined]);  // Exact tests for 2x2 tables
   Result.Insert('odds',  [rtUndefined]);  // Odds ratio, including M-H adjusted
   Result.Insert('rr',    [rtUndefined]);  // Risk ratio, including M-H adjusted
+  Result.Insert('ci90',  [rtUndefined]);  // for OR and RR confidence intervals
+  Result.Insert('ci95',  [rtUndefined]);
+  Result.Insert('ci99',  [rtUndefined]);
 end;
 
 function TTablesCommand.GetAcceptedVariableCount: TBoundArray;

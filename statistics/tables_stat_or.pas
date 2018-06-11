@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles,
-  result_variables, executor;
+  result_variables, executor, statfunctions;
 
 type
 
@@ -16,6 +16,7 @@ type
   private
     FOrgTable: TTwoWayTable;
     FOddsRatio: EpiFloat;
+    FMessage: String;
   public
     procedure CalcTable(Table: TTwoWayTable); override;
     procedure AddToOutput(OutputTable: TOutputTable); override;
@@ -26,6 +27,7 @@ type
 
   TTwoWayStatisticsOR = class(TTwoWayStatistics)
   private
+    FConf: Integer;
     FMHOR: EpiFloat;
     FORLL, FORUL: EpiFloat;
   protected
@@ -42,18 +44,22 @@ type
 implementation
 
 uses
-  tables, epimiscutils;
+  tables, epimiscutils, Math, ana_globals;
 
 { CalcTable}
 
 procedure TTwoWayStatisticOR.CalcTable(Table: TTwoWayTable);
-
+//TODO: confidence interval
 var
   a, b, c, d: Integer;
 begin
   FOrgTable := Table;
-  FOddsRatio := TEpiFloatField.DefaultMissing; // Missing value will suppress output
-  if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then exit;
+  if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then
+  begin
+    FOddsRatio := TEpiFloatField.DefaultMissing;
+    FMessage   := 'Table is not 2x2.';
+    exit;
+  end;
 
   a := FOrgTable.Cell[0,0].N;
   b := FOrgTable.Cell[1,0].N;
@@ -61,7 +67,10 @@ begin
   d := FOrgTable.Cell[1,1].N;
 
   if ((a * d) = 0) and ((b * c) = 0) then
-     FOddsRatio := TEpiFloatField.DefaultMissing
+  begin
+    FMessage   := 'Table has a zero marginal.';
+    FOddsRatio := TEpiFloatField.DefaultMissing
+  end
   else
     FOddsRatio := (a * d) / (b * c);
 end;
@@ -70,8 +79,10 @@ procedure TTwoWayStatisticOR.AddToOutput(OutputTable: TOutputTable);
 var
   S: String;
 begin
-  if (FOddsRatio = TEpiFloatField.DefaultMissing) then exit;
-  S := 'Odds Ratio: '+ Format('%.2f', [FOddsRatio]);
+  if (FOddsRatio = TEpiFloatField.DefaultMissing) then
+    S := 'Cannot estimate the Odds Ratio. '+ FMessage
+  else
+    S := 'Odds Ratio: '+ Format('%.2f', [FOddsRatio]);
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
 end;
 
@@ -122,8 +133,9 @@ begin
         S := Format('%.2f', [Stat.FOddsRatio]);
       OutputTable.Cell[ColIdx    , i + 2].Text := S;
     end;
+  if (isInfinite(FMHOR)) then exit;
   OutputTable.ColCount := OutputTable.ColCount + 2;
-  OutputTable.Cell[ColIdx + 1, 0].Text := '95% Conf.';
+  OutputTable.Cell[ColIdx + 1, 0].Text := IntToStr(FConf) + '% Conf.';
   OutputTable.Cell[ColIdx + 2, 0].Text := 'Interval';
   OutputTable.Cell[ColIdx,     2].Text := Format('%.2f', [FMHOR]);
   OutputTable.Cell[ColIdx + 1, 2].Text := Format('%.2f', [FORLL]);
@@ -134,8 +146,7 @@ procedure TTwoWayStatisticsOR.CreateSummaryResultVariables(Executor: TExecutor;
   const NamePrefix: UTF8String);
 
 begin
-  if (StatisticsCount = 1) then exit;   // No stratified tables
-//  inherited CreateResultVariables(Executor, NamePrefix);
+  if (StatisticsCount = 1) or (isInfinite(FMHOR)) then exit;   // No stratified tables
 
   Executor.AddResultConst(NamePrefix + 'MHOR',   ftFloat).AsFloatVector[0] := FMHOR;
   Executor.AddResultConst(NamePrefix + 'MHORLL', ftFloat).AsFloatVector[0] := FORLL;
@@ -151,10 +162,12 @@ var
   SumR, SumS, SumRS, SumPR, SumPSQR, SumSQ: EpiFloat;
   MantelNum, MantelDen: EpiFloat;
   conf, variance: EpiFloat;
+  t: String;
 
   begin
   if (StatisticsCount = 1) then exit;   // No stratified tables
-  conf      := 1.96;     // this really should be an option (e.g. !sig:=.05)
+  FConf     := 95;  // this should get set by option
+  conf      := PNormalInv((1 - (FConf / 100)) / 2);
   MantelNum := 0;
   MantelDen := 0;
   SumR      := 0;
@@ -195,7 +208,7 @@ var
   { NIST reference has same formula
     https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/mantel.htm
   }
-  if ((SumR * SumS) = 0) then exit;
+  if ((SumR * SumS) = 0) or (isInfinite(FMHOR)) then exit;
 
   variance := abs(SumPR / (2 * (SumR * SumR)) + (SumPSQR / (2 * SumR * SumS)) + (SumSQ / (2 * SumS * SumS)));
   FORLL := exp(ln(FMHOR) - (conf * sqrt(variance)));
