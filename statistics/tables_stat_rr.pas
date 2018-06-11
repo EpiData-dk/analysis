@@ -13,6 +13,8 @@ type
 
   TTwoWayStatisticRR = class(TTwoWayStatistic)
   private
+    FConf: Integer;
+    FLL, FUL: EpiFloat;
     FOrgTable: TTwoWayTable;
     FRelativeRisk: EpiFloat;
     FMessage: String;
@@ -49,7 +51,8 @@ uses
 
 procedure TTwoWayStatisticRR.CalcTable(Table: TTwoWayTable);
 var
-  a, ab, c, cd: Integer;
+  a, ab, c, cd, n: Integer;
+  conf, r, s, dgr, rrgb, vgr: EpiFloat;
 Begin
   FOrgTable := Table;
   FRelativeRisk := TEpiFloatField.DefaultMissing;
@@ -59,6 +62,8 @@ Begin
     FMessage := 'Table is not 2x2.';
     exit;
   end;
+  FConf      := 95;  // this should get set by option
+  conf       := PNormalInv((1 - (FConf / 100)) / 2);
 
   a := FOrgTable.Cell[0,0].N;
   ab := FOrgTable.RowTotal[0];
@@ -66,9 +71,29 @@ Begin
   cd := FOrgTable.RowTotal[1];
 
   if (cd = 0) or (ab = 0) or (FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0) then
-    FMessage := 'Table has a zero marginal.'
+  begin
+    FMessage := 'Table has a zero marginal.';
+    exit;
+  end
   else
     FRelativeRisk := (a * cd) / (ab * c);
+
+  // Greenland/Robins confidence limits
+  n := FOrgTable.Total;
+  r := a * cd;
+  s := c * ab;
+  dgr := ((ab * ab * cd) - (a * c * n)) / (n * n);
+  if ((r = 0) or (s = 0)) then
+  begin
+    FUL := TEpiFloatField.DefaultMissing;
+    FLL := FUL;
+  end
+  else
+  begin
+    vgr := abs(dgr / (r * s));
+    FLL := exp(ln(FRelativeRisk - (conf  * sqrt(vgr))));
+    FUL := exp(ln(FRelativeRisk + (conf  * sqrt(vgr))));
+  end;
 end;
 
 procedure TTwoWayStatisticRR.AddToOutput(OutputTable: TOutputTable);
@@ -79,6 +104,10 @@ begin
      S := 'Cannot estimate Risk Ratio. ' + FMessage
   else
     S := 'Risk Ratio: '+ Format('%.2f', [FRelativeRisk]);
+  if (FLL <> TEpiFloatField.DefaultMissing) then
+    S += ' ' + IntToStr(FConf) + '% CI: ' + '(' +
+      Format('%.2f', [FLL]) + ', ' + Format('%.2f', [FUL]) +
+      ')';
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
 end;
 
@@ -190,7 +219,7 @@ begin
   else FMHRR := SumR / SumS;
 
   // Estimate upper and lower confidence limits
-
+  // TODO: validate this; seems much too wide
   if ((SumR * SumS) = 0) then
   begin
     FRRUL := TEpiFloatField.DefaultMissing;

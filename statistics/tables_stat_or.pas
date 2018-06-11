@@ -14,8 +14,10 @@ type
 
   TTwoWayStatisticOR = class(TTwoWayStatistic)
   private
+    FConf: Integer;
     FOrgTable: TTwoWayTable;
     FOddsRatio: EpiFloat;
+    FLL, FUL: EpiFloat;
     FMessage: String;
   public
     procedure CalcTable(Table: TTwoWayTable); override;
@@ -51,7 +53,9 @@ uses
 procedure TTwoWayStatisticOR.CalcTable(Table: TTwoWayTable);
 //TODO: confidence interval
 var
-  a, b, c, d: Integer;
+  a, b, c, d, n: Integer;
+  p, q, r, s, f1, f2, f3: EpiFloat;
+  conf: EpiFLoat;
 begin
   FOrgTable := Table;
   if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then
@@ -60,6 +64,8 @@ begin
     FMessage   := 'Table is not 2x2.';
     exit;
   end;
+  FConf      := 95;  // this should get set by option
+  conf       := PNormalInv((1 - (FConf / 100)) / 2);
 
   a := FOrgTable.Cell[0,0].N;
   b := FOrgTable.Cell[1,0].N;
@@ -69,10 +75,34 @@ begin
   if ((a * d) = 0) and ((b * c) = 0) then
   begin
     FMessage   := 'Table has a zero marginal.';
-    FOddsRatio := TEpiFloatField.DefaultMissing
+    FOddsRatio := TEpiFloatField.DefaultMissing;
+    exit
   end
   else
     FOddsRatio := (a * d) / (b * c);
+
+  // GreenlandRobins confidence limits
+  n := FOrgTable.Total;
+  p := (a + d) / n;
+  q := (b + c) / n;
+  r := a * d / n;
+  s := b * c / n;
+  f1 := 0;
+  f2 := 0;
+  f3 := 0;
+  if (r <> 0) then f1 := (p * r) / (2 * r * r);
+  if ((r * s) <> 0) then f2 := ((p * s) + (q * r)) / (2 * r * s);
+  if (s <> 0) then f3 := (q * s) / (2 * s * s);
+  if (f2 = 0) then
+  begin
+    FUL := TEpiFloatField.DefaultMissing;
+    FLL := FUL;
+  end
+  else
+  begin
+    FLL := exp(ln(FOddsRatio - (conf  * sqrt(f1 + f2 + f3))));
+    FUL := exp(ln(FOddsRatio + (conf  * sqrt(f1 + f2 + f3))));
+  end;
 end;
 
 procedure TTwoWayStatisticOR.AddToOutput(OutputTable: TOutputTable);
@@ -83,6 +113,10 @@ begin
     S := 'Cannot estimate the Odds Ratio. '+ FMessage
   else
     S := 'Odds Ratio: '+ Format('%.2f', [FOddsRatio]);
+  if (FLL <> TEpiFloatField.DefaultMissing) then
+    S += ' ' + IntToStr(FConf) + '% CI: ' + '(' +
+      Format('%.2f', [FLL]) + ', ' + Format('%.2f', [FUL]) +
+      ')';
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
 end;
 
