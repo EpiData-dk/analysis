@@ -100,8 +100,8 @@ begin
   end
   else
   begin
-    FLL := exp(ln(FOddsRatio - (conf  * sqrt(f1 + f2 + f3))));
-    FUL := exp(ln(FOddsRatio + (conf  * sqrt(f1 + f2 + f3))));
+    FLL := exp(ln(FOddsRatio) - (conf  * sqrt(f1 + f2 + f3)));
+    FUL := exp(ln(FOddsRatio) + (conf  * sqrt(f1 + f2 + f3)));
   end;
 end;
 
@@ -194,7 +194,6 @@ var
   Tab: TTwoWayTable;
   p, q, r, s,
   SumR, SumS, SumRS, SumPR, SumPSQR, SumSQ: EpiFloat;
-  MantelNum, MantelDen: EpiFloat;
   conf, variance: EpiFloat;
   t: String;
 
@@ -202,8 +201,6 @@ var
   if (StatisticsCount = 1) then exit;   // No stratified tables
   FConf     := 95;  // this should get set by option
   conf      := PNormalInv((1 - (FConf / 100)) / 2);
-  MantelNum := 0;
-  MantelDen := 0;
   SumR      := 0;
   SumS      := 0;
   SumRS     := 0;
@@ -219,14 +216,12 @@ var
         c := Tab.Cell[0,1].N;
         d := Tab.Cell[1,1].N;
         n := Tab.Total;
-        MantelNum += ((a * d) / n);
-        MantelDen += ((b * c) / n);
-        if (n > 0) and ((b * c) > 0) then  // why this restriction?
+        if (n > 0) then
         begin
           p := (a + d) / n;
-          q := (b + c) / n;
-          r := (a * d);
-          s := (b * c);
+          q := 1 - p;
+          r := (a * d) / n;
+          s := (b * c) / n;
           SumR    += r;
           SumS    += s;
           SumRS   += r*s;
@@ -236,7 +231,7 @@ var
         end;
       end;
     end;
-  FMHOR := MantelNum / MantelDen;
+  FMHOR := SumR / SumS;
 
   // Estimate upper and lower confidence limits
   { NIST reference has same formula
@@ -244,7 +239,7 @@ var
   }
   if ((SumR * SumS) = 0) or (isInfinite(FMHOR)) then exit;
 
-  variance := abs(SumPR / (2 * (SumR * SumR)) + (SumPSQR / (2 * SumR * SumS)) + (SumSQ / (2 * SumS * SumS)));
+  variance := abs((SumPR/(SumR * SumR)) + (SumPSQR/(SumR * SumS)) + (SumSQ / (SumS * Sums))) / 2;
   FORLL := exp(ln(FMHOR) - (conf * sqrt(variance)));
   FORUL := exp(ln(FMHOR) + (conf * sqrt(variance)));
 end;

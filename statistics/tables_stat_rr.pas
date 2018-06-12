@@ -219,7 +219,6 @@ begin
   else FMHRR := SumR / SumS;
 
   // Estimate upper and lower confidence limits
-  // TODO: validate this; seems much too wide
   if ((SumR * SumS) = 0) then
   begin
     FRRUL := TEpiFloatField.DefaultMissing;
