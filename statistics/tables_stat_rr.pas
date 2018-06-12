@@ -14,7 +14,7 @@ type
   TTwoWayStatisticRR = class(TTwoWayStatistic)
   private
     FConf: Integer;
-    FLL, FUL: EpiFloat;
+    FRRLL, FRRUL: EpiFloat;
     FOrgTable: TTwoWayTable;
     FRelativeRisk: EpiFloat;
     FMessage: String;
@@ -30,7 +30,7 @@ type
   private
     FConf: Integer;
     FMHRR: EpiFloat;
-    FRRLL, FRRUL: EpiFloat;
+    FMHRRLL, FMHRRUL: EpiFloat;
   protected
     function GetStatistics(const Index: Integer): TTwoWayStatisticRR; override;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
@@ -45,14 +45,14 @@ type
 implementation
 
 uses
-  tables, epimiscutils, Math;
+  tables, epimiscutils, generalutils, Math;
 
 { CalcTable}
 
 procedure TTwoWayStatisticRR.CalcTable(Table: TTwoWayTable);
 var
   a, ab, c, cd, n: Integer;
-  conf, r, s, dgr, rrgb, vgr: EpiFloat;
+  conf, r, s, dgr, vgr: EpiFloat;
 Begin
   FOrgTable := Table;
   FRelativeRisk := TEpiFloatField.DefaultMissing;
@@ -84,15 +84,15 @@ Begin
   s := c * ab;
   if ((r = 0) or (s = 0)) then
   begin
-    FUL := TEpiFloatField.DefaultMissing;
-    FLL := FUL;
+    FRRUL := TEpiFloatField.DefaultMissing;
+    FRRLL := FRRUL;
   end
   else
   begin
     dgr := ((ab * cd * (a + c)) - (a * c * n));
     vgr := abs(dgr / (r * s));
-    FLL := exp(ln(FRelativeRisk) - (conf  * sqrt(vgr)));
-    FUL := exp(ln(FRelativeRisk) + (conf  * sqrt(vgr)));
+    FRRLL := exp(ln(FRelativeRisk) - (conf  * sqrt(vgr)));
+    FRRUL := exp(ln(FRelativeRisk) + (conf  * sqrt(vgr)));
   end;
 end;
 
@@ -104,10 +104,8 @@ begin
      S := 'Cannot estimate Risk Ratio. ' + FMessage
   else
     S := 'Risk Ratio: '+ Format('%.2f', [FRelativeRisk]);
-  if (FLL <> TEpiFloatField.DefaultMissing) then
-    S += ' ' + IntToStr(FConf) + '% CI: ' + '(' +
-      Format('%.2f', [FLL]) + ', ' + Format('%.2f', [FUL]) +
-      ')';
+  if (not IsInfinite(FRelativeRisk)) then
+    S += ' ' + FormatCI(FRRLL, FRRUL, FConf);
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
 end;
 
@@ -135,15 +133,17 @@ procedure TTwoWayStatisticsRR.AddToSummaryTable(OutputTable: TOutputTable);
 var
   ColIdx, i: Integer;
   Stat: TTwoWayStatisticRR;
-  S: string;
 begin
   Stat := Statistics[0];
   if (Stat.FRelativeRisk = TEpiFloatField.DefaultMissing) then exit;
 
   ColIdx := OutputTable.ColCount;
-  OutputTable.ColCount := OutputTable.ColCount + 1;
+  OutputTable.ColCount := OutputTable.ColCount + 2;
   OutputTable.Cell[ColIdx    , 0].Text := 'Risk Ratio';
+  OutputTable.Cell[ColIdx + 1, 0].Text := IntToStr(FConf) + '% CI';
+
   OutputTable.Cell[ColIdx    , 1].Text := Format('%.2f', [Stat.FRelativeRisk]);
+  OutputTable.Cell[ColIdx + 1, 1].Text := FormatCI(Stat.FRRLL, Stat.FRRUL, 0);
   if (StatisticsCount = 1) then begin
      OutputTable.Cell[ColIdx    , 2].Text := '-';   // will be replaced by M-H OR
      exit;
@@ -153,19 +153,22 @@ begin
     begin
       Stat := Statistics[i];
       if (Stat.FRelativeRisk = TEpiFloatField.DefaultMissing) then
-        S := '-'
+      begin
+        OutputTable.Cell[ColIdx    , i + 2].Text := '-';
+        OutputTable.Cell[ColIdx + 1, i + 2].Text := '';
+      end
       else
-        S := Format('%.2f', [Stat.FRelativeRisk]);
-      OutputTable.Cell[ColIdx    , i + 2].Text := S;
+      begin
+        OutputTable.Cell[ColIdx    , i + 2].Text := Format('%.2f', [Stat.FRelativeRisk]);
+        if (not IsInfinite(Stat.FRelativeRisk)) then
+          OutputTable.Cell[ColIdx + 1, i + 2].Text := FormatCI(Stat.FRRLL, Stat.FRRUL, 0);
+      end;
     end;
-  OutputTable.ColCount := OutputTable.ColCount + 2;
 
-  if (isInfinite(FMHRR) or (FMHRR = TEpiFLoatField.DefaultMissing)) then exit;
-  OutputTable.Cell[ColIdx + 1, 0].Text := IntToStr(FConf) + '% Conf.';
-  OutputTable.Cell[ColIdx + 2, 0].Text := 'Interval';
+  if (FMHRR = TEpiFLoatField.DefaultMissing) then exit;
   OutputTable.Cell[ColIdx,     2].Text := Format('%.2f', [FMHRR]);
-  OutputTable.Cell[ColIdx + 1, 2].Text := Format('%.2f', [FRRLL]);
-  OutputTable.Cell[ColIdx + 2, 2].Text := Format('%.2f', [FRRUL]);
+  if (IsInfinite(FMHRR)) then exit;
+  OutputTable.Cell[ColIdx + 1, 2].Text := FormatCI(FMHRRLL, FMHRRUL, 0);
 end;
 
 procedure TTwoWayStatisticsRR.CreateSummaryResultVariables(Executor: TExecutor;
@@ -176,8 +179,8 @@ begin
 //  inherited CreateResultVariables(Executor, NamePrefix);
 
   Executor.AddResultConst(NamePrefix + 'MHRR',   ftFloat).AsFloatVector[0] := FMHRR;
-  Executor.AddResultConst(NamePrefix + 'MHRRLL', ftFloat).AsFloatVector[0] := FRRLL;
-  Executor.AddResultConst(NamePrefix + 'MHRRUL', ftFloat).AsFloatVector[0] := FRRUL;
+  Executor.AddResultConst(NamePrefix + 'MHRRLL', ftFloat).AsFloatVector[0] := FMHRRLL;
+  Executor.AddResultConst(NamePrefix + 'MHRRUL', ftFloat).AsFloatVector[0] := FMHRRUL;
 
 end;
 
@@ -221,13 +224,13 @@ begin
   // Estimate upper and lower confidence limits
   if ((SumR * SumS) = 0) then
   begin
-    FRRUL := TEpiFloatField.DefaultMissing;
-    FRRLL := TEpiFloatField.DefaultMissing;
+    FMHRRUL := TEpiFloatField.DefaultMissing;
+    FMHRRLL := TEpiFloatField.DefaultMissing;
   end
   else begin
     variance := abs(SumV / (SumR * SumS));
-    FRRLL := exp(ln(FMHRR) - (conf * sqrt(variance)));
-    FRRUL := exp(ln(FMHRR) + (conf * sqrt(variance)));
+    FMHRRLL := exp(ln(FMHRR) - (conf * sqrt(variance)));
+    FMHRRUL := exp(ln(FMHRR) + (conf * sqrt(variance)));
   end;
 end;
 

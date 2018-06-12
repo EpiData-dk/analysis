@@ -11,6 +11,7 @@ uses
 function PercentileIndex(const Size: integer; const Percentile: Double; out Factor: EpiFloat): Integer;
 function PercentileIndexNIST(const Size: integer; const Percentile: Double; out Factor: EpiFloat): Integer;
 function FormatP(Val: EpiFloat; ShowP: Boolean): UTF8String;
+function FormatCI(Val1: EpiFloat; Val2: EpiFLoat; Pct: Integer): UTF8String;
 
 implementation
 
@@ -106,7 +107,7 @@ function PercentileIndexNIST(const Size: integer; const Percentile: Double; out 
  end;
 
 function FormatP(Val: EpiFloat; ShowP: Boolean): UTF8String;
-// this should probably be a standard function in table_types
+
 var
   prefix: string = '';
 begin
@@ -119,6 +120,13 @@ begin
   else
     if (ShowP) then prefix += ' =';
     Result := prefix + Format('%.3f', [Val]) ;
+end;
+
+function FormatCI(Val1: EpiFloat; Val2: EpiFLoat; Pct: Integer): UTF8String;
+begin
+  Result := '';
+  if (Pct > 0) then Result += IntToStr(Pct) + '% CI: ';
+  Result += '(' + Format('%.2f', [Val1]) + ', ' + Format('%.2f', [Val2]) + ')';
 end;
 
 end.
