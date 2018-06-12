@@ -1854,6 +1854,8 @@ begin
                         ProgramDirectory + 'docs'
                       {$ENDIF},
                       rtString));
+  // sTATISTICS
+  FOptions.Insert(ANA_SO_CONFIDENCE_INTERVAL,              TSetOption.Create('95',      rtInteger));
 
   // TABLES:
   FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_COL,   TTablePercentFormatOption.Create('{}', rtString));

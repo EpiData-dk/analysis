@@ -1810,7 +1810,7 @@ begin
 
   {$IFDEF DARWIN}
   S := 'file://' + ResolveDots(ProgramDirectory + '../../../docs' + DirectorySeparator + 'commands.html' + S);
-  {$ELSE}  }
+  {$ELSE}
   S := 'file://' + Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER] + DirectorySeparator + 'commands.html' + S;
   {$ENDIF}
   OpenURL(S);
