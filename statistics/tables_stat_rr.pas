@@ -76,13 +76,12 @@ Begin
     exit;
   end
   else
-    FRelativeRisk := (a * cd) / (ab * c);
+    FRelativeRisk := (a * cd) / (c * ab);
 
   // Greenland/Robins confidence limits
   n := FOrgTable.Total;
   r := a * cd;
   s := c * ab;
-  dgr := ((ab * ab * cd) - (a * c * n)) / (n * n);
   if ((r = 0) or (s = 0)) then
   begin
     FUL := TEpiFloatField.DefaultMissing;
@@ -90,9 +89,10 @@ Begin
   end
   else
   begin
+    dgr := ((ab * cd * (a + c)) - (a * c * n));
     vgr := abs(dgr / (r * s));
-    FLL := exp(ln(FRelativeRisk - (conf  * sqrt(vgr))));
-    FUL := exp(ln(FRelativeRisk + (conf  * sqrt(vgr))));
+    FLL := exp(ln(FRelativeRisk) - (conf  * sqrt(vgr)));
+    FUL := exp(ln(FRelativeRisk) + (conf  * sqrt(vgr)));
   end;
 end;
 
