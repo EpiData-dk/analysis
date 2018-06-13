@@ -5,7 +5,8 @@ unit tables_stat_chi2;
 interface
 
 uses
-  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, executor;
+  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes,
+  executor, ast;
 
 type
 
@@ -28,8 +29,8 @@ type
     FChi2, FChiP: EpiFloat;
     FExpectedCellsLessThan5: Integer;
   public
-    procedure CalcTable(Table: TTwoWayTable); override;
-    procedure AddToOutput(OutputTable: TOutputTable); override;
+    procedure CalcTable(Table: TTwoWayTable;Conf: Integer); override;
+    procedure AddToOutput(OutputTable: TOutputTable; Options: TOptionList); override;
     procedure CreateResultVariables(Executor: TExecutor; const NamePrefix: UTF8String); override;
     procedure DebugOutput(OutputCreator: TOutputCreator); override;
   end;
@@ -43,8 +44,8 @@ type
     function GetStatistics(const Index: Integer): TTwoWayStatisticChi2; override;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
-    procedure AddToSummaryTable(OutputTable: TOutputTable); override;
-    procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
+    procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
+    procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
 //    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring);
     property Statistics[Const Index: Integer]: TTwoWayStatisticChi2 read GetStatistics;
   end;
@@ -65,9 +66,9 @@ end;
 
 { TTwoWayStatisticChi2 }
 
-procedure TTwoWayStatisticChi2.CalcTable(Table: TTwoWayTable);
+procedure TTwoWayStatisticChi2.CalcTable(Table: TTwoWayTable;Conf: Integer);
 var
-  Row, Col, I: Integer;
+  Row, Col: Integer;
   C: TTableCellChi2Expected;
   Val: EpiFloat;
   O: TTableCell;
@@ -99,7 +100,7 @@ begin
   FChiP  := ChiPValue(FChi2 , FOrgTable.DF);
 end;
 
-procedure TTwoWayStatisticChi2.AddToOutput(OutputTable: TOutputTable);
+procedure TTwoWayStatisticChi2.AddToOutput(OutputTable: TOutputTable; Options: TOptionList);
 var
   S: String;
   PCt: Int64;
@@ -154,7 +155,7 @@ begin
   result := TTwoWayStatisticChi2;
 end;
 
-procedure TTwoWayStatisticsChi2.AddToSummaryTable(OutputTable: TOutputTable);
+procedure TTwoWayStatisticsChi2.AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList);
 var
   ColIdx, i: Integer;
   Stat: TTwoWayStatisticChi2;
@@ -194,7 +195,7 @@ begin
     end;
 end;
 // M-H Chi-square for 2x2 stratified tables
-procedure TTwoWayStatisticsChi2.CalcSummaryStatistics(Tables: TTwoWayTables);
+procedure TTwoWayStatisticsChi2.CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer);
 var
   a, b, c, d, i, n: Integer;
   Tab: TTwoWayTable;

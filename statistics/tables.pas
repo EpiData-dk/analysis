@@ -388,7 +388,7 @@ begin
   for i := 0 to Table.StatisticsCount - 1 do
     begin
       Stat := Table.Statistics[i];
-      Stat.AddToOutput(T);
+      Stat.AddToOutput(T, ST.Options);    //*
 
       if (ST.HasOption('debug')) then
         Stat.DebugOutput(FOutputCreator);
@@ -460,7 +460,7 @@ begin
     end;
 
   for i := 0 to Tables.StatisticsCount -1  do
-    Tables.Statistics[i].AddToSummaryTable(T);
+    Tables.Statistics[i].AddToSummaryTable(T, ST.Options);   //*
 
 
   // Setting up borders
@@ -547,7 +547,7 @@ begin
         RaiseError;
 
       StatObj := StatisticsMap.Data[Index].Create;
-      StatObj.CalcTables(Tables);
+      StatObj.CalcTables(Tables, FExecutor);
       Tables.AddStatistic(StatObj);
     end;
 end;

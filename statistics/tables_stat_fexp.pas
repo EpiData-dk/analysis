@@ -5,7 +5,8 @@ unit tables_stat_fexp;
 interface
 
 uses
-  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles, executor;
+  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles,
+    executor, ast;
 
 type
 
@@ -16,8 +17,8 @@ type
     FOrgTable: TTwoWayTable;
     FFExP: EpiFloat;
   public
-    procedure CalcTable(Table: TTwoWayTable); override;
-    procedure AddToOutput(OutputTable: TOutputTable); override;
+    procedure CalcTable(Table: TTwoWayTable;Conf: Integer); override;
+    procedure AddToOutput(OutputTable: TOutputTable; Options: TOptionList); override;
     procedure CreateResultVariables(Executor: TExecutor; const NamePrefix: UTF8String); override;
   end;
 
@@ -28,7 +29,7 @@ type
     function GetStatistics(const Index: Integer): TTwoWayStatisticFExP; override;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
-    procedure AddToSummaryTable(OutputTable: TOutputTable); override;
+    procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
 //    procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
 //    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticFExP read GetStatistics;
@@ -41,10 +42,10 @@ uses
 
 { TTwoWayStatisticFExP }
 
-procedure TTwoWayStatisticFExP.CalcTable(Table: TTwoWayTable);
+procedure TTwoWayStatisticFExP.CalcTable(Table: TTwoWayTable;Conf: Integer);
 Var
   AF, BF, CF, DF : EpiFloat;
-  A2, B2, C2, D2, N1F, N0F, M1F, M0F, TF : EpiFloat;
+  A2, B2, C2, D2 : EpiFloat;
   X, SN, ON, DEN : EpiFloat;
 Begin
   FOrgTable := Table;
@@ -65,11 +66,7 @@ Begin
     CF := FOrgTable.Cell[0,0].N; //A;
     DF := FOrgTable.Cell[1,0].N; //B
   End;
-  N1F := AF + BF;
-  N0F := CF + DF;
-  M1F := AF + CF;
-  M0F := BF + DF;
-  TF  := N1F + N0F;
+
   SN  := 1;
   ON  := 0;
   DEN := 1;
@@ -87,7 +84,7 @@ Begin
       D2  := D2 - 1;
       B2  := B2 + 1;
       C2  := C2 + 1
-      End (*While*);
+      End;
   B2 := BF;
   C2 := CF;
   A2 := AF + 1;
@@ -103,13 +100,13 @@ Begin
       D2 := D2 + 1;
       B2 := B2 - 1;
       C2 := C2 - 1
-      End (*While*);
+      End;
   // result := SN / DEN;  one sided fishers exact
   FFExP := (SN + ON) / DEN;
 
 end;
 
-procedure TTwoWayStatisticFExP.AddToOutput(OutputTable: TOutputTable);
+procedure TTwoWayStatisticFExP.AddToOutput(OutputTable: TOutputTable; Options: TOptionList);
 var
   S: String;
 begin
@@ -138,7 +135,7 @@ begin
   result := TTwoWayStatisticFExP;
 end;
 
-procedure TTwoWayStatisticsFExP.AddToSummaryTable(OutputTable: TOutputTable);
+procedure TTwoWayStatisticsFExP.AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList);
 var
   ColIdx, i: Integer;
   Stat: TTwoWayStatisticFExP;

@@ -6,7 +6,7 @@ unit tables_types;
 interface
 
 uses
-  Classes, SysUtils, epidatafilestypes, epidatafiles, outputcreator, fgl, executor;
+  Classes, SysUtils, epidatafilestypes, epidatafiles, outputcreator, fgl, executor, ast, ana_globals;
 
 type
 
@@ -25,8 +25,8 @@ type
 
   TTwoWayStatistic = class
   public
-    procedure CalcTable(Table: TTwoWayTable); virtual; abstract;
-    procedure AddToOutput(OutputTable: TOutputTable); virtual; abstract;
+    procedure CalcTable(Table: TTwoWayTable; Conf: Integer = 95); virtual; abstract;
+    procedure AddToOutput(OutputTable: TOutputTable; Options: TOptionList); virtual; abstract;     //*
     procedure CreateResultVariables(Executor: TExecutor; Const NamePrefix: UTF8String); virtual;
     procedure DebugOutput(OutputCreator: TOutputCreator); virtual;
   end;
@@ -45,10 +45,10 @@ type
     property StatisticsCount: Integer read GetStatisticsCount;
   public
     constructor Create; virtual;
-    procedure CalcTables(Tables: TTwoWayTables);
+    procedure CalcTables(Tables: TTwoWayTables; Executor: TExecutor);
     procedure CreateResultVariables(Tables: TTwoWayTables; Executor: TExecutor); virtual;
-    procedure AddToSummaryTable(OutputTable: TOutputTable); virtual;  abstract;
-    procedure CalcSummaryStatistics(Tables: TTwoWayTables); virtual;
+    procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); virtual;  abstract;  //*
+    procedure CalcSummaryStatistics(Tables: TTwoWayTables; Conf: Integer = 95); virtual;
     procedure CreateSummaryResultVariables(Executor: TExecutor; Const NamePrefix: UTF8STRING); virtual;
     property TwoWayStatisticClass: TTwoWayStatisticClass read GetTwoWayStatisticClass;
   end;
@@ -304,15 +304,17 @@ begin
   FStatistics := TList.Create;
 end;
 
-procedure TTwoWayStatistics.CalcTables(Tables: TTwoWayTables);
+procedure TTwoWayStatistics.CalcTables(Tables: TTwoWayTables; Executor: TExecutor);
 var
   Stat: TTwoWayStatistic;
   Tab: TTwoWayTable;
+  Conf: Integer;
 begin
+  Conf := StrToInt(Executor.SetOptionValue[ANA_SO_CONFIDENCE_INTERVAL]);
   // First do calculations on the unstratified table
   Tab := Tables.UnstratifiedTable;
   Stat := TwoWayStatisticClass.Create;
-  Stat.CalcTable(Tab);
+  Stat.CalcTable(Tab, Conf);
   FStatistics.Add(Stat);
   Tab.AddStatistic(Stat);
 
@@ -320,13 +322,13 @@ begin
   for Tab in Tables do
     begin
       Stat := TwoWayStatisticClass.Create;
-      Stat.CalcTable(Tab);
+      Stat.CalcTable(Tab, Conf);
       FStatistics.Add(Stat);
       Tab.AddStatistic(Stat);
     end;
 
   // Finally do any summary calculations that depend on stratified table calculations
-   CalcSummaryStatistics(Tables);
+   CalcSummaryStatistics(Tables, Conf);
 
 end;
 
@@ -856,7 +858,7 @@ begin
   result := TTwoWayTablesEnumerator.Create(Self);
 end;
 
-procedure TTwoWayStatistics.CalcSummaryStatistics(Tables: TTwoWayTables);
+procedure TTwoWayStatistics.CalcSummaryStatistics(Tables: TTwoWayTables; Conf: Integer);
 begin
   // do nothing
 end;

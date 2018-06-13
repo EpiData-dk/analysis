@@ -5,7 +5,7 @@ unit tables_stat_rr;
 interface
 uses
   Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles,
-  result_variables, executor, statfunctions;
+  result_variables, executor, ast;
 
 type
 
@@ -19,8 +19,8 @@ type
     FRelativeRisk: EpiFloat;
     FMessage: String;
   public
-    procedure CalcTable(Table: TTwoWayTable); override;
-    procedure AddToOutput(OutputTable: TOutputTable); override;
+    procedure CalcTable(Table: TTwoWayTable;Conf: Integer); override;
+    procedure AddToOutput(OutputTable: TOutputTable; Options: TOptionList); override;
     procedure CreateResultVariables(Executor: TExecutor; const NamePrefix: UTF8String); override;
   end;
 
@@ -35,8 +35,8 @@ type
     function GetStatistics(const Index: Integer): TTwoWayStatisticRR; override;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
-    procedure AddToSummaryTable(OutputTable: TOutputTable); override;
-    procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
+    procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
+    procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
     procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticRR read GetStatistics;
   end;
@@ -45,14 +45,14 @@ type
 implementation
 
 uses
-  tables, epimiscutils, generalutils, Math;
+  tables, epimiscutils, generalutils, statfunctions, Math;
 
 { CalcTable}
 
-procedure TTwoWayStatisticRR.CalcTable(Table: TTwoWayTable);
+procedure TTwoWayStatisticRR.CalcTable(Table: TTwoWayTable;Conf: Integer);
 var
   a, ab, c, cd, n: Integer;
-  conf, r, s, dgr, vgr: EpiFloat;
+  Zconf, r, s, dgr, vgr: EpiFloat;
 Begin
   FOrgTable := Table;
   FRelativeRisk := TEpiFloatField.DefaultMissing;
@@ -62,9 +62,8 @@ Begin
     FMessage := 'Table is not 2x2.';
     exit;
   end;
-  FConf      := 95;  // this should get set by option
-  conf       := PNormalInv((1 - (FConf / 100)) / 2);
-
+  Zconf       := PNormalInv((1 - (Conf / 100)) / 2);
+  FConf       := Conf;
   a := FOrgTable.Cell[0,0].N;
   ab := FOrgTable.RowTotal[0];
   c := FOrgTable.Cell[0,1].N;
@@ -91,21 +90,21 @@ Begin
   begin
     dgr := ((ab * cd * (a + c)) - (a * c * n));
     vgr := abs(dgr / (r * s));
-    FRRLL := exp(ln(FRelativeRisk) - (conf  * sqrt(vgr)));
-    FRRUL := exp(ln(FRelativeRisk) + (conf  * sqrt(vgr)));
+    FRRLL := exp(ln(FRelativeRisk) - (Zconf  * sqrt(vgr)));
+    FRRUL := exp(ln(FRelativeRisk) + (Zconf  * sqrt(vgr)));
   end;
 end;
 
-procedure TTwoWayStatisticRR.AddToOutput(OutputTable: TOutputTable);
+procedure TTwoWayStatisticRR.AddToOutput(OutputTable: TOutputTable; Options: TOptionList);
 var
   S: String;
 begin
   if (FRelativeRisk = TEpiFloatField.DefaultMissing) then
      S := 'Cannot estimate Risk Ratio. ' + FMessage
   else
-    S := 'Risk Ratio: '+ Format('%.2f', [FRelativeRisk]);
+    S := 'Risk Ratio: '+ FormatRatio(FRelativeRisk, Options);
   if (not IsInfinite(FRelativeRisk)) then
-    S += ' ' + FormatCI(FRRLL, FRRUL, FConf);
+    S += ' ' + FormatCI(FRRLL, FRRUL, FConf, Options);
   OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
 end;
 
@@ -129,7 +128,7 @@ begin
   result := TTwoWayStatisticRR;
 end;
 
-procedure TTwoWayStatisticsRR.AddToSummaryTable(OutputTable: TOutputTable);
+procedure TTwoWayStatisticsRR.AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList);
 var
   ColIdx, i: Integer;
   Stat: TTwoWayStatisticRR;
@@ -142,8 +141,8 @@ begin
   OutputTable.Cell[ColIdx    , 0].Text := 'Risk Ratio';
   OutputTable.Cell[ColIdx + 1, 0].Text := IntToStr(FConf) + '% CI';
 
-  OutputTable.Cell[ColIdx    , 1].Text := Format('%.2f', [Stat.FRelativeRisk]);
-  OutputTable.Cell[ColIdx + 1, 1].Text := FormatCI(Stat.FRRLL, Stat.FRRUL, 0);
+  OutputTable.Cell[ColIdx    , 1].Text := FormatRatio(Stat.FRelativeRisk, Options);
+  OutputTable.Cell[ColIdx + 1, 1].Text := FormatCI(Stat.FRRLL, Stat.FRRUL, 0, Options);
   if (StatisticsCount = 1) then begin
      OutputTable.Cell[ColIdx    , 2].Text := '-';   // will be replaced by M-H OR
      exit;
@@ -159,16 +158,16 @@ begin
       end
       else
       begin
-        OutputTable.Cell[ColIdx    , i + 2].Text := Format('%.2f', [Stat.FRelativeRisk]);
+        OutputTable.Cell[ColIdx    , i + 2].Text := FormatRatio(Stat.FRelativeRisk, Options);
         if (not IsInfinite(Stat.FRelativeRisk)) then
-          OutputTable.Cell[ColIdx + 1, i + 2].Text := FormatCI(Stat.FRRLL, Stat.FRRUL, 0);
+          OutputTable.Cell[ColIdx + 1, i + 2].Text := FormatCI(Stat.FRRLL, Stat.FRRUL, 0, Options);
       end;
     end;
 
   if (FMHRR = TEpiFLoatField.DefaultMissing) then exit;
-  OutputTable.Cell[ColIdx,     2].Text := Format('%.2f', [FMHRR]);
+  OutputTable.Cell[ColIdx,     2].Text := FormatRatio(FMHRR, Options);
   if (IsInfinite(FMHRR)) then exit;
-  OutputTable.Cell[ColIdx + 1, 2].Text := FormatCI(FMHRRLL, FMHRRUL, 0);
+  OutputTable.Cell[ColIdx + 1, 2].Text := FormatCI(FMHRRLL, FMHRRUL, 0, Options);
 end;
 
 procedure TTwoWayStatisticsRR.CreateSummaryResultVariables(Executor: TExecutor;
@@ -184,19 +183,19 @@ begin
 
 end;
 
-procedure TTwoWayStatisticsRR.CalcSummaryStatistics(Tables: TTwoWayTables);
+procedure TTwoWayStatisticsRR.CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer);
 var
   a, ab, c, cd, n: Integer;
   Tab: TTwoWayTable;
   r, s, SumR, SumS, SumV: EpiFloat;
-  conf, variance: EpiFloat;
+  Zconf, variance: EpiFloat;
 begin
   if (StatisticsCount = 1) then exit;   // No stratified tables
-  FConf     := 95;  // this should get set by option
-  conf      := PNormalInv((1 - (FConf / 100)) / 2);
-  SumV := 0;
-  SumR := 0;
-  SumS := 0;
+  Zconf := PNormalInv((1 - (Conf / 100)) / 2);
+  FConf := Conf;
+  SumV  := 0;
+  SumR  := 0;
+  SumS  := 0;
 
   for Tab in Tables do   // skips unstratified table
     begin
@@ -229,8 +228,8 @@ begin
   end
   else begin
     variance := abs(SumV / (SumR * SumS));
-    FMHRRLL := exp(ln(FMHRR) - (conf * sqrt(variance)));
-    FMHRRUL := exp(ln(FMHRR) + (conf * sqrt(variance)));
+    FMHRRLL := exp(ln(FMHRR) - (Zconf * sqrt(variance)));
+    FMHRRUL := exp(ln(FMHRR) + (Zconf * sqrt(variance)));
   end;
 end;
 
