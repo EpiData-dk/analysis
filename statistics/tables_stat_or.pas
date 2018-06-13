@@ -152,6 +152,7 @@ begin
   OutputTable.Cell[ColIdx    , 0].Text := 'Odds Ratio';
   OutputTable.Cell[ColIdx + 1, 0].Text := IntToStr(FConf) + '% CI';
   OutputTable.Cell[ColIdx    , 1].Text := Format('%.2f', [Stat.FOddsRatio]);
+  OutputTable.Cell[ColIdx + 1, 1].Text := FormatCI(Stat.FORUL, Stat.FORLL, 0);
   if (StatisticsCount = 1) then begin
      OutputTable.Cell[ColIdx    , 2].Text := '-';   // will be replaced by M-H OR
      exit;
