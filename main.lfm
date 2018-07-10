@@ -149,7 +149,7 @@ object MainForm: TMainForm
     MinFontSize = 0
     MaxFontSize = 0
     left = 464
-    top = 16
+    top = 17
   end
   object SaveDialog1: TSaveDialog
     left = 96

@@ -37,7 +37,7 @@
 </head>
 <body class="bodywhite">
   <!-- put here all tags for old commands -->
-  <a name="top" id="top"></a><h2>EpiData Analysis: Command and Function Reference Guide &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  <a name="top" id="top"></a><h2>EpiData Analysis: Command and Function Reference Guide &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
      <font style="font-size: 0.85em;">Document version 2.7</font></h2>
   <table border="1" cellpadding="3" cellspacing="1" width="100%">
     <tbody>
@@ -303,7 +303,7 @@ read fn;                               // expression where the variable fn is us
           </ul>
         </td>
       </tr>
-     
+
      <!--
       ######################################################3
       Merge, Append & Aggregate
@@ -454,18 +454,18 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
        </ul>
        <font class="cmd">
 Example <br/>
-// define a global vectore for column texts: 
+// define a global vectore for column texts:
 new global columnhead[5] string;
 columntxt[1] := "Group";
 columntxt[2] := "N Total";
 columntxt[3] := "n (observed)";
 columntxt[4] := "Mean";
-columntxt[5] := .; 
+columntxt[5] := .;
 agg sex age !by:=family !header:=columntxt  !mci:=economy !mci:=children ;
        </font>
        </td>
      </tr>
-     
+
      <!--
       ######################################################3
       Using datasets & Sorting
@@ -674,8 +674,8 @@ new variable age date   := integer((today() - dateborn)/365.25)    // calculated
           <font class="cmd">new global <i>variable<sub>1</sub></i>                       &lt;type&gt; [:= expression]
 new global <i>variable<sub>1</sub></i>[&lt;integer expression&gt;] &lt;type&gt; [:= expression]
           </font>
-          <p>Create a new global parameter variable with a given <a href="#types">type</a> and optionally assign the value given in an expression.<br/> 
-            The global variable or parameter has only one value, whereas a standard variable has one value for each observation.  
+          <p>Create a new global parameter variable with a given <a href="#types">type</a> and optionally assign the value given in an expression.<br/>
+            The global variable or parameter has only one value, whereas a standard variable has one value for each observation.
             The global variable type and expressions type must be compatible otherwise an error will occur.<br/>
             Global variables can for most parts be used like as a regular variable, but they cannot be evaluated as a vector.</p>
           <p>If the name is post-fixed with square brackets [...], then a global vector is created, where each entry can be individually
@@ -713,7 +713,7 @@ new global g7[10] integer := 10;
           </ul>
           Examples:
           <font class="cmd">
-// "normal" value label             
+// "normal" value label
 new valuelabel _VL1 integer (1, "Value A") (2, "Value B") (9, "Missing") !m := 9;
 
 // using expression
@@ -747,13 +747,13 @@ new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "Thi
         <li><font class="option">!c </font> Close all currently open browsers</li>
         <li><font class="option">!a </font> Arrange all browsers in a cascade</li>
         <li><font class="option">!vn </font>Show variable names instead of following the <br/>
-         <font class="cmd"> set "FORMAT VALUE LABEL"</font> and <font class="cmd">set "FORMAT VARIABLE LABEL"</font> setting</li>		
+         <font class="cmd"> set "FORMAT VALUE LABEL"</font> and <font class="cmd">set "FORMAT VARIABLE LABEL"</font> setting</li>
        </ul>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
        <p><b>Note that browse is much faster than list</b></p>
       </td>
      </tr>
-     
+
      <tr valign="top">
       <td>
        <a name="listdata" id="listdata">list data</a><br/>
@@ -767,11 +767,11 @@ new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "Thi
         <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
        </ul>
        <p>Note that browse is much faster than list.</p>
-       <font class="limit">Select:</font> the sequence number is within the current select if you used a select statement, not for the whole dataset. 
+       <font class="limit">Select:</font> the sequence number is within the current select if you used a select statement, not for the whole dataset.
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
       </td>
      </tr>
-     
+
      <tr valign="top">
       <td>
        <a name="list_project" id="list_project">list project</a><br/>
@@ -806,7 +806,7 @@ new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "Thi
       </td>
       <td>
        <font class="cmd">list variable</font>
-       <p>List currently defined variable names, types, formats and labels</p>       
+       <p>List currently defined variable names, types, formats and labels</p>
       </td>
      </tr>
      <tr valign="top">
@@ -843,7 +843,7 @@ new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "Thi
        <p>List currently defined global parameters and their types and value. Global parameters can only contain a single value. But you may give them varying values and use functions to create content values.</p>
       </td>
      </tr>
-     
+
      <!--
       ######################################################3
       Editing definitions
@@ -906,7 +906,7 @@ new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "Thi
             <li>
               <font class="option">!noparent</font>
               Moves the current dataset (and all related datasets) to be a top-level dataset.<br/>
-              Notice than one must create a new empty child dataset to restore the relate situation followed by a merge of data in child datasets. 
+              Notice than one must create a new empty child dataset to restore the relate situation followed by a merge of data in child datasets.
             </li>
           </ul>
          <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
@@ -963,7 +963,7 @@ new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "Thi
          </li>
         <li>
          <font class="option">!cmpX := <i>variable</i></font>
-         Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between this variable and the assigned variable. 
+         Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between this variable and the assigned variable.
         </li>
         <li>
            <font class="option">!confirm</font>
@@ -1024,9 +1024,9 @@ new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "Thi
        </ul>
        Examples:
        <font class="cmd">
-// Create a new simple valuelabel     
+// Create a new simple valuelabel
 new vl _VL1 int (1, "A");
-         
+
 // Simple edit: add another valuelabel
 edit vl _VL1 (2, "B");
 
@@ -1034,7 +1034,7 @@ edit vl _VL1 (2, "B");
 edit vl _VL1 (2, "Replaced B");
 
 // Create a valuelabel set using a loop.
-new valuelabel _VL2 int (1, "This is the first value label"); // create a new valuelabel set 
+new valuelabel _VL2 int (1, "This is the first value label"); // create a new valuelabel set
 new global i integer;                                         // we also need a loop variable
 
 // now create 5 pairs (2, "... 2") (3, "... 3") ...
@@ -1079,7 +1079,7 @@ for i := 2 to 5 do
         </td>
         <td>
           <font class="cmd">drop dataset <i>dataset<sub>1</sub></i> [<i>dataset<sub>2</sub></i> ...]</font><br/>
-          <p>Remove the listed datasets (and related datasets) from memory</p>  
+          <p>Remove the listed datasets (and related datasets) from memory</p>
          <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
         </td>
       </tr>
@@ -1087,11 +1087,11 @@ for i := 2 to 5 do
       <td>
        <a name="dropvariable" id="dropvariable">drop variable</a><br/>
        drop var<br/>
-       drop v       
+       drop v
       </td>
       <td>
        <font class="cmd">drop variable <i>variable<sub>1</sub></i> [<i>variable<sub>2</sub></i> ...]</font><br/>
-       <p>Remove the listed variables from memory</p>  
+       <p>Remove the listed variables from memory</p>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
       </td>
      </tr>
@@ -1128,7 +1128,7 @@ drop global !all;             // drops i1 and s1 (because they are left)
         </td>
         <td>
           <font class="cmd">drop valuelabel <i>valuelabel<sub>1</sub></i> [<i>valuelabel<sub>2</sub></i> ...]</font><br/>
-          <p>Remove the listed value label sets from memory. If the set is assigned to a variable, then this assignment is automatically removed</p>  
+          <p>Remove the listed value label sets from memory. If the set is assigned to a variable, then this assignment is automatically removed</p>
          <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
         </td>
       </tr>
@@ -1143,17 +1143,17 @@ drop global !all;             // drops i1 and s1 (because they are left)
        <ul>
         <li><font class="option">!del</font> Drops all observations marked for deletion.
 		<font class="limit">Note: </font>Make sure to test whether this creates a problem in a related dataset with the check command		</li>
-		
+
        </ul>
        Examples:<br/>
         <font class="cmd">
 read "bromar.epx";
-select (id > 1000) do 
+select (id > 1000) do
   drop data;  // Drops all observations where id > 1000, but keeps the rest.
 
 read "bromar.epx";
 drop data !del ; // drop all observations "marked for deletion"
-        </font>       
+        </font>
       </td>
     </tr>
 
@@ -1183,10 +1183,10 @@ drop data !del ; // drop all observations "marked for deletion"
         end;</font>
       </td>
      </tr>
-     
+
      <!--
       ######################################################3
-      change flow If ... Then, for 
+      change flow If ... Then, for
       ######################################################3
      -->
      <tr>
@@ -1202,7 +1202,7 @@ drop data !del ; // drop all observations "marked for deletion"
         when the logical expression is true. <font class="limit">Note: </font> This statement is not normally used to change values of variables (see the example below).
         The <i>else</i> clause is optional and is only executed if evaluation of the logical expression is false.<br/>
         - for complex logical expressions, use parentheses for clarity.<br/>
-        <font class="limit">Note: </font> The if is changing flow of programming NOT values in variables unless the logic in the if ... ; defines this. 
+        <font class="limit">Note: </font> The if is changing flow of programming NOT values in variables unless the logic in the if ... ; defines this.
        </p>
        Examples:<br/>
        <font class="cmd">
@@ -1213,9 +1213,9 @@ drop data !del ; // drop all observations "marked for deletion"
        </font>
        <p><font class="limit">Note: </font> The flow control of "if ... then .... was completely different in EpiData Analysis Classic v2.2.</p>
        <font class="cmd">// In Analysis 2.2 to change all system missing values in V1 with the value 99
-        if (V1 = .) then V1 := 99;  
-        
-        // To do the same in current Analysis use this syntax: 
+        if (V1 = .) then V1 := 99;
+
+        // To do the same in current Analysis use this syntax:
         select (V1 = .) do V1 := 99;
        </font>
       </td>
@@ -1228,17 +1228,17 @@ drop data !del ; // drop all observations "marked for deletion"
        <font class="cmd">for &lt;var&gt; := &lt;start value&gt; to|downto &lt;end value&gt; do &lt;statements&gt;;</font><br/>
        <p>Loops through the integer values from start to end either in ascending order (to) or descending order (downto).<br/>
         If the values are in the wrong order (e.g. start value &gt; end value, and the order is ascending) then the statements are not executed.<br/>
-        
+
         <i>&lt;var&gt;</i>: Must be global variable (single or vector) and integer datatype!<br/>
         The result of &lt;start value&gt; and &lt;end value&gt; must be an integer value</p>
        Examples:<br/>
        <font class="cmd">new variable ID integer;   // this creates the new ID variable
-        new global i integer;  
+        new global i integer;
         for i := 1 to size(@dataset[1]) do
-        ID := i;  // This gives the ID variable the sequential number that each observation has in a dataset. You may sort the data before doing so. 
+        ID := i;  // This gives the ID variable the sequential number that each observation has in a dataset. You may sort the data before doing so.
        </font>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-      </td>       
+      </td>
      </tr>
      <tr valign="top">
       <td>
@@ -1251,21 +1251,21 @@ drop data !del ; // drop all observations "marked for deletion"
        Examples:<font class="cmd">
         new global I integer;
         for I in [1, 3, 5, 7, 9] do ? I &lt; 10;       // "regular" integer loop.
-        
+
         new global F float;
         for F in [1.1, 3.3, 5.5] do ? fraction(F);  // Looping with floating values
-        
+
         new global S string;
         for S in ["Denmark", "Norway", "Sweden", "Finland"] do
-        ? S + " is a nordic country"; 
+        ? S + " is a nordic country";
        </font>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-      </td>       
+      </td>
      </tr>
-     
+
      <!--
       ######################################################3
-      Reordering variables and ? 
+      Reordering variables and ?
       ######################################################3
      -->
      <tr>
@@ -1281,7 +1281,7 @@ drop data !del ; // drop all observations "marked for deletion"
         <li><font class="option">!before := &lt;var&gt;</font>Places the variables before this variable</li>
         <li><font class="option">!after:= &lt;var&gt;</font>Places the variables after this variable</li>
         <li><font class="option">!last</font>Places the variables at the end of the list</li>
-       </ul>          
+       </ul>
        <p>If no options are specified, the default is to place the variables before all other variables in the list. Use F3 or "list variable" to show the current order of variables.</p>
        Examples:
        <font class="cmd">
@@ -1310,7 +1310,7 @@ drop data !del ; // drop all observations "marked for deletion"
 
      <!--
       ######################################################3
-      change content of variables 
+      change content of variables
       ######################################################3
      -->
      <tr valign="top">
@@ -1320,7 +1320,7 @@ drop data !del ; // drop all observations "marked for deletion"
       <td>&nbsp;</td>
       <td>
        Assign the value given in an expression. The variable <a href="#types">type</a> and expressions must be compatible otherwise an error will occur.<br/>
-       <br/> 
+       <br/>
        Here all observations get the same value:
        <font class="cmd">
         v1 := 1 + 2 * 3 - 4;
@@ -1340,8 +1340,8 @@ drop data !del ; // drop all observations "marked for deletion"
        <font class="cmd">select (v1 = 0) do v17 := 17;
         select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
        <p><a href="#functions">Functions</a> may be used:</p>
-       <font class="cmd">select (age = .) do age := integer((today() - dateborn)/365.25)    // calculated age 
-       </font>    
+       <font class="cmd">select (age = .) do age := integer((today() - dateborn)/365.25)    // calculated age
+       </font>
       </td>
      </tr>
 
@@ -1399,7 +1399,7 @@ drop data !del ; // drop all observations "marked for deletion"
           <li><font class="option">!pt</font> Show total percents for each table cell and col/row totals</li>
          </ul>
         </li>
-        <li> Sorting: 
+        <li> Sorting:
          <ul>
           <li>Indicate by !Sxxx where the x indicate:<br/>
            R:row C:Column A:Ascending D:Descending T:Total L:label (else numerical)</li>
@@ -1419,13 +1419,16 @@ drop data !del ; // drop all observations "marked for deletion"
         </li>
         <li> Estimation and testing:
          <ul>
-          <li><font class="option">!t</font> Chi<sup>2</sup></li>
+         <li><font class="option">!t</font> Chi<sup>2</sup></li>
+         <li><font class="option">!ex</font> Fisher Exact test for 2x2 tables only</li>
+         <li><font class="option">!odds</font> Odds Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data</li>
+         <li><font class="option">!rr</font> Risk Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data</li>
           </ul>
         </li>
        </ul>
       </td>
      </tr>
-    
+
      <!--
       ######################################################3
       Means and Count
@@ -1454,7 +1457,7 @@ drop data !del ; // drop all observations "marked for deletion"
        <font class="cmd">means <i>variable<sub>1</sub></i> [!by=<i>variable<sub>2</sub></i>] [!t]</font><br/>
        <p>Basic descriptive statistics for variable1, optionally stratified by variable2<br/></p>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-       
+
        <ul>
         <li><font class="option">!by:</font> Stratify by this variable</li>
         <li><font class="option">!t:</font> Test for homogeneity of the mean across strata (same or different mean)<br/>
@@ -1468,7 +1471,7 @@ drop data !del ; // drop all observations "marked for deletion"
        <font class="limit">Note:</font> Confidence Intervals given are based on the T-distribution with N-1 degrees of freedom.
       </td>
      </tr>
-     
+
      <!--
       ######################################################3
       Data and Structural Consistency Checks
@@ -1522,7 +1525,7 @@ drop data !del ; // drop all observations "marked for deletion"
        Examples:
        <font class="cmd">
         read "related_data.epx";  // Load the project
-        use child_dataset;        // Change dataset to a related dataset 
+        use child_dataset;        // Change dataset to a related dataset
         check relate;             // Perform the check from the child dataset "upwards" to the parent. Must be repeated if you have more levels</font>
       </td>
      </tr>
@@ -1538,7 +1541,7 @@ drop data !del ; // drop all observations "marked for deletion"
         check study;          // Perform the check</font>
       </td>
      </tr>
-     
+
      <!--
       ######################################################3
       REPORTS
@@ -1553,7 +1556,7 @@ drop data !del ; // drop all observations "marked for deletion"
       <td>
        <font class="cmd">report users</font><br/>
        <p>If a project is using Extended Access control, this command will show a condensed report of the log entries and a list of failed login attempts.</p>
-       If the project is not using Extended Access control, an error will be displayed. 
+       If the project is not using Extended Access control, an error will be displayed.
       </td>
      </tr>
      <tr valign="top">
@@ -1562,7 +1565,7 @@ drop data !del ; // drop all observations "marked for deletion"
       <td>
        <font class="cmd">report validate [var<sub>1</sub> var<sub>2</sub> ...] [!options]</font><br/>
        Compares two dataset / projects against eachother, validating the data content and outputs a report of diffenrences based on the comparison.<br/>
-       The variables var<sub>1</sub> .. var<sub>n</sub> denotes the sorting variables. This is required if not comparing whole projects OR if the datasets does not contain and key variables.    
+       The variables var<sub>1</sub> .. var<sub>n</sub> denotes the sorting variables. This is required if not comparing whole projects OR if the datasets does not contain and key variables.
        <ul>
         <li><font class="option">!fn := "&lt;string&gt;"</font> Opens an external file to compare with.</li>
         <li><font class="option">!ds := &lt;dataset id&gt;</font> Specifies a single dataset (internal/external) to compare with.</li>
@@ -1575,19 +1578,19 @@ drop data !del ; // drop all observations "marked for deletion"
        </ul>
        Examples:<font class="cmd">
         read "bromar.epx";               // Load the project
-        
-        // Run a report based on the two internal datasets (1st is currently used, 2nd is the one marked with !ds :=...) 
+
+        // Run a report based on the two internal datasets (1st is currently used, 2nd is the one marked with !ds :=...)
         report val id !ds := ds2;
-        
-        // Run a report based on the two datasets, one internal and one external (1st is currently used, 2nd is the one marked with !ds :=...) 
+
+        // Run a report based on the two datasets, one internal and one external (1st is currently used, 2nd is the one marked with !ds :=...)
         report val id !fn := "double_entry.epx" !ds := ds1
-        
+
         // If you have two projects there are two ways compare there. If you wish to compare individual dataset, use the options above.
         // If you have two project you wish to make a complete validation on, use following:
-        
+
         // Run a report based on the two complete projects, one internal and one external
         report val !fn := "double_entry.epx"
-        
+
         // The last example is a special case where both the internal and external project only contains a single dataset each.
         // In this case you only need to specify the sorting variable(s) and the external file. The dataset option is not need
         // since the external project only has a single dataset.
@@ -1607,7 +1610,7 @@ drop data !del ; // drop all observations "marked for deletion"
         <li><font class="option">!nol</font> Only show the condensed report - do not show the list of observations</li>
        </ul>
        Examples:<font class="cmd">
-        
+
         // Setup the input for the report:
         new global filenames[5] string;
         filenames[1] := "count_file_1.epx";
@@ -1617,7 +1620,7 @@ drop data !del ; // drop all observations "marked for deletion"
         filenames[5] := .;
         // NOTE: the filename are not required to be the same format, only the variable names MUST be the same
         //       if an entry in the vector is sys.missing, the command assumes the dataset is in the currently opened project.
-        
+
         // The number of entries in the dataset variable MUST be the same as the filenames
         new global datasets[5] string;
         datasets[1] := "ds1";
@@ -1625,9 +1628,9 @@ drop data !del ; // drop all observations "marked for deletion"
         datasets[3] := "ds1";
         datasets[4] := "ds1";
         datasets[5] := "ds1";
-        
+
         // Run the report:
-        report cby id !fn := filenames !ds := datasets</font> 
+        report cby id !fn := filenames !ds := datasets</font>
       </td>
      </tr>
 
@@ -1675,7 +1678,7 @@ drop data !del ; // drop all observations "marked for deletion"
         <font class="limit">Warning: </font>The file is deleted (if the file exist) with no confirmatory question</p>
       </td>
      </tr>
-     
+
      <!--
       ######################################################3
       SET
@@ -1694,8 +1697,8 @@ drop data !del ; // drop all observations "marked for deletion"
             - without parameters, provides a list of available parameters and their current values<br/>
             Set commands will be implemented as development continues, to see those currently defined issue "set" without parameters. .
         <br/>
-            - All <font class="cmd">set ["parameter"]</font> definitions may be added to the file <b>startup.pgm</b>, such that you define your own default standard. 
-               An example of this is colour or font selection. 
+            - All <font class="cmd">set ["parameter"]</font> definitions may be added to the file <b>startup.pgm</b>, such that you define your own default standard.
+               An example of this is colour or font selection.
               Notice that placement can depend on operation system, but for most will be where your exe file is placed</li>
             <li>values can be a number, text, ON/OFF or a hexadecimal font colour (<a href= "https://www.w3schools.com/colors/colors_hexadecimal.asp"> See examples here (requires internet) </a>).<br/>
                 see table below</li>
@@ -1952,8 +1955,8 @@ drop data !del ; // drop all observations "marked for deletion"
             </tbody>
           </table>
         </td>
-        </tr>      
-    
+        </tr>
+
      <!--
       ######################################################
       Labeling and formatting data
@@ -1969,9 +1972,9 @@ drop data !del ; // drop all observations "marked for deletion"
       <td>
        <ul>
         <li><font class="option">!v:</font> Show only the value, (<b>fallback</b> if no label to corresponding value)</li>
-        <li><font class="option">!l:</font> Show only the label (<b>default</b>)</li>       
+        <li><font class="option">!l:</font> Show only the label (<b>default</b>)</li>
         <li><font class="option">!vl:</font> Show the value then the label</li>
-        <li><font class="option">!lv:</font> Show the label then the value</li>       
+        <li><font class="option">!lv:</font> Show the label then the value</li>
        </ul>
       </td>
      </tr>
@@ -1982,9 +1985,9 @@ drop data !del ; // drop all observations "marked for deletion"
         <td>
           <ul>
             <li><font class="option">!vn:</font> Show only the name, (<b>fallback</b> if no variable label assigned)</li>
-            <li><font class="option">!vla:</font> Show only the label (<b>default</b>)</li>       
+            <li><font class="option">!vla:</font> Show only the label (<b>default</b>)</li>
             <li><font class="option">!vnl:</font> Show the name then the label</li>
-            <li><font class="option">!vln:</font> Show the label then the name</li>       
+            <li><font class="option">!vln:</font> Show the label then the name</li>
           </ul>
         </td>
       </tr>
@@ -2006,7 +2009,7 @@ drop data !del ; // drop all observations "marked for deletion"
 
      <!--
       ######################################################3
-      Variable types 
+      Variable types
       ######################################################3
      -->
      <tr>
@@ -2061,7 +2064,7 @@ drop data !del ; // drop all observations "marked for deletion"
        t
       </td>
       <td>
-       A variable (standard, result or global) that contains a time value.  
+       A variable (standard, result or global) that contains a time value.
       </td>
      </tr>
      <tr valign="top">
@@ -2070,10 +2073,10 @@ drop data !del ; // drop all observations "marked for deletion"
        d
       </td>
       <td>
-       A variable (standard, result or global) that contains a date value. All new date variables created will be a DMY type, but this may change in the future.   
+       A variable (standard, result or global) that contains a date value. All new date variables created will be a DMY type, but this may change in the future.
       </td>
      </tr>
-      
+
       <!--
         ######################################################3
         Variable references
@@ -2087,12 +2090,12 @@ drop data !del ; // drop all observations "marked for deletion"
           <i>Variable Expansion</i><br/>
           var<sub>1</sub> - var<sub>4</sub><br/>
           va*<br/>
-          var?            
+          var?
         </td>
         <td>
           <p>
           Any command that accepts more than 1 (one) variable can use the scheme for variable expansion.</p>
-          <ul>            
+          <ul>
           <li>Using "-" (dash) tells the program to use all variables between the two specified variables (both including).</li>
           <li>The "*" (asterisk) is used as a replacement for 0 to many characters</li>
           <li>The "?" (questionmark) is used as a replacement for exactly 1 character</li>
@@ -2118,7 +2121,7 @@ list data V1??;          // V1?? is expanded to V100 only!</font>
           variable<sub>1</sub>
         </td>
         <td>
-          Any command that accepts variables can use this variant. This is the "default" way to provide a variable to a command.  
+          Any command that accepts variables can use this variant. This is the "default" way to provide a variable to a command.
         </td>
       </tr>
       <tr valign="top">
@@ -2133,7 +2136,7 @@ list data V1??;          // V1?? is expanded to V100 only!</font>
 new global gvar1 string := "sex";
 read "bromar.epx";
 freq sex;       // Outputs a frequency table for the variable "sex"
-freq @{gvar1};  // Does the same as above, because the content of gvar1 is "sex" 
+freq @{gvar1};  // Does the same as above, because the content of gvar1 is "sex"
           </font>
          <p>This can be combined with eg. indexing of a variable. Using some of the builtin result variables like $dataset and $variable:</p>
          <font class="cmd">
@@ -2141,9 +2144,9 @@ new global i integer;
 for i := 1 to size($variable) do
   begin
     // Here we output the name of all the variables:
-    // - not using the @{..} because we want the content of the $variable result var. 
+    // - not using the @{..} because we want the content of the $variable result var.
     ? $variable[i]
-    
+
     // Here we do a frequency table of the variable.
     // - using @{..} because "freq" needs a variable and not the content of $variable
     freq @{$variable[i]}
@@ -2151,9 +2154,9 @@ for i := 1 to size($variable) do
          </font>
          <p>The Variable inside the @{..} may itself be another reference (with or without index), making it possible to combine multiple levels of references.</p>
          <font class="cmd">
-new global f    string := "age"         
+new global f    string := "age"
 new global g[3] string := "f";  // All entries have the value "f", but that is fine for this example.
-new global h[3] string := "g";  // All entries have the value "g", but that is fine for this example.   
+new global h[3] string := "g";  // All entries have the value "g", but that is fine for this example.
 
 // The line below is a valid construction, which evalutes the following way
 // 1: h[1] is evaluated into the string "g"
@@ -2163,34 +2166,34 @@ new global h[3] string := "g";  // All entries have the value "g", but that is f
 // 5: @{f} is evalued to the variable AGE
 // 6: The command freq is run on the variable AGE.
 
-freq @{ @{h[1]}[1] };  
+freq @{ @{h[1]}[1] };
 
-Example of how to loop over a referenced variable: 
+Example of how to loop over a referenced variable:
 
 // you wish to estimate the time for parts of an analysis and have created a number of time stamps:
-new global tx t:= now(); // where x is 1 , 2, 3 etc. 
+new global tx t:= now(); // where x is 1 , 2, 3 etc.
 
-// now to display these and the difference: - assume you had five of these:  
+// now to display these and the difference: - assume you had five of these:
 
 new global i i;
 for i:= 1 to 5 do
    begin
-     ? i + " time: " + @{"t" + i};  // this works becaus the parenthesis will be t1 t2 t3 etc. 
+     ? i + " time: " + @{"t" + i};  // this works becaus the parenthesis will be t1 t2 t3 etc.
      end;
 
-// now also calculate the difference in time between the two: 
+// now also calculate the difference in time between the two:
 
-new global tdif t;   // tdif is a time difference 
+new global tdif t;   // tdif is a time difference
 
 for i:= 2 to 5 do
    begin
-     tdif := (@{"t" + i} - @{"t" + (i-1)});  // notice again the (tdif = t2 -t1 ) when i was = 2 
+     tdif := (@{"t" + i} - @{"t" + (i-1)});  // notice again the (tdif = t2 -t1 ) when i was = 2
      ? i + " difference : " + tdif;
    end;
-</font> 
+</font>
         </td>
       </tr>
-            
+
      <!--
       ######################################################3
       Programming aids - not normally used in interactive mode
@@ -2222,7 +2225,7 @@ for i:= 2 to 5 do
         - without parameters, the open file dialogue is started</p>
       </td>
      </tr>
-     
+
      <!--
       ######################################################3
       Clean up - stop
@@ -2240,7 +2243,7 @@ for i:= 2 to 5 do
        Stop using a project<br/>
        - all unsaved variables and changes to existing variables and labels will be lost<br/>
        - global variables will remain in memory<br/>
-      </td>       
+      </td>
      </tr>
      <tr valign="top">
       <td><a name="cls" id="cls"></a>cls</td>
@@ -2267,18 +2270,18 @@ for i:= 2 to 5 do
        <br/>But this also clears all result variables!
       </td>
      </tr>
-     
-     
+
+
     </tbody>
   </table>
- 
+
  <!--
   ######################################################3
   Functions available in EpiData Analysis
   HEADER
   ######################################################3
  -->
- 
+
   <!-- <h3>Functions available in EpiData Analysis</h3>  -->
 
   <table border="1" cellpadding="4" cellspacing="0" frame="void" rules="rows" width="100%">
@@ -2320,7 +2323,7 @@ for i:= 2 to 5 do
     </tr>
     </tbody>
   </table>
- 
+
  <!--
   ######################################################3
   Functions available in EpiData Analysis
@@ -2514,7 +2517,7 @@ for i:= 2 to 5 do
        <td>d</td>
        <td>createdate("31/12/2016") =&gt; 31/12/2016<br/>
         The form of <i>datestr</i> is automatically detected, but if the string is ambiguous the preference is always DMY over MDY.<br/>
-        If parts of the datestr are omitted, then these parts are filled with todays values.  
+        If parts of the datestr are omitted, then these parts are filled with todays values.
        </td>
       </tr>
      <tr valign="top">
@@ -2585,7 +2588,7 @@ for i:= 2 to 5 do
       <td>t</td>
       <td>createtime("12:34:56") =&gt; 12:34:56<br/>
        The form of <i>timestr</i> is automatically detected.<br/>
-       If parts of the timestr are omitted, then these parts are filled with 0 (zero).   
+       If parts of the timestr are omitted, then these parts are filled with 0 (zero).
       </td>
      </tr>
      <tr valign="top">
@@ -2740,12 +2743,12 @@ for i:= 2 to 5 do
           <br/>
           0: Global variable<br/>
           1: Global vector<br/>
-          2: Regular Variable<br/>  
+          2: Regular Variable<br/>
           3: Dataset<br/>
           4: Valuelabel<br/>
           5: Result Variable<br/>
           6: Result Vector<br/>
-          7: Result Matrix<br/>    
+          7: Result Matrix<br/>
           <br/>
           <font class="limit">Note: </font> if using idtype(x) with the eval function "?", the output will be in text.
         </td>
@@ -2784,9 +2787,9 @@ for i:= 2 to 5 do
           Global &amp; Result variables always have size 1<br/>
           Global vector, Result Vector, Variable &amp; Valuelabel return the length/size/count of elements/data<br/>
           Result Matrix is not implemented yet - it returns -1;<br/>
-          Dataset returns the total number of observations (even if a select is applied).<br/>       
+          Dataset returns the total number of observations (even if a select is applied).<br/>
         </td>
-      </tr>      
+      </tr>
       <tr valign="top">
         <td><a name="string"/>label(v)</td>
         <td>v</td>

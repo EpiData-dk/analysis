@@ -199,12 +199,15 @@ begin
   then
     begin
       OpenDialog1.InitialDir := GetCurrentDirUTF8;
-      OpenDialog1.Filter := GetEpiDialogFilter(dfImport);
-
+      OpenDialog1.Filter     := GetEpiDialogFilter(dfImport);
+      OpenDialog1.FileName   := OpenDialog1.InitialDir;
+      OpenDialog1.Options    := [ofNoChangeDir];
+//      OpenDialog1.LastSelectionChangeFilename := '';
       if OpenDialog1.Execute then
       begin
         FN := OpenDialog1.FileName;
         DoDialogFilename(FN);
+        SetCurrentDirUTF8(ExtractFilePath(FN));    // just to be sure
       end
       else
         Exit(dfrCanceled);

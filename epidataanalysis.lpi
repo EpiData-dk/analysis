@@ -230,7 +230,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="80">
+    <Units Count="83">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -589,6 +589,18 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit79>
+      <Unit80>
+        <Filename Value="statistics/tables_stat_fexp.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit80>
+      <Unit81>
+        <Filename Value="statistics/tables_stat_or.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit81>
+      <Unit82>
+        <Filename Value="statistics/tables_stat_rr.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit82>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -37,7 +37,8 @@ type
   private
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
-    function  DoCalcTables(InputDF: TEpiDataFile; Varnames, StratifyNames: TStrings; Const WeightVariable: UTF8String = ''): TTwoWayTables;
+    function  DoCalcTables(InputDF: TEpiDataFile;
+      Varnames, StratifyNames: TStrings; Const WeightVariable: UTF8String = ''): TTwoWayTables;
     procedure OutputTwoWayTable(Table: TTwoWayTable; StratifyVariables: TEpiFields; ST: TTablesCommand; IsUnstratifiedTable: boolean);
     procedure OutputSummaryTable(Tables: TTwoWayTables; ST: TTablesCommand);
     function  PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
@@ -55,6 +56,7 @@ type
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
     function  CalcTables(InputDF: TEpiDataFile; VariableNames: TStrings;
       StratifyNames: TStrings; Const WeightName: UTF8String;
+
       Out RefMap: TEpiReferenceMap; Statistics: TTableStatistics = []): TTwoWayTables;
   end;
 
@@ -65,7 +67,7 @@ implementation
 uses
   aggregate, aggregate_types, epimiscutils, epidatafileutils, epifields_helper,
   options_utils, LazUTF8, ana_globals, epidatafilestypes, options_table, strutils,
-  tables_stat_chi2;
+  tables_stat_chi2, tables_stat_fexp, tables_stat_or, tables_stat_rr;
 
 type
   PBoundArray = ^TBoundArray;
@@ -126,8 +128,8 @@ end;
 
 { TTables }
 
-function TTables.DoCalcTables(InputDF: TEpiDataFile; Varnames,
-  StratifyNames: TStrings; const WeightVariable: UTF8String): TTwoWayTables;
+function TTables.DoCalcTables(InputDF: TEpiDataFile;
+  Varnames, StratifyNames: TStrings; const WeightVariable: UTF8String): TTwoWayTables;
 var
   FuncList: TAggrFuncList;
   Aggr: TAggregate;
@@ -260,7 +262,7 @@ var
                 Format('%.' + IntToStr(Decimals) + 'f', [Value * 100]) +
                 OutputCreatorNormalizeText(SetOption.RigthChar);
   end;
-
+ // TODO: Do not display a row if row total is zero; should be same for columns
 begin
   ColSeparator      := '';
   if (ST.HasOption('cs', Opt)) then
@@ -386,7 +388,7 @@ begin
   for i := 0 to Table.StatisticsCount - 1 do
     begin
       Stat := Table.Statistics[i];
-      Stat.AddToOutput(T);
+      Stat.AddToOutput(T, ST.Options);    //*
 
       if (ST.HasOption('debug')) then
         Stat.DebugOutput(FOutputCreator);
@@ -458,7 +460,7 @@ begin
     end;
 
   for i := 0 to Tables.StatisticsCount -1  do
-    Tables.Statistics[i].AddToSummaryTable(T);
+    Tables.Statistics[i].AddToSummaryTable(T, ST.Options);   //*
 
 
   // Setting up borders
@@ -495,7 +497,15 @@ function TTables.GetStatisticOptions(ST: TTablesCommand): TTableStatistics;
 begin
   result := [];
 
-  if (ST.HasOption('t')) then Include(Result, tsChi2);
+  if (ST.HasOption('t')) then
+     Include(Result, tsChi2);
+  if (ST.HasOption('ex')) then
+     Include(Result, tsFExP);
+  if (ST.HasOption('odds')) then
+     Include(Result, tsOR);
+  if (ST.HasOption('rr')) then
+     Include(Result, tsRR);
+
 end;
 
 procedure TTables.DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
@@ -511,23 +521,24 @@ begin
       OutputTwoWayTable(Tab, Tables.StratifyVariables, ST, False);
 
   if (not ST.HasOption('ns')) and
-     (Tables.Count > 0)
+     (Tables.Count > 1)   // no summary if only one table
   then
     OutputSummaryTable(Tables, ST);
 end;
 
-procedure TTables.DoTableStatistics(Tables: TTwoWayTables; Statistics: TTableStatistics);
+procedure TTables.DoTableStatistics(Tables: TTwoWayTables;
+          Statistics: TTableStatistics);
 var
   Stat: TTableStatistic;
   StatObj: TTwoWayStatistics;
   Index: Integer;
-
   procedure RaiseError;
   begin
     raise Exception.Create('A table statistic was not correctly registered!');
   end;
 
 begin
+
   for Stat in Statistics do
     begin
       // This should only happen if a statistic unit did not call
@@ -536,7 +547,7 @@ begin
         RaiseError;
 
       StatObj := StatisticsMap.Data[Index].Create;
-      StatObj.CalcTables(Tables);
+      StatObj.CalcTables(Tables, FExecutor);
       Tables.AddStatistic(StatObj);
     end;
 end;
@@ -684,9 +695,10 @@ begin
       Inc(i);
     end;
 
-
+  // Need to treat summary statistics differently
   for i := 0 to Tables.StatisticsCount - 1 do
     Tables.Statistics[i].CreateResultVariables(Tables, FExecutor);
+
 end;
 
 constructor TTables.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator
@@ -726,10 +738,10 @@ begin
 
   AllTables := DoCalcTables(DF, VarNames, StratifyVarnames, WeightName);
 
-  DoTableStatistics(AllTables, GetStatisticOptions(ST));
-
   if (not DoSortTables(AllTables, ST)) then
     Exit;
+
+  DoTableStatistics(AllTables, GetStatisticOptions(ST));
 
   DoResultVariables(AllTables);
 

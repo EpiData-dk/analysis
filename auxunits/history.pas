@@ -201,6 +201,10 @@ end;
 
 function THistory.CheckCommandLogFile: boolean;
 begin
+  (*Debug
+    FOutputCreator.DoInfoAll('Current directory is ' + GetCurrentDirUTF8);
+    FOutputCreator.DoInfoAll('Does ' + FCommandLogFilename + ' exist? ' + BoolToStr(FileExistsUTF8(FCommandLogFilename)));
+  End Debug*)
   Result :=
           (
             (FileExistsUTF8(FCommandLogFilename)) and

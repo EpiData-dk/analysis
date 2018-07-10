@@ -1849,11 +1849,17 @@ begin
 
   FOptions.Insert(ANA_SO_TUTORIAL_FOLDER,
     TFolderOption.Create({$IFDEF DARWIN}
-                        ProgramDirectory + '../../../docs'
+                        ResolveDots(ProgramDirectory + '../../../docs')
                       {$ELSE}
                         ProgramDirectory + 'docs'
                       {$ENDIF},
                       rtString));
+  // STATISTICS
+  SOpt := TSetOption.Create('95', rtInteger);
+  SOpt.LegalValues.Add('90');
+  SOpt.LegalValues.Add('95');
+  SOpt.LegalValues.Add('99');
+  FOptions.Insert(ANA_SO_CONFIDENCE_INTERVAL, SOpt);
 
   // TABLES:
   FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_COL,   TTablePercentFormatOption.Create('{}', rtString));

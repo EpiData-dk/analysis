@@ -405,6 +405,7 @@ type
     function ResultType: TASTResultType; override;
     function IsMissing: Boolean; override;
     function AsInteger: ASTInteger; override;
+    function AsFloat: ASTFloat; override;
   end;
 
   { TUnaryExpr }
@@ -1537,6 +1538,12 @@ begin
   // Statistics
   Result.Insert('debug', [rtUndefined]);  // Special debug option for statistics
   Result.Insert('t',     [rtUndefined]);  // Chi2
+  Result.Insert('ex',    [rtUndefined]);  // Exact tests for 2x2 tables
+  Result.Insert('odds',  [rtUndefined]);  // Odds ratio, including M-H adjusted
+  Result.Insert('rr',    [rtUndefined]);  // Risk ratio, including M-H adjusted
+  Result.Insert('ci90',  [rtUndefined]);  // for OR and RR confidence intervals
+  Result.Insert('ci95',  [rtUndefined]);
+  Result.Insert('ci99',  [rtUndefined]);
 end;
 
 function TTablesCommand.GetAcceptedVariableCount: TBoundArray;
@@ -4358,6 +4365,11 @@ begin
   Result := FExecutor.GetCurrentRecordNo + 1;
 end;
 
+function TRecNumberLiteral.AsFloat: ASTFloat;
+begin
+  Result := FExecutor.GetCurrentRecordNo + 1;
+end;
+
 { TAbstractSyntaxTreeBase }
 
 procedure TAbstractSyntaxTreeBase.DoTypeCheckError(const Msg: String;
@@ -4506,6 +4518,7 @@ begin
         Result := (evfAsObject in TypesAndFlags.Flags);
 
         if (not Result) then
+ { TODO -oJamie : Why not just recast this as having the default index? }
         begin
           DoTypeCheckError('Identifier "' + Ident + '" must have an index', TypeChecker);
           Exit;

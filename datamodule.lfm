@@ -4,6 +4,7 @@ object aDM: TaDM
   HorizontalOffset = 1155
   VerticalOffset = 416
   Width = 475
+  PPI = 96
   object OpenDialog1: TOpenDialog
     left = 45
     top = 34

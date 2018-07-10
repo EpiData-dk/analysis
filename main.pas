@@ -459,6 +459,9 @@ begin
   FPageControl.ShowTabs := false;
   DockMaster.MakeDockable(FPageControl, false, false);
 
+  {IFDEF DARWIN}
+  SetCurrentDirUTF8(ResolveDots(ProgramDirectory + '../../..'));
+  {ENDIF}
   FHistory := THistory.Create(Executor, FOutputCreator);
 
   //HistoryForm := THistoryForm.Create(self, FHistory);
@@ -1288,15 +1291,8 @@ begin
 
   // Find all .pdf files in the directory set by TutorialsDirUTF8
   FileList := TStringListUTF8.Create;
-(* suggested change for DARWIN
   {$IFDEF DARWIN}
   P := ResolveDots(ProgramDirectory + '../../../docs');
-  {$ELSE}
-  P := ProgramDirectory + DirectorySeparator + 'docs';
-  {$ENDIF}
-*)
-  {$IFDEF DARWIN}
-  P := ProgramDirectory + '../../../docs';
   {$ELSE}
   P := ProgramDirectory + DirectorySeparator + 'docs';
   {$ENDIF}
@@ -1536,15 +1532,8 @@ procedure TMainForm.OpenTutorialMenuItemClick(Sender: TObject);
 var
   P: String;
 begin
-(* suggested change for DARWIN
   {$IFDEF DARWIN}
   P := ResolveDots(ProgramDirectory + '../../../docs');
-  {$ELSE}
-  P := ProgramDirectory + DirectorySeparator + 'docs';
-  {$ENDIF}
-*)
-  {$IFDEF DARWIN}
-  P := ProgramDirectory + '../../../docs';
   {$ELSE}
   P := ProgramDirectory + DirectorySeparator + 'docs';
   {$ENDIF}
@@ -1908,11 +1897,11 @@ begin
   else
     S := '';
 
-{  {$IFDEF DARWIN}
+  {$IFDEF DARWIN}
   S := 'file://' + ResolveDots(ProgramDirectory + '../../../docs' + DirectorySeparator + 'commands.html' + S);
-  {$ELSE}  }
+  {$ELSE}
   S := 'file://' + Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER] + DirectorySeparator + 'commands.html' + S;
-//  {$ENDIF}
+  {$ENDIF}
   OpenURL(S);
 end;
 
