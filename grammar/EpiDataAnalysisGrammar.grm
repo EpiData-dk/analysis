@@ -21,13 +21,13 @@ Float         = {Digit}+'.'{Digit}+
 ! Comments
 Comment Start = '/*'
 Comment End   = '*/'
-Comment Line  = '//' 
+Comment Line  = '//'
 
 ! Special tokens
 Missing       = '.'
 Pi            = 'pi'|'π'
 RecNumber     = '_n'
-              
+
 
 ! ==========================================================
 ! ===============        Commands      =====================
@@ -45,6 +45,7 @@ opReport      = 'report'
 
 ! -- Variable commands.
 opTables      = 'tab'('les')?
+opCTable      = 'cta'('ble')?
 opMeans       = 'mea'('ns')?
 opUse         = 'use'
 opBrowse      = 'bro'('wse')?
@@ -63,7 +64,7 @@ opSave        = 'sav'('e')?
 opCD          = 'cd'
 opLS          = 'ls'|'dir'
 opErase       = 'erase'
-              
+
 ! -- Empty Commands
 opCls         = 'cls'
 opClh         = 'clh'
@@ -73,11 +74,11 @@ opQuit        = 'qui'('t')?
 opReset       = 'reset'
 !opPack        = 'pack'
 
-              
+
 ! -- Other commands
 opAssert      = 'assert'
-opSet         = 'set'   
-!opRecode      = 'recode'                        
+opSet         = 'set'
+!opRecode      = 'recode'
 
 
 ! ------------------------------------------------- Rules
@@ -86,7 +87,7 @@ opSet         = 'set'
 
 <Statement List>                           ::= <Statement> ';' <Statement List>
                                            |
-               
+
 <Statement>                                ::= 'begin' <Statement List> 'end'
                                            |   'if' <Expression> 'then' <Statement> <Optional Else>
                                            |   'select' <Expression> 'do' <Statement>
@@ -108,7 +109,7 @@ opSet         = 'set'
                                            |   <Empty Command>                                     <Option List>
                                            |   <System Command>   <Optional Expression>
                                            |   ! This is to accomodate empty commands
-       
+
 <Crud Commands>                            ::= opNew  <Variable>  <New SubSystem>                   <Option List>
                                            |   opEdit <Variable>  <Edit SubSystem>                  <Option List>
                                            |   opDrop <Variable>  <Optional Indexed Variable List>  <Option List>
@@ -136,13 +137,14 @@ opSet         = 'set'
                                            |   opReorder
                                            |   opAggregate
                                            |   opTables
+                                           |   opCTable
 
 <String Command>                           ::= opRead
                                            |   opRuntest
                                            |   opRun
                                            |   opSave
                                            |   opErase
-                    
+
 <Empty Command>                            ::= opCls
                                            |   opClh
                                            |   opCount
@@ -156,16 +158,16 @@ opSet         = 'set'
 
 <Optional Else>                            ::= 'else' <Statement>
                                            |
-                   
+
 <For Direction>                            ::= 'to'
                                            |  'downto'
-                   
+
 <Value Label Pairs>                        ::= '(' <Expression> ',' <Expression> ')' <Value Label Pairs>
                                            |   '(' <Expression> ',' <Expression> ')'
 
 <Optional Assignment>                      ::= ':=' <Expression>
                                            |
-                                           
+
 !  =====================================================
 !        RECODING STUFF
 !  =====================================================
@@ -178,9 +180,9 @@ opSet         = 'set'
 
 !<Recode Inteval List>                      ::= <Recode Interval> <Recode Inteval List>
 !                                           |   <Recode Interval>
-                                           
+
 !<Recode Interval>                          ::= <Interval> ':=' <Expression>
-                                            
+
 !<Interval>                                 ::= 'from' <Expression> 'to' <Expression>
 !                                           |   opUse <Expression>
 
@@ -226,7 +228,7 @@ opSet         = 'set'
 
 <Optional Expression>                      ::= <Expression>
                                            |
-                   
+
 <Expression>                               ::= <Expression> '>'  <Add Exp>
                                            |   <Expression> '<'  <Add Exp>
                                            |   <Expression> '<=' <Add Exp>
@@ -249,7 +251,7 @@ opSet         = 'set'
                                            |   <Mult Exp> 'shl' <Exponential Exp>
                                            |   <Mult Exp> 'shr' <Exponential Exp>
                                            |   <Exponential Exp>
-                   
+
 <Exponential Exp>                          ::= <Exponential Exp> '^' <Negate Exp>
                                            |   <Negate Exp>
 
@@ -273,4 +275,3 @@ opSet         = 'set'
 <Function Call>                            ::= Identifier '(' <Optional Expression List> ')'
 
 <Array>                                    ::= '[' <Expression List> ']'
-

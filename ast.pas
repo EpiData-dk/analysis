@@ -1151,6 +1151,17 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+  { TCTableCommand }
+
+  TCTableCommand = class(TCustomVariableCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TMeansCommand }
 
   TMeansCommand = class(TCustomVariableCommand)
@@ -1502,6 +1513,7 @@ begin
   AddDecimalOptions(Result);
   AddVariableLabelOptions(Result);
   AddValueLabelOptions(Result);
+  AddSortingOptions(Result);
 
   Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('w',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
@@ -1518,22 +1530,6 @@ begin
   Result.Insert('pr', [rtUndefined]);
   Result.Insert('pc', [rtUndefined]);
   Result.Insert('pt', [rtUndefined]);
-
-  // Sorting options
-  Result.Insert('sa',  [rtUndefined]);
-  Result.Insert('sd',  [rtUndefined]);
-  Result.Insert('sla', [rtUndefined]);
-  Result.Insert('sld', [rtUndefined]);
-
-  Result.Insert('sra', [rtInteger]);
-  Result.Insert('srd', [rtInteger]);
-  Result.Insert('sca', [rtInteger]);
-  Result.Insert('scd', [rtInteger]);
-
-  Result.Insert('srta', [rtUndefined]);
-  Result.Insert('srtd', [rtUndefined]);
-  Result.Insert('scta', [rtUndefined]);
-  Result.Insert('sctd', [rtUndefined]);
 
   // Statistics
   Result.Insert('debug', [rtUndefined]);  // Special debug option for statistics
@@ -1564,6 +1560,54 @@ constructor TTablesCommand.Create(AVariableList: TVariableList;
 begin
   inherited Create(AVariableList, AOptionList, stTables);
 end;
+
+{TCTableCommand}
+
+function TCTableCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  AddDecimalOptions(Result);
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+  AddSortingOptions(Result);
+
+  Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('w',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('m', [rtUndefined]);
+  Result.Insert('cs', AllResultDataTypes);
+
+  // Output silencing options
+  Result.Insert('q',  [rtUndefined]);
+
+  // Statistics
+  Result.Insert('ar',    [rtUndefined]);  // Show attack rates (only with rr)
+  Result.Insert('t',     [rtUndefined]);  // Chi2
+  Result.Insert('ex',    [rtUndefined]);  // Exact tests for 2x2 tables
+  Result.Insert('odds',  [rtUndefined]);  // Odds ratio, including M-H adjusted
+  Result.Insert('rr',    [rtUndefined]);  // Risk ratio, including M-H adjusted
+  Result.Insert('ci90',  [rtUndefined]);  // for OR and RR confidence intervals
+  Result.Insert('ci95',  [rtUndefined]);
+  Result.Insert('ci99',  [rtUndefined]);
+end;
+
+function TCTableCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  result := inherited GetAcceptedVariableCount;
+end;
+
+function TCTableCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+//  result.ResultTypes := [rtFloat, rtInteger];
+end;
+
+constructor TCTableCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stCTable);
+end;
+
 
 { TAggregateCommand }
 
@@ -3567,6 +3611,7 @@ begin
     stReorder:   Result := TReorderCommand.Create(AVariableList, AOptionList);
     stAggregate: Result := TAggregateCommand.Create(AVariableList, AOptionList);
     stTables:    Result := TTablesCommand.Create(AVariableList, AOptionList);
+    stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
   else
     DoError();
   end;
@@ -6627,6 +6672,7 @@ begin
     'set': Result := stSet;
     'sor': Result := stSort;
     'tab': Result := stTables;
+    'cta': Result := stCTable;
     'use': Result := stUse;
   else
     DoError();

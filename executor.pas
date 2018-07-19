@@ -214,6 +214,7 @@ type
     procedure ExecReorder(ST: TReorderCommand); virtual;
     procedure ExecAggregate(ST: TAggregateCommand); virtual;
     procedure ExecTables(ST: TTablesCommand); virtual;
+    procedure ExecCTable(ST: TCTableCommand); virtual;
 
     // String commands
     procedure ExecRead(ST: TCustomStringCommand); virtual;
@@ -325,7 +326,7 @@ uses
   aggregate,
 
   // STATISTICS
-  means, freq, tables;
+  means, freq, tables, ctable;
 
 type
   EExecutorException = class(Exception);
@@ -3653,6 +3654,70 @@ begin
   end;
 end;
 
+procedure TExecutor.ExecCTable(ST: TCTableCommand);
+var
+  Table: TCTable;
+  DF: TEpiDataFile;
+  Opt: TOption;
+  S: UTF8String;
+  AllVarNames: TStrings;
+begin
+  AllVarNames := ST.VariableList.GetIdentsAsList;
+
+  // Get the by variables out too
+  for Opt in ST.Options do
+    begin
+      if (Opt.Ident <> 'by') then
+        Continue;
+
+      S := Opt.Expr.AsIdent;
+      if (AllVarNames.IndexOf(S) > -1) then
+        begin
+          Error('By variables cannot overlap table variables: ' + S);
+          ST.ExecResult := csrFailed;
+          AllVarNames.Free;
+          Exit;
+        end;
+
+      AllVarNames.Add(Opt.Expr.AsIdent)
+    end;
+
+  // Weighted counts
+  if (ST.HasOption('w', Opt)) then
+    AllVarNames.Add(Opt.Expr.AsIdent);
+
+  if ST.HasOption('m') then
+    DF := PrepareDatafile(AllVarNames, nil)
+  else
+    DF := PrepareDatafile(AllVarNames, AllVarNames);
+
+  // Attack rates ** allow !ar without !rr (just shows attack rate table with no rr)
+  {if (ST.HasOption('ar')) and (not ST.HasOption('rr')) then
+    begin
+      Error('Option !ar for attack rates is only valid with !rr');
+      ST.ExecResult := csrFailed;
+      AllVarNames.Free;
+      Exit;
+    end;
+  }
+  try
+    if (DF.Size = 0) then
+      begin
+        DoError('No data!');
+        ST.ExecResult := csrFailed;
+        Exit;
+      end;
+
+    Table := TCTable.Create(Self, FOutputCreator);
+    Table.ExecCTable(DF, ST);
+    Table.Free;
+
+  finally
+    AllVarNames.Free;
+    DF.Free;
+  end;
+end;
+
 procedure TExecutor.ExecUse(ST: TUse);
 var
   Idx: LongInt;
@@ -3796,6 +3861,9 @@ begin
 
         stTables:
           ExecTables(TTablesCommand(ST));
+
+        stCTable:
+          ExecCTable(TCTableCommand(ST));
 
         stMerge:
           ExecMerge(TMergeCommand(ST));

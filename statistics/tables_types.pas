@@ -48,6 +48,7 @@ type
     procedure CalcTables(Tables: TTwoWayTables; Executor: TExecutor);
     procedure CreateResultVariables(Tables: TTwoWayTables; Executor: TExecutor); virtual;
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); virtual;  abstract;  //*
+    procedure AddToCompactTable(OutputTable: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); virtual; abstract;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables; Conf: Integer = 95); virtual;
     procedure CreateSummaryResultVariables(Executor: TExecutor; Const NamePrefix: UTF8STRING); virtual;
     property TwoWayStatisticClass: TTwoWayStatisticClass read GetTwoWayStatisticClass;

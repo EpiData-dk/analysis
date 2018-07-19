@@ -36,6 +36,7 @@ type
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
+    procedure AddToCompactTable(OutputTable: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
     procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticRR read GetStatistics;
@@ -168,6 +169,37 @@ begin
   OutputTable.Cell[ColIdx,     2].Text := FormatRatio(FMHRR, Options);
   if (IsInfinite(FMHRR)) then exit;
   OutputTable.Cell[ColIdx + 1, 2].Text := FormatCI(FMHRRLL, FMHRRUL, 0, Options);
+end;
+
+procedure TTwoWayStatisticsRR.AddToCompactTable(OutputTable: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
+var
+  i: Integer;
+  Stat: TTwoWayStatisticRR;
+begin
+  Stat := Statistics[0];
+  if (Stat.FRelativeRisk = TEpiFloatField.DefaultMissing) then exit;
+  if (StatisticsCount = 1) then
+  // unstratified - crude result
+  begin
+    if (Stat.FRelativeRisk = TEpiFloatField.DefaultMissing) then
+    begin
+      OutputTable.Cell[ColIdx    , RowIdx].Text := '-';
+      OutputTable.Cell[ColIdx + 1, RowIdx].Text := '';
+    end
+    else
+    begin
+      OutputTable.Cell[ColIdx      , RowIdx].Text := FormatRatio(Stat.FRelativeRisk, Options);
+      if (not IsInfinite(Stat.FRelativeRisk)) then
+        OutputTable.Cell[ColIdx + 1, RowIdx].Text := FormatCI(Stat.FRRLL, Stat.FRRUL, 0, Options);
+    end;
+    exit;
+  end;
+  // stratified - summary result
+  if (FMHRR = TEpiFLoatField.DefaultMissing) then exit;
+  OutputTable.Cell[ColIdx,     RowIdx].Text := FormatRatio(FMHRR, Options);
+  if (IsInfinite(FMHRR)) then exit;
+  OutputTable.Cell[ColIdx + 1, RowIdx].Text := FormatCI(FMHRRLL, FMHRRUL, 0, Options);
+
 end;
 
 procedure TTwoWayStatisticsRR.CreateSummaryResultVariables(Executor: TExecutor;

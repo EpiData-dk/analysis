@@ -14,11 +14,14 @@ type
 
   TTwoWayStatisticOR = class(TTwoWayStatistic)
   private
-    FConf: Integer;
-    FOrgTable: TTwoWayTable;
-    FOddsRatio: EpiFloat;
-    FORLL, FORUL: EpiFloat;
-    FMessage: String;
+    FTableStats: record
+      FConf: Integer;
+      FMName: String;
+      FMeasure: EpiFloat;
+      FLL, FUL: EpiFloat;
+      FMessage: String;
+      FOrgTable: TTwoWayTable;
+    end;
   public
     procedure CalcTable(Table: TTwoWayTable;Conf: Integer); override;
     procedure AddToOutput(OutputTable: TOutputTable; Options: TOptionList); override;
@@ -57,50 +60,52 @@ var
   p, q, r, s, f1, f2, f3: EpiFloat;
   Zconf: EpiFLoat;
 begin
-  FOrgTable := Table;
-  if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then
+  with FTableStats do
   begin
-    FOddsRatio := TEpiFloatField.DefaultMissing;
-    FMessage   := 'Table is not 2x2.';
-    exit;
-  end;
-  Zconf       := PNormalInv((1 - (Conf / 100)) / 2);
-  FConf       := Conf; // save confidence level for output
-  a := FOrgTable.Cell[0,0].N;
-  b := FOrgTable.Cell[1,0].N;
-  c := FOrgTable.Cell[0,1].N;
-  d := FOrgTable.Cell[1,1].N;
+    FMName    := 'Odds Ratio';
+    FOrgTable := Table;
+    FMeasure  := TEpiFloatField.DefaultMissing;
+    FUL       := TEpiFloatField.DefaultMissing;
+    FLL       := TEpiFloatField.DefaultMissing;
 
-  if ((a * d) = 0) and ((b * c) = 0) then
-  begin
-    FMessage   := 'Table has a zero marginal.';
-    FOddsRatio := TEpiFloatField.DefaultMissing;
-    exit
-  end
-  else
-    FOddsRatio := (a * d) / (b * c);
+    if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then
+    begin
+      FMessage := 'Table is not 2x2.';
+      exit;
+    end;
+    Zconf := PNormalInv((1 - (Conf / 100)) / 2);
+    FConf := Conf; // save confidence level for output
+    a := FOrgTable.Cell[0,0].N;
+    b := FOrgTable.Cell[1,0].N;
+    c := FOrgTable.Cell[0,1].N;
+    d := FOrgTable.Cell[1,1].N;
 
-  // GreenlandRobins confidence limits
-  n := FOrgTable.Total;
-  p := (a + d) / n;
-  q := (b + c) / n;
-  r := a * d / n;
-  s := b * c / n;
-  f1 := 0;
-  f2 := 0;
-  f3 := 0;
-  if (r <> 0) then f1 := (p * r) / (2 * r * r);
-  if ((r * s) <> 0) then f2 := ((p * s) + (q * r)) / (2 * r * s);
-  if (s <> 0) then f3 := (q * s) / (2 * s * s);
-  if (f2 = 0) then
-  begin
-    FORUL := TEpiFloatField.DefaultMissing;
-    FORLL := FORUL;
-  end
-  else
-  begin
-    FORLL := exp(ln(FOddsRatio) - (Zconf  * sqrt(f1 + f2 + f3)));
-    FORUL := exp(ln(FOddsRatio) + (Zconf  * sqrt(f1 + f2 + f3)));
+    if ((a * d) = 0) and ((b * c) = 0) then
+    begin
+      FMessage   := 'Table has a zero marginal.';
+      exit
+    end
+    else
+      FMeasure := (a * d) / (b * c);
+
+    // GreenlandRobins confidence limits
+    n := FOrgTable.Total;
+    p := (a + d) / n;
+    q := (b + c) / n;
+    r := a * d / n;
+    s := b * c / n;
+    f1 := 0;
+    f2 := 0;
+    f3 := 0;
+    if (r <> 0) then f1 := (p * r) / (2 * r * r);
+    if ((r * s) <> 0) then f2 := ((p * s) + (q * r)) / (2 * r * s);
+    if (s <> 0) then f3 := (q * s) / (2 * s * s);
+    if (f2 = 0) then exit
+    else
+    begin
+      FLL := exp(ln(FMeasure) - (Zconf  * sqrt(f1 + f2 + f3)));
+      FUL := exp(ln(FMeasure) + (Zconf  * sqrt(f1 + f2 + f3)));
+    end;
   end;
 end;
 
@@ -108,27 +113,30 @@ procedure TTwoWayStatisticOR.AddToOutput(OutputTable: TOutputTable; Options: TOp
 var
   S: String;
 begin
-  if (FOddsRatio = TEpiFloatField.DefaultMissing) then
-    S := 'Cannot estimate the Odds Ratio. '+ FMessage
-  else
-    S := 'Odds Ratio: '+
-      FormatRatio(FOddsRatio,Options);
-  if (FORLL <> TEpiFloatField.DefaultMissing) then
-    S += ' ' + FormatCI(FORLL, FORUL, FConf, Options);
-  OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
+  with FTableStats do
+  begin
+    if (FMeasure = TEpiFloatField.DefaultMissing) then
+      S := 'Cannot estimate the ' + FMName + '. '+ FMessage
+    else
+    begin
+      S := FMName + ': '+ FormatRatio(FMeasure,Options);
+      if (FLL <> TEpiFloatField.DefaultMissing) then
+         S += ' ' + FormatCI(FLL, FUL, FConf, Options);
+      OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
+    end;
+  end;
 end;
 
 procedure TTwoWayStatisticOR.CreateResultVariables(Executor: TExecutor;
   const NamePrefix: UTF8String);
 begin
-  if (FOddsRatio = TEpiFloatField.DefaultMissing) then exit;
+  if (FTableStats.FMeasure = TEpiFloatField.DefaultMissing) then exit;
   inherited CreateResultVariables(Executor, NamePrefix);
 
-  Executor.AddResultConst(NamePrefix + 'OR', ftFloat).AsFloatVector[0] := FOddsRatio;
+  Executor.AddResultConst(NamePrefix + 'OR', ftFloat).AsFloatVector[0] := FTableStats.FMeasure;
 end;
 
-function TTwoWayStatisticsOR.GetStatistics(const Index: Integer
-  ): TTwoWayStatisticOR;
+function TTwoWayStatisticsOR.GetStatistics(const Index: Integer): TTwoWayStatisticOR;
 begin
   result := TTwoWayStatisticOR(inherited GetStatistics(Index));
 end;
@@ -145,34 +153,40 @@ var
   S: string;
 begin
   Stat := Statistics[0];
-  if (Stat.FOddsRatio = TEpiFloatField.DefaultMissing) then exit;
+  with Stat.FTableStats do
+  begin
+   if (FMeasure = TEpiFloatField.DefaultMissing) then exit;
 
-  ColIdx := OutputTable.ColCount;
-  OutputTable.ColCount := OutputTable.ColCount + 2;
-  OutputTable.Cell[ColIdx    , 0].Text := 'Odds Ratio';
-  OutputTable.Cell[ColIdx + 1, 0].Text := IntToStr(FConf) + '% CI';
-  OutputTable.Cell[ColIdx    , 1].Text := FormatRatio(Stat.FOddsRatio, Options);
-  OutputTable.Cell[ColIdx + 1, 1].Text := FormatCI(Stat.FORLL, Stat.FORUL, 0, Options);
+    ColIdx := OutputTable.ColCount;
+    OutputTable.ColCount := OutputTable.ColCount + 2;
+    OutputTable.Cell[ColIdx    , 0].Text := 'Odds Ratio';
+    OutputTable.Cell[ColIdx + 1, 0].Text := IntToStr(FConf) + '% CI';
+    OutputTable.Cell[ColIdx    , 1].Text := FormatRatio(FMeasure, Options);
+    OutputTable.Cell[ColIdx + 1, 1].Text := FormatCI(FLL, FUL, 0, Options);
+  end;
   if (StatisticsCount = 1) then begin
      OutputTable.Cell[ColIdx    , 2].Text := '-';   // will be replaced by M-H OR
      exit;
   end;
 
   for i := 1 to StatisticsCount - 1 do   // skips unstratified table
-    begin
-      Stat := Statistics[i];
-      if (Stat.FOddsRatio = TEpiFloatField.DefaultMissing) then
+  begin
+    Stat := Statistics[i];
+    with Stat.FTableStats do
+      begin
+      if (FMeasure = TEpiFloatField.DefaultMissing) then
       begin
         OutputTable.Cell[ColIdx,     2].Text := '-';
         OutputTable.Cell[ColIdx + 1, 2].Text := '';
       end
       else
       begin
-        OutputTable.Cell[ColIdx,     i + 2].Text := FormatRatio(Stat.FOddsRatio, Options);
-        if (Stat.FORLL <> TEpiFloatField.DefaultMissing) then
-          OutputTable.Cell[ColIdx + 1, i + 2].Text := FormatCI(Stat.FORLL, Stat.FORUL, 0, Options);
+        OutputTable.Cell[ColIdx,     i + 2].Text := FormatRatio(FMeasure, Options);
+        if (FLL <> TEpiFloatField.DefaultMissing) then
+          OutputTable.Cell[ColIdx + 1, i + 2].Text := FormatCI(FLL, FUL, 0, Options);
       end;
     end;
+  end;
   if (isInfinite(FMHOR)) then exit;
   OutputTable.Cell[ColIdx,     2].Text := FormatRatio(FMHOR, Options);
   OutputTable.Cell[ColIdx + 1, 2].Text := FormatCI(FMHORLL, FMHORUL, 0, Options);
@@ -211,28 +225,26 @@ var
   SumSQ     := 0;
 
   for Tab in Tables do
+  begin
+    a := Tab.Cell[0,0].N;
+    b := Tab.Cell[1,0].N;
+    c := Tab.Cell[0,1].N;
+    d := Tab.Cell[1,1].N;
+    n := Tab.Total;
+    if (n > 0) then
     begin
-      with Tab do begin
-        a := Tab.Cell[0,0].N;
-        b := Tab.Cell[1,0].N;
-        c := Tab.Cell[0,1].N;
-        d := Tab.Cell[1,1].N;
-        n := Tab.Total;
-        if (n > 0) then
-        begin
-          p := (a + d) / n;
-          q := 1 - p;
-          r := (a * d) / n;
-          s := (b * c) / n;
-          SumR    += r;
-          SumS    += s;
-          SumRS   += r*s;
-          SumPR   += p*r;
-          SumSQ   += s*q;
-          SumPSQR += (p*s) + (q*r);
-        end;
+      p := (a + d) / n;
+      q := 1 - p;
+      r := (a * d) / n;
+      s := (b * c) / n;
+      SumR    += r;
+      SumS    += s;
+      SumRS   += r*s;
+      SumPR   += p*r;
+      SumSQ   += s*q;
+      SumPSQR += (p*s) + (q*r);
       end;
-    end;
+   end;
   FMHOR := SumR / SumS;
 
   // Estimate upper and lower confidence limits
