@@ -228,7 +228,6 @@ procedure TTwoWayStatisticsRR.AddToCompactTable(ValueLabelType: TEpiGetValueLabe
 var
   i: Integer;
   Stat: TTwoWayStatisticRR;
-
 begin
   Stat := Statistics[0];
   with Stat do

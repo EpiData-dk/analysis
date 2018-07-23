@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, tables_types, outputcreator, epidatafilestypes,
-  executor, ast;
+  epifields_helper, options_utils, executor, ast;
 
 type
 
@@ -45,6 +45,8 @@ type
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
+    procedure AddToCompactTable(ValueLabelType: TEpiGetValueLabelType; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
+    procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
 //    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring);
     property Statistics[Const Index: Integer]: TTwoWayStatisticChi2 read GetStatistics;
@@ -243,6 +245,47 @@ var
   { NIST reference:
     https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/mantel.htm
   }
+end;
+
+procedure TTwoWayStatisticsChi2.AddToCompactHeader(T: TOutputTable; Options: TOptionList);
+var
+  ColIdx: Integer;
+  Stat: TTwoWayStatisticChi2;
+
+begin
+  Stat := Statistics[0];
+  if (T.RowCount <> 2) then exit;
+  ColIdx                      := T.ColCount;
+  T.ColCount                  := ColIdx + 3;
+  T.Cell[ColIdx     , 1].Text := 'Chi^2';
+  T.Cell[ColIdx + 1 , 1].Text := 'df';
+  T.Cell[ColIdx + 2 , 1].Text := 'p';
+
+end;
+
+procedure TTwoWayStatisticsChi2.AddToCompactTable(ValueLabelType: TEpiGetValueLabelType;
+         T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
+var
+  i: Integer;
+  Stat: TTwoWayStatisticChi2;
+
+begin
+  Stat := Statistics[0];
+  with Stat do
+  begin
+    if (StatisticsCount = 1) then
+    // unstratified - crude result
+    begin
+      T.Cell[ColIdx    , RowIdx].Text := Format('%.2f', [FChi2]);
+      T.Cell[ColIdx + 1, RowIdx].Text := IntToStr(FOrgTable.DF);
+      T.Cell[ColIdx + 2, RowIdx].Text := FormatP(FChiP, false);
+      exit;
+    end;
+  end;
+  // stratified - summary result
+  T.Cell[ColIdx    , RowIdx].Text := Format('%.2f', [FMHChi2]);
+  T.Cell[ColIdx + 1, RowIdx].Text := '1';
+  T.Cell[ColIdx + 2, RowIdx].Text := FormatP(FMHChiP, false);
 end;
 
 

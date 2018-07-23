@@ -71,8 +71,9 @@ begin
   Result.Footer.Alignment := taLeftJustify;
 
   // Collect header information
-  S := Tables.UnstratifiedTable.ColVariable.GetVariableLabel(VariableLabelType) + LineEnding +
-       'Outcome (O+) = ' +
+  S := Tables.UnstratifiedTable.ColVariable.GetVariableLabel(VariableLabelType);
+  if (ST.HasOption('ar') or ST.HasOption('rr')) then
+    S := S + LineEnding + 'Outcome (O+) = ' +
        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(0,ValueLabelType) + LineEnding +
        'Not outcome (O-) = ' +
        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(1,ValueLabelType);
@@ -94,6 +95,8 @@ begin
   Result.Cell[0, 0].Text := 'by';
   Result.Cell[0, 1].Text := 'Var';
   Result.Cell[1, 1].Text := 'N';
+
+  // TODO: move 3rd column back here
 
   if (Tables.StatisticsCount > 0) then
   for i := 0 to Tables.StatisticsCount - 1 do
