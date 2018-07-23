@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles,
-  result_variables, executor, ast;
+  epifields_helper, options_utils, result_variables, executor, ast;
 
 type
 
@@ -14,15 +14,14 @@ type
 
   TTwoWayStatisticOR = class(TTwoWayStatistic)
   private
-    FTableStats: record
-      FConf: Integer;
-      FMName: String;
-      FMeasure: EpiFloat;
-      FLL, FUL: EpiFloat;
-      FMessage: String;
-      FOrgTable: TTwoWayTable;
-    end;
+    FConf: Integer;
+    FMName: String;
+    FOddsRatio: EpiFloat;
+    FOddsRatioLL, FOddsRatioUL: EpiFloat;
+    FMessage: UTF8String;
+    FOrgTable: TTwoWayTable;
   public
+    property Message: UTF8String read FMessage;
     procedure CalcTable(Table: TTwoWayTable;Conf: Integer); override;
     procedure AddToOutput(OutputTable: TOutputTable; Options: TOptionList); override;
     procedure CreateResultVariables(Executor: TExecutor; const NamePrefix: UTF8String); override;
@@ -40,6 +39,8 @@ type
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
+    procedure AddToCompactTable(ValueLabelType: TEpiGetValueLabelType; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
+    procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
     procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticOR read GetStatistics;
@@ -60,52 +61,49 @@ var
   p, q, r, s, f1, f2, f3: EpiFloat;
   Zconf: EpiFLoat;
 begin
-  with FTableStats do
+  FMName       := 'Odds Ratio';
+  FOrgTable    := Table;
+  FOddsRatio   := TEpiFloatField.DefaultMissing;
+  FOddsRatioUL := TEpiFloatField.DefaultMissing;
+  FOddsRatioLL := TEpiFloatField.DefaultMissing;
+
+  if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then
   begin
-    FMName    := 'Odds Ratio';
-    FOrgTable := Table;
-    FMeasure  := TEpiFloatField.DefaultMissing;
-    FUL       := TEpiFloatField.DefaultMissing;
-    FLL       := TEpiFloatField.DefaultMissing;
+    FMessage := 'Table is not 2x2.';
+    exit;
+  end;
+  Zconf := PNormalInv((1 - (Conf / 100)) / 2);
+  FConf := Conf; // save confidence level for output
+  a := FOrgTable.Cell[0,0].N;
+  b := FOrgTable.Cell[1,0].N;
+  c := FOrgTable.Cell[0,1].N;
+  d := FOrgTable.Cell[1,1].N;
 
-    if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then
-    begin
-      FMessage := 'Table is not 2x2.';
-      exit;
-    end;
-    Zconf := PNormalInv((1 - (Conf / 100)) / 2);
-    FConf := Conf; // save confidence level for output
-    a := FOrgTable.Cell[0,0].N;
-    b := FOrgTable.Cell[1,0].N;
-    c := FOrgTable.Cell[0,1].N;
-    d := FOrgTable.Cell[1,1].N;
+  if ((a * d) = 0) and ((b * c) = 0) then
+  begin
+    FMessage   := 'Table has a zero marginal.';
+    exit
+  end
+  else
+    FOddsRatio := (a * d) / (b * c);
 
-    if ((a * d) = 0) and ((b * c) = 0) then
-    begin
-      FMessage   := 'Table has a zero marginal.';
-      exit
-    end
-    else
-      FMeasure := (a * d) / (b * c);
-
-    // GreenlandRobins confidence limits
-    n := FOrgTable.Total;
-    p := (a + d) / n;
-    q := (b + c) / n;
-    r := a * d / n;
-    s := b * c / n;
-    f1 := 0;
-    f2 := 0;
-    f3 := 0;
-    if (r <> 0) then f1 := (p * r) / (2 * r * r);
-    if ((r * s) <> 0) then f2 := ((p * s) + (q * r)) / (2 * r * s);
-    if (s <> 0) then f3 := (q * s) / (2 * s * s);
-    if (f2 = 0) then exit
-    else
-    begin
-      FLL := exp(ln(FMeasure) - (Zconf  * sqrt(f1 + f2 + f3)));
-      FUL := exp(ln(FMeasure) + (Zconf  * sqrt(f1 + f2 + f3)));
-    end;
+  // GreenlandRobins confidence limits
+  n := FOrgTable.Total;
+  p := (a + d) / n;
+  q := (b + c) / n;
+  r := a * d / n;
+  s := b * c / n;
+  f1 := 0;
+  f2 := 0;
+  f3 := 0;
+  if (r <> 0) then f1 := (p * r) / (2 * r * r);
+  if ((r * s) <> 0) then f2 := ((p * s) + (q * r)) / (2 * r * s);
+  if (s <> 0) then f3 := (q * s) / (2 * s * s);
+  if (f2 = 0) then exit
+  else
+  begin
+    FOddsRatioLL := exp(ln(FOddsRatio) - (Zconf  * sqrt(f1 + f2 + f3)));
+    FOddsRatioUL := exp(ln(FOddsRatio) + (Zconf  * sqrt(f1 + f2 + f3)));
   end;
 end;
 
@@ -113,27 +111,24 @@ procedure TTwoWayStatisticOR.AddToOutput(OutputTable: TOutputTable; Options: TOp
 var
   S: String;
 begin
-  with FTableStats do
+  if (FOddsRatio = TEpiFloatField.DefaultMissing) then
+    S := 'Cannot estimate the ' + FMName + '. '+ FMessage
+  else
   begin
-    if (FMeasure = TEpiFloatField.DefaultMissing) then
-      S := 'Cannot estimate the ' + FMName + '. '+ FMessage
-    else
-    begin
-      S := FMName + ': '+ FormatRatio(FMeasure,Options);
-      if (FLL <> TEpiFloatField.DefaultMissing) then
-         S += ' ' + FormatCI(FLL, FUL, FConf, Options);
-      OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
-    end;
+    S := FMName + ': '+ FormatRatio(FOddsRatio,Options);
+    if (FOddsRatioLL <> TEpiFloatField.DefaultMissing) then
+       S += ' ' + FormatCI(FOddsRatioLL, FOddsRatioUL, FConf, Options);
+    OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
   end;
 end;
 
 procedure TTwoWayStatisticOR.CreateResultVariables(Executor: TExecutor;
   const NamePrefix: UTF8String);
 begin
-  if (FTableStats.FMeasure = TEpiFloatField.DefaultMissing) then exit;
+  if (FOddsRatio = TEpiFloatField.DefaultMissing) then exit;
   inherited CreateResultVariables(Executor, NamePrefix);
 
-  Executor.AddResultConst(NamePrefix + 'OR', ftFloat).AsFloatVector[0] := FTableStats.FMeasure;
+  Executor.AddResultConst(NamePrefix + 'OR', ftFloat).AsFloatVector[0] := FOddsRatio;
 end;
 
 function TTwoWayStatisticsOR.GetStatistics(const Index: Integer): TTwoWayStatisticOR;
@@ -153,16 +148,16 @@ var
   S: string;
 begin
   Stat := Statistics[0];
-  with Stat.FTableStats do
+  with Stat do
   begin
-   if (FMeasure = TEpiFloatField.DefaultMissing) then exit;
+   if (FOddsRatio = TEpiFloatField.DefaultMissing) then exit;
 
     ColIdx := OutputTable.ColCount;
     OutputTable.ColCount := OutputTable.ColCount + 2;
     OutputTable.Cell[ColIdx    , 0].Text := 'Odds Ratio';
     OutputTable.Cell[ColIdx + 1, 0].Text := IntToStr(FConf) + '% CI';
-    OutputTable.Cell[ColIdx    , 1].Text := FormatRatio(FMeasure, Options);
-    OutputTable.Cell[ColIdx + 1, 1].Text := FormatCI(FLL, FUL, 0, Options);
+    OutputTable.Cell[ColIdx    , 1].Text := FormatRatio(FOddsRatio, Options);
+    OutputTable.Cell[ColIdx + 1, 1].Text := FormatCI(FOddsRatioLL, FOddsRatioUL, 0, Options);
   end;
   if (StatisticsCount = 1) then begin
      OutputTable.Cell[ColIdx    , 2].Text := '-';   // will be replaced by M-H OR
@@ -172,24 +167,78 @@ begin
   for i := 1 to StatisticsCount - 1 do   // skips unstratified table
   begin
     Stat := Statistics[i];
-    with Stat.FTableStats do
+    with Stat do
       begin
-      if (FMeasure = TEpiFloatField.DefaultMissing) then
+      if (FOddsRatio = TEpiFloatField.DefaultMissing) then
       begin
         OutputTable.Cell[ColIdx,     2].Text := '-';
         OutputTable.Cell[ColIdx + 1, 2].Text := '';
       end
       else
       begin
-        OutputTable.Cell[ColIdx,     i + 2].Text := FormatRatio(FMeasure, Options);
-        if (FLL <> TEpiFloatField.DefaultMissing) then
-          OutputTable.Cell[ColIdx + 1, i + 2].Text := FormatCI(FLL, FUL, 0, Options);
+        OutputTable.Cell[ColIdx,     i + 2].Text := FormatRatio(FOddsRatio, Options);
+        if (FOddsRatioLL <> TEpiFloatField.DefaultMissing) then
+          OutputTable.Cell[ColIdx + 1, i + 2].Text := FormatCI(FOddsRatioLL, FOddsRatioUL, 0, Options);
       end;
     end;
   end;
   if (isInfinite(FMHOR)) then exit;
   OutputTable.Cell[ColIdx,     2].Text := FormatRatio(FMHOR, Options);
   OutputTable.Cell[ColIdx + 1, 2].Text := FormatCI(FMHORLL, FMHORUL, 0, Options);
+end;
+
+procedure TTwoWayStatisticsOR.AddToCompactHeader(T: TOutputTable; Options: TOptionList);
+var
+  ColIdx: Integer;
+  Stat: TTwoWayStatisticOR;
+
+begin
+  Stat := Statistics[0];
+  if (T.RowCount <> 2) then exit;
+  ColIdx                      := T.ColCount;
+  T.ColCount                  := ColIdx + 2;
+  T.Cell[ColIdx     , 1].Text := 'OR';
+  T.Cell[ColIdx + 1 , 1].Text := IntToStr(Stat.FConf) + '% CI';
+  T.SetColAlignment(ColIdx + 1, taCenter);  // just header alignment
+
+end;
+
+procedure TTwoWayStatisticsOR.AddToCompactTable(ValueLabelType: TEpiGetValueLabelType;
+         T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
+var
+  i: Integer;
+  Stat: TTwoWayStatisticOR;
+
+begin
+  Stat := Statistics[0];
+  with Stat do
+  begin
+    if (Message <> '') then
+      T.Footer.Text := T.Footer.Text + LineEnding +
+                       T.Cell[0,RowIdx].Text + ': ' + Message;
+
+    if (StatisticsCount = 1) then
+    // unstratified - crude result
+    begin
+      if (FOddsRatio = TEpiFloatField.DefaultMissing) then
+      begin
+        T.Cell[ColIdx    , RowIdx].Text := '-';
+        T.Cell[ColIdx + 1, RowIdx].Text := '';
+      end
+      else
+      begin
+        T.Cell[ColIdx    , RowIdx].Text := FormatRatio(FOddsRatio, Options);
+        if (IsInfinite(FOddsRatio)) then exit;
+        T.Cell[ColIdx + 1, RowIdx].Text := FormatCI(FOddsRatioLL, FOddsRatioUL, 0, Options);
+      end;
+      exit;
+    end;
+  end;
+  // stratified - summary result
+  if (FMHOR = TEpiFLoatField.DefaultMissing) then exit;
+  T.Cell[ColIdx    , RowIdx].Text := FormatRatio(FMHOR, Options);
+  if (IsInfinite(FMHOR)) then exit;
+  T.Cell[ColIdx + 1, RowIdx].Text := FormatCI(FMHORLL, FMHORUL, 0, Options);
 end;
 
 procedure TTwoWayStatisticsOR.CreateSummaryResultVariables(Executor: TExecutor;

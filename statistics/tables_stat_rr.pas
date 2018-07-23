@@ -1,11 +1,11 @@
 unit tables_stat_rr;
-
+// TODO: {jamie} add CI for attack rates, option to show on table?
 {$mode objfpc}{$H+}
 
 interface
 uses
   Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles,
-  result_variables, executor, ast;
+  epifields_helper, options_utils, result_variables, executor, ast;
 
 type
 
@@ -17,8 +17,12 @@ type
     FRRLL, FRRUL: EpiFloat;
     FOrgTable: TTwoWayTable;
     FRelativeRisk: EpiFloat;
-    FMessage: String;
+    FAR0, FAR1: EpiFloat;
+    FA, FAB, FC, FCD: Integer;
+    FMessage: UTF8String;
+    FRowVar: TEpiField;  // need this to get value for Exposure = yes
   public
+    property Message: UTF8String read FMessage;
     procedure CalcTable(Table: TTwoWayTable;Conf: Integer); override;
     procedure AddToOutput(OutputTable: TOutputTable; Options: TOptionList); override;
     procedure CreateResultVariables(Executor: TExecutor; const NamePrefix: UTF8String); override;
@@ -36,7 +40,8 @@ type
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
-    procedure AddToCompactTable(OutputTable: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
+    procedure AddToCompactTable(ValueLabelType: TEpiGetValueLabelType; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
+    procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
     procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticRR read GetStatistics;
@@ -55,20 +60,28 @@ var
   a, ab, c, cd, n: Integer;
   Zconf, r, s, dgr, vgr: EpiFloat;
 Begin
-  FOrgTable := Table;
-  FRelativeRisk := TEpiFloatField.DefaultMissing;
+  FOrgTable      := Table;
+  FRelativeRisk  := TEpiFloatField.DefaultMissing;
+  FRowVar        := FOrgTable.RowVariable;
 
   if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then
   begin
     FMessage := 'Table is not 2x2.';
     exit;
   end;
-  Zconf       := PNormalInv((1 - (Conf / 100)) / 2);
-  FConf       := Conf;
-  a := FOrgTable.Cell[0,0].N;
-  ab := FOrgTable.RowTotal[0];
-  c := FOrgTable.Cell[0,1].N;
-  cd := FOrgTable.RowTotal[1];
+
+  Zconf := PNormalInv((1 - (Conf / 100)) / 2);
+  FConf := Conf;
+  a     := FOrgTable.Cell[0,0].N;
+  ab    := FOrgTable.RowTotal[0];
+  c     := FOrgTable.Cell[0,1].N;
+  cd    := FOrgTable.RowTotal[1];
+  FAR0  := a / ab;
+  FAR1  := c / cd;
+  FA    := a;
+  FAB   := ab;
+  FC    :=c;
+  FCD   :=cd;
 
   if (cd = 0) or (ab = 0) or (FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0) then
   begin
@@ -135,70 +148,132 @@ var
   Stat: TTwoWayStatisticRR;
 begin
   Stat := Statistics[0];
-  if (Stat.FRelativeRisk = TEpiFloatField.DefaultMissing) then exit;
+  with Stat do
+  begin
+    if (FRelativeRisk = TEpiFloatField.DefaultMissing) then exit;
 
-  ColIdx := OutputTable.ColCount;
-  OutputTable.ColCount := OutputTable.ColCount + 2;
-  OutputTable.Cell[ColIdx    , 0].Text := 'Risk Ratio';
-  OutputTable.Cell[ColIdx + 1, 0].Text := IntToStr(FConf) + '% CI';
+    ColIdx := OutputTable.ColCount;
+    OutputTable.ColCount := OutputTable.ColCount + 2;
+    OutputTable.Cell[ColIdx    , 0].Text := 'Risk Ratio';
+    OutputTable.Cell[ColIdx + 1, 0].Text := IntToStr(FConf) + '% CI';
 
-  OutputTable.Cell[ColIdx    , 1].Text := FormatRatio(Stat.FRelativeRisk, Options);
-  OutputTable.Cell[ColIdx + 1, 1].Text := FormatCI(Stat.FRRLL, Stat.FRRUL, 0, Options);
-  if (StatisticsCount = 1) then begin
-     OutputTable.Cell[ColIdx    , 2].Text := '-';   // will be replaced by M-H OR
-     exit;
-  end;
+    OutputTable.Cell[ColIdx    , 1].Text := FormatRatio(FRelativeRisk, Options);
+    OutputTable.Cell[ColIdx + 1, 1].Text := FormatCI(FRRLL, FRRUL, 0, Options);
+    if (StatisticsCount = 1) then begin
+       OutputTable.Cell[ColIdx    , 2].Text := '-';   // will be replaced by M-H OR
+       exit;
+    end;
 
-  for i := 1 to StatisticsCount - 1 do   // skips unstratified table
+    for i := 1 to StatisticsCount - 1 do   // skips unstratified table
     begin
       Stat := Statistics[i];
-      if (Stat.FRelativeRisk = TEpiFloatField.DefaultMissing) then
+      if (FRelativeRisk = TEpiFloatField.DefaultMissing) then
       begin
         OutputTable.Cell[ColIdx    , i + 2].Text := '-';
         OutputTable.Cell[ColIdx + 1, i + 2].Text := '';
       end
       else
       begin
-        OutputTable.Cell[ColIdx    , i + 2].Text := FormatRatio(Stat.FRelativeRisk, Options);
-        if (not IsInfinite(Stat.FRelativeRisk)) then
-          OutputTable.Cell[ColIdx + 1, i + 2].Text := FormatCI(Stat.FRRLL, Stat.FRRUL, 0, Options);
+        OutputTable.Cell[ColIdx    , i + 2].Text := FormatRatio(FRelativeRisk, Options);
+        if (not IsInfinite(FRelativeRisk)) then
+          OutputTable.Cell[ColIdx + 1, i + 2].Text := FormatCI(FRRLL, FRRUL, 0, Options);
       end;
     end;
-
+  end;
   if (FMHRR = TEpiFLoatField.DefaultMissing) then exit;
   OutputTable.Cell[ColIdx,     2].Text := FormatRatio(FMHRR, Options);
   if (IsInfinite(FMHRR)) then exit;
   OutputTable.Cell[ColIdx + 1, 2].Text := FormatCI(FMHRRLL, FMHRRUL, 0, Options);
 end;
 
-procedure TTwoWayStatisticsRR.AddToCompactTable(OutputTable: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
+procedure TTwoWayStatisticsRR.AddToCompactHeader(T: TOutputTable; Options: TOptionList);
+var
+  ColIdx: Integer;
+  Stat: TTwoWayStatisticRR;
+
+begin
+  Stat := Statistics[0];
+  if (T.RowCount <> 2) then exit;
+  ColIdx     := T.ColCount;
+  T.ColCount := ColIdx + 1;
+  T.SetColAlignment(ColIdx, taCenter);
+  T.Cell[ColIdx, 0].Text := 'E+';
+  T.Cell[ColIdx, 1].Text := 'value';
+  if (Options.HasOption('ar')) then
+    begin
+      ColIdx                      := T.ColCount;
+      T.ColCount                  := ColIdx + 6;
+      T.Cell[ColIdx     , 0].Text := 'E+';
+      T.Cell[ColIdx + 3 , 0].Text := 'E-';
+      T.Cell[ColIdx     , 1].Text := 'O+';
+      T.Cell[ColIdx + 1 , 1].Text := 'O-';
+      T.Cell[ColIdx + 2 , 1].Text := 'AR';
+      T.Cell[ColIdx + 3 , 1].Text := 'O+';
+      T.Cell[ColIdx + 4 , 1].Text := 'O-';
+      T.Cell[ColIdx + 5 , 1].Text := 'AR';
+     end;
+  if (Options.HasOption('rr') or Options.HasOption('ar')) then
+    begin
+      ColIdx                      := T.ColCount;
+      T.ColCount                  := ColIdx + 2;
+      T.Cell[ColIdx     , 1].Text := 'RR';
+      T.Cell[ColIdx + 1 , 1].Text := IntToStr(Stat.FConf) + '% CI';
+      T.SetColAlignment(ColIdx + 1, taCenter);  // just header alignment
+    end;
+
+end;
+
+procedure TTwoWayStatisticsRR.AddToCompactTable(ValueLabelType: TEpiGetValueLabelType;
+         T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
 var
   i: Integer;
   Stat: TTwoWayStatisticRR;
+
 begin
   Stat := Statistics[0];
-  if (Stat.FRelativeRisk = TEpiFloatField.DefaultMissing) then exit;
-  if (StatisticsCount = 1) then
-  // unstratified - crude result
+  with Stat do
   begin
-    if (Stat.FRelativeRisk = TEpiFloatField.DefaultMissing) then
+    if (Message <> '') then
+      T.Footer.Text := T.Footer.Text + LineEnding +
+                       T.Cell[0,RowIdx].Text + ': ' + Message;
+
+    // save value of exposure = yes for CTable
+    T.Cell[ColIdx, RowIdx].Text := FRowVar.GetValueLabel(0, ValueLabelType);
+    T.SetColAlignment(ColIdx,taCenter); // must repeat this as not simple to do at the end
+
+    // if Attack rates requested, output them now, based on unstratified table
+    if (Options.HasOption('ar')) then
+      begin
+        T.Cell[ColIdx + 1, RowIdx].Text := IntToStr(FA);
+        T.Cell[ColIdx + 2, RowIdx].Text := IntToStr(FAB);
+        T.Cell[ColIdx + 3, RowIdx].Text := FormatRatio(FAR0, Options);
+        T.Cell[ColIdx + 4, RowIdx].Text := IntToStr(FC);
+        T.Cell[ColIdx + 5, RowIdx].Text := IntToStr(FCD);
+        T.Cell[ColIdx + 6, RowIdx].Text := FormatRatio(FAR1, Options);
+        ColIdx += 6;
+      end;
+    if (StatisticsCount = 1) then
+    // unstratified - crude result
     begin
-      OutputTable.Cell[ColIdx    , RowIdx].Text := '-';
-      OutputTable.Cell[ColIdx + 1, RowIdx].Text := '';
-    end
-    else
-    begin
-      OutputTable.Cell[ColIdx      , RowIdx].Text := FormatRatio(Stat.FRelativeRisk, Options);
-      if (not IsInfinite(Stat.FRelativeRisk)) then
-        OutputTable.Cell[ColIdx + 1, RowIdx].Text := FormatCI(Stat.FRRLL, Stat.FRRUL, 0, Options);
-    end;
-    exit;
+      if (FRelativeRisk = TEpiFloatField.DefaultMissing) then
+      begin
+        T.Cell[ColIdx + 1, RowIdx].Text := '-';
+        T.Cell[ColIdx + 2, RowIdx].Text := '';
+      end
+      else
+      begin
+        T.Cell[ColIdx + 1, RowIdx].Text := FormatRatio(FRelativeRisk, Options);
+        if (IsInfinite(FRelativeRisk)) then exit;
+        T.Cell[ColIdx + 2, RowIdx].Text := FormatCI(FRRLL, FRRUL, 0, Options);
+      end;
+      exit;
+      end;
   end;
   // stratified - summary result
   if (FMHRR = TEpiFLoatField.DefaultMissing) then exit;
-  OutputTable.Cell[ColIdx,     RowIdx].Text := FormatRatio(FMHRR, Options);
+  T.Cell[ColIdx + 1, RowIdx].Text := FormatRatio(FMHRR, Options);
   if (IsInfinite(FMHRR)) then exit;
-  OutputTable.Cell[ColIdx + 1, RowIdx].Text := FormatCI(FMHRRLL, FMHRRUL, 0, Options);
+  T.Cell[ColIdx + 2, RowIdx].Text := FormatCI(FMHRRLL, FMHRRUL, 0, Options);
 
 end;
 

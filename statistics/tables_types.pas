@@ -6,19 +6,24 @@ unit tables_types;
 interface
 
 uses
-  Classes, SysUtils, epidatafilestypes, epidatafiles, outputcreator, fgl, executor, ast, ana_globals;
+  Classes, SysUtils, epidatafilestypes, epidatafiles, epifields_helper,
+  outputcreator, fgl, executor, ast, ana_globals;
 
 type
 
   TTwoWayTable = class;
   TTwoWayTables = class;
 
+  // VERY IMPORTANT
+  // The order here MUST match the order in which statistics unit are used in tables.pas
+  // and the order in tables.pas MUST match the order in which statistics are desired in ctable.pas
   TTableStatistic  = (
-    tsChi2,
-    tsFExP,
+    tsRR,
     tsOR,
-    tsRR
+    tsChi2,
+    tsFExP
   );
+
   TTableStatistics = set of TTableStatistic;
 
   { TTwoWayStatistic }
@@ -48,7 +53,8 @@ type
     procedure CalcTables(Tables: TTwoWayTables; Executor: TExecutor);
     procedure CreateResultVariables(Tables: TTwoWayTables; Executor: TExecutor); virtual;
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); virtual;  abstract;  //*
-    procedure AddToCompactTable(OutputTable: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); virtual; abstract;
+    procedure AddToCompactTable(ValueLabelType: TEpiGetValueLabelType; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); virtual; abstract;
+    procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); virtual; abstract;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables; Conf: Integer = 95); virtual;
     procedure CreateSummaryResultVariables(Executor: TExecutor; Const NamePrefix: UTF8STRING); virtual;
     property TwoWayStatisticClass: TTwoWayStatisticClass read GetTwoWayStatisticClass;
@@ -272,7 +278,7 @@ type
 implementation
 
 uses
-  epifields_helper, LazUTF8;
+  LazUTF8;
 
 { TTwoWayStatistic }
 

@@ -66,7 +66,8 @@ implementation
 uses
   aggregate, aggregate_types, epimiscutils, epidatafileutils, epifields_helper,
   options_utils, LazUTF8, ana_globals, epidatafilestypes, options_table, strutils,
-  tables_stat_chi2, tables_stat_fexp, tables_stat_or, tables_stat_rr;
+  tables_stat_rr, tables_stat_or, tables_stat_chi2, tables_stat_fexp;
+// see note in tables_types.pas regarding order of statistics above
 
 type
   PBoundArray = ^TBoundArray;

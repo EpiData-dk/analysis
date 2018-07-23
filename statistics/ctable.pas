@@ -5,7 +5,7 @@ unit ctable;
 interface
 
 uses
-  Classes, SysUtils, math, epidatafiles, ast, executor, result_variables,
+  Classes, SysUtils, epidatafiles, ast, executor, result_variables,
   outputcreator, epicustombase, tables_types, tables;
 
 type
@@ -22,21 +22,23 @@ type
       procedure DoOutputCTableRow(Tables: TTwoWayTables; ST: TCTableCommand; T: TOutputTable);
       procedure DoResultVariables(Tables: TTwoWayTables);
     private
-        StratifyVarnames: TStringList;
-        OutputCol: array [0..5] of integer;
+      FStratifyVarnames: TStringList;
+      FCTableStatistics: TTableStatistics;
+      FOutputCol: array [0..5] of integer;
+      FFooterText: UTF8String;
     public
       constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
       destructor Destroy; override;
       // Method called from Executor, does calculation + result vars + output
-      procedure ExecCTable(DF: TEpiDataFile; ST: TCTableCommand);
+      procedure ExecCTable(VarNames: TStrings; ST: TCTableCommand);
 
   end;
 
 implementation
 
 uses
-  epimiscutils, epidatafileutils, epifields_helper,
-  options_utils, LazUTF8, epidatafilestypes, options_table, strutils;
+  epimiscutils, epifields_helper,
+  options_utils, LazUTF8, epidatafilestypes;
 
 {CTable}
 
@@ -55,7 +57,7 @@ var
   ValueLabelType: TEpiGetValueLabelType;
   S, S1: UTF8String;
   F: TEpiField;
-  RowIdx, ColIdx, i: Integer;
+  i: Integer;
 
 begin
   // Formatting of variables and values
@@ -66,7 +68,7 @@ begin
   Result := FOutputCreator.AddTable;
   Result.ColCount := 2;
   Result.RowCount := 2;
-  Result.SetColAlignment(0, taLeftJustify);
+  Result.Footer.Alignment := taLeftJustify;
 
   // Collect header information
   S := Tables.UnstratifiedTable.ColVariable.GetVariableLabel(VariableLabelType) + LineEnding +
@@ -75,7 +77,7 @@ begin
        'Not outcome (O-) = ' +
        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(1,ValueLabelType);
 
-  if (StratifyVarNames.Count>0) then
+  if (FStratifyVarNames.Count>0) then
     begin
       S := S + ' adjusted for:';
 
@@ -90,57 +92,14 @@ begin
 
   // Summary table headers
   Result.Cell[0, 0].Text := 'by';
-  Result.Cell[0, 1].Text := 'var';
+  Result.Cell[0, 1].Text := 'Var';
   Result.Cell[1, 1].Text := 'N';
-  ColIdx                 := 2;
 
-  if (ST.HasOption('ar') or ST.HasOption('rr')) then
+  if (Tables.StatisticsCount > 0) then
+  for i := 0 to Tables.StatisticsCount - 1 do
     begin
-      ColIdx                      := Result.ColCount;
-      Result.ColCount             := ColIdx + 1;
-//      Result.Cell[ColIdx, 0].Text := 'Exposed';
-      Result.Cell[ColIdx, 1].Text := 'E+ =';
-    end;
-  // optional results
-  if (ST.HasOption('ar')) then
-    begin
-      ColIdx                           := Result.ColCount;
-      Result.ColCount                  := ColIdx + 6;
-      Result.Cell[ColIdx     , 0].Text := 'E+';
-      Result.Cell[ColIdx + 3 , 0].Text := 'E-';
-      Result.Cell[ColIdx     , 1].Text := 'O+';
-      Result.Cell[ColIdx + 1 , 1].Text := 'O-';
-      Result.Cell[ColIdx + 2 , 1].Text := 'AR';
-      Result.Cell[ColIdx + 3 , 1].Text := 'O+';
-      Result.Cell[ColIdx + 4 , 1].Text := 'O-';
-      Result.Cell[ColIdx + 5 , 1].Text := 'AR';
-     end;
-  if (ST.HasOption('rr') or ST.HasOption('ar')) then
-    begin
-      ColIdx                           := Result.ColCount;
-      Result.ColCount                  := ColIdx + 2;
-      Result.Cell[ColIdx     , 1].Text := 'RR';
-      Result.Cell[ColIdx + 1 , 1].Text := 'x% CI';
-    end;
-  if (ST.HasOption('odds')) then
-    begin
-      ColIdx                           := Result.ColCount;
-      Result.ColCount                  := ColIdx + 2;
-      Result.Cell[ColIdx     , 1].Text := 'OR';
-      Result.Cell[ColIdx + 1 , 1].Text := 'x % CI';
-    end;
-  if (ST.HasOption('t')) then
-    begin
-      ColIdx                           := Result.ColCount;
-      Result.ColCount                  := ColIdx + 2;
-      Result.Cell[ColIdx ,     1].Text := 'Chi2';
-      Result.Cell[ColIdx + 1 , 1].Text := 'p';
-    end;
-  if (ST.HasOption('ex')) then
-    begin
-      ColIdx                           := Result.ColCount;
-      Result.ColCount                  := ColIdx + 1;
-      Result.Cell[ColIdx ,     1].Text := 'Fisher P';
+      FOutputCol[i] := Result.ColCount;
+      Tables.Statistics[i].AddToCompactHeader(Result,ST.Options);
     end;
 
 end;
@@ -150,33 +109,24 @@ var
 
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
-  S, S1: UTF8String;
-  F: TEpiField;
   Tab: TTwoWayTable;
-  Stat: String;
-  RowIdx, ColIdx, i, Decimals, a, b, c, d: Integer;
-  ExpAR, NexpAR: EpiFloat;
+  RowIdx, ColIdx, i: Integer;
 begin
-  Decimals          := DecimalFromOption(ST.Options);
   VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-
   RowIdx := T.RowCount;
   Tab    := Tables.UnstratifiedTable;
   T.RowCount := RowIdx + 1;
   T.Cell[0, RowIdx].Text := Tab.RowVariable.GetVariableLabel(VariableLabelType);
   T.Cell[1, RowIdx].Text := IntToStr(Tab.Total);
-  if (ST.HasOption('ar') or ST.HasOption('rr')) then
-    T.Cell[2, RowIdx].Text := Tab.RowVariable.GetValueLabel(0, ValueLabelType);
-
-  // TODO: add method to add results to output table for each statistic
+ // TODO: add method to add results to output table for each statistic
   //       left-align first column
   //       if !ar, add in the attack rates
 
   for i := 0 to Tables.StatisticsCount -1  do
     begin
-      ColIdx := OutputCol[i];
-      Tables.Statistics[i].AddToCompactTable(T, RowIdx, ColIdx, ST.Options);   //*
+      ColIdx := FOutputCol[i];
+      Tables.Statistics[i].AddToCompactTable(ValueLabelType, T, RowIdx, ColIdx, ST.Options);
     end;
   // Setting up borders at the top
   T.SetRowBorders(0, [cbTop]);
@@ -185,7 +135,7 @@ end;
 
 procedure TCTable.DoResultVariables(Tables: TTwoWayTables);
 var
-  i, Cols, Rows: Integer;
+  i: Integer;
   RTableNames, RStratNames: TExecVarVector;
   S: UTF8String;
   Tab: TTwoWayTable;
@@ -271,81 +221,81 @@ begin
 end;
 
 function TCTable.GetStatisticOptions(ST: TCTableCommand): TTableStatistics;
-var
-  StatCount, Col1: Integer;
 begin
   result := [];
-  StatCount := 0;
-  Col1      := 3;
-// order determines order of output to compact table
-  if (ST.HasOption('ar')) then
-    begin
-//      OutputCol[StatCount] := Col1;
-//      Inc(StatCount);
-      Col1 += 6;
-      // consider making TTwoWayStatisticsAR, in which case need to use OutputCol for it
-    end;
-  if (ST.HasOption('rr') or ST.HasOption('ar')) then
-    begin
-      OutputCol[StatCount] := Col1;
-      Inc(StatCount);
-      Col1 += 2;
-      Include(Result, tsRR);
-    end;
-  if (ST.HasOption('odds')) then
-    begin
-      OutputCol[StatCount] := Col1;
-      Inc(StatCount);
-      Col1 += 2;
-      Include(Result, tsOR);
-    end;
-  if (ST.HasOption('t')) then
-    begin
-      OutputCol[StatCount] := Col1;
-      Inc(StatCount);
-      Col1 += 2;
-      Include(Result, tsChi2);
-    end;
   if (ST.HasOption('ex')) then
-      begin
-      OutputCol[StatCount] := Col1;
-      Inc(StatCount);
-      Col1 += 1;
       Include(Result, tsFExP);
-    end;
+  if (ST.HasOption('t')) then
+      Include(Result, tsChi2);
+  if (ST.HasOption('odds')) then
+      Include(Result, tsOR);
+  if (ST.HasOption('rr') or ST.HasOption('ar')) then
+      Include(Result, tsRR);
 
 end;
 
-procedure TCTable.ExecCTable(DF: TEpiDataFile; ST: TCTableCommand);
+procedure TCTable.ExecCTable(VarNames: TStrings; ST: TCTableCommand);
 var
   SummaryTable: TOutputTable;
-  VarNames: TStrings;
+  DF: TEpiDataFile;
   TwoVarNames: TStrings;
   Opt: TOption;
-//  StratifyVarnames: TStringList;
+  S: UTF8String;
   WeightName: String;
   i, VarCount: Integer;
   TableData: TTables;
   Table: TTwoWayTables;
   TablesRefMap: TEpiReferenceMap;
-begin
-  Varnames := ST.VariableList.GetIdentsAsList;
-  TwoVarNames := TStringList.Create;
 
-  StratifyVarnames := TStringList.Create;
+  procedure DoOneCTable;
+// invoke CalcTables for one pair of variables
+  begin;
+    if ST.HasOption('m') then
+      DF := FExecutor.PrepareDatafile(TwoVarNames, nil)
+    else
+      DF := FExecutor.PrepareDatafile(TwoVarNames, TwoVarNames);
+    S := '';
+    try
+      if (DF.Size = 0) then
+        begin
+          S := VarNames[0] + ': No data' + LineEnding;
+          Exit;
+        end;
+      Table := TableData.CalcTables(DF, TwoVarNames, FStratifyVarNames, WeightName,
+             ST.Options, TablesRefMap, FCTableStatistics);
+
+//    DoResultVariables(Table);
+
+      if (not ST.HasOption('q')) then
+      begin
+        if (i = 1) then // cannot create header until we have done calctable once
+          SummaryTable := CreateOutputHeader(Table, ST);
+        DoOutputCTableRow(Table, ST, SummaryTable);
+        SummaryTable.Footer.Text := SummaryTable.Footer.Text + S;
+      end;
+
+    finally
+      DF.Free;
+
+    end;
+  end;
+
+begin
+  FStratifyVarnames := TStringList.Create;
   for Opt in ST.Options do
     begin
-      if (Opt.Ident <> 'by') then
-        Continue;
-
-      StratifyVarnames.Add(Opt.Expr.AsIdent);
+      if (Opt.Ident = 'by') then
+        FStratifyVarnames.Add(Opt.Expr.AsIdent);
     end;
 
   WeightName := '';
   if (ST.HasOption('w', Opt)) then
     WeightName := Opt.Expr.AsIdent;
 
-  // get each set of results based on first variable and variable i
+  TwoVarNames := TStringList.Create;
+  TwoVarNames.Add(VarNames[0]);
+
+  // get each set of results based on first variable and each of the other variables
   VarCount := VarNames.Count;
   if (VarCount < 2) then
   begin
@@ -353,24 +303,16 @@ begin
     exit;
   end;
 
+  FFooterText := '';
+  FCTableStatistics := GetStatisticOptions(ST);
   TableData  := TTables.Create(FExecutor, FOutputCreator);
-  TwoVarNames.Add(VarNames[0]);
   for i := 1 to VarCount - 1 do
   begin
-    TwoVarNames.Add(VarNames[i]); // ?.GetVariable(i));
-    Table := TableData.CalcTables(DF, TwoVarNames, StratifyVarNames, WeightName,
-             ST.Options, TablesRefMap, GetStatisticOptions(ST));
-
-//    DoResultVariables(Table);
-
-    if (not ST.HasOption('q')) then
-    begin
-      if (i = 1) then
-        SummaryTable := CreateOutputHeader(Table, ST);
-      DoOutputCTableRow(Table, ST, SummaryTable);
-    end;
+    TwoVarNames.Add(VarNames[i]);
+    DoOneCTable;
     TwoVarNames.Delete(1);
   end;
+  SummaryTable.SetColAlignment(0, taLeftJustify); // variable name column
   SummaryTable.SetRowBorders(SummaryTable.RowCount - 1, [cbBottom]);
   TableData.Free;
 end;

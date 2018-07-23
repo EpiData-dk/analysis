@@ -3660,9 +3660,9 @@ var
   DF: TEpiDataFile;
   Opt: TOption;
   S: UTF8String;
-  AllVarNames: TStrings;
+  VarNames: TStrings;
 begin
-  AllVarNames := ST.VariableList.GetIdentsAsList;
+  VarNames := ST.VariableList.GetIdentsAsList;
 
   // Get the by variables out too
   for Opt in ST.Options do
@@ -3671,35 +3671,28 @@ begin
         Continue;
 
       S := Opt.Expr.AsIdent;
-      if (AllVarNames.IndexOf(S) > -1) then
+      if (VarNames.IndexOf(S) > -1) then
         begin
           Error('By variables cannot overlap table variables: ' + S);
           ST.ExecResult := csrFailed;
-          AllVarNames.Free;
+          VarNames.Free;
           Exit;
         end;
 
-      AllVarNames.Add(Opt.Expr.AsIdent)
+      VarNames.Add(Opt.Expr.AsIdent)
     end;
 
   // Weighted counts
   if (ST.HasOption('w', Opt)) then
-    AllVarNames.Add(Opt.Expr.AsIdent);
+    VarNames.Add(Opt.Expr.AsIdent);
 
+
+{  // TODO: must move this whole block to CTABLE!
   if ST.HasOption('m') then
     DF := PrepareDatafile(AllVarNames, nil)
   else
     DF := PrepareDatafile(AllVarNames, AllVarNames);
 
-  // Attack rates ** allow !ar without !rr (just shows attack rate table with no rr)
-  {if (ST.HasOption('ar')) and (not ST.HasOption('rr')) then
-    begin
-      Error('Option !ar for attack rates is only valid with !rr');
-      ST.ExecResult := csrFailed;
-      AllVarNames.Free;
-      Exit;
-    end;
-  }
   try
     if (DF.Size = 0) then
       begin
@@ -3707,15 +3700,15 @@ begin
         ST.ExecResult := csrFailed;
         Exit;
       end;
-
+ }
     Table := TCTable.Create(Self, FOutputCreator);
-    Table.ExecCTable(DF, ST);
+    Table.ExecCTable(VarNames, ST);
     Table.Free;
 
-  finally
-    AllVarNames.Free;
-    DF.Free;
-  end;
+//  finally
+    VarNames.Free;
+//    DF.Free;
+//  end;
 end;
 
 procedure TExecutor.ExecUse(ST: TUse);
