@@ -7,7 +7,7 @@ interface
 
 uses
   Classes, SysUtils, epidatafilestypes, epidatafiles, epifields_helper,
-  outputcreator, fgl, executor, ast, ana_globals;
+  outputcreator, fgl, executor, ast, ana_globals, result_variables;
 
 type
 
@@ -25,6 +25,10 @@ type
   );
 
   TTableStatistics = set of TTableStatistic;
+
+  {TStatResult}
+
+  TStatResult = array of TExecVarVector;
 
   { TTwoWayStatistic }
 
@@ -53,14 +57,16 @@ type
     procedure CalcTables(Tables: TTwoWayTables; Executor: TExecutor);
     procedure CreateResultVariables(Tables: TTwoWayTables; Executor: TExecutor); virtual;
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); virtual;  abstract;  //*
-    procedure AddToCompactTable(ValueLabelType: TEpiGetValueLabelType; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); virtual; abstract;
+    procedure AddToCompactTable(Executor: TExecutor; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); virtual; abstract;
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); virtual; abstract;
+    function CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; virtual; abstract;
+    procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); virtual; abstract;
+    procedure AddCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; Index: Integer; ResultTables: TTwoWayTables; ResultRows: Integer); virtual; abstract;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables; Conf: Integer = 95); virtual;
     procedure CreateSummaryResultVariables(Executor: TExecutor; Const NamePrefix: UTF8STRING); virtual;
     property TwoWayStatisticClass: TTwoWayStatisticClass read GetTwoWayStatisticClass;
   end;
   TTwoWayStatisticsClass = class of TTwoWayStatistics;
-
 
   { TTableCell }
 

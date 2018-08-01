@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles,
-    epifields_helper, options_utils, executor, ast;
+    epifields_helper, result_variables, options_utils, executor, ast;
 
 type
 
@@ -26,13 +26,19 @@ type
   { TTwoWayStatisticsFExP }
 
   TTwoWayStatisticsFExP = class(TTwoWayStatistics)
+  private
+    // TODO: FResultFExp is not persistent - belongs to each 2x2 table in turn; should really return this,
+    //       BUT(!) it is different for each statistic; perhaps return as a Record, but then ctable needs to know
+    //       the structure
   protected
     function GetStatistics(const Index: Integer): TTwoWayStatisticFExP; override;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
-    procedure AddToCompactTable(ValueLabelType: TEpiGetValueLabelType; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
+    procedure AddToCompactTable(Executor: TExecutor; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
+    function CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
+    procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); override;
 //    procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
 //    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticFExP read GetStatistics;
@@ -182,7 +188,7 @@ begin
 
 end;
 
-procedure TTwoWayStatisticsFExP.AddToCompactTable(ValueLabelType: TEpiGetValueLabelType;
+procedure TTwoWayStatisticsFExP.AddToCompactTable(Executor: TExecutor;
          T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
 var
   i: Integer;
@@ -208,6 +214,22 @@ begin
   end;
 end;
 
+function TTwoWayStatisticsFExP.CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String;
+         ResultRows: Integer): TStatResult;
+
+begin
+  setlength(Result,1); // one statistic
+  Result[0] := Executor.AddResultVector(Prefix + 'FExP', ftFloat, ResultRows);
+end;
+
+procedure TTwoWayStatisticsFExP.AddCompactResultVariables(Executor: TExecutor;
+          Index: Integer; Results: TStatResult);
+var
+  Stat: TTwoWayStatisticFExP;
+begin
+  Stat := Statistics[0];
+  Results[0].AsFloatVector[Index] := Stat.FFExP;
+end;
 
 initialization
   RegisterTableStatistic(tsFExP, TTwoWayStatisticsFExP);

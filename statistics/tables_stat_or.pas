@@ -39,7 +39,7 @@ type
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
-    procedure AddToCompactTable(ValueLabelType: TEpiGetValueLabelType; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
+    procedure AddToCompactTable(Executor: TExecutor; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
     procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
@@ -203,7 +203,7 @@ begin
 
 end;
 
-procedure TTwoWayStatisticsOR.AddToCompactTable(ValueLabelType: TEpiGetValueLabelType;
+procedure TTwoWayStatisticsOR.AddToCompactTable(Executor: TExecutor;
          T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
 var
   i: Integer;

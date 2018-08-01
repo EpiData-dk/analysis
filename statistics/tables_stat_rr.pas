@@ -40,7 +40,7 @@ type
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
-    procedure AddToCompactTable(ValueLabelType: TEpiGetValueLabelType; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
+    procedure AddToCompactTable(Executor: TExecutor; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
     procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
@@ -223,11 +223,12 @@ begin
 
 end;
 
-procedure TTwoWayStatisticsRR.AddToCompactTable(ValueLabelType: TEpiGetValueLabelType;
+procedure TTwoWayStatisticsRR.AddToCompactTable(Executor: TExecutor;
          T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
 var
   i: Integer;
   Stat: TTwoWayStatisticRR;
+  ValueLabelType: TEpiGetValueLabelType;
 begin
   Stat := Statistics[0];
   with Stat do
@@ -237,6 +238,7 @@ begin
                        T.Cell[0,RowIdx].Text + ': ' + Message;
 
     // save value of exposure = yes for CTable
+    ValueLabelType := ValueLabelTypeFromOptionList(Options, Executor.SetOptions);
     T.Cell[ColIdx, RowIdx].Text := FRowVar.GetValueLabel(0, ValueLabelType);
     T.SetColAlignment(ColIdx,taCenter); // must repeat this as not simple to do at the end
 
