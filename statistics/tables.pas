@@ -55,7 +55,7 @@ type
     procedure ExecTables(DF: TEpiDataFile; ST: TTablesCommand);
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
     function  CalcTables(InputDF: TEpiDataFile; VariableNames: TStrings;
-      StratifyNames: TStrings; Const WeightName: UTF8String; ST: TOptionList;
+      StratifyNames: TStringList; Const WeightName: UTF8String; ST: TOptionList;
       Out RefMap: TEpiReferenceMap; Statistics: TTableStatistics = []): TTwoWayTables;
   end;
 
@@ -750,7 +750,7 @@ begin
 end;
 
 function TTables.CalcTables(InputDF: TEpiDataFile; VariableNames: TStrings;
-  StratifyNames: TStrings; const WeightName: UTF8String; ST: TOptionList;
+  StratifyNames: TStringList; const WeightName: UTF8String; ST: TOptionList;
   out RefMap: TEpiReferenceMap; Statistics: TTableStatistics): TTwoWayTables;
 var
   AllTables: TTwoWayTables;

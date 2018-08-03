@@ -43,6 +43,8 @@ type
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
     procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
+    function  CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
+    procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticOR read GetStatistics;
   end;
 
@@ -305,6 +307,38 @@ var
   variance := abs((SumPR/(SumR * SumR)) + (SumPSQR/(SumR * SumS)) + (SumSQ / (SumS * Sums))) / 2;
   FMHORLL := exp(ln(FMHOR) - (Zconf * sqrt(variance)));
   FMHORUL := exp(ln(FMHOR) + (Zconf * sqrt(variance)));
+end;
+
+function TTwoWayStatisticsOR.CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String;
+         ResultRows: Integer): TStatResult;
+
+begin
+  setlength(Result,3);
+  Result[0] := Executor.AddResultVector(Prefix + 'or', ftFloat, ResultRows);
+  Result[1] := Executor.AddResultVector(Prefix + 'orll', ftFloat, ResultRows);
+  Result[2] := Executor.AddResultVector(Prefix + 'orul', ftFloat, ResultRows);
+end;
+
+procedure TTwoWayStatisticsOR.AddCompactResultVariables(Executor: TExecutor;
+          Index: Integer; Results: TStatResult);
+var
+  Stat: TTwoWayStatisticOR;
+begin
+  if (StatisticsCount = 1) then
+  begin
+    Stat := Statistics[0];
+    with Stat do
+    begin
+      Results[0].AsFloatVector[Index] := FOddsRatio;
+      Results[1].AsFloatVector[Index] := FOddsRatioLL;
+      Results[0].AsFloatVector[Index] := FOddsRatioUL;
+    end;
+    exit;
+  end;
+// stratified
+  Results[0].AsFloatVector[Index] := FMHOR;
+  Results[1].AsFloatVector[Index] := FMHORLL;
+  Results[0].AsFloatVector[Index] := FMHORUL;
 end;
 
 initialization

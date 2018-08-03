@@ -44,6 +44,8 @@ type
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
     procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
+    procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); override;
+    function  CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticRR read GetStatistics;
   end;
 
@@ -339,6 +341,38 @@ begin
     FMHRRLL := exp(ln(FMHRR) - (Zconf * sqrt(variance)));
     FMHRRUL := exp(ln(FMHRR) + (Zconf * sqrt(variance)));
   end;
+end;
+
+function TTwoWayStatisticsRR.CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String;
+         ResultRows: Integer): TStatResult;
+
+begin
+  setlength(Result,3);
+  Result[0] := Executor.AddResultVector(Prefix + 'rr', ftFloat, ResultRows);
+  Result[1] := Executor.AddResultVector(Prefix + 'rrll', ftFloat, ResultRows);
+  Result[2] := Executor.AddResultVector(Prefix + 'rrul', ftFloat, ResultRows);
+end;
+
+procedure TTwoWayStatisticsRR.AddCompactResultVariables(Executor: TExecutor;
+          Index: Integer; Results: TStatResult);
+var
+  Stat: TTwoWayStatisticRR;
+begin
+  if (StatisticsCount = 1) then
+  begin
+    Stat := Statistics[0];
+    with Stat do
+    begin
+      Results[0].AsFloatVector[Index] := FRelativeRisk;
+      Results[1].AsFloatVector[Index] := FRRLL;
+      Results[0].AsFloatVector[Index] := FRRUL;
+    end;
+    exit;
+  end;
+// stratified
+  Results[0].AsFloatVector[Index] := FMHRR;
+  Results[1].AsFloatVector[Index] := FMHRRLL;
+  Results[0].AsFloatVector[Index] := FMHRRUL;
 end;
 
 initialization

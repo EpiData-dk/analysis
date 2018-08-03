@@ -23,16 +23,15 @@ type
       function CreateOutputHeader(Tables: TTwoWayTables; ST: TCTableCommand): TOutputTable;
       procedure DoOutputCTableRow(Tables: TTwoWayTables; ST: TCTableCommand; T: TOutputTable);
       procedure CreateResultVariables(Tables: TTwoWayTables; VarNames: TStrings);
-      procedure DoResultVariables(Tables: TTwoWayTables; VarName: UTF8String; Index: Integer);
+      procedure DoResultVariables(Tables: TTwoWayTables; Index: Integer);
     private
-      FStratifyVarnames: TStringList;
+      FStratifyVarNames: TStringList;
       FWeightName: UTF8String;
       FCTableStatistics: TTableStatistics;
       FOutputCol: array [0..5] of integer;  // TODO: make this variable length
       FFooterText: UTF8String;
       FResultCounts: TExecVarVector;
       FResultRows: Integer;
-      FResultTable: TTwoWayTables;
     public
       TableResults: TTableResults;
       property ResultRows: Integer read FResultRows;
@@ -134,8 +133,6 @@ procedure TCTable.CreateResultVariables(Tables: TTwoWayTables; VarNames: TString
 var
   i: Integer;
   RTableNames, RStratNames: TExecVarVector;
-  S: UTF8String;
-  Tab: TTwoWayTable;
   F: UTF8String;
 
 begin
@@ -144,7 +141,9 @@ begin
   FExecutor.AddResultConst('$ctable_basevar',   ftString).AsStringVector[0] := VarNames[0];
   RTableNames := FExecutor.AddResultVector('$ctable_varnames', ftString, FResultRows);
   for i := 1 to VarNames.Count - 1 do
-    RTableNames.AsStringVector[i-1] := VarNames[i];
+    begin
+      RTableNames.AsStringVector[i-1] := VarNames[i];
+    end;
   FResultCounts := FExecutor.AddResultVector('$ctable_n', ftInteger, FResultRows);
   i := 0;
   if (Assigned(FStratifyVarNames)) and
@@ -166,7 +165,7 @@ begin
 
 end;
 
-procedure TCTable.DoResultVariables(Tables: TTwoWayTables; VarName: UTF8String; Index: Integer);
+procedure TCTable.DoResultVariables(Tables: TTwoWayTables; Index: Integer);
 var
   i: Integer;
 begin
@@ -214,17 +213,24 @@ var
   i, VarCount: Integer;
   TableData: TTables;
   Table: TTwoWayTables;
-//  TableResults: array of TStatResult;
   TablesRefMap: TEpiReferenceMap;
-  Stat: TTableStatistic;
   procedure DoOneCTable;
+  var
+    AllVarNames: TStrings;
+    j: Integer;
 // invoke CalcTables for one pair of variables
   begin;
+    AllVarNames := TStringList.Create;
+    AllVarNames.AddStrings(VarNames);
+    // add in stratify and weight variables before preparing the datafile
+    if ST.HasOption('by') then
+      AllVarNames.AddStrings(FStratifyVarNames);
+    if St.HasOption('w') then
+      AllVarNames.Add(FWeightName);
     if ST.HasOption('m') then
-      DF := FExecutor.PrepareDatafile(TwoVarNames, nil)
+      DF := FExecutor.PrepareDatafile(AllVarNames, nil)
     else
-      DF := FExecutor.PrepareDatafile(TwoVarNames, TwoVarNames);
-    S := '';
+      DF := FExecutor.PrepareDatafile(AllVarNames, AllVarNames);
     try
       if (DF.Size = 0) then
         begin
@@ -233,13 +239,11 @@ var
         end;
       Table := TableData.CalcTables(DF, TwoVarNames, FStratifyVarNames, FWeightName,
              ST.Options, TablesRefMap, FCTableStatistics);
-// TODO: try passing an object that will own all result variables
-//       since it will persist across all of the 2x2 tables
-//       or have each statistic return 3 vectors: result var name (string), result var type (varType), result var value (variant?)
+
       if (i = 1) then
         CreateResultVariables(Table, VarNames); // set up result variables
 
-      DoResultVariables(Table, TwoVarNames[1], i); // results for one table row
+      DoResultVariables(Table, i); // results for one table row
 
       if (not ST.HasOption('q')) then
       begin
@@ -251,16 +255,16 @@ var
 
     finally
       DF.Free;
-
+      AllVarNames.Free;
     end;
   end;
 
 begin
-  FStratifyVarnames := TStringList.Create;
+  FStratifyVarNames := TStringList.Create;
   for Opt in ST.Options do
     begin
       if (Opt.Ident = 'by') then
-        FStratifyVarnames.Add(Opt.Expr.AsIdent);
+        FStratifyVarNames.Add(Opt.Expr.AsIdent);
     end;
 
   FWeightName := '';

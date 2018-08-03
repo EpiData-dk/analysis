@@ -3663,7 +3663,6 @@ var
   VarNames: TStrings;
 begin
   VarNames := ST.VariableList.GetIdentsAsList;
-
   // Get the by variables out too
   for Opt in ST.Options do
     begin
@@ -3678,37 +3677,14 @@ begin
           VarNames.Free;
           Exit;
         end;
-
-      VarNames.Add(Opt.Expr.AsIdent)
     end;
 
-  // Weighted counts
-  if (ST.HasOption('w', Opt)) then
-    VarNames.Add(Opt.Expr.AsIdent);
-
-
-{  // TODO: must move this whole block to CTABLE!
-  if ST.HasOption('m') then
-    DF := PrepareDatafile(AllVarNames, nil)
-  else
-    DF := PrepareDatafile(AllVarNames, AllVarNames);
-
-  try
-    if (DF.Size = 0) then
-      begin
-        DoError('No data!');
-        ST.ExecResult := csrFailed;
-        Exit;
-      end;
- }
     Table := TCTable.Create(Self, FOutputCreator);
     Table.ExecCTable(VarNames, ST);
     Table.Free;
 
-//  finally
     VarNames.Free;
-//    DF.Free;
-//  end;
+
 end;
 
 procedure TExecutor.ExecUse(ST: TUse);

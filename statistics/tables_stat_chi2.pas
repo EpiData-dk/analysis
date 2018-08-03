@@ -48,6 +48,8 @@ type
     procedure AddToCompactTable(Executor: TExecutor; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
+    function CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
+    procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); override;
 //    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring);
     property Statistics[Const Index: Integer]: TTwoWayStatisticChi2 read GetStatistics;
   end;
@@ -288,6 +290,37 @@ begin
   T.Cell[ColIdx + 2, RowIdx].Text := FormatP(FMHChiP, false);
 end;
 
+function TTwoWayStatisticsChi2.CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String;
+         ResultRows: Integer): TStatResult;
+
+begin
+  setlength(Result,3); // three statistics
+  Result[0] := Executor.AddResultVector(Prefix + 'chi2', ftFloat, ResultRows);
+  Result[1] := Executor.AddResultVector(Prefix + 'chip', ftFloat, ResultRows);
+  Result[2] := Executor.AddResultVector(Prefix + 'df', ftInteger, ResultRows);
+end;
+
+procedure TTwoWayStatisticsChi2.AddCompactResultVariables(Executor: TExecutor;
+          Index: Integer; Results: TStatResult);
+var
+  Stat: TTwoWayStatisticChi2;
+begin
+  Stat := Statistics[0];
+  with Stat do
+  begin
+    if (StatisticsCount = 1) or (FOrgTable.DF > 1) then
+    begin
+      Results[0].AsFloatVector[Index] := FChi2;
+      Results[1].AsFloatVector[Index] := FChiP;
+    end
+    else
+    begin
+      Results[0].AsFloatVector[Index] := FMHChi2;
+      Results[1].AsFloatVector[Index] := FMHChiP;
+    end;
+    Results[2].AsIntegerVector[Index] := FOrgTable.DF;
+  end;
+end;
 
 initialization
   RegisterTableStatistic(tsChi2, TTwoWayStatisticsChi2);
