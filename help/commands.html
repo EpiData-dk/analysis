@@ -1401,8 +1401,8 @@ drop data !del ; // drop all observations "marked for deletion"
         </li>
         <li> Sorting:
          <ul>
-          <li>Indicate by !Sxxx where the x indicate:<br/>
-           R:row C:Column A:Ascending D:Descending T:Total L:label (else numerical)</li>
+          <li>Indicate by !sxxx where the x indicate:<br/>
+           r:row c:Column a:Ascending d:Descending t:Total l:label (else numerical)</li>
           <li><font class="option">!sa</font> Sort col &amp; row in ascending value order</li>
           <li><font class="option">!sd</font> Sort col &amp; row in descending value order</li>
           <li><font class="option">!sla</font> Sort col &amp; row in ascending label order</li>
@@ -1428,7 +1428,24 @@ drop data !del ; // drop all observations "marked for deletion"
        </ul>
       </td>
      </tr>
-
+     <tr valign="top">
+      <td><a name="ctable" id="ctable"></a>ctable<br/>
+      <a name="cta" id="cta">cta</a></td>
+      <td>
+      <font class="cmd">cta <i>&lt;column variable&gt; &lt;row variables&gt;</i> [!&lt;option&gt; ...]</font><br/>
+      <p>The ctable (brief: cta) command summarizes a series of cross tables for the first variable against each of the following variables.</p>
+      <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+      <p>The ctable command takes the same options as the tables command, <i>except for </i> !nc !nb !ns !pr !pc !pt.</p>
+      <p>One additional option is available.</p>
+      <ul>
+       <li> Attack rate table<br/>
+       <ul>
+        <li><font class="option">!ar</font> Show attack rates and relative risks</li>
+        </ul>
+        </li>
+       </ul>
+      </td>
+     </tr>
      <!--
       ######################################################3
       Means and Count
