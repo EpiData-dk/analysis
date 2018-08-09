@@ -1,6 +1,6 @@
 ﻿"Name"     = 'EpiData Analysis Grammar'
 "Author"   = 'Torsten Bonde Christiansen'
-"Version"  = '1.0'
+"Version"  = '1.2'
 "About"    = 'The grammar for the EpiData Analysis Program'
 "Case Sensitive" = 'False'
 "Start Symbol" = <Program>
