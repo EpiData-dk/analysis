@@ -74,9 +74,9 @@ begin
   // Collect header information
   S := Tables.UnstratifiedTable.ColVariable.GetVariableLabel(VariableLabelType);
   if (ST.HasOption('ar') or ST.HasOption('rr')) then
-    S := S + LineEnding + 'Outcome (O+) = ' +
-       Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(0,ValueLabelType) + LineEnding +
-       'Not outcome (O-) = ' +
+    S := S + LineEnding + 'O+ = ' +
+       Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(0,ValueLabelType) +
+       ' / O- = ' +
        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(1,ValueLabelType);
 
   if (FStratifyVarNames.Count>0) then

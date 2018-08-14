@@ -206,7 +206,9 @@ begin
       ColIdx                      := T.ColCount;
       T.ColCount                  := ColIdx + 6;
       T.Cell[ColIdx     , 0].Text := 'E+';
+      T.Cell[ColIdx + 1 , 0].Text := 'E+';
       T.Cell[ColIdx + 3 , 0].Text := 'E-';
+      T.Cell[ColIdx + 4 , 0].Text := 'E-';
       T.Cell[ColIdx     , 1].Text := 'O+';
       T.Cell[ColIdx + 1 , 1].Text := 'O-';
       T.Cell[ColIdx + 2 , 1].Text := 'AR';

@@ -114,12 +114,12 @@ var
 begin
   if (ShowP) then prefix := ' p';
   if (Val < 0.0001) then
-    Result := prefix + ' < 0.0001'
+    Result := prefix + '< 0.0001'
   else
     if (Val < 0.001) then
-      Result := prefix + ' < 0.001'
+      Result := prefix + '< 0.001'
   else
-    if (ShowP) then prefix += ' =';
+    if (ShowP) then prefix := prefix + '=';
     Result := prefix + Format('%.3f', [Val]) ;
 end;
 
