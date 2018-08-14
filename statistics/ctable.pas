@@ -56,7 +56,7 @@ function TCTable.CreateOutputHeader(Tables: TTwoWayTables; ST: TCTableCommand) :
 var
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
-  S, S1: UTF8String;
+  SH, S1, SF: UTF8String;
   F: TEpiField;
   i: Integer;
 
@@ -70,27 +70,36 @@ begin
   Result.ColCount := 2;
   Result.RowCount := 2;
   Result.Footer.Alignment := taLeftJustify;
+  SF := '';
 
   // Collect header information
-  S := Tables.UnstratifiedTable.ColVariable.GetVariableLabel(VariableLabelType);
+  SH := Tables.UnstratifiedTable.ColVariable.GetVariableLabel(VariableLabelType);
   if (ST.HasOption('ar') or ST.HasOption('rr')) then
-    S := S + LineEnding + 'O+ = ' +
-       Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(0,ValueLabelType) +
-       ' / O- = ' +
-       Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(1,ValueLabelType);
+    begin
+      SF := 'O+ = ' +
+        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(0,ValueLabelType) +
+        ' / O- = ' +
+        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(1,ValueLabelType) +
+        LineEnding;
+      if (FStratifyVarNames.Count>0) then
+        SF := SF + '(attack rates are shown for unstratified data)' + LineEnding;
+    end;
 
   if (FStratifyVarNames.Count>0) then
     begin
-      S := S + ' adjusted for:';
+      SH := SH + LineEnding + ' adjusted for:';
 
-      S1 := ' ';
-      if (VariableLabelType <> gvtVarName) then
+      if (VariableLabelType = gvtVarName) then
+        S1 := ' '
+      else
         S1 := LineEnding;
-
+      if (ST.HasOption('ex')) then
+        SF := SF + LineEnding + '(Fisher Exact test p is shown for unstratified data)';
       for F in Tables.StratifyVariables do
-        S := S + S1 + F.GetVariableLabel(VariableLabelType);
+        SH := SH + S1 + F.GetVariableLabel(VariableLabelType);
     end;
-  Result.Header.Text := S;
+  Result.Header.Text := SH;
+  Result.Footer.Text := SF;
 
   // Summary table headers
   Result.Cell[0, 0].Text := 'by';
@@ -221,7 +230,9 @@ var
 // invoke CalcTables for one pair of variables
   begin;
     AllVarNames := TStringList.Create;
-    AllVarNames.AddStrings(VarNames);
+    // local AllVarNames has only the two variables being analyzed in this pass
+    // must add back the stratifying and weight variables
+    AllVarNames.AddStrings(TwoVarNames);
     // add in stratify and weight variables before preparing the datafile
     if ST.HasOption('by') then
       AllVarNames.AddStrings(FStratifyVarNames);

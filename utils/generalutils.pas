@@ -120,6 +120,9 @@ begin
       Result := prefix + '< 0.001'
   else
     if (ShowP) then prefix := prefix + '=';
+  if (Val = TEpiFloatField.DefaultMissing) then
+    Result := prefix + '-'
+  else
     Result := prefix + Format('%.3f', [Val]) ;
 end;
 

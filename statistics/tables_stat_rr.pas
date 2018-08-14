@@ -238,34 +238,32 @@ begin
   with Stat do
   begin
     if (Message <> '') then
+    begin
       T.Footer.Text := T.Footer.Text + LineEnding +
                        T.Cell[0,RowIdx].Text + ': ' + Message;
+      exit;
+    end;
 
-    // save value of exposure = yes for CTable
+  // save value of exposure = yes for CTable
     ValueLabelType := ValueLabelTypeFromOptionList(Options, Executor.SetOptions);
     T.Cell[ColIdx, RowIdx].Text := FRowVar.GetValueLabel(0, ValueLabelType);
     T.SetColAlignment(ColIdx,taCenter); // must repeat this as not simple to do at the end
 
-    // if Attack rates requested, output them now, based on unstratified table
+  // if Attack rates requested, output them now, based on unstratified table
     if (Options.HasOption('ar')) then
       begin
         T.Cell[ColIdx + 1, RowIdx].Text := IntToStr(FA);
-        T.Cell[ColIdx + 2, RowIdx].Text := IntToStr(FAB);
+        T.Cell[ColIdx + 2, RowIdx].Text := IntToStr(FAB - FA);
         T.Cell[ColIdx + 3, RowIdx].Text := FormatRatio(FAR0, Options);
         T.Cell[ColIdx + 4, RowIdx].Text := IntToStr(FC);
-        T.Cell[ColIdx + 5, RowIdx].Text := IntToStr(FCD);
+        T.Cell[ColIdx + 5, RowIdx].Text := IntToStr(FCD - FC);
         T.Cell[ColIdx + 6, RowIdx].Text := FormatRatio(FAR1, Options);
         ColIdx += 6;
       end;
     if (StatisticsCount = 1) then
     // unstratified - crude result
     begin
-      if (FRelativeRisk = TEpiFloatField.DefaultMissing) then
-      begin
-        T.Cell[ColIdx + 1, RowIdx].Text := '-';
-        T.Cell[ColIdx + 2, RowIdx].Text := '';
-      end
-      else
+      if (FRelativeRisk <> TEpiFloatField.DefaultMissing) then
       begin
         T.Cell[ColIdx + 1, RowIdx].Text := FormatRatio(FRelativeRisk, Options);
         if (IsInfinite(FRelativeRisk)) then exit;
@@ -273,12 +271,13 @@ begin
       end;
       exit;
       end;
-  end;
   // stratified - summary result
-  if (FMHRR = TEpiFLoatField.DefaultMissing) then exit;
-  T.Cell[ColIdx + 1, RowIdx].Text := FormatRatio(FMHRR, Options);
-  if (IsInfinite(FMHRR)) then exit;
-  T.Cell[ColIdx + 2, RowIdx].Text := FormatCI(FMHRRLL, FMHRRUL, 0, Options);
+    if (FMHRR = TEpiFLoatField.DefaultMissing) then exit;
+    T.Cell[ColIdx + 1, RowIdx].Text := FormatRatio(FMHRR, Options);
+    if (IsInfinite(FMHRR)) then exit;
+    T.Cell[ColIdx + 2, RowIdx].Text := FormatCI(FMHRRLL, FMHRRUL, 0, Options);
+
+  end;
 
 end;
 
