@@ -82,7 +82,7 @@ begin
         Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(1,ValueLabelType) +
         LineEnding;
       if (FStratifyVarNames.Count>0) then
-        SF := SF + '(attack rates are shown for unstratified data)' + LineEnding;
+        SF := SF + '(attack rates are for unstratified data)' + LineEnding;
     end;
 
   if (FStratifyVarNames.Count>0) then
@@ -94,7 +94,7 @@ begin
       else
         S1 := LineEnding;
       if (ST.HasOption('ex')) then
-        SF := SF + LineEnding + '(Fisher Exact test p is shown for unstratified data)';
+        SF := SF + LineEnding + '(Fisher Exact test p is for unstratified data)';
       for F in Tables.StratifyVariables do
         SH := SH + S1 + F.GetVariableLabel(VariableLabelType);
     end;
@@ -218,20 +218,20 @@ var
   DF: TEpiDataFile;
   TwoVarNames: TStrings;
   Opt: TOption;
-  S: UTF8String;
   i, VarCount: Integer;
   TableData: TTables;
   Table: TTwoWayTables;
   TablesRefMap: TEpiReferenceMap;
+  FirstPass: Boolean; // marks first table (no table if no data for a variable)
+
+  // invoke CalcTables for one pair of variables
   procedure DoOneCTable;
   var
     AllVarNames: TStrings;
-    j: Integer;
-// invoke CalcTables for one pair of variables
   begin;
     AllVarNames := TStringList.Create;
     // local AllVarNames has only the two variables being analyzed in this pass
-    // must add back the stratifying and weight variables
+    // must add the stratifying and weight variables
     AllVarNames.AddStrings(TwoVarNames);
     // add in stratify and weight variables before preparing the datafile
     if ST.HasOption('by') then
@@ -244,30 +244,29 @@ var
       DF := FExecutor.PrepareDatafile(AllVarNames, AllVarNames);
     try
       if (DF.Size = 0) then
-        begin
-          S := VarNames[0] + ': No data' + LineEnding;
-          Exit;
-        end;
-      Table := TableData.CalcTables(DF, TwoVarNames, FStratifyVarNames, FWeightName,
+        FOutputCreator.DoWarning(AllVarNames[1] + ': No data')
+      else
+      begin
+        Table := TableData.CalcTables(DF, TwoVarNames, FStratifyVarNames, FWeightName,
              ST.Options, TablesRefMap, FCTableStatistics);
 
-      if (i = 1) then
-        CreateResultVariables(Table, VarNames); // set up result variables
+        if (FirstPass) then
+          CreateResultVariables(Table, VarNames); // set up result variables
+        DoResultVariables(Table, i); // results for one table row
 
-      DoResultVariables(Table, i); // results for one table row
-
-      if (not ST.HasOption('q')) then
-      begin
-        if (i = 1) then // cannot create header until we have done calctable once
-          SummaryTable := CreateOutputHeader(Table, ST);
-        DoOutputCTableRow(Table, ST, SummaryTable);
-        SummaryTable.Footer.Text := SummaryTable.Footer.Text + S;
+        if (not ST.HasOption('q')) then
+        begin
+          if (FirstPass) then // cannot create header until we have done calctable once
+            SummaryTable := CreateOutputHeader(Table, ST);
+          DoOutputCTableRow(Table, ST, SummaryTable);
+        end;
+        FirstPass := FALSE;
       end;
-
     finally
       DF.Free;
       AllVarNames.Free;
     end;
+
   end;
 
 begin
@@ -284,7 +283,7 @@ begin
 
   TwoVarNames := TStringList.Create;
   TwoVarNames.Add(VarNames[0]);
-
+  FirstPass := TRUE;
   // get each set of results based on first variable and each of the other variables
   VarCount := VarNames.Count;
   if (VarCount < 2) then
