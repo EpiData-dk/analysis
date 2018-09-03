@@ -5504,6 +5504,12 @@ begin
   // Just make sure we output the error.
   if (not Result) then
     begin
+      if (not Assigned(EV) ) then
+        begin
+          FVAriable.TypeCheck(Parser, EFlags);
+          Exit;
+        end;
+
       if (EV.VarType = evtField) then
         begin
           EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject]);
