@@ -4848,9 +4848,13 @@ begin
     otDiv:
       Result := rtInteger;
     otMult,
-    otPlus,
-    otMinus:
+    otPlus:
       result := CommonType(FL, FR);
+    otMinus:
+      if (FL.ResultType = rtDate) and (FR.ResultType = rtDate) then
+        result := rtInteger
+      else
+        result := CommonType(FL, FR);
     otExponential,
     otDivide:
       result := rtFloat;
