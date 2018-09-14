@@ -14,9 +14,9 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="1"/>
-      <RevisionNr Value="1"/>
-      <BuildNr Value="12"/>
+      <MinorVersionNr Value="2"/>
+      <RevisionNr Value="2"/>
+      <BuildNr Value="1"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -618,24 +618,31 @@
       </Item2>
       <Item3>
         <Name Value="EFOpenError"/>
+        <Enabled Value="False"/>
       </Item3>
       <Item4>
         <Name Value="EEpiPasswordCanceled"/>
+        <Enabled Value="False"/>
       </Item4>
       <Item5>
         <Name Value="ESetOption"/>
+        <Enabled Value="False"/>
       </Item5>
       <Item6>
         <Name Value="EDuplicate"/>
+        <Enabled Value="False"/>
       </Item6>
       <Item7>
         <Name Value="EExecutorZeroDataException"/>
+        <Enabled Value="False"/>
       </Item7>
       <Item8>
         <Name Value="EExecutorIndexException"/>
+        <Enabled Value="False"/>
       </Item8>
       <Item9>
         <Name Value="EKeyNotFoundException"/>
+        <Enabled Value="False"/>
       </Item9>
       <Item10>
         <Name Value="Exception"/>
@@ -643,9 +650,11 @@
       </Item10>
       <Item11>
         <Name Value="EAggrFunc"/>
+        <Enabled Value="False"/>
       </Item11>
       <Item12>
         <Name Value="ETwoWaySortException"/>
+        <Enabled Value="False"/>
       </Item12>
     </Exceptions>
   </Debugging>

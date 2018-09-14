@@ -170,6 +170,13 @@ var
           DstDatafile.ValueLabels.AddItem(VLSet);
           F.ValueLabelSet := VLSet;
         end;
+
+      // Remove any "Relates" on a field - they are not valid anymore.
+      if (Assigned(F.Relates)) then
+        begin
+          F.Relates.Free;
+          F.Relates := nil;
+        end;
     end;
   end;
 
@@ -536,6 +543,7 @@ begin
   FExecutor.Document.DataFiles.AddItem(MainDF);
   RefMap.FixupReferences;
   RefMap.Free;
+  MainDF.Relates.ClearAndFree;
   FExecutor.Document.Relations.NewMasterRelation.Datafile := MainDF;
 
   MainKeyFields  := FieldsFromStrings(Varnames, MainDF);
