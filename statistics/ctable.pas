@@ -74,7 +74,7 @@ begin
 
   // Collect header information
   SH := Tables.UnstratifiedTable.ColVariable.GetVariableLabel(VariableLabelType);
-  if (ST.HasOption('ar') or ST.HasOption('rr')) then
+  if (ST.HasOption('ar') or ST.HasOption('rr') or ST.HasOption('en')) then
     begin
       SF := 'O+ = ' +
         Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(0,ValueLabelType) +
@@ -166,7 +166,7 @@ begin
   if (FWeightName <> '') then
     FExecutor.AddResultConst('$ctable_weightvar',   ftString).AsStringVector[0] := FWeightName;
 
-  SetLength(TableResults,Tables.StatisticsCount);
+  SetLength(TableResults, Tables.StatisticsCount);
   for i := 0 to Tables.StatisticsCount - 1 do
   begin
     TableResults[i] := Tables.Statistics[i].CreateCompactResultVariables(FExecutor, '$ctable_', FResultRows); // add results for Tables to TableResults
@@ -207,9 +207,8 @@ begin
       Include(Result, tsChi2);
   if (ST.HasOption('odds')) then
       Include(Result, tsOR);
-  if (ST.HasOption('rr') or ST.HasOption('ar')) then
+  if (ST.HasOption('rr') or ST.HasOption('ar') or ST.HasOption('en')) then
       Include(Result, tsRR);
-
 end;
 
 procedure TCTable.ExecCTable(VarNames: TStrings; ST: TCTableCommand);

@@ -4357,10 +4357,10 @@ begin
     ftDMYAuto,
     ftMDYAuto,
     ftYMDAuto:
-      result :=  TEpiIntField.CheckMissing(GetVariableValueDate(Sender));
+      result :=  TEpiDateField.CheckMissing(GetVariableValueDate(Sender));
     ftTime,
     ftTimeAuto:
-      result :=  TEpiFloatField.CheckMissing(GetVariableValueTime(Sender));
+      result :=  TEpiDateTimeField.CheckMissing(GetVariableValueTime(Sender));
     ftMemo,
     ftString,
     ftUpperString:

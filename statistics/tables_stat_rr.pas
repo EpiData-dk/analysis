@@ -82,8 +82,8 @@ Begin
   FAR1  := c / cd;
   FA    := a;
   FAB   := ab;
-  FC    :=c;
-  FCD   :=cd;
+  FC    := c;
+  FCD   := cd;
 
   if (cd = 0) or (ab = 0) or (FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0) then
   begin
@@ -190,8 +190,9 @@ end;
 
 procedure TTwoWayStatisticsRR.AddToCompactHeader(T: TOutputTable; Options: TOptionList);
 var
-  ColIdx: Integer;
+  ColIdx, StartIdx: Integer;
   Stat: TTwoWayStatisticRR;
+  HasAr, HasEn, HasRR: Boolean;
 
 begin
   Stat := Statistics[0];
@@ -201,22 +202,39 @@ begin
   T.SetColAlignment(ColIdx, taCenter);
   T.Cell[ColIdx, 0].Text := 'E+';
   T.Cell[ColIdx, 1].Text := 'value';
-  if (Options.HasOption('ar')) then
+
+  HasAr := Options.HasOption('ar');
+  HasEn := Options.HasOption('en');
+  HasRR := Options.HasOption('rr');
+
+  if (HasAR or HasEn) then
     begin
-      ColIdx                      := T.ColCount;
-      T.ColCount                  := ColIdx + 6;
-      T.Cell[ColIdx     , 0].Text := 'E+';
-      T.Cell[ColIdx + 1 , 0].Text := 'E+';
-      T.Cell[ColIdx + 3 , 0].Text := 'E-';
-      T.Cell[ColIdx + 4 , 0].Text := 'E-';
-      T.Cell[ColIdx     , 1].Text := 'O+';
-      T.Cell[ColIdx + 1 , 1].Text := 'O-';
-      T.Cell[ColIdx + 2 , 1].Text := 'AR';
-      T.Cell[ColIdx + 3 , 1].Text := 'O+';
-      T.Cell[ColIdx + 4 , 1].Text := 'O-';
-      T.Cell[ColIdx + 5 , 1].Text := 'AR';
+      StartIdx := T.ColCount;
+      ColIdx   := StartIdx;
+
+      if (HasAr) then
+        T.ColCount := ColIdx + 6
+      else
+        T.ColCount := ColIdx + 4;
+
+      T.Cell[PostInc(ColIdx), 0].Text := 'E+';
+      T.Cell[PostInc(ColIdx), 0].Text := 'E+';
+      if (HasAr) then Inc(ColIdx);
+      T.Cell[PostInc(ColIdx), 0].Text := 'E-';
+      T.Cell[PostInc(ColIdx), 0].Text := 'E-';
+
+      ColIdx := StartIdx;
+      T.Cell[PostInc(ColIdx), 1].Text := 'O+';
+      T.Cell[PostInc(ColIdx), 1].Text := 'O-';
+      if (HasAR) then
+        T.Cell[PostInc(ColIdx), 1].Text := 'AR';
+      T.Cell[PostInc(ColIdx), 1].Text := 'O+';
+      T.Cell[PostInc(ColIdx), 1].Text := 'O-';
+      if (HasAR) then
+        T.Cell[PostInc(ColIdx), 1].Text := 'AR';
      end;
-  if (Options.HasOption('rr') or Options.HasOption('ar')) then
+
+  if (HasRR or HasAR) then
     begin
       ColIdx                      := T.ColCount;
       T.ColCount                  := ColIdx + 2;
@@ -224,7 +242,6 @@ begin
       T.Cell[ColIdx + 1 , 1].Text := IntToStr(Stat.FConf) + '% CI';
       T.SetColAlignment(ColIdx + 1, taCenter);  // just header alignment
     end;
-
 end;
 
 procedure TTwoWayStatisticsRR.AddToCompactTable(Executor: TExecutor;
@@ -233,6 +250,7 @@ var
   i: Integer;
   Stat: TTwoWayStatisticRR;
   ValueLabelType: TEpiGetValueLabelType;
+  HasAr, HasEn, HasRR: Boolean;
 begin
   Stat := Statistics[0];
   with Stat do
@@ -240,45 +258,54 @@ begin
     if (Message <> '') then
     begin
       T.Footer.Text := T.Footer.Text + LineEnding +
-                       T.Cell[0,RowIdx].Text + ': ' + Message;
+                       T.Cell[0, RowIdx].Text + ': ' + Message;
       exit;
     end;
 
   // save value of exposure = yes for CTable
     ValueLabelType := ValueLabelTypeFromOptionList(Options, Executor.SetOptions);
     T.Cell[ColIdx, RowIdx].Text := FRowVar.GetValueLabel(0, ValueLabelType);
-    T.SetColAlignment(ColIdx,taCenter); // must repeat this as not simple to do at the end
+    T.SetColAlignment(ColIdx, taCenter); // must repeat this as not simple to do at the end
+
+    HasAr := Options.HasOption('ar');
+    HasEn := Options.HasOption('en');
+    HasRR := Options.HasOption('rr');
 
   // if Attack rates requested, output them now, based on unstratified table
-    if (Options.HasOption('ar')) then
+    if (HasAr or HasEn) then
       begin
-        T.Cell[ColIdx + 1, RowIdx].Text := IntToStr(FA);
-        T.Cell[ColIdx + 2, RowIdx].Text := IntToStr(FAB - FA);
-        T.Cell[ColIdx + 3, RowIdx].Text := FormatRatio(FAR0, Options);
-        T.Cell[ColIdx + 4, RowIdx].Text := IntToStr(FC);
-        T.Cell[ColIdx + 5, RowIdx].Text := IntToStr(FCD - FC);
-        T.Cell[ColIdx + 6, RowIdx].Text := FormatRatio(FAR1, Options);
-        ColIdx += 6;
+        Inc(ColIdx);
+        T.Cell[PostInc(ColIdx), RowIdx].Text := IntToStr(FA);
+        T.Cell[PostInc(ColIdx), RowIdx].Text := IntToStr(FAB - FA);
+        if (HasAr) then
+          T.Cell[PostInc(ColIdx), RowIdx].Text := FormatRatio(FAR0, Options);
+        T.Cell[PostInc(ColIdx), RowIdx].Text := IntToStr(FC);
+        T.Cell[PostInc(ColIdx), RowIdx].Text := IntToStr(FCD - FC);
+        if (HasAr) then
+          T.Cell[PostInc(ColIdx), RowIdx].Text := FormatRatio(FAR1, Options);
       end;
-    if (StatisticsCount = 1) then
-    // unstratified - crude result
-    begin
-      if (FRelativeRisk <> TEpiFloatField.DefaultMissing) then
-      begin
-        T.Cell[ColIdx + 1, RowIdx].Text := FormatRatio(FRelativeRisk, Options);
-        if (IsInfinite(FRelativeRisk)) then exit;
-        T.Cell[ColIdx + 2, RowIdx].Text := FormatCI(FRRLL, FRRUL, 0, Options);
-      end;
-      exit;
-      end;
-  // stratified - summary result
-    if (FMHRR = TEpiFLoatField.DefaultMissing) then exit;
-    T.Cell[ColIdx + 1, RowIdx].Text := FormatRatio(FMHRR, Options);
-    if (IsInfinite(FMHRR)) then exit;
-    T.Cell[ColIdx + 2, RowIdx].Text := FormatCI(FMHRRLL, FMHRRUL, 0, Options);
 
+    if (HasAr or HasRR) then
+      begin
+        // unstratified - crude result
+        if (StatisticsCount = 1) then
+          begin
+            if (FRelativeRisk <> TEpiFloatField.DefaultMissing) then
+              begin
+                T.Cell[ColIdx, RowIdx].Text := FormatRatio(FRelativeRisk, Options);
+                if (IsInfinite(FRelativeRisk)) then exit;
+                T.Cell[ColIdx + 1, RowIdx].Text := FormatCI(FRRLL, FRRUL, 0, Options);
+              end;
+            exit;
+          end;
+
+      // stratified - summary result
+        if (FMHRR = TEpiFLoatField.DefaultMissing) then exit;
+        T.Cell[ColIdx, RowIdx].Text := FormatRatio(FMHRR, Options);
+        if (IsInfinite(FMHRR)) then exit;
+        T.Cell[ColIdx + 1, RowIdx].Text := FormatCI(FMHRRLL, FMHRRUL, 0, Options);
+    end;
   end;
-
 end;
 
 procedure TTwoWayStatisticsRR.CreateSummaryResultVariables(Executor: TExecutor;
@@ -348,10 +375,16 @@ function TTwoWayStatisticsRR.CreateCompactResultVariables(Executor: TExecutor; P
          ResultRows: Integer): TStatResult;
 
 begin
-  setlength(Result,3);
-  Result[0] := Executor.AddResultVector(Prefix + 'rr', ftFloat, ResultRows);
-  Result[1] := Executor.AddResultVector(Prefix + 'rrll', ftFloat, ResultRows);
-  Result[2] := Executor.AddResultVector(Prefix + 'rrul', ftFloat, ResultRows);
+  setlength(Result, 9);
+  Result[0] := Executor.AddResultVector(Prefix + 'rr',       ftFloat,   ResultRows);
+  Result[1] := Executor.AddResultVector(Prefix + 'rrll',     ftFloat,   ResultRows);
+  Result[2] := Executor.AddResultVector(Prefix + 'rrul',     ftFloat,   ResultRows);
+  Result[3] := Executor.AddResultVector(Prefix + 'ARpos',    ftFloat,   ResultRows);
+  Result[4] := Executor.AddResultVector(Prefix + 'EposOpos', ftInteger, ResultRows);
+  Result[5] := Executor.AddResultVector(Prefix + 'EposOneg', ftInteger, ResultRows);
+  Result[6] := Executor.AddResultVector(Prefix + 'ARneg',    ftFloat,   ResultRows);
+  Result[7] := Executor.AddResultVector(Prefix + 'EnegOpos', ftInteger, ResultRows);
+  Result[8] := Executor.AddResultVector(Prefix + 'EnegOneg', ftInteger, ResultRows);
 end;
 
 procedure TTwoWayStatisticsRR.AddCompactResultVariables(Executor: TExecutor;
@@ -363,11 +396,17 @@ begin
   begin
     Stat := Statistics[0];
     with Stat do
-    begin
-      Results[0].AsFloatVector[Index] := FRelativeRisk;
-      Results[1].AsFloatVector[Index] := FRRLL;
-      Results[0].AsFloatVector[Index] := FRRUL;
-    end;
+      begin
+        Results[0].AsFloatVector[Index]   := FRelativeRisk;
+        Results[1].AsFloatVector[Index]   := FRRLL;
+        Results[2].AsFloatVector[Index]   := FRRUL;
+        Results[3].AsFloatVector[Index]   := FAR0;
+        Results[4].AsIntegerVector[Index] := FA;
+        Results[5].AsIntegerVector[Index] := FAB - FA;
+        Results[6].AsFloatVector[Index]   := FAR1;
+        Results[7].AsIntegerVector[Index] := FC;
+        Results[8].AsIntegerVector[Index] := FCD - FC;
+      end;
     exit;
   end;
 // stratified

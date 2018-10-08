@@ -1461,9 +1461,7 @@ var
 begin
   F := TCheckVersionForm.Create(Self);
   F.Caption := 'EpiData Analysis';
-  F.CheckBoxValue := true;
   F.ShowModal;
-//  ManagerSettings.CheckForUpdates := F.CheckBoxValue;
   F.Free;
 end;
 

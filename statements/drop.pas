@@ -189,22 +189,21 @@ end;
 
 procedure TExecDrop.DoDropDataset(ST: TDropCommand);
 
-  function DropRecusive(Relation: TEpiMasterRelation): string;
+  function GetNamesRecusive(Relation: TEpiMasterRelation): string;
   var
     Rel: TEpiMasterRelation;
   begin
     result := Relation.Datafile.Name;
     for Rel in Relation.DetailRelations do
-      Result := Result + ', ' + DropRecusive(Rel);
-
-    // This auto destroys the relation....
-    Relation.Datafile.Free;
+      Result := Result + ', ' + GetNamesRecusive(Rel);
   end;
 
 var
   V: TCustomVariable;
   Rel: TEpiMasterRelation;
   S, T: String;
+  DFs: TEpiDataFiles;
+  i: Integer;
 begin
   S := '';
   T := '';
@@ -217,8 +216,14 @@ begin
   begin
     Rel := FExecutor.Document.Relations.MasterRelationFromDatafileName(V.Ident);
     if (Assigned(Rel)) then
-      S := S + DropRecusive(Rel);
+      S := S + GetNamesRecusive(Rel);
   end;
+
+  DFs := Rel.DetailRelations.GetOrderedDataFiles;
+  for i := DFs.Count - 1 downto 0 do
+    DFs[i].Free;
+  DFs.Free;
+  Rel.Datafile.Free;
 
   if (S <> '') then
     FOutputCreator.DoInfoAll(S + ' was dropped!');

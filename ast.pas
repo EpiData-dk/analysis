@@ -1580,7 +1580,8 @@ begin
   Result.Insert('q',  [rtUndefined]);
 
   // Statistics
-  Result.Insert('ar',    [rtUndefined]);  // Show attack rates (only with rr)
+  Result.Insert('ar',    [rtUndefined]);  // Show attack rates
+  Result.Insert('en',    [rtUndefined]);  // Minimized ar output... (contains less)
   Result.Insert('t',     [rtUndefined]);  // Chi2
   Result.Insert('ex',    [rtUndefined]);  // Exact tests for 2x2 tables
   Result.Insert('odds',  [rtUndefined]);  // Odds ratio, including M-H adjusted
@@ -4893,9 +4894,13 @@ begin
     otDiv:
       Result := rtInteger;
     otMult,
-    otPlus,
-    otMinus:
+    otPlus:
       result := CommonType(FL, FR);
+    otMinus:
+      if (FL.ResultType = rtDate) and (FR.ResultType = rtDate) then
+        result := rtInteger
+      else
+        result := CommonType(FL, FR);
     otExponential,
     otDivide:
       result := rtFloat;
@@ -5549,6 +5554,12 @@ begin
   // Just make sure we output the error.
   if (not Result) then
     begin
+      if (not Assigned(EV) ) then
+        begin
+          FVAriable.TypeCheck(Parser, EFlags);
+          Exit;
+        end;
+
       if (EV.VarType = evtField) then
         begin
           EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject]);
