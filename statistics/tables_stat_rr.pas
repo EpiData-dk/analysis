@@ -266,6 +266,7 @@ begin
     ValueLabelType := ValueLabelTypeFromOptionList(Options, Executor.SetOptions);
     T.Cell[ColIdx, RowIdx].Text := FRowVar.GetValueLabel(0, ValueLabelType);
     T.SetColAlignment(ColIdx, taCenter); // must repeat this as not simple to do at the end
+    Inc(ColIdx);
 
     HasAr := Options.HasOption('ar');
     HasEn := Options.HasOption('en');
@@ -274,7 +275,6 @@ begin
   // if Attack rates requested, output them now, based on unstratified table
     if (HasAr or HasEn) then
       begin
-        Inc(ColIdx);
         T.Cell[PostInc(ColIdx), RowIdx].Text := IntToStr(FA);
         T.Cell[PostInc(ColIdx), RowIdx].Text := IntToStr(FAB - FA);
         if (HasAr) then
