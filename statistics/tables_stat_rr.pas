@@ -412,7 +412,7 @@ begin
 // stratified
   Results[0].AsFloatVector[Index] := FMHRR;
   Results[1].AsFloatVector[Index] := FMHRRLL;
-  Results[0].AsFloatVector[Index] := FMHRRUL;
+  Results[2].AsFloatVector[Index] := FMHRRUL;
 end;
 
 initialization

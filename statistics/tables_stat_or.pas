@@ -331,14 +331,14 @@ begin
     begin
       Results[0].AsFloatVector[Index] := FOddsRatio;
       Results[1].AsFloatVector[Index] := FOddsRatioLL;
-      Results[0].AsFloatVector[Index] := FOddsRatioUL;
+      Results[2].AsFloatVector[Index] := FOddsRatioUL;
     end;
     exit;
   end;
 // stratified
   Results[0].AsFloatVector[Index] := FMHOR;
   Results[1].AsFloatVector[Index] := FMHORLL;
-  Results[0].AsFloatVector[Index] := FMHORUL;
+  Results[2].AsFloatVector[Index] := FMHORUL;
 end;
 
 initialization
