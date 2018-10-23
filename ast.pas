@@ -1571,21 +1571,24 @@ begin
   AddValueLabelOptions(Result);
   AddSortingOptions(Result);
 
-  Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('w',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('m', [rtUndefined]);
-  Result.Insert('cs', AllResultDataTypes);
+  Result.Insert('by',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('w',    AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('m',    [rtUndefined]);
+  Result.Insert('cs',   AllResultDataTypes);
 
   // Output silencing options
-  Result.Insert('q',  [rtUndefined]);
+  Result.Insert('q',    [rtUndefined]);
 
+  // Sort table by variable name or label
+  Result.Insert('sn',   [rtUndefined]);  // sort summary table by variable name
+  Result.Insert('sl',   [rtUndefined]);  // sort summary table by variable label
   // Statistics
-  Result.Insert('ar',    [rtUndefined]);  // Show attack rates
-  Result.Insert('en',    [rtUndefined]);  // Minimized ar output... (contains less)
-  Result.Insert('t',     [rtUndefined]);  // Chi2
-  Result.Insert('ex',    [rtUndefined]);  // Exact tests for 2x2 tables
-  Result.Insert('odds',  [rtUndefined]);  // Odds ratio, including M-H adjusted
-  Result.Insert('rr',    [rtUndefined]);  // Risk ratio, including M-H adjusted
+  Result.Insert('ar',   [rtUndefined]);  // Show attack rates
+  Result.Insert('en',   [rtUndefined]);  // Minimized ar output... (contains less)
+  Result.Insert('t',    [rtUndefined]);  // Chi2
+  Result.Insert('ex',   [rtUndefined]);  // Exact tests for 2x2 tables
+  Result.Insert('odds', [rtUndefined]);  // Odds ratio, including M-H adjusted
+  Result.Insert('rr',   [rtUndefined]);  // Risk ratio, including M-H adjusted
 //  Result.Insert('ci90',  [rtUndefined]);  // for OR and RR confidence intervals
 //  Result.Insert('ci95',  [rtUndefined]);
 //  Result.Insert('ci99',  [rtUndefined]);

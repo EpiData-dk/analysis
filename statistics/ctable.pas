@@ -214,10 +214,16 @@ end;
 procedure TCTable.ExecCTable(VarNames: TStrings; ST: TCTableCommand);
 var
   SummaryTable: TOutputTable;
+  debugst1, debugst2: String;
   DF: TEpiDataFile;
   TwoVarNames: TStrings;
+  CrossVars: TEpiFields;
+  CrossVarNames: TStringList;
+  HoldVarLabels, SortVarLabels: TStringList;
+  CrossVarLabel: String;
+  VariableLabelType: TEpiGetVariableLabelType;
   Opt: TOption;
-  i, VarCount: Integer;
+  i, ix, VarCount: Integer;
   TableData: TTables;
   Table: TTwoWayTables;
   TablesRefMap: TEpiReferenceMap;
@@ -279,13 +285,54 @@ begin
   FWeightName := '';
   if (ST.HasOption('w', Opt)) then
     FWeightName := Opt.Expr.AsIdent;
-
   TwoVarNames := TStringList.Create;
   TwoVarNames.Add(VarNames[0]);
+
+{ This is where to sort the remaining table variables (1 ... n) if such an option is implemented
+  e.g. !sn --> sort output by variable name
+       !sl --> sort by variable label
+  see list.pas for approach to getting variable labels
+}
+  CrossVarNames := TStringList.Create;
+  if (ST.HasOption('sl')) then
+    begin
+      CrossVars := TEpiFields.Create(nil);
+      for i:= 1 to VarNames.Count - 1 do
+        CrossVars.AddItem(FExecutor.SortedFields.FieldByName[VarNames[i]]);
+      VariableLabelType := gvtVarLabel;
+      SortVarLabels := TStringList.Create;
+      HoldVarLabels := TStringList.Create;
+      HoldVarLabels.Sorted := False;
+      for i:= 1 to VarNames.Count - 1 do
+        begin
+          CrossVarLabel := CrossVars[i-1].GetVariableLabel(VariableLabelType) + VarNames[i];
+          SortVarLabels.Add(CrossVarLabel);
+          HoldVarLabels.Add(CrossVarLabel);
+        end;
+      SortVarLabels.Sort;
+      for i:= 0 to HoldVarLabels.Count - 1 do
+        begin
+          ix := HoldVarLabels.IndexOf(SortVarLabels[i]);
+          debugst1 := SortVarLabels[i];
+          debugst2 := VarNames[ix + 1];
+          CrossVarNames.Add(VarNames[ix + 1]);
+       end;
+      CrossVars.Free;
+      HoldVarLabels.Free;
+      SortVarLabels.Free;
+    end
+  else
+    begin
+      for i := 1 to VarNames.Count -1  do
+        CrossVarNames.Add(VarNames[i]);
+      if (ST.HasOption('sn')) then
+        CrossVarNames.Sort;
+    end;
+
   FirstPass := TRUE;
   // get each set of results based on first variable and each of the other variables
-  VarCount := VarNames.Count;
-  if (VarCount < 2) then
+  VarCount := CrossVarNames.Count;
+  if (VarCount < 1) then
   begin
     // error message (should not happen)
     exit;
@@ -294,17 +341,20 @@ begin
   FFooterText := '';
   FCTableStatistics := GetStatisticOptions(ST);
   TableData  := TTables.Create(FExecutor, FOutputCreator);
-  setlength(TableResults,VarCount - 1);
+  setlength(TableResults,VarCount);
 
-  for i := 1 to VarCount - 1 do
+  for i := 1 to VarCount do
   begin
-    TwoVarNames.Add(VarNames[i]);
+    TwoVarNames.Add(CrossVarNames[i-1]);
     DoOneCTable;
     TwoVarNames.Delete(1);
   end;
   SummaryTable.SetColAlignment(0, taLeftJustify); // variable name column
   SummaryTable.SetRowBorders(SummaryTable.RowCount - 1, [cbBottom]);
   TableData.Free;
+  FStratifyVarNames.Free;
+  TwoVarNames.Free;
+  CrossVarNames.Free;
 end;
 
 
