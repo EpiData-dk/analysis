@@ -41,8 +41,9 @@ type
     FValuelabelOutput: TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
     FDecimals: Integer;
-    function  DoCalcFreqTable(InputDF: TEpiDataFile; Out RefMap: TEpiReferenceMap): TFreqDatafile;
-    procedure DoResultVariables(ResultDF: TFreqDatafile);
+    function  DoCalcFreqTable(InputDF: TEpiDataFile; VariableName: String; Out RefMap: TEpiReferenceMap): TFreqDatafile;
+    procedure PrepareResultVariables(Variables: TStrings);
+    procedure DoResultVariables(ResultDF: TFreqDatafile; VariableName: String);
     procedure DoOutputFreqTable(ResultDF: TFreqDatafile; ST: TCustomVariableCommand);
   public
     constructor Create(AExecutor: TExecutor; OutputCreator: TOutputCreator);
@@ -50,7 +51,7 @@ type
     // Method called from Executor, does calculation + result vars + output
     procedure ExecFreq(DF: TEpiDataFile; ST: TCustomVariableCommand);
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
-    function  CalcFreq(DF: TEpiDataFile; Out RefMap: TEpiReferenceMap): TFreqDatafile;
+    function  CalcFreq(DF: TEpiDataFile; VariableName: String; Out RefMap: TEpiReferenceMap): TFreqDatafile;
   end;
 
 implementation
@@ -138,8 +139,8 @@ end;
 
 { TFreqCommand }
 
-function TFreqCommand.DoCalcFreqTable(InputDF: TEpiDataFile; out
-  RefMap: TEpiReferenceMap): TFreqDatafile;
+function TFreqCommand.DoCalcFreqTable(InputDF: TEpiDataFile;
+  VariableName: String; out RefMap: TEpiReferenceMap): TFreqDatafile;
 var
   FunctionList: TAggrFuncList;
   Aggregator: TAggregate;
@@ -148,7 +149,7 @@ var
   Dummy: TEpiFields;
 begin
   Varnames := TStringList.Create;
-  VarNames.Add(InputDF.Field[0].Name);
+  VarNames.Add(VariableName);
 
   FunctionList := TAggrFuncList.Create(true);
   Func := TFreqAggrFunc.Create('', InputDF.Field[0]);
@@ -165,19 +166,25 @@ begin
   Dummy.Free;
 end;
 
-procedure TFreqCommand.DoResultVariables(ResultDF: TFreqDatafile);
+procedure TFreqCommand.PrepareResultVariables(Variables: TStrings);
+begin
+  // TODO: Created resultvariables like in tables
+end;
+
+procedure TFreqCommand.DoResultVariables(ResultDF: TFreqDatafile;
+  VariableName: String);
 var
   RCount, RCateg, RPerc, RCum, RLowCI, RHighCI: TExecVarVector;
   i: Integer;
 begin
-  FExecutor.AddResultConst('$freq_total', ftInteger).AsIntegerVector[0] := ResultDF.Sum;
-  FExecutor.AddResultConst('$freq_rows', ftInteger).AsIntegerVector[0]  := ResultDF.Size;
-  RCount  := FExecutor.AddResultVector('$freq_count',      ftInteger, ResultDF.Size);
-  RCateg  := FExecutor.AddResultVector('$freq_labels',     ftString,  ResultDF.Size);
-  RPerc   := FExecutor.AddResultVector('$freq_rowpercent', ftFloat,   ResultDF.Size);
-  RCum    := FExecutor.AddResultVector('$freq_cumpercent', ftFloat,   ResultDF.Size);
-  RLowCI  := FExecutor.AddResultVector('$freq_lowCI',      ftFloat,   ResultDF.Size);
-  RHighCI := FExecutor.AddResultVector('$freq_highCI',     ftFloat,   ResultDF.Size);
+  FExecutor.AddResultConst('$freq_total_' + VariableName, ftInteger).AsIntegerVector[0] := ResultDF.Sum;
+  FExecutor.AddResultConst('$freq_rows_' + VariableName, ftInteger).AsIntegerVector[0]  := ResultDF.Size;
+  RCount  := FExecutor.AddResultVector('$freq_count_' + VariableName,      ftInteger, ResultDF.Size);
+  RCateg  := FExecutor.AddResultVector('$freq_labels_' + VariableName,     ftString,  ResultDF.Size);
+  RPerc   := FExecutor.AddResultVector('$freq_rowpercent_' + VariableName, ftFloat,   ResultDF.Size);
+  RCum    := FExecutor.AddResultVector('$freq_cumpercent_' + VariableName, ftFloat,   ResultDF.Size);
+  RLowCI  := FExecutor.AddResultVector('$freq_lowCI_' + VariableName,      ftFloat,   ResultDF.Size);
+  RHighCI := FExecutor.AddResultVector('$freq_highCI_' + VariableName,     ftFloat,   ResultDF.Size);
 
   for i := 0 to ResultDF.Size - 1 do
     begin
@@ -265,26 +272,33 @@ procedure TFreqCommand.ExecFreq(DF: TEpiDataFile; ST: TCustomVariableCommand);
 var
   ResDF: TFreqDatafile;
   RefMap: TEpiReferenceMap;
+  Variables: TStrings;
+  Variable: String;
 begin
+  FExecutor.ClearResults('$freq');
+
   FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+  FDecimals            := DecimalFromOption(ST.Options);
 
-  FDecimals := DecimalFromOption(ST.Options);
+  Variables := ST.VariableList.GetIdentsAsList;
+  for Variable in Variables do
+    begin
+      ResDF := DoCalcFreqTable(DF, Variable, RefMap);
+      DoResultVariables(ResDF, Variable);
 
-  ResDF := DoCalcFreqTable(DF, RefMap);
-  DoResultVariables(ResDF);
+      if (not ST.HasOption('q')) then
+        DoOutputFreqTable(ResDF, ST);
 
-  if (not ST.HasOption('q')) then
-    DoOutputFreqTable(ResDF, ST);
-
-  RefMap.Free;
-  ResDF.Free;
+      RefMap.Free;
+      ResDF.Free;
+    end;
 end;
 
-function TFreqCommand.CalcFreq(DF: TEpiDataFile; out RefMap: TEpiReferenceMap
-  ): TFreqDatafile;
+function TFreqCommand.CalcFreq(DF: TEpiDataFile; VariableName: String; out
+  RefMap: TEpiReferenceMap): TFreqDatafile;
 begin
-  Result := DoCalcFreqTable(DF, RefMap);
+  Result := DoCalcFreqTable(DF, VariableName, RefMap);
 end;
 
 end.

@@ -532,13 +532,13 @@ var
   Stat: TTableStatistic;
   StatObj: TTwoWayStatistics;
   Index: Integer;
+
   procedure RaiseError;
   begin
     raise Exception.Create('A table statistic was not correctly registered!');
   end;
 
 begin
-
   for Stat in Statistics do
     begin
       // This should only happen if a statistic unit did not call

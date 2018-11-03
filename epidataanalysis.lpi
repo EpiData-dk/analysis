@@ -16,7 +16,7 @@
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="2"/>
       <RevisionNr Value="2"/>
-      <BuildNr Value="1"/>
+      <BuildNr Value="2"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -638,7 +638,6 @@
       </Item7>
       <Item8>
         <Name Value="EExecutorIndexException"/>
-        <Enabled Value="False"/>
       </Item8>
       <Item9>
         <Name Value="EKeyNotFoundException"/>
