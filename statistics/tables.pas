@@ -374,8 +374,8 @@ begin
   // Footer
   T.Footer.Alignment := taLeftJustify;
   S := '';
-  if (ST.HasOption('pc')) then S := S + RowOption.LeftChar + 'Row'   + RowOption.RigthChar;
-  if (ST.HasOption('pr')) then S := S + ColOption.LeftChar + 'Col'   + ColOption.RigthChar;
+  if (ST.HasOption('pr')) then S := S + RowOption.LeftChar + 'Row'   + RowOption.RigthChar;
+  if (ST.HasOption('pc')) then S := S + ColOption.LeftChar + 'Col'   + ColOption.RigthChar;
   if (ST.HasOption('pt')) then S := S + TotOption.LeftChar + 'Total' + TotOption.RigthChar;
   if (S <> '') then
     T.Footer.Text := T.Footer.Text + 'Percents: ' + OutputCreatorNormalizeText(S) + LineEnding;
