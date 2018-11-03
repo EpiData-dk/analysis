@@ -2196,7 +2196,7 @@ begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('m',   [rtUndefined]);
   Result.Insert('cum', [rtUndefined]);
-  Result.Insert('r',   [rtUndefined]);
+  Result.Insert('pr',  [rtUndefined]);
   Result.Insert('ci',  [rtUndefined]);
   Result.Insert('q',   [rtUndefined]);
   AddDecimalOptions(Result);
@@ -2205,7 +2205,7 @@ end;
 function TFreqCommand.GetAcceptedVariableCount: TBoundArray;
 begin
   Result := inherited GetAcceptedVariableCount;
-  result[0] := 1;
+  result[0] := -1;
 end;
 
 constructor TFreqCommand.Create(AVariableList: TVariableList;

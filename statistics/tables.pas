@@ -372,8 +372,8 @@ begin
   // Footer
   T.Footer.Alignment := taLeftJustify;
   S := '';
-  if (ST.HasOption('pc')) then S := S + RowOption.LeftChar + 'Row'   + RowOption.RigthChar;
-  if (ST.HasOption('pr')) then S := S + ColOption.LeftChar + 'Col'   + ColOption.RigthChar;
+  if (ST.HasOption('pr')) then S := S + RowOption.LeftChar + 'Row'   + RowOption.RigthChar;
+  if (ST.HasOption('pc')) then S := S + ColOption.LeftChar + 'Col'   + ColOption.RigthChar;
   if (ST.HasOption('pt')) then S := S + TotOption.LeftChar + 'Total' + TotOption.RigthChar;
   if (S <> '') then
     T.Footer.Text := T.Footer.Text + 'Percents: ' + OutputCreatorNormalizeText(S) + LineEnding;
@@ -530,13 +530,13 @@ var
   Stat: TTableStatistic;
   StatObj: TTwoWayStatistics;
   Index: Integer;
+
   procedure RaiseError;
   begin
     raise Exception.Create('A table statistic was not correctly registered!');
   end;
 
 begin
-
   for Stat in Statistics do
     begin
       // This should only happen if a statistic unit did not call
