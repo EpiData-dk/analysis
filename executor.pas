@@ -214,6 +214,7 @@ type
     procedure ExecReorder(ST: TReorderCommand); virtual;
     procedure ExecAggregate(ST: TAggregateCommand); virtual;
     procedure ExecTables(ST: TTablesCommand); virtual;
+    procedure ExecCTable(ST: TCTableCommand); virtual;
 
     // String commands
     procedure ExecRead(ST: TCustomStringCommand); virtual;
@@ -325,7 +326,7 @@ uses
   aggregate,
 
   // STATISTICS
-  means, freq, tables;
+  means, freq, tables, ctable;
 
 type
   EExecutorException = class(Exception);
@@ -3653,6 +3654,39 @@ begin
   end;
 end;
 
+procedure TExecutor.ExecCTable(ST: TCTableCommand);
+var
+  Table: TCTable;
+  DF: TEpiDataFile;
+  Opt: TOption;
+  S: UTF8String;
+  VarNames: TStrings;
+begin
+  VarNames := ST.VariableList.GetIdentsAsList;
+  // Get the by variables out too
+  for Opt in ST.Options do
+    begin
+      if (Opt.Ident <> 'by') then
+        Continue;
+
+      S := Opt.Expr.AsIdent;
+      if (VarNames.IndexOf(S) > -1) then
+        begin
+          Error('By variables cannot overlap table variables: ' + S);
+          ST.ExecResult := csrFailed;
+          VarNames.Free;
+          Exit;
+        end;
+    end;
+
+    Table := TCTable.Create(Self, FOutputCreator);
+    Table.ExecCTable(VarNames, ST);
+    Table.Free;
+
+    VarNames.Free;
+
+end;
+
 procedure TExecutor.ExecUse(ST: TUse);
 var
   Idx: LongInt;
@@ -3796,6 +3830,9 @@ begin
 
         stTables:
           ExecTables(TTablesCommand(ST));
+
+        stCTable:
+          ExecCTable(TCTableCommand(ST));
 
         stMerge:
           ExecMerge(TMergeCommand(ST));

@@ -6,7 +6,7 @@ unit generalutils;
 interface
 
 uses
-  Classes, SysUtils, epidatafilestypes, options_utils, ast;
+  Classes, SysUtils, epidatafilestypes, options_utils, ast, epidatafiles;
 
 function PercentileIndex(const Size: integer; const Percentile: Double; out Factor: EpiFloat): Integer;
 function PercentileIndexNIST(const Size: integer; const Percentile: Double; out Factor: EpiFloat): Integer;
@@ -114,12 +114,15 @@ var
 begin
   if (ShowP) then prefix := ' p';
   if (Val < 0.0001) then
-    Result := prefix + ' < 0.0001'
+    Result := prefix + '< 0.0001'
   else
     if (Val < 0.001) then
-      Result := prefix + ' < 0.001'
+      Result := prefix + '< 0.001'
   else
-    if (ShowP) then prefix += ' =';
+    if (ShowP) then prefix := prefix + '=';
+  if (Val = TEpiFloatField.DefaultMissing) then
+    Result := prefix + '-'
+  else
     Result := prefix + Format('%.3f', [Val]) ;
 end;
 
@@ -133,7 +136,10 @@ end;
 
 function FormatRatio(Val: EpiFloat; Options: TOptionList): UTF8String;
 begin
-  Result := Format('%.' + IntToStr(DecimalFromOption(Options, 2)) + 'f', [Val]);
+  if (Val = TEpiFloatField.DefaultMissing) then
+    Result := '.'
+  else
+    Result := Format('%.' + IntToStr(DecimalFromOption(Options, 2)) + 'f', [Val]);
 end;
 
 end.

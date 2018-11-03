@@ -25,6 +25,8 @@ function DecimalFromOption(OptionList: TOptionList; DefaultValue: Integer = 1): 
 
 procedure AddReadOptions(STOptionList: TStatementOptionsMap);
 
+procedure AddSortingOptions(STOptionList: TStatementOptionsMap);
+
 function FontFromSetOptions(Const FontName, SizeName, ColorName, StyleName: String; SetOptions: TSetOptionsMap): TFont;
 procedure FontToSetOptions(AFont: TFont; Const FontName, SizeName, ColorName, StyleName: String;
   SetOptions: TSetOptionsMap);
@@ -148,6 +150,24 @@ begin
   STOptionList.Insert('h',        [rtBoolean]);
   STOptionList.Insert('pw',       [rtString]);
   STOptionList.Insert('login',    [rtString]);
+end;
+
+procedure AddSortingOptions(STOptionList: TStatementOptionsMap);
+begin
+  STOptionList.Insert('sa',  [rtUndefined]);
+  STOptionList.Insert('sd',  [rtUndefined]);
+  STOptionList.Insert('sla', [rtUndefined]);
+  STOptionList.Insert('sld', [rtUndefined]);
+
+  STOptionList.Insert('sra', [rtInteger]);
+  STOptionList.Insert('srd', [rtInteger]);
+  STOptionList.Insert('sca', [rtInteger]);
+  STOptionList.Insert('scd', [rtInteger]);
+
+  STOptionList.Insert('srta', [rtUndefined]);
+  STOptionList.Insert('srtd', [rtUndefined]);
+  STOptionList.Insert('scta', [rtUndefined]);
+  STOptionList.Insert('sctd', [rtUndefined]);
 end;
 
 function FontFromSetOptions(const FontName, SizeName, ColorName,

@@ -46,7 +46,7 @@ type
   protected
     procedure DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
     procedure DoTableStatistics(Tables: TTwoWayTables; Statistics: TTableStatistics);
-    function  DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand): boolean;
+    function  DoSortTables(Tables: TTwoWayTables; ST: TOptionList): boolean;
     procedure DoResultVariables(Tables: TTwoWayTables);
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
@@ -55,8 +55,7 @@ type
     procedure ExecTables(DF: TEpiDataFile; ST: TTablesCommand);
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
     function  CalcTables(InputDF: TEpiDataFile; VariableNames: TStrings;
-      StratifyNames: TStrings; Const WeightName: UTF8String;
-
+      StratifyNames: TStringList; Const WeightName: UTF8String; ST: TOptionList;
       Out RefMap: TEpiReferenceMap; Statistics: TTableStatistics = []): TTwoWayTables;
   end;
 
@@ -67,7 +66,8 @@ implementation
 uses
   aggregate, aggregate_types, epimiscutils, epidatafileutils, epifields_helper,
   options_utils, LazUTF8, ana_globals, epidatafilestypes, options_table, strutils,
-  tables_stat_chi2, tables_stat_fexp, tables_stat_or, tables_stat_rr;
+  tables_stat_rr, tables_stat_or, tables_stat_chi2, tables_stat_fexp;
+// see note in tables_types.pas regarding order of statistics above
 
 type
   PBoundArray = ^TBoundArray;
@@ -136,11 +136,9 @@ var
   RefMap: TEpiReferenceMap;
   AggrVars: TStringList;
   AggregatedVariables, TwoWayVariables, StratifyVariables: TEpiFields;
-  S: String;
   i: Integer;
   Runners: TBoundArray;
   PackRecord: TPackRecord;
-  F: TEpiField;
   SubTable: TTwoWayTable;
   TempDF, AggregatedDF: TTwoWayDatafile;
 
@@ -552,7 +550,7 @@ begin
     end;
 end;
 
-function TTables.DoSortTables(Tables: TTwoWayTables; ST: TTablesCommand
+function TTables.DoSortTables(Tables: TTwoWayTables; ST: TOptionList //TTablesCommand
   ): boolean;
 var
   Tab: TTwoWayTable;
@@ -596,7 +594,7 @@ var
       On E: ETwoWaySortException do
         begin
           FExecutor.Error(E.Message);
-          ST.ExecResult := csrFailed;
+ //         ST.ExecResult := csrFailed;
           Exit;
         end;
 
@@ -738,9 +736,11 @@ begin
 
   AllTables := DoCalcTables(DF, VarNames, StratifyVarnames, WeightName);
 
-  if (not DoSortTables(AllTables, ST)) then
-    Exit;
-
+  if (not DoSortTables(AllTables, ST.Options)) then
+    begin
+      ST.ExecResult := csrFailed;
+      Exit;
+    end;
   DoTableStatistics(AllTables, GetStatisticOptions(ST));
 
   DoResultVariables(AllTables);
@@ -750,11 +750,16 @@ begin
 end;
 
 function TTables.CalcTables(InputDF: TEpiDataFile; VariableNames: TStrings;
-  StratifyNames: TStrings; const WeightName: UTF8String; out
-  RefMap: TEpiReferenceMap; Statistics: TTableStatistics): TTwoWayTables;
+  StratifyNames: TStringList; const WeightName: UTF8String; ST: TOptionList;
+  out RefMap: TEpiReferenceMap; Statistics: TTableStatistics): TTwoWayTables;
+var
+  AllTables: TTwoWayTables;
 begin
-  Result := DoCalcTables(InputDF, VariableNames, StratifyNames, WeightName);
-  DoTableStatistics(Result, Statistics);
+  AllTables := DoCalcTables(InputDF, VariableNames, StratifyNames, WeightName);
+  if (not DoSortTables(AllTables, ST)) then
+    Exit;
+  DoTableStatistics(AllTables, Statistics);
+  Result := AllTables;
 end;
 
 finalization

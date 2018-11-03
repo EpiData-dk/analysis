@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles,
-    executor, ast;
+    epifields_helper, result_variables, options_utils, executor, ast;
 
 type
 
@@ -16,6 +16,7 @@ type
   private
     FOrgTable: TTwoWayTable;
     FFExP: EpiFloat;
+    FMessage: UTF8String;
   public
     procedure CalcTable(Table: TTwoWayTable;Conf: Integer); override;
     procedure AddToOutput(OutputTable: TOutputTable; Options: TOptionList); override;
@@ -25,11 +26,19 @@ type
   { TTwoWayStatisticsFExP }
 
   TTwoWayStatisticsFExP = class(TTwoWayStatistics)
+  private
+    // TODO: FResultFExp is not persistent - belongs to each 2x2 table in turn; should really return this,
+    //       BUT(!) it is different for each statistic; perhaps return as a Record, but then ctable needs to know
+    //       the structure
   protected
     function GetStatistics(const Index: Integer): TTwoWayStatisticFExP; override;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
+    procedure AddToCompactTable(Executor: TExecutor; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
+    procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
+    function CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
+    procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); override;
 //    procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
 //    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticFExP read GetStatistics;
@@ -50,8 +59,16 @@ Var
 Begin
   FOrgTable := Table;
   FFExP     := TEpiFloatField.DefaultMissing; // Missing value will suppress output
-  if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then exit;
-  if ((FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0)) then exit;
+  if (FOrgTable.ColCount <> 2) or (FOrgTable.RowCount <> 2 ) then
+  begin
+    FMessage := 'Table is not 2x2';
+    exit;
+  end;
+  if ((FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0)) then
+  begin
+    FMessage := 'Table has a zero column marginal';
+    exit;
+  end;
   If (FOrgTable.Cell[0,0].N * FOrgTable.RowTotal[1]) < (FOrgTable.Cell[0,1].N * FOrgTable.RowTotal[0]) then
     Begin
     AF := FOrgTable.Cell[0,0].N; //A
@@ -145,9 +162,9 @@ begin
 
   ColIdx := OutputTable.ColCount;
   OutputTable.ColCount := OutputTable.ColCount + 1;
-  OutputTable.Cell[ColIdx    , 0].Text := 'Fisher Exact p';
-  OutputTable.Cell[ColIdx , 1].Text := FormatP(Stat.FFExP, false);
-  OutputTable.Cell[ColIdx    , 2].Text := '-';
+  OutputTable.Cell[ColIdx, 0].Text := 'Fisher Exact p';
+  OutputTable.Cell[ColIdx, 1].Text := FormatP(Stat.FFExP, false);
+  OutputTable.Cell[ColIdx, 2].Text := '-';
 
   for i := 1 to StatisticsCount - 1 do
     begin
@@ -156,6 +173,63 @@ begin
     end;
 end;
 
+procedure TTwoWayStatisticsFExP.AddToCompactHeader(T: TOutputTable; Options: TOptionList);
+var
+  ColIdx: Integer;
+  Stat: TTwoWayStatisticFExP;
+
+begin
+  Stat := Statistics[0];
+  if (T.RowCount <> 2) then exit;
+  ColIdx                      := T.ColCount;
+  T.ColCount                  := ColIdx + 1;
+  T.Cell[ColIdx, 0].Text := 'Fisher';
+  T.Cell[ColIdx, 1].Text := 'Exact p';
+
+end;
+
+procedure TTwoWayStatisticsFExP.AddToCompactTable(Executor: TExecutor;
+         T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
+var
+  i: Integer;
+  Stat: TTwoWayStatisticFExP;
+
+begin
+  Stat := Statistics[0];
+  with Stat do
+  begin
+    if (FMessage <> '') then
+      T.Footer.Text := T.Footer.Text + LineEnding +
+                       T.Cell[0,RowIdx].Text + ': ' + FMessage;
+
+      if (FFExP = TEpiFloatField.DefaultMissing) then
+      begin
+        T.Cell[ColIdx, RowIdx].Text := '-';
+      end
+      else
+      begin
+        T.Cell[ColIdx, RowIdx].Text := FormatP(Stat.FFExP, false);
+      end;
+      exit;
+  end;
+end;
+
+function TTwoWayStatisticsFExP.CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String;
+         ResultRows: Integer): TStatResult;
+
+begin
+  setlength(Result,1); // one statistic
+  Result[0] := Executor.AddResultVector(Prefix + 'FExP', ftFloat, ResultRows);
+end;
+
+procedure TTwoWayStatisticsFExP.AddCompactResultVariables(Executor: TExecutor;
+          Index: Integer; Results: TStatResult);
+var
+  Stat: TTwoWayStatisticFExP;
+begin
+  Stat := Statistics[0];
+  Results[0].AsFloatVector[Index] := Stat.FFExP;
+end;
 
 initialization
   RegisterTableStatistic(tsFExP, TTwoWayStatisticsFExP);

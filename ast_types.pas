@@ -80,6 +80,7 @@ type
 
   // Variable Commands
     stTables,
+    stCTable,
     stBrowse,
     stList,
     stEdit,

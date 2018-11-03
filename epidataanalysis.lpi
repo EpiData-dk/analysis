@@ -14,11 +14,11 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="2"/>
+      <MinorVersionNr Value="3"/>
       <RevisionNr Value="2"/>
       <BuildNr Value="2"/>
       <Attributes pvaSpecialBuild="True"/>
-      <StringTable SpecialBuild="TRUNK"/>
+      <StringTable SpecialBuild="CTABLE"/>
     </VersionInfo>
     <BuildModes Count="6">
       <Item1 Name="Default" Default="True"/>
@@ -229,7 +229,7 @@
         <PackageName Value="LCL"/>
       </Item12>
     </RequiredPackages>
-    <Units Count="79">
+    <Units Count="80">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -572,6 +572,10 @@
         <Filename Value="statistics/tables_stat_rr.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit78>
+      <Unit79>
+        <Filename Value="statistics/ctable.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit79>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, tables_types, outputcreator, epidatafilestypes,
-  executor, ast;
+  epifields_helper, options_utils, executor, ast;
 
 type
 
@@ -45,7 +45,12 @@ type
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
   public
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
+    procedure AddToCompactTable(Executor: TExecutor; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
+    procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
+    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8String); override;
+    function CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
+    procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); override;
 //    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring);
     property Statistics[Const Index: Integer]: TTwoWayStatisticChi2 read GetStatistics;
   end;
@@ -195,56 +200,125 @@ begin
     end;
 end;
 // M-H Chi-square for 2x2 stratified tables
+// Formula from  http://www.biostathandbook.com/cmh.html
 procedure TTwoWayStatisticsChi2.CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer);
 var
-  a, b, c, d, i, n: Integer;
+  a, b, c, d: Integer;
+  k, n: Integer;
   Tab: TTwoWayTable;
-  p, q, r, s,
-  SumP, SumQ, SumR, SumS, SumN, MeanP, MeanQ: EpiFloat;
-  variance: EpiFloat;
+  Num, Denom: EpiFloat;
 
   begin
   if (StatisticsCount = 1) then exit;   // No stratified tables
-  // need to exit if not 2x2!
+
   Tab := Tables.UnstratifiedTable;
   if (Tab.ColCount <> 2) or (Tab.RowCount <> 2) then exit;
-  SumP      := 0;
-  SumQ      := 0;
-  SumR      := 0;
-  SumS      := 0;
-  SumN      := 0;
-  i         := 0;
+  k         := 0;
+  Num       := 0;
+  Denom     := 0;
   for Tab in Tables do
     begin
       with Tab do begin
-        i += 1;
+        k += 1;
         a := Tab.Cell[0,0].N;
         b := Tab.Cell[1,0].N;
         c := Tab.Cell[0,1].N;
         d := Tab.Cell[1,1].N;
         n := Tab.Total;
-        p := (a + c) / n;
-        q := (b + d) / n;
-        r := abs((a + d) * (c + d) * ((a / (a + b)) - (c / (c + d)))/n) - 0.5;
-        s := ((a + b) * (c + d) / (n - 1));
-        SumP    += p;
-        SumQ    += q;
-        SumR    += r * r;
-        SumS    += s;
-        SumN    += n;
+        Num     += a - ((a + b) * (a + c) / n);
+        Denom   += ((a + b) * (a + c) * (b + d) * (c + d))
+                   / ((n * n * n) - (n * n));
       end;
     end;
-  MeanP   := SumP / i;
-  MeanQ   := SumQ / i;
-  FMHChi2 := SumR / (SumS * MeanP * MeanQ);
+  Num     := abs(Num) - 0.5;
+  FMHChi2  := Num * Num / Denom;
   FMHChiP := ChiPValue(FMHChi2,1);
 
-  // Estimate variance for MH Chi square
-  { NIST reference:
-    https://www.itl.nist.gov/div898/software/dataplot/refman1/auxillar/mantel.htm
-  }
 end;
 
+procedure TTwoWayStatisticsChi2.CreateSummaryResultVariables(Executor: TExecutor;
+  const NamePrefix: UTF8String);
+
+begin
+  if (StatisticsCount = 1) then exit;   // No stratified tables
+
+  Executor.AddResultConst(NamePrefix + 'MHChi2', ftFloat).AsFloatVector[0] := FMHChi2;
+  Executor.AddResultConst(NamePrefix + 'MHChip', ftFloat).AsFloatVector[0] := FMHChiP;
+
+end;
+
+procedure TTwoWayStatisticsChi2.AddToCompactHeader(T: TOutputTable; Options: TOptionList);
+var
+  ColIdx: Integer;
+  Stat: TTwoWayStatisticChi2;
+
+begin
+  Stat := Statistics[0];
+  if (T.RowCount <> 2) then exit;
+  ColIdx                      := T.ColCount;
+  T.ColCount                  := ColIdx + 3;
+  T.Cell[ColIdx     , 1].Text := 'Chi^2';
+  T.Cell[ColIdx + 1 , 1].Text := 'df';
+  T.Cell[ColIdx + 2 , 1].Text := 'p';
+
+end;
+
+procedure TTwoWayStatisticsChi2.AddToCompactTable(Executor: TExecutor;
+         T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
+var
+  i: Integer;
+  Stat: TTwoWayStatisticChi2;
+
+begin
+  Stat := Statistics[0];
+  with Stat do
+  begin
+    if (StatisticsCount = 1) then
+    // unstratified - crude result
+    begin
+      T.Cell[ColIdx    , RowIdx].Text := Format('%.2f', [FChi2]);
+      T.Cell[ColIdx + 1, RowIdx].Text := IntToStr(FOrgTable.DF);
+      T.Cell[ColIdx + 2, RowIdx].Text := FormatP(FChiP, false);
+      exit;
+    end;
+  end;
+  // stratified - summary result
+  T.Cell[ColIdx    , RowIdx].Text := Format('%.2f', [FMHChi2]);
+  T.Cell[ColIdx + 1, RowIdx].Text := '1';
+  T.Cell[ColIdx + 2, RowIdx].Text := FormatP(FMHChiP, false);
+end;
+
+function TTwoWayStatisticsChi2.CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String;
+         ResultRows: Integer): TStatResult;
+
+begin
+  setlength(Result,3); // three statistics
+  Result[0] := Executor.AddResultVector(Prefix + 'chi2', ftFloat, ResultRows);
+  Result[1] := Executor.AddResultVector(Prefix + 'chip', ftFloat, ResultRows);
+  Result[2] := Executor.AddResultVector(Prefix + 'df', ftInteger, ResultRows);
+end;
+
+procedure TTwoWayStatisticsChi2.AddCompactResultVariables(Executor: TExecutor;
+          Index: Integer; Results: TStatResult);
+var
+  Stat: TTwoWayStatisticChi2;
+begin
+  Stat := Statistics[0];
+  with Stat do
+  begin
+    if (StatisticsCount = 1) or (FOrgTable.DF > 1) then
+    begin
+      Results[0].AsFloatVector[Index] := FChi2;
+      Results[1].AsFloatVector[Index] := FChiP;
+    end
+    else
+    begin
+      Results[0].AsFloatVector[Index] := FMHChi2;
+      Results[1].AsFloatVector[Index] := FMHChiP;
+    end;
+    Results[2].AsIntegerVector[Index] := FOrgTable.DF;
+  end;
+end;
 
 initialization
   RegisterTableStatistic(tsChi2, TTwoWayStatisticsChi2);
