@@ -214,7 +214,7 @@ begin
   T.Header.Text := CategV.GetVariableLabel(VariableLabelType);
 
   CCount := 2;
-  if ST.HasOption('r') then   inc(CCount);
+  if ST.HasOption('pr') then  inc(CCount);
   if ST.HasOption('ci') then  inc(CCount);
   if ST.HasOption('cum') then inc(CCount);
 
@@ -224,7 +224,7 @@ begin
 
   Col := 1;
   T.Cell[PostInc(Col), 0].Text := 'N';
-  if ST.HasOption('r') then   T.Cell[PostInc(Col), 0].Text := '%';
+  if ST.HasOption('pr') then  T.Cell[PostInc(Col), 0].Text := '%';
   if ST.HasOption('ci') then  T.Cell[PostInc(Col), 0].Text := '(95% CI)';
   if ST.HasOption('cum') then T.Cell[PostInc(Col), 0].Text := 'Cum %';
   T.SetRowBorders(0, [cbTop, cbBottom]);
@@ -236,7 +236,7 @@ begin
       T.Cell[PostInc(Col), i + 1].Text := CategV.GetValueLabel(i, ValueLabelType);
       T.Cell[PostInc(Col), i + 1].Text := CountV.AsString[i];
 
-      if ST.HasOption('r') then
+      if ST.HasOption('pr') then
         T.Cell[PostInc(Col), i + 1].Text := Format('%8.' + IntToStr(FDecimals) + 'F', [ResultDF.Percent.AsFloat[i]]);
 
       if ST.HasOption('ci') then

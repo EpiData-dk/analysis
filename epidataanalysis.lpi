@@ -15,10 +15,9 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="3"/>
-      <RevisionNr Value="2"/>
-      <BuildNr Value="2"/>
+      <RevisionNr Value="3"/>
       <Attributes pvaSpecialBuild="True"/>
-      <StringTable SpecialBuild="CTABLE"/>
+      <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
     <BuildModes Count="6">
       <Item1 Name="Default" Default="True"/>
