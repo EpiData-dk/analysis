@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 2406
+  Left = 360
   Height = 682
-  Top = 170
+  Top = 262
   Width = 1159
   ActiveControl = Panel2
   AllowDropFiles = True
@@ -91,7 +91,7 @@ object MainForm: TMainForm
       OnDrawItem = HistoryListBoxDrawItem
       OnKeyDown = HistoryListBoxKeyDown
       PopupMenu = HistoryPopupMenu
-      ScrollWidth = 192
+      ScrollWidth = 190
       Style = lbOwnerDrawFixed
       TabOrder = 0
       TopIndex = -1
@@ -124,13 +124,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 253
+          Width = 254
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 213
+          Width = 214
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
