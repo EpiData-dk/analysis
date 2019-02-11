@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 360
+  Left = 2264
   Height = 682
-  Top = 262
+  Top = 292
   Width = 1159
   ActiveControl = Panel2
   AllowDropFiles = True
@@ -15,7 +15,7 @@ object MainForm: TMainForm
   OnDropFiles = FormDropFiles
   OnShow = FormShow
   Position = poDefault
-  LCLVersion = '1.9.0.0'
+  LCLVersion = '2.0.0.4'
   object PageControl1: TPageControl
     Left = 216
     Height = 607
@@ -34,13 +34,13 @@ object MainForm: TMainForm
     ClientHeight = 50
     ClientWidth = 1159
     TabOrder = 0
-    Visible = False
     object Button2: TButton
       Left = 16
       Height = 25
       Top = 13
       Width = 75
       Caption = 'test'
+      OnClick = Button2Click
       TabOrder = 0
     end
     object Button3: TButton
@@ -124,13 +124,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 254
+          Width = 259
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 214
+          Width = 219
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
