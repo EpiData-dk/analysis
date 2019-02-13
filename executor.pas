@@ -206,6 +206,7 @@ type
     procedure ExecBrowse(ST: TCustomVariableCommand); virtual;
     procedure ExecMean(ST: TCustomVariableCommand); virtual;
     procedure ExecFreq(ST: TCustomVariableCommand); virtual;
+    procedure ExecDescribe(ST: TCustomVariableCommand); virtual;
     procedure ExecSort(ST: TCustomVariableCommand); virtual;
     procedure ExecAppend(ST: TAppendCommand); virtual;
     procedure ExecMerge(ST: TMergeCommand); virtual;
@@ -326,7 +327,7 @@ uses
   aggregate,
 
   // STATISTICS
-  means, freq, tables, ctable;
+  means, freq, tables, ctable, describe;
 
 type
   EExecutorException = class(Exception);
@@ -3270,6 +3271,39 @@ begin
   end;
 end;
 
+procedure TExecutor.ExecDescribe(ST: TCustomVariableCommand);
+var
+  L: TStrings;
+//  DF: TEpiDataFile;
+  F: TDescribeCommand;
+begin
+  L := ST.VariableList.GetIdentsAsList;
+  F := nil;
+//  DF := nil;
+
+  { Do this within the module
+  if ST.HasOption('m') then
+    DF := DoPrepareDatafile(L, nil)
+  else
+    DF := DoPrepareDatafile(L, L);
+  try
+    if DF.Size = 0 then
+      begin
+        DoError('No data!');
+        ST.ExecResult := csrFailed;
+        Exit;
+      end;
+   }
+  try
+    F := TDescribeCommand.Create(Self, FOutputCreator);
+    F.ExecDescribe(L, ST);
+  finally
+//    DF.Free;
+    F.Free;
+    L.Free;
+  end;
+end;
+
 procedure TExecutor.ExecSort(ST: TCustomVariableCommand);
 var
   lFields: TEpiFields;
@@ -3815,6 +3849,9 @@ begin
 
         stMeans:
           ExecMean(TCustomVariableCommand(ST));
+
+        stDescribe:
+          ExecDescribe(TCustomVariableCommand(ST));
 
         stUse:
           ExecUse(TUse(ST));

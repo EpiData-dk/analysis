@@ -116,6 +116,7 @@ type
     CheckVersionOnlineAction: TAction;
     ReleaseNotesAction: TAction;
     ShowShortcutAction: TAction;
+    procedure Button2Click(Sender: TObject);
     procedure CancelExecActionExecute(Sender: TObject);
     procedure CmdEditFocusActionExecute(Sender: TObject);
     procedure CopyAllHistoryActionExecute(Sender: TObject);
@@ -278,17 +279,23 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLType, ast_builder, epiversionutils, parser, LazUTF8, outputgenerator_txt,
+  LCLType, ast_builder, epiversionutils, parser, LazUTF8,
   outputgenerator_html, about, Clipbrd, epimiscutils, ast_types, epidatafilerelations,
-  epiv_custom_statusbar, datamodule, introduction_form, editor_form, LCLIntf, Symbol,
+  epiv_custom_statusbar, datamodule, editor_form, LCLIntf, Symbol,
   ana_procs, ana_documentfile, LazFileUtils, LazUTF8Classes, epistringutils, ana_globals,
-  browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform;
+  browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform,
+  wizard_form;
 
 { TMainForm }
 
 procedure TMainForm.CancelExecActionExecute(Sender: TObject);
 begin
   Executor.Cancelled := true;
+end;
+
+procedure TMainForm.Button2Click(Sender: TObject);
+begin
+  CheckAndStartWizard(GetStartupPgm);
 end;
 
 procedure TMainForm.CmdEditFocusActionExecute(Sender: TObject);
@@ -462,17 +469,9 @@ begin
 
   // At this point it is possible to run the first commands
   if Application.HasOption('i') then
-    S := Application.GetOptionValue('i')
+    S := ExpandFileNameUTF8(Application.GetOptionValue('i'))
   else
-    {$IFDEF DARWIN}
-  // One possible location of startup.pgm in folder with config files
-  //  S := GetEnvironmentVariableUTF8('HOME')+'/.config/epidata/epidataanalysis/startup.pgm';
-    S := ResolveDots(ProgramDirectory + '../../../startup.pgm');
-    {$ELSE}
-    S := ProgramDirectory + DirectorySeparator + 'startup.pgm';
-    {$ENDIF}
-
-  S := ExpandFileNameUTF8(S);
+    S := GetStartupPgm;
 
   if FileExistsUTF8(s) then
     begin
@@ -604,14 +603,7 @@ procedure TMainForm.ShowEditorStartupActionExecute(Sender: TObject);
 var
   S: String;
 begin
-  {$IFDEF DARWIN}
-// suggested location of startup.pgm
-//  S := GetEnvironmentVariableUTF8('HOME')+'/.config/epidata/epidataanalysis/startup.pgm';
-  S := ResolveDots(ProgramDirectory + '../../../startup.pgm');
-  {$ELSE}
-  S := ProgramDirectory + DirectorySeparator + 'startup.pgm';
-  {$ENDIF}
-  ShowEditor(S);
+  ShowEditor(GetStartupPgm);
 end;
 
 procedure TMainForm.ToggleCmdTreeActionExecute(Sender: TObject);
@@ -860,7 +852,7 @@ begin
 
   EditorForm.Show;
 
-  if (Filename <> '') then
+  if FileExistsUTF8(Filename) then
     EditorForm.OpenPgm(Filename);
 end;
 

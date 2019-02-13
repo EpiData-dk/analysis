@@ -14,6 +14,7 @@ function GetRecentDataIniFileName: string;
 function GetRecentPGMIniFileName: string;
 
 function GetIniFileName: string;
+function GetStartupPgm: string;
 
 procedure SaveFormPosition(Const AForm: TForm; Const SectionName: string);
 procedure LoadFormPosition(AForm: TForm; Const SectionName: string);
@@ -31,7 +32,7 @@ const
 implementation
 
 uses
-  IniFiles, LazFileUtils, LazUTF8;
+  IniFiles, LazFileUtils, LazUTF8, FileUtil;
 
 var
   IniFileName: string = '';
@@ -152,6 +153,18 @@ begin
   end;
 
   Result := IniFileName;
+end;
+
+function GetStartupPgm: string;
+begin
+  {$IFDEF DARWIN}
+  // One possible location of startup.pgm in folder with config files
+  //  S := GetEnvironmentVariableUTF8('HOME')+'/.config/epidata/epidataanalysis/startup.pgm';
+  Result := ResolveDots(ProgramDirectory + '../../../startup.pgm');
+  {$ELSE}
+  Result := GetAppConfigDirUTF8(false, true) + 'startup.pgm';
+//  Result := ProgramDirectory + DirectorySeparator + 'startup.pgm';
+  {$ENDIF}
 end;
 
 procedure SaveFormPosition(const AForm: TForm; const SectionName: string);

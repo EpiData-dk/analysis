@@ -53,6 +53,7 @@ begin
 
   RequireDerivedFormResource := True;
   Application.Initialize;
+
   Application.CreateForm(TaDM, aDM);
   Application.CreateForm(TMainForm, MainForm);
   Application.Run;

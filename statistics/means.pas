@@ -729,7 +729,7 @@ function TMeans.CalcMeans(DataFile: TEpiDataFile; const CountVarName,
   StratifyVarName: UTF8String; ValueLabelOutput: TEpiGetValueLabelType;
   VariableLabelOutput: TEpiGetVariableLabelType): TMeansDatafile;
 begin
-  FValuelabelOutput := ValueLabelOutput;
+  FValuelabelOutput := ValueLabelOutput;       // why are these here?
   VariableLabelOutput := VariableLabelOutput;
 
   Result := DoCalcMeans(DataFile, CountVarName, StratifyVarName);
