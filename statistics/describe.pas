@@ -99,6 +99,7 @@ begin
   result.Cell[2, 0].Text := 'sum';
   result.Cell[3, 0].Text := 'mean';
   result.Cell[4, 0].Text := 'sd';
+  // TODO: if (ST.HasOption('ci') then show ci
   result.Cell[5, 0].Text := 'min';
   result.Cell[6, 0].Text := 'median';
   result.Cell[7, 0].Text := 'max';
@@ -109,7 +110,6 @@ end;
 
 procedure TDescribeCommand.DoOutputFreqRow(Data: TFreqDataFile; ST: TCustomVariableCommand; T: TOutputTable);
 
-//TODO: show total frequency, not just Count from first category
 var
   Offset: Integer;
   CategV, CountV: TEpiField;
