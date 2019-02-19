@@ -38,9 +38,9 @@ type
     procedure CommandLogChange(Sender: TObject);
     procedure CommandLogFileChange(Sender: TObject);
     procedure CommandLogLinesChange(Sender: TObject);
-    function  CheckCommandLogFile: boolean;
+    function  CheckCommandLogFile(ReportError: boolean = true): boolean;
     procedure DoSaveCommandLog;
-    procedure DoLoadCommandLog;
+    procedure DoLoadCommandLog(ReportError: boolean = true);
     procedure SetupHooks;
     procedure RemoveHooks;
 
@@ -199,7 +199,7 @@ begin
     FStrings.Objects[Index] := nil;
 end;
 
-function THistory.CheckCommandLogFile: boolean;
+function THistory.CheckCommandLogFile(ReportError: boolean): boolean;
 begin
   (*Debug
     FOutputCreator.DoInfoAll('Current directory is ' + GetCurrentDirUTF8);
@@ -214,7 +214,10 @@ begin
           );
 
 
-  if (not result) then
+  if (not result) and
+     (ReportError) and
+     (not LoadingStartup)
+  then
     begin
       FOutputCreator.DoWarning('Command Log file is not writeable and has been disabled!' + LineEnding +
                                'To re-enable command log:' + LineEnding +
@@ -245,12 +248,12 @@ begin
     end;
 end;
 
-procedure THistory.DoLoadCommandLog;
+procedure THistory.DoLoadCommandLog(ReportError: boolean);
 begin
   if (not FCommandLogActive) then
     Exit;
 
-  if (not CheckCommandLogFile) then
+  if (not CheckCommandLogFile(ReportError)) then
     Exit;
 
   if (FCommandLogFilename <> '') then
@@ -307,7 +310,7 @@ begin
   FExecutor.AddOnAfterStatementHandler(@ExecutorAfterStatement);
   FExecutor.AddOnBeforeStatementHandler(@ExecutorBeforeStatement);
   SetupHooks;
-  DoLoadCommandLog;
+  DoLoadCommandLog(false);
 end;
 
 destructor THistory.Destroy;

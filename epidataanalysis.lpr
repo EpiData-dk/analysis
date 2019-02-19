@@ -30,7 +30,7 @@ uses
   browse4, report, options_fontoptions, save_output,
   epi_script_function_observations, options_filesoptions, aggregate,
   aggregate_types, tables, tables_types, options_table, tables_stat_chi2,
-  tables_stat_fexp, tables_stat_or, tables_stat_rr, ctable;
+  tables_stat_fexp, tables_stat_or, tables_stat_rr, ctable, wizard_form;
 
 {$R *.res}
 
@@ -47,12 +47,15 @@ end;
 
 
 begin
-  Application.Title := 'Analysis';
+  Application.Title := 'EpiData Analysis';
   OnGetApplicationName := @EpiDataApplicationName;
   OnGetVendorName := @EpiDataVendorName;
 
   RequireDerivedFormResource := True;
   Application.Initialize;
+
+  if (not CheckAndStartWizard(GetStartupPgm)) then
+    Exit;
 
   Application.CreateForm(TaDM, aDM);
   Application.CreateForm(TMainForm, MainForm);

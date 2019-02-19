@@ -24,6 +24,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    Label3: TLabel;
     MenuItem36: TMenuItem;
     MenuItem37: TMenuItem;
     OutputFontMenuItem: TMenuItem;
