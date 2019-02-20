@@ -359,67 +359,70 @@ begin
 end;
 
 procedure TMeans.DoResultVariables(ResultDF: TMeansDatafile);
+// TODO: append CountVar name to result var name after $means_
+// e.g. ResultVarPrefix := '$means_' + ResultDF.CountVarText + '_';
 var
   CatV, ObsV, SumV, MeanV, SvV, SdV, SerrV, CfilV, CfihV, SkewV, KurtV,
   MinV, P05V, P10V, P25V, MedV, P75V, P90V, P95V, MaxV: TCustomExecutorDataVariable;
   Sz, i: Integer;
+  Prefix: String;
 begin
   Sz := ResultDF.Size;
-
+  Prefix := '$means_' + ResultDF.CountVarText + '_';
   with FExecutor do
   begin
     if Sz = 1 then
       begin
-        CatV  := AddResultConst('$means_category', ftString);
-        ObsV  := AddResultConst('$means_obs',      ftInteger);
-        SumV  := AddResultConst('$means_sum',      ftFloat);
-        MeanV := AddResultConst('$means_mean',     ftFloat);
-        MinV  := AddResultConst('$means_min',      ftFloat);
-        P05V  := AddResultConst('$means_p05',      ftFloat);
-        P10V  := AddResultConst('$means_p10',      ftFloat);
-        P25V  := AddResultConst('$means_p25',      ftFloat);
-        MedV  := AddResultConst('$means_median',   ftFloat);
-        P75V  := AddResultConst('$means_p75',      ftFloat);
-        P90V  := AddResultConst('$means_p90',      ftFloat);
-        P95V  := AddResultConst('$means_p95',      ftFloat);
-        MaxV  := AddResultConst('$means_max',      ftFloat);
-        SvV   := AddResultConst('$means_variance', ftFloat);
-        SdV   := AddResultConst('$means_sd',       ftFloat);
-        SerrV := AddResultConst('$means_stderr',   ftFloat);
-        CfilV := AddResultConst('$means_cfil',     ftFloat);
-        CfihV := AddResultConst('$means_cfih',     ftFloat);
-        SkewV := AddResultConst('$means_skew',     ftFloat);
-        KurtV := AddResultConst('$means_kurt',     ftFloat);
-        AddResultConst('$means_catvar', ftString).AsStringVector[0]  := '';
+        CatV  := AddResultConst(Prefix + 'category', ftString);
+        ObsV  := AddResultConst(Prefix + 'obs',      ftInteger);
+        SumV  := AddResultConst(Prefix + 'sum',      ftFloat);
+        MeanV := AddResultConst(Prefix + 'mean',     ftFloat);
+        MinV  := AddResultConst(Prefix + 'min',      ftFloat);
+        P05V  := AddResultConst(Prefix + 'p05',      ftFloat);
+        P10V  := AddResultConst(Prefix + 'p10',      ftFloat);
+        P25V  := AddResultConst(Prefix + 'p25',      ftFloat);
+        MedV  := AddResultConst(Prefix + 'median',   ftFloat);
+        P75V  := AddResultConst(Prefix + 'p75',      ftFloat);
+        P90V  := AddResultConst(Prefix + 'p90',      ftFloat);
+        P95V  := AddResultConst(Prefix + 'p95',      ftFloat);
+        MaxV  := AddResultConst(Prefix + 'max',      ftFloat);
+        SvV   := AddResultConst(Prefix + 'variance', ftFloat);
+        SdV   := AddResultConst(Prefix + 'sd',       ftFloat);
+        SerrV := AddResultConst(Prefix + 'stderr',   ftFloat);
+        CfilV := AddResultConst(Prefix + 'cfil',     ftFloat);
+        CfihV := AddResultConst(Prefix + 'cfih',     ftFloat);
+        SkewV := AddResultConst(Prefix + 'skew',     ftFloat);
+        KurtV := AddResultConst(Prefix + 'kurt',     ftFloat);
+        AddResultConst(Prefix + 'catvar', ftString).AsStringVector[0]  := '';
       end
     else
       begin
-        CatV  := AddResultVector('$means_category', ftString, Sz);
-        ObsV  := AddResultVector('$means_obs',      ftInteger, Sz);
-        SumV  := AddResultVector('$means_sum',      ftFloat, Sz);
-        MeanV := AddResultVector('$means_mean',     ftFloat, Sz);
-        MinV  := AddResultVector('$means_min',      ftFloat, Sz);
-        P05V  := AddResultVector('$means_p05',      ftFloat, Sz);
-        P10V  := AddResultVector('$means_p10',      ftFloat, Sz);
-        P25V  := AddResultVector('$means_p25',      ftFloat, Sz);
-        MedV  := AddResultVector('$means_median',   ftFloat, Sz);
-        P75V  := AddResultVector('$means_p75',      ftFloat, Sz);
-        P90V  := AddResultVector('$means_p90',      ftFloat, Sz);
-        P95V  := AddResultVector('$means_p95',      ftFloat, Sz);
-        MaxV  := AddResultVector('$means_max',      ftFloat, Sz);
-        SvV   := AddResultVector('$means_sv',       ftFloat, Sz);
-        SdV   := AddResultVector('$means_sd',       ftFloat, Sz);
-        SerrV := AddResultVector('$means_stderr',   ftFloat, Sz);
-        CfilV := AddResultVector('$means_cfil',     ftFloat, Sz);
-        CfihV := AddResultVector('$means_cfih',     ftFloat, Sz);
-        SkewV := AddResultVector('$means_skew',     ftFloat, Sz);
-        KurtV := AddResultVector('$means_kurt',     ftFloat, Sz);
+        CatV  := AddResultVector(Prefix + 'category', ftString, Sz);
+        ObsV  := AddResultVector(Prefix + 'obs',      ftInteger, Sz);
+        SumV  := AddResultVector(Prefix + 'sum',      ftFloat, Sz);
+        MeanV := AddResultVector(Prefix + 'mean',     ftFloat, Sz);
+        MinV  := AddResultVector(Prefix + 'min',      ftFloat, Sz);
+        P05V  := AddResultVector(Prefix + 'p05',      ftFloat, Sz);
+        P10V  := AddResultVector(Prefix + 'p10',      ftFloat, Sz);
+        P25V  := AddResultVector(Prefix + 'p25',      ftFloat, Sz);
+        MedV  := AddResultVector(Prefix + 'median',   ftFloat, Sz);
+        P75V  := AddResultVector(Prefix + 'p75',      ftFloat, Sz);
+        P90V  := AddResultVector(Prefix + 'p90',      ftFloat, Sz);
+        P95V  := AddResultVector(Prefix + 'p95',      ftFloat, Sz);
+        MaxV  := AddResultVector(Prefix + 'max',      ftFloat, Sz);
+        SvV   := AddResultVector(Prefix + 'sv',       ftFloat, Sz);
+        SdV   := AddResultVector(Prefix + 'sd',       ftFloat, Sz);
+        SerrV := AddResultVector(Prefix + 'stderr',   ftFloat, Sz);
+        CfilV := AddResultVector(Prefix + 'cfil',     ftFloat, Sz);
+        CfihV := AddResultVector(Prefix + 'cfih',     ftFloat, Sz);
+        SkewV := AddResultVector(Prefix + 'skew',     ftFloat, Sz);
+        KurtV := AddResultVector(Prefix + 'kurt',     ftFloat, Sz);
 
-        AddResultConst('$means_catvar', ftString).AsStringVector[0]  := ResultDF.FStratifyVarText;
+        AddResultConst(Prefix + 'catvar', ftString).AsStringVector[0]  := ResultDF.FStratifyVarText;
      end;
 
-    AddResultConst('$means_size',  ftInteger).AsIntegerVector[0] := Sz;
-    AddResultConst('$means_var',  ftString).AsStringVector[0]    := ResultDF.CountVarText;
+    AddResultConst(Prefix + 'size',  ftInteger).AsIntegerVector[0] := Sz;
+//    AddResultConst(Prefix + 'var',  ftString).AsStringVector[0]    := ResultDF.CountVarText;
  end;
 
   for i := 0 to ResultDF.Size - 1 do
@@ -452,21 +455,21 @@ begin
   With ResultDF.AnovaRecord do
     if ResultDF.Size > 1 then
       begin
-        FExecutor.AddResultConst('$means_DFB',   ftInteger).AsIntegerVector[0] := DFB;
-        FExecutor.AddResultConst('$means_SSB',   ftFloat).AsFloatVector[0]     := SSB;
-        FExecutor.AddResultConst('$means_MSB',   ftFloat).AsFloatVector[0]     := MSB;
-        FExecutor.AddResultConst('$means_F',     ftFloat).AsFloatVector[0]     := F;
-        FExecutor.AddResultConst('$means_PROB',  ftFloat).AsFloatVector[0]     := PROB;
-        FExecutor.AddResultConst('$means_DFW',   ftInteger).AsIntegerVector[0] := DFW;
-        FExecutor.AddResultConst('$means_SSW',   ftFloat).AsFloatVector[0]     := SSW;
-        FExecutor.AddResultConst('$means_MSW',   ftFloat).AsFloatVector[0]     := MSW;
-        FExecutor.AddResultConst('$means_BART',  ftFloat).AsFloatVector[0]     := BART;
-        FExecutor.AddResultConst('$means_pBART', ftFloat).AsFloatVector[0]     := PBART;
+        FExecutor.AddResultConst(Prefix + 'DFB',   ftInteger).AsIntegerVector[0] := DFB;
+        FExecutor.AddResultConst(Prefix + 'SSB',   ftFloat).AsFloatVector[0]     := SSB;
+        FExecutor.AddResultConst(Prefix + 'MSB',   ftFloat).AsFloatVector[0]     := MSB;
+        FExecutor.AddResultConst(Prefix + 'F',     ftFloat).AsFloatVector[0]     := F;
+        FExecutor.AddResultConst(Prefix + 'PROB',  ftFloat).AsFloatVector[0]     := PROB;
+        FExecutor.AddResultConst(Prefix + 'DFW',   ftInteger).AsIntegerVector[0] := DFW;
+        FExecutor.AddResultConst(Prefix + 'SSW',   ftFloat).AsFloatVector[0]     := SSW;
+        FExecutor.AddResultConst(Prefix + 'MSW',   ftFloat).AsFloatVector[0]     := MSW;
+        FExecutor.AddResultConst(Prefix + 'BART',  ftFloat).AsFloatVector[0]     := BART;
+        FExecutor.AddResultConst(Prefix + 'pBART', ftFloat).AsFloatVector[0]     := PBART;
       end
     else
       begin
-        FExecutor.AddResultConst('$means_T',     ftFloat).AsFloatVector[0]     := F;
-        FExecutor.AddResultConst('$means_PROB',  ftfloat).AsFloatVector[0]     := PROB;
+        FExecutor.AddResultConst(Prefix + 'T',     ftFloat).AsFloatVector[0]     := F;
+        FExecutor.AddResultConst(Prefix + 'PROB',  ftfloat).AsFloatVector[0]     := PROB;
       end;
 end;
 

@@ -20,6 +20,13 @@ function CalcMeans(DataFile: TEpiDataFile; Const CountVarName, StratifyVarName: 
 }
 
 type
+  {ShowStat} // only used in describe
+  FShowStat = record
+    Show: Boolean;
+    Row:  Integer;
+    Col:  Integer
+  end;
+
   {DescribeCommand}
 
   TDescribeCommand = class
@@ -31,16 +38,29 @@ type
     FVariableLabelOutput: TEpiGetVariableLabelType;
   protected
     FFreqData: TFreqDataFile;
-    FMeanData: TMeansDataFile;
-    function CreateFreqOutputHeader(Data: TFreqDataFile; ST: TCustomVariableCommand): TOutputTable;
-    function CreateMeansOutputHeader(Data: TMeansDataFile; ST: TCustomVariableCommand): TOutputTable;
-    procedure DoOutputFreqRow(Data: TFreqDataFile; ST: TCustomVariableCommand; T: TOutputTable);
-    procedure DoOutputMeansRow(Data: TMeansDataFile; ST: TCustomVariableCommand; T: TOutputTable);
+    FMeansData: TMeansDataFile;
+    function CreateOutputHeader(ST: TCustomVariableCommand): TOutputTable;
+    function CreateOutputHeaderFromTemplate(): TOutputTable;
+    procedure CreateTemplateFromHeader(T: TOutputTable);
+    procedure DoOutputRows(ST: TCustomVariableCommand; DoMeans: Boolean; T: TOutputTable);
+//    procedure DoOutputTable(ST: TCustomVariableCommand; DoMeans: Boolean; T: TOutputTable);
+// need to put these here to make them easily available
+// add other stats here as necessary
+  protected
+    Fmissing,
+    Fsum, Fmean, Fsd, Fcfil, Fcfih,
+    Fmin, Fp10, Fp25, Fmedian, Fp75, Fp90, Fmax,
+    Ffreqlo, Ffreqhi: FShowStat;
+    FRowsPerVar: Integer;
+    FOneTable: Boolean;
+    FTemplate: Array of Array of UTF8String;
+    FFirstPass: Boolean;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
     destructor  Destroy; override;
     procedure   ExecDescribe(VarNames: TStrings; ST: TCustomVariableCommand);
   end;
+
 
 implementation
 
@@ -56,92 +76,331 @@ begin
   inherited Destroy;
 end;
 
-function TDescribeCommand.CreateFreqOutputHeader(Data: TFreqDataFile; ST: TCustomVariableCommand): TOutputTable;
+function TDescribeCommand.CreateOutputHeaderFromTemplate(): TOutputTable;
 var
-  Offset: Integer;
+  i, j: Integer;
 begin
   result := FOutputCreator.AddTable;
-  result.ColCount := 8;
-  result.RowCount := 2;
-  Offset          := 2;
-  result.Cell[0, 1].Text := 'Var';
-  result.Cell[1, 1].Text := 'obs';
+  result.RowCount := FRowsPerVar;
+  result.ColCount := high(FTemplate) + 1;
+  for i := 0 to high(FTemplate) do
+    for j := 0 to high(FTemplate[0]) do
+      result.Cell[i,j].Text := FTemplate[i,j];
+end;
+
+procedure TDescribeCommand.CreateTemplateFromHeader(T: TOutputTable);
+var
+  i, j: Integer;
+begin
+  setLength(FTemplate,T.ColCount,FRowsPerVar);
+  for i := 0 to T.ColCount - 1 do
+    for j := 0 to FRowsPerVar - 1 do
+      FTemplate[i,j] := T.Cell[i,j].Text;
+end;
+
+function TDescribeCommand.CreateOutputHeader(ST: TCustomVariableCommand): TOutputTable;
+// TODO: one header setup only
+{
+  parameter  output
+  always     var name, obs, unique values
+  from freq
+     fl      low 5 frequencies
+     fh      high 5 frequencies
+     fb      low and high frequencies
+     m       missing count
+  from means
+     mci     mean and ci
+     msd     sum, mean, sd
+     iqr     p25, median, p75
+     idr     p10, median, p90
+     rm      min, median, max
+}
+var
+  OptCount, Offset, ROffset, i, HeaderRows: Integer;
+  aOpt, aStr: UTF8String;
+  aMedianCount: Integer;
+  ncol, nrow: Integer;
+  aStatsOption: Boolean;
+  aDefaultStats: array [1..5] of UTF8String = ('mean','sd','min','median','max');
+
+  function SetStat(Col, Row: Integer): FShowStat;
+    begin
+      result.Show := true;
+      result.Row  := Row;
+      result.Col  := Col;
+    end;
+
+begin
+  // start by counting up columns to show (use case of)
+  // if more than 11, then go to one table per variable
+  // - set up header array as a dummy table and use it to populate SummaryTable for each var
+  // if 11 or less, set up SummaryTable headers
+
+  // set all stats to not show
+  Fmissing.Show:= false;
+  Fsum.Show    := false;
+  Fmean.Show   := false;
+  Fsd.Show     := false;
+  Fcfil.Show   := false;
+  Fcfih.Show   := false;
+  Fmin.Show    := false;
+  Fp10.Show    := false;
+  Fp25.Show    := false;
+  Fmedian.Show := false;
+  Fp75.Show    := false;
+  Fp90.Show    := false;
+  Fmax.Show    := false;
+  Ffreqlo.Show := false;
+  Ffreqhi.Show := false;
+// are there any stats options?
+
+  FOneTable := true;
+  FRowsPerVar := 1;
+  aStatsOption := false;
+// check for stats options
+  OptCount := ST.Options.Count;
+  for i := 0 to OptCount - 1 do
+  case ST.Options[i].Ident of
+    'mci',
+    'msd',
+    'rm',
+    'iqr',
+    'idr',
+    'fb',
+    'fh',
+    'fl':
+      begin
+          if not (ST.HasOption('ct')) then
+          begin
+            FOneTable := false;
+            FRowsPerVar := 2;   // default number of rows
+          end;
+          aStatsOption := true;
+        break;
+      end;
+  end;
+
+  result := FOutputCreator.AddTable;
+
+  result.RowCount := 1;
+  result.ColCount := 0;
+  Offset          := 0;
+  // variable name
+  if (FOneTable) then
+  begin
+    Offset := 1;
+    result.ColCount := 1;
+    result.Cell[0,0].Text := 'var';
+  end;
+  // obs and unique values
+  //Offset := result.ColCount;
+  result.ColCount := Offset + 2;
+  result.Cell[Offset, 0].Text := 'obs';
+  result.Cell[Offset+1,0].Text := 'unique';
+  // missing count
   if (ST.HasOption('m')) then
   begin
-    Offset += 1;
-    Result.ColCount := 9;
-    result.Cell[2, 1].Text := 'missing';
+    Offset := result.ColCount;
+    result.ColCount := Offset + 1;
+    result.Cell[Offset, 0].Text := 'missing';
+    Fmissing := SetStat(Offset,0);
   end;
-  result.Cell[Offset,     0].Text := 'unique';
-  result.Cell[Offset,     1].Text := 'values';
-  result.Cell[Offset + 1, 0].Text := 'value';
-  result.Cell[Offset + 1, 1].Text := '(#)';
-  result.Cell[Offset + 2, 0].Text := 'value';
-  result.Cell[Offset + 2, 1].Text := '(#)';
-  result.Cell[Offset + 3, 0].Text := 'value';
-  result.Cell[Offset + 3, 1].Text := '(#)';
-  result.Cell[Offset + 4, 0].Text := 'value';
-  result.Cell[Offset + 4, 1].Text := '(#)';
-  result.Cell[Offset + 5, 0].Text := 'value';
-  result.Cell[Offset + 5, 1].Text := '(#)';
-  result.SetRowBorders(0, [cbTop]);
-  result.SetRowBorders(1, [cbBottom]);
 
+  if (not aStatsOption) then
+  begin
+    // no other options - standard output
+    Offset := result.ColCount;
+    result.ColCount := Offset + 5;
+    Fmean          := SetStat(Offset, 0);
+    Fsd            := SetStat(Offset+1, 0);
+    Fmin           := SetStat(Offset+2, 0);
+    Fmedian        := SetStat(Offset+3, 0);
+    Fmax           := SetStat(Offset+4, 0);
+    for aStr in aDefaultStats do
+    begin
+      result.Cell[Offset,0].Text := aStr;
+      Offset += 1;
+    end;
+    exit;
+  end;
+
+  // check for other means output
+  // if too many for one row, shift to alternate presentation
+
+
+  if (ST.HasOption('msd')) then    // mean, sd, sum
+  begin
+    Offset := result.ColCount;
+    result.ColCount := Offset + 3;
+    result.Cell[Offset, 0].Text := 'sum';
+    Fsum := SetStat(Offset, 0);
+    result.Cell[Offset+1, 0].Text := 'mean';
+    Fmean := SetStat(Offset+1, 0);
+    result.Cell[Offset+2, 0].Text := 'sd';
+    Fsd := SetStat(Offset + 2, 0);
+  end;
+  if (ST.HasOption('mci')) then   // mean, ci of mean
+  begin
+    if not Fmean.Show then
+    begin
+      Offset := result.ColCount;
+      result.ColCount := Offset + 1;
+      result.Cell[Offset, 0].Text := 'mean';
+      Fmean := SetStat(Offset, 0);
+    end;
+    Offset := result.ColCount;
+    result.ColCount := Offset + 2;
+    result.Cell[Offset, 0].Text := 'cfil';
+    Fcfil := SetStat(Offset, 0);
+    result.Cell[Offset+1, 0].Text := 'cfih';
+    Fcfih := SetStat(Offset+1, 0);
+  end;
+ // how many options with median? decide if they fit on one row or not
+ ROffset      := 0;
+ aMedianCount := 0;
+ if (ST.HasOption('rm')) then aMedianCount := 1;
+ if (ST.HasOption('iqr')) then aMedianCount += 1;
+ if (ST.HasOption('idr')) then aMedianCount += 1;
+ Offset := result.ColCount;
+ if (aMedianCount > 0) then
+   if ((not FOneTable) and ((Offset + 1 + (aMedianCount * 2)) > 11)) then
+   begin
+     ROffset := 2;
+     Offset  := 0;
+     FRowsPerVar := 4;
+     result.RowCount := 4;
+     if (result.ColCount < (1 + aMedianCount*2)) then result.ColCount := 1 + aMedianCount*2;
+   end
+   else
+     result.ColCount := Offset + 1 + aMedianCount*2;
+
+ result.RowCount := FRowsPerVar;
+ if (ST.HasOption('rm')) then
+ begin
+   result.Cell[Offset,ROffset].Text := 'min';
+   result.Cell[Offset+aMedianCount,ROffset].Text := 'median';
+   result.Cell[Offset+2*aMedianCount,ROffset].Text := 'max';
+   Fmin := SetStat(Offset,ROffset);
+   Fmedian := SetStat(Offset+aMedianCount,ROffset);
+   Fmax := SetStat(Offset+2*aMedianCount,ROffset);
+   Offset += 1;
+   aMedianCount -= 1;
+ end;
+
+ if (ST.HasOption('idr')) then
+ begin
+   result.Cell[Offset,ROffset].Text := 'p10';
+   result.Cell[Offset+aMedianCount,ROffset].Text := 'median';
+   result.Cell[Offset+2*aMedianCount,ROffset].Text := 'p90';
+   Fp10 := SetStat(Offset,ROffset);
+   FMedian := SetStat(Offset+aMedianCount,ROffset);
+   Fp90 := SetStat(Offset+2*aMedianCount,ROffset);
+   Offset += 1;
+   aMedianCount -= 1;
+ end;
+
+ if (ST.HasOption('iqr')) then
+  begin
+    result.Cell[Offset,ROffset].Text := 'p25';
+    result.Cell[Offset+1,ROffset].Text := 'median';
+    result.Cell[Offset+2,ROffset].Text := 'p75';
+    Fp25 := SetStat(Offset,ROffset);
+    FMedian := SetStat(Offset+1,ROffset);
+    Fp75 := SetStat(Offset+2,ROffset);
+  end;
+
+ {  for i:= 1 to 5 do
+  begin
+    result.Cell[Offset + i, 0].Text := 'value';
+    result.Cell[Offset + i, 1].Text := '(#)';
+  end;
+ }
+ {
+ result.SetRowAlignment(0, taRightJustify);
+ result.SetRowAlignment(1, taRightJustify);
+ result.SetColAlignment(0, taLeftJustify);
+ result.SetRowBorders(0, [cbTop]);
+ result.SetRowBorders(HeaderRows - 1, [cbBottom]);
+ }
 end;
 
-function TDescribeCommand.CreateMeansOutputHeader(Data: TMeansDataFile; ST: TCustomVariableCommand): TOutputTable;
-begin
-  result := FOutputCreator.AddTable;
-  result.ColCount := 8;
-  result.RowCount := 1;
-  result.Cell[0, 0].Text := 'Var';
-  result.Cell[1, 0].Text := 'obs';
-  result.Cell[2, 0].Text := 'sum';
-  result.Cell[3, 0].Text := 'mean';
-  result.Cell[4, 0].Text := 'sd';
-  // TODO: if (ST.HasOption('ci') then show ci
-  result.Cell[5, 0].Text := 'min';
-  result.Cell[6, 0].Text := 'median';
-  result.Cell[7, 0].Text := 'max';
-  result.SetRowAlignment(0, taRightJustify);
-  result.SetColAlignment(0, taLeftJustify);
-  result.SetRowBorders(0, [cbTop, cbBottom]);
-end;
-
-procedure TDescribeCommand.DoOutputFreqRow(Data: TFreqDataFile; ST: TCustomVariableCommand; T: TOutputTable);
+procedure TDescribeCommand.DoOutputRows(ST: TCustomVariableCommand; DoMeans: Boolean; T: TOutputTable);
 
 var
-  Offset: Integer;
+  aStr: String;
   CategV, CountV: TEpiField;
-  RowIdx, ix, NCat, aCount, aIx, i: Integer;
+  RowIdx, ix, NCat, aCount, aIx, i, j, Offset: Integer;
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
   CategIx: array [0..4] of Integer;
   CountIx: array [0..4] of Integer;
+  StatFmt: String;
+
+  function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;  // from means.pas
+    begin
+      if (val = TEpiFloatField.DefaultMissing) then
+        Result := TEpiStringField.DefaultMissing
+      else
+        Result := Format(fmt, [val]);
+    end;
+
 begin
-  CategV := Data.Categ;
-  CountV := Data.Count;
-  Offset := 2;
+  CategV := FFreqData.Categ;
+  CountV := FFreqData.Count;
+
   VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-  RowIdx     := T.RowCount;
-  T.RowCount := RowIdx + 2;
-  T.Cell[0, RowIdx].Text := CategV.GetVariableLabel(VariableLabelType);
-  T.SetColAlignment(0, taLeftJustify);
-  T.Cell[1, RowIdx].Text := IntToStr(Data.Sum);
-  NCat := Data.Size;
-  if (ST.HasOption('m')) then
+  if (FOneTable) then
   begin
-    Offset += 1;
-    T.Cell[2, RowIdx].Text := '-'; // check for missing value as last category
-    if (CategV.IsMissing[Data.Size-1]) then
-    begin
-      T.Cell[2,RowIdx].Text := CountV.AsString[Data.Size-1];
-      NCat := Data.Size - 1;
-    end;
+    RowIdx     := T.RowCount;
+    T.RowCount := RowIdx + FRowsPerVar;
+    T.Cell[0, RowIdx].Text := CategV.GetVariableLabel(VariableLabelType);
+    T.SetColAlignment(0, taLeftJustify);
+    Offset := 1;
+  end
+  else
+  begin
+    Offset := 0;
+    T.RowCount := FRowsPerVar;
+    RowIdx := 1;
+    T.Header.Text := CategV.GetVariableLabel(VariableLabelType);
   end;
-  T.Cell[Offset   , RowIdx].Text := IntToStr(Data.Size);
 
+  // need to use proper row
+  NCat := FFreqData.Size;
+  T.Cell[Offset,     RowIdx].Text := IntToStr(FFreqData.Sum);
+  T.Cell[Offset + 1, RowIdx].Text := IntToStr(NCat);
+
+  if (Fmissing.Show) then
+  begin
+    aStr := '-';
+    if (CategV.IsMissing[FFreqData.Size-1]) then
+    begin
+      aStr := CountV.AsString[FFreqData.Size-1];
+      NCat := FFreqData.Size - 1;
+    end;
+    T.Cell[FMissing.Col, RowIdx].Text := aStr;
+  end;
+  aStr := CategV.GetVariableLabel(VariableLabelType);
+  // check stats one by one
+  if (DoMeans) then with FMeansData do
+  begin
+    FDecimals  := DecimalFromOption(ST.Options);
+    StatFmt    := '%8.' + IntToStr(FDecimals) + 'F';
+    if (Fsum.Show)    then T.Cell[Fsum.Col,   RowIdx + Fsum.Row   ].Text := Format(StatFmt, [Sum.AsFloat[0]]);
+    if (Fmean.Show)   then T.Cell[Fmean.Col,  RowIdx + Fmean.Row  ].Text := Format(StatFmt, [Mean.AsFloat[0]]);
+    if (Fsd.Show)     then T.Cell[Fsd.Col,    RowIdx + Fsd.Row    ].Text := StatFloatDisplay(StatFmt, StdDev.AsFloat[0]);
+    if (Fcfih.Show)   then T.Cell[Fcfih.Col,  RowIdx + Fcfih.Row  ].Text := StatFloatDisplay(StatFmt, Cfih.AsFloat[0]);
+    if (Fcfil.Show)   then T.Cell[Fcfil.Col,  RowIdx + Fcfil.Row  ].Text := StatFloatDisplay(StatFmt, Cfil.AsFloat[0]);
+    if (Fmin.Show)    then T.Cell[Fmin.Col,   RowIdx + Fmin.Row   ].Text := Format(StatFmt, [Min.AsFloat[0]]);
+    if (Fp10.Show)    then T.Cell[Fp10.Col,   RowIdx + Fp10.Row   ].Text := Format(StatFmt, [P10.AsFloat[0]]);
+    if (Fp25.Show)    then T.Cell[Fp25.Col,   RowIdx + Fp25.Row   ].Text := Format(StatFmt, [P25.AsFloat[0]]);
+    if (Fmedian.Show) then T.Cell[Fmedian.Col,RowIdx + Fmedian.Row].Text := Format(StatFmt, [Median.AsFloat[0]]);
+    if (Fp75.Show)    then T.Cell[Fp75.Col,   RowIdx + Fp75.Row   ].Text := Format(StatFmt, [P75.AsFloat[0]]);
+    if (Fp90.Show)    then T.Cell[Fp90.Col,   RowIdx + Fp90.Row   ].Text := Format(StatFmt, [P90.AsFloat[0]]);
+    if (Fmax.Show)    then T.Cell[Fmax.Col,   RowIdx + Fmax.Row   ].Text := Format(StatFmt, [Max.AsFloat[0]]);
+  end;
+{
 // here we search for top 5 frequencies
   CategIx[0] := 0;
   CountIx[0] := CountV[0];
@@ -176,25 +435,19 @@ begin
   for ix := 0 to NCat - 1 do
   begin
     T.Cell[Offset + ix, RowIdx    ].Text := CategV.GetValueLabel(CategIx[ix], ValueLabelType);
-    T.Cell[Offset + ix, RowIdx + 1].Text := CountV.AsString[CategIx[ix]];
+    T.Cell[Offset + ix, RowIdx + 1].Text := '(' + CountV.AsString[CategIx[ix]] + ')';
   end;
-  T.SetRowBorders(RowIdx + 1, [cbBottom]);
+}
+T.SetRowBorders(0, [cbTop]);
+T.SetRowBorders(T.RowCount-1, [cbBottom]);
 end;
 
-procedure TDescribeCommand.DoOutputMeansRow(Data: TMeansDataFile; ST: TCustomVariableCommand; T: TOutputTable);
+{procedure TDescribeCommand.DoOutputMeansRow(Data: TMeansDataFile; ST: TCustomVariableCommand; T: TOutputTable);
 var
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
   RowIdx: Integer;
   StatFmt: String;
-
-function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;  // from means.pas
-  begin
-    if (val = TEpiFloatField.DefaultMissing) then
-      Result := TEpiStringField.DefaultMissing
-    else
-      Result := Format(fmt, [val]);
-  end;
 
 begin
   VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
@@ -215,6 +468,7 @@ begin
   end;
   T.SetColAlignment(0, taLeftJustify);
 end;
+}
 
 procedure TDescribeCommand.ExecDescribe(VarNames: TStrings; ST: TCustomVariableCommand);
 var
@@ -223,64 +477,13 @@ var
   AFieldType: TEpiFieldType;
   AVar: TStrings;
   Opt: TOption;
-  i, ix, VarCount: Integer;
-  FirstPass: Boolean;
-  FreqData:  TFreqDataFile;
-  MeansData: TMeansDataFile;
+  i, ix, VarCount, TableIx: Integer;
   SummaryTable: TOutputTable;
   F:   TFreqCommand;
   M:   TMeans;
   O:   TEpiReferenceMap;
-
-  // invoke freq for one variable
-  procedure DoDescribeFreq(VarName: String);
-
-  begin;
-    try
-      FreqData := F.CalcFreq(DF, VarName, O);
-{        if (FirstPass) then
-          CreateFreqResultVariables(VarNames); // set up result variables
-        DoFreqResultVariables(i); // results for one table row
-}
-        if (not ST.HasOption('q')) then
-        begin
-          if (FirstPass) then // cannot create header until we have done calcfreq once
-            SummaryTable := CreateFreqOutputHeader(FreqData, ST);
-          DoOutputFreqRow(FreqData, ST, SummaryTable);
-        end;
-        FirstPass := FALSE;
-
-    finally
-      DF.Free;
-    end;
-
-  end;
-
-  // invoke means for one variable
-  procedure DoDescribeMeans(VarName: String);
-
-  begin;
-    try
-      MeansData := M.CalcMeans(DF, VarName, '');
-
-{        if (FirstPass) then
-          CreateMeansResultVariables(VarNames); // set up result variables
-        DoMeansResultVariables(i); // results for one table row
-}
-        if (not ST.HasOption('q')) then
-        begin
-          if (FirstPass) then // cannot create header until we have done calcfreq once
-            SummaryTable := CreateMeansOutputHeader(MeansData, ST);
-          DoOutputMeansRow(MeansData, ST, SummaryTable);
-        end;
-        FirstPass := FALSE;
-
-    finally
-      DF.Free;
-    end;
-
-  end;
-
+  DoOutput: Boolean;
+  DoMeans:  Boolean;
 begin
   VarCount := VarNames.Count;
   if (VarCount < 1) then
@@ -289,52 +492,68 @@ begin
     exit;
   end;
   AVar := TStringList.Create;
-  // Process categorical variables first
+
+  //TODO: do freq on all variables
+  //      do means on numeric
+  //      one function to create headers
+  //      output means/freq uses appropriate columns
+
+  //
+  DoOutput := not ST.HasOption('q');
   F := TFreqCommand.Create(FExecutor, FOutputCreator);
-  FirstPass := TRUE;
+  M := TMeans.Create(FExecutor, FOutputCreator);
+  if (DoOutput) then
+  begin
+    FDecimals := DecimalFromOption(ST.Options);
+    FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+    FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+    FFirstPass   := true;
+  end;
   for i := 0 to VarCount - 1 do
   begin
+    if (FFirstPass) then
+    begin
+      SummaryTable := CreateOutputHeader(ST);
+      CreateTemplateFromHeader(SummaryTable);
+      TableIx := 0;
+    end
+    else if (not FOneTable) then
+    begin
+      SummaryTable := CreateOutputHeaderFromTemplate();
+      TableIx := i;
+    end;
+
     AVar.Add(VarNames[i]);
     if ST.HasOption('m') then
       DF := FExecutor.PrepareDatafile(AVar, nil)
     else
       DF := FExecutor.PrepareDatafile(AVar, AVar);
-    AVar.Delete(0);
     AFieldType := DF.Field[0].FieldType;
-    if (ST.HasOption('c') or
-       not ((AFieldType = ftInteger) or (AfieldType = ftFloat) or (AFieldType = ftAutoInc))) then
+    DoMeans  := (AFieldType = ftInteger) or (AfieldType = ftFloat) or (AFieldType = ftAutoInc);
+    if (DF.Size = 0) then
       begin
-        if (DF.Size = 0) then
-          FOutputCreator.DoWarning(VarNames[i] + ': No data')
-        else
-          DoDescribeFreq(VarNames[i]);
-      end;
-  end;
+        FOutputCreator.DoWarning(VarNames[i] + ': No data');
+      end
+    else begin
+      FFreqData := F.CalcFreq(DF, VarNames[i], O);
 
-  if (not ST.HasOption('c')) then
-  begin
-  // Process integer and float variables
-    FDecimals := DecimalFromOption(ST.Options);
-    FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-    FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-
-    M := TMeans.Create(FExecutor, FOutputCreator);
-    FirstPass := TRUE;
-    for i := 0 to VarCount - 1 do
-    begin
-      AVar.Add(VarNames[i]);
-      DF := FExecutor.PrepareDatafile(AVar, AVar);
-      AFieldType := DF.Field[0].FieldType;
-      if ((AFieldType = ftInteger) or (AfieldType = ftFloat) or (AFieldType = ftAutoInc)) then
+      if (DoMeans) then
       begin
-        if (DF.Size = 0) then
-          FOutputCreator.DoWarning(VarNames[i] + ': No data')
-        else
-          DoDescribeMeans(VarNames[i]);
+        DF.Free;
+        DF := FExecutor.PrepareDatafile(AVar, AVar);
+        FMeansData := M.CalcMeans(DF, VarNames[i], '');
       end;
-      AVar.Delete(0);
+      if (DoOutput) then
+        DoOutputRows(ST, DoMeans, SummaryTable);
     end;
+    DF.Free;
+    FFreqData.Free;
+    AVar.Delete(0);
+    if (DoMeans) then FMeansData.Free;
+    FFirstPass := false;
   end;
+  F.Free;
+  M.Free;
 end;
 
 end.
