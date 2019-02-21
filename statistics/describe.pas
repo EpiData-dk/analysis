@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
   executor, result_variables, epifields_helper, outputcreator, options_utils,
-  freq, means;
+  freq, means, math;
 
 {
 makes use of freq and means
@@ -43,7 +43,7 @@ type
     function CreateOutputHeaderFromTemplate(): TOutputTable;
     procedure CreateTemplateFromHeader(T: TOutputTable);
     procedure DoOutputRows(ST: TCustomVariableCommand; DoMeans: Boolean; T: TOutputTable);
-//    procedure DoOutputTable(ST: TCustomVariableCommand; DoMeans: Boolean; T: TOutputTable);
+    procedure DoOutputFreq(ST: TCustomVariableCommand; T: TOutputTable);
 // need to put these here to make them easily available
 // add other stats here as necessary
   protected
@@ -52,7 +52,7 @@ type
     Fmin, Fp10, Fp25, Fmedian, Fp75, Fp90, Fmax,
     Ffreqlo, Ffreqhi: FShowStat;
     FRowsPerVar: Integer;
-    FOneTable: Boolean;
+    FOneTable, FFreqTable: Boolean;
     FTemplate: Array of Array of UTF8String;
     FFirstPass: Boolean;
   public
@@ -120,7 +120,7 @@ var
   aOpt, aStr: UTF8String;
   aMedianCount: Integer;
   ncol, nrow: Integer;
-  aStatsOption: Boolean;
+  aStatsOption, aFreqOption: Boolean;
   aDefaultStats: array [1..5] of UTF8String = ('mean','sd','min','median','max');
 
   function SetStat(Col, Row: Integer): FShowStat;
@@ -155,6 +155,7 @@ begin
 // are there any stats options?
 
   FOneTable := true;
+  FFreqTable := false;
   FRowsPerVar := 1;
   aStatsOption := false;
 // check for stats options
@@ -165,10 +166,7 @@ begin
     'msd',
     'rm',
     'iqr',
-    'idr',
-    'fb',
-    'fh',
-    'fl':
+    'idr':
       begin
           if not (ST.HasOption('ct')) then
           begin
@@ -176,7 +174,15 @@ begin
             FRowsPerVar := 2;   // default number of rows
           end;
           aStatsOption := true;
-        break;
+      end;
+    'fb',
+    'fh',
+    'fl' :
+      begin
+          FOneTable := false;
+          FFreqTable := true;
+          FRowsPerVar := 2;
+          aFreqOption := true;
       end;
   end;
 
@@ -206,7 +212,7 @@ begin
     Fmissing := SetStat(Offset,0);
   end;
 
-  if (not aStatsOption) then
+  if (not (aStatsOption or aFreqOption)) then
   begin
     // no other options - standard output
     Offset := result.ColCount;
@@ -308,20 +314,17 @@ begin
     FMedian := SetStat(Offset+1,ROffset);
     Fp75 := SetStat(Offset+2,ROffset);
   end;
-
- {  for i:= 1 to 5 do
-  begin
-    result.Cell[Offset + i, 0].Text := 'value';
-    result.Cell[Offset + i, 1].Text := '(#)';
-  end;
- }
  {
- result.SetRowAlignment(0, taRightJustify);
- result.SetRowAlignment(1, taRightJustify);
- result.SetColAlignment(0, taLeftJustify);
- result.SetRowBorders(0, [cbTop]);
- result.SetRowBorders(HeaderRows - 1, [cbBottom]);
- }
+ if (not aFreqOption) then exit;
+
+ if (ST.HasOption('fh') or ST.HasOption('fb')) then
+    Ffreqhi := SetStat(1,0);
+ if (ST.HasOption('fl') or ST.HasOption('fb')) then
+    if (FFreqhi.Show) then
+      Ffreqlo := SetStat(1,2)
+    else
+      FFreqlo := SetStat(1,0);
+}
 end;
 
 procedure TDescribeCommand.DoOutputRows(ST: TCustomVariableCommand; DoMeans: Boolean; T: TOutputTable);
@@ -332,8 +335,6 @@ var
   RowIdx, ix, NCat, aCount, aIx, i, j, Offset: Integer;
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
-  CategIx: array [0..4] of Integer;
-  CountIx: array [0..4] of Integer;
   StatFmt: String;
 
   function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;  // from means.pas
@@ -400,75 +401,81 @@ begin
     if (Fp90.Show)    then T.Cell[Fp90.Col,   RowIdx + Fp90.Row   ].Text := Format(StatFmt, [P90.AsFloat[0]]);
     if (Fmax.Show)    then T.Cell[Fmax.Col,   RowIdx + Fmax.Row   ].Text := Format(StatFmt, [Max.AsFloat[0]]);
   end;
-{
-// here we search for top 5 frequencies
-  CategIx[0] := 0;
-  CountIx[0] := CountV[0];
-  for ix := 1 to 4 do
-  begin
-    CategIx[ix] := 0;
-    CountIx[ix] := 0;
-  end;
-  for ix := 1 to NCat - 1 do
-  begin
-    aCount := CountV.AsInteger[ix];
-    if (aCount > CountIx[4]) then
-    begin
-      CountIx[4] := aCount;
-      CategIx[4] := ix;
-      for i := 3 downto 0 do
-      begin
-        if (aCount > CountIx[i]) then
-        begin
-          CountIx[i+1] := CountIx[i];
-          CategIx[i+1] := CategIx[i];
-          CountIx[i]   := aCount;
-          CategIx[i]   := ix;
-        end;
-      end;
-    end;
-  end;
 
-  // now show the top categories
-  Offset += 1;
-  if (NCat > 5) then NCat := 5;
-  for ix := 0 to NCat - 1 do
-  begin
-    T.Cell[Offset + ix, RowIdx    ].Text := CategV.GetValueLabel(CategIx[ix], ValueLabelType);
-    T.Cell[Offset + ix, RowIdx + 1].Text := '(' + CountV.AsString[CategIx[ix]] + ')';
-  end;
-}
 T.SetRowBorders(0, [cbTop]);
 T.SetRowBorders(T.RowCount-1, [cbBottom]);
 end;
 
-{procedure TDescribeCommand.DoOutputMeansRow(Data: TMeansDataFile; ST: TCustomVariableCommand; T: TOutputTable);
+procedure TDescribeCommand.DoOutputFreq(ST: TCustomVariableCommand; T: TOutputTable);
 var
-  VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
-  RowIdx: Integer;
-  StatFmt: String;
-
+  CategV, CountV: TEpiField;
+  RowIdx, NCat, DCat, aCount, Offset: Integer;
+  CategIx: array [0..10] of Integer;
+  CountIx: array [0..10] of Integer;
+  i, ix, big: Integer;
+  FoundHighFreq: Boolean;
 begin
-  VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-  FDecimals  := DecimalFromOption(ST.Options);
-  StatFmt    := '%8.' + IntToStr(FDecimals) + 'F';
-  RowIdx     := T.RowCount;
-  T.RowCount := RowIdx + 1;
-  with Data do
+  FFreqData.SortRecords(FFreqData.Count); // sorts counts into ascending order
+  CategV := FFreqData.Categ;
+  CountV := FFreqData.Count;
+  NCat   := CategV.Size;
+
+  ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+  FoundHighFreq := false;
+  RowIdx     := 0;
+  if (ST.HasOption('fh') or ST.HasOption('fb')) then
   begin
-    T.Cell[0, RowIdx].Text := CountVarText;
-    T.Cell[1, RowIdx].Text := N.AsString[0];
-    T.Cell[2, RowIdx].Text := Format(StatFmt, [Sum.AsFloat[0]]);
-    T.Cell[3, RowIdx].Text := Format(StatFmt, [Mean.AsFloat[0]]);
-    T.Cell[4, RowIdx].Text := StatFloatDisplay(StatFmt, StdDev.AsFloat[0]);
-    T.Cell[5, RowIdx].Text := Format(StatFmt, [Min.AsFloat[0]]);
-    T.Cell[6, RowIdx].Text := Format(StatFmt, [Median.AsFloat[0]]);
-    T.Cell[7, RowIdx].Text := Format(StatFmt, [Max.AsFloat[0]]);
+    FoundHighFreq := true;
+    T.RowCount := RowIdx + 2;
+    T.ColCount := 7;
+    T.Cell[0,RowIdx].Text := 'Most';
+    T.Cell[0,RowIdx+1].Text := 'Frequent';
+    T.Cell[1,RowIdx].Text := 'value';
+    T.Cell[1,RowIdx+1].Text := 'count';
+
+   // now show the top 5 frequencies *** If only 2 categories, they are not sorted properly ***
+    Offset := 2;
+    DCat := max(0,NCat-5);
+    for ix := NCat-1 downto DCat do
+    begin
+      T.Cell[Offset, RowIdx    ].Text := CategV.GetValueLabel(ix, ValueLabelType);
+      T.Cell[Offset, RowIdx + 1].Text := CountV.AsString[ix];
+      Offset += 1;
+    end;
+    RowIdx := 2;
   end;
-  T.SetColAlignment(0, taLeftJustify);
+  if (FoundHighFreq and (Ncat <6)) then exit;
+
+  if (ST.HasOption('fl') or ST.HasOption('fb')) then
+  begin
+    T.RowCount := RowIdx + 2;
+    T.Cell[0,RowIdx].Text := 'Least';
+    T.Cell[0,RowIdx+1].Text := 'Frequent';
+    T.Cell[1,RowIdx].Text := 'value';
+    T.Cell[1,RowIdx+1].Text := 'count';
+    if (NCat > 10) then
+    begin
+      i    := 0;
+      DCat := 4;
+    end
+    else
+    begin
+      i    := 0;
+      DCat := NCat - 6;
+    end;
+    // now show the bottom 5 frequencies
+    Offset := 2;
+    for ix := i to DCat do
+    begin
+      T.Cell[Offset, RowIdx    ].Text := CategV.GetValueLabel(ix, ValueLabelType);
+      T.Cell[Offset, RowIdx + 1].Text := CountV.AsString[ix];
+      Offset += 1;
+    end;
+  end;
+
 end;
-}
+
 
 procedure TDescribeCommand.ExecDescribe(VarNames: TStrings; ST: TCustomVariableCommand);
 var
@@ -478,7 +485,7 @@ var
   AVar: TStrings;
   Opt: TOption;
   i, ix, VarCount, TableIx: Integer;
-  SummaryTable: TOutputTable;
+  SummaryTable, FreqTable: TOutputTable;
   F:   TFreqCommand;
   M:   TMeans;
   O:   TEpiReferenceMap;
@@ -544,7 +551,15 @@ begin
         FMeansData := M.CalcMeans(DF, VarNames[i], '');
       end;
       if (DoOutput) then
+      begin
         DoOutputRows(ST, DoMeans, SummaryTable);
+        if (FFreqTable) then
+        begin
+          FreqTable := FOutputCreator.AddTable;
+          DoOutputFreq(ST,FreqTable);
+        end;
+      end;
+
     end;
     DF.Free;
     FFreqData.Free;
