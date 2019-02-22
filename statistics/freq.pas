@@ -51,7 +51,7 @@ type
     // Method called from Executor, does calculation + result vars + output
     procedure ExecFreq(DF: TEpiDataFile; ST: TCustomVariableCommand);
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
-    function  CalcFreq(DF: TEpiDataFile; VariableName: String; Out RefMap: TEpiReferenceMap): TFreqDatafile;
+    function  CalcFreq(DF: TEpiDataFile; VariableName: String; DoResults: Boolean; Out RefMap: TEpiReferenceMap): TFreqDatafile;
   end;
 
 implementation
@@ -295,10 +295,11 @@ begin
     end;
 end;
 
-function TFreqCommand.CalcFreq(DF: TEpiDataFile; VariableName: String; out
+function TFreqCommand.CalcFreq(DF: TEpiDataFile; VariableName: String; DoResults: Boolean; out
   RefMap: TEpiReferenceMap): TFreqDatafile;
 begin
   Result := DoCalcFreqTable(DF, VariableName, RefMap);
+  if (DoResults) then DoResultVariables(Result, VariableName);
 end;
 
 end.

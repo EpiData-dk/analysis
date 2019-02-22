@@ -2,6 +2,24 @@ unit describe;
 
 {$mode objfpc}{$H+}
 
+{ EpiData Analysis Describe command
+  Jamie Hockin
+  2019/02/21
+  For command syntax, see commands.html
+
+  Describe provides brief descriptive statistics on one or more variables. It has no inbuilt
+  statistical code, but instead makes use of the freq and means commands to generate statistics.
+
+  Rather than write new procedures within freq and means to provide output, it is simpler
+  to do it here. Most of the code here is to determine where in the output to place statistics.
+
+  The general approach is to call execfreq for each variable, call execmeans for numeric variables
+  and then place certain results into a templated output table, or rows of a single output table.
+
+  freq and means are used to create result variables. As a consequence, all result variables
+  from the two commands are available to the user.
+}
+
 interface
 
 uses
@@ -9,18 +27,9 @@ uses
   executor, result_variables, epifields_helper, outputcreator, options_utils,
   freq, means, math;
 
-{
-makes use of freq and means
-function  CalcFreq(DF: TEpiDataFile; VariableName: String; Out RefMap: TEpiReferenceMap): TFreqDatafile;
-
-function CalcMeans(DataFile: TEpiDataFile; Const CountVarName, StratifyVarName: UTF8String;
-  ValueLabelOutput: TEpiGetValueLabelType = gvtValue; VariableLabelOutput: TEpiGetVariableLabelType = gvtVarName): TMeansDatafile;
-
-  Handle all output with mean/freq routines? or do it here; should be able to manage one row of freqs per variable
-}
-
 type
-  {ShowStat} // only used in describe
+  {ShowStat}
+
   FShowStat = record
     Show: Boolean;
     Row:  Integer;
@@ -40,17 +49,17 @@ type
     FFreqData: TFreqDataFile;
     FMeansData: TMeansDataFile;
     function CreateOutputHeader(ST: TCustomVariableCommand): TOutputTable;
-    function CreateOutputHeaderFromTemplate(): TOutputTable;
+    function CreateOutputHeaderFromTemplate(DoMeans: Boolean): TOutputTable;
     procedure CreateTemplateFromHeader(T: TOutputTable);
     procedure DoOutputRows(ST: TCustomVariableCommand; DoMeans: Boolean; T: TOutputTable);
     procedure DoOutputFreq(ST: TCustomVariableCommand; T: TOutputTable);
-// need to put these here to make them easily available
 // add other stats here as necessary
   protected
-    Fmissing,
-    Fsum, Fmean, Fsd, Fcfil, Fcfih,
-    Fmin, Fp10, Fp25, Fmedian, Fp75, Fp90, Fmax,
-    Ffreqlo, Ffreqhi: FShowStat;
+    Fmissing,                                       // !m
+    Fsum, Fmean, Fsd, Fcfil, Fcfih,                 // !msd !mci
+    Fmin, Fp10, Fp25, Fmedian, Fp75, Fp90, Fmax,    // !rm !idr !iqr
+    Ffreqlo, Ffreqhi: FShowStat;                    // !fl !fh !fb
+// output control
     FRowsPerVar: Integer;
     FOneTable, FFreqTable: Boolean;
     FTemplate: Array of Array of UTF8String;
@@ -64,8 +73,7 @@ type
 
 implementation
 
-constructor TDescribeCommand.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator
-  );
+constructor TDescribeCommand.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
 begin
   FExecutor := AExecutor;
   FOutputCreator := AOutputCreator;
@@ -76,19 +84,33 @@ begin
   inherited Destroy;
 end;
 
-function TDescribeCommand.CreateOutputHeaderFromTemplate(): TOutputTable;
+function TDescribeCommand.CreateOutputHeaderFromTemplate(DoMeans: Boolean): TOutputTable;
+// copy headings for a single output table
 var
   i, j: Integer;
 begin
   result := FOutputCreator.AddTable;
-  result.RowCount := FRowsPerVar;
-  result.ColCount := high(FTemplate) + 1;
-  for i := 0 to high(FTemplate) do
-    for j := 0 to high(FTemplate[0]) do
+  if (DoMeans) then
+  begin
+    result.RowCount := FRowsPerVar;
+    result.ColCount := high(FTemplate) + 1;
+  end
+  else
+  begin
+    result.RowCount := 2;
+    if (FTemplate[2,0] = 'missing') then
+      result.ColCount := 3
+    else
+      result.ColCount := 2;
+  end;
+
+  for i := 0 to result.ColCount-1 do
+    for j := 0 to result.RowCount-1 do
       result.Cell[i,j].Text := FTemplate[i,j];
 end;
 
 procedure TDescribeCommand.CreateTemplateFromHeader(T: TOutputTable);
+// copy headings from a single output table
 var
   i, j: Integer;
 begin
@@ -99,7 +121,7 @@ begin
 end;
 
 function TDescribeCommand.CreateOutputHeader(ST: TCustomVariableCommand): TOutputTable;
-// TODO: one header setup only
+
 {
   parameter  output
   always     var name, obs, unique values
@@ -116,19 +138,20 @@ function TDescribeCommand.CreateOutputHeader(ST: TCustomVariableCommand): TOutpu
      rm      min, median, max
 }
 var
-  OptCount, Offset, ROffset, i, HeaderRows: Integer;
-  aOpt, aStr: UTF8String;
-  aMedianCount: Integer;
-  ncol, nrow: Integer;
+  Offset, ROffset, i: Integer;
+  aStr: UTF8String;
+  aOptCount, aMedianCount, aMaxColumnsForOneTable: Integer;
   aStatsOption, aFreqOption: Boolean;
   aDefaultStats: array [1..5] of UTF8String = ('mean','sd','min','median','max');
+  aHasMedian:    array [0..2] of UTF8String = ('rm','idr','iqr');
 
   function SetStat(Col, Row: Integer): FShowStat;
-    begin
-      result.Show := true;
-      result.Row  := Row;
-      result.Col  := Col;
-    end;
+  // save location of stats output to match header
+  begin
+    result.Show := true;
+    result.Row  := Row;
+    result.Col  := Col;
+  end;
 
 begin
   // start by counting up columns to show (use case of)
@@ -152,15 +175,17 @@ begin
   Fmax.Show    := false;
   Ffreqlo.Show := false;
   Ffreqhi.Show := false;
-// are there any stats options?
 
-  FOneTable := true;
-  FFreqTable := false;
-  FRowsPerVar := 1;
-  aStatsOption := false;
-// check for stats options
-  OptCount := ST.Options.Count;
-  for i := 0 to OptCount - 1 do
+  // starting position
+  FOneTable              := true;
+  aMaxColumnsForOneTable := 11;
+  FFreqTable             := false;
+  FRowsPerVar            := 1;
+  aStatsOption           := false;
+
+  // check for stats options
+  aOptCount := ST.Options.Count;
+  for i := 0 to aOptCount - 1 do
   case ST.Options[i].Ident of
     'mci',
     'msd',
@@ -168,29 +193,30 @@ begin
     'iqr',
     'idr':
       begin
-          if not (ST.HasOption('ct')) then
-          begin
-            FOneTable := false;
-            FRowsPerVar := 2;   // default number of rows
-          end;
-          aStatsOption := true;
+        if not (ST.HasOption('ct')) then
+        begin
+          FOneTable := false;
+          FRowsPerVar := 2;   // default number of rows for a single table per var
+        end;
+        aStatsOption := true;
       end;
     'fb',
     'fh',
     'fl' :
       begin
-          FOneTable := false;
-          FFreqTable := true;
-          FRowsPerVar := 2;
-          aFreqOption := true;
+        FOneTable := false;
+        FFreqTable := true;
+        FRowsPerVar := 2;
+        aFreqOption := true;
       end;
   end;
 
+  // set up output table
   result := FOutputCreator.AddTable;
-
   result.RowCount := 1;
   result.ColCount := 0;
   Offset          := 0;
+
   // variable name
   if (FOneTable) then
   begin
@@ -198,11 +224,12 @@ begin
     result.ColCount := 1;
     result.Cell[0,0].Text := 'var';
   end;
+
   // obs and unique values
-  //Offset := result.ColCount;
   result.ColCount := Offset + 2;
-  result.Cell[Offset, 0].Text := 'obs';
-  result.Cell[Offset+1,0].Text := 'unique';
+  result.Cell[Offset,   0].Text := 'obs';
+  result.Cell[Offset+1, 0].Text := 'unique';
+
   // missing count
   if (ST.HasOption('m')) then
   begin
@@ -217,11 +244,11 @@ begin
     // no other options - standard output
     Offset := result.ColCount;
     result.ColCount := Offset + 5;
-    Fmean          := SetStat(Offset, 0);
-    Fsd            := SetStat(Offset+1, 0);
-    Fmin           := SetStat(Offset+2, 0);
-    Fmedian        := SetStat(Offset+3, 0);
-    Fmax           := SetStat(Offset+4, 0);
+    Fmean           := SetStat(Offset, 0);
+    Fsd             := SetStat(Offset+1, 0);
+    Fmin            := SetStat(Offset+2, 0);
+    Fmedian         := SetStat(Offset+3, 0);
+    Fmax            := SetStat(Offset+4, 0);
     for aStr in aDefaultStats do
     begin
       result.Cell[Offset,0].Text := aStr;
@@ -232,19 +259,18 @@ begin
 
   // check for other means output
   // if too many for one row, shift to alternate presentation
-
-
   if (ST.HasOption('msd')) then    // mean, sd, sum
   begin
     Offset := result.ColCount;
     result.ColCount := Offset + 3;
-    result.Cell[Offset, 0].Text := 'sum';
-    Fsum := SetStat(Offset, 0);
+    result.Cell[Offset,   0].Text := 'sum';
     result.Cell[Offset+1, 0].Text := 'mean';
-    Fmean := SetStat(Offset+1, 0);
     result.Cell[Offset+2, 0].Text := 'sd';
-    Fsd := SetStat(Offset + 2, 0);
+    Fsum  := SetStat(Offset, 0);
+    Fmean := SetStat(Offset+1, 0);
+    Fsd   := SetStat(Offset+2, 0);
   end;
+
   if (ST.HasOption('mci')) then   // mean, ci of mean
   begin
     if not Fmean.Show then
@@ -256,25 +282,25 @@ begin
     end;
     Offset := result.ColCount;
     result.ColCount := Offset + 2;
-    result.Cell[Offset, 0].Text := 'cfil';
-    Fcfil := SetStat(Offset, 0);
+    result.Cell[Offset,   0].Text := 'cfil';
     result.Cell[Offset+1, 0].Text := 'cfih';
+    Fcfil := SetStat(Offset, 0);
     Fcfih := SetStat(Offset+1, 0);
   end;
- // how many options with median? decide if they fit on one row or not
+
+  // how many options with median? decide if they fit on one row or not
  ROffset      := 0;
  aMedianCount := 0;
- if (ST.HasOption('rm')) then aMedianCount := 1;
- if (ST.HasOption('iqr')) then aMedianCount += 1;
- if (ST.HasOption('idr')) then aMedianCount += 1;
+ for aStr in (aHasMedian) do
+   if (ST.HasOption(aStr)) then aMedianCount += 1;
  Offset := result.ColCount;
  if (aMedianCount > 0) then
-   if ((not FOneTable) and ((Offset + 1 + (aMedianCount * 2)) > 11)) then
+   if ((not FOneTable) and ((Offset + 1 + (aMedianCount * 2)) > aMaxColumnsForOneTable)) then
    begin
      ROffset := 2;
      Offset  := 0;
      FRowsPerVar := 4;
-     result.RowCount := 4;
+//     result.RowCount := 4;
      if (result.ColCount < (1 + aMedianCount*2)) then result.ColCount := 1 + aMedianCount*2;
    end
    else
@@ -283,56 +309,48 @@ begin
  result.RowCount := FRowsPerVar;
  if (ST.HasOption('rm')) then
  begin
-   result.Cell[Offset,ROffset].Text := 'min';
-   result.Cell[Offset+aMedianCount,ROffset].Text := 'median';
+   result.Cell[Offset,               ROffset].Text := 'min';
+   result.Cell[Offset+aMedianCount,  ROffset].Text := 'median';
    result.Cell[Offset+2*aMedianCount,ROffset].Text := 'max';
-   Fmin := SetStat(Offset,ROffset);
+   Fmin    := SetStat(Offset,ROffset);
    Fmedian := SetStat(Offset+aMedianCount,ROffset);
-   Fmax := SetStat(Offset+2*aMedianCount,ROffset);
-   Offset += 1;
+   Fmax    := SetStat(Offset+2*aMedianCount,ROffset);
+   Offset  += 1;
    aMedianCount -= 1;
  end;
 
  if (ST.HasOption('idr')) then
  begin
-   result.Cell[Offset,ROffset].Text := 'p10';
-   result.Cell[Offset+aMedianCount,ROffset].Text := 'median';
+   result.Cell[Offset,              ROffset].Text := 'p10';
+   result.Cell[Offset+aMedianCount, ROffset].Text := 'median';
    result.Cell[Offset+2*aMedianCount,ROffset].Text := 'p90';
-   Fp10 := SetStat(Offset,ROffset);
+   Fp10    := SetStat(Offset,ROffset);
    FMedian := SetStat(Offset+aMedianCount,ROffset);
-   Fp90 := SetStat(Offset+2*aMedianCount,ROffset);
-   Offset += 1;
+   Fp90    := SetStat(Offset+2*aMedianCount,ROffset);
+   Offset  += 1;
    aMedianCount -= 1;
  end;
 
  if (ST.HasOption('iqr')) then
   begin
-    result.Cell[Offset,ROffset].Text := 'p25';
+    result.Cell[Offset,  ROffset].Text := 'p25';
     result.Cell[Offset+1,ROffset].Text := 'median';
     result.Cell[Offset+2,ROffset].Text := 'p75';
-    Fp25 := SetStat(Offset,ROffset);
+    Fp25    := SetStat(Offset,  ROffset);
     FMedian := SetStat(Offset+1,ROffset);
-    Fp75 := SetStat(Offset+2,ROffset);
+    Fp75    := SetStat(Offset+2,ROffset);
   end;
- {
- if (not aFreqOption) then exit;
 
- if (ST.HasOption('fh') or ST.HasOption('fb')) then
-    Ffreqhi := SetStat(1,0);
- if (ST.HasOption('fl') or ST.HasOption('fb')) then
-    if (FFreqhi.Show) then
-      Ffreqlo := SetStat(1,2)
-    else
-      FFreqlo := SetStat(1,0);
-}
+// no need to set up template for high and low frequencies
+// as they always force one table per var and have their own output tables
 end;
 
 procedure TDescribeCommand.DoOutputRows(ST: TCustomVariableCommand; DoMeans: Boolean; T: TOutputTable);
-
+// add a single variable stats to the current output table
 var
   aStr: String;
   CategV, CountV: TEpiField;
-  RowIdx, ix, NCat, aCount, aIx, i, j, Offset: Integer;
+  RowIdx, NCat, Offset: Integer;
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
   StatFmt: String;
@@ -351,6 +369,7 @@ begin
 
   VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+
   if (FOneTable) then
   begin
     RowIdx     := T.RowCount;
@@ -361,28 +380,28 @@ begin
   end
   else
   begin
-    Offset := 0;
-    T.RowCount := FRowsPerVar;
-    RowIdx := 1;
+    Offset        := 0;
+    RowIdx        := 1;
     T.Header.Text := CategV.GetVariableLabel(VariableLabelType);
+    T.RowCount    := FRowsPerVar;
   end;
 
-  // need to use proper row
+  // always show total count and number of unique values
   NCat := FFreqData.Size;
-  T.Cell[Offset,     RowIdx].Text := IntToStr(FFreqData.Sum);
-  T.Cell[Offset + 1, RowIdx].Text := IntToStr(NCat);
+  T.Cell[Offset,   RowIdx].Text := IntToStr(FFreqData.Sum);
+  T.Cell[Offset+1, RowIdx].Text := IntToStr(NCat);
+  Offset += 2;
 
   if (Fmissing.Show) then
   begin
     aStr := '-';
     if (CategV.IsMissing[FFreqData.Size-1]) then
-    begin
       aStr := CountV.AsString[FFreqData.Size-1];
-      NCat := FFreqData.Size - 1;
-    end;
     T.Cell[FMissing.Col, RowIdx].Text := aStr;
+    Offset += 1;
   end;
   aStr := CategV.GetVariableLabel(VariableLabelType);
+
   // check stats one by one
   if (DoMeans) then with FMeansData do
   begin
@@ -402,41 +421,52 @@ begin
     if (Fmax.Show)    then T.Cell[Fmax.Col,   RowIdx + Fmax.Row   ].Text := Format(StatFmt, [Max.AsFloat[0]]);
   end;
 
-T.SetRowBorders(0, [cbTop]);
-T.SetRowBorders(T.RowCount-1, [cbBottom]);
+  T.SetRowBorders(0, [cbTop]);
+  T.SetRowBorders(1, [cbBottom]);
+  if (T.RowCount > 2) then T.SetRowBorders(T.RowCount-1, [cbBottom]);
+
 end;
 
 procedure TDescribeCommand.DoOutputFreq(ST: TCustomVariableCommand; T: TOutputTable);
+// output high / low frequencies as a new output table
 var
   ValueLabelType: TEpiGetValueLabelType;
   CategV, CountV: TEpiField;
-  RowIdx, NCat, DCat, aCount, Offset: Integer;
-  CategIx: array [0..10] of Integer;
-  CountIx: array [0..10] of Integer;
-  i, ix, big: Integer;
+  RowIdx, NCat, DCat, Offset: Integer;
+  ix: Integer;
   FoundHighFreq: Boolean;
+  aStr: String;
 begin
   FFreqData.SortRecords(FFreqData.Count); // sorts counts into ascending order
   CategV := FFreqData.Categ;
   CountV := FFreqData.Count;
   NCat   := CategV.Size;
 
-  ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-  FoundHighFreq := false;
-  RowIdx     := 0;
+  ValueLabelType := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+  FoundHighFreq  := false;
+  RowIdx         := 0;
+  T.ColCount     := 7;
+
+  // use header to subtitle high / low frequencies
+  aStr := '';
+  if (ST.HasOption('fh') or ST.HasOption('fb')) then aStr := 'Most ';
+  if (ST.HasOption('fb') or ST.HasOption('fl')) then
+    if (aStr <> '') then aStr += 'and Least '
+      else aStr := 'Least ';
+  if (aStr <> '') then T.Header.Text := aStr + 'frequent values';
+
+  if (ST.HasOption('m') and CategV.IsMissing[NCat-1])
+    then NCat -= 1;
   if (ST.HasOption('fh') or ST.HasOption('fb')) then
   begin
     FoundHighFreq := true;
-    T.RowCount := RowIdx + 2;
-    T.ColCount := 7;
-    T.Cell[0,RowIdx].Text := 'Most';
-    T.Cell[0,RowIdx+1].Text := 'Frequent';
-    T.Cell[1,RowIdx].Text := 'value';
-    T.Cell[1,RowIdx+1].Text := 'count';
+    T.RowCount    := RowIdx + 2;
+    T.Cell[0,RowIdx].Text   := 'value';
+    T.Cell[0,RowIdx+1].Text := 'count';
 
    // now show the top 5 frequencies *** If only 2 categories, they are not sorted properly ***
-    Offset := 2;
-    DCat := max(0,NCat-5);
+    Offset := 1;
+    DCat   := max(0, NCat-5);
     for ix := NCat-1 downto DCat do
     begin
       T.Cell[Offset, RowIdx    ].Text := CategV.GetValueLabel(ix, ValueLabelType);
@@ -445,52 +475,52 @@ begin
     end;
     RowIdx := 2;
   end;
-  if (FoundHighFreq and (Ncat <6)) then exit;
 
-  if (ST.HasOption('fl') or ST.HasOption('fb')) then
+  if ((not FoundHighFreq) or (Ncat >5)) then // no need for this if all frequencies already shown
   begin
-    T.RowCount := RowIdx + 2;
-    T.Cell[0,RowIdx].Text := 'Least';
-    T.Cell[0,RowIdx+1].Text := 'Frequent';
-    T.Cell[1,RowIdx].Text := 'value';
-    T.Cell[1,RowIdx+1].Text := 'count';
-    if (NCat > 10) then
+  // show low 5 frequencies (fewer if some already shown as high frequencies)
+    if (ST.HasOption('fl') or ST.HasOption('fb')) then
     begin
-      i    := 0;
-      DCat := 4;
-    end
-    else
-    begin
-      i    := 0;
-      DCat := NCat - 6;
-    end;
-    // now show the bottom 5 frequencies
-    Offset := 2;
-    for ix := i to DCat do
-    begin
-      T.Cell[Offset, RowIdx    ].Text := CategV.GetValueLabel(ix, ValueLabelType);
-      T.Cell[Offset, RowIdx + 1].Text := CountV.AsString[ix];
-      Offset += 1;
+      T.RowCount := RowIdx + 2;
+      T.Cell[0,RowIdx].Text   := 'value';
+      T.Cell[0,RowIdx+1].Text := 'count';
+      if (FoundHighFreq) then
+        if (NCat > 10) then
+          DCat := 4
+        else
+          DCat := NCat - 6
+      else
+        if (NCat < 6) then
+          DCat := NCat - 1
+        else
+          DCat := 4;
+      // now show the bottom 5 frequencies
+      Offset := 1;
+      for ix := 0 to DCat do
+      begin
+        T.Cell[Offset, RowIdx    ].Text := CategV.GetValueLabel(ix, ValueLabelType);
+        T.Cell[Offset, RowIdx + 1].Text := CountV.AsString[ix];
+        Offset += 1;
+      end;
     end;
   end;
+  T.SetRowBorders(0, [cbTop]);
+  T.SetRowBorders(1, [cbBottom]);
+  if (T.RowCount > 2) then T.SetRowBorders(T.RowCount-1, [cbBottom]);
 
 end;
-
 
 procedure TDescribeCommand.ExecDescribe(VarNames: TStrings; ST: TCustomVariableCommand);
 var
   DF: TEpiDataFile;
-  VariableLabelType: TEpiGetVariableLabelType;
   AFieldType: TEpiFieldType;
   AVar: TStrings;
-  Opt: TOption;
-  i, ix, VarCount, TableIx: Integer;
+  i, VarCount: Integer;
   SummaryTable, FreqTable: TOutputTable;
   F:   TFreqCommand;
   M:   TMeans;
   O:   TEpiReferenceMap;
-  DoOutput: Boolean;
-  DoMeans:  Boolean;
+  DoOutput, DoMeans:  Boolean;
 begin
   VarCount := VarNames.Count;
   if (VarCount < 1) then
@@ -498,60 +528,59 @@ begin
     // error message (should not happen)
     exit;
   end;
-  AVar := TStringList.Create;
 
-  //TODO: do freq on all variables
-  //      do means on numeric
-  //      one function to create headers
-  //      output means/freq uses appropriate columns
-
-  //
+  AVar     := TStringList.Create;
   DoOutput := not ST.HasOption('q');
-  F := TFreqCommand.Create(FExecutor, FOutputCreator);
-  M := TMeans.Create(FExecutor, FOutputCreator);
+  F        := TFreqCommand.Create(FExecutor, FOutputCreator);
+  M        := TMeans.Create(FExecutor, FOutputCreator);
   if (DoOutput) then
   begin
-    FDecimals := DecimalFromOption(ST.Options);
+    FFirstPass           := true;
+    FDecimals            := DecimalFromOption(ST.Options);
     FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
     FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-    FFirstPass   := true;
   end;
   for i := 0 to VarCount - 1 do
   begin
-    if (FFirstPass) then
-    begin
-      SummaryTable := CreateOutputHeader(ST);
-      CreateTemplateFromHeader(SummaryTable);
-      TableIx := 0;
-    end
-    else if (not FOneTable) then
-    begin
-      SummaryTable := CreateOutputHeaderFromTemplate();
-      TableIx := i;
-    end;
-
     AVar.Add(VarNames[i]);
     if ST.HasOption('m') then
       DF := FExecutor.PrepareDatafile(AVar, nil)
     else
       DF := FExecutor.PrepareDatafile(AVar, AVar);
+
     AFieldType := DF.Field[0].FieldType;
     DoMeans  := (AFieldType = ftInteger) or (AfieldType = ftFloat) or (AFieldType = ftAutoInc);
+
     if (DF.Size = 0) then
-      begin
-        FOutputCreator.DoWarning(VarNames[i] + ': No data');
-      end
-    else begin
-      FFreqData := F.CalcFreq(DF, VarNames[i], O);
+    begin
+      FOutputCreator.DoWarning(VarNames[i] + ': No data');
+    end
+    else
+    begin
+      FFreqData := F.CalcFreq(DF, VarNames[i], true, O);
 
       if (DoMeans) then
       begin
-        DF.Free;
-        DF := FExecutor.PrepareDatafile(AVar, AVar);
-        FMeansData := M.CalcMeans(DF, VarNames[i], '');
+        if (ST.HasOption('m')) then      // must recreate DF without missing vars for means
+        begin
+          DF.Free;
+          DF := FExecutor.PrepareDatafile(AVar, AVar);
+        end;
+        FMeansData := M.CalcMeans(DF, VarNames[i], '', true);
       end;
+
       if (DoOutput) then
       begin
+        if (FFirstPass) then
+        begin
+          SummaryTable := CreateOutputHeader(ST);
+          CreateTemplateFromHeader(SummaryTable);
+        end
+        else if (not FOneTable) then
+        begin
+          SummaryTable := CreateOutputHeaderFromTemplate(DoMeans);
+        end;
+
         DoOutputRows(ST, DoMeans, SummaryTable);
         if (FFreqTable) then
         begin

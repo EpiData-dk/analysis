@@ -57,7 +57,7 @@ type
     // Method called from Executor, does calculation + result vars + output
     procedure ExecMeans(DataFile: TEpiDataFile; ST: TMeansCommand);
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
-    function CalcMeans(DataFile: TEpiDataFile; Const CountVarName, StratifyVarName: UTF8String;
+    function CalcMeans(DataFile: TEpiDataFile; Const CountVarName, StratifyVarName: UTF8String; DoResults: Boolean;
       ValueLabelOutput: TEpiGetValueLabelType = gvtValue; VariableLabelOutput: TEpiGetVariableLabelType = gvtVarName): TMeansDatafile;
   end;
 
@@ -359,69 +359,68 @@ begin
 end;
 
 procedure TMeans.DoResultVariables(ResultDF: TMeansDatafile);
-// TODO: append CountVar name to result var name after $means_
-// e.g. ResultVarPrefix := '$means_' + ResultDF.CountVarText + '_';
 var
   CatV, ObsV, SumV, MeanV, SvV, SdV, SerrV, CfilV, CfihV, SkewV, KurtV,
   MinV, P05V, P10V, P25V, MedV, P75V, P90V, P95V, MaxV: TCustomExecutorDataVariable;
   Sz, i: Integer;
-  Prefix: String;
+  Prefix, vname: String;
 begin
   Sz := ResultDF.Size;
-  Prefix := '$means_' + ResultDF.CountVarText + '_';
+  Prefix := '$means_';
+  Vname := '_' + LowerCase(ResultDF.CountVarText);
   with FExecutor do
   begin
     if Sz = 1 then
       begin
-        CatV  := AddResultConst(Prefix + 'category', ftString);
-        ObsV  := AddResultConst(Prefix + 'obs',      ftInteger);
-        SumV  := AddResultConst(Prefix + 'sum',      ftFloat);
-        MeanV := AddResultConst(Prefix + 'mean',     ftFloat);
-        MinV  := AddResultConst(Prefix + 'min',      ftFloat);
-        P05V  := AddResultConst(Prefix + 'p05',      ftFloat);
-        P10V  := AddResultConst(Prefix + 'p10',      ftFloat);
-        P25V  := AddResultConst(Prefix + 'p25',      ftFloat);
-        MedV  := AddResultConst(Prefix + 'median',   ftFloat);
-        P75V  := AddResultConst(Prefix + 'p75',      ftFloat);
-        P90V  := AddResultConst(Prefix + 'p90',      ftFloat);
-        P95V  := AddResultConst(Prefix + 'p95',      ftFloat);
-        MaxV  := AddResultConst(Prefix + 'max',      ftFloat);
-        SvV   := AddResultConst(Prefix + 'variance', ftFloat);
-        SdV   := AddResultConst(Prefix + 'sd',       ftFloat);
-        SerrV := AddResultConst(Prefix + 'stderr',   ftFloat);
-        CfilV := AddResultConst(Prefix + 'cfil',     ftFloat);
-        CfihV := AddResultConst(Prefix + 'cfih',     ftFloat);
-        SkewV := AddResultConst(Prefix + 'skew',     ftFloat);
-        KurtV := AddResultConst(Prefix + 'kurt',     ftFloat);
+        CatV  := AddResultConst(Prefix + 'category' + Vname, ftString);
+        ObsV  := AddResultConst(Prefix + 'obs' + Vname,      ftInteger);
+        SumV  := AddResultConst(Prefix + 'sum' + Vname,      ftFloat);
+        MeanV := AddResultConst(Prefix + 'mean + Vname',     ftFloat);
+        MinV  := AddResultConst(Prefix + 'min' + Vname,      ftFloat);
+        P05V  := AddResultConst(Prefix + 'p05' + Vname,      ftFloat);
+        P10V  := AddResultConst(Prefix + 'p10' + Vname,      ftFloat);
+        P25V  := AddResultConst(Prefix + 'p25' + Vname,      ftFloat);
+        MedV  := AddResultConst(Prefix + 'median' + Vname,   ftFloat);
+        P75V  := AddResultConst(Prefix + 'p75' + Vname,      ftFloat);
+        P90V  := AddResultConst(Prefix + 'p90' + Vname,      ftFloat);
+        P95V  := AddResultConst(Prefix + 'p95' + Vname,      ftFloat);
+        MaxV  := AddResultConst(Prefix + 'max' + Vname,      ftFloat);
+        SvV   := AddResultConst(Prefix + 'variance' + Vname, ftFloat);
+        SdV   := AddResultConst(Prefix + 'sd' + Vname,       ftFloat);
+        SerrV := AddResultConst(Prefix + 'stderr' + Vname,   ftFloat);
+        CfilV := AddResultConst(Prefix + 'cfil' + Vname,     ftFloat);
+        CfihV := AddResultConst(Prefix + 'cfih' + Vname,     ftFloat);
+        SkewV := AddResultConst(Prefix + 'skew' + Vname,     ftFloat);
+        KurtV := AddResultConst(Prefix + 'kurt' + Vname,     ftFloat);
         AddResultConst(Prefix + 'catvar', ftString).AsStringVector[0]  := '';
       end
     else
       begin
-        CatV  := AddResultVector(Prefix + 'category', ftString, Sz);
-        ObsV  := AddResultVector(Prefix + 'obs',      ftInteger, Sz);
-        SumV  := AddResultVector(Prefix + 'sum',      ftFloat, Sz);
-        MeanV := AddResultVector(Prefix + 'mean',     ftFloat, Sz);
-        MinV  := AddResultVector(Prefix + 'min',      ftFloat, Sz);
-        P05V  := AddResultVector(Prefix + 'p05',      ftFloat, Sz);
-        P10V  := AddResultVector(Prefix + 'p10',      ftFloat, Sz);
-        P25V  := AddResultVector(Prefix + 'p25',      ftFloat, Sz);
-        MedV  := AddResultVector(Prefix + 'median',   ftFloat, Sz);
-        P75V  := AddResultVector(Prefix + 'p75',      ftFloat, Sz);
-        P90V  := AddResultVector(Prefix + 'p90',      ftFloat, Sz);
-        P95V  := AddResultVector(Prefix + 'p95',      ftFloat, Sz);
-        MaxV  := AddResultVector(Prefix + 'max',      ftFloat, Sz);
-        SvV   := AddResultVector(Prefix + 'sv',       ftFloat, Sz);
-        SdV   := AddResultVector(Prefix + 'sd',       ftFloat, Sz);
-        SerrV := AddResultVector(Prefix + 'stderr',   ftFloat, Sz);
-        CfilV := AddResultVector(Prefix + 'cfil',     ftFloat, Sz);
-        CfihV := AddResultVector(Prefix + 'cfih',     ftFloat, Sz);
-        SkewV := AddResultVector(Prefix + 'skew',     ftFloat, Sz);
-        KurtV := AddResultVector(Prefix + 'kurt',     ftFloat, Sz);
+        CatV  := AddResultVector(Prefix + 'category' + Vname, ftString, Sz);
+        ObsV  := AddResultVector(Prefix + 'obs' + Vname,      ftInteger, Sz);
+        SumV  := AddResultVector(Prefix + 'sum' + Vname,      ftFloat, Sz);
+        MeanV := AddResultVector(Prefix + 'mean' + Vname,     ftFloat, Sz);
+        MinV  := AddResultVector(Prefix + 'min' + Vname,      ftFloat, Sz);
+        P05V  := AddResultVector(Prefix + 'p05' + Vname,      ftFloat, Sz);
+        P10V  := AddResultVector(Prefix + 'p10' + Vname,      ftFloat, Sz);
+        P25V  := AddResultVector(Prefix + 'p25' + Vname,      ftFloat, Sz);
+        MedV  := AddResultVector(Prefix + 'median' + Vname,   ftFloat, Sz);
+        P75V  := AddResultVector(Prefix + 'p75' + Vname,      ftFloat, Sz);
+        P90V  := AddResultVector(Prefix + 'p90' + Vname,      ftFloat, Sz);
+        P95V  := AddResultVector(Prefix + 'p95' + Vname,      ftFloat, Sz);
+        MaxV  := AddResultVector(Prefix + 'max' + Vname,      ftFloat, Sz);
+        SvV   := AddResultVector(Prefix + 'sv' + Vname,       ftFloat, Sz);
+        SdV   := AddResultVector(Prefix + 'sd' + Vname,       ftFloat, Sz);
+        SerrV := AddResultVector(Prefix + 'stderr' + Vname,   ftFloat, Sz);
+        CfilV := AddResultVector(Prefix + 'cfil' + Vname,     ftFloat, Sz);
+        CfihV := AddResultVector(Prefix + 'cfih' + Vname,     ftFloat, Sz);
+        SkewV := AddResultVector(Prefix + 'skew' + Vname,     ftFloat, Sz);
+        KurtV := AddResultVector(Prefix + 'kurt' + Vname,     ftFloat, Sz);
 
-        AddResultConst(Prefix + 'catvar', ftString).AsStringVector[0]  := ResultDF.FStratifyVarText;
+        AddResultConst(Prefix + 'catvar' + Vname, ftString).AsStringVector[0]  := ResultDF.FStratifyVarText;
      end;
 
-    AddResultConst(Prefix + 'size',  ftInteger).AsIntegerVector[0] := Sz;
+    AddResultConst(Prefix + 'size' + Vname,  ftInteger).AsIntegerVector[0] := Sz;
 //    AddResultConst(Prefix + 'var',  ftString).AsStringVector[0]    := ResultDF.CountVarText;
  end;
 
@@ -729,13 +728,14 @@ begin
 end;
 
 function TMeans.CalcMeans(DataFile: TEpiDataFile; const CountVarName,
-  StratifyVarName: UTF8String; ValueLabelOutput: TEpiGetValueLabelType;
+  StratifyVarName: UTF8String; DoResults: Boolean; ValueLabelOutput: TEpiGetValueLabelType;
   VariableLabelOutput: TEpiGetVariableLabelType): TMeansDatafile;
 begin
   FValuelabelOutput := ValueLabelOutput;       // why are these here?
   VariableLabelOutput := VariableLabelOutput;
 
   Result := DoCalcMeans(DataFile, CountVarName, StratifyVarName);
+  if (DoResults) then DoResultVariables(Result);
 end;
 
 end.
