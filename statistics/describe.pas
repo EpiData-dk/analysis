@@ -98,7 +98,7 @@ begin
   else
   begin
     result.RowCount := 2;
-    if (FTemplate[2,0] = 'missing') then
+    if (Fmissing.Show) then
       result.ColCount := 3
     else
       result.ColCount := 2;
@@ -182,6 +182,7 @@ begin
   FFreqTable             := false;
   FRowsPerVar            := 1;
   aStatsOption           := false;
+  aFreqOption            := false;
 
   // check for stats options
   aOptCount := ST.Options.Count;
@@ -422,9 +423,13 @@ begin
   end;
 
   T.SetRowBorders(0, [cbTop]);
-  T.SetRowBorders(1, [cbBottom]);
-  if (T.RowCount > 2) then T.SetRowBorders(T.RowCount-1, [cbBottom]);
-
+  if (FOneTable) then
+    T.SetRowBorders(0, [cbTop, cbBottom])
+  else
+  begin
+    T.SetRowBorders(1, [cbBottom]);
+    if (T.RowCount > 2) then T.SetRowBorders(T.RowCount-1, [cbBottom]);
+  end;
 end;
 
 procedure TDescribeCommand.DoOutputFreq(ST: TCustomVariableCommand; T: TOutputTable);
@@ -566,7 +571,10 @@ begin
           DF.Free;
           DF := FExecutor.PrepareDatafile(AVar, AVar);
         end;
-        FMeansData := M.CalcMeans(DF, VarNames[i], '', true);
+        if (DF.Size = 0) then
+          DoMeans := false
+        else
+          FMeansData := M.CalcMeans(DF, VarNames[i], '', true);
       end;
 
       if (DoOutput) then
@@ -589,12 +597,12 @@ begin
         end;
       end;
 
+      FFreqData.Free;
+      if (DoMeans) then FMeansData.Free;
+      FFirstPass := false;
     end;
     DF.Free;
-    FFreqData.Free;
     AVar.Delete(0);
-    if (DoMeans) then FMeansData.Free;
-    FFirstPass := false;
   end;
   F.Free;
   M.Free;
