@@ -1354,6 +1354,17 @@ drop data !del ; // drop all observations "marked for deletion"
         <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="tablegrp" id="tablegrp"></a> Tables &amp; Frequencies</td>
       </tr>
       <tr valign="top">
+       <td>
+        <a name="count" id="count"></a>count<br/>
+       </td>
+       <td>
+        <font class="cmd">count</font><br/>
+        <p>Counts number of observations. Count may be used with select to count within a subgroup</p>
+        <br/>
+        Result variable: <font class="cmd">$count</font>. Use <font class="cmd">list results</font> for details<br/>
+       </td>
+      </tr>
+      <tr valign="top">
         <td><a name="freq" id="freq"></a>freq<br/>
         <a name="fre" id="fre">fre</a></td>
         <td>
@@ -1495,22 +1506,11 @@ drop data !del ; // drop all observations "marked for deletion"
      </tr>
      <!--
       ######################################################3
-      Means and Count
+      Means and Descriptive Statistics
       ######################################################3
      -->
      <tr>
-      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="analysisgrp" id="analysisgrp"></a> Means and Count</td>
-     </tr>
-     <tr valign="top">
-      <td>
-       <a name="count" id="count"></a>count<br/>
-      </td>
-      <td>
-       <font class="cmd">count</font><br/>
-       <p>Counts number of observations. Count may be used with select to count within a subgroup</p>
-       <br/>
-       Result variable: <font class="cmd">$count</font>. Use <font class="cmd">list results</font> for details<br/>
-      </td>
+      <td colspan="2" class="cmdgroup"><a href="#top">&#8613;</a><a name="analysisgrp" id="analysisgrp"></a> Means and Descriptive Statistics</td>
      </tr>
      <tr valign="top">
       <td>
@@ -1519,15 +1519,15 @@ drop data !del ; // drop all observations "marked for deletion"
       </td>
       <td>
        <font class="cmd">means <i>variable<sub>1</sub></i> [!by=<i>variable<sub>2</sub></i>] [!t]</font><br/>
-       <p>Basic descriptive statistics for variable1, optionally stratified by variable2<br/></p>
+       <p>Basic descriptive statistics for variable1, optionally stratified by variable2 with analysis of variance<br/></p>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
 
        <ul>
         <li><font class="option">!by:</font> Stratify by this variable</li>
-        <li><font class="option">!t:</font> Test for homogeneity of the mean across strata (same or different mean)<br/>
-         Including Bartletts test for homogeneity of variance with more than two strata<br/>
-         F-test is provided, can be interpreted as T-test with two strata</li>
-        <li>Without <font class="option">!by</font> and with <font class="option">!t</font> : Test that mean=0<br/>
+        <li><font class="option">!t:</font> Analysis of Variance to test for homogeneity of the mean across strata,<br/>
+         including Bartletts test for homogeneity of variance.<br/>
+         a T-test or F-test is provided, based on the number of strata.</li>
+        <li>Without <font class="cmd">!by</font> and with <font class="cmd">!t</font> : Test that mean=0<br/>
          (e.g. as a paired T-test for difference in before and after measure)</li>
         <li>Estimates are saved as result variables. Use <font class="cmd">list results</font> for details<br/></li>
         <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
@@ -1535,7 +1535,38 @@ drop data !del ; // drop all observations "marked for deletion"
        <font class="limit">Note:</font> Confidence Intervals given are based on the T-distribution with N-1 degrees of freedom.
       </td>
      </tr>
-
+     <tr valign="top">
+      <td>
+       <a name="describe" id="describe"/>describe
+      </td>
+      <td>
+       <font class="cmd">describe <i>variable list</i> [option list]</font><br/>
+       <p>Basic descriptive statistics and frequencies for a group of variables<br/>
+       With no options specified, a single table will be provided, with one row per variable showing:<br/>
+       number of observations, number of unique values<br/>
+       For numerical variables, the output will also include <br/>
+       mean, standard deviation, minimum, median, maximum<br/>
+       If no options are specified, normally one output table is produced for each variable.</p>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+       <p>Use any combination of options to customize the output</p>
+       <ul>
+        <li><font class="option">!msd:</font>mean, standard deviation and sum </li>
+        <li><font class="option">!mci:</font>mean and confidence interval. See <a href="#setgrp">set</a> to change the confidence interval</li>
+        <li><font class="option">!rm:</font>minimum, median, maximum </li>
+        <li><font class="option">!idr:</font>10th percentile, median, 90th percentile </li>
+        <li><font class="option">!iqr:</font>25th percentile, median, 75th percentile </li>
+        <li><font class="option">!fh:</font>5 most frequent values</li>
+        <li><font class="option">!fl:</font>5 least frequent values</li>
+        <li><font class="option">!fb:</font>5 most frequent and 5 least frequent values</li>
+        <li><font class="option">!ct:</font>force one row per variable when the above options are specified.<br/>
+        This will be ignored if one of <font class="cmd">!fh !fl !fb</font> is specified.</li>
+        <li><font class="option">!m:</font>number of missing values</li>
+        <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
+       </ul>
+       <font class="limit">Note:</font> All statistics are based on the means command,
+       so results will be exactly the same from <font class="cmd">means</font> and <font class="cmd">describe</font>.
+      </td>
+     </tr>
      <!--
       ######################################################3
       Data and Structural Consistency Checks
