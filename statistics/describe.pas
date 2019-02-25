@@ -4,7 +4,7 @@ unit describe;
 
 { EpiData Analysis Describe command
   Jamie Hockin
-  2019/02/21
+  2019/02/25
   For command syntax, see commands.html
 
   Describe provides brief descriptive statistics on one or more variables. It has no inbuilt
