@@ -42,10 +42,6 @@ type
   private
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
-    FDecimals: Integer;
-    FStatFmt: String;
-    FValuelabelOutput: TEpiGetValueLabelType;
-    FVariableLabelOutput: TEpiGetVariableLabelType;
   protected
     FFreqData: TFreqDataFile;
     FMeansData: TMeansDataFile;
@@ -60,8 +56,12 @@ type
     Fsum, Fmean, Fsd, Fcfil, Fcfih,                 // !msd !mci
     Fmin, Fp10, Fp25, Fmedian, Fp75, Fp90, Fmax,    // !rm !idr !iqr
     Ffreqlo, Ffreqhi: FShowStat;                    // !fl !fh !fb
-    Fpct: Boolean;                                  // !pc
 // output control
+    FDecimals: Integer;
+    FStatFmt, FFreqFmt, FFreqLabel: String;
+    FPct: Boolean;
+    FValuelabelOutput: TEpiGetValueLabelType;
+    FVariableLabelOutput: TEpiGetVariableLabelType;
     FRowsPerVar: Integer;
     FOneTable, FFreqTable: Boolean;
     FTemplate: Array of Array of UTF8String;
@@ -435,7 +435,7 @@ procedure TDescribeCommand.DoOutputFreq(ST: TCustomVariableCommand; T: TOutputTa
 // output high / low frequencies as a new output table
 var
   ValueLabelType: TEpiGetValueLabelType;
-  CategV, CountV: TEpiField;
+  CategV, FreqV: TEpiField;
   RowIdx, NCat, DCat, Offset: Integer;
   ix: Integer;
   FoundHighFreq: Boolean;
@@ -444,7 +444,10 @@ var
 begin
   FFreqData.SortRecords(FFreqData.Count); // sorts counts into ascending order
   CategV := FFreqData.Categ;
-  CountV := FFreqData.Count;
+  if (FPct) then
+    FreqV := FFreqData.Percent
+  else
+    FreqV := FFreqData.Count;
   NCat   := CategV.Size;
 
   ValueLabelType := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
@@ -467,8 +470,7 @@ begin
     FoundHighFreq := true;
     T.RowCount    := RowIdx + 2;
     T.Cell[0,RowIdx].Text   := 'value';
-    if (Fpct) then T.Cell[0,RowIdx+1].Text := 'percent'
-    else           T.Cell[0,RowIdx+1].Text := 'count';
+    T.Cell[0,RowIdx+1].Text := FFreqLabel;
 
    // now show the top 5 frequencies *** If only 2 categories, they are not sorted properly ***
     Offset := 1;
@@ -476,13 +478,7 @@ begin
     for ix := NCat-1 downto DCat do
     begin
       T.Cell[Offset, RowIdx    ].Text := CategV.GetValueLabel(ix, ValueLabelType);
-      if (Fpct) then
-      begin
-        aPct := FFreqData.Percent[ix];
-        T.Cell[Offset, RowIdx + 1].Text := Format(FStatFmt, [aPct]);
-      end
-      else
-        T.Cell[Offset, RowIdx + 1].Text := CountV.AsString[ix];
+      T.Cell[Offset, RowIdx + 1].Text := Format(FFreqFmt, [FreqV.AsFloat[ix]]);
       Offset += 1;
     end;
     RowIdx := 2;
@@ -495,8 +491,7 @@ begin
     begin
       T.RowCount := RowIdx + 2;
       T.Cell[0,RowIdx].Text   := 'value';
-      if (Fpct) then T.Cell[0,RowIdx+1].Text := 'percent'
-      else           T.Cell[0,RowIdx+1].Text := 'count';
+      T.Cell[0,RowIdx+1].Text := FFreqLabel;
       if (FoundHighFreq) then
         if (NCat > 10) then
           DCat := 4
@@ -512,13 +507,7 @@ begin
       for ix := 0 to DCat do
       begin
         T.Cell[Offset, RowIdx    ].Text := CategV.GetValueLabel(ix, ValueLabelType);
-        if (Fpct) then
-        begin
-          aPct := FFreqData.Percent[ix];
-          T.Cell[Offset, RowIdx + 1].Text := Format(FStatFmt, [aPct]);
-        end
-        else
-          T.Cell[Offset, RowIdx + 1].Text := CountV.AsString[ix];
+        T.Cell[Offset, RowIdx + 1].Text := Format(FFreqFmt, [FreqV.AsFloat[ix]]);
         Offset += 1;
       end;
     end;
@@ -548,9 +537,20 @@ begin
     exit;
   end;
 
-  Fpct     := ST.HasOption('pc');
+  FPct     := ST.HasOption('pc');
   FDecimals:= DecimalFromOption(ST.Options);
   FStatFmt := '%8.' + IntToStr(FDecimals) + 'F';
+  if (FPct) then
+  begin
+    FFreqFmt := '%8.' + IntToStr(FDecimals) + 'F%%';
+    FFreqLabel := 'percent'
+  end
+  else
+  begin
+    FFreqFmt := '%8.0F';
+    FFreqLabel := 'count';
+  end;
+
   AVar     := TStringList.Create;
   DoOutput := not ST.HasOption('q');
   F        := TFreqCommand.Create(FExecutor, FOutputCreator);
