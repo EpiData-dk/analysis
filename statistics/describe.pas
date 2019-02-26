@@ -43,6 +43,7 @@ type
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
     FDecimals: Integer;
+    FStatFmt: String;
     FValuelabelOutput: TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
   protected
@@ -59,6 +60,7 @@ type
     Fsum, Fmean, Fsd, Fcfil, Fcfih,                 // !msd !mci
     Fmin, Fp10, Fp25, Fmedian, Fp75, Fp90, Fmax,    // !rm !idr !iqr
     Ffreqlo, Ffreqhi: FShowStat;                    // !fl !fh !fb
+    Fpct: Boolean;                                  // !pc
 // output control
     FRowsPerVar: Integer;
     FOneTable, FFreqTable: Boolean;
@@ -354,7 +356,6 @@ var
   RowIdx, NCat, Offset: Integer;
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
-  StatFmt: String;
 
   function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;  // from means.pas
     begin
@@ -406,20 +407,18 @@ begin
   // check stats one by one
   if (DoMeans) then with FMeansData do
   begin
-    FDecimals  := DecimalFromOption(ST.Options);
-    StatFmt    := '%8.' + IntToStr(FDecimals) + 'F';
-    if (Fsum.Show)    then T.Cell[Fsum.Col,   RowIdx + Fsum.Row   ].Text := Format(StatFmt, [Sum.AsFloat[0]]);
-    if (Fmean.Show)   then T.Cell[Fmean.Col,  RowIdx + Fmean.Row  ].Text := Format(StatFmt, [Mean.AsFloat[0]]);
-    if (Fsd.Show)     then T.Cell[Fsd.Col,    RowIdx + Fsd.Row    ].Text := StatFloatDisplay(StatFmt, StdDev.AsFloat[0]);
-    if (Fcfih.Show)   then T.Cell[Fcfih.Col,  RowIdx + Fcfih.Row  ].Text := StatFloatDisplay(StatFmt, Cfih.AsFloat[0]);
-    if (Fcfil.Show)   then T.Cell[Fcfil.Col,  RowIdx + Fcfil.Row  ].Text := StatFloatDisplay(StatFmt, Cfil.AsFloat[0]);
-    if (Fmin.Show)    then T.Cell[Fmin.Col,   RowIdx + Fmin.Row   ].Text := Format(StatFmt, [Min.AsFloat[0]]);
-    if (Fp10.Show)    then T.Cell[Fp10.Col,   RowIdx + Fp10.Row   ].Text := Format(StatFmt, [P10.AsFloat[0]]);
-    if (Fp25.Show)    then T.Cell[Fp25.Col,   RowIdx + Fp25.Row   ].Text := Format(StatFmt, [P25.AsFloat[0]]);
-    if (Fmedian.Show) then T.Cell[Fmedian.Col,RowIdx + Fmedian.Row].Text := Format(StatFmt, [Median.AsFloat[0]]);
-    if (Fp75.Show)    then T.Cell[Fp75.Col,   RowIdx + Fp75.Row   ].Text := Format(StatFmt, [P75.AsFloat[0]]);
-    if (Fp90.Show)    then T.Cell[Fp90.Col,   RowIdx + Fp90.Row   ].Text := Format(StatFmt, [P90.AsFloat[0]]);
-    if (Fmax.Show)    then T.Cell[Fmax.Col,   RowIdx + Fmax.Row   ].Text := Format(StatFmt, [Max.AsFloat[0]]);
+    if (Fsum.Show)    then T.Cell[Fsum.Col,   RowIdx + Fsum.Row   ].Text := Format(FStatFmt, [Sum.AsFloat[0]]);
+    if (Fmean.Show)   then T.Cell[Fmean.Col,  RowIdx + Fmean.Row  ].Text := Format(FStatFmt, [Mean.AsFloat[0]]);
+    if (Fsd.Show)     then T.Cell[Fsd.Col,    RowIdx + Fsd.Row    ].Text := StatFloatDisplay(FStatFmt, StdDev.AsFloat[0]);
+    if (Fcfih.Show)   then T.Cell[Fcfih.Col,  RowIdx + Fcfih.Row  ].Text := StatFloatDisplay(FStatFmt, Cfih.AsFloat[0]);
+    if (Fcfil.Show)   then T.Cell[Fcfil.Col,  RowIdx + Fcfil.Row  ].Text := StatFloatDisplay(FStatFmt, Cfil.AsFloat[0]);
+    if (Fmin.Show)    then T.Cell[Fmin.Col,   RowIdx + Fmin.Row   ].Text := Format(FStatFmt, [Min.AsFloat[0]]);
+    if (Fp10.Show)    then T.Cell[Fp10.Col,   RowIdx + Fp10.Row   ].Text := Format(FStatFmt, [P10.AsFloat[0]]);
+    if (Fp25.Show)    then T.Cell[Fp25.Col,   RowIdx + Fp25.Row   ].Text := Format(FStatFmt, [P25.AsFloat[0]]);
+    if (Fmedian.Show) then T.Cell[Fmedian.Col,RowIdx + Fmedian.Row].Text := Format(FStatFmt, [Median.AsFloat[0]]);
+    if (Fp75.Show)    then T.Cell[Fp75.Col,   RowIdx + Fp75.Row   ].Text := Format(FStatFmt, [P75.AsFloat[0]]);
+    if (Fp90.Show)    then T.Cell[Fp90.Col,   RowIdx + Fp90.Row   ].Text := Format(FStatFmt, [P90.AsFloat[0]]);
+    if (Fmax.Show)    then T.Cell[Fmax.Col,   RowIdx + Fmax.Row   ].Text := Format(FStatFmt, [Max.AsFloat[0]]);
   end;
 
   T.SetRowBorders(0, [cbTop]);
@@ -441,6 +440,7 @@ var
   ix: Integer;
   FoundHighFreq: Boolean;
   aStr: String;
+  aPct: EpiFloat;
 begin
   FFreqData.SortRecords(FFreqData.Count); // sorts counts into ascending order
   CategV := FFreqData.Categ;
@@ -467,7 +467,8 @@ begin
     FoundHighFreq := true;
     T.RowCount    := RowIdx + 2;
     T.Cell[0,RowIdx].Text   := 'value';
-    T.Cell[0,RowIdx+1].Text := 'count';
+    if (Fpct) then T.Cell[0,RowIdx+1].Text := 'percent'
+    else           T.Cell[0,RowIdx+1].Text := 'count';
 
    // now show the top 5 frequencies *** If only 2 categories, they are not sorted properly ***
     Offset := 1;
@@ -475,7 +476,13 @@ begin
     for ix := NCat-1 downto DCat do
     begin
       T.Cell[Offset, RowIdx    ].Text := CategV.GetValueLabel(ix, ValueLabelType);
-      T.Cell[Offset, RowIdx + 1].Text := CountV.AsString[ix];
+      if (Fpct) then
+      begin
+        aPct := FFreqData.Percent[ix];
+        T.Cell[Offset, RowIdx + 1].Text := Format(FStatFmt, [aPct]);
+      end
+      else
+        T.Cell[Offset, RowIdx + 1].Text := CountV.AsString[ix];
       Offset += 1;
     end;
     RowIdx := 2;
@@ -488,7 +495,8 @@ begin
     begin
       T.RowCount := RowIdx + 2;
       T.Cell[0,RowIdx].Text   := 'value';
-      T.Cell[0,RowIdx+1].Text := 'count';
+      if (Fpct) then T.Cell[0,RowIdx+1].Text := 'percent'
+      else           T.Cell[0,RowIdx+1].Text := 'count';
       if (FoundHighFreq) then
         if (NCat > 10) then
           DCat := 4
@@ -504,7 +512,13 @@ begin
       for ix := 0 to DCat do
       begin
         T.Cell[Offset, RowIdx    ].Text := CategV.GetValueLabel(ix, ValueLabelType);
-        T.Cell[Offset, RowIdx + 1].Text := CountV.AsString[ix];
+        if (Fpct) then
+        begin
+          aPct := FFreqData.Percent[ix];
+          T.Cell[Offset, RowIdx + 1].Text := Format(FStatFmt, [aPct]);
+        end
+        else
+          T.Cell[Offset, RowIdx + 1].Text := CountV.AsString[ix];
         Offset += 1;
       end;
     end;
@@ -534,6 +548,9 @@ begin
     exit;
   end;
 
+  Fpct     := ST.HasOption('pc');
+  FDecimals:= DecimalFromOption(ST.Options);
+  FStatFmt := '%8.' + IntToStr(FDecimals) + 'F';
   AVar     := TStringList.Create;
   DoOutput := not ST.HasOption('q');
   F        := TFreqCommand.Create(FExecutor, FOutputCreator);

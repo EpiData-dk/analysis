@@ -2228,19 +2228,19 @@ end;
 function TDescribeCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  Result.Insert('m',   [rtUndefined]);
-  Result.Insert('mci', [rtUndefined]);
-  Result.Insert('msd', [rtUndefined]);
-  Result.Insert('rm',  [rtUndefined]);
-  Result.Insert('iqr', [rtUndefined]);
-  Result.Insert('idr', [rtUndefined]);
-  Result.Insert('q',   [rtUndefined]);
-  Result.Insert('fl',  [rtUndefined]);
-  Result.Insert('fh',  [rtUndefined]);
-  Result.Insert('fb',  [rtUndefined]);
-  Result.Insert('c',   [rtUndefined]);
-  Result.Insert('nf',  [rtUndefined]);
-  Result.Insert('ct',  [rtUndefined]);
+  Result.Insert('m',   [rtUndefined]);  // include missing
+  Result.Insert('mci', [rtUndefined]);  // mean, conf. interval
+  Result.Insert('msd', [rtUndefined]);  // sum, mean, sd
+  Result.Insert('rm',  [rtUndefined]);  // range (min, max), median
+  Result.Insert('iqr', [rtUndefined]);  // interquartile range, median
+  Result.Insert('idr', [rtUndefined]);  // intrdecile range, median
+  Result.Insert('q',   [rtUndefined]);  // no output
+  Result.Insert('fl',  [rtUndefined]);  // lowest frequencies
+  Result.Insert('fh',  [rtUndefined]);  // highest frequencies
+  Result.Insert('fb',  [rtUndefined]);  // lowest and highest
+  Result.Insert('pc',   [rtUndefined]); // show percent rather than counts
+  Result.Insert('nf',  [rtUndefined]);  // no footer (not relevant)
+  Result.Insert('ct',  [rtUndefined]);  // force compact table
   AddDecimalOptions(Result);
   AddVariableLabelOptions(Result);
   AddValueLabelOptions(Result);
