@@ -37,7 +37,6 @@ uses
 function EpiDataApplicationName: string;
 begin
   result := 'epidataanalysis';
-//  result := '';
 end;
 
 function EpiDataVendorName: string;
