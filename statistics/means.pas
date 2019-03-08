@@ -56,7 +56,7 @@ type
 
     // Method called from Executor, does calculation + result vars + output
     procedure ExecMeans(DataFile: TEpiDataFile; ST: TMeansCommand);
-    // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
+    // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset; optionally creates result variables
     function CalcMeans(DataFile: TEpiDataFile; Const CountVarName, StratifyVarName: UTF8String; DoResults: Boolean;
       ValueLabelOutput: TEpiGetValueLabelType = gvtValue; VariableLabelOutput: TEpiGetVariableLabelType = gvtVarName): TMeansDatafile;
   end;

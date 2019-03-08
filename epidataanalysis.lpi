@@ -20,6 +20,9 @@
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
+    <MacroValues Count="1">
+      <Macro2 Name="LCLWidgetType" Value="cocoa"/>
+    </MacroValues>
     <BuildModes Count="6">
       <Item1 Name="Default" Default="True"/>
       <Item2 Name="Win32">
@@ -165,8 +168,10 @@
           </Linking>
         </CompilerOptions>
       </Item6>
-      <SharedMatrixOptions Count="1">
+      <SharedMatrixOptions Count="3">
         <Item1 ID="324748042522" Modes="Darwin32" Type="IDEMacro" MacroName="LCLWidgetType" Value="carbon"/>
+        <Item2 ID="081215147691" Modes="Default" Type="IDEMacro" MacroName="LCLWidgetType" Value="cocoa"/>
+        <Item3 ID="469458410244" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
       </SharedMatrixOptions>
     </BuildModes>
     <PublishOptions>
@@ -189,47 +194,53 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="12">
+    <RequiredPackages Count="14">
       <Item1>
-        <PackageName Value="ChsDet"/>
+        <PackageName Value="luicontrols"/>
       </Item1>
       <Item2>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="luicomponents"/>
       </Item2>
       <Item3>
-        <PackageName Value="lclextensions_package"/>
+        <PackageName Value="ChsDet"/>
       </Item3>
       <Item4>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="lnetbase"/>
       </Item4>
       <Item5>
-        <PackageName Value="CEF3"/>
+        <PackageName Value="lclextensions_package"/>
       </Item5>
       <Item6>
-        <PackageName Value="BGRABitmapPack"/>
+        <PackageName Value="dcpcrypt"/>
       </Item6>
       <Item7>
-        <PackageName Value="FrameViewer09"/>
+        <PackageName Value="CEF3"/>
       </Item7>
       <Item8>
-        <PackageName Value="virtualtreeview_package"/>
+        <PackageName Value="BGRABitmapPack"/>
       </Item8>
       <Item9>
-        <PackageName Value="epidatacore_visuals"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="FrameViewer09"/>
       </Item9>
       <Item10>
-        <PackageName Value="epidatacore"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="virtualtreeview_package"/>
       </Item10>
       <Item11>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="epidatacore_visuals"/>
+        <MinVersion Major="2" Valid="True"/>
       </Item11>
       <Item12>
-        <PackageName Value="LCL"/>
+        <PackageName Value="epidatacore"/>
+        <MinVersion Major="2" Valid="True"/>
       </Item12>
+      <Item13>
+        <PackageName Value="SynEdit"/>
+      </Item13>
+      <Item14>
+        <PackageName Value="LCL"/>
+      </Item14>
     </RequiredPackages>
-    <Units Count="80">
+    <Units Count="81">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -576,6 +587,10 @@
         <Filename Value="statistics/ctable.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit79>
+      <Unit80>
+        <Filename Value="statistics/describe.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit80>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -594,6 +609,7 @@
       </SyntaxOptions>
     </Parsing>
     <CodeGeneration>
+      <TargetCPU Value="x86_64"/>
       <Optimizations>
         <OptimizationLevel Value="0"/>
       </Optimizations>

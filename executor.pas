@@ -2068,7 +2068,7 @@ begin
     begin
       if (not aDM.SaveDialog1.Execute) then
         begin
-          DoInfo('Save cancled');
+          DoInfo('Save cancelled');
           ST.ExecResult := csrFailed;
           Exit;
         end;
@@ -3274,31 +3274,14 @@ end;
 procedure TExecutor.ExecDescribe(ST: TCustomVariableCommand);
 var
   L: TStrings;
-//  DF: TEpiDataFile;
   F: TDescribeCommand;
 begin
   L := ST.VariableList.GetIdentsAsList;
   F := nil;
-//  DF := nil;
-
-  { Do this within the module
-  if ST.HasOption('m') then
-    DF := DoPrepareDatafile(L, nil)
-  else
-    DF := DoPrepareDatafile(L, L);
-  try
-    if DF.Size = 0 then
-      begin
-        DoError('No data!');
-        ST.ExecResult := csrFailed;
-        Exit;
-      end;
-   }
   try
     F := TDescribeCommand.Create(Self, FOutputCreator);
     F.ExecDescribe(L, ST);
   finally
-//    DF.Free;
     F.Free;
     L.Free;
   end;

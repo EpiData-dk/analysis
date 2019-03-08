@@ -9,8 +9,8 @@ uses
     clocale,
   {$ENDIF}
   Interfaces,// this includes the LCL widgetset
-  sysutils, Forms, FrameViewer09, lclextensions_package, lnetbase, main,
-  executor, expr, ast, ast_types, ast_builder, datamodule, select_stack,
+  sysutils, Forms, FrameViewer09, lclextensions_package, lnetbase, luicontrols,
+  main, executor, expr, ast, ast_types, ast_builder, datamodule, select_stack,
   result_variables, runtest, parser, about, epidatacore, statfunctions, means,
   generalutils, interval_types, outputcreator, outputgenerator_base,
   outputgenerator_txt, outputgenerator_html, options_hashmap, list, edit, drop,
@@ -47,7 +47,7 @@ end;
 
 
 begin
-  Application.Title := 'Analysis';
+  Application.Title:='Analysis';
   OnGetApplicationName := @EpiDataApplicationName;
   OnGetVendorName := @EpiDataVendorName;
 
