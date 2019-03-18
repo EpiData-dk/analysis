@@ -50,12 +50,18 @@ type
     procedure CreateTemplateFromHeader(T: TOutputTable);
     procedure DoOutputRows(ST: TCustomVariableCommand; DoMeans: Boolean; T: TOutputTable);
     procedure DoOutputFreq(ST: TCustomVariableCommand; T: TOutputTable);
+    procedure PrepareResultVariables(VarNames: TStrings);
+    procedure DoResultVariables(Index: Integer; DoMeans: Boolean);
 // add other stats here as necessary
   protected
     Fmissing,                                       // !m
     Fsum, Fmean, Fsd, Fcfil, Fcfih,                 // !msd !mci
     Fmin, Fp10, Fp25, Fmedian, Fp75, Fp90, Fmax,    // !rm !idr !iqr
     Ffreqlo, Ffreqhi: FShowStat;                    // !fl !fh !fb
+// result variable vectors
+    RVarName, Rcount, Rcat, RMissing,
+    Rsum, Rmean, Rsd, Rcfil, Rcfih,
+    Rmin, Rp10, Rp25, Rmedian, Rp75, Rp90, Rmax: TExecVarVector;
 // output control
     FDecimals: Integer;
     FStatFmt, FFreqFmt, FFreqLabel: String;
@@ -518,6 +524,68 @@ begin
 
 end;
 
+procedure TDescribeCommand.PrepareResultVariables(VarNames: TStrings);
+var
+  i: Integer;
+  Prefix: UTF8String;
+  ResultRows: Integer;
+begin
+  Prefix := '$describe_';
+  FExecutor.ClearResults('$describe');
+  ResultRows := VarNames.Count;
+  FExecutor.AddResultConst(Prefix + 'nvar', ftInteger).AsIntegerVector[0] := VarNames.Count;
+  RVarName := FExecutor.AddResultVector(Prefix + 'varname', ftString, ResultRows);
+  for i := 0 to ResultRows - 1 do
+    begin
+      RVarName.AsStringVector[i] := VarNames[i];
+    end;
+  // all result variables
+  Rcount   := FExecutor.AddResultVector(Prefix + 'N',       ftInteger, ResultRows);
+  Rcat     := FExecutor.AddResultVector(Prefix + 'unique',  ftInteger, ResultRows);
+  Rmissing := FExecutor.AddResultVector(Prefix + 'missing', ftInteger, ResultRows);
+  Rsum     := FExecutor.AddResultVector(Prefix + 'sum',     ftFloat,   ResultRows);
+  Rmean    := FExecutor.AddResultVector(Prefix + 'mean',    ftFloat,   ResultRows);
+  Rsd      := FExecutor.AddResultVector(Prefix + 'sd',      ftFloat,   ResultRows);
+  Rcfil    := FExecutor.AddResultVector(Prefix + 'cfil',    ftFloat,   ResultRows);
+  Rcfih    := FExecutor.AddResultVector(Prefix + 'cfih',    ftFloat,   ResultRows);
+  Rmin     := FExecutor.AddResultVector(Prefix + 'min',     ftFloat,   ResultRows);
+  Rp10     := FExecutor.AddResultVector(Prefix + 'p10',     ftFloat,   ResultRows);
+  Rp25     := FExecutor.AddResultVector(Prefix + 'p25',     ftFloat,   ResultRows);
+  Rmedian  := FExecutor.AddResultVector(Prefix + 'median',  ftFloat,   ResultRows);
+  Rp75     := FExecutor.AddResultVector(Prefix + 'p75',     ftFloat,   ResultRows);
+  Rp90     := FExecutor.AddResultVector(Prefix + 'p90',     ftFloat,   ResultRows);
+  Rmax     := FExecutor.AddResultVector(Prefix + 'max',     ftFloat,   ResultRows);
+//  Rfreqlo  := FExecutor.AddResultVector(Prefix + 'freqlo', ftInteger, ResultRows);
+//  Rfreqhi  := FExecutor.AddResultVector(Prefix + 'freqhi', ftInteger, ResultRows);
+
+end;
+
+procedure TDescribeCommand.DoResultVariables(Index: Integer; DoMeans: Boolean);
+
+begin
+  Rcount.AsIntegerVector[Index] := FFreqData.Sum;
+  Rcat.AsIntegerVector[Index]   := FFreqData.Size;
+  if (FFreqData.Categ.IsMissing[FFreqData.Size-1]) then
+    Rmissing.AsIntegerVector[Index] := FFreqData.Count[FFreqData.Size-1].MaxValue;
+  // add else here
+  if (DoMeans) then
+  begin
+    Rsum.AsFloatVector[Index]     := FMeansData.Sum.AsFloat[0];
+    Rmean.AsFloatVector[Index]    := FMeansData.Mean.AsFloat[0];
+    Rsd.AsFloatVector[Index]      := FMeansData.StdDev.AsFloat[0];
+    Rcfil.AsFloatVector[Index]    := FMeansData.Cfil.AsFloat[0];
+    Rcfih.AsFloatVector[Index]    := FMeansData.Cfih.AsFloat[0];
+    Rmin.AsFloatVector[Index]     := FMeansData.Min.AsFloat[0];
+    Rp10.AsFloatVector[Index]     := FMeansData.P10.AsFloat[0];
+    Rp25.AsFloatVector[Index]     := FMeansData.P25.AsFloat[0];
+    Rmedian.AsFloatVector[Index]  := FMeansData.Median.AsFloat[0];
+    Rp75.AsFloatVector[Index]     := FMeansData.P75.AsFloat[0];
+    Rp90.AsFloatVector[Index]     := FMeansData.P90.AsFloat[0];
+    Rmax.AsFloatVector[Index]     := FMeansData.Max.AsFloat[0];
+  // add hi / lo freqs as matrix vars?
+  end;
+end;
+
 procedure TDescribeCommand.ExecDescribe(VarNames: TStrings; ST: TCustomVariableCommand);
 var
   DF: TEpiDataFile;
@@ -533,23 +601,11 @@ begin
   VarCount := VarNames.Count;
   if (VarCount < 1) then
   begin
-    // error message (should not happen)
+    // no error message (should not happen)
     exit;
   end;
 
-  FPct     := ST.HasOption('pc');
-  FDecimals:= DecimalFromOption(ST.Options);
-  FStatFmt := '%8.' + IntToStr(FDecimals) + 'F';
-  if (FPct) then
-  begin
-    FFreqFmt := '%8.' + IntToStr(FDecimals) + 'F%%';
-    FFreqLabel := 'percent'
-  end
-  else
-  begin
-    FFreqFmt := '%8.0F';
-    FFreqLabel := 'count';
-  end;
+  PrepareResultVariables(VarNames);
 
   AVar     := TStringList.Create;
   DoOutput := not ST.HasOption('q');
@@ -557,6 +613,19 @@ begin
   M        := TMeans.Create(FExecutor, FOutputCreator);
   if (DoOutput) then
   begin
+    FPct     := ST.HasOption('pc');
+    FDecimals:= DecimalFromOption(ST.Options);
+    FStatFmt := '%8.' + IntToStr(FDecimals) + 'F';
+    if (FPct) then
+    begin
+      FFreqFmt := '%8.' + IntToStr(FDecimals) + 'F%%';
+      FFreqLabel := 'percent'
+    end
+    else
+    begin
+      FFreqFmt := '%8.0F';
+      FFreqLabel := 'count';
+    end;
     FFirstPass           := true;
     FDecimals            := DecimalFromOption(ST.Options);
     FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
@@ -579,7 +648,7 @@ begin
     end
     else
     begin
-      FFreqData := F.CalcFreq(DF, VarNames[i], true, O);
+      FFreqData := F.CalcFreq(DF, VarNames[i], O);
 
       if (DoMeans) then
       begin
@@ -591,8 +660,10 @@ begin
         if (DF.Size = 0) then
           DoMeans := false
         else
-          FMeansData := M.CalcMeans(DF, VarNames[i], '', true);
+          FMeansData := M.CalcMeans(DF, VarNames[i], '');
       end;
+
+      DoResultVariables(i, DoMeans);
 
       if (DoOutput) then
       begin

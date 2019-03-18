@@ -22,7 +22,7 @@ type
 
       function CreateOutputHeader(Tables: TTwoWayTables; ST: TCTableCommand): TOutputTable;
       procedure DoOutputCTableRow(Tables: TTwoWayTables; ST: TCTableCommand; T: TOutputTable);
-      procedure CreateResultVariables(Tables: TTwoWayTables; VarNames: TStrings);
+      procedure PrepareResultVariables(Tables: TTwoWayTables; VarNames: TStrings);
       procedure DoResultVariables(Tables: TTwoWayTables; Index: Integer);
     private
       FStratifyVarNames: TStringList;
@@ -138,7 +138,7 @@ begin
   T.SetRowBorders(1, [cbBottom]);
 end;
 
-procedure TCTable.CreateResultVariables(Tables: TTwoWayTables; VarNames: TStrings);
+procedure TCTable.PrepareResultVariables(Tables: TTwoWayTables; VarNames: TStrings);
 var
   i: Integer;
   RTableNames, RStratNames: TExecVarVector;
@@ -256,7 +256,7 @@ var
              ST.Options, TablesRefMap, FCTableStatistics);
 
         if (FirstPass) then
-          CreateResultVariables(Table, VarNames); // set up result variables
+          PrepareResultVariables(Table, VarNames); // set up result variables
         DoResultVariables(Table, i); // results for one table row
 
         if (not ST.HasOption('q')) then
