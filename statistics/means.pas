@@ -374,7 +374,7 @@ begin
         CatV  := AddResultConst(Prefix + 'category', ftString);
         ObsV  := AddResultConst(Prefix + 'obs',      ftInteger);
         SumV  := AddResultConst(Prefix + 'sum',      ftFloat);
-        MeanV := AddResultConst(Prefix + 'mean + Vname',     ftFloat);
+        MeanV := AddResultConst(Prefix + 'mean',     ftFloat);
         MinV  := AddResultConst(Prefix + 'min',      ftFloat);
         P05V  := AddResultConst(Prefix + 'p05',      ftFloat);
         P10V  := AddResultConst(Prefix + 'p10',      ftFloat);

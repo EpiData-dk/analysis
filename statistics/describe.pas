@@ -58,10 +58,12 @@ type
     Fsum, Fmean, Fsd, Fcfil, Fcfih,                 // !msd !mci
     Fmin, Fp10, Fp25, Fmedian, Fp75, Fp90, Fmax,    // !rm !idr !iqr
     Ffreqlo, Ffreqhi: FShowStat;                    // !fl !fh !fb
+    FCategV, FCountV: TEpiField;
 // result variable vectors
     RVarName, Rcount, Rcat, RMissing,
     Rsum, Rmean, Rsd, Rcfil, Rcfih,
     Rmin, Rp10, Rp25, Rmedian, Rp75, Rp90, Rmax: TExecVarVector;
+    Robslo, Robshi, Rvallo, Rvalhi: TExecVarMatrix;
 // output control
     FDecimals: Integer;
     FStatFmt, FFreqFmt, FFreqLabel: String;
@@ -162,7 +164,25 @@ var
   end;
 
 begin
-  // start by counting up columns to show (use case of)
+  // process output options
+  FPct     := ST.HasOption('pc');
+  FDecimals:= DecimalFromOption(ST.Options);
+  FStatFmt := '%8.' + IntToStr(FDecimals) + 'F';
+  if (FPct) then
+  begin
+    FFreqFmt := '%8.' + IntToStr(FDecimals) + 'F%%';
+    FFreqLabel := 'percent'
+  end
+  else
+  begin
+    FFreqFmt := '%8.0F';
+    FFreqLabel := 'count';
+  end;
+  FDecimals            := DecimalFromOption(ST.Options);
+  FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+  FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+
+  // now count up columns to show
   // if more than 11, then go to one table per variable
   // - set up header array as a dummy table and use it to populate SummaryTable for each var
   // if 11 or less, set up SummaryTable headers
@@ -358,7 +378,6 @@ procedure TDescribeCommand.DoOutputRows(ST: TCustomVariableCommand; DoMeans: Boo
 // add a single variable stats to the current output table
 var
   aStr: String;
-  CategV, CountV: TEpiField;
   RowIdx, NCat, Offset: Integer;
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
@@ -372,8 +391,6 @@ var
     end;
 
 begin
-  CategV := FFreqData.Categ;
-  CountV := FFreqData.Count;
 
   VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
@@ -382,7 +399,7 @@ begin
   begin
     RowIdx     := T.RowCount;
     T.RowCount := RowIdx + FRowsPerVar;
-    T.Cell[0, RowIdx].Text := CategV.GetVariableLabel(VariableLabelType);
+    T.Cell[0, RowIdx].Text := FCategV.GetVariableLabel(VariableLabelType);
     T.SetColAlignment(0, taLeftJustify);
     Offset := 1;
   end
@@ -390,7 +407,7 @@ begin
   begin
     Offset        := 0;
     RowIdx        := 1;
-    T.Header.Text := CategV.GetVariableLabel(VariableLabelType);
+    T.Header.Text := FCategV.GetVariableLabel(VariableLabelType);
     T.RowCount    := FRowsPerVar;
   end;
 
@@ -403,12 +420,12 @@ begin
   if (Fmissing.Show) then
   begin
     aStr := '-';
-    if (CategV.IsMissing[FFreqData.Size-1]) then
-      aStr := CountV.AsString[FFreqData.Size-1];
+    if (FCategV.IsMissing[FFreqData.Size-1]) then
+      aStr := FCountV.AsString[FFreqData.Size-1];
     T.Cell[FMissing.Col, RowIdx].Text := aStr;
     Offset += 1;
   end;
-  aStr := CategV.GetVariableLabel(VariableLabelType);
+  aStr := FCategV.GetVariableLabel(VariableLabelType);
 
   // check stats one by one
   if (DoMeans) then with FMeansData do
@@ -441,20 +458,15 @@ procedure TDescribeCommand.DoOutputFreq(ST: TCustomVariableCommand; T: TOutputTa
 // output high / low frequencies as a new output table
 var
   ValueLabelType: TEpiGetValueLabelType;
-  CategV, FreqV: TEpiField;
   RowIdx, NCat, DCat, Offset: Integer;
   ix: Integer;
   FoundHighFreq: Boolean;
   aStr: String;
   aPct: EpiFloat;
 begin
-  FFreqData.SortRecords(FFreqData.Count); // sorts counts into ascending order
-  CategV := FFreqData.Categ;
   if (FPct) then
-    FreqV := FFreqData.Percent
-  else
-    FreqV := FFreqData.Count;
-  NCat   := CategV.Size;
+    FCountV := FFreqData.Percent;
+  NCat   := FCategV.Size;
 
   ValueLabelType := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   FoundHighFreq  := false;
@@ -469,7 +481,7 @@ begin
       else aStr := 'Least ';
   if (aStr <> '') then T.Header.Text := aStr + 'frequent values';
 
-  if (ST.HasOption('m') and CategV.IsMissing[NCat-1])
+  if (ST.HasOption('m') and FCategV.IsMissing[NCat-1])
     then NCat -= 1;
   if (ST.HasOption('fh') or ST.HasOption('fb')) then
   begin
@@ -483,8 +495,8 @@ begin
     DCat   := max(0, NCat-5);
     for ix := NCat-1 downto DCat do
     begin
-      T.Cell[Offset, RowIdx    ].Text := CategV.GetValueLabel(ix, ValueLabelType);
-      T.Cell[Offset, RowIdx + 1].Text := Format(FFreqFmt, [FreqV.AsFloat[ix]]);
+      T.Cell[Offset, RowIdx    ].Text := FCategV.GetValueLabel(ix, ValueLabelType);
+      T.Cell[Offset, RowIdx + 1].Text := Format(FFreqFmt, [FCountV.AsFloat[ix]]);
       Offset += 1;
     end;
     RowIdx := 2;
@@ -512,8 +524,8 @@ begin
       Offset := 1;
       for ix := 0 to DCat do
       begin
-        T.Cell[Offset, RowIdx    ].Text := CategV.GetValueLabel(ix, ValueLabelType);
-        T.Cell[Offset, RowIdx + 1].Text := Format(FFreqFmt, [FreqV.AsFloat[ix]]);
+        T.Cell[Offset, RowIdx    ].Text := FCategV.GetValueLabel(ix, ValueLabelType);
+        T.Cell[Offset, RowIdx + 1].Text := Format(FFreqFmt, [FCountV.AsFloat[ix]]);
         Offset += 1;
       end;
     end;
@@ -540,7 +552,7 @@ begin
       RVarName.AsStringVector[i] := VarNames[i];
     end;
   // all result variables
-  Rcount   := FExecutor.AddResultVector(Prefix + 'N',       ftInteger, ResultRows);
+  Rcount   := FExecutor.AddResultVector(Prefix + 'obs',     ftInteger, ResultRows);
   Rcat     := FExecutor.AddResultVector(Prefix + 'unique',  ftInteger, ResultRows);
   Rmissing := FExecutor.AddResultVector(Prefix + 'missing', ftInteger, ResultRows);
   Rsum     := FExecutor.AddResultVector(Prefix + 'sum',     ftFloat,   ResultRows);
@@ -555,19 +567,23 @@ begin
   Rp75     := FExecutor.AddResultVector(Prefix + 'p75',     ftFloat,   ResultRows);
   Rp90     := FExecutor.AddResultVector(Prefix + 'p90',     ftFloat,   ResultRows);
   Rmax     := FExecutor.AddResultVector(Prefix + 'max',     ftFloat,   ResultRows);
-//  Rfreqlo  := FExecutor.AddResultVector(Prefix + 'freqlo', ftInteger, ResultRows);
-//  Rfreqhi  := FExecutor.AddResultVector(Prefix + 'freqhi', ftInteger, ResultRows);
+  Robslo   := FExecutor.AddResultMatrix(Prefix + 'obslo',   ftInteger, ResultRows, 5);
+  Robshi   := FExecutor.AddResultMatrix(Prefix + 'obshi',   ftInteger, ResultRows, 5);
+  Rvallo   := FExecutor.AddResultMatrix(Prefix + 'vallo',   ftString,  ResultRows, 5);
+  Rvalhi   := FExecutor.AddResultMatrix(Prefix + 'valhi',   ftString,  ResultRows, 5);
 
 end;
 
 procedure TDescribeCommand.DoResultVariables(Index: Integer; DoMeans: Boolean);
+var
+  i, NCat, DCat: Integer;
 
 begin
   Rcount.AsIntegerVector[Index] := FFreqData.Sum;
   Rcat.AsIntegerVector[Index]   := FFreqData.Size;
   if (FFreqData.Categ.IsMissing[FFreqData.Size-1]) then
     Rmissing.AsIntegerVector[Index] := FFreqData.Count[FFreqData.Size-1].MaxValue;
-  // add else here
+
   if (DoMeans) then
   begin
     Rsum.AsFloatVector[Index]     := FMeansData.Sum.AsFloat[0];
@@ -582,8 +598,21 @@ begin
     Rp75.AsFloatVector[Index]     := FMeansData.P75.AsFloat[0];
     Rp90.AsFloatVector[Index]     := FMeansData.P90.AsFloat[0];
     Rmax.AsFloatVector[Index]     := FMeansData.Max.AsFloat[0];
-  // add hi / lo freqs as matrix vars?
   end;
+
+  FFreqData.SortRecords(FFreqData.Count); // sorts counts into ascending order
+  FCategV := FFreqData.Categ;
+  FCountV  := FFreqData.Count;
+  NCat := FCategV.Size - 1;
+  DCat := Min(4, NCat);
+  for i:= 0 to DCat do
+  begin
+    Robshi.AsIntegerMatrix[Index, i] := FCountV.AsInteger[NCat - i];
+    Rvalhi.AsStringMatrix[Index, i]  := FCategV.AsString[NCat - i];
+    Robslo.AsIntegerMatrix[Index, i] := FCountV.AsInteger[i];
+    Rvallo.AsStringMatrix[Index, i]  := FCategV.AsString[i];
+  end;
+
 end;
 
 procedure TDescribeCommand.ExecDescribe(VarNames: TStrings; ST: TCustomVariableCommand);
@@ -598,7 +627,8 @@ var
   O:   TEpiReferenceMap;
   DoOutput, DoMeans:  Boolean;
 begin
-  VarCount := VarNames.Count;
+  FFirstPass := true;
+  VarCount   := VarNames.Count;
   if (VarCount < 1) then
   begin
     // no error message (should not happen)
@@ -611,26 +641,7 @@ begin
   DoOutput := not ST.HasOption('q');
   F        := TFreqCommand.Create(FExecutor, FOutputCreator);
   M        := TMeans.Create(FExecutor, FOutputCreator);
-  if (DoOutput) then
-  begin
-    FPct     := ST.HasOption('pc');
-    FDecimals:= DecimalFromOption(ST.Options);
-    FStatFmt := '%8.' + IntToStr(FDecimals) + 'F';
-    if (FPct) then
-    begin
-      FFreqFmt := '%8.' + IntToStr(FDecimals) + 'F%%';
-      FFreqLabel := 'percent'
-    end
-    else
-    begin
-      FFreqFmt := '%8.0F';
-      FFreqLabel := 'count';
-    end;
-    FFirstPass           := true;
-    FDecimals            := DecimalFromOption(ST.Options);
-    FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-    FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-  end;
+
   for i := 0 to VarCount - 1 do
   begin
     AVar.Add(VarNames[i]);
@@ -649,7 +660,6 @@ begin
     else
     begin
       FFreqData := F.CalcFreq(DF, VarNames[i], O);
-
       if (DoMeans) then
       begin
         if (ST.HasOption('m')) then      // must recreate DF without missing vars for means
