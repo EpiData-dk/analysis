@@ -21,6 +21,8 @@ procedure LoadFormPosition(AForm: TForm; Const SectionName: string);
 procedure SaveSplitterPosition(Const ASplitter: TSplitter; Const SectionName: string);
 procedure LoadSplitterPosition(ASplitter: TSplitter; Const SectionName: string);
 
+procedure ParseCommandLineOpts;
+
 var
   RecentDataFiles: TStringList;
   RecentPGMFiles: TStringList;
@@ -32,7 +34,7 @@ const
 implementation
 
 uses
-  IniFiles, LazFileUtils, LazUTF8, FileUtil;
+  IniFiles, LazFileUtils, LazUTF8, FileUtil, epiversionutils, Dialogs;
 
 var
   IniFileName: string = '';
@@ -222,6 +224,93 @@ begin
     );
   finally
     Ini.Free;
+  end;
+end;
+
+procedure ParseCommandLineOpts;
+const
+  IniFile =            '--inifile';
+  IniFileShort =       '-i';
+  ShowHelp =           '--help';
+  ShowHelpShort =      '-h';
+  ShowVersion =        '--version';
+  ShowVersionShort =   '-v';
+
+  function ParseLine(Const Param, Option: string; var Value: string): boolean;
+  begin
+    Result := false;
+    if LeftStr(Param, Length(Option)) = Option then
+    begin
+      Result := true;
+      Value := Copy(Param, Length(Option) + 2, Length(Param));
+    end;
+  end;
+
+  procedure DoOutputText(Const AText: string);
+  begin
+    if TextRec(Output).Mode = fmClosed then
+      MessageDlg('Information:', AText, mtInformation, [mbOk], 0)
+    else
+      WriteLn(UTF8ToConsole(AText));
+  end;
+
+  procedure DoShowHelp;
+  var
+    HText: TStringList;
+  begin
+    HText := TStringList.Create;
+
+    HText.Add('Usage:');
+    HText.Add(ParamStrUTF8(0) + ' [OPTIONS]');
+    HText.Add('');
+    HText.Add('Options:');
+    HText.Add('-h or --help             Show this help and exit.');
+    HText.Add('-v or --version          Show version info and exit.');
+    HText.Add('');
+    HText.Add('-i= or --inifile=...     Location of the startup file.');
+    HText.Add('                         If no location is specified, the startup.pgm file is used.');
+    HText.Add('');
+    DoOutputText(HText.Text);
+    HText.Free;
+  end;
+
+  procedure DoShowVersion;
+  begin
+    DoOutputText(GetEpiVersionInfo(HINSTANCE));
+  end;
+
+var
+  i: Integer;
+  S, P: string;
+begin
+  for i := 1 to Paramcount do
+  begin
+    P := ParamStrUTF8(i);
+
+    if ParseLine(P, IniFile, S) or
+       ParseLine(P, IniFileShort, S)
+    then
+    begin
+      Continue;
+    end;
+
+    if ParseLine(P, ShowHelp, S) or
+       ParseLine(P, ShowHelpShort, S)
+    then
+    begin
+      DoShowHelp;
+      halt(0);
+    end;
+
+    if ParseLine(P, ShowVersion, S) or
+       ParseLine(P, ShowVersionShort, S)
+    then
+    begin
+      DoShowVersion;
+      Halt(0);
+    end;
+
+    DoOutputText('Unrecognized option: ' + P);
   end;
 end;
 

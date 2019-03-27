@@ -53,6 +53,8 @@ begin
   RequireDerivedFormResource := True;
   Application.Initialize;
 
+  ParseCommandLineOpts;
+
   if (not CheckAndStartWizard(GetStartupPgm)) then
     Exit;
 
