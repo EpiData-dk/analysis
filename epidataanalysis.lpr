@@ -46,7 +46,7 @@ end;
 
 
 begin
-  Application.Title := 'EpiData Analysis';
+  Application.Title := 'Analysis';
   OnGetApplicationName := @EpiDataApplicationName;
   OnGetVendorName := @EpiDataVendorName;
 
