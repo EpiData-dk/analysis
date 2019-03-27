@@ -175,6 +175,9 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
+      <local>
+        <CommandLineParams Value="-i=startup.pgm"/>
+      </local>
       <environment>
         <UserOverrides Count="1">
           <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
@@ -183,6 +186,9 @@
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
+          <local>
+            <CommandLineParams Value="-i=startup.pgm"/>
+          </local>
           <environment>
             <UserOverrides Count="1">
               <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
