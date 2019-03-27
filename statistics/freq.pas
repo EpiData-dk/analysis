@@ -50,7 +50,7 @@ type
     destructor Destroy; override;
     // Method called from Executor, does calculation + result vars + output
     procedure ExecFreq(DF: TEpiDataFile; ST: TCustomVariableCommand);
-    // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
+    // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset;
     function  CalcFreq(DF: TEpiDataFile; VariableName: String; Out RefMap: TEpiReferenceMap): TFreqDatafile;
   end;
 
@@ -295,8 +295,8 @@ begin
     end;
 end;
 
-function TFreqCommand.CalcFreq(DF: TEpiDataFile; VariableName: String; out
-  RefMap: TEpiReferenceMap): TFreqDatafile;
+function TFreqCommand.CalcFreq(DF: TEpiDataFile; VariableName: String;
+  out RefMap: TEpiReferenceMap): TFreqDatafile;
 begin
   Result := DoCalcFreqTable(DF, VariableName, RefMap);
 end;

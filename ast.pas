@@ -1162,7 +1162,7 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
-  { TMeansCommand }
+ { TMeansCommand }
 
   TMeansCommand = class(TCustomVariableCommand)
   protected
@@ -1198,6 +1198,16 @@ type
   { TFreqCommand }
 
   TFreqCommand = class(TCustomVariableCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
+  { TDescribeCommand }
+
+  TDescribeCommand = class(TCustomVariableCommand)
   protected
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
@@ -1611,7 +1621,6 @@ constructor TCTableCommand.Create(AVariableList: TVariableList;
 begin
   inherited Create(AVariableList, AOptionList, stCTable);
 end;
-
 
 { TAggregateCommand }
 
@@ -2212,6 +2221,38 @@ constructor TFreqCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
   inherited Create(AVariableList, AOptionList, stFreq);
+end;
+
+{ TDescribeCommand }
+
+function TDescribeCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  Result.Insert('m',   [rtUndefined]);  // include missing
+  Result.Insert('mci', [rtUndefined]);  // mean, conf. interval
+  Result.Insert('msd', [rtUndefined]);  // sum, mean, sd
+  Result.Insert('rm',  [rtUndefined]);  // range (min, max), median
+  Result.Insert('iqr', [rtUndefined]);  // interquartile range, median
+  Result.Insert('idr', [rtUndefined]);  // intrdecile range, median
+  Result.Insert('q',   [rtUndefined]);  // no output
+  Result.Insert('fl',  [rtUndefined]);  // lowest frequencies
+  Result.Insert('fh',  [rtUndefined]);  // highest frequencies
+  Result.Insert('fb',  [rtUndefined]);  // lowest and highest
+  Result.Insert('pc',   [rtUndefined]); // show percent rather than counts
+  Result.Insert('nf',  [rtUndefined]);  // no footer (not relevant)
+  Result.Insert('ct',  [rtUndefined]);  // force compact table
+  AddDecimalOptions(Result);
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+end;
+function TDescribeCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  result[0] := -1;
+end;
+constructor TDescribeCommand.Create(AVariableList: TVariableList; AOptionList: TOptionList);
+begin
+    inherited Create(AVariableList, AOptionList, stDescribe);
 end;
 
 { TSortCommand }
@@ -3616,6 +3657,7 @@ begin
     stAggregate: Result := TAggregateCommand.Create(AVariableList, AOptionList);
     stTables:    Result := TTablesCommand.Create(AVariableList, AOptionList);
     stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
+    stDescribe:  Result := TDescribeCommand.Create(AVariablelist, AOptionList);
   else
     DoError();
   end;
@@ -6687,6 +6729,7 @@ begin
     'sor': Result := stSort;
     'tab': Result := stTables;
     'cta': Result := stCTable;
+    'des': Result := stDescribe;
     'use': Result := stUse;
   else
     DoError();

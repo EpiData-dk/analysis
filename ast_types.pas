@@ -89,6 +89,7 @@ type
     stAggregate,
     stUse,
     stFreq,
+    stDescribe,
     stSort,
     stAppend,
     stMerge,

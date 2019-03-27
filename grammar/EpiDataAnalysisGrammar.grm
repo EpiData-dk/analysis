@@ -55,6 +55,7 @@ opAppend      = 'app'('end')?
 opMerge       = 'mer'('ge')?
 opReorder     = 'reo'('rder')?
 opAggregate   = 'agg'('regate')?
+opDescribe    = 'des'('cribe')?
 
 ! -- String commands
 opRunTest     = 'runtest'
@@ -138,6 +139,7 @@ opSet         = 'set'
                                            |   opAggregate
                                            |   opTables
                                            |   opCTable
+                                           |   opDescribe
 
 <String Command>                           ::= opRead
                                            |   opRuntest

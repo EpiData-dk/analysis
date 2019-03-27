@@ -65,7 +65,7 @@ implementation
 
 uses
   aggregate, aggregate_types, epimiscutils, epidatafileutils, epifields_helper,
-  options_utils, LazUTF8, ana_globals, epidatafilestypes, options_table, strutils,
+  options_utils, LazUTF8, ana_globals, epidatafilestypes, options_table,
   tables_stat_rr, tables_stat_or, tables_stat_chi2, tables_stat_fexp;
 // see note in tables_types.pas regarding order of statistics above
 
@@ -495,14 +495,14 @@ function TTables.GetStatisticOptions(ST: TTablesCommand): TTableStatistics;
 begin
   result := [];
 
-  if (ST.HasOption('t')) then
-     Include(Result, tsChi2);
   if (ST.HasOption('ex')) then
      Include(Result, tsFExP);
   if (ST.HasOption('odds')) then
      Include(Result, tsOR);
   if (ST.HasOption('rr')) then
      Include(Result, tsRR);
+  if (ST.HasOption('t')) then
+     Include(Result, tsChi2);
 
 end;
 
@@ -537,11 +537,14 @@ var
   end;
 
 begin
+
   for Stat in Statistics do
     begin
       // This should only happen if a statistic unit did not call
       // RegisterTableStatistic in the initialization part!
-      if (not StatisticsMap.Find(Stat, Index)) then
+//      if (not StatisticsMap.Find(Stat, Index)) then
+      Index := StatisticsMap.IndexOf(Stat);
+      if (Index < 0) then
         RaiseError;
 
       StatObj := StatisticsMap.Data[Index].Create;
@@ -624,7 +627,7 @@ end;
 
 procedure TTables.DoResultVariables(Tables: TTwoWayTables);
 var
-  i, Cols, Rows: Integer;
+  i: Integer;
   RTableNames, RStratNames: TExecVarVector;
   S: UTF8String;
   Tab: TTwoWayTable;

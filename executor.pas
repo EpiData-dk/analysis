@@ -206,6 +206,7 @@ type
     procedure ExecBrowse(ST: TCustomVariableCommand); virtual;
     procedure ExecMean(ST: TCustomVariableCommand); virtual;
     procedure ExecFreq(ST: TCustomVariableCommand); virtual;
+    procedure ExecDescribe(ST: TCustomVariableCommand); virtual;
     procedure ExecSort(ST: TCustomVariableCommand); virtual;
     procedure ExecAppend(ST: TAppendCommand); virtual;
     procedure ExecMerge(ST: TMergeCommand); virtual;
@@ -326,7 +327,7 @@ uses
   aggregate,
 
   // STATISTICS
-  means, freq, tables, ctable;
+  means, freq, tables, ctable, describe;
 
 type
   EExecutorException = class(Exception);
@@ -2067,7 +2068,7 @@ begin
     begin
       if (not aDM.SaveDialog1.Execute) then
         begin
-          DoInfo('Save cancled');
+          DoInfo('Save cancelled');
           ST.ExecResult := csrFailed;
           Exit;
         end;
@@ -3270,6 +3271,22 @@ begin
   end;
 end;
 
+procedure TExecutor.ExecDescribe(ST: TCustomVariableCommand);
+var
+  L: TStrings;
+  F: TDescribeCommand;
+begin
+  L := ST.VariableList.GetIdentsAsList;
+  F := nil;
+  try
+    F := TDescribeCommand.Create(Self, FOutputCreator);
+    F.ExecDescribe(L, ST);
+  finally
+    F.Free;
+    L.Free;
+  end;
+end;
+
 procedure TExecutor.ExecSort(ST: TCustomVariableCommand);
 var
   lFields: TEpiFields;
@@ -3815,6 +3832,9 @@ begin
 
         stMeans:
           ExecMean(TCustomVariableCommand(ST));
+
+        stDescribe:
+          ExecDescribe(TCustomVariableCommand(ST));
 
         stUse:
           ExecUse(TUse(ST));

@@ -80,7 +80,7 @@ begin
 
       if (not SD.Execute) then
         begin
-          FOutputCreator.DoInfoAll('Save cancled');
+          FOutputCreator.DoInfoAll('Save cancelled');
           ST.ExecResult := csrFailed;
           Exit;
         end;
