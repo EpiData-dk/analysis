@@ -204,6 +204,7 @@ var
   S, T: String;
   DFs: TEpiDataFiles;
   i: Integer;
+  DF: TEpiDataFile;
 begin
   S := '';
   T := '';
@@ -216,14 +217,19 @@ begin
   begin
     Rel := FExecutor.Document.Relations.MasterRelationFromDatafileName(V.Ident);
     if (Assigned(Rel)) then
-      S := S + GetNamesRecusive(Rel);
+      S := S + GetNamesRecusive(Rel) + ', '
+    else
+      // The dataset in V was removed in a previous iteration.
+      Continue;
+
+    DFs := Rel.DetailRelations.GetOrderedDataFiles;
+    for i := DFs.Count - 1 downto 0 do
+      DFs[i].Free;
+    DFs.Free;
+    Rel.Datafile.Free;
   end;
 
-  DFs := Rel.DetailRelations.GetOrderedDataFiles;
-  for i := DFs.Count - 1 downto 0 do
-    DFs[i].Free;
-  DFs.Free;
-  Rel.Datafile.Free;
+  Delete(S, Length(S) - 1, 2);
 
   if (S <> '') then
     FOutputCreator.DoInfoAll(S + ' was dropped!');
