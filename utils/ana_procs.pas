@@ -267,9 +267,15 @@ const
     HText.Add('-h or --help             Show this help and exit.');
     HText.Add('-v or --version          Show version info and exit.');
     HText.Add('');
-    HText.Add('-i= or --inifile=...     Location of the startup file.');
-    HText.Add('                         If no location is specified, the startup.pgm file is used.');
+    HText.Add('-i or --inifile [FILE]   Uses [FILE] as startup program.');
+    HText.Add('                         If no location is specified startup.pgm is used.');
     HText.Add('');
+    HText.Add('Example:');
+    {$IFDEF MSWINDOWS}
+    HText.Add(ParamStrUTF8(0) + ' -i C:\path\to\startup.pgm');
+    {$ELSE}
+    HText.Add(ParamStrUTF8(0) + ' -i /path/to/startup.pgm');
+    {$ENDIF}
     DoOutputText(HText.Text);
     HText.Free;
   end;
@@ -287,13 +293,6 @@ begin
   begin
     P := ParamStrUTF8(i);
 
-    if ParseLine(P, IniFile, S) or
-       ParseLine(P, IniFileShort, S)
-    then
-    begin
-      Continue;
-    end;
-
     if ParseLine(P, ShowHelp, S) or
        ParseLine(P, ShowHelpShort, S)
     then
@@ -309,8 +308,6 @@ begin
       DoShowVersion;
       Halt(0);
     end;
-
-    DoOutputText('Unrecognized option: ' + P);
   end;
 end;
 

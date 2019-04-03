@@ -1,7 +1,7 @@
 object EditorForm: TEditorForm
-  Left = 627
+  Left = 2743
   Height = 662
-  Top = 305
+  Top = 278
   Width = 823
   ActiveControl = SynEdit1
   AllowDropFiles = True
@@ -15,7 +15,7 @@ object EditorForm: TEditorForm
   OnShow = FormShow
   Position = poDefault
   ShowInTaskBar = stAlways
-  LCLVersion = '1.9.0.0'
+  LCLVersion = '2.0.0.4'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 21
@@ -783,8 +783,6 @@ object EditorForm: TEditorForm
     end
   end
   object SaveDialog1: TSaveDialog
-    Width = 968
-    Height = 672
     DefaultExt = '.pgm'
     Options = [ofOverwritePrompt, ofEnableSizing, ofViewDetail]
     left = 600
@@ -806,15 +804,11 @@ object EditorForm: TEditorForm
     top = 112
   end
   object ReplaceDialog1: TReplaceDialog
-    Width = 480
-    Height = 184
     Options = [frDown, frHidePromptOnReplace]
     left = 600
     top = 192
   end
   object FindDialog1: TFindDialog
-    Width = 480
-    Height = 136
     left = 496
     top = 192
   end

@@ -166,6 +166,7 @@ type
   private
     procedure UpdateCaption;
     procedure LoadTutorials;
+    procedure CloseCurrentTab;
   private
     FExecutor: TExecutor;
     procedure SetExecutor(AValue: TExecutor);
@@ -466,10 +467,7 @@ end;
 
 procedure TEditorForm.CloseTabActionExecute(Sender: TObject);
 begin
-  CloseTab(TabControl1.TabIndex);
-
-  if (TabControl1.Tabs.Count = 0) then
-    NewTab;
+  CloseCurrentTab;
 end;
 
 procedure TEditorForm.OpenActionExecute(Sender: TObject);
@@ -831,8 +829,8 @@ begin
   O.Tag := PtrInt(PR);
   TabControl1.TabIndex := result;
 
-  // For some odd reason OnChange is not fired (on linux at least)
-  TabControl1Change(TabControl1);
+  if (result = 0) then
+    TabControl1Change(TabControl1);
 end;
 
 function TEditorForm.TabRecord(Index: integer): TTabRecord;
@@ -898,6 +896,14 @@ begin
     TutorialSubMenu.Enabled := true;
 
   FileList.Free;
+end;
+
+procedure TEditorForm.CloseCurrentTab;
+begin
+  CloseTab(TabControl1.TabIndex);
+
+  if (TabControl1.Tabs.Count = 0) then
+    NewTab;
 end;
 
 procedure TEditorForm.SetExecutor(AValue: TExecutor);
@@ -1309,6 +1315,8 @@ var
   KS: TSynEditKeyStroke;
 begin
   inherited Create(TheOwner);
+
+  TabControl1.Options := [nboDoChangeOnSetIndex];
 
   BuildRecentFilesActions;
   NewTab;
