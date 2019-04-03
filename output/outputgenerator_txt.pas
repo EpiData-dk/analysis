@@ -16,6 +16,8 @@ type
   { Misc }
   private
     function LineFromLines(var Lines: UTF8String; LineNo: Integer = 1): UTF8String;
+  protected
+    function GetDialogFilter: UTF8String; override;
 
   { Table }
   private
@@ -80,6 +82,11 @@ begin
       delete(Lines, 1, (p - 1) + Length(LineEnding));
     end;
   end;
+end;
+
+function TOutputGeneratorTXT.GetDialogFilter: UTF8String;
+begin
+  result := 'Text Output|*.txt';
 end;
 
 function TOutputGeneratorTXT.GetCorner(Cell: TOutputTableCell;

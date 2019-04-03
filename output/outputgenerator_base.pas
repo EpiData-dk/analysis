@@ -32,12 +32,14 @@ type
     procedure DoOutputTable(Table: TOutputTable); virtual;
   protected
     procedure WriteToStream(Const S: UTF8String);
+    function GetDialogFilter: UTF8String; virtual; abstract;
     property Creator: TOutputCreator read FCreator;
   public
     constructor Create(ACreator: TOutputCreator; AOutputStream: TStream = nil); virtual;
     procedure GenerateReport; virtual; overload;
     procedure GenerateReport(out Text: UTF8String); overload;
     property Stream: TStream read FStream;
+    property DialogFilter: UTF8String read GetDialogFilter;
   end;
 
   TOutputGeneratorClass = class of TOutputGeneratorBase;

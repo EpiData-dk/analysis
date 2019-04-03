@@ -21,6 +21,8 @@ type
   protected
     procedure DoOutputTable(Table: TOutputTable); override;
     procedure DoOutputLine(Line: TOutputLine); override;
+  protected
+    function GetDialogFilter: UTF8String; override;
   public
     procedure GenerateReport; override;
 //    procedure GenerateReport(out Text: UTF8String); override; overload;
@@ -145,6 +147,11 @@ begin
 
   WriteToStream('<p class="' + cl + '">' + TextToHtml(Line) + '</p>');
 //  result := '<p class="' + cl + '">' + TextToHtml(Line) + '</p>';
+end;
+
+function TOutputGeneratorHTML.GetDialogFilter: UTF8String;
+begin
+  result := 'HTML Output|*.html';
 end;
 
 procedure TOutputGeneratorHTML.GenerateReport;

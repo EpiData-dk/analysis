@@ -24,9 +24,11 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    SaveOutputAction: TAction;
     Label3: TLabel;
     MenuItem36: TMenuItem;
     MenuItem37: TMenuItem;
+    MenuItem39: TMenuItem;
     OutputFontMenuItem: TMenuItem;
     CommandLineFontMenuItem: TMenuItem;
     MenuItem40: TMenuItem;
@@ -134,6 +136,7 @@ type
     procedure FontChangeClick(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure ReadCBActionExecute(Sender: TObject);
+    procedure SaveOutputActionExecute(Sender: TObject);
     procedure ShowAboutActionExecute(Sender: TObject);
     procedure ShowEditorStartupActionExecute(Sender: TObject);
     procedure ToggleCmdTreeActionExecute(Sender: TObject);
@@ -251,6 +254,7 @@ type
     FOutputCreator: TOutputCreator;
     FOutputGenerator: TOutputGeneratorBase;
     procedure OutputRedrawRequest(Sender: TObject);
+    function  CreateOutputGenerator(ST: TStream): TOutputGeneratorBase;
     procedure RedrawOutput;
     function  HTMLStream: TStream;
     procedure OutputViewerChanges(Sender: TObject);
@@ -589,6 +593,26 @@ end;
 procedure TMainForm.ReadCBActionExecute(Sender: TObject);
 begin
   InterfaceRunCommand('read !cb;');
+end;
+
+procedure TMainForm.SaveOutputActionExecute(Sender: TObject);
+var
+  Filter: UTF8String;
+  OutputGenerator: TOutputGeneratorBase;
+  ST: TMemoryStreamUTF8;
+begin
+  ST := TMemoryStreamUTF8.Create;
+  OutputGenerator := CreateOutputGenerator(ST);
+  Filter := OutputGenerator.DialogFilter;
+  OutputGenerator.GenerateReport;
+  OutputGenerator.Free;
+
+  SaveDialog1.Filter := Filter;
+  SaveDialog1.DefaultExt := Copy(TSaveDialog.ExtractAllFilterMasks(Filter), 2, 10);
+  SaveDialog1.InitialDir := GetCurrentDirUTF8;
+  SaveDialog1.Options := [ofOverwritePrompt, ofPathMustExist, ofEnableSizing];
+  if SaveDialog1.Execute then
+    ST.SaveToFile(SaveDialog1.FileName);
 end;
 
 procedure TMainForm.ShowAboutActionExecute(Sender: TObject);
@@ -1626,6 +1650,11 @@ begin
   RedrawOutput;
 end;
 
+function TMainForm.CreateOutputGenerator(ST: TStream): TOutputGeneratorBase;
+begin
+  Result := (PageControl1.ActivePage as IAnaOutputViewer).GetOutputGeneratorClass.Create(FOutputCreator, ST);
+end;
+
 procedure TMainForm.RedrawOutput;
 var
   S: UTF8String;
@@ -1638,7 +1667,7 @@ begin
     begin
       ST := TMemoryStreamUTF8.Create;
 
-      FOutputGenerator := (PageControl1.ActivePage as IAnaOutputViewer).GetOutputGeneratorClass.Create(FOutputCreator, ST);
+      FOutputGenerator := CreateOutputGenerator(ST);
       FOutputGenerator.GenerateReport;
       FOutputGenerator.Free;
       ST.Position := 0;
