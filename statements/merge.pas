@@ -49,6 +49,22 @@ uses
 const
   MERGE_CUSTOM_DATA = 'MERGE_CUSTOM_DATA';
 
+type
+
+  { TInternalNewValuelabel }
+
+  TInternalNewValuelabel = class(TNewValuelabel)
+  protected
+    function GetExecFlags: TCustomStatementExecutionFlags; override;
+  end;
+
+{ TInternalNewValuelabel }
+
+function TInternalNewValuelabel.GetExecFlags: TCustomStatementExecutionFlags;
+begin
+  Result := inherited GetExecFlags + [sefInternal];
+end;
+
 { TMerge }
 
 function TMerge.FieldsFromStrings(S: TStrings; DF: TEpiDataFile): TEpiFields;
@@ -607,8 +623,9 @@ begin
       VLList.AddPair(TIntegerLiteral.Create(3), TStringLiteral.Create('In both datasets'));
       Opts := TOptionList.Create;
 
-      NewST := TNewValuelabel.Create(VLList, ftInteger, TVariable.Create('_mergevar_lbl', FExecutor), Opts);
+      NewST := TInternalNewValuelabel.Create(VLList, ftInteger, TVariable.Create('_mergevar_lbl', FExecutor), Opts);
       NewST.AssignToken(TToken.Create(ST.LineNo, ST.ColNo, ST.ByteNo));
+      NewST.ExecFlags;
 
       FExecutor.ExecStatement(NewST);
       NewST.Free;

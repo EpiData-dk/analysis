@@ -139,7 +139,9 @@ type
 
   TCustomStatementExecutionFlag = (
     sefNoSelect,  // Cannot execute during an active select
-    sefNoLoop     // Cannot execure during a loop
+    sefNoLoop,    // Cannot execure during a loop
+    sefInternal   // Command called within another command, eg. adding Valuelabel set during merge
+                  // hence should not be added to output/history.
   );
   TCustomStatementExecutionFlags = set of TCustomStatementExecutionFlag;
 

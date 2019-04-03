@@ -1183,6 +1183,7 @@ var
 begin
   if (not FExecuting) then exit;
   if Assigned(Statement.FindCustomData(EDITOR_COMMAND_OUTPUT)) then exit;
+  if (sefInternal in Statement.ExecFlags) then exit;
 
   Statement.AddCustomData(EDITOR_COMMAND_OUTPUT, TObject(1));
 
