@@ -481,8 +481,8 @@ begin
       else aStr := 'Least ';
   if (aStr <> '') then T.Header.Text := aStr + 'frequent values';
 
-  if (ST.HasOption('m') and FCategV.IsMissing[NCat-1])
-    then NCat -= 1;
+ // if (ST.HasOption('m') and FCategV.IsMissing[NCat-1])
+ //   then NCat -= 1;
   if (ST.HasOption('fh') or ST.HasOption('fb')) then
   begin
     FoundHighFreq := true;
@@ -490,7 +490,7 @@ begin
     T.Cell[0,RowIdx].Text   := 'value';
     T.Cell[0,RowIdx+1].Text := FFreqLabel;
 
-   // now show the top 5 frequencies *** If only 2 categories, they are not sorted properly ***
+   // now show the top 5 frequencies
     Offset := 1;
     DCat   := max(0, NCat-5);
     for ix := NCat-1 downto DCat do
