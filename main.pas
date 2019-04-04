@@ -953,7 +953,8 @@ begin
       if (Statement.ExecResult = csrSuccess)
       then
         begin
-          ProjectPanel.Visible := false;
+          if (not (sefInternal in Statement.ExecFlags)) then
+            ProjectPanel.Visible := false;
 
           FStatusbar.DocFile  := nil;
           FStatusbar.Datafile := nil;

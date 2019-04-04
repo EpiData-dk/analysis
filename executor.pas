@@ -1933,6 +1933,22 @@ begin
     Result := GetExecDataVariable(Ident);
 end;
 
+type
+
+  { TInternalCloseCommand }
+
+  TInternalCloseCommand = class(TCustomEmptyCommand)
+  protected
+    function GetExecFlags: TCustomStatementExecutionFlags; override;
+  end;
+
+{ TInternalCloseCommand }
+
+function TInternalCloseCommand.GetExecFlags: TCustomStatementExecutionFlags;
+begin
+  Result := inherited GetExecFlags + [sefInternal];
+end;
+
 procedure TExecutor.ExecRead(ST: TCustomStringCommand);
 var
   FN: UTF8String;
@@ -1959,7 +1975,7 @@ begin
 
   if Assigned(FDocFile) then
     begin
-      EC := TCustomEmptyCommand.Create(nil, 'close');
+      EC := TInternalCloseCommand.Create(nil, 'close');
       ExecStatement(EC);
       EC.Free;
     end;
