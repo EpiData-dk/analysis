@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, tables_types, outputcreator, epidatafilestypes,
-  epifields_helper, options_utils, executor, ast;
+  executor, ast;
 
 type
 
@@ -266,7 +266,6 @@ end;
 procedure TTwoWayStatisticsChi2.AddToCompactTable(Executor: TExecutor;
          T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
 var
-  i: Integer;
   Stat: TTwoWayStatisticChi2;
 
 begin

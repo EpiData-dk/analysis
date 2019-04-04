@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles,
-    epifields_helper, result_variables, options_utils, executor, ast;
+    result_variables, executor, ast;
 
 type
 
@@ -176,10 +176,10 @@ end;
 procedure TTwoWayStatisticsFExP.AddToCompactHeader(T: TOutputTable; Options: TOptionList);
 var
   ColIdx: Integer;
-  Stat: TTwoWayStatisticFExP;
+//  Stat: TTwoWayStatisticFExP;
 
 begin
-  Stat := Statistics[0];
+//  Stat := Statistics[0];
   if (T.RowCount <> 2) then exit;
   ColIdx                      := T.ColCount;
   T.ColCount                  := ColIdx + 1;
@@ -191,7 +191,6 @@ end;
 procedure TTwoWayStatisticsFExP.AddToCompactTable(Executor: TExecutor;
          T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
 var
-  i: Integer;
   Stat: TTwoWayStatisticFExP;
 
 begin

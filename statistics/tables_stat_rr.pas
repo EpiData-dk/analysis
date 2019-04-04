@@ -247,7 +247,6 @@ end;
 procedure TTwoWayStatisticsRR.AddToCompactTable(Executor: TExecutor;
          T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
 var
-  i: Integer;
   Stat: TTwoWayStatisticRR;
   ValueLabelType: TEpiGetValueLabelType;
   HasAr, HasEn, HasRR: Boolean;

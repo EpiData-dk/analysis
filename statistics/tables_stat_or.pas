@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles,
-  epifields_helper, options_utils, result_variables, executor, ast;
+  result_variables, executor, ast;
 
 type
 
@@ -52,7 +52,7 @@ type
 implementation
 
 uses
-  tables, epimiscutils, generalutils, statfunctions, Math, ana_globals;
+  tables, epimiscutils, generalutils, statfunctions, Math;
 
 { CalcTable}
 
@@ -147,7 +147,6 @@ procedure TTwoWayStatisticsOR.AddToSummaryTable(OutputTable: TOutputTable; Optio
 var
   ColIdx, i: Integer;
   Stat: TTwoWayStatisticOR;
-  S: string;
 begin
   Stat := Statistics[0];
   with Stat do
@@ -208,7 +207,6 @@ end;
 procedure TTwoWayStatisticsOR.AddToCompactTable(Executor: TExecutor;
          T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList);
 var
-  i: Integer;
   Stat: TTwoWayStatisticOR;
 
 begin
@@ -262,7 +260,6 @@ var
   p, q, r, s,
   SumR, SumS, SumRS, SumPR, SumPSQR, SumSQ: EpiFloat;
   Zconf, variance: EpiFloat;
-  t: String;
 
   begin
   if (StatisticsCount = 1) then exit;   // No stratified tables
