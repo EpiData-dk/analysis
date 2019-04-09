@@ -16,7 +16,7 @@
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="3"/>
       <RevisionNr Value="4"/>
-      <BuildNr Value="5"/>
+      <BuildNr Value="6"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -627,7 +627,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="12">
+    <Exceptions Count="13">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -672,6 +672,9 @@
         <Name Value="ETwoWaySortException"/>
         <Enabled Value="False"/>
       </Item12>
+      <Item13>
+        <Name Value="EEpiBadPassword"/>
+      </Item13>
     </Exceptions>
   </Debugging>
 </CONFIG>
