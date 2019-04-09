@@ -2756,6 +2756,7 @@ begin
   Result := inherited GetAcceptedOptions;
 
   result.Insert('m', AllResultDataTypes);
+  result.Insert('replace', [rtUndefined]);
 end;
 
 constructor TNewValuelabel.Create(AValueLabelPairs: TValueLabelPairs;

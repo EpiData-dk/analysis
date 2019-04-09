@@ -1439,6 +1439,12 @@ var
 begin
   ST.ExecResult := csrFailed;
 
+  VLSet := Document.ValueLabelSets.GetValueLabelSetByName(ST.Variable.Ident);
+  if (Assigned(VLSet)) and
+     (ST.HasOption('replace'))
+  then
+    VLSet.Free;
+
   VLSet := Document.ValueLabelSets.NewValueLabelSet(ST.NewType);
   VLSet.Name := ST.Variable.Ident;
 
@@ -2811,8 +2817,10 @@ begin
         begin
           res := false;
 
-          if (ST.SubCommand = ccGlobal) and
-             (V.InheritsFrom(TExecVarGlobal) or V.InheritsFrom(TExecVarGlobalVector))
+          if (ST.SubCommand in [ccGlobal, ccValuelabel]) and
+             (V.InheritsFrom(TExecVarGlobal) or
+              V.InheritsFrom(TExecVarGlobalVector) or
+              V.InheritsFrom(TExecutorValuelabelsetVariable))
           then
             res := ((TCustomExecutorDataVariable(V).DataType = TCustomNewGlobal(ST).NewType) and
                     (
