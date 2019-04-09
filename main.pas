@@ -175,6 +175,7 @@ type
     function  DoParseContent(Const S: UTF8String): boolean;
     procedure CommentError(Sender: TObject; ErrorToken: TToken);
     procedure LexError(Sender: TObject; ErrorToken: TToken);
+    procedure ShowSidewindows(Sender: TObject);
     procedure SyntaxError(Sender: TObject; ErrorToken: TToken; TokenTable: TTokenStack);
     procedure ASTBuildError(Sender: TObject; const Msg: UTF8String; ErrorToken: TToken);
     procedure FormChanged(Sender: TObject; Form: TCustomForm);
@@ -228,7 +229,9 @@ type
 
   { Sidebar }
   private
-    procedure ToggleSidebar(Item: Integer);
+    type
+      TToggleMode = (tmToggle, tmForceOpen, tmForceClose);
+    procedure ToggleSidebar(Item: Integer; ToggleMode: TToggleMode = tmToggle);
     procedure DoUpdateVarnames;
     procedure DoUpdateHistory;
   public
@@ -379,6 +382,7 @@ begin
   Executor.SetOptions[ANA_SO_OUTPUT_BG_COLOR].AddOnChangeHandler(@OutputFontChange);
   Executor.SetOptions[ANA_SO_OUTPUT_FORMAT].AddOnChangeHandler(@OutputViewerChanges);
   Executor.SetOptions[ANA_SO_TUTORIAL_FOLDER].AddOnChangeHandler(@TutorialChange);
+  Executor.SetOptions[ANA_SO_SHOW_SIDEWINDOWS].AddOnChangeHandler(@ShowSidewindows);
 
   FOutputCreator.SetOptions := Executor.SetOptions;
 
@@ -463,6 +467,7 @@ begin
   UpdateShortCuts;
   OutputFontChange(nil);
   CmdEditFontChangeEvent(nil);
+  ShowSidewindows(nil);
 
   UpdateRecentFiles;
   LoadTutorials;
@@ -775,8 +780,7 @@ end;
 
 procedure TMainForm.ToggleProjectTreeExecute(Sender: TObject);
 begin
-  ProjectPanel.Visible := not ProjectPanel.Visible;
-  ProjectSplitter.Visible := ProjectPanel.Visible;
+  ToggleSidebar(1);
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -1112,6 +1116,23 @@ begin
   SelectErrorText(ErrorToken);
   FHistory.Failed[FHistory.Lines.Count - 1] := true;
   RedrawOutput;
+end;
+
+procedure TMainForm.ShowSidewindows(Sender: TObject);
+var
+  Value: String;
+  toggleValue: TToggleMode;
+begin
+  Value := Executor.SetOptionValue[ANA_SO_SHOW_SIDEWINDOWS];
+
+  if (UTF8UpperString(Value) = 'ON') then
+    toggleValue := tmForceOpen
+  else
+    toggleValue := tmForceClose;
+
+  ToggleSidebar(1, toggleValue);
+  ToggleSidebar(2, toggleValue);
+  ToggleSidebar(3, toggleValue);
 end;
 
 procedure TMainForm.SyntaxError(Sender: TObject; ErrorToken: TToken;
@@ -1557,45 +1578,34 @@ begin
   end;
 end;
 
-procedure TMainForm.ToggleSidebar(Item: Integer);
+procedure TMainForm.ToggleSidebar(Item: Integer; ToggleMode: TToggleMode);
 var
   Ctrl: TWinControl;
+  Tmp: Boolean;
 begin
-  // 1 = CmdTree
+  // 1 = ProjectTree/Panel
   // 2 = VarList
   // 3 = History
-  // 4 = Project Tree
 
   case Item of
-//    1: Ctrl := CmdTree;
+    1: Ctrl := ProjectPanel;
     2: Ctrl := VarnamesList;
     3: Ctrl := HistoryListBox;
-    4:
-      begin
-
-      end;
   end;
 
-  if (not Ctrl.Visible) then
-    begin
-      if (not SidebarPanel.Visible) then
-        SidebarPanel.Visible := true;
-      Ctrl.Visible := true;
-    end;
+  case ToggleMode of
+    tmToggle:     Tmp := (not Ctrl.Visible) or (not Ctrl.Focused);
+    tmForceOpen:  Tmp := true;
+    tmForceClose: Tmp := false;
+  end;
 
-  if (Ctrl.Focused) then
+
+  SidebarPanel.Visible := Tmp;
+  Ctrl.Visible := Tmp;
+  if (Ctrl.CanSetFocus) then
     begin
-      Ctrl.Visible := false;
-    end
-  else
-    begin
-      if (Ctrl.CanFocus) and
-         (Self.CanFocus)
-      then
-        begin
-          Self.SetFocus;
-          Ctrl.SetFocus;
-        end;
+      Self.SetFocus;
+      Ctrl.SetFocus;
     end;
 
   if (HistoryListBox.Visible) then
@@ -1612,6 +1622,8 @@ begin
 
   SidebarPanel.Visible := (VarnamesList.Visible or HistoryListBox.Visible);
   SidebarSplitter.Visible := SidebarPanel.Visible;
+
+  ProjectSplitter.Visible := ProjectPanel.Visible;
 end;
 
 procedure TMainForm.DoUpdateVarnames;
