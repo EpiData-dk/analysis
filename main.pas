@@ -957,8 +957,10 @@ begin
       if (Statement.ExecResult = csrSuccess)
       then
         begin
-          if (not (sefInternal in Statement.ExecFlags)) then
-            ProjectPanel.Visible := false;
+          if (not (sefInternal in Statement.ExecFlags)) and
+             (Executor.SetOptionValue[ANA_SO_SHOW_SIDEWINDOWS] = 'OFF')
+          then
+            ToggleSidebar(1, tmForceClose);
 
           FStatusbar.DocFile  := nil;
           FStatusbar.Datafile := nil;
