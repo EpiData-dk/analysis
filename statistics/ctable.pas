@@ -28,10 +28,11 @@ type
       FStratifyVarNames: TStringList;
       FWeightName: UTF8String;
       FCTableStatistics: TTableStatistics;
-      FOutputCol: array [0..5] of integer;  // TODO: make this variable length
+      FOutputCol: array of integer;
       FFooterText: UTF8String;
       FResultCounts: TExecVarVector;
       FResultRows: Integer;
+      FAllTables: array of TTwoWayTables;
     public
       TableResults: TTableResults;
       property ResultRows: Integer read FResultRows;
@@ -49,8 +50,6 @@ uses
   options_utils, LazUTF8, epidatafilestypes;
 
 {CTable}
-
-// create result variables for summary tables only
 
 function TCTable.CreateOutputHeader(Tables: TTwoWayTables; ST: TCTableCommand) : TOutputTable;
 var
@@ -70,21 +69,9 @@ begin
   Result.ColCount := 2;
   Result.RowCount := 2;
   Result.Footer.Alignment := taLeftJustify;
-  SF := '';
 
   // Collect header information
   SH := Tables.UnstratifiedTable.ColVariable.GetVariableLabel(VariableLabelType);
-  if (ST.HasOption('ar') or ST.HasOption('rr') or ST.HasOption('en')) then
-    begin
-      SF := 'O+ = ' +
-        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(0,ValueLabelType) +
-        ' / O- = ' +
-        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(1,ValueLabelType) +
-        LineEnding;
-      if (FStratifyVarNames.Count>0) then
-        SF := SF + '(attack rates are for unstratified data)' + LineEnding;
-    end;
-
   if (FStratifyVarNames.Count>0) then
     begin
       SH := SH + LineEnding + ' adjusted for:';
@@ -93,25 +80,40 @@ begin
         S1 := ' '
       else
         S1 := LineEnding;
-      if (ST.HasOption('ex')) then
-        SF := SF + LineEnding + '(Fisher Exact test p is for unstratified data)';
       for F in Tables.StratifyVariables do
         SH := SH + S1 + F.GetVariableLabel(VariableLabelType);
     end;
   Result.Header.Text := SH;
-  Result.Footer.Text := SF;
 
   // Summary table headers
   Result.Cell[0, 0].Text := 'by';
   Result.Cell[0, 1].Text := 'Var';
   Result.Cell[1, 1].Text := 'N';
   if (Tables.StatisticsCount > 0) then
-  for i := 0 to Tables.StatisticsCount - 1 do
     begin
-      FOutputCol[i] := Result.ColCount;
-      Tables.Statistics[i].AddToCompactHeader(Result,ST.Options);
+      SetLength(FOutputCol,Tables.StatisticsCount);
+      for i := 0 to Tables.StatisticsCount - 1 do
+        begin
+          FOutputCol[i] := Result.ColCount;
+          Tables.Statistics[i].AddToCompactHeader(Result,ST.Options);
+       end;
    end;
 
+  SF := '';
+  if (ST.HasOption('ar') or ST.HasOption('rr') or ST.HasOption('en')) then
+    begin
+      result.Header.Text := result.Header.Text + LineEnding + 'O+ = ' +
+        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(0,ValueLabelType) +
+        ' / O- = ' +
+        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(1,ValueLabelType) +
+        LineEnding;
+      if (FStratifyVarNames.Count>0) then
+        SF := SF + LineEnding + '(attack rates are for unstratified data)';
+    end;
+      if (ST.HasOption('ex')) then
+        SF := SF + LineEnding + '(Fisher Exact test p is for unstratified data)';
+
+  result.Footer.Text := result.Footer.Text + SF;
 end;
 
 procedure TCTable.DoOutputCTableRow(Tables: TTwoWayTables; ST: TCTableCommand; T: TOutputTable);
@@ -223,17 +225,20 @@ var
   CrossVarLabel: String;
   VariableLabelType: TEpiGetVariableLabelType;
   Opt: TOption;
-  i, ix, VarCount: Integer;
+  i, j, ix, VarCount, TableCount: Integer;
+  SortValue: EpiFloat;
   TableData: TTables;
   Table: TTwoWayTables;
   TablesRefMap: TEpiReferenceMap;
-  FirstPass: Boolean; // marks first table (no table if no data for a variable)
+  FirstPass: Boolean;
+  HeaderDone: Boolean;
 
   // invoke CalcTables for one pair of variables
-  procedure DoOneCTable;
+  function DoOneCTable: Boolean;
   var
     AllVarNames: TStrings;
   begin;
+    result := false;
     AllVarNames := TStringList.Create;
     // local AllVarNames has only the two variables being analyzed in this pass
     // must add the stratifying and weight variables
@@ -254,17 +259,12 @@ var
       begin
         Table := TableData.CalcTables(DF, TwoVarNames, FStratifyVarNames, FWeightName,
              ST.Options, TablesRefMap, FCTableStatistics);
+        result := true;
 
         if (FirstPass) then
           PrepareResultVariables(Table, VarNames); // set up result variables
         DoResultVariables(Table, i); // results for one table row
 
-        if (not ST.HasOption('q')) then
-        begin
-          if (FirstPass) then // cannot create header until we have done calctable once
-            SummaryTable := CreateOutputHeader(Table, ST);
-          DoOutputCTableRow(Table, ST, SummaryTable);
-        end;
         FirstPass := FALSE;
       end;
     finally
@@ -272,7 +272,7 @@ var
       AllVarNames.Free;
     end;
 
-  end;
+  end;  {DoOneCTable}
 
 begin
   FStratifyVarNames := TStringList.Create;
@@ -288,10 +288,9 @@ begin
   TwoVarNames := TStringList.Create;
   TwoVarNames.Add(VarNames[0]);
 
-{ This is where to sort the remaining table variables (1 ... n) if such an option is implemented
-  e.g. !sn --> sort output by variable name
+{ This is where to sort the remaining table variables (1 ... n)
+       !sn --> sort output by variable name
        !sl --> sort by variable label
-  see list.pas for approach to getting variable labels
 }
   CrossVarNames := TStringList.Create;
   if (ST.HasOption('sl')) then
@@ -341,16 +340,53 @@ begin
   FFooterText := '';
   FCTableStatistics := GetStatisticOptions(ST);
   TableData  := TTables.Create(FExecutor, FOutputCreator);
-  setlength(TableResults,VarCount);
-
+  setlength(FAllTables,VarCount);
+  TableCount := 0;
   for i := 1 to VarCount do
   begin
     TwoVarNames.Add(CrossVarNames[i-1]);
-    DoOneCTable;
+    if (DoOneCTable) then
+    begin
+      FAllTables[TableCount] := Table;
+      TableCount += 1;
+      if (tsRR in FCTableStatistics) then        // does order in FCTableStatistics matter?
+      begin
+        for j := 0 to Table.StatisticsCount - 1 do
+        begin
+          SortValue := Table.Statistics[j].CompactSortValue(tsRR);
+//          if (SortValue >= 0) then
+//            FOutputCreator.DoWarning(TwoVarNames[1] + ': sort value is ' +  Format('%.3f',[SortValue]));
+        end;
+      end;
+    end;
     TwoVarNames.Delete(1);
   end;
-  SummaryTable.SetColAlignment(0, taLeftJustify); // variable name column
-  SummaryTable.SetRowBorders(SummaryTable.RowCount - 1, [cbBottom]);
+
+  // this is where the output table could be sorted by one of the columns (odds or risk ratio)
+  // however, will need the method implemented in outputcreator.pas
+
+  if (not ST.HasOption('q')) then
+  begin
+    HeaderDone := false;
+    if (ST.HasOption('rr') or ST.HasOption('or') or ST.HasOption('ex') or ST.HasOption('en') or ST.HasOption('ar')) then
+    // first find a 2x2 table to create the header and footer if RR, OR or FExP requested
+      for i:= 0 to TableCount-1 do
+        if (FAllTables[i].UnstratifiedTable.ColCount = 2) then
+        begin
+          SummaryTable := CreateOutputHeader(FAllTables[i], ST);
+          HeaderDone := true;
+          break;
+        end;
+    if (not HeaderDone) then
+      SummaryTable := CreateOutputHeader(FAllTables[0], ST);
+    // now output the table rows
+    for i:= 0 to TableCount-1 do
+      DoOutputCTableRow(FAllTables[i], ST, SummaryTable);
+    SummaryTable.SetColAlignment(0, taLeftJustify); // variable name column
+    SummaryTable.SetRowBorders(SummaryTable.RowCount - 1, [cbBottom]);
+  end;
+
+
   TableData.Free;
   FStratifyVarNames.Free;
   TwoVarNames.Free;

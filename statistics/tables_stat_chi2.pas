@@ -49,7 +49,8 @@ type
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
     procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8String); override;
-    function CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
+    function  CompactSortValue(Stat: TTableStatistic): EpiFloat; override;
+    function  CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
     procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); override;
 //    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring);
     property Statistics[Const Index: Integer]: TTwoWayStatisticChi2 read GetStatistics;
@@ -317,6 +318,17 @@ begin
     end;
     Results[2].AsIntegerVector[Index] := FOrgTable.DF;
   end;
+end;
+
+function TTwoWayStatisticsChi2.CompactSortValue(Stat: TTableStatistic): EpiFloat;
+
+begin
+  result := -1;
+  if (Stat <> tsChi2) then exit;
+  if (StatisticsCount = 1) then
+    result := Statistics[0].FChiP
+  else
+    result := FMHChiP;
 end;
 
 initialization

@@ -37,7 +37,8 @@ type
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
     procedure AddToCompactTable(Executor: TExecutor; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
-    function CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
+    function  CompactSortValue(Stat: TTableStatistic): EpiFloat; override;
+    function  CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
     procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); override;
 //    procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
 //    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
@@ -228,6 +229,14 @@ var
 begin
   Stat := Statistics[0];
   Results[0].AsFloatVector[Index] := Stat.FFExP;
+end;
+
+function TTwoWayStatisticsFExP.CompactSortValue(Stat: TTableStatistic): EpiFloat;
+
+begin
+  result := -1;
+  if (Stat <> tsFExP) then exit;
+  result := Statistics[0].FFExP;
 end;
 
 initialization
