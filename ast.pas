@@ -4806,8 +4806,10 @@ function TBinaryExpr.TypeCheck(TypeChecker: IEpiTypeChecker;
 var
   Lr: TASTResultType;
   Rr: TASTResultType;
+  BinaryTypesAndFlags: TTypesAndFlagsRec;
 begin
-  Result := inherited TypeCheck(TypeChecker, TypesAndFlags);
+  BinaryTypesAndFlags := options_hashmap.TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData);
+  Result := inherited TypeCheck(TypeChecker, BinaryTypesAndFlags);
 
   if result then
   begin
