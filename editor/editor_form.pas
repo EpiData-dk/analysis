@@ -1132,9 +1132,9 @@ begin
          (S[1] = 'o') and
          (S[2] = 'p')
       then
-        S := 'Line %d: Syntax error at pos %d  (%s: Reserved word)'
+        S := 'Line %d: Syntax error at pos %d: %s: Reserved word'
       else
-        S := 'Line %d: Syntax error at pos %d  (%s)';
+        S := 'Line %d: Syntax error at pos %d: %s';
 
       ShowMessage(
         Format(S,
@@ -1142,7 +1142,7 @@ begin
                 ErrorToken.CaretNum + (FParserStartPoint.X - 1),
                 ErrorToken.DataVar]
               ) + LineEnding +
-        'Expected tokens: ' + LineEnding +
+        'Expected: ' + LineEnding +
         T
       );
 

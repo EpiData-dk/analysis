@@ -1146,11 +1146,11 @@ begin
      (S[1] = 'o') and
      (S[2] = 'p')
   then
-    FOutputCreator.DoError(Format('Line %d: Syntax error at pos %d  (%s: Reserved word)', [ErrorToken.LineNum, ErrorToken.CaretNum, ErrorToken.DataVar]))
+    FOutputCreator.DoError(Format('Line %d: Syntax error at pos %d: %s: Reserved word', [ErrorToken.LineNum, ErrorToken.CaretNum, ErrorToken.DataVar]))
   else
     begin
       T := OutputCreatorNormalizeText(ErrorToken.DataVar);
-      FOutputCreator.DoError(Format('Line %d: Syntax error at pos %d  (%s)', [ErrorToken.LineNum, ErrorToken.CaretNum, T]));
+      FOutputCreator.DoError(Format('Line %d: Syntax error at pos %d: %s', [ErrorToken.LineNum, ErrorToken.CaretNum, T]));
 
       if (ErrorToken.ParentSymbol.Kind = SymbolTypeEnd) then
         begin
@@ -1166,7 +1166,7 @@ begin
             for i := 1 to TokenTable.Count - 1 do
               T := T + ', ' + '"' + TokenTable[i].Name + '"';
 
-            FOutputCreator.DoInfoAll('Expected tokens: ' + OutputCreatorNormalizeText(T));
+            FOutputCreator.DoInfoAll('Expected: ' + OutputCreatorNormalizeText(T));
           end;
     end;
 
