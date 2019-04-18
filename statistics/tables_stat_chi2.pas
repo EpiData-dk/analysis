@@ -5,7 +5,7 @@ unit tables_stat_chi2;
 interface
 
 uses
-  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes,
+  Classes, SysUtils, tables_types, outputcreator, epidatafilestypes, epidatafiles,
   executor, ast;
 
 type
@@ -49,7 +49,7 @@ type
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
     procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8String); override;
-    function  CompactSortValue(Stat: TTableStatistic): EpiFloat; override;
+    function  CompactSortValue: EpiFloat; override;
     function  CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
     procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); override;
 //    procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring);
@@ -320,19 +320,18 @@ begin
   end;
 end;
 
-function TTwoWayStatisticsChi2.CompactSortValue(Stat: TTableStatistic): EpiFloat;
+function TTwoWayStatisticsChi2.CompactSortValue: EpiFloat;
 
 begin
-  result := -1;
-  if (Stat <> tsChi2) then exit;
   if (StatisticsCount = 1) then
     result := Statistics[0].FChiP
   else
     result := FMHChiP;
+  if result = TEpiFloatField.DefaultMissing then
+    result := 2;
 end;
 
 initialization
   RegisterTableStatistic(tsChi2, TTwoWayStatisticsChi2);
 
 end.
-

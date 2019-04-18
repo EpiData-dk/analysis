@@ -3702,30 +3702,42 @@ var
   DF: TEpiDataFile;
   Opt: TOption;
   S: UTF8String;
+  SO: Integer;
   VarNames: TStrings;
 begin
   VarNames := ST.VariableList.GetIdentsAsList;
-  // Get the by variables out too
+  // Get the by variables out and check for redundant sort options
+  SO := 0;
   for Opt in ST.Options do
     begin
-      if (Opt.Ident <> 'by') then
-        Continue;
-
-      S := Opt.Expr.AsIdent;
-      if (VarNames.IndexOf(S) > -1) then
-        begin
-          Error('By variables cannot overlap table variables: ' + S);
-          ST.ExecResult := csrFailed;
-          VarNames.Free;
-          Exit;
-        end;
+      S := Opt.Ident;
+      if (S = 'by') then
+      begin
+        S := Opt.Expr.AsIdent;
+        if (VarNames.IndexOf(S) > -1) then
+          begin
+            Error('By variables cannot overlap table variables: ' + S);
+            ST.ExecResult := csrFailed;
+            VarNames.Free;
+          end;
+      end;
+      if (S = 'sn') or (S = 'sl') or (S = 'ss') then
+        SO += 1;
     end;
 
-    Table := TCTable.Create(Self, FOutputCreator);
-    Table.ExecCTable(VarNames, ST);
-    Table.Free;
+  if (SO > 1) then
+  begin
+    Error('Too many sort options, only one is allowed');
+    ST.ExecResult := csrFailed;
+  end;
 
-    VarNames.Free;
+  if ST.ExecResult = csrFailed then exit;
+
+  Table := TCTable.Create(Self, FOutputCreator);
+  Table.ExecCTable(VarNames, ST);
+  Table.Free;
+
+  VarNames.Free;
 
 end;
 
@@ -4790,4 +4802,3 @@ begin
 end;
 
 end.
-

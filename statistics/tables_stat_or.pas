@@ -43,7 +43,7 @@ type
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
     procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
-    function  CompactSortValue(Stat: TTableStatistic): EpiFloat; override;
+    function  CompactSortValue: EpiFloat; override;
     function  CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
     procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticOR read GetStatistics;
@@ -339,15 +339,15 @@ begin
   Results[2].AsFloatVector[Index] := FMHORUL;
 end;
 
-function TTwoWayStatisticsOR.CompactSortValue(Stat: TTableStatistic): EpiFloat;
+function TTwoWayStatisticsOR.CompactSortValue: EpiFloat;
 
 begin
-result := -1;
-if (Stat <> tsOR) then exit;
   if (StatisticsCount = 1) then
     result := Statistics[0].FOddsRatio
   else
     result := FMHOR;
+  if result = TEpiFloatField.DefaultMissing then
+    result := -1;
 end;
 
 initialization
@@ -355,4 +355,3 @@ initialization
 
 
 end.
-

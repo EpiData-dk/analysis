@@ -1594,6 +1594,7 @@ begin
   // Sort table by variable name or label
   Result.Insert('sn',   [rtUndefined]);  // sort summary table by variable name
   Result.Insert('sl',   [rtUndefined]);  // sort summary table by variable label
+  Result.Insert('ss',   [rtUndefined]);  // sort summary table by key statistic
   // Statistics
   Result.Insert('ar',   [rtUndefined]);  // Show attack rates
   Result.Insert('en',   [rtUndefined]);  // Minimized ar output... (contains less)
@@ -6787,4 +6788,3 @@ begin
 end;
 
 end.
-

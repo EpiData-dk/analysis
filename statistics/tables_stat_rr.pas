@@ -45,7 +45,7 @@ type
     procedure CalcSummaryStatistics(Tables: TTwoWayTables;Conf: Integer); override;
     procedure CreateSummaryResultVariables(Executor: TExecutor; const NamePrefix: UTF8STring); override;
     procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); override;
-    function  CompactSortValue(Stat: TTableStatistic): EpiFloat; override;
+    function  CompactSortValue: EpiFloat; override;
     function  CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
     property Statistics[Const Index: Integer]: TTwoWayStatisticRR read GetStatistics;
   end;
@@ -415,15 +415,15 @@ begin
   Results[2].AsFloatVector[Index] := FMHRRUL;
 end;
 
-function TTwoWayStatisticsRR.CompactSortValue(Stat: TTableStatistic): EpiFloat;
+function TTwoWayStatisticsRR.CompactSortValue: EpiFloat;
 
 begin
-  result := -1;
-  if (Stat <> tsRR) then exit;
   if (StatisticsCount = 1) then
     result := Statistics[0].FRelativeRisk
   else
     result := FMHRR;
+  if result = TEpiFloatField.DefaultMissing then
+    result := -1;
 end;
 
 initialization
@@ -431,4 +431,3 @@ initialization
 
 
 end.
-

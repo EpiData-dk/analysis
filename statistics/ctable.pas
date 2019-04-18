@@ -33,6 +33,9 @@ type
       FResultCounts: TExecVarVector;
       FResultRows: Integer;
       FAllTables: array of TTwoWayTables;
+      FSortBy: TTableStatistic;
+      FSortIndex: Integer;
+      FSortDescending: Boolean;
     public
       TableResults: TTableResults;
       property ResultRows: Integer read FResultRows;
@@ -201,16 +204,33 @@ begin
 end;
 
 function TCTable.GetStatisticOptions(ST: TCTableCommand): TTableStatistics;
+// find statistics options and set the sort statistic in case !so is specified
+
 begin
   result := [];
-  if (ST.HasOption('ex')) then
-      Include(Result, tsFExP);
+  FSortDescending := false;
   if (ST.HasOption('t')) then
+    begin
       Include(Result, tsChi2);
+      FSortBy := tsChi2;
+    end;
+  if (ST.HasOption('ex')) then
+    begin
+      Include(Result, tsFExP);
+      FSortBy := tsFExP;
+    end;
   if (ST.HasOption('odds')) then
+    begin
       Include(Result, tsOR);
+      FSortBy := tsOR;
+      FSortDescending := true;
+    end;
   if (ST.HasOption('rr') or ST.HasOption('ar') or ST.HasOption('en')) then
+    begin
       Include(Result, tsRR);
+      FSortBy := tsRR;
+      FSortDescending := true;
+    end;
 end;
 
 procedure TCTable.ExecCTable(VarNames: TStrings; ST: TCTableCommand);
@@ -227,11 +247,21 @@ var
   Opt: TOption;
   i, j, ix, VarCount, TableCount: Integer;
   SortValue: EpiFloat;
+  SortValues: array of EpiFloat;
+  SortIndex: array of Integer;
   TableData: TTables;
   Table: TTwoWayTables;
   TablesRefMap: TEpiReferenceMap;
   FirstPass: Boolean;
   HeaderDone: Boolean;
+
+  // comparison for sorting table by statistic
+
+  function Compare(a,b: EpiFloat): Boolean;
+  begin
+    if (FSortDescending) then result := (b > a)
+    else result := (b < a);
+  end;
 
   // invoke CalcTables for one pair of variables
   function DoOneCTable: Boolean;
@@ -341,36 +371,44 @@ begin
   FCTableStatistics := GetStatisticOptions(ST);
   TableData  := TTables.Create(FExecutor, FOutputCreator);
   setlength(FAllTables,VarCount);
-  TableCount := 0;
+  setlength(SortIndex,VarCount);
+  setlength(SortValues,VarCount);
+
+  TableCount := -1;
+  FSortIndex := 0;
+
   for i := 1 to VarCount do
   begin
     TwoVarNames.Add(CrossVarNames[i-1]);
     if (DoOneCTable) then
     begin
-      FAllTables[TableCount] := Table;
       TableCount += 1;
-      if (tsRR in FCTableStatistics) then        // does order in FCTableStatistics matter?
+      FAllTables[TableCount] := Table;
+      if ((Table.StatisticsCount > 0) and (ST.HasOption('ss'))) then
       begin
-        for j := 0 to Table.StatisticsCount - 1 do
-        begin
-          SortValue := Table.Statistics[j].CompactSortValue(tsRR);
-//          if (SortValue >= 0) then
-//            FOutputCreator.DoWarning(TwoVarNames[1] + ': sort value is ' +  Format('%.3f',[SortValue]));
-        end;
-      end;
+          SortValue := Table.Statistics[FSortIndex].CompactSortValue;
+          SortValues[TableCount] := SortValue;
+          SortIndex[TableCount] := TableCount;
+          j := TableCount;
+          while ((j > 0) and (Compare(SortValues[SortIndex[j-1]], SortValue))) do
+          begin
+            SortIndex[j]  := SortIndex[j-1];
+            SortIndex[j-1]  := TableCount;
+            j -= 1;
+          end;
+      end
+      else
+        SortIndex[TableCount] := TableCount;
     end;
     TwoVarNames.Delete(1);
   end;
-
-  // this is where the output table could be sorted by one of the columns (odds or risk ratio)
-  // however, will need the method implemented in outputcreator.pas
 
   if (not ST.HasOption('q')) then
   begin
     HeaderDone := false;
     if (ST.HasOption('rr') or ST.HasOption('or') or ST.HasOption('ex') or ST.HasOption('en') or ST.HasOption('ar')) then
     // first find a 2x2 table to create the header and footer if RR, OR or FExP requested
-      for i:= 0 to TableCount-1 do
+      for i:= 0 to TableCount do
         if (FAllTables[i].UnstratifiedTable.ColCount = 2) then
         begin
           SummaryTable := CreateOutputHeader(FAllTables[i], ST);
@@ -380,8 +418,8 @@ begin
     if (not HeaderDone) then
       SummaryTable := CreateOutputHeader(FAllTables[0], ST);
     // now output the table rows
-    for i:= 0 to TableCount-1 do
-      DoOutputCTableRow(FAllTables[i], ST, SummaryTable);
+    for i:= 0 to TableCount do
+      DoOutputCTableRow(FAllTables[SortIndex[i]], ST, SummaryTable);
     SummaryTable.SetColAlignment(0, taLeftJustify); // variable name column
     SummaryTable.SetRowBorders(SummaryTable.RowCount - 1, [cbBottom]);
   end;
@@ -395,4 +433,3 @@ end;
 
 
 end.
-

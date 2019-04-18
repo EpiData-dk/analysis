@@ -37,7 +37,7 @@ type
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); override;
     procedure AddToCompactTable(Executor: TExecutor; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); override;
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); override;
-    function  CompactSortValue(Stat: TTableStatistic): EpiFloat; override;
+    function  CompactSortValue: EpiFloat; override;
     function  CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; override;
     procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); override;
 //    procedure CalcSummaryStatistics(Tables: TTwoWayTables); override;
@@ -231,16 +231,15 @@ begin
   Results[0].AsFloatVector[Index] := Stat.FFExP;
 end;
 
-function TTwoWayStatisticsFExP.CompactSortValue(Stat: TTableStatistic): EpiFloat;
+function TTwoWayStatisticsFExP.CompactSortValue: EpiFloat;
 
 begin
-  result := -1;
-  if (Stat <> tsFExP) then exit;
   result := Statistics[0].FFExP;
+  if result = TEpiFloatField.DefaultMissing then
+    result := 2;
 end;
 
 initialization
   RegisterTableStatistic(tsFExP, TTwoWayStatisticsFExP);
 
 end.
-

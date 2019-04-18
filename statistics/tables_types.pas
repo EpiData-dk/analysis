@@ -59,7 +59,7 @@ type
     procedure AddToSummaryTable(OutputTable: TOutputTable; Options: TOptionList); virtual;  abstract;  //*
     procedure AddToCompactTable(Executor: TExecutor; T: TOutputTable; RowIdx, ColIdx: Integer; Options: TOptionList); virtual; abstract;
     procedure AddToCompactHeader(T: TOutputTable; Options: TOptionList); virtual; abstract;
-    function  CompactSortValue(Stat: TTableStatistic): EpiFloat; virtual; abstract;
+    function  CompactSortValue: EpiFloat; virtual; abstract;
     function  CreateCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; ResultRows: Integer): TStatResult; virtual; abstract;
     procedure AddCompactResultVariables(Executor: TExecutor; Index: Integer; Results: TStatResult); virtual; abstract;
     procedure AddCompactResultVariables(Executor: TExecutor; Prefix: UTF8String; Index: Integer; ResultTables: TTwoWayTables; ResultRows: Integer); virtual; abstract;
