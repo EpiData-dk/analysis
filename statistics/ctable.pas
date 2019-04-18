@@ -103,19 +103,17 @@ begin
    end;
 
   SF := '';
-  if (ST.HasOption('ar') or ST.HasOption('rr') or ST.HasOption('en')) then
-    begin
-      if Tables.UnstratifiedTable.ColCount > 1 then
-      result.Header.Text := result.Header.Text + LineEnding + 'O+ = ' +
-        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(0,ValueLabelType) +
-        ' / O- = ' +
-        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(1,ValueLabelType) +   // TODO: dies here is no 2x2 tables at all
-        LineEnding;
-      if (FStratifyVarNames.Count>0) then
-        SF := SF + LineEnding + '(attack rates are for unstratified data)';
-    end;
-      if (ST.HasOption('ex')) then
-        SF := SF + LineEnding + '(Fisher Exact test p is for unstratified data)';
+  if ((ST.HasOption('ar') or ST.HasOption('rr') or ST.HasOption('en')) and
+     (Tables.UnstratifiedTable.ColCount = 2)) then
+        result.Header.Text := result.Header.Text + LineEnding + 'O+ = ' +
+          Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(0,ValueLabelType) +
+          ' / O- = ' +
+          Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(1,ValueLabelType) +
+          LineEnding;
+  if ((ST.HasOption('ar') or ST.HasOption('en')) and (FStratifyVarNames.Count>0)) then
+    SF := SF + LineEnding + '(attack rates are for unstratified data)';
+  if ((FStratifyVarNames.Count>0) and (ST.HasOption('ex'))) then
+    SF := SF + LineEnding + '(Fisher Exact test p is for unstratified data)';
 
   result.Footer.Text := result.Footer.Text + SF;
 end;
@@ -175,7 +173,7 @@ begin
   SetLength(TableResults, Tables.StatisticsCount);
   for i := 0 to Tables.StatisticsCount - 1 do
   begin
-    TableResults[i] := Tables.Statistics[i].CreateCompactResultVariables(FExecutor, '$ctable_', FResultRows); // add results for Tables to TableResults
+    TableResults[i] := Tables.Statistics[i].CreateCompactResultVariables(FExecutor, '$ctable_', FResultRows);
   end;
 
 end;
@@ -188,7 +186,7 @@ begin
 
   for i := 0 to Tables.StatisticsCount - 1 do
   begin
-    Tables.Statistics[i].AddCompactResultVariables(FExecutor, Index-1, TableResults[i]); // add results for Tables to TableResults
+    Tables.Statistics[i].AddCompactResultVariables(FExecutor, Index-1, TableResults[i]);
 
   end;
 end;
@@ -256,14 +254,16 @@ var
   FirstPass: Boolean;
   HeaderDone: Boolean;
 
+  {Compare}
   // comparison for sorting table by statistic
-
   function Compare(a,b: EpiFloat): Boolean;
   begin
     if (FSortDescending) then result := (b > a)
     else result := (b < a);
   end;
+  {end Compare}
 
+  {DoOneCTable}
   // invoke CalcTables for one pair of variables
   function DoOneCTable: Boolean;
   var
@@ -271,10 +271,9 @@ var
   begin;
     result := false;
     AllVarNames := TStringList.Create;
+    AllVarNames.AddStrings(TwoVarNames);
     // local AllVarNames has only the two variables being analyzed in this pass
     // must add the stratifying and weight variables
-    AllVarNames.AddStrings(TwoVarNames);
-    // add in stratify and weight variables before preparing the datafile
     if ST.HasOption('by') then
       AllVarNames.AddStrings(FStratifyVarNames);
     if St.HasOption('w') then
@@ -303,7 +302,8 @@ var
       AllVarNames.Free;
     end;
 
-  end;  {DoOneCTable}
+  end;
+  {end DoOneCTable}
 
 begin
   FStratifyVarNames := TStringList.Create;
