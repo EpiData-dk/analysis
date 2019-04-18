@@ -105,10 +105,11 @@ begin
   SF := '';
   if (ST.HasOption('ar') or ST.HasOption('rr') or ST.HasOption('en')) then
     begin
+      if Tables.UnstratifiedTable.ColCount > 1 then
       result.Header.Text := result.Header.Text + LineEnding + 'O+ = ' +
         Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(0,ValueLabelType) +
         ' / O- = ' +
-        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(1,ValueLabelType) +
+        Tables.UnstratifiedTable.ColVariable.GetValueLabelFormatted(1,ValueLabelType) +   // TODO: dies here is no 2x2 tables at all
         LineEnding;
       if (FStratifyVarNames.Count>0) then
         SF := SF + LineEnding + '(attack rates are for unstratified data)';
