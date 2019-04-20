@@ -1460,7 +1460,7 @@ drop data !del ; // drop all observations "marked for deletion"
          <li>See <a href="#formatting">formatting</a> for options on formatting percentages</li>
         </ul>
        </li>
-       <li> Sorting:
+       <li> Sorting (applies to individual variable tables):
         <ul>
          <li>Indicate by !sxxx where the x indicate:<br/>
           r:row c:Column a:Ascending d:Descending t:Total l:label (else numerical)</li>
@@ -1480,7 +1480,7 @@ drop data !del ; // drop all observations "marked for deletion"
        </li>
        <li> Estimation and testing:
         <ul>
-        <li><font class="option">!t</font> Chi<sup>2</sup></li>
+        <li><font class="option">!t</font> Chi<sup>2</sup> and p-value</li>
         <li><font class="option">!ex</font> Fisher Exact test for 2x2 tables only</li>
         <li><font class="option">!odds</font> Odds Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data</li>
         <li><font class="option">!rr</font> Risk Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data</li>
@@ -1496,10 +1496,12 @@ drop data !del ; // drop all observations "marked for deletion"
         <li><font class="option">!en</font> Show unstratified 2x2 tables</li>
         </ul>
         </li>
-       <li> Output<br/>
+       <li> Output table sort options (specify one only)<br/>
        <ul>
         <li><font class="option">!sn</font> Sort the table rows by variable name</li>
         <li><font class="option">!sl</font> Sort the table rows by variable label</li>
+        <li><font class="option">!ss</font> Sort the table rows by key statistic, depending of estimation options<br>
+        - priority given to RR then OR then Fisher Exact P then Chi<sup>2</sup> P</li>
         </ul>
         </li>
        </ul>

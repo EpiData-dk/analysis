@@ -33,7 +33,6 @@ type
       FResultCounts: TExecVarVector;
       FResultRows: Integer;
       FAllTables: array of TTwoWayTables;
-      FSortBy: TTableStatistic;
       FSortIndex: Integer;
       FSortDescending: Boolean;
     public
@@ -203,31 +202,26 @@ begin
 end;
 
 function TCTable.GetStatisticOptions(ST: TCTableCommand): TTableStatistics;
-// find statistics options and set the sort statistic in case !so is specified
-
+// find statistics options and set the sort statistic in case !ss is specified
 begin
   result := [];
   FSortDescending := false;
   if (ST.HasOption('t')) then
     begin
       Include(Result, tsChi2);
-      FSortBy := tsChi2;
     end;
   if (ST.HasOption('ex')) then
     begin
       Include(Result, tsFExP);
-      FSortBy := tsFExP;
     end;
   if (ST.HasOption('odds')) then
     begin
       Include(Result, tsOR);
-      FSortBy := tsOR;
       FSortDescending := true;
     end;
   if (ST.HasOption('rr') or ST.HasOption('ar') or ST.HasOption('en')) then
     begin
       Include(Result, tsRR);
-      FSortBy := tsRR;
       FSortDescending := true;
     end;
 end;
@@ -235,7 +229,6 @@ end;
 procedure TCTable.ExecCTable(VarNames: TStrings; ST: TCTableCommand);
 var
   SummaryTable: TOutputTable;
-  debugst1, debugst2: String;
   DF: TEpiDataFile;
   TwoVarNames: TStrings;
   CrossVars: TEpiFields;
@@ -245,8 +238,8 @@ var
   VariableLabelType: TEpiGetVariableLabelType;
   Opt: TOption;
   i, j, ix, VarCount, TableCount: Integer;
-  SortValue: EpiFloat;
-  SortValues: array of EpiFloat;
+  StatValue: EpiFloat;
+  SortValue: array of EpiFloat;
   SortIndex: array of Integer;
   TableData: TTables;
   Table: TTwoWayTables;
@@ -343,8 +336,6 @@ begin
       for i:= 0 to HoldVarLabels.Count - 1 do
         begin
           ix := HoldVarLabels.IndexOf(SortVarLabels[i]);
-          debugst1 := SortVarLabels[i];
-          debugst2 := VarNames[ix + 1];
           CrossVarNames.Add(VarNames[ix + 1]);
        end;
       CrossVars.Free;
@@ -373,7 +364,7 @@ begin
   TableData  := TTables.Create(FExecutor, FOutputCreator);
   setlength(FAllTables,VarCount);
   setlength(SortIndex,VarCount);
-  setlength(SortValues,VarCount);
+  setlength(SortValue,VarCount);
 
   TableCount := -1;
   FSortIndex := 0;
@@ -387,16 +378,16 @@ begin
       FAllTables[TableCount] := Table;
       if ((Table.StatisticsCount > 0) and (ST.HasOption('ss'))) then
       begin
-          SortValue := Table.Statistics[FSortIndex].CompactSortValue;
-          SortValues[TableCount] := SortValue;
-          SortIndex[TableCount] := TableCount;
-          j := TableCount;
-          while ((j > 0) and (Compare(SortValues[SortIndex[j-1]], SortValue))) do
-          begin
-            SortIndex[j]  := SortIndex[j-1];
-            SortIndex[j-1]  := TableCount;
-            j -= 1;
-          end;
+        StatValue := Table.Statistics[FSortIndex].CompactSortValue;
+        SortValue[TableCount] := StatValue;
+        SortIndex[TableCount] := TableCount;
+        j := TableCount;
+        while ((j > 0) and (Compare(SortValue[SortIndex[j-1]], StatValue))) do
+        begin
+          SortIndex[j]   := SortIndex[j-1];
+          SortIndex[j-1] := TableCount;
+          j -= 1;
+        end;
       end
       else
         SortIndex[TableCount] := TableCount;

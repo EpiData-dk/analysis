@@ -14,14 +14,13 @@ type
   TTwoWayTable = class;
   TTwoWayTables = class;
 
-  // VERY IMPORTANT
-  // The order here MUST match the order in which statistics unit are used in tables.pas
-  // and the order in tables.pas MUST match the order in which statistics are desired in ctable.pas
+  // The order here MUST match the order in which statistics are output in ctable.pas
+  // This also sets the order or priority for ctable option !ss (tsRR always used, if present, etc)
   TTableStatistic  = (
     tsRR,
     tsOR,
-    tsChi2,
-    tsFExP
+    tsFExP,
+    tsChi2
   );
 
   TTableStatistics = set of TTableStatistic;
