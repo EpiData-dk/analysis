@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, executor, ast, epiopenfile, epidocument, outputcreator,
-  epidatafiles, epidatafilerelations, datamodule;
+  epidatafiles, epidatafilerelations, datamodule, epidocument_helper;
 
 type
 
@@ -797,6 +797,7 @@ var
   i: Integer;
   LastModified: TDateTime;
   TmpDoc: TEpiDocument;
+  S: UTF8String;
 
   function DoDatafilesCheck(Datafiles: TEpiDataFiles): boolean;
   var
@@ -828,49 +829,6 @@ begin
 
   if (not InternalCheckAndOpenFile(ST, MergeDocFile)) then
     Exit;
-{
-
-  if ((FExecutor.Document.DataFiles.Count > 1) and (MergeDocFile.DataFiles.Count > 1)) and
-     (not ST.HasOption('ds'))
-  then
-    begin
-      if (Assigned(ST.VariableList)) and
-         (ST.VariableList.Count > 0)
-      then
-        begin
-          FExecutor.Error('When merging whole projects, it is not possible to select individual key variables!!');
-          ST.ExecResult := csrFailed;
-          Exit;
-        end;
-    end
-  else
-    begin
-      if ST.HasOption('ds', Opt) then
-        MergeDF := MergeDocFile.Document.DataFiles.GetDataFileByName(Opt.Expr.AsIdent)
-      else
-        MergeDF := MergeDocFile.Document.DataFiles[0];
-
-      for i := 0 to ST.VariableList.Count - 1 do
-        begin
-          V := ST.VariableList[i];
-          MergeF := MergeDF.Fields.FieldByName[V.Ident];
-
-          if not Assigned(MergeF) then
-          begin
-            FExecutor.Error(Format('Variable "%s" not found in external dataset!', [V.Ident]));
-            ST.ExecResult := csrFailed;
-            Exit;
-          end;
-
-          MainF := FExecutor.DataFile.Fields.FieldByName[V.Ident];
-          if (MainF.FieldType <> MergeF.FieldType) then
-          begin
-            FExecutor.Error(Format('Variable "%s" in external dataset has a different type than in the internal dataset', [V.Ident]));
-            ST.ExecResult := csrFailed;
-            Exit;
-          end;
-        end;
-    end;     }
 
   if (MergeDocFile <> FExecutor.DocFile) then
     begin
@@ -1018,10 +976,18 @@ begin
   Result := InternalMerge(ST, MergeDF, VarNames);
 
   if (Assigned(Result)) then
-    FOutputCreator.DoNormal(
-      'Successfully merged ' + MergeDF.Name + ' into ' + FExecutor.DataFile.Name + LineEnding +
-      'Resulting dataset name: ' + Result.Name
-    );
+    begin
+      S := 'Successfully merged ' + MergeDF.Name + ' into ' + FExecutor.DataFile.Name + LineEnding +
+           'Resulting dataset name: ' + Result.Name;
+
+      if (MergeDocFile.Document.IsEncrypted()) and
+         (not FExecutor.Document.IsEncrypted())
+      then
+        S := S + LineEnding +
+             'Warning: Merged dataset is UN-encrypted';
+
+      FOutputCreator.DoNormal(S);
+    end;
 
   if (MergeDocFile <> FExecutor.DocFile) then
     MergeDocFile.Free;
