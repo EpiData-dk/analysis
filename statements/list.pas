@@ -102,7 +102,6 @@ begin
       Inc(i);
     end;
 
-  FOutputCreator.DoInfoAll('Note: Browse is faster than List');
   ST.ExecResult := csrSuccess;
 
   Fields.Free;
