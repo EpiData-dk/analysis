@@ -1241,12 +1241,6 @@ begin
 
   // Find all .pdf files in the directory set by TutorialsDirUTF8
   FileList := TStringListUTF8.Create;
-  {$IFDEF DARWIN}
-  P := ResolveDots(ProgramDirectory + '../../../docs');
-  {$ELSE}
-  P := ProgramDirectory + DirectorySeparator + 'docs';
-  {$ENDIF}
-
   P := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER];
 
   FindAllFiles(FileList, P, '*.pdf', false);
@@ -1480,12 +1474,6 @@ procedure TMainForm.OpenTutorialMenuItemClick(Sender: TObject);
 var
   P: String;
 begin
-  {$IFDEF DARWIN}
-  P := ResolveDots(ProgramDirectory + '../../../docs');
-  {$ELSE}
-  P := ProgramDirectory + DirectorySeparator + 'docs';
-  {$ENDIF}
-
   P := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER];
 
   OpenDocument(P + DirectorySeparator + TMenuItem(Sender).Caption);
