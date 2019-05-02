@@ -382,6 +382,12 @@ var
         for i := 0 to Src.Size - 1 do
           TransferData(DstF, SrcF, StartIdx + i, i);
       end;
+
+    for i := 0 to Src.Size - 1 do
+      begin
+        if Src.Deleted[i] then Dst.Deleted[StartIdx + i] := True;
+        if Src.Verified[i] then Dst.Verified[StartIdx + i] := True;
+      end;
   end;
 
 begin
