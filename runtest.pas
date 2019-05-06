@@ -399,7 +399,7 @@ begin
   T.Cell[2, FDatafile.Size + 1].Text := IntToStr(SumFound);
   T.Cell[3, FDatafile.Size + 1].Text := IntToStr(SumError);
   if (SumError > 0) then
-    T.Cell[6, FDatafile.Size + 1].Text := '{\b Assert Errors Exits!}';
+    T.Cell[6, FDatafile.Size + 1].Text := '{\b Assert Errors Exist!}';
 
   T.SetColAlignment(0, taLeftJustify);
   T.SetColAlignment(6, taLeftJustify);

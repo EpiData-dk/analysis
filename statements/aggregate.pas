@@ -427,7 +427,6 @@ begin
   ResultIdx := 0;
   ResultSize := ResultDF.Size;
 
-  // TODO: {Jamie} why do we get infinite loop here with DF of only two records?
   while ResultIdx < ResultSize do
     begin
       // Check that levels have change properly

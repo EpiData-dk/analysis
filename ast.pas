@@ -3488,7 +3488,6 @@ begin
         DoTypeCheckError('Identifier "' + Ident + '" does not accept an index', TypeChecker);
         Exit;
       end;
-
     evtField,
     evtGlobalVector,
     evtResultVector:
@@ -4583,6 +4582,7 @@ function TVariable.TypeCheck(TypeChecker: IEpiTypeChecker;
   TypesAndFlags: TTypesAndFlagsRec): boolean;
 var
   EV: TCustomExecutorVariable;
+  debug: TExecutorVariableType;
 begin
   Result := inherited TypeCheck(TypeChecker, TypesAndFlags);
 
@@ -4595,25 +4595,27 @@ begin
   then
     Exit;
 
+  debug := EV.VarType;
   case EV.VarType of
     evtGlobal,
     evtResultConst:
         // A global or result can be accepted as either Value or Object.
         Result := true;
 
+    evtField:
+        // A variable can be accepted as Value or Object
+        Result := true;
+
     evtDataset,
     evtValuelabel,
     evtGlobalVector,
-    evtField,
     evtResultVector,
     evtResultMatrix:
       begin
         // Since the AST found this to be a non-indexed variable, it may only
         // be accepted as an object!
         Result := (evfAsObject in TypesAndFlags.Flags);
-
         if (not Result) then
- { TODO -oJamie : Why not just recast this as having the default index? }
         begin
           DoTypeCheckError('Identifier "' + Ident + '" must have an index', TypeChecker);
           Exit;
@@ -5583,12 +5585,24 @@ var
   VarT: TASTResultType;
   ExpT: TASTResultType;
   EFlags: TTypesAndFlagsRec;
-  EV: TCustomExecutorVariable;
+  EV, ExprV: TCustomExecutorVariable;
 begin
   // Since assignment vary greatly, we need to make diffent check for combination.
   // eg. evtField may be AsValue and AsObject.
   // but evtGlobalVector can only be AsValue. Otherwise assignment fails.
+
   Parser.SetTypeCheckErrorOutput(false);
+
+  // Check for global vector, result vector or matrix without an index on the right of :=
+  // If they are used in an expression, the error is caught elsewhere
+  EFlags := TypesAndFlags(AllResultDataTypes, [evtGlobalVector, evtResultVector, evtResultMatrix], [evfAsObject]);
+  if ((FExpr.Operation = otVariable) and (FExpr.Typecheck(Parser, EFlags))) then
+     begin
+       result := false;
+       Parser.SetTypeCheckErrorOutput(true);
+       DoTypeCheckError('The variable in this expression cannot be used without an index',Parser);
+       exit;
+     end;
 
   // Check field
   EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject]);
@@ -5598,11 +5612,10 @@ begin
   EFlags := TypesAndFlags(AllResultDataTypes, [evtGlobal, evtGlobalVector], [evfInternal, evfAsValue]);
   Result := result or FVariable.TypeCheck(Parser, EFlags);
 
+  // Just make sure we output an error.
   Parser.SetTypeCheckErrorOutput(true);
 
   EV := Parser.GetExecVariable(FVAriable.Ident);
-
-  // Just make sure we output the error.
   if (not Result) then
     begin
       if (not Assigned(EV) ) then

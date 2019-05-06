@@ -2304,7 +2304,7 @@ begin
 
   if (not FileExistsUTF8(FN)) then
   begin
-    DoError('File "' + FN + '" does not exits');
+    DoError('File "' + FN + '" does not exist');
     Exit;
   end;
 
