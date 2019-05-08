@@ -176,6 +176,11 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
+      <environment>
+        <UserOverrides Count="1">
+          <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
+        </UserOverrides>
+      </environment>
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
@@ -649,7 +654,6 @@
       </Item8>
       <Item9>
         <Name Value="EKeyNotFoundException"/>
-        <Enabled Value="False"/>
       </Item9>
       <Item10>
         <Name Value="Exception"/>

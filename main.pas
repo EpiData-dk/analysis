@@ -500,7 +500,9 @@ begin
   // of the main form recalculates it all. This is only needed right after programstart.
   Application.QueueAsyncCall(@ChangeWidth, 0);
 
-  {$IFDEF RELEASE}
+  {$IFDEF EPI_BETA}
+  Panel2.Visible := true;
+  {$ELSE}
   Panel2.Visible := false;
   {$ENDIF}
 end;
