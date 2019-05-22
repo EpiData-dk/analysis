@@ -98,7 +98,7 @@ var
   F: TEpiField;
   I, Decimals: Integer;
 begin
-  if (ST.HasOption('caption', opt)) then
+  if (ST.HasOption('label', opt)) then
     ResultDF.Caption.Text := Opt.Expr.AsString
   else
     ResultDF.Caption.Text := 'Aggregated Table';

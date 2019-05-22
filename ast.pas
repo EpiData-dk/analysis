@@ -1655,7 +1655,7 @@ begin
   Result.Insert('nc',      [rtUndefined]);
   Result.Insert('nt',      [rtUndefined]);
   Result.Insert('replace', [rtUndefined]);
-  Result.Insert('caption', AllResultDataTypes);
+  Result.Insert('label',   AllResultDataTypes);
   Result.Insert('h',       [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
   Result.Insert('ds',      [rtObject],               [evtDataset],      [evfInternal, evfExternal, evfAsObject]);
   Result.Insert('u',       [rtUndefined]);
@@ -2111,7 +2111,7 @@ begin
   result.Insert('replace', [rtUndefined]);
   result.Insert('table',   [rtUndefined]);
   result.Insert('nu',      [rtUndefined]);
-  result.Insert('label',   [rtString]);
+  result.Insert('label',   AllResultDataTypes);
   result.Insert('r',       [rtUndefined, rtObject], [], [evfAsObject, evfExternal]);
 end;
 
@@ -2648,7 +2648,7 @@ function TNewVariable.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  result.Insert('label',      [rtString]);
+  result.Insert('label',      AllResultDataTypes);
   result.Insert('l',          [rtInteger]);
   result.Insert('d',          [rtInteger]);
   result.Insert('vl',         [rtObject], [evtValuelabel], [evfInternal, evfAsObject]);
