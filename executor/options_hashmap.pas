@@ -18,6 +18,7 @@ type
   TSetOption=class
   private
     FOnChange: TNotifyEvent;
+    FName: UTF8String;
     FValue: UTF8String;
     FASTType: TASTResultType;
     FLegalValues: TStrings;
@@ -35,6 +36,7 @@ type
     procedure SetHighRange(AValue: UTF8String);
   public
     constructor Create(const AValue: UTF8String; AAstType: TASTResultType);
+    property Name: UTF8String read FName;
     property Value: UTF8String read FValue write SetValue;
     property ASTType: TASTResultType read FASTType;
     property LegalValues: TStrings read FLegalValues;
@@ -56,7 +58,13 @@ type
     class function c(KeyA, KeyB: UTF8String): boolean;
   end;
 
-  TSetOptionsMap = specialize TMap<UTF8String, TSetOption, TOptionCompare>;
+  TCustomSetOptionsMap = specialize TMap<UTF8String, TSetOption, TOptionCompare>;
+
+  { TSetOptionsMap }
+
+  TSetOptionsMap = class(TCustomSetOptionsMap)
+    procedure Insert(key: UTF8String; value: TSetOption);
+  end;
 
   TTypesAndFlagsRec = record
     ResultTypes: TASTResultTypes;
@@ -99,6 +107,14 @@ begin
   result.ResultTypes := AResultTypes;
   result.ExecutorVariableTypes := AExecutorVariableTypes;
   result.Flags := AFlags;
+end;
+
+{ TSetOptionsMap }
+
+procedure TSetOptionsMap.Insert(key: UTF8String; value: TSetOption);
+begin
+  inherited Insert(key, value);
+  value.FName := key;
 end;
 
 { TStatementOptionsMap }
@@ -177,7 +193,7 @@ var
   ValInt,   LowInt,   HighInt: EpiInteger;
   ValTime,  LowTime,  HighTime: EpiTime;
 begin
-  if FValue = AValue then Exit;
+  if (FValue = AValue) then Exit;
 
   if (LegalValues.Count > 0) then
   begin

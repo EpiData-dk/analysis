@@ -165,6 +165,8 @@ type
   { Other internals }
   private
     Executor: TExecutor;
+    procedure LeftPanelChange(Sender: TObject);
+    procedure RightPanelChange(Sender: TObject);
     procedure ShowEditor(Const Filename: UTF8String = '');
     procedure DoUpdateTitle;
     procedure DialogFilenameHack(const S: string);
@@ -234,6 +236,7 @@ type
     procedure ToggleSidebar(Item: Integer; ToggleMode: TToggleMode = tmToggle);
     procedure DoUpdateVarnames;
     procedure DoUpdateHistory;
+    procedure AddSetOptionHandlers;
   public
     procedure UpdateVarnamesList;
     procedure UpdateHistoryList;
@@ -370,19 +373,7 @@ begin
   Executor.OnRunPgmSyntaxError  := @SyntaxError;
   Executor.OnGUIInteraction     := @GUIInteraction;
 
-  Executor.SetOptions[ANA_SO_CMDEDIT_FONT_NAME].AddOnChangeHandler(@CmdEditFontChangeEvent);
-  Executor.SetOptions[ANA_SO_CMDEDIT_FONT_SIZE].AddOnChangeHandler(@CmdEditFontChangeEvent);
-  Executor.SetOptions[ANA_SO_CMDEDIT_FONT_COLOR].AddOnChangeHandler(@CmdEditFontChangeEvent);
-  Executor.SetOptions[ANA_SO_CMDEDIT_FONT_STYLE].AddOnChangeHandler(@CmdEditFontChangeEvent);
-  Executor.SetOptions[ANA_SO_CMDEDIT_BG_COLOR].AddOnChangeHandler(@CmdEditFontChangeEvent);
-  Executor.SetOptions[ANA_SO_OUTPUT_FONT_SIZE].AddOnChangeHandler(@OutputFontChange);
-  Executor.SetOptions[ANA_SO_OUTPUT_FONT_NAME].AddOnChangeHandler(@OutputFontChange);
-  Executor.SetOptions[ANA_SO_OUTPUT_FONT_COLOR].AddOnChangeHandler(@OutputFontChange);
-  Executor.SetOptions[ANA_SO_OUTPUT_FONT_STYLE].AddOnChangeHandler(@OutputFontChange);
-  Executor.SetOptions[ANA_SO_OUTPUT_BG_COLOR].AddOnChangeHandler(@OutputFontChange);
-  Executor.SetOptions[ANA_SO_OUTPUT_FORMAT].AddOnChangeHandler(@OutputViewerChanges);
-  Executor.SetOptions[ANA_SO_TUTORIAL_FOLDER].AddOnChangeHandler(@TutorialChange);
-  Executor.SetOptions[ANA_SO_SHOW_SIDEWINDOWS].AddOnChangeHandler(@ShowSidewindows);
+  AddSetOptionHandlers;
 
   FOutputCreator.SetOptions := Executor.SetOptions;
 
@@ -885,6 +876,21 @@ begin
 
   if FileExistsUTF8(Filename) then
     EditorForm.OpenPgm(Filename);
+end;
+
+procedure TMainForm.LeftPanelChange(Sender: TObject);
+var
+  Option: TSetOption;
+begin
+  Option := TSetOption(Sender);
+
+//  if (Option.Name;
+  //
+end;
+
+procedure TMainForm.RightPanelChange(Sender: TObject);
+begin
+  //
 end;
 
 procedure TMainForm.DoUpdateTitle;
@@ -1633,6 +1639,35 @@ begin
 
   HistoryListBox.Items.EndUpdate;
   HistoryListBox.TopIndex := HistoryListBox.Items.Count - 1;
+end;
+
+procedure TMainForm.AddSetOptionHandlers;
+begin
+  // CmdEdit handlers
+  Executor.SetOptions[ANA_SO_CMDEDIT_FONT_NAME].AddOnChangeHandler(@CmdEditFontChangeEvent);
+  Executor.SetOptions[ANA_SO_CMDEDIT_FONT_SIZE].AddOnChangeHandler(@CmdEditFontChangeEvent);
+  Executor.SetOptions[ANA_SO_CMDEDIT_FONT_COLOR].AddOnChangeHandler(@CmdEditFontChangeEvent);
+  Executor.SetOptions[ANA_SO_CMDEDIT_FONT_STYLE].AddOnChangeHandler(@CmdEditFontChangeEvent);
+  Executor.SetOptions[ANA_SO_CMDEDIT_BG_COLOR].AddOnChangeHandler(@CmdEditFontChangeEvent);
+
+  // Output handlers
+  Executor.SetOptions[ANA_SO_OUTPUT_FONT_SIZE].AddOnChangeHandler(@OutputFontChange);
+  Executor.SetOptions[ANA_SO_OUTPUT_FONT_NAME].AddOnChangeHandler(@OutputFontChange);
+  Executor.SetOptions[ANA_SO_OUTPUT_FONT_COLOR].AddOnChangeHandler(@OutputFontChange);
+  Executor.SetOptions[ANA_SO_OUTPUT_FONT_STYLE].AddOnChangeHandler(@OutputFontChange);
+  Executor.SetOptions[ANA_SO_OUTPUT_BG_COLOR].AddOnChangeHandler(@OutputFontChange);
+  Executor.SetOptions[ANA_SO_OUTPUT_FORMAT].AddOnChangeHandler(@OutputViewerChanges);
+
+  // Tutorial handlers
+  Executor.SetOptions[ANA_SO_TUTORIAL_FOLDER].AddOnChangeHandler(@TutorialChange);
+
+  Executor.SetOptions[ANA_SO_SHOW_SIDEWINDOWS].AddOnChangeHandler(@ShowSidewindows);
+
+  // Display/Windows handlers
+{  Executor.SetOptions[ANA_SO_DISPAY_COMMANDTREE].AddOnChangeHandler(@LeftPanelChange);
+  Executor.SetOptions[ANA_SO_DISPAY_DATASET].AddOnChangeHandler(@LeftPanelChange);
+  Executor.SetOptions[ANA_SO_DISPAY_HISTORY].AddOnChangeHandler(@RightPanelChange);
+  Executor.SetOptions[ANA_SO_DISPAY_VARIABLE].AddOnChangeHandler(@RightPanelChange);        }
 end;
 
 procedure TMainForm.UpdateVarnamesList;
