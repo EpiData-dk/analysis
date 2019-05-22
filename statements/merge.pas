@@ -516,6 +516,7 @@ var
   RefMap: TEpiReferenceMap;
   Opt: TOption;
   S: UTF8String;
+  NewCaption: String;
 
   function CompareKeys(MainIdx, MergeIdx: Integer): TValueRelationship;
   var
@@ -540,7 +541,12 @@ begin
 
   RefMap := TEpiReferenceMap.Create;
   MainDF := TEpiDataFile(FExecutor.DataFile.Clone(nil, RefMap));
-  MainDF.Caption.Text := 'Merged datasets: ' + MainDF.Name + ' and ' + MergeDF.Name;
+
+  if (ST.HasOption('label', Opt)) then
+    NewCaption := Opt.Expr.AsString
+  else
+    NewCaption := 'Merged datasets: ' + MainDF.Name + ' and ' + MergeDF.Name;
+
   if (ST.HasOption('r', Opt)) then
     begin
       S := Opt.Expr.AsIdent;
@@ -557,7 +563,7 @@ begin
   else
     begin
       i := 1;
-      S := '_merge_' + MainDF.Name + '_' + MergeDF.Name + '_' ;
+      S := 'mds' ;
       while (not FExecutor.Document.DataFiles.ValidateRename(S + IntToStr(i), false)) do
         inc(i);
       MainDF.Name := S + IntToStr(i);
@@ -566,6 +572,7 @@ begin
   RefMap.FixupReferences;
   RefMap.Free;
   MainDF.Relates.ClearAndFree;
+  MainDF.Caption.Text := NewCaption;
   FExecutor.Document.Relations.NewMasterRelation.Datafile := MainDF;
 
   MainKeyFields  := FieldsFromStrings(Varnames, MainDF);

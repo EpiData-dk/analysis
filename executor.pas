@@ -8,7 +8,7 @@ interface
 uses
   Classes, SysUtils, fgl, ast, ast_types, outputcreator, epidatafiles,
   epidatafilestypes, epidatafilerelations, epivaluelabels, options_hashmap,
-  contnrs, select_stack, epiopenfile, epimiscutils, result_variables,
+  contnrs, gmap, select_stack, epiopenfile, epimiscutils, result_variables,
   epidocument, LazMethodList, parser_types, epicustombase, epiranges, epiadmin;
 
 type
@@ -181,6 +181,8 @@ type
     FNestedLoopCounter: Integer;
 
   // EXEC's
+  private
+    procedure OutputOptions(Options: IOptionCheck);
   protected
     // FCurrentRecNo is NO offset into current SelectVector. However it will never exceed
     // the boundries of SelectVector... ie.  FCurrentRecNo = [0 .. SelectVector.Size - 1]
@@ -1763,6 +1765,23 @@ begin
     end;
 
   ST.ExecResult := csrSuccess;
+end;
+
+procedure TExecutor.OutputOptions(Options: IOptionCheck);
+var
+  OptionList: TStatementOptionsMap;
+  Item: TStatementOptionsMap.TIterator;
+  S: String;
+begin
+  OptionList := Options.GetAcceptedOptions;
+
+  S := 'Options: ';
+  Item := OptionList.Min;
+  while Item.Next do
+    S := S + Item.GetKey + ', ';
+  S := S + Item.GetKey;
+
+  FOutputCreator.DoInfoAll(S);
 end;
 
 procedure TExecutor.InitSetOptions;
@@ -3353,11 +3372,25 @@ begin
   RebuildSelectStack;
 end;
 
+type
+
+{ TInternalListDSCommand }
+TInternalListDSCommand = class(TListCommand)
+  function GetExecFlags: TCustomStatementExecutionFlags; override;
+end;
+
+{ TInternalListDSCommand }
+function TInternalListDSCommand.GetExecFlags: TCustomStatementExecutionFlags;
+begin
+  Result := inherited GetExecFlags + [sefInternal];
+end;
+
 procedure TExecutor.ExecMerge(ST: TMergeCommand);
 var
   MergeModule: TMerge;
   Opt: TOption;
   NewDF: TEpiDataFile;
+  ListCommand: TListCommand;
 begin
   // Sanity checks:
   if (ST.HasOption('combine') and
@@ -3376,10 +3409,22 @@ begin
   MergeModule.Free;
 
   // Update select stack since data was added
-  RebuildSelectStack;
-  DoUpdateFieldResultVar;
+  if (ST.HasOption('nu')) then
+    begin
+      RebuildSelectStack;
+      DoUpdateFieldResultVar;
+    end
+  else
+    DoUseDatafile(NewDF);
+
   DoUpdateDatasetResultVar;
   DoUpdateValuelabelsResultVar;
+
+  DoInfo('All defined datasets are:');
+
+  ListCommand := TInternalListDSCommand.Create(TVariableList.Create(), TOptionList.Create(), ccDataset);
+  ExecList(ListCommand);
+  ListCommand.Free;
 end;
 
 procedure TExecutor.ExecCheck(ST: TCustomCheckCommand);
@@ -3775,11 +3820,24 @@ end;
 procedure TExecutor.DoStatement(St: TCustomStatement);
 var
   Cmd: TCustomStatement;
+  Options: IOptionCheck;
 begin
   DoBeforeStatement(St);
 
   try
     try
+      // If !h is used, then always output help.
+      if (Supports(ST, IOptionCheck, Options)) and
+         (Assigned(Options.GetOptionList)) and
+         (Options.GetOptionList.HasOption('h'))
+      then
+        begin
+          ST.ExecResult := csrOptionList;
+          OutputOptions(Options);
+          Exit;
+        end;
+
+
       if (not Assigned(FDocFile)) and
          (ST.RequireOpenProject)
       then

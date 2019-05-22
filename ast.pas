@@ -133,6 +133,7 @@ type
 
   TCustomStatementExecutionResult = (
     csrSuccess,   // The statement completed successfully
+    csrOptionList,// The statement completed by showing the list of options
     csrFailed,    // The statement failed
     csrCustom     // The statement returned a custom result. See actual implementation for details.
   );
@@ -2109,6 +2110,8 @@ begin
   result.Insert('update',  [rtUndefined]);
   result.Insert('replace', [rtUndefined]);
   result.Insert('table',   [rtUndefined]);
+  result.Insert('nu',      [rtUndefined]);
+  result.Insert('label',   [rtString]);
   result.Insert('r',       [rtUndefined, rtObject], [], [evfAsObject, evfExternal]);
 end;
 

@@ -355,10 +355,15 @@ read fn;                               // expression where the variable fn is us
         <li>
          <font class="option">!ds := &lt;dataset&gt;</font> Optional! Specifies which dataset to use. It is only needed if the multiple datasets exist (either as related datasets or in external file).
         </li>
+            <li>
+              <font class="option">!label := "&lt;text&gt;"</font>
+              Assign the descriptive text as a caption/label for the resulting dataset.<br/>
+            </li>
         <li><font class="option">!combine</font> All non-missing values in the external dataset replaces all MISSING values for common variables</li>
         <li><font class="option">!update</font> All non-missing values in the external dataset replaces ALL values for common variables</li>
         <li><font class="option">!replace</font> All values in the external dataset replace all values for common variables</li>
         <li><font class="option">!table</font> The external file is used as a lookup table. <br/>E.g. to add person information to a file with clinical results</li>
+        <li><font class="option">!nu</font> By default the resulting data is automatically used. By using this option the program will stay on the current dataset after the command has completed.</li>
         <li><font class="option">!r</font> Specify a different name for the resulting dataset. Default naming is a concatenation of the two used datasets</li>
        </ul>
         To keep information in variables with an identical name (e.g. mergevar or name) from all files rename (using <a href="#editvariable">edit</a>) the variables <b>before</b> you merge the next file. E.g. <font class="cmd">

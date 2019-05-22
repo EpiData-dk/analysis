@@ -14,9 +14,7 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="3"/>
-      <RevisionNr Value="4"/>
-      <BuildNr Value="8"/>
+      <MinorVersionNr Value="5"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -623,7 +621,8 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dEPI_CHROMIUM_HTML1"/>
+      <CustomOptions Value="-dEPI_CHROMIUM_HTML1
+-dEPI_BETA"/>
     </Other>
   </CompilerOptions>
   <Debugging>
