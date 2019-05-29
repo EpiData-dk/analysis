@@ -56,7 +56,6 @@ const
   ANA_SO_SHOW_ERROR                    = 'SHOW ERROR';
   ANA_SO_SHOW_INFO                     = 'SHOW INFO';
   ANA_SO_SHOW_WARNING                  = 'SHOW WARNING';
-  ANA_SO_SHOW_SIDEWINDOWS              = 'SHOW SIDEWINDOWS';
 
   ANA_SO_CONFIDENCE_INTERVAL           = 'CONFIDENCE INTERVAL';
 

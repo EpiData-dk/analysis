@@ -30,7 +30,7 @@ uses
   browse4, report, options_fontoptions, save_output,
   epi_script_function_observations, options_filesoptions, aggregate,
   aggregate_types, tables, tables_types, options_table, tables_stat_chi2,
-  tables_stat_fexp, tables_stat_or, tables_stat_rr, ctable, wizard_form;
+  tables_stat_fexp, tables_stat_or, tables_stat_rr, ctable, wizard_form, commandtree;
 
 {$R *.res}
 

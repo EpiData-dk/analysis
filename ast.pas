@@ -167,6 +167,7 @@ type
     property ExecFlags: TCustomStatementExecutionFlags read GetExecFlags;
     property ExecFlagsErrorMsg[Flag: TCustomStatementExecutionFlag]: UTF8String read GetExecFlagsErrorMsg;
   end;
+  TCustomStatementClass = class of TCustomStatement;
 
   { TEmptyStatement }
 

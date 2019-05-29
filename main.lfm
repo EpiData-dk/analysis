@@ -1,13 +1,13 @@
 object MainForm: TMainForm
-  Left = 2518
-  Height = 682
-  Top = 387
-  Width = 1159
+  Left = 2369
+  Height = 673
+  Top = 146
+  Width = 1002
   ActiveControl = Panel2
   AllowDropFiles = True
   Caption = 'AMainForm'
-  ClientHeight = 657
-  ClientWidth = 1159
+  ClientHeight = 648
+  ClientWidth = 1002
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -18,9 +18,9 @@ object MainForm: TMainForm
   LCLVersion = '2.0.0.4'
   object PageControl1: TPageControl
     Left = 216
-    Height = 607
+    Height = 598
     Top = 50
-    Width = 742
+    Width = 585
     Align = alClient
     ShowTabs = False
     TabOrder = 5
@@ -29,10 +29,10 @@ object MainForm: TMainForm
     Left = 0
     Height = 50
     Top = 0
-    Width = 1159
+    Width = 1002
     Align = alTop
     ClientHeight = 50
-    ClientWidth = 1159
+    ClientWidth = 1002
     TabOrder = 0
     object Button2: TButton
       Left = 16
@@ -69,20 +69,21 @@ object MainForm: TMainForm
       ParentColor = False
     end
   end
-  object SidebarPanel: TPanel
-    Left = 963
-    Height = 607
+  object RightSidePanel: TPanel
+    Left = 806
+    Height = 598
     Top = 50
     Width = 196
     Align = alRight
-    ClientHeight = 607
+    ClientHeight = 598
     ClientWidth = 196
     TabOrder = 1
     Visible = False
     object HistoryListBox: TListBox
+      Tag = 1
       Left = 1
       Height = 195
-      Top = 411
+      Top = 402
       Width = 194
       Align = alBottom
       ItemHeight = 0
@@ -97,11 +98,11 @@ object MainForm: TMainForm
       TopIndex = -1
       Visible = False
     end
-    object SidebarBottomSplitter: TSplitter
+    object RightPanelSplitter: TSplitter
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 406
+      Top = 397
       Width = 194
       Align = alBottom
       AutoSnap = False
@@ -112,7 +113,7 @@ object MainForm: TMainForm
     object VarnamesList: TVirtualStringTree
       Cursor = 63
       Left = 1
-      Height = 405
+      Height = 396
       Top = 1
       Width = 194
       Align = alClient
@@ -124,13 +125,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 262
+          Width = 264
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 222
+          Width = 224
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -147,8 +148,8 @@ object MainForm: TMainForm
     end
   end
   object SidebarSplitter: TSplitter
-    Left = 958
-    Height = 607
+    Left = 801
+    Height = 598
     Top = 50
     Width = 5
     Align = alRight
@@ -158,18 +159,45 @@ object MainForm: TMainForm
     ResizeAnchor = akRight
     Visible = False
   end
-  object ProjectPanel: TPanel
+  object LeftSidePanel: TPanel
     Left = 0
-    Height = 607
+    Height = 598
     Top = 50
     Width = 211
     Align = alLeft
+    ClientHeight = 598
+    ClientWidth = 211
     TabOrder = 2
     Visible = False
+    object CommandTree: TVirtualStringTree
+      Tag = 1
+      Left = 1
+      Height = 286
+      Top = 311
+      Width = 209
+      Align = alBottom
+      DefaultText = 'Node'
+      Header.AutoSizeIndex = 0
+      Header.Columns = <>
+      Header.MainColumn = -1
+      TabOrder = 0
+      Visible = False
+    end
+    object LeftPanelSplitter: TSplitter
+      Cursor = crVSplit
+      Left = 1
+      Height = 5
+      Top = 306
+      Width = 209
+      Align = alBottom
+      AutoSnap = False
+      Beveled = True
+      ResizeAnchor = akBottom
+    end
   end
   object ProjectSplitter: TSplitter
     Left = 211
-    Height = 607
+    Height = 598
     Top = 50
     Width = 5
     Beveled = True
@@ -352,13 +380,11 @@ object MainForm: TMainForm
       Category = 'Window'
       Caption = 'Variables'
       OnExecute = ToggleVarnamesListActionExecute
-      ShortCut = 114
     end
     object ToggleHistoryListAction: TAction
       Category = 'Window'
       Caption = 'History'
       OnExecute = ToggleHistoryListActionExecute
-      ShortCut = 118
     end
     object CmdEditFocusAction: TAction
       Caption = 'Command Prompt'
@@ -396,7 +422,6 @@ object MainForm: TMainForm
       Category = 'Window'
       Caption = 'Project Tree'
       OnExecute = ToggleProjectTreeExecute
-      ShortCut = 113
     end
     object ChangeDirAction: TAction
       Category = 'File'

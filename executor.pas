@@ -1798,11 +1798,15 @@ begin
 
   FOptions.Insert(ANA_SO_CLIPBOARD_DELIMITER,            TSetOption.Create(',',  rtString));
 
+  FOptions.Insert(ANA_SO_DISPAY_COMMANDTREE,             TSetOption.Create('OFF', rtBoolean));
+  FOptions.Insert(ANA_SO_DISPAY_DATASET,                 TSetOption.Create('OFF', rtBoolean));
+  FOptions.Insert(ANA_SO_DISPAY_HISTORY,                 TSetOption.Create('OFF', rtBoolean));
+  FOptions.Insert(ANA_SO_DISPAY_VARIABLE,                TSetOption.Create('OFF', rtBoolean));
+
   FOptions.Insert(ANA_SO_ECHO,                           TSetOption.Create('ON', rtBoolean));
   FOptions.Insert(ANA_SO_SHOW_COMMAND,                   TSetOption.Create('ON', rtBoolean));
   FOptions.Insert(ANA_SO_SHOW_DEBUG,                     TSetOption.Create('ON', rtBoolean));
   FOptions.Insert(ANA_SO_SHOW_ERROR,                     TSetOption.Create('ON', rtBoolean));
-  FOptions.Insert(ANA_SO_SHOW_SIDEWINDOWS,               TSetOption.Create('ON', rtBoolean));
 
   SOpt := TSetOption.Create('ON', rtString);
   SOpt.LegalValues.Add('ON');
