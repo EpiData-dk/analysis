@@ -12,6 +12,7 @@ uses
   epiv_datamodule, epidatafiles, outputgenerator_base, history, cmdedit,
   options_hashmap, epiv_projecttreeview_frame, epicustombase,
   analysis_statusbar, epidocument, epiopenfile, outputviewer_types,
+  commandtree,
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -72,7 +73,7 @@ type
     MenuItem5: TMenuItem;
     MenuItem6: TMenuItem;
     Panel2: TPanel;
-    ProjectSplitter: TSplitter;
+    LeftSideSplitter: TSplitter;
     Button3: TButton;
     SaveDialog1: TSaveDialog;
     RightSidePanel: TPanel;
@@ -81,7 +82,7 @@ type
     ToggleCmdTreeAction: TAction;
     ToggleVarnamesListAction: TAction;
     ToggleHistoryListAction: TAction;
-    SidebarSplitter: TSplitter;
+    RightSideSplitter: TSplitter;
     VarnamesList: TVirtualStringTree;
     MenuItem9: TMenuItem;
     MenuItem10: TMenuItem;
@@ -120,7 +121,6 @@ type
     CheckVersionOnlineAction: TAction;
     ReleaseNotesAction: TAction;
     ShowShortcutAction: TAction;
-    CommandTree: TVirtualStringTree;
     procedure Button2Click(Sender: TObject);
     procedure CancelExecActionExecute(Sender: TObject);
     procedure CmdEditFocusActionExecute(Sender: TObject);
@@ -167,6 +167,7 @@ type
   { Other internals }
   private
     Executor: TExecutor;
+    procedure CommandTreeCommandDoubleClick(const CommandString: UTF8String);
     procedure LeftPanelChange(Sender: TObject);
     procedure RightPanelChange(Sender: TObject);
     procedure ShowEditor(Const Filename: UTF8String = '');
@@ -224,17 +225,20 @@ type
 
   { LeftSidePanel }
   private
+    // Project Tree
     FProjectTree: TEpiVProjectTreeViewFrame;
     procedure ProjectTreeHint(Sender: TObject; const AObject: TEpiCustomBase;
       ObjectType: TEpiVTreeNodeObjectType; var HintText: string);
     procedure ProjectTreeDoubleClick(Sender: TObject;
       const AObject: TEpiCustomBase; ObjectType: TEpiVTreeNodeObjectType);
-
+  private
+    // Command Tree
+    FCommandTree: TCommandTree;
   { Sidebar }
   private
     type
       TToggleMode = (tmToggle, tmForceOpen, tmForceClose);
-    procedure ToggleSidebar(ToggleItem, Sibling: TWinControl; Splitter: TSplitter; ToggleMode: TToggleMode = tmToggle);
+    procedure ToggleSidebar(ToggleItem, Sibling: TWinControl; MidSplitter, MainSplitter: TSplitter; ToggleMode: TToggleMode = tmToggle);
     procedure DoUpdateVarnames;
     procedure DoUpdateHistory;
     procedure AddSetOptionHandlers;
@@ -398,8 +402,12 @@ begin
   FProjectTree.OnGetText := @ProjectGetText;
 
 
-
-
+  FCommandTree := TCommandTree.Create(Self);
+  FCommandTree.Visible := false;
+  FCommandTree.Parent := LeftSidePanel;
+  FCommandTree.Align := alBottom;
+  FCommandTree.Tag := 1;
+  FCommandTree.OnCommandDoubleClick := @CommandTreeCommandDoubleClick;
 
   with VarnamesList do
   begin
@@ -469,8 +477,8 @@ begin
   LoadTutorials;
 
   LoadFormPosition(Self, 'MainForm');
-  LoadSplitterPosition(ProjectSplitter, 'ProjectSplitter');
-  LoadSplitterPosition(SidebarSplitter, 'SidebarSplitter');
+  LoadSplitterPosition(LeftSideSplitter, 'ProjectSplitter');
+  LoadSplitterPosition(RightSideSplitter, 'SidebarSplitter');
   LoadSplitterPosition(RightPanelSplitter, 'SidebarBottomSplitter');
 
   // At this point it is possible to run the first commands
@@ -640,22 +648,22 @@ end;
 
 procedure TMainForm.ToggleCmdTreeActionExecute(Sender: TObject);
 begin
-  ToggleSidebar(CommandTree, FProjectTree, LeftPanelSplitter);
+  ToggleSidebar(FCommandTree, FProjectTree, LeftPanelSplitter, LeftSideSplitter);
 end;
 
 procedure TMainForm.ToggleProjectTreeExecute(Sender: TObject);
 begin
-  ToggleSidebar(FProjectTree, CommandTree, LeftPanelSplitter);
+  ToggleSidebar(FProjectTree, FCommandTree, LeftPanelSplitter, LeftSideSplitter);
 end;
 
 procedure TMainForm.ToggleVarnamesListActionExecute(Sender: TObject);
 begin
-  ToggleSidebar(VarnamesList, HistoryListBox, RightPanelSplitter);
+  ToggleSidebar(VarnamesList, HistoryListBox, RightPanelSplitter, RightSideSplitter);
 end;
 
 procedure TMainForm.ToggleHistoryListActionExecute(Sender: TObject);
 begin
-  ToggleSidebar(HistoryListBox, VarnamesList, RightPanelSplitter);
+  ToggleSidebar(HistoryListBox, VarnamesList, RightPanelSplitter, RightSideSplitter);
   HistoryListBox.TopIndex := HistoryListBox.Count - 1;
 end;
 
@@ -813,11 +821,11 @@ begin
     begin
       SaveFormPosition(Self, 'MainForm');
 
-      if ProjectSplitter.Visible then
-        SaveSplitterPosition(ProjectSplitter, 'ProjectSplitter');
+      if LeftSideSplitter.Visible then
+        SaveSplitterPosition(LeftSideSplitter, 'ProjectSplitter');
 
-      if SidebarSplitter.Visible then
-        SaveSplitterPosition(SidebarSplitter, 'SidebarSplitter');
+      if RightSideSplitter.Visible then
+        SaveSplitterPosition(RightSideSplitter, 'SidebarSplitter');
 
       if RightPanelSplitter.Visible then
         SaveSplitterPosition(RightPanelSplitter, 'SidebarBottomSplitter');
@@ -898,9 +906,15 @@ begin
   end;
 
   if (Sender = Executor.SetOptions[ANA_SO_DISPAY_COMMANDTREE]) then
-    ToggleSidebar(CommandTree, FProjectTree, LeftPanelSplitter, Value)
+    ToggleSidebar(FCommandTree, FProjectTree, LeftPanelSplitter, LeftSideSplitter, Value)
   else
-    ToggleSidebar(CommandTree, FProjectTree, LeftPanelSplitter, Value);
+    ToggleSidebar(FProjectTree, FCommandTree, LeftPanelSplitter, LeftSideSplitter, Value);
+end;
+
+procedure TMainForm.CommandTreeCommandDoubleClick(
+  const CommandString: UTF8String);
+begin
+  FCmdEdit.Text := CommandString;
 end;
 
 procedure TMainForm.RightPanelChange(Sender: TObject);
@@ -913,9 +927,9 @@ begin
   end;
 
   if (Sender = Executor.SetOptions[ANA_SO_DISPAY_HISTORY]) then
-    ToggleSidebar(HistoryListBox, VarnamesList, RightPanelSplitter, Value)
+    ToggleSidebar(HistoryListBox, VarnamesList, RightPanelSplitter, RightSideSplitter, Value)
   else
-    ToggleSidebar(VarnamesList, HistoryListBox, RightPanelSplitter, Value);
+    ToggleSidebar(VarnamesList, HistoryListBox, RightPanelSplitter, RightSideSplitter, Value);
 end;
 
 procedure TMainForm.DoUpdateTitle;
@@ -1012,7 +1026,7 @@ begin
   end;
 
   FStatusbar.Update();
-  ProjectSplitter.Visible := LeftSidePanel.Visible;
+  LeftSideSplitter.Visible := LeftSidePanel.Visible;
 end;
 
 procedure TMainForm.DialogFilenameHack(const S: string);
@@ -1575,10 +1589,26 @@ begin
 end;
 
 procedure TMainForm.ToggleSidebar(ToggleItem, Sibling: TWinControl;
-  Splitter: TSplitter; ToggleMode: TToggleMode);
+  MidSplitter, MainSplitter: TSplitter; ToggleMode: TToggleMode);
 var
   Tmp: Boolean;
   ParentPanel: TWinControl;
+
+  procedure ToggleSplitterVisible(Splitter: TSplitter; Value: boolean);
+  begin
+    if (Splitter.Visible and (not Value)) then
+      begin
+        SaveSplitterPosition(Splitter, Splitter.Name);
+        Splitter.Visible := Value;
+      end;
+
+    if ((not Splitter.Visible) and value) then
+      begin
+        Splitter.Visible := Value;
+        LoadSplitterPosition(Splitter, Splitter.Name);
+      end;
+  end;
+
 begin
   case ToggleMode of
     tmToggle:     Tmp := (not ToggleItem.Visible) or (not ToggleItem.Focused);
@@ -1588,9 +1618,11 @@ begin
 
   ToggleItem.Visible := Tmp;
 
-  ParentPanel := ToggleItem.Parent;
-  ParentPanel.Visible := ToggleItem.Visible or  Sibling.Visible;
-  Splitter.Visible    := ToggleItem.Visible and Sibling.Visible;
+  ToggleSplitterVisible(MidSplitter,  ToggleItem.Visible and Sibling.Visible);
+  ToggleSplitterVisible(MainSplitter, ToggleItem.Visible or  Sibling.Visible);
+
+  ParentPanel          := ToggleItem.Parent;
+  ParentPanel.Visible  := ToggleItem.Visible or Sibling.Visible;
 
   if (ToggleItem.CanSetFocus) then
     begin
@@ -1598,9 +1630,9 @@ begin
       ToggleItem.SetFocus;
     end;
 
-  if (Splitter.Visible) then
+  if (MidSplitter.Visible) then
     begin
-      Splitter.Align := alNone;
+      MidSplitter.Align := alNone;
       if (ToggleItem.Tag < Sibling.Tag) then
         begin
           ToggleItem.Align := alClient;
@@ -1611,23 +1643,13 @@ begin
           ToggleItem.Align := alBottom;
           Sibling.Align := alClient;
         end;
-      Splitter.Align := alBottom;
+      MidSplitter.Align := alBottom;
     end
   else
     begin
       ToggleItem.Align := alClient;
       Sibling.Align := alClient;
     end;
-
-{  if (HistoryListBox.Visible) then
-    begin
-      if (not VarnamesList.Visible) then
-        HistoryListBox.Align := alClient
-      else
-        HistoryListBox.Align := alBottom;
-
-      HistoryListBox.TopIndex := HistoryListBox.Count - 1;
-    end;}
 end;
 
 procedure TMainForm.DoUpdateVarnames;

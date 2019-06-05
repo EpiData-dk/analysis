@@ -9,21 +9,26 @@ uses
 
 type
 
+  TCommandClickEvent = procedure(Const CommandString: UTF8String) of object;
+
   { TCommandTree }
 
   TCommandTree = class(TVirtualStringTree)
   private
+    FOnCommandDoubleClick: TCommandClickEvent;
     procedure GetCommandText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
+    procedure NodeDblClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo);
+  protected
+    procedure DoCommandDoubleClick(const CommandString: UTF8String);
   public
     constructor Create(AOwner: TComponent); override;
-
+    property OnCommandDoubleClick: TCommandClickEvent read FOnCommandDoubleClick write FOnCommandDoubleClick;
   end;
 
 implementation
 
 type
-
   { TStringCommandComposite }
 
   TStringCommandComposite = class
@@ -32,6 +37,16 @@ type
     FClass: TCustomStatementClass;
   public
     constructor Create(Title: UTF8String; csClass: TCustomStatementClass);
+  end;
+
+  { TStringStringComposite }
+
+  TStringStringComposite = class
+  private
+    FTitle: UTF8String;
+    FCommandString: UTF8String;
+  public
+    constructor Create(Title: UTF8String; CommandString: UTF8String);
   end;
 
 { TStringCommandComposite }
@@ -43,13 +58,37 @@ begin
   FClass := csClass;
 end;
 
+{ TStringStringComposite }
+
+constructor TStringStringComposite.Create(Title: UTF8String;
+  CommandString: UTF8String);
+begin
+  FTitle := Title;
+  FCommandString := CommandString;
+end;
+
 { TCommandTree }
 
 procedure TCommandTree.GetCommandText(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
   var CellText: String);
 begin
-  CellText := TStringCommandComposite(GetNodeData(Node)^).FTitle;
+  CellText := TStringStringComposite(GetNodeData(Node)^).FTitle;
+end;
+
+procedure TCommandTree.NodeDblClick(Sender: TBaseVirtualTree;
+  const HitInfo: THitInfo);
+begin
+  if (Assigned(HitInfo.HitNode)) then
+    DoCommandDoubleClick(TStringStringComposite(Sender.GetNodeData(HitInfo.HitNode)^).FCommandString);
+end;
+
+procedure TCommandTree.DoCommandDoubleClick(const CommandString: UTF8String);
+begin
+  if (Assigned(FOnCommandDoubleClick)) and
+     (CommandString <> '')
+  then
+    FOnCommandDoubleClick(CommandString);
 end;
 
 constructor TCommandTree.Create(AOwner: TComponent);
@@ -69,19 +108,32 @@ begin
   end;
 
   OnGetText := @GetCommandText;
+  OnNodeDblClick := @NodeDblClick;
   NodeDataSize := SizeOf(Pointer);
 
-
   // Data
-  ParentNode := AddChild(nil, TStringCommandComposite.Create('Data', nil));
+  ParentNode := AddChild(nil, TStringStringComposite.Create('Data', ''));
   // - Read, Browse, List Data, List Var, List Dataset, Save
-  AddChild(ParentNode, TStringCommandComposite.Create('Read', TReadCommand));
-  AddChild(ParentNode, TStringCommandComposite.Create('Browse', TBrowseCommand));
-  AddChild(ParentNode, TStringCommandComposite.Create('List Data', TListCommand));
-  AddChild(ParentNode, TStringCommandComposite.Create('List Variables', TListCommand));
-  AddChild(ParentNode, TStringCommandComposite.Create('List Datasets', TListCommand));
-  AddChild(ParentNode, TStringCommandComposite.Create('Save', TSaveCommand));
+  AddChild(ParentNode, TStringStringComposite.Create('Read', 'read '));
+  AddChild(ParentNode, TStringStringComposite.Create('Browse', 'browse '));
+  AddChild(ParentNode, TStringStringComposite.Create('List Data', 'list data '));
+  AddChild(ParentNode, TStringStringComposite.Create('List Variables', 'list variables '));
+  AddChild(ParentNode, TStringStringComposite.Create('List Datasets', 'list datasets '));
+  AddChild(ParentNode, TStringStringComposite.Create('Save', 'save '));
 
+  // Statistics
+  ParentNode := AddChild(nil, TStringStringComposite.Create('Statistics', ''));
+  // - Read, Browse, List Data, List Var, List Dataset, Save
+  AddChild(ParentNode, TStringStringComposite.Create('Describe', 'describe '));
+  AddChild(ParentNode, TStringStringComposite.Create('Frequency', 'freq '));
+  AddChild(ParentNode, TStringStringComposite.Create('Tables', 'tables '));
+  AddChild(ParentNode, TStringStringComposite.Create('Compact Tables', 'ctable '));
+
+  // Statistics
+  ParentNode := AddChild(nil, TStringStringComposite.Create('Other', ''));
+  // - Read, Browse, List Data, List Var, List Dataset, Save
+  AddChild(ParentNode, TStringStringComposite.Create('Save output', 'save !output'));
+  AddChild(ParentNode, TStringStringComposite.Create('Show Commands', ''));
 end;
 
 end.
