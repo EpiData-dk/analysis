@@ -117,8 +117,8 @@ begin
   AddChild(ParentNode, TStringStringComposite.Create('Read', 'read '));
   AddChild(ParentNode, TStringStringComposite.Create('Browse', 'browse '));
   AddChild(ParentNode, TStringStringComposite.Create('List Data', 'list data '));
-  AddChild(ParentNode, TStringStringComposite.Create('List Variables', 'list variables '));
-  AddChild(ParentNode, TStringStringComposite.Create('List Datasets', 'list datasets '));
+  AddChild(ParentNode, TStringStringComposite.Create('List Variables', 'list variable '));
+  AddChild(ParentNode, TStringStringComposite.Create('List Datasets', 'list dataset '));
   AddChild(ParentNode, TStringStringComposite.Create('Save', 'save '));
 
   // Statistics
