@@ -1,13 +1,13 @@
 object MainForm: TMainForm
-  Left = 2369
-  Height = 673
-  Top = 146
-  Width = 1002
+  Left = 2344
+  Height = 483
+  Top = 277
+  Width = 981
   ActiveControl = Panel2
   AllowDropFiles = True
   Caption = 'AMainForm'
-  ClientHeight = 648
-  ClientWidth = 1002
+  ClientHeight = 458
+  ClientWidth = 981
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -18,9 +18,9 @@ object MainForm: TMainForm
   LCLVersion = '2.0.0.4'
   object PageControl1: TPageControl
     Left = 216
-    Height = 598
+    Height = 408
     Top = 50
-    Width = 585
+    Width = 564
     Align = alClient
     ShowTabs = False
     TabOrder = 5
@@ -29,10 +29,10 @@ object MainForm: TMainForm
     Left = 0
     Height = 50
     Top = 0
-    Width = 1002
+    Width = 981
     Align = alTop
     ClientHeight = 50
-    ClientWidth = 1002
+    ClientWidth = 981
     TabOrder = 0
     object Button2: TButton
       Left = 16
@@ -70,12 +70,12 @@ object MainForm: TMainForm
     end
   end
   object RightSidePanel: TPanel
-    Left = 806
-    Height = 598
+    Left = 785
+    Height = 408
     Top = 50
     Width = 196
     Align = alRight
-    ClientHeight = 598
+    ClientHeight = 408
     ClientWidth = 196
     TabOrder = 1
     Visible = False
@@ -83,7 +83,7 @@ object MainForm: TMainForm
       Tag = 1
       Left = 1
       Height = 195
-      Top = 402
+      Top = 212
       Width = 194
       Align = alBottom
       ItemHeight = 0
@@ -102,7 +102,7 @@ object MainForm: TMainForm
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 397
+      Top = 207
       Width = 194
       Align = alBottom
       AutoSnap = False
@@ -113,7 +113,7 @@ object MainForm: TMainForm
     object VarnamesList: TVirtualStringTree
       Cursor = 63
       Left = 1
-      Height = 396
+      Height = 206
       Top = 1
       Width = 194
       Align = alClient
@@ -125,13 +125,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 265
+          Width = 266
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 225
+          Width = 226
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -148,8 +148,8 @@ object MainForm: TMainForm
     end
   end
   object RightSideSplitter: TSplitter
-    Left = 801
-    Height = 598
+    Left = 780
+    Height = 408
     Top = 50
     Width = 5
     Align = alRight
@@ -161,11 +161,11 @@ object MainForm: TMainForm
   end
   object LeftSidePanel: TPanel
     Left = 0
-    Height = 598
+    Height = 408
     Top = 50
     Width = 211
     Align = alLeft
-    ClientHeight = 598
+    ClientHeight = 408
     ClientWidth = 211
     TabOrder = 2
     Visible = False
@@ -173,7 +173,7 @@ object MainForm: TMainForm
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 592
+      Top = 402
       Width = 209
       Align = alBottom
       AutoSnap = False
@@ -183,7 +183,7 @@ object MainForm: TMainForm
   end
   object LeftSideSplitter: TSplitter
     Left = 211
-    Height = 598
+    Height = 408
     Top = 50
     Width = 5
     Beveled = True
@@ -200,7 +200,7 @@ object MainForm: TMainForm
   object MainMenu1: TMainMenu
     Images = DM.Icons16
     left = 280
-    top = 188
+    top = 192
     object MenuItem1: TMenuItem
       Caption = '&File'
       object MenuItem19: TMenuItem
@@ -266,8 +266,8 @@ object MainForm: TMainForm
     end
     object MenuItem9: TMenuItem
       Caption = '&Window'
-      object MenuItem18: TMenuItem
-        Action = ToggleProjectTree
+      object MenuItem43: TMenuItem
+        Action = ToggleCmdTreeAction
       end
       object MenuItem11: TMenuItem
         Action = ToggleVarnamesListAction
@@ -283,6 +283,9 @@ object MainForm: TMainForm
       end
       object MenuItem10: TMenuItem
         Action = ToggleHistoryListAction
+      end
+      object MenuItem18: TMenuItem
+        Action = ToggleProjectTree
       end
       object MenuItem30: TMenuItem
         Caption = '-'
@@ -359,18 +362,20 @@ object MainForm: TMainForm
     object ToggleCmdTreeAction: TAction
       Category = 'Window'
       Caption = 'Show Command Tree'
-      Enabled = False
       OnExecute = ToggleCmdTreeActionExecute
+      ShortCut = 113
     end
     object ToggleVarnamesListAction: TAction
       Category = 'Window'
       Caption = 'Variables'
       OnExecute = ToggleVarnamesListActionExecute
+      ShortCut = 114
     end
     object ToggleHistoryListAction: TAction
       Category = 'Window'
       Caption = 'History'
       OnExecute = ToggleHistoryListActionExecute
+      ShortCut = 118
     end
     object CmdEditFocusAction: TAction
       Caption = 'Command Prompt'
@@ -408,6 +413,7 @@ object MainForm: TMainForm
       Category = 'Window'
       Caption = 'Project Tree'
       OnExecute = ToggleProjectTreeExecute
+      ShortCut = 119
     end
     object ChangeDirAction: TAction
       Category = 'File'
