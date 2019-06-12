@@ -169,6 +169,7 @@ type
   private
     Executor: TExecutor;
     procedure CommandTreeCommandDoubleClick(const CommandString: UTF8String);
+    procedure CommandTreePressEnterKey(const CommandString: UTF8String);
     procedure LeftPanelChange(Sender: TObject);
     procedure RightPanelChange(Sender: TObject);
     procedure ShowEditor(Const Filename: UTF8String = '');
@@ -389,7 +390,6 @@ begin
   FProjectTree.Align := alClient;
   FProjectTree.ShowProtected := true;
   FProjectTree.Tag := 0;
-
   FProjectTree.AllowSelectProject := false;
   FProjectTree.EditCaption := false;
   FProjectTree.EditStructure := false;
@@ -402,13 +402,13 @@ begin
   FProjectTree.OnTreeNodeDoubleClick := @ProjectTreeDoubleClick;
   FProjectTree.OnGetText := @ProjectGetText;
 
-
   FCommandTree := TCommandTree.Create(Self);
   FCommandTree.Visible := false;
   FCommandTree.Parent := LeftSidePanel;
   FCommandTree.Align := alBottom;
   FCommandTree.Tag := 1;
   FCommandTree.OnCommandDoubleClick := @CommandTreeCommandDoubleClick;
+  FCommandTree.OnCommandPressEnterKey := @CommandTreePressEnterKey;
 
   with VarnamesList do
   begin
@@ -420,7 +420,6 @@ begin
     OnNodeDblClick           := @VarnamesListNodeDblClick;
     OnGetImageIndex          := @VarnamesListGetImageIndex;
   end;
-
 
   FStatusbar := TAnalysisStatusbar.Create(Self, Executor);
   FStatusbar.Parent := Self;
@@ -916,6 +915,13 @@ procedure TMainForm.CommandTreeCommandDoubleClick(
   const CommandString: UTF8String);
 begin
   FCmdEdit.Text := CommandString;
+end;
+
+procedure TMainForm.CommandTreePressEnterKey(const CommandString: UTF8String);
+begin
+  FCmdEdit.Text := CommandString;
+  if (FCmdEdit.CanFocus) then
+    FCmdEdit.SetFocus;
 end;
 
 procedure TMainForm.RightPanelChange(Sender: TObject);
