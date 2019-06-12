@@ -218,6 +218,7 @@ type
     procedure ExecAggregate(ST: TAggregateCommand); virtual;
     procedure ExecTables(ST: TTablesCommand); virtual;
     procedure ExecCTable(ST: TCTableCommand); virtual;
+    procedure ExecRecode(ST: TRecodeCommand); virtual;
 
     // String commands
     procedure ExecRead(ST: TCustomStringCommand); virtual;
@@ -3797,6 +3798,11 @@ begin
 
 end;
 
+procedure TExecutor.ExecRecode(ST: TRecodeCommand);
+begin
+
+end;
+
 procedure TExecutor.ExecUse(ST: TUse);
 var
   Idx: LongInt;
@@ -3974,6 +3980,9 @@ begin
 
         stAggregate:
           ExecAggregate(TAggregateCommand(ST));
+
+        stRecode:
+          ExecRecode(TRecodeCommand(ST));
 
       // String Commands
         stRead:

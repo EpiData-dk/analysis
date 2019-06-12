@@ -96,6 +96,7 @@ type
     stCheck,
     stReport,
     stReorder,
+    stRecode,
 
   // String Commands
     stRead,

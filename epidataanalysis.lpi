@@ -238,7 +238,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="82">
+    <Units Count="83">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -593,6 +593,10 @@
         <Filename Value="commandtree/commandtree.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit81>
+      <Unit82>
+        <Filename Value="statements/recode.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit82>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

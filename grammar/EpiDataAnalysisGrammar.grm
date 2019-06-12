@@ -56,6 +56,7 @@ opMerge       = 'mer'('ge')?
 opReorder     = 'reo'('rder')?
 opAggregate   = 'agg'('regate')?
 opDescribe    = 'des'('cribe')?
+opRecode      = 'recode'
 
 ! -- String commands
 opRunTest     = 'runtest'
@@ -79,7 +80,6 @@ opVersion     = 'ver'('sion')?
 ! -- Other commands
 opAssert      = 'assert'
 opSet         = 'set'
-!opRecode      = 'recode'
 
 
 ! ------------------------------------------------- Rules
@@ -100,7 +100,6 @@ opSet         = 'set'
                                            |   opAssert <Expression>        <Option List>
                                            |   opAssert '(' <Statement> ')' <Option List>
                                            |   opSet <Optional Expression> <Optional Assignment>
-!                                           |   opRecode <Referenced Variable> <Optional Recode To> <Recode By Or Intervals> <Option List>
                                            |   <Indexed Variable> ':=' <Expression>
                                            |   <Crud Commands>
                                            |   <Check Command>
@@ -140,6 +139,7 @@ opSet         = 'set'
                                            |   opTables
                                            |   opCTable
                                            |   opDescribe
+                                           |   opRecode
 
 <String Command>                           ::= opRead
                                            |   opRuntest
@@ -170,24 +170,6 @@ opSet         = 'set'
 
 <Optional Assignment>                      ::= ':=' <Expression>
                                            |
-
-!  =====================================================
-!        RECODING STUFF
-!  =====================================================
-
-!<Optional Recode To>                       ::= 'to' <Referenced Variable>
-!                                           |
-
-!<Recode By Or Intervals>                   ::= 'by' <Expression>
-!                                           |   <Recode Inteval List>
-
-!<Recode Inteval List>                      ::= <Recode Interval> <Recode Inteval List>
-!                                           |   <Recode Interval>
-
-!<Recode Interval>                          ::= <Interval> ':=' <Expression>
-
-!<Interval>                                 ::= 'from' <Expression> 'to' <Expression>
-!                                           |   opUse <Expression>
 
 !  =====================================================
 !        VARIABLES
