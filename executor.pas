@@ -233,6 +233,7 @@ type
     procedure ExecClh(ST: TCustomEmptyCommand); virtual;
     procedure ExecCount(ST: TCustomEmptyCommand); virtual;
     procedure ExecQuit(ST: TCustomEmptyCommand); virtual;
+    procedure ExecVersion(ST: TCustomEmptyCommand); virtual;
   protected
     procedure DoStatement(St: TCustomStatement); virtual;
     procedure DoStatementList(L: TStatementList); virtual;
@@ -320,6 +321,7 @@ uses
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
   RegExpr, ana_globals, browse4, strutils, ana_documentfile, FileUtil,
+  about,
 
   // Set options
   options_fontoptions, options_filesoptions, options_table,
@@ -2464,6 +2466,11 @@ begin
   Application.MainForm.Close;
 end;
 
+procedure TExecutor.ExecVersion(ST: TCustomEmptyCommand);
+begin
+  FOutputCreator.DoInfoAll(GetProgramInfo);
+end;
+
 function TExecutor.GetCancelled: Boolean;
 begin
   result := FCancelled;
@@ -4002,6 +4009,9 @@ begin
 
         stQuit:
           ExecQuit(TCustomEmptyCommand(ST));
+
+        stVersion:
+          ExecVersion(TCustomEmptyCommand(ST));
 
         stNone:
           ST.ExecResult := csrSuccess;

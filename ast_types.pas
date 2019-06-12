@@ -114,7 +114,8 @@ type
     stClh,
     stClose,
     stCount,
-    stQuit
+    stQuit,
+    stVersion
   );
 
   TParserOperationType = (

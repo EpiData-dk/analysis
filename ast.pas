@@ -3675,7 +3675,7 @@ function TCustomEmptyCommand.GetRequireOpenProject: Boolean;
 begin
   Result := inherited GetRequireOpenProject;
 
-  if (StatementType in [stReset, stCls, stClh, stClose, stQuit]) then
+  if (StatementType in [stReset, stCls, stClh, stClose, stQuit, stVersion]) then
     result := false;
 end;
 
@@ -3690,7 +3690,8 @@ begin
     stCount,
     stClose,
     stQuit,
-    stReset:
+    stReset,
+    stVersion:
       C := TCustomEmptyCommand;
   end;
 
@@ -6734,6 +6735,7 @@ begin
     'cta': Result := stCTable;
     'des': Result := stDescribe;
     'use': Result := stUse;
+    'ver': Result := stVersion;
   else
     DoError();
   end;

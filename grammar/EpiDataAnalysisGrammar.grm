@@ -73,7 +73,7 @@ opCount       = 'cou'('nt')?
 opClose       = 'clo'('se')?
 opQuit        = 'qui'('t')?
 opReset       = 'reset'
-!opPack        = 'pack'
+opVersion     = 'ver'('sion')?
 
 
 ! -- Other commands
@@ -153,6 +153,7 @@ opSet         = 'set'
                                            |   opClose
                                            |   opQuit
                                            |   opReset
+                                           |   opVersion
 
 <System Command>                           ::= opCD
                                            |   opLS
