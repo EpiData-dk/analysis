@@ -29,6 +29,7 @@ type
     function GetSelectedText: String;
     function GetCaretPos: TPoint;
     function IsFocused: Boolean;
+    function GetContextMenu: TOutputViewerPopup;
   end;
 
 implementation
@@ -178,7 +179,6 @@ begin
 
   FEdit.Options := [eoAutoIndent, eoGroupUndo, eoSmartTabs, eoTabsToSpaces];
 
-
   FEdit.PopupMenu := TOutputViewerPopup.Create(Self);
   TOutputViewerPopup(FEdit.PopupMenu).OnCopySelectedClick := @CopySelectClipBoardClick;
   TOutputViewerPopup(FEdit.PopupMenu).OnCopyAllClick      := @CopyAllClipboardClick;
@@ -245,6 +245,11 @@ end;
 function TTextPanel.IsFocused: Boolean;
 begin
   result := FEdit.Focused;
+end;
+
+function TTextPanel.GetContextMenu: TOutputViewerPopup;
+begin
+  result := TOutputViewerPopup(FEdit.PopupMenu);
 end;
 
 end.

@@ -27,6 +27,7 @@ type
     function GetSelectedText: String;
     function GetCaretPos: TPoint;
     function IsFocused: Boolean;
+    function GetContextMenu: TOutputViewerPopup;
   end;
 
 implementation
@@ -106,6 +107,11 @@ end;
 function TOldHtmlSheet.IsFocused: Boolean;
 begin
   result := false;
+end;
+
+function TOldHtmlSheet.GetContextMenu: TOutputViewerPopup;
+begin
+  result := TOutputViewerPopup(FHtmlView.PopupMenu);
 end;
 
 end.

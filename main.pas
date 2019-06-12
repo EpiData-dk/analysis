@@ -611,23 +611,8 @@ begin
 end;
 
 procedure TMainForm.SaveOutputActionExecute(Sender: TObject);
-var
-  Filter: UTF8String;
-  OutputGenerator: TOutputGeneratorBase;
-  ST: TMemoryStreamUTF8;
 begin
-  ST := TMemoryStreamUTF8.Create;
-  OutputGenerator := CreateOutputGenerator(ST);
-  Filter := OutputGenerator.DialogFilter;
-  OutputGenerator.GenerateReport;
-  OutputGenerator.Free;
-
-  SaveDialog1.Filter := Filter;
-  SaveDialog1.DefaultExt := Copy(TSaveDialog.ExtractAllFilterMasks(Filter), 2, 10);
-  SaveDialog1.InitialDir := GetCurrentDirUTF8;
-  SaveDialog1.Options := [ofOverwritePrompt, ofPathMustExist, ofEnableSizing];
-  if SaveDialog1.Execute then
-    ST.SaveToFile(SaveDialog1.FileName);
+  DoParseContent('save !output;');
 end;
 
 procedure TMainForm.ShowAboutActionExecute(Sender: TObject);
@@ -1417,6 +1402,7 @@ begin
 
   FOutputViewer.Initialize;
   FOutputViewer.UpdateFontAndSize(Executor);
+  FOutputViewer.GetContextMenu.OnSaveOutputClick := @SaveOutputActionExecute;
   RedrawOutput;
 
   EnableAutoSizing;
