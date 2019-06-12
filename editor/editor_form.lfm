@@ -493,6 +493,12 @@ object EditorForm: TEditorForm
       object MenuItem16: TMenuItem
         Action = PasteAction
       end
+      object N1: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem47: TMenuItem
+        Action = EditPreferencesAction
+      end
     end
     object MenuItem20: TMenuItem
       Caption = '&Search'
@@ -777,6 +783,11 @@ object EditorForm: TEditorForm
       Category = 'Edit'
       Caption = 'Insert Set Options'
       OnExecute = InsertSetOptionsActionExecute
+    end
+    object EditPreferencesAction: TAction
+      Category = 'Edit'
+      Caption = 'Preferences... (Startup.pgm)'
+      OnExecute = EditPreferencesActionExecute
     end
   end
   object SaveDialog1: TSaveDialog
