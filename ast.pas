@@ -169,6 +169,8 @@ type
   end;
   TCustomStatementClass = class of TCustomStatement;
 
+  TStatementList = class;
+
   { TEmptyStatement }
 
   TEmptyStatement = class(TCustomStatement)
@@ -270,6 +272,23 @@ type
     property Statement: TCustomStatement read FStatement;
     property Direction: TForDirection read FDirection;
     property ForType: TForType read FForType;
+  end;
+
+  { TFunctionDefinition }
+
+  TFunctionDefinition = class(TCustomStatement)
+  private
+    FParameterTypeList: TList;
+    FReturnType: TObject;
+    FStatements: TStatementList;
+  public
+    constructor Create(Const Ident: UTF8String;
+      ParameterTypeList: TList;
+      ReturnType: TObject;
+      Statements: TStatementList);
+    property ParameterTypeList: TList read FParameterTypeList;
+    property ReturnType: TObject read FReturnType;
+    property Statements: TStatementList read FStatements;
   end;
 
   { TEvalExpression }
@@ -3433,6 +3452,17 @@ begin
       );
       Result := false;
     end;
+end;
+
+{ TFunctionDefinition }
+
+constructor TFunctionDefinition.Create(const Ident: UTF8String;
+  ParameterTypeList: TList; ReturnType: TObject; Statements: TStatementList);
+begin
+  inherited Create(stFunctionDefinition);
+  FParameterTypeList := ParameterTypeList;
+  FReturnType        := ReturnType;
+  FStatements        := Statements;
 end;
 
 { TEvalExpression }

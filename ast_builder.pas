@@ -42,6 +42,15 @@ type
     function DoRecodeCommand(R: TReduction): TCustomCommand;
     function DoOptionalAssignment(R: TReduction): TExpr;
   private
+    // Function Definition
+    function DoFunctionDefinition(R: TReduction): TCustomStatement;
+    function DoOptionalParameterTypeList(R: TReduction): TList;
+    function DoParameterTypeList(R: TReduction; List: TList): TList;
+    function DoParameterTypePair(R: TReduction): TObject;
+    function DoDataType(R: TReduction): TObject;
+    function DoOptionalReturnValue(R: TReduction): TObject;
+
+  private
     // Recode
     function DoOptionalRecodeTo(R: TReduction): TCustomVariable;
     function DoRecodeIntervaList(R: TReduction): TValueLabelPairs;
@@ -233,23 +242,26 @@ end;
 function TASTBuilder.DoStatement(R: TReduction): TCustomStatement;
 begin
 {
-<Statement>      ::= 'begin' <Statement List> 'end'
-                 |   'if' <Expression> 'then' <Statement> <Optional Else>
-                 |   'select' <Expression> <Statement>
-                 |   'for' <Variable> ':=' <Expression> <For Direction> <Expression> 'do' <Statement>
-                 |   <Function Call>
-                 |   <Crud Commands>
-                 |   opUse <Referenced Variable> <Option List>
-                 |   '?' <Expression>
-                 |   opAssert <Expression> <Option List>
-                 |   opSet <Optional Reference Or String> <Optional Assignment>
-                 |   opRecode <Referenced Variable> <Optional Recode To> <Recode By Or Intervals> <Option List>
-                 |   <Indexed Variable> ':=' <Expression>
-                 |   <Variable Command> <Optional Referenced Variable List> <Option List>
-                 |   <String Command> <Optional Expression> <Option List>
-                 |   <Empty Command> <Option List>
-                 |   <System Command> <Optional String>
-                 |   ! This is to accomodate empty commands
+<Statement>    ::= 'begin' <Statement List> 'end'
+               |   'if' <Expression> 'then' <Statement> <Optional Else>
+               |   'select' <Expression> 'do' <Statement>
+               |   'for' <Indexed Variable> ':=' <Expression> <For Direction> <Expression> 'do' <Statement>
+               |   'for' <Indexed Variable> 'in' <Array> 'do' <Statement>
+               |   'function' Identifier '(' <Optional Parameter Type List> ')' <Optional Return Value> ';' 'begin' <Statement List> 'end'
+               |   opUse <Indexed Variable> <Option List>
+               |   '?' <Expression>
+               |   opAssert <Expression>        <Option List>
+               |   opAssert '(' <Statement> ')' <Option List>
+               |   opSet <Optional Expression> <Optional Assignment>
+               |   <Indexed Variable> ':=' <Expression>
+               |   <Crud Commands>
+               |   <Check Command>
+               |   <Report Command>
+               |   <Variable Command> <Optional Indexed Variable List> <Option List>
+               |   <String Command>   <Optional Expression>            <Option List>
+               |   <Empty Command>                                     <Option List>
+               |   <System Command>   <Optional Expression>
+               |   ! This is to accomodate empty commands
 }
   result := nil;
 
@@ -276,6 +288,9 @@ begin
 
     'for':
       Result := DoFor(R);
+
+    'function':
+      Result := DoFunctionDefinition(R);
 
     'Function Call':
       Result := DoFunctionCall(R.Tokens[0].Reduction);
@@ -1101,6 +1116,77 @@ begin
       if (Assigned(Result)) then
         Result.AssignToken(R.Tokens[0]);
     end;
+end;
+
+function TASTBuilder.DoFunctionDefinition(R: TReduction): TCustomStatement;
+var
+  Ident: UTF8String;
+  List: TList;
+  ReturnValue: TObject;
+  Statements: TStatementList;
+begin
+  //                     0           1      2                3                 4            5              6    7           8            9
+  // <Statement> ::= 'function' Identifier '(' <Optional Parameter Type List> ')' <Optional Return Value> ';' 'begin' <Statement List> 'end'
+
+  Ident := R.Tokens[1].DataVar;
+  List := DoOptionalParameterTypeList(R.Tokens[3].Reduction);
+  ReturnValue := DoOptionalReturnValue(R.Tokens[5].Reduction);
+  Statements := DoStatementList(R.Tokens[8].Reduction, nil);
+
+  result := TFunctionDefinition.Create(Ident, List, ReturnValue, Statements);
+end;
+
+function TASTBuilder.DoOptionalParameterTypeList(R: TReduction): TList;
+begin
+//  <Optional Parameter Type List>             ::= <Parameter Type List>
+//                                             |
+
+  Result := TList.Create;
+
+  if (R.TokenCount = 0) then
+    exit;
+
+  Result := DoParameterTypeList(R.Tokens[0].Reduction, Result);
+end;
+
+function TASTBuilder.DoParameterTypeList(R: TReduction; List: TList): TList;
+begin
+  //  <Parameter Type List>                      ::= <Parameter Type Pair> ';' <Parameter Type List>
+  //                                             |   <Parameter Type Pair>
+  if (not Assigned(List)) then
+    List := TList.Create;
+
+  List.Add(DoParameterTypePair(R.Tokens[0].Reduction));
+
+  if (R.TokenCount = 3) then
+    Result := DoParameterTypeList(R.Tokens[2].Reduction, List);
+end;
+
+function TASTBuilder.DoParameterTypePair(R: TReduction): TObject;
+var
+  Ident: UTF8String;
+  IdentType: TObject;
+begin
+  // <Parameter Type Pair>                      ::= Identifier ':' <Type>
+  Ident := R.Tokens[0].DataVar;
+  IdentType := DoDataType(R.Tokens[0].Reduction);
+  result := nil;
+end;
+
+function TASTBuilder.DoDataType(R: TReduction): TObject;
+begin
+  // <Type>                                     ::= 'int'
+  result := nil;
+end;
+
+function TASTBuilder.DoOptionalReturnValue(R: TReduction): TObject;
+begin
+  // <Optional Return Value>                    ::= ':' <Type>
+  //                                            |
+  if (R.TokenCount = 2) then
+    Result := DoDataType(R.Tokens[1].Reduction)
+  else
+    Result := nil;
 end;
 
 function TASTBuilder.DoOptionalRecodeTo(R: TReduction): TCustomVariable;

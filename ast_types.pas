@@ -71,6 +71,7 @@ type
     stStatementList,
     stNew,
     stFor,
+    stFunctionDefinition,
     stAssignment,
     stIfThen,
     stSelect,
