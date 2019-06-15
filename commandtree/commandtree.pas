@@ -16,17 +16,25 @@ type
   TCommandTree = class(TVirtualStringTree)
   private
     FOnCommandDoubleClick: TCommandClickEvent;
+    FOnCommandPressEnterKey: TCommandClickEvent;
+    procedure CmdTreeKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState
+      );
     procedure GetCommandText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
     procedure NodeDblClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo);
   protected
     procedure DoCommandDoubleClick(const CommandString: UTF8String);
+    procedure DoEnterKeyPress(const CommandString: UTF8String);
   public
     constructor Create(AOwner: TComponent); override;
     property OnCommandDoubleClick: TCommandClickEvent read FOnCommandDoubleClick write FOnCommandDoubleClick;
+    property OnCommandPressEnterKey: TCommandClickEvent read FOnCommandPressEnterKey write FOnCommandPressEnterKey;
   end;
 
 implementation
+
+uses
+  LCLType;
 
 type
   { TStringCommandComposite }
@@ -76,6 +84,16 @@ begin
   CellText := TStringStringComposite(GetNodeData(Node)^).FTitle;
 end;
 
+procedure TCommandTree.CmdTreeKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Shift = []) and
+     (Key = VK_RETURN) and
+     (Assigned(FocusedNode))
+  then
+    DoEnterKeyPress(TStringStringComposite(GetNodeData(FocusedNode)^).FCommandString);
+end;
+
 procedure TCommandTree.NodeDblClick(Sender: TBaseVirtualTree;
   const HitInfo: THitInfo);
 begin
@@ -89,6 +107,14 @@ begin
      (CommandString <> '')
   then
     FOnCommandDoubleClick(CommandString);
+end;
+
+procedure TCommandTree.DoEnterKeyPress(const CommandString: UTF8String);
+begin
+  if (Assigned(FOnCommandPressEnterKey)) and
+     (CommandString <> '')
+  then
+    FOnCommandPressEnterKey(CommandString);
 end;
 
 constructor TCommandTree.Create(AOwner: TComponent);
@@ -109,6 +135,7 @@ begin
 
   OnGetText := @GetCommandText;
   OnNodeDblClick := @NodeDblClick;
+  OnKeyDown := @CmdTreeKeyDown;
   NodeDataSize := SizeOf(Pointer);
 
   // Data
@@ -117,8 +144,8 @@ begin
   AddChild(ParentNode, TStringStringComposite.Create('Read', 'read '));
   AddChild(ParentNode, TStringStringComposite.Create('Browse', 'browse '));
   AddChild(ParentNode, TStringStringComposite.Create('List Data', 'list data '));
-  AddChild(ParentNode, TStringStringComposite.Create('List Variables', 'list variables '));
-  AddChild(ParentNode, TStringStringComposite.Create('List Datasets', 'list datasets '));
+  AddChild(ParentNode, TStringStringComposite.Create('List Variables', 'list variable '));
+  AddChild(ParentNode, TStringStringComposite.Create('List Datasets', 'list dataset '));
   AddChild(ParentNode, TStringStringComposite.Create('Save', 'save '));
 
   // Statistics

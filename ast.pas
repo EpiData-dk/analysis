@@ -1218,6 +1218,16 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+  { TRecodeCommand }
+
+  TRecodeCommand = class(TCustomVariableCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TSortCommand }
 
   TSortCommand = class(TCustomVariableCommand)
@@ -2253,6 +2263,29 @@ end;
 constructor TDescribeCommand.Create(AVariableList: TVariableList; AOptionList: TOptionList);
 begin
     inherited Create(AVariableList, AOptionList, stDescribe);
+end;
+
+{ TRecodeCommand }
+
+function TRecodeCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  Result.Insert('g',    [rtInteger]); // Group size
+  Result.Insert('min',  [rtUndefined] + AllResultDataTypes);  // Custom starting value
+  Result.Insert('vl',   [rtObject], [evtValuelabel], [evfInternal, evfExternal, evfAsObject]); // Create valuelabel for new groups
+  Result.Insert('replace', [rtUndefined]);// Replace valuelabel set if already exists
+end;
+
+function TRecodeCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  Result[0] := 1;
+end;
+
+constructor TRecodeCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stRecode);
 end;
 
 { TSortCommand }
@@ -3659,6 +3692,7 @@ begin
     stTables:    Result := TTablesCommand.Create(AVariableList, AOptionList);
     stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
     stDescribe:  Result := TDescribeCommand.Create(AVariablelist, AOptionList);
+    stRecode:    Result := TRecodeCommand.Create(AVariableList, AOptionList);
   else
     DoError();
   end;
@@ -3675,7 +3709,7 @@ function TCustomEmptyCommand.GetRequireOpenProject: Boolean;
 begin
   Result := inherited GetRequireOpenProject;
 
-  if (StatementType in [stReset, stCls, stClh, stClose, stQuit]) then
+  if (StatementType in [stReset, stCls, stClh, stClose, stQuit, stVersion]) then
     result := false;
 end;
 
@@ -3690,7 +3724,8 @@ begin
     stCount,
     stClose,
     stQuit,
-    stReset:
+    stReset,
+    stVersion:
       C := TCustomEmptyCommand;
   end;
 
@@ -6720,6 +6755,7 @@ begin
     'mer': Result := stMerge;
     'qui': Result := stQuit;
     'rea': Result := stRead;
+    'rec': Result := stRecode;
     'reo': Result := stReorder;
     'res': Result := stReset;
     'run':
@@ -6734,6 +6770,7 @@ begin
     'cta': Result := stCTable;
     'des': Result := stDescribe;
     'use': Result := stUse;
+    'ver': Result := stVersion;
   else
     DoError();
   end;

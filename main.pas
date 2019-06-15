@@ -25,6 +25,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    MenuItem43: TMenuItem;
     SaveOutputAction: TAction;
     Label3: TLabel;
     MenuItem36: TMenuItem;
@@ -168,6 +169,7 @@ type
   private
     Executor: TExecutor;
     procedure CommandTreeCommandDoubleClick(const CommandString: UTF8String);
+    procedure CommandTreePressEnterKey(const CommandString: UTF8String);
     procedure LeftPanelChange(Sender: TObject);
     procedure RightPanelChange(Sender: TObject);
     procedure ShowEditor(Const Filename: UTF8String = '');
@@ -388,7 +390,6 @@ begin
   FProjectTree.Align := alClient;
   FProjectTree.ShowProtected := true;
   FProjectTree.Tag := 0;
-
   FProjectTree.AllowSelectProject := false;
   FProjectTree.EditCaption := false;
   FProjectTree.EditStructure := false;
@@ -401,13 +402,13 @@ begin
   FProjectTree.OnTreeNodeDoubleClick := @ProjectTreeDoubleClick;
   FProjectTree.OnGetText := @ProjectGetText;
 
-
   FCommandTree := TCommandTree.Create(Self);
   FCommandTree.Visible := false;
   FCommandTree.Parent := LeftSidePanel;
   FCommandTree.Align := alBottom;
   FCommandTree.Tag := 1;
   FCommandTree.OnCommandDoubleClick := @CommandTreeCommandDoubleClick;
+  FCommandTree.OnCommandPressEnterKey := @CommandTreePressEnterKey;
 
   with VarnamesList do
   begin
@@ -419,7 +420,6 @@ begin
     OnNodeDblClick           := @VarnamesListNodeDblClick;
     OnGetImageIndex          := @VarnamesListGetImageIndex;
   end;
-
 
   FStatusbar := TAnalysisStatusbar.Create(Self, Executor);
   FStatusbar.Parent := Self;
@@ -611,23 +611,8 @@ begin
 end;
 
 procedure TMainForm.SaveOutputActionExecute(Sender: TObject);
-var
-  Filter: UTF8String;
-  OutputGenerator: TOutputGeneratorBase;
-  ST: TMemoryStreamUTF8;
 begin
-  ST := TMemoryStreamUTF8.Create;
-  OutputGenerator := CreateOutputGenerator(ST);
-  Filter := OutputGenerator.DialogFilter;
-  OutputGenerator.GenerateReport;
-  OutputGenerator.Free;
-
-  SaveDialog1.Filter := Filter;
-  SaveDialog1.DefaultExt := Copy(TSaveDialog.ExtractAllFilterMasks(Filter), 2, 10);
-  SaveDialog1.InitialDir := GetCurrentDirUTF8;
-  SaveDialog1.Options := [ofOverwritePrompt, ofPathMustExist, ofEnableSizing];
-  if SaveDialog1.Execute then
-    ST.SaveToFile(SaveDialog1.FileName);
+  DoParseContent('save !output;');
 end;
 
 procedure TMainForm.ShowAboutActionExecute(Sender: TObject);
@@ -915,6 +900,13 @@ procedure TMainForm.CommandTreeCommandDoubleClick(
   const CommandString: UTF8String);
 begin
   FCmdEdit.Text := CommandString;
+end;
+
+procedure TMainForm.CommandTreePressEnterKey(const CommandString: UTF8String);
+begin
+  FCmdEdit.Text := CommandString;
+  if (FCmdEdit.CanFocus) then
+    FCmdEdit.SetFocus;
 end;
 
 procedure TMainForm.RightPanelChange(Sender: TObject);
@@ -1410,6 +1402,7 @@ begin
 
   FOutputViewer.Initialize;
   FOutputViewer.UpdateFontAndSize(Executor);
+  FOutputViewer.GetContextMenu.OnSaveOutputClick := @SaveOutputActionExecute;
   RedrawOutput;
 
   EnableAutoSizing;

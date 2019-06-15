@@ -10,6 +10,8 @@ uses
 
 type
 
+  TOutputViewerPopup = class;
+
   { IAnaOutputViewer }
 
   IAnaOutputViewer = interface ['IAnaOutputViewer']
@@ -19,6 +21,9 @@ type
     procedure LoadFromStream(ST: TStream);
     procedure UpdateFontAndSize(AExecutor: TExecutor);
     function GetOutputGeneratorClass: TOutputGeneratorClass;
+
+  // Context menu
+    function GetContextMenu: TOutputViewerPopup;
 
   // Methods for help context system
     function GetLineAtCaret: String;
@@ -34,12 +39,15 @@ type
     FOnClearClick: TNotifyEvent;
     FOnCopyAllClick: TNotifyEvent;
     FOnCopySelectedClick: TNotifyEvent;
+    FOnSaveOutputClick: TNotifyEvent;
     procedure ClearOutputClick(Sender: TObject);
     procedure CopyAllClipboardClick(Sender: TObject);
     procedure CopySelectClipBoardClick(Sender: TObject);
+    procedure SaveOutputClick(Sender: TObject);
     procedure SetOnClearClick(AValue: TNotifyEvent);
     procedure SetOnCopyAllClick(AValue: TNotifyEvent);
     procedure SetOnCopySelectedClick(AValue: TNotifyEvent);
+    procedure SetOnSaveOutputClick(AValue: TNotifyEvent);
   public
     constructor Create(AOwner: TComponent); override;
     // Callback when Copy Selected to Clipboard is clicked
@@ -49,6 +57,8 @@ type
     // Callback when Clear Output is clicked. There is a default handler for this
     // so it may not need to be assigned.
     property OnClearClick: TNotifyEvent read FOnClearClick write SetOnClearClick;
+    // Callback when Save Output is clicked.
+    property OnSaveOutputClick: TNotifyEvent read FOnSaveOutputClick write SetOnSaveOutputClick;
   end;
 
 implementation
@@ -68,6 +78,12 @@ procedure TOutputViewerPopup.CopySelectClipBoardClick(Sender: TObject);
 begin
   if Assigned(OnCopySelectedClick) then
     OnCopySelectedClick(Sender);
+end;
+
+procedure TOutputViewerPopup.SaveOutputClick(Sender: TObject);
+begin
+  if Assigned(OnSaveOutputClick) then
+    OnSaveOutputClick(Sender);
 end;
 
 procedure TOutputViewerPopup.CopyAllClipboardClick(Sender: TObject);
@@ -96,6 +112,12 @@ begin
   FOnCopySelectedClick := AValue;
 end;
 
+procedure TOutputViewerPopup.SetOnSaveOutputClick(AValue: TNotifyEvent);
+begin
+  if FOnSaveOutputClick = AValue then Exit;
+  FOnSaveOutputClick := AValue;
+end;
+
 constructor TOutputViewerPopup.Create(AOwner: TComponent);
 var
   Item: TMenuItem;
@@ -114,6 +136,11 @@ begin
 
   Item := TMenuItem.Create(Self);
   Item.Caption := '-';
+  Items.Add(Item);
+
+  Item := TMenuItem.Create(Self);
+  Item.Caption := 'Save Output';
+  Item.OnClick := @SaveOutputClick;
   Items.Add(Item);
 
   Item := TMenuItem.Create(Self);

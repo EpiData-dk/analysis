@@ -15,6 +15,7 @@ type
   { TEditorForm }
 
   TEditorForm = class(TForm)
+    EditPreferencesAction: TAction;
     CancelExecutionAction: TAction;
     MenuItem25: TMenuItem;
     MenuItem26: TMenuItem;
@@ -35,6 +36,8 @@ type
     MenuItem42: TMenuItem;
     MenuItem43: TMenuItem;
     MenuItem44: TMenuItem;
+    N1: TMenuItem;
+    MenuItem47: TMenuItem;
     PopupMenu1: TPopupMenu;
     TutorialSubMenu: TMenuItem;
     MenuItem39: TMenuItem;
@@ -98,6 +101,7 @@ type
     procedure CancelExecutionActionExecute(Sender: TObject);
     procedure CutActionExecute(Sender: TObject);
     procedure CopyActionExecute(Sender: TObject);
+    procedure EditPreferencesActionExecute(Sender: TObject);
     procedure FindNextActionExecute(Sender: TObject);
     procedure FindPrevActionExecute(Sender: TObject);
     procedure MenuItem28Click(Sender: TObject);
@@ -297,6 +301,11 @@ end;
 procedure TEditorForm.CopyActionExecute(Sender: TObject);
 begin
   SynEdit1.CopyToClipboard;
+end;
+
+procedure TEditorForm.EditPreferencesActionExecute(Sender: TObject);
+begin
+  DoOpenPGM(GetStartupPgm);
 end;
 
 procedure TEditorForm.FindNextActionExecute(Sender: TObject);

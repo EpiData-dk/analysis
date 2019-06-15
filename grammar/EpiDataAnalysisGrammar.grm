@@ -56,6 +56,7 @@ opMerge       = 'mer'('ge')?
 opReorder     = 'reo'('rder')?
 opAggregate   = 'agg'('regate')?
 opDescribe    = 'des'('cribe')?
+opRecode      = 'recode'
 
 ! -- String commands
 opRunTest     = 'runtest'
@@ -73,13 +74,12 @@ opCount       = 'cou'('nt')?
 opClose       = 'clo'('se')?
 opQuit        = 'qui'('t')?
 opReset       = 'reset'
-!opPack        = 'pack'
+opVersion     = 'ver'('sion')?
 
 
 ! -- Other commands
 opAssert      = 'assert'
 opSet         = 'set'
-!opRecode      = 'recode'
 
 
 ! ------------------------------------------------- Rules
@@ -94,13 +94,12 @@ opSet         = 'set'
                                            |   'select' <Expression> 'do' <Statement>
                                            |   'for' <Indexed Variable> ':=' <Expression> <For Direction> <Expression> 'do' <Statement>
                                            |   'for' <Indexed Variable> 'in' <Array> 'do' <Statement>
-!                                          |   'function' Identifier '(' <Parameter Type List> ')' <Optional Return Value> ';' 'begin' <Statement List> 'end'
+                                           |   'function' Identifier '(' <Optional Parameter Type List> ')' <Optional Return Value> ';' 'begin' <Statement List> 'end'
                                            |   opUse <Indexed Variable> <Option List>
                                            |   '?' <Expression>
                                            |   opAssert <Expression>        <Option List>
                                            |   opAssert '(' <Statement> ')' <Option List>
                                            |   opSet <Optional Expression> <Optional Assignment>
-!                                           |   opRecode <Referenced Variable> <Optional Recode To> <Recode By Or Intervals> <Option List>
                                            |   <Indexed Variable> ':=' <Expression>
                                            |   <Crud Commands>
                                            |   <Check Command>
@@ -140,6 +139,7 @@ opSet         = 'set'
                                            |   opTables
                                            |   opCTable
                                            |   opDescribe
+                                           |   opRecode
 
 <String Command>                           ::= opRead
                                            |   opRuntest
@@ -153,6 +153,7 @@ opSet         = 'set'
                                            |   opClose
                                            |   opQuit
                                            |   opReset
+                                           |   opVersion
 
 <System Command>                           ::= opCD
                                            |   opLS
@@ -171,22 +172,21 @@ opSet         = 'set'
                                            |
 
 !  =====================================================
-!        RECODING STUFF
+!        FUNCTIONS
 !  =====================================================
 
-!<Optional Recode To>                       ::= 'to' <Referenced Variable>
-!                                           |
+<Optional Parameter Type List>             ::= <Parameter Type List> 
+                                           |
 
-!<Recode By Or Intervals>                   ::= 'by' <Expression>
-!                                           |   <Recode Inteval List>
+<Parameter Type List>                      ::= <Parameter Type Pair> ';' <Parameter Type List>
+                                           |   <Parameter Type Pair>
 
-!<Recode Inteval List>                      ::= <Recode Interval> <Recode Inteval List>
-!                                           |   <Recode Interval>
+<Parameter Type Pair>                      ::= Identifier ':' <Type>
 
-!<Recode Interval>                          ::= <Interval> ':=' <Expression>
+<Type>                                     ::= 'int'
 
-!<Interval>                                 ::= 'from' <Expression> 'to' <Expression>
-!                                           |   opUse <Expression>
+<Optional Return Value>                    ::= ':' <Type>
+                                           |  
 
 !  =====================================================
 !        VARIABLES

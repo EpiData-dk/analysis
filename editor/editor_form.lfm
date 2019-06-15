@@ -1,12 +1,12 @@
 object EditorForm: TEditorForm
-  Left = 1095
-  Height = 662
-  Top = 278
+  Left = 2544
+  Height = 682
+  Top = 237
   Width = 823
   ActiveControl = SynEdit1
   AllowDropFiles = True
   Caption = 'PGM Editor'
-  ClientHeight = 641
+  ClientHeight = 657
   ClientWidth = 823
   Menu = MainMenu1
   OnClose = FormClose
@@ -19,7 +19,7 @@ object EditorForm: TEditorForm
   object StatusBar1: TStatusBar
     Left = 0
     Height = 21
-    Top = 620
+    Top = 636
     Width = 823
     Panels = <    
       item
@@ -41,7 +41,7 @@ object EditorForm: TEditorForm
   end
   object TabControl1: TTabControl
     Left = 0
-    Height = 620
+    Height = 636
     Top = 0
     Width = 823
     HotTrack = True
@@ -51,8 +51,8 @@ object EditorForm: TEditorForm
     TabOrder = 1
     inline SynEdit1: TSynEdit
       Left = 2
-      Height = 586
-      Top = 32
+      Height = 608
+      Top = 26
       Width = 819
       Align = alClient
       Font.Height = 13
@@ -228,10 +228,6 @@ object EditorForm: TEditorForm
         item
           Command = ecLineBreak
           ShortCut = 13
-        end      
-        item
-          Command = ecSelectAll
-          ShortCut = 16449
         end      
         item
           Command = ecCopy
@@ -497,6 +493,12 @@ object EditorForm: TEditorForm
       object MenuItem16: TMenuItem
         Action = PasteAction
       end
+      object N1: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem47: TMenuItem
+        Action = EditPreferencesAction
+      end
     end
     object MenuItem20: TMenuItem
       Caption = '&Search'
@@ -676,16 +678,16 @@ object EditorForm: TEditorForm
       SecondaryShortCuts.Strings = (
         ''
       )
-      ShortCut = 120
+      ShortCut = 16449
     end
     object RunSelectedAction: TAction
       Category = 'Run'
       Caption = 'Run Selected'
       OnExecute = RunSelectedActionExecute
       SecondaryShortCuts.Strings = (
-        'CTRL+D'
+        ''
       )
-      ShortCut = 119
+      ShortCut = 16452
     end
     object SaveAction: TAction
       Category = 'File'
@@ -781,6 +783,11 @@ object EditorForm: TEditorForm
       Category = 'Edit'
       Caption = 'Insert Set Options'
       OnExecute = InsertSetOptionsActionExecute
+    end
+    object EditPreferencesAction: TAction
+      Category = 'Edit'
+      Caption = 'Preferences... (Startup.pgm)'
+      OnExecute = EditPreferencesActionExecute
     end
   end
   object SaveDialog1: TSaveDialog

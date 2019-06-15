@@ -284,7 +284,7 @@ type
 implementation
 
 uses
-  LazUTF8;
+  LazUTF8, math;
 
 { TTwoWayStatistic }
 
@@ -389,17 +389,26 @@ end;
 
 function TTableCell.GetColPct: EpiFloat;
 begin
-  result := N / FTable.ColTotal[FCol];
+  if (N = 0) then
+    result := math.NaN
+  else
+    result := N / FTable.ColTotal[FCol];
 end;
 
 function TTableCell.GetRowPct: EpiFloat;
 begin
-  result := N / FTable.RowTotal[FRow];
+  if (N = 0) then
+    result := math.NaN
+  else
+    result := N / FTable.RowTotal[FRow];
 end;
 
 function TTableCell.GetTotalPct: EpiFloat;
 begin
-  result := N / FTable.Total;
+  if (N = 0) then
+    result := math.NaN
+  else
+    result := N / FTable.Total;
 end;
 
 procedure TTableCell.SetN(AValue: EpiInteger);

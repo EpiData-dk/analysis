@@ -96,6 +96,7 @@ type
     stCheck,
     stReport,
     stReorder,
+    stRecode,
 
   // String Commands
     stRead,
@@ -114,7 +115,8 @@ type
     stClh,
     stClose,
     stCount,
-    stQuit
+    stQuit,
+    stVersion
   );
 
   TParserOperationType = (
