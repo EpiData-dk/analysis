@@ -1,12 +1,12 @@
 object EditorForm: TEditorForm
-  Left = 2544
-  Height = 682
-  Top = 237
+  Left = 2328
+  Height = 694
+  Top = 220
   Width = 823
   ActiveControl = SynEdit1
   AllowDropFiles = True
   Caption = 'PGM Editor'
-  ClientHeight = 657
+  ClientHeight = 669
   ClientWidth = 823
   Menu = MainMenu1
   OnClose = FormClose
@@ -19,7 +19,7 @@ object EditorForm: TEditorForm
   object StatusBar1: TStatusBar
     Left = 0
     Height = 21
-    Top = 636
+    Top = 648
     Width = 823
     Panels = <    
       item
@@ -41,7 +41,7 @@ object EditorForm: TEditorForm
   end
   object TabControl1: TTabControl
     Left = 0
-    Height = 636
+    Height = 648
     Top = 0
     Width = 823
     HotTrack = True
@@ -51,7 +51,7 @@ object EditorForm: TEditorForm
     TabOrder = 1
     inline SynEdit1: TSynEdit
       Left = 2
-      Height = 608
+      Height = 620
       Top = 26
       Width = 819
       Align = alClient
@@ -526,8 +526,8 @@ object EditorForm: TEditorForm
     end
     object MenuItem25: TMenuItem
       Caption = 'Window'
-      object MenuItem26: TMenuItem
-        Action = MainForm.ToggleProjectTree
+      object MenuItem46: TMenuItem
+        Action = MainForm.ToggleCmdTreeAction
       end
       object MenuItem29: TMenuItem
         Action = MainForm.ToggleVarnamesListAction
@@ -543,6 +543,9 @@ object EditorForm: TEditorForm
       end
       object MenuItem33: TMenuItem
         Action = MainForm.ToggleHistoryListAction
+      end
+      object MenuItem26: TMenuItem
+        Action = MainForm.ToggleProjectTree
       end
       object MenuItem34: TMenuItem
         Caption = '-'

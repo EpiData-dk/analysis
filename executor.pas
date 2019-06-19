@@ -322,7 +322,7 @@ uses
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
   RegExpr, ana_globals, browse4, strutils, ana_documentfile, FileUtil,
-  about,
+  about, recode,
 
   // Set options
   options_fontoptions, options_filesoptions, options_table,
@@ -3799,8 +3799,16 @@ begin
 end;
 
 procedure TExecutor.ExecRecode(ST: TRecodeCommand);
+var
+  Recoder: TRecode;
 begin
+  Recoder := TRecode.Create(self, FOutputCreator);
+  Recoder.ExecRecode(ST);
+  Recoder.Free;
 
+  // We added a new var and possibly a new valuelabel
+  DoUpdateFieldResultVar;
+  DoUpdateValuelabelsResultVar;
 end;
 
 procedure TExecutor.ExecUse(ST: TUse);
