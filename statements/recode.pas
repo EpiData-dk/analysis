@@ -54,7 +54,7 @@ begin
     end;
 
   // Only '!min' was given, find the lowest value.
-  Result := MaxExtended;
+  Result := Math.MaxFloat;
   for i := 0 to FromVariable.Size - 1 do
     Result := Math.Min(Result, FromVariable.AsFloat[i]);
 end;
@@ -73,7 +73,7 @@ begin
 
   // Determin start value:
   MinValue     := FindStartValue(ST.Options, FromVariable);
-  MaxValue     := Math.MaxExtended;
+  MaxValue     := Math.MaxFloat;
   if (ST.HasOption('max', Opt)) then
     MaxValue := Opt.Expr.AsFloat;
 
