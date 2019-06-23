@@ -378,7 +378,7 @@ procedure TDescribeCommand.DoOutputRows(ST: TCustomVariableCommand; DoMeans: Boo
 // add a single variable stats to the current output table
 var
   aStr: String;
-  RowIdx, NCat, Offset: Integer;
+  RowIdx, NCat, Offset, i, mCount: Integer;
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
 
@@ -419,12 +419,15 @@ begin
 
   if (Fmissing.Show) then
   begin
-    aStr := '-';
-    if (FCategV.IsMissing[FFreqData.Size-1]) then
-      aStr := FCountV.AsString[FFreqData.Size-1];
-    T.Cell[FMissing.Col, RowIdx].Text := aStr;
+    mCount := 0;
+    // loop through all categories here to find missing
+    for i := 0 to FFreqData.Size-1 do
+      if ((FCategV.IsMissing[i]) or (FCategV.IsMissingValue[i])) then
+        mCount += FCountV[i];
+    T.Cell[FMissing.Col, RowIdx].Text := IntToStr(mCount);
     Offset += 1;
   end;
+
   aStr := FCategV.GetVariableLabel(VariableLabelType);
 
   // check stats one by one
