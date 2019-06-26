@@ -197,6 +197,7 @@ type
     procedure ExecAssert(ST: TAssertCommand); virtual;
     procedure ExecSet(ST: TSetCommand); virtual;
     procedure ExecUse(ST: TUse); virtual;
+    procedure ExecRecode(ST: TRecodeCommand); virtual;
 
     // Crud Commands
     procedure ExecNew(ST: TCustomNew); virtual;
@@ -218,7 +219,6 @@ type
     procedure ExecAggregate(ST: TAggregateCommand); virtual;
     procedure ExecTables(ST: TTablesCommand); virtual;
     procedure ExecCTable(ST: TCTableCommand); virtual;
-    procedure ExecRecode(ST: TRecodeCommand); virtual;
 
     // String commands
     procedure ExecRead(ST: TCustomStringCommand); virtual;
@@ -3420,6 +3420,9 @@ begin
   NewDF := MergeModule.DoMerge(ST);
   MergeModule.Free;
 
+  if (not Assigned(NewDF)) then
+    Exit;
+
   // Update select stack since data was added
   if (ST.HasOption('nu')) then
     begin
@@ -3798,19 +3801,6 @@ begin
 
 end;
 
-procedure TExecutor.ExecRecode(ST: TRecodeCommand);
-var
-  Recoder: TRecode;
-begin
-  Recoder := TRecode.Create(self, FOutputCreator);
-  Recoder.ExecRecode(ST);
-  Recoder.Free;
-
-  // We added a new var and possibly a new valuelabel
-  DoUpdateFieldResultVar;
-  DoUpdateValuelabelsResultVar;
-end;
-
 procedure TExecutor.ExecUse(ST: TUse);
 var
   Idx: LongInt;
@@ -3840,6 +3830,19 @@ begin
     end;
 
   DoGUIInteraction(gaProjectTree);
+end;
+
+procedure TExecutor.ExecRecode(ST: TRecodeCommand);
+var
+  Recoder: TRecode;
+begin
+  Recoder := TRecode.Create(self, FOutputCreator);
+  Recoder.ExecRecode(ST);
+  Recoder.Free;
+
+  // We added a new var and possibly a new valuelabel
+  DoUpdateFieldResultVar;
+  DoUpdateValuelabelsResultVar;
 end;
 
 procedure TExecutor.DoStatement(St: TCustomStatement);
