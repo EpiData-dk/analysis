@@ -4602,6 +4602,9 @@ begin
         // A global or result can be accepted as either Value or Object.
         Result := true;
 
+    // TODO: if the result is a value (e.g. global var),
+    //       current behaviour is to return data for the first record
+    //       The user must know that the result is for _n=1
     evtField:
         // A variable can be accepted as Value or Object
         Result := true;

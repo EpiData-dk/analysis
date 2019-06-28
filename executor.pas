@@ -2581,6 +2581,7 @@ begin
 
   Changes := 0;
 
+  // TODO: this is where we could watch for assignment of variable without an index to global
   case EV.VarType of
     evtGlobal, evtGlobalVector:
       begin
@@ -4130,7 +4131,6 @@ begin
           Idx := IV.Expr[0].AsInteger
         else
           Idx := FCurrentRecNo + 1;  // +1 becase FCurrentRecNo is 0-indext and user provided Idx is 1-indexed.;
-
         if (Idx < 1) or (Idx > SelectVector.Size) then
           DoLocalError(SelectVector.Size);
       end;
