@@ -2310,7 +2310,7 @@ function TRecodeCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
   // Group size
-  Result.Insert('by',   [rtInteger, rtFloat]);
+  Result.Insert('by',   [rtInteger]);
   // Custom starting value
   Result.Insert('min',  [rtUndefined, rtFloat, rtInteger]);
   // Custom starting value
@@ -2319,6 +2319,8 @@ begin
   Result.Insert('vl',   [rtObject], [evtValuelabel], [evfInternal, evfExternal, evfAsObject]);
   // Replace valuelabel set if already exists
   Result.Insert('replace', [rtUndefined]);
+  // Grouping values are integers
+  Result.Insert('i', [rtUndefined]);
 end;
 
 function TRecodeCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2356,8 +2358,8 @@ begin
   if (not Result) then
     exit;
 
-  if (RecodeIntervalList.Count > 0) then
-    Parser.TypeCheckError('Recode intervals not supported!', LineNo, ColNo, ByteNo);
+//  if (RecodeIntervalList.Count > 0) then
+//    Parser.TypeCheckError('Recode intervals not supported!', LineNo, ColNo, ByteNo);
 end;
 
 { TSortCommand }
