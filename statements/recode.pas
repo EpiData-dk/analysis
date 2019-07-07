@@ -86,11 +86,11 @@ begin
   ValueLabelName := GetValueLabelName(ToVariable);
   Result := FExecutor.Document.ValueLabelSets.GetValueLabelSetByName(ValueLabelName);
 
-  if (not Assigned(Result)) then
-    begin
-      Result := FExecutor.Document.ValueLabelSets.NewValueLabelSet(ftInteger);
-      Result.Name := ValueLabelName;
-    end;
+  if (Assigned(Result)) then
+    FreeAndNil(Result);
+
+  Result := FExecutor.Document.ValueLabelSets.NewValueLabelSet(ftInteger);
+  Result.Name := ValueLabelName;
 end;
 
 function TRecode.FindStartValue(Options: TOptionList; FromVariable: TEpiField
