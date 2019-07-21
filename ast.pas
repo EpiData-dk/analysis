@@ -1237,14 +1237,42 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+  { TRecodeInterval }
+
+  TRecodeInterval = class
+  private
+    FFromValue: TExpr;
+    FLabelValue: TExpr;
+    FToValue: TExpr;
+    FValueLabel: TExpr;
+  public
+    constructor Create(AFromValue, AToValue, ALabelValue, AValueLabel: TExpr);
+    property FromValue:  TExpr read FFromValue;
+    property ToValue:    TExpr read FToValue;
+    property LabelValue: TExpr read FLabelValue;
+    property ValueLabel: TExpr read FValueLabel;
+  end;
+
+  TRecodeIntervalList = specialize TFPGList<TRecodeInterval>;
+
   { TRecodeCommand }
 
   TRecodeCommand = class(TCustomVariableCommand)
+  private
+    FFromVariable: TCustomVariable;
+    FRecodeIntervalList: TRecodeIntervalList;
+    FToVariable: TCustomVariable;
   protected
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
   public
-    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+    constructor Create(AFromVariable, AToVariable: TCustomVariable;
+      ARecodeIntervalList: TRecodeIntervalList; AOptionList: TOptionList);
+    function TypeCheck(Parser: IEpiTypeChecker): boolean; override;
+    property FromVariable: TCustomVariable read FFromVariable;
+    property ToVariable: TCustomVariable read FToVariable;
+    property RecodeIntervalList: TRecodeIntervalList read FRecodeIntervalList;
   end;
 
   { TSortCommand }
@@ -1509,6 +1537,17 @@ uses
   epi_script_function_systemfunctions,
   epi_script_function_observations,
   math, variants, LazUTF8, LazFileUtils;
+
+{ TRecodeInterval }
+
+constructor TRecodeInterval.Create(AFromValue, AToValue, ALabelValue,
+  AValueLabel: TExpr);
+begin
+  FFromValue  := AFromValue;
+  FToValue    := AToValue;
+  FLabelValue := ALabelValue;
+  FValueLabel := AValueLabel;
+end;
 
 { TOptionListEnumerator }
 
@@ -2289,10 +2328,18 @@ end;
 function TRecodeCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  Result.Insert('g',    [rtInteger]); // Group size
-  Result.Insert('min',  [rtUndefined] + AllResultDataTypes);  // Custom starting value
-  Result.Insert('vl',   [rtObject], [evtValuelabel], [evfInternal, evfExternal, evfAsObject]); // Create valuelabel for new groups
-  Result.Insert('replace', [rtUndefined]);// Replace valuelabel set if already exists
+  // Group size
+  Result.Insert('by',   [rtInteger]);
+  // Custom starting value
+  Result.Insert('min',  [rtUndefined, rtFloat, rtInteger]);
+  // Custom starting value
+  Result.Insert('max',  [rtUndefined, rtFloat, rtInteger]);
+  // Create valuelabel for new groups
+  Result.Insert('vl',   [rtObject], [evtValuelabel], [evfInternal, evfExternal, evfAsObject]);
+  // Replace valuelabel set if already exists
+  Result.Insert('replace', [rtUndefined]);
+  // Grouping values are integers
+  Result.Insert('i', [rtUndefined]);
 end;
 
 function TRecodeCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2301,10 +2348,37 @@ begin
   Result[0] := 1;
 end;
 
-constructor TRecodeCommand.Create(AVariableList: TVariableList;
-  AOptionList: TOptionList);
+function TRecodeCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
 begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  Result.ResultTypes := [rtInteger, rtFloat];
+end;
+
+constructor TRecodeCommand.Create(AFromVariable, AToVariable: TCustomVariable;
+  ARecodeIntervalList: TRecodeIntervalList; AOptionList: TOptionList);
+var
+  AVariableList: TVariableList;
+begin
+  AVariableList := TVariableList.Create;
+  AVariableList.Add(AFromVariable);
+
   inherited Create(AVariableList, AOptionList, stRecode);
+
+  FFromVariable       := AFromVariable;
+  FToVariable         := AToVariable;
+  FRecodeIntervalList := ARecodeIntervalList;
+end;
+
+function TRecodeCommand.TypeCheck(Parser: IEpiTypeChecker): boolean;
+begin
+  Result := inherited TypeCheck(Parser);
+
+  if (not Result) then
+    exit;
+
+//  if (RecodeIntervalList.Count > 0) then
+//    Parser.TypeCheckError('Recode intervals not supported!', LineNo, ColNo, ByteNo);
 end;
 
 { TSortCommand }
@@ -3722,7 +3796,6 @@ begin
     stTables:    Result := TTablesCommand.Create(AVariableList, AOptionList);
     stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
     stDescribe:  Result := TDescribeCommand.Create(AVariablelist, AOptionList);
-    stRecode:    Result := TRecodeCommand.Create(AVariableList, AOptionList);
   else
     DoError();
   end;

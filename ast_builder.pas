@@ -6,7 +6,7 @@ unit ast_builder;
 interface
 
 uses
-  Classes, SysUtils, ast, ast_types, Token, epidatafilestypes;
+  Classes, SysUtils, fgl, ast, ast_types, Token, epidatafilestypes;
 
 type
 
@@ -39,7 +39,6 @@ type
     function DoCrudCmds(R: TReduction): TCustomStatement;
     function DoCheckCmd(R: TReduction): TCustomStatement;
     function DoReportCmd(R: TReduction): TCustomStatement;
-    function DoRecodeCommand(R: TReduction): TCustomCommand;
     function DoOptionalAssignment(R: TReduction): TExpr;
   private
     // Function Definition
@@ -52,11 +51,10 @@ type
 
   private
     // Recode
-    function DoOptionalRecodeTo(R: TReduction): TCustomVariable;
-    function DoRecodeIntervaList(R: TReduction): TValueLabelPairs;
-    function DoRecodeInterval(R: TReduction): TExpr;
-    function DoInterval(R: TReduction): TExpr;
-
+    function DoRecodeCommand(R: TReduction): TRecodeCommand;
+    function DoOptionalRecodeList(R: TReduction): TRecodeIntervalList;
+    function DoRecodeIntervaList(R: TReduction; OwnerList: TRecodeIntervalList): TRecodeIntervalList;
+    function DoRecodeInterval(R: TReduction): TRecodeInterval;
   private
     FCrudErrorToken: TToken;
     // Crud commands
@@ -242,26 +240,27 @@ end;
 function TASTBuilder.DoStatement(R: TReduction): TCustomStatement;
 begin
 {
-<Statement>    ::= 'begin' <Statement List> 'end'
-               |   'if' <Expression> 'then' <Statement> <Optional Else>
-               |   'select' <Expression> 'do' <Statement>
-               |   'for' <Indexed Variable> ':=' <Expression> <For Direction> <Expression> 'do' <Statement>
-               |   'for' <Indexed Variable> 'in' <Array> 'do' <Statement>
-               |   'function' Identifier '(' <Optional Parameter Type List> ')' <Optional Return Value> ';' 'begin' <Statement List> 'end'
-               |   opUse <Indexed Variable> <Option List>
-               |   '?' <Expression>
-               |   opAssert <Expression>        <Option List>
-               |   opAssert '(' <Statement> ')' <Option List>
-               |   opSet <Optional Expression> <Optional Assignment>
-               |   <Indexed Variable> ':=' <Expression>
-               |   <Crud Commands>
-               |   <Check Command>
-               |   <Report Command>
-               |   <Variable Command> <Optional Indexed Variable List> <Option List>
-               |   <String Command>   <Optional Expression>            <Option List>
-               |   <Empty Command>                                     <Option List>
-               |   <System Command>   <Optional Expression>
-               |   ! This is to accomodate empty commands
+<Statement>   ::= 'begin' <Statement List> 'end'
+              |   'if' <Expression> 'then' <Statement> <Optional Else>
+              |   'select' <Expression> 'do' <Statement>
+              |   'for' <Indexed Variable> ':=' <Expression> <For Direction> <Expression> 'do' <Statement>
+              |   'for' <Indexed Variable> 'in' <Array> 'do' <Statement>
+              |   'function' Identifier '(' <Parameter Type List> ')' <Optional Return Value> ';' 'begin' <Statement List> 'end'
+              |   opUse <Indexed Variable> <Option List>
+              |   '?' <Expression>
+              |   opAssert <Expression>        <Option List>
+              |   opAssert '(' <Statement> ')' <Option List>
+              |   opSet <Optional Expression> <Optional Assignment>
+              |   <Indexed Variable> ':=' <Expression>
+              |   <Crud Commands>
+              |   <Check Command>
+              |   <Report Command>
+              |   <Recode Command>
+              |   <Variable Command> <Optional Indexed Variable List> <Option List>
+              |   <String Command>   <Optional Expression>            <Option List>
+              |   <Empty Command>                                     <Option List>
+              |   <System Command>   <Optional Expression>
+              |   ! This is to accomodate empty commands
 }
   result := nil;
 
@@ -304,6 +303,9 @@ begin
     'Report Command':
       result := DoReportCmd(R.Tokens[0].Reduction);
 
+    'Recode Command':
+      Result := DoRecodeCommand(R.Tokens[0].Reduction);
+
     'opUse':
       Result := DoUse(R);
 
@@ -315,9 +317,6 @@ begin
 
     'opSet':
       Result := DoSetCommand(R);
-
-    'opRecode':
-      Result := DoRecodeCommand(R);
 
     'Indexed Variable':
       Result := DoAssignment(R);
@@ -1189,24 +1188,50 @@ begin
     Result := nil;
 end;
 
-function TASTBuilder.DoOptionalRecodeTo(R: TReduction): TCustomVariable;
+function TASTBuilder.DoOptionalRecodeList(R: TReduction): TRecodeIntervalList;
 begin
+{
+<Optional Recode List>     ::= <Recode Interval List>
+                           |
+}
+  Result := TRecodeIntervalList.Create();
 
+  if (R.TokenCount = 1) then
+    Result := DoRecodeIntervaList(R.Tokens[0].Reduction, Result);
 end;
 
-function TASTBuilder.DoRecodeIntervaList(R: TReduction): TValueLabelPairs;
+function TASTBuilder.DoRecodeIntervaList(R: TReduction;
+  OwnerList: TRecodeIntervalList): TRecodeIntervalList;
 begin
+{
+<Recode Interval List>   ::= <Recode Interval> <Recode Interval List>
+                         |   <Recode Interval>
+}
 
+  if (Assigned(OwnerList)) then
+    result := OwnerList
+  else
+    Result := TRecodeIntervalList.Create();
+
+  Result.Add(DoRecodeInterval(R.Tokens[0].Reduction));
+
+  if (R.TokenCount = 2) then
+    Result := DoRecodeIntervaList(R.Tokens[1].Reduction, Result)
 end;
 
-function TASTBuilder.DoRecodeInterval(R: TReduction): TExpr;
+function TASTBuilder.DoRecodeInterval(R: TReduction): TRecodeInterval;
+var
+  FromValue, ToValue, LabelValue, ValueLabel: TExpr;
 begin
+{                        0       1        2       3        4       5        6       7        8
+  <Recode Interval> ::= '(' <Expression> ',' <Expression> ',' <Expression> ',' <Expression> ')'
+}
+  FromValue  := DoExpression(R.Tokens[1].Reduction);
+  ToValue    := DoExpression(R.Tokens[3].Reduction);
+  LabelValue := DoExpression(R.Tokens[5].Reduction);
+  ValueLabel := DoExpression(R.Tokens[7].Reduction);
 
-end;
-
-function TASTBuilder.DoInterval(R: TReduction): TExpr;
-begin
-
+  Result := TRecodeInterval.Create(FromValue, ToValue, LabelValue, ValueLabel);
 end;
 
 function TASTBuilder.DoFunctionCall(R: TReduction): TFunctionCall;
@@ -1297,16 +1322,22 @@ begin
     result.AssignToken(R.Tokens[0]);
 end;
 
-function TASTBuilder.DoRecodeCommand(R: TReduction): TCustomCommand;
+function TASTBuilder.DoRecodeCommand(R: TReduction): TRecodeCommand;
 var
-  Variable: TCustomVariable;
+  FromVariable, ToVariable: TCustomVariable;
+  Options: TOptionList;
+  RecodeList: TRecodeIntervalList;
 begin
-{                     0             1                     2                       3                    4
-  <Statement>  ::= opRecode <Referenced Variable> <Optional Recode To> <Recode By Or Intervals> <Option List>
+{                         0              1               2           3                     4                  5
+  <Recode Command> ::= opRecode <Indexed FromVariable> 'to' <Indexed FromVariable> <Optional Recode List> <Option List>
 }
-  //Variable := DoReferencedVariable(R.Tokens[1].Reduction);
-//  RecodeTo := DoOptionalRecodeTo(R.Tokens[2].Reduction);
+  FromVariable := DoIndexVariable(R.Tokens[1].Reduction);
+  ToVariable   := DoIndexVariable(R.Tokens[3].Reduction);
 
+  RecodeList   := DoOptionalRecodeList(R.Tokens[4].Reduction);
+  Options      := DoOptionList(R.Tokens[5].Reduction, nil);
+
+  Result := TRecodeCommand.Create(FromVariable, ToVariable, RecodeList, Options);
 end;
 
 function TASTBuilder.DoIndexVariable(R: TReduction): TCustomVariable;

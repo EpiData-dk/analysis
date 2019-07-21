@@ -94,7 +94,7 @@ opSet         = 'set'
                                            |   'select' <Expression> 'do' <Statement>
                                            |   'for' <Indexed Variable> ':=' <Expression> <For Direction> <Expression> 'do' <Statement>
                                            |   'for' <Indexed Variable> 'in' <Array> 'do' <Statement>
-                                           |   'function' Identifier '(' <Optional Parameter Type List> ')' <Optional Return Value> ';' 'begin' <Statement List> 'end'
+!                                          |   'function' Identifier '(' <Parameter Type List> ')' <Optional Return Value> ';' 'begin' <Statement List> 'end'
                                            |   opUse <Indexed Variable> <Option List>
                                            |   '?' <Expression>
                                            |   opAssert <Expression>        <Option List>
@@ -104,6 +104,7 @@ opSet         = 'set'
                                            |   <Crud Commands>
                                            |   <Check Command>
                                            |   <Report Command>
+                                           |   <Recode Command>
                                            |   <Variable Command> <Optional Indexed Variable List> <Option List>
                                            |   <String Command>   <Optional Expression>            <Option List>
                                            |   <Empty Command>                                     <Option List>
@@ -139,7 +140,6 @@ opSet         = 'set'
                                            |   opTables
                                            |   opCTable
                                            |   opDescribe
-                                           |   opRecode
 
 <String Command>                           ::= opRead
                                            |   opRuntest
@@ -170,6 +170,20 @@ opSet         = 'set'
 
 <Optional Assignment>                      ::= ':=' <Expression>
                                            |
+
+!  =====================================================
+!        RECODE
+!  =====================================================
+
+<Recode Command>                           ::= opRecode <Indexed Variable> 'to' <Indexed Variable> <Optional Recode List> <Option List>
+
+<Optional Recode List>                     ::= <Recode Interval List>
+                                           |
+
+<Recode Interval List>                     ::= <Recode Interval> <Recode Interval List>
+                                           |   <Recode Interval>
+
+<Recode Interval>                          ::= '(' <Expression> ',' <Expression> ',' <Expression> ',' <Expression> ')'
 
 !  =====================================================
 !        FUNCTIONS

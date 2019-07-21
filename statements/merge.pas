@@ -841,7 +841,7 @@ begin
   MergeDocFile := nil;
 
   if (not InternalCheckAndOpenFile(ST, MergeDocFile)) then
-    Exit;
+    Exit(nil);
 
   if (MergeDocFile <> FExecutor.DocFile) then
     begin

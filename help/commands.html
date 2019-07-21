@@ -358,7 +358,7 @@ read fn;                // expression using the variable fn
         <li>
           <font class="option">!label := "&lt;text&gt;"</font>
           Assign the descriptive text as a caption/label for the resulting dataset.<br/>
-        </li > 
+        </li >
         <li><font class="option">!table</font> The external file is used as a lookup table. e.g. to add person information to a file with clinical results</li>
         <li><font class="option">!combine</font> All non-missing values in the external dataset replaces all MISSING values for common variables</li>
         <li><font class="option">!update</font> All non-missing values in the external dataset replaces ALL values for common variables</li>
@@ -1588,8 +1588,10 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
         <li><font class="option">!m:</font>number of missing values</li>
         <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
        </ul>
-       <font class="limit">Note:</font> All statistics are based on the means command,
-       so results will be exactly the same from <font class="cmd">means</font> and <font class="cmd">describe</font>.
+       <font class="limit">Note:</font> All statistics are based on the <font class="cmd">means</font> command
+       and all frequeencies are based on the <font class="cmd">freq</font> command,
+       so results from <font class="cmd">describe</font> will be exactly the same
+       as those from <font class="cmd">means</font> or <font class="cmd">freq</font>.
       </td>
      </tr>
      <!--
@@ -1616,9 +1618,9 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
        </ul>
        Examples:
        <font class="cmd">
-        read "bromar.epx"
-        check data                   // checks all variable
-        check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age</font>
+read "bromar.epx"
+check data                   // checks all variable
+check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age</font>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
       </td>
      </tr>
@@ -1631,8 +1633,8 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
         If no variables are specified and a key is already present in the current dataset, this key is check.</p>
        Examples:
        <font class="cmd">
-        read "bromar.epx"
-        check key id                 // checks if the variable ID represents a unique key</font>
+read "bromar.epx"
+check key id                 // checks if the variable ID represents a unique key</font>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
       </td>
      </tr>
@@ -1644,9 +1646,10 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
        <p>Performs a check on data and whether all observations have a valid parent observation</p>
        Examples:
        <font class="cmd">
-        read "related_data.epx";  // Load the project
-        use child_dataset;        // Change dataset to a related dataset
-        check relate;             // Perform the check from the child dataset "upwards" to the parent. Must be repeated if you have more levels</font>
+read "related_data.epx";  // Load the project
+use child_dataset;        // Change dataset to a related dataset
+check relate;             // Perform the check from the child dataset "upwards" to the parent.
+                          // Must be repeated if you have more levels</font>
       </td>
      </tr>
      <tr valign="top">
@@ -1657,8 +1660,8 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
        <p>Performs a check on the study information of whether it is filled or not.</p>
        Examples:
        <font class="cmd">
-        read "samplev3.epx";  // Load the project
-        check study;          // Perform the check</font>
+read "samplev3.epx";  // Load the project
+check study;          // Perform the check</font>
       </td>
      </tr>
 
@@ -1815,7 +1818,7 @@ report cby id !fn := filenames !ds := datasets</font>
         <td>
           <font class="cmd">set ["parameter"] := ["value"]</font>
           <ul>
-            <li>Change the value of a EpiData "set" parameter<br/>
+            <li>Change the value of an EpiData setting<br/>
             <br/>
             Without parameters, provides a list of available parameters and their current values<br/>
             Set commands will be implemented as development continues; to see those currently defined, use "set" without parameters.
@@ -1823,17 +1826,14 @@ report cby id !fn := filenames !ds := datasets</font>
             All <font class="cmd">set ["parameter"]</font> definitions may be added to the file <b>startup.pgm</b> to define your own default standard.
             An example of this is colour or font selection.
             Notice that placement can depend on operation system, but for most will be where your exe file is placed.</li>
-            <li>values can be a number, text, ON/OFF or a hexadecimal font colour (<a href= "https://www.w3schools.com/colors/colors_hexadecimal.asp"> See examples here (requires internet) </a>).<br/>
+            <li>values can be a number, text, ON/OFF or a hexadecimal font colour (<a href= "https://www.w3schools.com/colors/colors_hexadecimal.asp">See colour examples here (requires internet) </a>).<br/>
                 see table below</li>
+            <li>The case of parameters and values does not matter.</li>
             <li>to see current value: <font class="cmd">set ["parameter"]</font> e.g.: <font class="cmd">set "echo"</font></li>
-            <li>For set's with ON/OFF or a text value include this in " " e.g.: <br/><font class="cmd">set "echo" := "off"<br/>set "COMMANDLINE FONT COLOUR" := "#FFF000"</font></li>
+            <li>For settings with ON/OFF or a text value include this in " " e.g.: <br/><font class="cmd">set "echo" := "off"<br/>set "COMMANDLINE FONT COLOUR" := "#FFF000"</font></li>
 <!--        <li>For any command: <font class="cmd">set option [cmd] := [options]</font> e.g. <font class="cmd">set option means := "!t!</font><br/>
             When the specified command is executed the options mentioned will be added to the command.</li> -->
-          </ul></td>
-      </tr>
-      <tr>
-        <td><br/></td>
-        <td>
+          </ul>
           <table border="1" cellspacing="0" frame="void" rules="rows">
             <tbody>
               <tr>
@@ -2223,13 +2223,13 @@ report cby id !fn := filenames !ds := datasets</font>
         </td>
         <td>
           <p>
-          Any command that accepts more than 1 (one) variable can use the scheme for variable expansion.</p>
+          Any command that accepts more than one variable can use the following schemes for variable expansion.</p>
           <ul>
-          <li>Using "-" (dash) tells the program to use all variables between the two specified variables (both including).</li>
-          <li>The "*" (asterisk) is used as a replacement for 0 to many characters</li>
-          <li>The "?" (questionmark) is used as a replacement for exactly 1 character</li>
+          <li>"-" (dash) tells the program to use the two variables given and all variables between them.</li>
+          <li>"*" (asterisk) is used as a replacement for 0 to many characters. This cannot be the first character.</li>
+          <li>"?" (question mark) is used as a replacement for exactly 1 character. This cannot be the first character.</li>
           </ul>
-          <font class="limit">Please Notice</font> If there are no variables matching the result, e.g. t? and you have no variables with t, then you get an error <br/>
+          <font class="limit">Note:</font> If there are no variables matching the result, e.g. t? and you have no variables with t, then you get an error <br/>
           <br/>
 
           It is possible to combine "*" and "?" for more elaborate expressions, but neither can be combined with "-"<br/>
@@ -2246,20 +2246,11 @@ list data V1??;          // V1?? is expanded to V100 only!</font>
       </tr>
       <tr valign="top">
         <td>
-          <i>Variable</i><br/>
-          variable<sub>1</sub>
-        </td>
-        <td>
-          Any command that accepts variables can use this variant. This is the "default" way to provide a variable to a command.
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
           <i>Referenced Variable</i><br/>
           @{variable<sub>1</sub>}
         </td>
         <td>
-         <p>With a referenced variable, you essentially use the content of another variable (global, result) <u>as the variable</u>.</p>
+         <p>With a referenced variable, you essentially use the content of another variable (global, result) <u>to provide the variable name</u>.</p>
           Examples:
           <font class="cmd">
 new global gvar1 string := "sex";
@@ -2267,7 +2258,7 @@ read "bromar.epx";
 freq sex;       // Outputs a frequency table for the variable "sex"
 freq @{gvar1};  // Does the same as above, because the content of gvar1 is "sex"
           </font>
-         <p>This can be combined with eg. indexing of a variable. Using some of the builtin result variables like $dataset and $variable:</p>
+         <p>This can be combined with indexing of a variable. Using some of the builtin result variables like $dataset and $variable:</p>
          <font class="cmd">
 new global i integer;
 for i := 1 to size($variable) do
@@ -2390,13 +2381,14 @@ for i:= 2 to 5 do
       <td><a name="reset" id="reset"></a>reset</td>
       <td><font class="cmd">reset</font><br/>
        <p>Complete reset of all parameters of the program!<br/>
-        This is almost equivalent of doing:</p>
-       <font class="cmd">close;
-        drop global !all;
-        cls;
-        clh;
+        This is almost equivalent of doing:</br>
+       <font class="cmd">
+close;
+drop global !all;
+cls;
+clh;
        </font>
-       <br/>But this also clears all result variables!
+       <br/>But <font class="cmd">reset</font> also clears all result variables!</p>
       </td>
      </tr>
 
@@ -2512,10 +2504,10 @@ for i:= 2 to 5 do
         <td><a name="concat"/>concat(X, s<sub>1</sub>, s<sub>2</sub>, ..., s<sub>n</sub>)</td>
         <td>s, any, ...</td>
         <td>s</td>
-        <td>Concat(...) concatinates values s<sub>1</sub> -> s<sub>n</sub> into a string. If any of the s<sub>x</sub> parameters return sys. missing it will be replaced by the value of X<br/>
+        <td>Concat(...) concatinates values s<sub>1</sub> -> s<sub>n</sub> into a string. If any of the s<sub>x</sub> parameters return system missing it will be replaced by the value of X<br/>
         <font class="cmd">concat("X", "a", v1[_n]) =&gt; "aX" if v1 is missing, else a + the value of v1</font><br/>
           <br/>
-        <font class="limit">NOTE:</font> the concat function only adds the first parameter for system missing (.), for user defined missing the actual value is added for that variable.
+        <font class="limit">Note:</font> for user defined missing values, the actual value is added to the string.
         </td>
       </tr>
       <tr>

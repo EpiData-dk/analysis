@@ -36,6 +36,7 @@ type
     MenuItem42: TMenuItem;
     MenuItem43: TMenuItem;
     MenuItem44: TMenuItem;
+    MenuItem46: TMenuItem;
     N1: TMenuItem;
     MenuItem47: TMenuItem;
     PopupMenu1: TPopupMenu;
