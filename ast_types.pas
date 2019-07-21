@@ -72,6 +72,7 @@ type
     stNew,
     stFor,
     stFunctionDefinition,
+    stReturn,
     stAssignment,
     stIfThen,
     stSelect,

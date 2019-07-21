@@ -610,11 +610,13 @@ object EditorForm: TEditorForm
       'ELSE'
       'END'
       'FOR'
+      'FUNCTION'
       'IF'
       'IN'
       'MOD'
       'NOT'
       'OR'
+      'RETURN'
       'SELECT'
       'SHL'
       'SHR'
@@ -624,6 +626,7 @@ object EditorForm: TEditorForm
     )
     Constants.Strings = (
       'FALSE'
+      '_N'
       'PI'
       'TRUE'
     )

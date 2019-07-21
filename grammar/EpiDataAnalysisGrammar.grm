@@ -84,7 +84,7 @@ opSet         = 'set'
 
 ! ------------------------------------------------- Rules
 
-<Program>                                  ::= <Statement List>
+<Program>                                  ::= <Statement List> <Optional Function List>
 
 <Statement List>                           ::= <Statement> ';' <Statement List>
                                            |
@@ -94,7 +94,7 @@ opSet         = 'set'
                                            |   'select' <Expression> 'do' <Statement>
                                            |   'for' <Indexed Variable> ':=' <Expression> <For Direction> <Expression> 'do' <Statement>
                                            |   'for' <Indexed Variable> 'in' <Array> 'do' <Statement>
-!                                          |   'function' Identifier '(' <Parameter Type List> ')' <Optional Return Value> ';' 'begin' <Statement List> 'end'
+                                           |   'return' <Optional Expression>
                                            |   opUse <Indexed Variable> <Option List>
                                            |   '?' <Expression>
                                            |   opAssert <Expression>        <Option List>
@@ -189,6 +189,14 @@ opSet         = 'set'
 !        FUNCTIONS
 !  =====================================================
 
+<Optional Function List>                   ::= <Function List>
+                                           |
+
+<Function List>                            ::= <Function Definition> <Function List>
+                                           |   <Function Definition>
+
+<Function Definition>                      ::= 'function' Identifier '(' <Optional Parameter Type List> ')' <Optional Return Value> ';' 'begin' <Statement List> 'end' ';'
+
 <Optional Parameter Type List>             ::= <Parameter Type List> 
                                            |
 
@@ -197,7 +205,7 @@ opSet         = 'set'
 
 <Parameter Type Pair>                      ::= Identifier ':' <Type>
 
-<Type>                                     ::= 'int'
+<Type>                                     ::= Identifier
 
 <Optional Return Value>                    ::= ':' <Type>
                                            |  

@@ -23,6 +23,9 @@ type
   TOption = class;
   TOptionList = class;
   TVariableList = class;
+  TFunctionDefinition = class;
+  TFunctionList = class;
+  TParamDeclerationTypeListEnumerator = class;
 
   ASTFloat = EpiFloat;
   ASTInteger = EpiInteger;
@@ -274,21 +277,113 @@ type
     property ForType: TForType read FForType;
   end;
 
+  { TParamPair }
+
+  TParamPair = class
+  private
+    FIdent: UTF8String;
+    FParamType: TASTResultType;
+  public
+    constructor Create(AIdent: UTF8String; AParamType: TASTResultType);
+    property Ident: UTF8String read FIdent;
+    property ParamType: TASTResultType read FParamType;
+  end;
+
+  { TParamDeclerationTypeList }
+
+  TParamDeclerationTypeList = class
+  private
+    type
+      TParamPairList = specialize TFPGList<TParamPair>;
+  private
+    FParamPairList: TParamPairList;
+    function GetCount: Integer;
+    function GetItems(Index: Integer): TParamPair;
+  public
+    constructor Create;
+    procedure Add(ParamPair: TParamPair);
+    function GetEnumerator: TParamDeclerationTypeListEnumerator;
+    property Count: Integer read GetCount;
+    property Items[Index: Integer]: TParamPair read GetItems; default;
+  end;
+
+  { TParamDeclerationTypeListEnumerator }
+
+  TParamDeclerationTypeListEnumerator = class
+  private
+    FCurrentIndex: Integer;
+    FParamDeclerationTypeList: TParamDeclerationTypeList;
+    FListCount: Integer;
+    procedure RaiseCountError;
+    procedure CheckListCount;
+  protected
+    function GetCurrent: TParamPair;
+  public
+    constructor Create(ParamDeclerationTypeList: TParamDeclerationTypeList);
+    function MoveNext: Boolean;
+    property Current: TParamPair read GetCurrent;
+  end;
+
+  { TFunctionListEnumerator }
+
+  TFunctionListEnumerator = class
+    FCurrentIndex: Integer;
+    FFunctionList: TFunctionList;
+    FListCount: Integer;
+    procedure RaiseCountError;
+    procedure CheckListCount;
+  protected
+    function GetCurrent: TFunctionDefinition;
+  public
+    constructor Create(FunctionList: TFunctionList);
+    function MoveNext: Boolean;
+    property Current: TFunctionDefinition read GetCurrent;
+  end;
+
+  { TFunctionList }
+
+  TFunctionList = class(TAbstractSyntaxTreeBase)
+  private
+    type
+      TFunctionDefinitionList = specialize TFPGList<TFunctionDefinition>;
+  private
+    FFunctionList: TFunctionDefinitionList;
+    function GetCount: Integer;
+    function GetItems(Index: Integer): TFunctionDefinition;
+  public
+    constructor Create; virtual;
+    destructor  Destroy; override;
+    procedure Add(AFunction: TFunctionDefinition);
+    function GetEnumerator: TFunctionListEnumerator;
+    property Count: Integer read GetCount;
+    property Items[Index: Integer]: TFunctionDefinition read GetItems; default;
+  end;
+
   { TFunctionDefinition }
 
   TFunctionDefinition = class(TCustomStatement)
   private
-    FParameterTypeList: TList;
-    FReturnType: TObject;
+    FParameterTypeList: TParamDeclerationTypeList;
+    FReturnType: TASTResultType;
     FStatements: TStatementList;
   public
     constructor Create(Const Ident: UTF8String;
-      ParameterTypeList: TList;
-      ReturnType: TObject;
+      ParameterTypeList: TParamDeclerationTypeList;
+      ReturnType: TASTResultType;
       Statements: TStatementList);
-    property ParameterTypeList: TList read FParameterTypeList;
-    property ReturnType: TObject read FReturnType;
+    property ParameterTypeList: TParamDeclerationTypeList read FParameterTypeList;
+    property ReturnType: TASTResultType read FReturnType;
     property Statements: TStatementList read FStatements;
+  end;
+
+  { TReturn }
+
+  TReturn = class(TCustomStatement)
+  private
+    FReturnExpression: TExpr;
+  public
+    constructor Create(AReturnExpression: TExpr);
+    property ReturnExpression: TExpr read FReturnExpression;
   end;
 
   { TEvalExpression }
@@ -1537,6 +1632,8 @@ uses
   epi_script_function_systemfunctions,
   epi_script_function_observations,
   math, variants, LazUTF8, LazFileUtils;
+
+{ TParamPair }
 
 { TRecodeInterval }
 
@@ -3528,15 +3625,165 @@ begin
     end;
 end;
 
+{ TParamDeclerationTypeList }
+
+function TParamDeclerationTypeList.GetCount: Integer;
+begin
+  result := FParamPairList.Count;
+end;
+
+function TParamDeclerationTypeList.GetItems(Index: Integer): TParamPair;
+begin
+  result := FParamPairList.Items[Index];
+end;
+
+constructor TParamDeclerationTypeList.Create;
+begin
+  FParamPairList := TParamPairList.Create;
+end;
+
+procedure TParamDeclerationTypeList.Add(ParamPair: TParamPair);
+begin
+  FParamPairList.Add(ParamPair);
+end;
+
+function TParamDeclerationTypeList.GetEnumerator: TParamDeclerationTypeListEnumerator;
+begin
+  result := TParamDeclerationTypeListEnumerator.Create(self);
+end;
+
+
+{ TParamDeclerationTypeListEnumerator }
+
+procedure TParamDeclerationTypeListEnumerator.RaiseCountError;
+begin
+  raise Exception.CreateFmt(
+      'Enumeration error!' + LineEnding +
+      'Expected %d items in list, but MoveNext found %d!' + LineEnding +
+      'Deleting/Inserting items during iteration is NOT supported!',
+      [FListCount, FParamDeclerationTypeList.Count]
+    );
+end;
+
+procedure TParamDeclerationTypeListEnumerator.CheckListCount;
+begin
+  if (FListCount <> FParamDeclerationTypeList.Count) then
+    RaiseCountError;
+end;
+
+function TParamDeclerationTypeListEnumerator.GetCurrent: TParamPair;
+begin
+  result := FParamDeclerationTypeList[FCurrentIndex];
+end;
+
+constructor TParamDeclerationTypeListEnumerator.Create(
+  ParamDeclerationTypeList: TParamDeclerationTypeList);
+begin
+  FParamDeclerationTypeList := ParamDeclerationTypeList;
+  FCurrentIndex := -1;
+  FListCount := FParamDeclerationTypeList.Count;
+end;
+
+function TParamDeclerationTypeListEnumerator.MoveNext: Boolean;
+begin
+  CheckListCount;
+  Inc(FCurrentIndex);
+  Result := (FCurrentIndex < FListCount);
+end;
+
+{ TFunctionListEnumerator }
+
+procedure TFunctionListEnumerator.RaiseCountError;
+begin
+  raise Exception.CreateFmt(
+      'Enumeration error!' + LineEnding +
+      'Expected %d items in list, but MoveNext found %d!' + LineEnding +
+      'Deleting/Inserting items during iteration is NOT supported!',
+      [FListCount, FFunctionList.Count]
+    );
+end;
+
+procedure TFunctionListEnumerator.CheckListCount;
+begin
+  if (FListCount <> FFunctionList.Count) then
+    RaiseCountError;
+end;
+
+function TFunctionListEnumerator.GetCurrent: TFunctionDefinition;
+begin
+  Result := FFunctionList[FCurrentIndex];
+end;
+
+constructor TFunctionListEnumerator.Create(FunctionList: TFunctionList);
+begin
+  FFunctionList := FunctionList;
+  FCurrentIndex := -1;
+  FListCount := FFunctionList.Count;
+end;
+
+function TFunctionListEnumerator.MoveNext: Boolean;
+begin
+  CheckListCount;
+  Inc(FCurrentIndex);
+  Result := (FCurrentIndex < FFunctionList.Count);
+end;
+
+{ TFunctionList }
+
+function TFunctionList.GetCount: Integer;
+begin
+  result := FFunctionList.Count;
+end;
+
+function TFunctionList.GetItems(Index: Integer): TFunctionDefinition;
+begin
+  result := FFunctionList.Items[Index];
+end;
+
+constructor TFunctionList.Create;
+begin
+  FFunctionList := TFunctionDefinitionList.Create;
+end;
+
+destructor TFunctionList.Destroy;
+begin
+  FFunctionList.Clear;
+  inherited Destroy;
+end;
+
+procedure TFunctionList.Add(AFunction: TFunctionDefinition);
+begin
+  FFunctionList.Add(AFunction);
+end;
+
+function TFunctionList.GetEnumerator: TFunctionListEnumerator;
+begin
+  result := TFunctionListEnumerator.Create(Self);
+end;
+
 { TFunctionDefinition }
 
 constructor TFunctionDefinition.Create(const Ident: UTF8String;
-  ParameterTypeList: TList; ReturnType: TObject; Statements: TStatementList);
+  ParameterTypeList: TParamDeclerationTypeList; ReturnType: TASTResultType; Statements: TStatementList);
 begin
   inherited Create(stFunctionDefinition);
   FParameterTypeList := ParameterTypeList;
   FReturnType        := ReturnType;
   FStatements        := Statements;
+end;
+
+constructor TParamPair.Create(AIdent: UTF8String; AParamType: TASTResultType);
+begin
+  FIdent := AIdent;
+  FParamType := AParamType;
+end;
+
+{ TReturn }
+
+constructor TReturn.Create(AReturnExpression: TExpr);
+begin
+  inherited Create(stReturn);
+  FReturnExpression := AReturnExpression;
 end;
 
 { TEvalExpression }
