@@ -18,8 +18,8 @@ type
     FExecutor: IEpiScriptExecutor;
   public
     constructor Create(Executor: TExecutor);
-    function ParseFile(Const Fn: UTF8String; out TheProgram: TStatementList): boolean; virtual;
-    function ParseText(Const S: UTF8String; out TheProgram: TStatementList): boolean; virtual;
+    function ParseFile(Const Fn: UTF8String; out TheProgram: TProgram): boolean; virtual;
+    function ParseText(Const S: UTF8String; out TheProgram: TProgram): boolean; virtual;
     property GoldParser: TGOLDParser read FGoldParser;
   // Events
   private
@@ -89,7 +89,7 @@ begin
   MS.Free;
 end;
 
-function TParser.ParseFile(const Fn: UTF8String; out TheProgram: TStatementList
+function TParser.ParseFile(const Fn: UTF8String; out TheProgram: TProgram
   ): boolean;
 var
   SL: TStringListUTF8;
@@ -100,12 +100,13 @@ begin
   SL.Free;
 end;
 
-function TParser.ParseText(const S: UTF8String; out TheProgram: TStatementList
+function TParser.ParseText(const S: UTF8String; out TheProgram: TProgram
   ): boolean;
 var
   ABuild: TASTBuilder;
   Done, Handled: Boolean;
   Response: TGoldParserMessage;
+  FunctionList: TFunctionList;
 begin
   Done := false;
   result := false;
@@ -187,19 +188,19 @@ begin
   FOnASTBuildError := AValue;
 end;
 
-procedure TParser.DoOnCommentError;
+procedure TParser.DoOnCommentError();
 begin
   if Assigned(OnCommentError) then
     OnCommentError(Self, FGoldParser.CurrentToken);
 end;
 
-procedure TParser.DoOnLexError;
+procedure TParser.DoOnLexError();
 begin
   if Assigned(OnLexError) then
     OnLexError(Self, FGoldParser.CurrentToken);
 end;
 
-procedure TParser.DoOnSyntaxError;
+procedure TParser.DoOnSyntaxError();
 begin
   if Assigned(OnSyntaxError) then
     OnSyntaxError(Self, FGoldParser.CurrentToken, FGoldParser.TokenTable);
@@ -290,7 +291,7 @@ end;
 function TOptionListParser.ParseText(const S: UTF8String; out
   OptionList: TOptionList): boolean;
 var
-  Dummy: TStatementList;
+  Dummy: TProgram;
 begin
   inherited ParseText(S, Dummy);
   OptionList := FInternalOptionList;

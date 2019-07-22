@@ -162,7 +162,7 @@ end;
 procedure TRunTest.RunFile(const FN: UTF8String);
 var
   P: TParser;
-  TheProgram: TStatementList;
+  TheProgram: TProgram;
   ParseOk: Boolean;
 begin
   FExternalOutputCreator.DoNormal('Running: ' + FN);

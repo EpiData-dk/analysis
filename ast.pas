@@ -26,6 +26,7 @@ type
   TFunctionDefinition = class;
   TFunctionList = class;
   TParamDeclerationTypeListEnumerator = class;
+  TReturn = class;
 
   ASTFloat = EpiFloat;
   ASTInteger = EpiInteger;
@@ -361,29 +362,38 @@ type
 
   { TFunctionDefinition }
 
+  TReturnStatementList = specialize TFPGList<TReturn>;
+
   TFunctionDefinition = class(TCustomStatement)
   private
+    FIdent: UTF8String;
     FParameterTypeList: TParamDeclerationTypeList;
     FReturnType: TASTResultType;
     FStatements: TStatementList;
+    FReturnStatements: TReturnStatementList;
   public
     constructor Create(Const Ident: UTF8String;
       ParameterTypeList: TParamDeclerationTypeList;
       ReturnType: TASTResultType;
-      Statements: TStatementList);
+      Statements: TStatementList;
+      ReturnStatements: TReturnStatementList);
+    property Ident: UTF8String read FIdent;
     property ParameterTypeList: TParamDeclerationTypeList read FParameterTypeList;
     property ReturnType: TASTResultType read FReturnType;
     property Statements: TStatementList read FStatements;
+    property ReturnStatements: TReturnStatementList read FReturnStatements;
   end;
 
   { TReturn }
 
   TReturn = class(TCustomStatement)
   private
+    FParentFunction: TFunctionDefinition;
     FReturnExpression: TExpr;
   public
     constructor Create(AReturnExpression: TExpr);
     property ReturnExpression: TExpr read FReturnExpression;
+    property ParentFunction: TFunctionDefinition read FParentFunction;
   end;
 
   { TEvalExpression }
@@ -1616,6 +1626,18 @@ type
     property Count: Integer read GetCount;
   end;
 
+  { TProgram }
+
+  TProgram = class
+  private
+    FFunctions: TFunctionList;
+    FStatements: TStatementList;
+  public
+    constructor Create(AStatements: TStatementList; AFunctions: TFunctionList);
+    property Functions: TFunctionList read FFunctions;
+    property Statements: TStatementList read FStatements;
+  end;
+
 implementation
 
 uses
@@ -1632,6 +1654,15 @@ uses
   epi_script_function_systemfunctions,
   epi_script_function_observations,
   math, variants, LazUTF8, LazFileUtils;
+
+{ TProgram }
+
+constructor TProgram.Create(AStatements: TStatementList;
+  AFunctions: TFunctionList);
+begin
+  FStatements := AStatements;
+  FFunctions  := AFunctions;
+end;
 
 { TParamPair }
 
@@ -3764,12 +3795,20 @@ end;
 { TFunctionDefinition }
 
 constructor TFunctionDefinition.Create(const Ident: UTF8String;
-  ParameterTypeList: TParamDeclerationTypeList; ReturnType: TASTResultType; Statements: TStatementList);
+  ParameterTypeList: TParamDeclerationTypeList; ReturnType: TASTResultType;
+  Statements: TStatementList; ReturnStatements: TReturnStatementList);
+var
+  Item: TReturn;
 begin
   inherited Create(stFunctionDefinition);
+  FIdent             := Ident;
   FParameterTypeList := ParameterTypeList;
   FReturnType        := ReturnType;
   FStatements        := Statements;
+  FReturnStatements  := ReturnStatements;
+
+  for Item in FReturnStatements do
+    Item.FParentFunction := Self;
 end;
 
 constructor TParamPair.Create(AIdent: UTF8String; AParamType: TASTResultType);

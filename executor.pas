@@ -238,10 +238,20 @@ type
   protected
     procedure DoStatement(St: TCustomStatement); virtual;
     procedure DoStatementList(L: TStatementList); virtual;
+
+  // USER DEFINED FUNCTIONS
+  private
+    type
+      TFunctionsMap = specialize TFPGMap<UTF8String, TFunctionDefinition>;
+  protected
+    FFunctionsMap: TFunctionsMap;
+    procedure AddFunctions(Functions: TFunctionList); virtual;
+
+
   public
     constructor Create(OutputCreator: TOutputCreator); virtual;
     destructor Destroy; override;
-    procedure Execute(TheProgram: TStatementList);  virtual;
+    procedure Execute(TheProgram: TProgram);  virtual;
     procedure ExecStatement(St: TCustomStatement);
 
   { IEpiTypeChecker }
@@ -2310,7 +2320,7 @@ procedure TExecutor.ExecRun(ST: TCustomStringCommand);
 var
   FN: UTF8String;
   P: TParser;
-  TheProgram: TStatementList;
+  TheProgram: TProgram;
   OldCurrentDir, RunCurrentDir: String;
 begin
   FN := '';
@@ -4062,6 +4072,20 @@ begin
     end;
 end;
 
+procedure TExecutor.AddFunctions(Functions: TFunctionList);
+var
+  Func: TFunctionDefinition;
+  Index: Integer;
+begin
+  for Func in Functions do
+    begin
+      if FFunctionsMap.Find(Func.Ident, Index) then
+        begin
+
+        end;
+    end;
+end;
+
 constructor TExecutor.Create(OutputCreator: TOutputCreator);
 var
   F: TEpiField;
@@ -4080,6 +4104,9 @@ begin
   // Loop setup
   FPostLoopNotification := TMethodList.Create;
   FNestedLoopCounter    := 0;
+
+  // Functions setup
+  FFunctionsMap         := TFunctionsMap.Create;
 
   FSelectStack := TSelectStack.Create;
   ClearSelectStack;
@@ -4126,14 +4153,16 @@ begin
     end;
 end;
 
-procedure TExecutor.Execute(TheProgram: TStatementList);
+procedure TExecutor.Execute(TheProgram: TProgram);
 begin
   try
     FExecuting := true;
     FCancelled := false;
     try
+
+
       DoStartExecuting;
-      DoStatementList(TheProgram);
+      DoStatementList(TheProgram.Statements);
     except
       on E: EExecutorException do
         ;

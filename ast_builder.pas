@@ -42,6 +42,7 @@ type
     function DoOptionalAssignment(R: TReduction): TExpr;
   private
     // Function Definition (and return)
+    FReturnStatements: TReturnStatementList;
     function DoOptionalFunctionList(R: TReduction): TFunctionList;
     function DoFunctionList(R: TReduction; OwnerList: TFunctionList): TFunctionList;
     function DoFunctionDefinition(R: TReduction): TFunctionDefinition;
@@ -50,7 +51,7 @@ type
     function DoParameterTypePair(R: TReduction): TParamPair;
     function DoDataType(R: TReduction): TASTResultType;
     function DoOptionalReturnValue(R: TReduction): TASTResultType;
-    function DoReturn(R: TReduction): TCustomStatement;
+    function DoReturn(R: TReduction): TReturn;
   private
     // Recode
     function DoRecodeCommand(R: TReduction): TRecodeCommand;
@@ -118,8 +119,8 @@ type
   public
     constructor Create(AExecutor: IEpiScriptExecutor);
     destructor Destroy; override;
-    function BuildAST(TheProgram: TReduction; out AST: TStatementList): boolean;
-    function BuildOptionList(TheProgram: TReduction; out AOptionList: TOptionList): boolean;
+    function BuildAST(MainReduction: TReduction; out TheProgram: TProgram): boolean;
+    function BuildOptionList(MainReduction: TReduction; out AOptionList: TOptionList): boolean;
     property Error: boolean read FError;
     property ErrorMsg: UTF8String read FErrorMsg;
     property ErrorToken: TToken read FErrorToken;
@@ -1160,16 +1161,19 @@ var
   Statements: TStatementList;
   List: TParamDeclerationTypeList;
   ReturnValue: TASTResultType;
+  Item: TReturn;
 begin
   //                               0           1      2                3                 4            5              6    7           8            9    10
   // <Function Definition> ::= 'function' Identifier '(' <Optional Parameter Type List> ')' <Optional Return Value> ';' 'begin' <Statement List> 'end' ';'
+  FReturnStatements := TReturnStatementList.Create;
 
   Ident := R.Tokens[1].DataVar;
   List := DoOptionalParameterTypeList(R.Tokens[3].Reduction);
   ReturnValue := DoOptionalReturnValue(R.Tokens[5].Reduction);
   Statements := DoStatementList(R.Tokens[8].Reduction, nil);
 
-  result := TFunctionDefinition.Create(Ident, List, ReturnValue, Statements);
+  Result := TFunctionDefinition.Create(Ident, List, ReturnValue, Statements, FReturnStatements);
+  FReturnStatements.Free;
 end;
 
 function TASTBuilder.DoOptionalParameterTypeList(R: TReduction): TParamDeclerationTypeList;
@@ -1246,7 +1250,7 @@ begin
     Result := rtUndefined;
 end;
 
-function TASTBuilder.DoReturn(R: TReduction): TCustomStatement;
+function TASTBuilder.DoReturn(R: TReduction): TReturn;
 var
   Expr: TExpr;
 begin
@@ -1254,6 +1258,7 @@ begin
   Expr := DoOptionalExpression(R.Tokens[1].Reduction);
 
   Result := TReturn.Create(Expr);
+  FReturnStatements.Add(Result);
 end;
 
 function TASTBuilder.DoOptionalRecodeList(R: TReduction): TRecodeIntervalList;
@@ -2095,27 +2100,33 @@ begin
   inherited Destroy;
 end;
 
-function TASTBuilder.BuildAST(TheProgram: TReduction; out AST: TStatementList
-  ): boolean;
+function TASTBuilder.BuildAST(MainReduction: TReduction; out TheProgram: TProgram): boolean;
 var
-  FunctionList: TFunctionList;
+  Statements: TStatementList;
+  Functions: TFunctionList;
 begin
   FError := false;
-
 // <Program> ::= <Statement List> <Optional Function List>
 
-  AST := DoStatementList(TheProgram.Tokens[0].Reduction, nil);
-  FunctionList := DoOptionalFunctionList(TheProgram.Tokens[1].Reduction);
+  // Statement List
+  FReturnStatements := TReturnStatementList.Create;
+  Statements := DoStatementList(MainReduction.Tokens[0].Reduction, nil);
+  FReturnStatements.Free;
+
+  // Function List
+  Functions := DoOptionalFunctionList(MainReduction.Tokens[1].Reduction);
+
+  TheProgram := TProgram.Create(Statements, Functions);
 
   Result := not FError;
 end;
 
-function TASTBuilder.BuildOptionList(TheProgram: TReduction; out
+function TASTBuilder.BuildOptionList(MainReduction: TReduction; out
   AOptionList: TOptionList): boolean;
 begin
   FError := false;
 
-  AOptionList := DoOptionList(TheProgram, nil);
+  AOptionList := DoOptionList(MainReduction, nil);
   Result := not FError;
 end;
 

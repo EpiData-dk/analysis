@@ -1105,8 +1105,8 @@ end;
 function TMainForm.DoParseContent(const S: UTF8String): boolean;
 var
   P: TParser;
-  TheProgram: TStatementList;
   T1, T2: TDateTime;
+  TheProgram: TProgram;
 begin
   T1 := Now;
   P := TParser.Create(Executor);

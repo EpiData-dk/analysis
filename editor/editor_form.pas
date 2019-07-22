@@ -1057,7 +1057,7 @@ end;
 procedure TEditorForm.DoParser(const S: UTF8String);
 var
   P: TParser;
-  Prgm: TStatementList;
+  Prgm: TProgram;
 begin
   FErrorToken := nil;
   SynEdit1.Invalidate;
