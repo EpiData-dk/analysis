@@ -14,6 +14,7 @@ uses
   Token;
 
 type
+  TCustomStatement = class;
   TAbstractSyntaxTreeBase = class;
   TExpr = class;
   TArray = class;
@@ -80,6 +81,8 @@ type
       Const LineNo, ColNo, BytePos: integer);
     procedure SetTypeCheckErrorOutput(Active: boolean);
     property DataFile: TEpiDataFile read GetDataFile;
+  // Functions
+    procedure ExecStatement(St: TCustomStatement);
   end;
 
   IEpiTypeChecker = IEpiScriptExecutor;
@@ -299,6 +302,7 @@ type
   private
     FParamPairList: TParamPairList;
     function GetCount: Integer;
+    function GetItem(Ident: UTF8String): TParamPair;
     function GetItems(Index: Integer): TParamPair;
   public
     constructor Create;
@@ -306,6 +310,7 @@ type
     function GetEnumerator: TParamDeclerationTypeListEnumerator;
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TParamPair read GetItems; default;
+    property Item[Ident: UTF8String]: TParamPair read GetItem;
   end;
 
   { TParamDeclerationTypeListEnumerator }
@@ -371,6 +376,7 @@ type
     FReturnType: TASTResultType;
     FStatements: TStatementList;
     FReturnStatements: TReturnStatementList;
+    FActualdReturnStatement: TReturn;
   public
     constructor Create(Const Ident: UTF8String;
       ParameterTypeList: TParamDeclerationTypeList;
@@ -382,6 +388,7 @@ type
     property ReturnType: TASTResultType read FReturnType;
     property Statements: TStatementList read FStatements;
     property ReturnStatements: TReturnStatementList read FReturnStatements;
+    property ActualdReturnStatement: TReturn read FActualdReturnStatement write FActualdReturnStatement;
   end;
 
   { TReturn }
@@ -392,6 +399,7 @@ type
     FReturnExpression: TExpr;
   public
     constructor Create(AReturnExpression: TExpr);
+    function TypeCheck(Parser: IEpiTypeChecker): boolean; override;
     property ReturnExpression: TExpr read FReturnExpression;
     property ParentFunction: TFunctionDefinition read FParentFunction;
   end;
@@ -647,6 +655,30 @@ type
     function ResultType: TASTResultType; override;
   public
     constructor Create(Const AOperation: TParserOperationType; Const ParamList: TParamList);
+    function AsBoolean: Boolean; override;
+    function AsInteger: ASTInteger; override;
+    function AsFloat: ASTFloat; override;
+    function AsDate: EpiDate; override;
+    function AsTime: EpiDateTime; override;
+    function AsString: EpiString; override;
+    function IsMissing: Boolean; override;
+  end;
+
+  { TUserFunction }
+
+  TUserFunction = class(TFunctionCall)
+  private
+    FExecuted: Boolean;
+    FFunctionDefinition: TFunctionDefinition;
+    procedure ExecuteStatements;
+  protected
+    function ParamCounts: TBoundArray; override;
+    function ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec; override;
+  public
+    function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
+    function ResultType: TASTResultType; override;
+  public
+    constructor Create(FunctionDefinition: TFunctionDefinition; const ParamList: TParamList);
     function AsBoolean: Boolean; override;
     function AsInteger: ASTInteger; override;
     function AsFloat: ASTFloat; override;
@@ -3663,6 +3695,17 @@ begin
   result := FParamPairList.Count;
 end;
 
+function TParamDeclerationTypeList.GetItem(Ident: UTF8String): TParamPair;
+var
+  Pair: TParamPair;
+begin
+  for Pair in Self do
+    if (UTF8CompareText(Pair.Ident, Ident)) = 0 then
+      Exit(Pair);
+
+  Result := nil;
+end;
+
 function TParamDeclerationTypeList.GetItems(Index: Integer): TParamPair;
 begin
   result := FParamPairList.Items[Index];
@@ -3823,6 +3866,11 @@ constructor TReturn.Create(AReturnExpression: TExpr);
 begin
   inherited Create(stReturn);
   FReturnExpression := AReturnExpression;
+end;
+
+function TReturn.TypeCheck(Parser: IEpiTypeChecker): boolean;
+begin
+  Result := inherited TypeCheck(Parser);
 end;
 
 { TEvalExpression }
@@ -6685,6 +6733,89 @@ begin
   end;    }
 end;
 
+{ TUserFunction }
+
+procedure TUserFunction.ExecuteStatements;
+begin
+  if (FExecuted) then exit;
+  FExecuted := true;
+  FExecutor.ExecStatement(FFunctionDefinition);
+end;
+
+function TUserFunction.ParamCounts: TBoundArray;
+begin
+  Result := inherited ParamCounts;
+  Result[0] := FFunctionDefinition.ParameterTypeList.Count;
+end;
+
+function TUserFunction.ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec;
+begin
+  Result := inherited ParamAcceptType(ParamNo);
+  Result.ResultTypes := [FFunctionDefinition.ParameterTypeList[ParamNo].ParamType];
+end;
+
+constructor TUserFunction.Create(FunctionDefinition: TFunctionDefinition;
+  const ParamList: TParamList);
+begin
+  inherited Create(ParamList);
+
+  FFunctionDefinition := FunctionDefinition;
+  FExecuted := false;;
+end;
+
+function TUserFunction.AsBoolean: Boolean;
+begin
+  ExecuteStatements;
+  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.AsBoolean;
+end;
+
+function TUserFunction.AsInteger: ASTInteger;
+begin
+  ExecuteStatements;
+  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.AsInteger;
+end;
+
+function TUserFunction.AsFloat: ASTFloat;
+begin
+  ExecuteStatements;
+  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.AsFloat;
+end;
+
+function TUserFunction.AsDate: EpiDate;
+begin
+  ExecuteStatements;
+  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.AsDate;
+end;
+
+function TUserFunction.AsTime: EpiDateTime;
+begin
+  ExecuteStatements;
+  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.AsTime;
+end;
+
+function TUserFunction.AsString: EpiString;
+begin
+  ExecuteStatements;
+  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.AsString;
+end;
+
+function TUserFunction.IsMissing: Boolean;
+begin
+  ExecuteStatements;
+  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.IsMissing;
+end;
+
+function TUserFunction.TypeCheck(TypeChecker: IEpiTypeChecker;
+  TypesAndFlags: TTypesAndFlagsRec): boolean;
+begin
+  Result := inherited TypeCheck(TypeChecker, TypesAndFlags);
+end;
+
+function TUserFunction.ResultType: TASTResultType;
+begin
+  Result := FFunctionDefinition.ReturnType;
+end;
+
 { TExpr }
 
 function TExpr.CommonType(const A, B: TExpr): TASTResultType;
@@ -6845,7 +6976,8 @@ begin
     evtField,
     evtResultConst,
     evtResultVector,
-    evtResultMatrix:
+    evtResultMatrix,
+    evtFunctionParam:
       Result := FieldTypeToParserType(Executor.GetVariableType(Self));
 
     evtDataset:

@@ -1173,7 +1173,6 @@ begin
   Statements := DoStatementList(R.Tokens[8].Reduction, nil);
 
   Result := TFunctionDefinition.Create(Ident, List, ReturnValue, Statements, FReturnStatements);
-  FReturnStatements.Free;
 end;
 
 function TASTBuilder.DoOptionalParameterTypeList(R: TReduction): TParamDeclerationTypeList;

@@ -123,6 +123,7 @@ type
     FFields:  TExecutorDataVariables;
     FConsts:  TExecutorDataVariables;
     FResults: TExecutorDataVariables;
+    FFuncVars: TExecutorDataVariables;
     procedure DeleteExecVar(Const Ident: UTF8String);
     function  GetModified: boolean;
     procedure InitSetOptions;
@@ -199,6 +200,10 @@ type
     procedure ExecUse(ST: TUse); virtual;
     procedure ExecRecode(ST: TRecodeCommand); virtual;
 
+    // Function
+    procedure ExecReturn(ST: TReturn); virtual;
+    procedure ExecFunction(ST: TFunctionDefinition); virtual;
+
     // Crud Commands
     procedure ExecNew(ST: TCustomNew); virtual;
     procedure ExecEdit(ST: TCustomCrudCommand); virtual;
@@ -243,11 +248,17 @@ type
   private
     type
       TFunctionsMap = specialize TFPGMap<UTF8String, TFunctionDefinition>;
+  private
+    procedure ClearFunctionParamVars;
+    procedure UpdateFunctionParamVars;
   protected
+    FFunctionCallStack: TObjectStack;
     FFunctionsMap: TFunctionsMap;
     procedure AddFunctions(Functions: TFunctionList); virtual;
+    procedure PushToFunctionStack(FunctionDefinition: TFunctionDefinition); virtual;
+    function PopFromFunctionStack: TFunctionDefinition; virtual;
 
-
+  // Constuctor/Destructor
   public
     constructor Create(OutputCreator: TOutputCreator); virtual;
     destructor Destroy; override;
@@ -275,16 +286,15 @@ type
     function GetVariableValueUserMissing(Const Sender: TCustomVariable): boolean; virtual;
     function GetVariableType(const Sender: TCustomVariable): TEpiFieldType; virtual;
     function GetCurrentRecordNo: Integer; virtual;
-    function CreateFunction(const FunctionName: string;
-      const ParamList: TParamList): TFunctionCall; virtual;
+    function CreateFunction(const FunctionName: string; const ParamList: TParamList): TFunctionCall; virtual;
     function TypeCheckVariable(const Sender: TCustomVariable; TypesAndFlags: TTypesAndFlagsRec): boolean;
-    function ExpandVariableList(Const Sender: TCustomVariable; VariableChecker: IVariableCheck;
-      Index: Integer; out AVariableList: TVariableList): boolean;
+    function ExpandVariableList(Const Sender: TCustomVariable; VariableChecker: IVariableCheck; Index: Integer; out AVariableList: TVariableList): boolean;
     procedure SetTypeCheckErrorOutput(Active: boolean);
 
   protected
     FCancelled: Boolean;
     FExecuting: boolean;
+    FReturning: Boolean;
     function  GetCancelled: Boolean; virtual;
   public
     property Executing: Boolean read FExecuting;
@@ -3107,6 +3117,21 @@ begin
     end;
 end;
 
+procedure TExecutor.ExecReturn(ST: TReturn);
+begin
+  FReturning := true;
+
+  if (Assigned(ST.ParentFunction)) then
+    ST.ParentFunction.ActualdReturnStatement := ST;
+end;
+
+procedure TExecutor.ExecFunction(ST: TFunctionDefinition);
+begin
+  PushToFunctionStack(ST);
+  DoStatementList(ST.Statements);
+  PopFromFunctionStack;
+end;
+
 procedure TExecutor.ExecList(ST: TCustomCrudCommand);
 var
   EL: TExecList;
@@ -3947,6 +3972,14 @@ begin
         stSet:
           ExecSet(TSetCommand(ST));
 
+      // Functions
+
+        stReturn:
+          ExecReturn(TReturn(ST));
+
+        stFunctionDefinition:
+          ExecFunction(TFunctionDefinition(ST));
+
       // Crud Commands
 
         stList:
@@ -4064,7 +4097,8 @@ var
 begin
   I := 0;
   while (I < L.Count) and
-        (not Cancelled)
+        (not Cancelled) and
+        (not FReturning)
   do
     begin
       DoStatement(L.Statements[i]);
@@ -4072,18 +4106,56 @@ begin
     end;
 end;
 
+procedure TExecutor.ClearFunctionParamVars;
+var
+  i: Integer;
+begin
+  for i := 0 to FFuncVars.Count - 1 do
+    FFuncVars.Data[i].Free;
+
+  FFuncVars.Clear;
+end;
+
+procedure TExecutor.UpdateFunctionParamVars;
+var
+  FunctionDefinition: TFunctionDefinition;
+  Item: TParamPair;
+begin
+  FunctionDefinition := TFunctionDefinition(FFunctionCallStack.Peek);
+
+  if (not Assigned(FunctionDefinition)) then
+    Exit;
+
+  for Item in FunctionDefinition.ParameterTypeList do
+    FFuncVars.Add(Item.Ident, TExecVarGlobal.Create(Item.Ident, ftInteger));
+end;
+
 procedure TExecutor.AddFunctions(Functions: TFunctionList);
 var
-  Func: TFunctionDefinition;
-  Index: Integer;
+  Func, Data: TFunctionDefinition;
 begin
   for Func in Functions do
     begin
-      if FFunctionsMap.Find(Func.Ident, Index) then
-        begin
+      if FFunctionsMap.TryGetData(Func.Ident, Data) then
+        Data.Free;
 
-        end;
+      FFunctionsMap.AddOrSetData(Func.Ident, Func);
     end;
+end;
+
+procedure TExecutor.PushToFunctionStack(FunctionDefinition: TFunctionDefinition
+  );
+begin
+  ClearFunctionParamVars;
+  FFunctionCallStack.Push(FunctionDefinition);
+  UpdateFunctionParamVars;
+end;
+
+function TExecutor.PopFromFunctionStack: TFunctionDefinition;
+begin
+  ClearFunctionParamVars;
+  Result := TFunctionDefinition(FFunctionCallStack.Pop);
+  UpdateFunctionParamVars;
 end;
 
 constructor TExecutor.Create(OutputCreator: TOutputCreator);
@@ -4107,6 +4179,8 @@ begin
 
   // Functions setup
   FFunctionsMap         := TFunctionsMap.Create;
+  FFunctionCallStack    := TObjectStack.Create;
+  FReturning            := False;
 
   FSelectStack := TSelectStack.Create;
   ClearSelectStack;
@@ -4130,6 +4204,8 @@ begin
   FResults               := TExecutorDataVariables.Create;
   FResults.OnKeyCompare  := @ExecutorDataVariablesCompare;
   FResults.Sorted        := true;
+
+  FFuncVars              := TExecutorDataVariables.Create;
 
   FResults.Add('$SYSTEMDATETIME', TExecVarSystemDateTime.Create);
 
@@ -4159,10 +4235,10 @@ begin
     FExecuting := true;
     FCancelled := false;
     try
-
+      AddFunctions(TheProgram.Functions);
 
       DoStartExecuting;
-      DoStatementList(TheProgram.Statements);
+      ExecStatement(TheProgram.Statements);
     except
       on E: EExecutorException do
         ;
@@ -4186,6 +4262,7 @@ end;
 procedure TExecutor.ExecStatement(St: TCustomStatement);
 begin
   DoStatement(St);
+  FReturning := false;
 end;
 
 procedure TExecutor.TypeCheckError(const Msg: string; const LineNo, ColNo,
@@ -4597,8 +4674,13 @@ end;
 
 function TExecutor.CreateFunction(const FunctionName: string;
   const ParamList: TParamList): TFunctionCall;
+var
+  FunctionDefinition: TFunctionDefinition;
 begin
   result := nil;
+
+  if (FFunctionsMap.TryGetData(FunctionName, FunctionDefinition)) then
+    Result := TUserFunction.Create(FunctionDefinition, ParamList);
 end;
 
 function TExecutor.TypeCheckVariable(const Sender: TCustomVariable;

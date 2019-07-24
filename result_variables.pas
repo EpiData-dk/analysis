@@ -19,7 +19,8 @@ type
     evtValuelabel,     // A user created / loaded variable     (no value)
     evtResultConst,    // An internally created result variable (single value)
     evtResultVector,   // An internally created result variable (vector)
-    evtResultMatrix    // An internally created result variable (matrix)
+    evtResultMatrix,   // An internally created result variable (matrix)
+    evtFunctionParam   // Parameters for a user created function
   );
   TExecutorVariableTypes = set of TExecutorVariableType;
 
@@ -49,7 +50,8 @@ const
     'valuelabel',
     'result const',
     'result vector',
-    'result matrix'
+    'result matrix',
+    'function parameter'
   );
 
 type
@@ -91,6 +93,35 @@ type
   public
     constructor Create(Const AIdent: UTF8String; AValuelabelset: TEpiValueLabelSet);
     property Valuelabelset: TEpiValueLabelSet read FValuelabelset;
+  end;
+
+  { TExecParamVar }
+
+  TExecParamVar = class(TCustomExecutorVariable)
+  protected
+    function GetAsBoolean: Boolean; virtual;
+    function GetAsDate: EpiDate; virtual;
+    function GetAsFloat: EpiFloat; virtual;
+    function GetAsInteger: EpiInteger; virtual;
+    function GetAsMissing: boolean; virtual;
+    function GetAsString: EpiString; virtual;
+    function GetAsTime: EpiTime; virtual;
+    procedure SetAsBoolean(AValue: Boolean); virtual;
+    procedure SetAsDate(AValue: EpiDate); virtual;
+    procedure SetAsFloat(AValue: EpiFloat); virtual;
+    procedure SetAsInteger(AValue: EpiInteger); virtual;
+    procedure SetAsMissing(AValue: boolean); virtual;
+    procedure SetAsString(AValue: EpiString); virtual;
+    procedure SetAsTime(AValue: EpiTime); virtual;
+  public
+    constructor Create(const AIdent: UTF8String);
+    property AsBoolean: Boolean    read GetAsBoolean write SetAsBoolean;
+    property AsInteger: EpiInteger read GetAsInteger write SetAsInteger;
+    property AsFloat:   EpiFloat   read GetAsFloat   write SetAsFloat;
+    property AsString:  EpiString  read GetAsString  write SetAsString;
+    property AsDate:    EpiDate    read GetAsDate    write SetAsDate;
+    property AsTime:    EpiTime    read GetAsTime    write SetAsTime;
+    property IsMissing: boolean    read GetAsMissing write SetAsMissing;
   end;
 
   { TCustomExecutorDataVariable }
@@ -444,6 +475,83 @@ constructor TExecutorValuelabelsetVariable.Create(const AIdent: UTF8String;
 begin
   inherited Create(AIdent);
   FValuelabelset := AValuelabelset;
+end;
+
+{ TExecParamVar }
+
+function TExecParamVar.GetAsBoolean: Boolean;
+begin
+
+end;
+
+function TExecParamVar.GetAsDate: EpiDate;
+begin
+
+end;
+
+function TExecParamVar.GetAsFloat: EpiFloat;
+begin
+
+end;
+
+function TExecParamVar.GetAsInteger: EpiInteger;
+begin
+
+end;
+
+function TExecParamVar.GetAsMissing: boolean;
+begin
+
+end;
+
+function TExecParamVar.GetAsString: EpiString;
+begin
+
+end;
+
+function TExecParamVar.GetAsTime: EpiTime;
+begin
+
+end;
+
+procedure TExecParamVar.SetAsBoolean(AValue: Boolean);
+begin
+
+end;
+
+procedure TExecParamVar.SetAsDate(AValue: EpiDate);
+begin
+
+end;
+
+procedure TExecParamVar.SetAsFloat(AValue: EpiFloat);
+begin
+
+end;
+
+procedure TExecParamVar.SetAsInteger(AValue: EpiInteger);
+begin
+
+end;
+
+procedure TExecParamVar.SetAsMissing(AValue: boolean);
+begin
+
+end;
+
+procedure TExecParamVar.SetAsString(AValue: EpiString);
+begin
+
+end;
+
+procedure TExecParamVar.SetAsTime(AValue: EpiTime);
+begin
+
+end;
+
+constructor TExecParamVar.Create(const AIdent: UTF8String);
+begin
+
 end;
 
 { TExecVarResultConst }
