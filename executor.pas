@@ -1801,7 +1801,7 @@ begin
   FOptions.Insert(ANA_SO_COMMANDLOGFILE,                 TSetOption.Create('commandlog.pgm', rtString));
   FOptions.Insert(ANA_SO_COMMANDLOGLINES,                TSetOption.Create('1000', rtInteger));
 
-  FOptions.Insert(ANA_SO_CLIPBOARD_DELIMITER,            TSetOption.Create(',',  rtString));
+  FOptions.Insert(ANA_SO_CLIPBOARD_DELIMITER,            TSetOption.Create(';',  rtString));
 
   FOptions.Insert(ANA_SO_DISPAY_COMMANDTREE,             TSetOption.Create('OFF', rtBoolean));
   FOptions.Insert(ANA_SO_DISPAY_DATASET,                 TSetOption.Create('OFF', rtBoolean));
