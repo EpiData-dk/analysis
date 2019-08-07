@@ -342,14 +342,14 @@ uses
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
   RegExpr, ana_globals, browse4, strutils, ana_documentfile, FileUtil,
-  about, recode,
+  about,
 
   // Set options
   options_fontoptions, options_filesoptions, options_table,
 
   // STATEMENTS
   list, edit, drop, systemcmd, merge, integrity_tests, report, save_output,
-  aggregate,
+  aggregate, recode,
 
   // STATISTICS
   means, freq, tables, ctable, describe;
@@ -1797,13 +1797,15 @@ var
   S: String;
 begin
   OptionList := Options.GetAcceptedOptions;
-
-  S := 'Options: ';
-  Item := OptionList.Min;
-  while Item.Next do
-    S := S + Item.GetKey + ', ';
-  S := S + Item.GetKey;
-
+  S := 'No options';
+  if (OptionList.Size > 0) then
+    begin
+      S := 'Options: ';
+      Item := OptionList.Min;
+      while Item.Next do
+        S := S + Item.GetKey + ', ';
+      S := S + Item.GetKey;
+    end;
   FOutputCreator.DoInfoAll(S);
 end;
 
@@ -1819,7 +1821,7 @@ begin
   FOptions.Insert(ANA_SO_COMMANDLOGFILE,                 TSetOption.Create('commandlog.pgm', rtString));
   FOptions.Insert(ANA_SO_COMMANDLOGLINES,                TSetOption.Create('1000', rtInteger));
 
-  FOptions.Insert(ANA_SO_CLIPBOARD_DELIMITER,            TSetOption.Create(',',  rtString));
+  FOptions.Insert(ANA_SO_CLIPBOARD_DELIMITER,            TSetOption.Create(';',  rtString));
 
   FOptions.Insert(ANA_SO_DISPAY_COMMANDTREE,             TSetOption.Create('OFF', rtBoolean));
   FOptions.Insert(ANA_SO_DISPAY_DATASET,                 TSetOption.Create('OFF', rtBoolean));
