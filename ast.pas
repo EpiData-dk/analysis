@@ -419,6 +419,16 @@ type
     property Expr: TExpr read FExpr;
   end;
 
+  TExprValue = record
+    Missing: boolean;
+    BoolVal: boolean;
+    IntVal: ASTInteger;
+    DateVal: EpiDate;
+    FloatVal: ASTFloat;
+    TimeVal: EpiTime;
+    StringVal: EpiString;
+  end;
+
   { TExpr }
 
   TExpr = class(TCustomStatement)
@@ -426,7 +436,9 @@ type
     FOp: TParserOperationType;
     FL:  TExpr;
     FR:  TExpr;
+    function GetAsString: EpiString;
   protected
+    FEvalValue: TExprValue;
     function CommonType(Const A, B: TExpr): TASTResultType;
     procedure DoObservedChange(Sender: TObject); override;
     procedure RuntimeError(EClass: TExceptionClass; Const Msg: string);
@@ -440,12 +452,13 @@ type
     property Left: TExpr read FL;
     property Right: TExpr read FR;
   public
-    function AsBoolean: Boolean; virtual;
-    function AsInteger: ASTInteger; virtual;
-    function AsFloat:   ASTFloat; virtual;
-    function AsDate:    EpiDate; virtual;
-    function AsTime:    EpiDateTime; virtual;
-    function AsString:  EpiString; virtual;
+    function Evaluate: boolean; virtual; abstract;
+    property AsBoolean: Boolean read FEvalValue.BoolVal;
+    property AsInteger: ASTInteger read FEvalValue.IntVal;
+    property AsFloat:   ASTFloat read FEvalValue.FloatVal;
+    property AsDate:    EpiDate read FEvalValue.DateVal;
+    property AsTime:    EpiDateTime read FEvalValue.TimeVal;
+    property AsString:  EpiString read GetAsString;
     function AsIdent:   UTF8String; virtual;
     function IsMissing: Boolean; virtual;
     function IsUserMissing: Boolean; virtual;
@@ -453,75 +466,41 @@ type
 
   { TLiteral }
 
-  TLiteral = class(TExpr);
+  TLiteral = class(TExpr)
+  public
+    function Evaluate: boolean; override;
+  end;
 
   { TBooleanLiteral }
 
   TBooleanLiteral = class(TLiteral)
-  private
-    FValue: Boolean;
   public
     constructor Create(Const Value: Boolean); overload;
     function ResultType: TASTResultType; override;
-  public
-    function AsBoolean: Boolean; override;
-    function AsInteger: ASTInteger; override;
-    function AsFloat: ASTFloat; override;
-    function AsDate: EpiDate; override;
-    function AsTime: EpiDateTime; override;
-    function AsString: EpiString; override;
   end;
 
   { TIntegerLiteral }
 
   TIntegerLiteral = class(TLiteral)
-  private
-    FValue: ASTInteger;
   public
     constructor Create(const Value: ASTInteger);
     function ResultType: TASTResultType; override;
-  public
-    function AsBoolean: Boolean; override;
-    function AsInteger: ASTInteger; override;
-    function AsFloat: ASTFloat; override;
-    function AsDate: EpiDate; override;
-    function AsTime: EpiDateTime; override;
-    function AsString: EpiString; override;
   end;
 
   { TFloatLiteral }
 
   TFloatLiteral = class(TLiteral)
-  private
-    FValue: ASTFloat;
   public
     constructor Create(const Value: ASTFloat);
     function ResultType: TASTResultType; override;
-  public
-    function AsBoolean: Boolean; override;
-    function AsInteger: ASTInteger; override;
-    function AsFloat: ASTFloat; override;
-    function AsDate: EpiDate; override;
-    function AsTime: EpiDateTime; override;
-    function AsString: EpiString; override;
   end;
 
   { TStringLiteral }
 
   TStringLiteral = class(TLiteral)
-  private
-    FValue: EpiString;
   public
     constructor Create(const Value: EpiString);
-    destructor Destroy; override;
     function ResultType: TASTResultType; override;
-  public
-    function AsBoolean: Boolean; override;
-    function AsInteger: ASTInteger; override;
-    function AsFloat: ASTFloat; override;
-    function AsDate: EpiDate; override;
-    function AsTime: EpiDateTime; override;
-    function AsString: EpiString; override;
   end;
 
   { TMissingLiteral }
@@ -530,7 +509,6 @@ type
   public
     constructor Create;
     function ResultType: TASTResultType; override;
-    function IsMissing: Boolean; override;
   end;
 
   { TRecNumberLiteral }
@@ -541,9 +519,7 @@ type
   public
     constructor Create(Executor: IEpiScriptExecutor);
     function ResultType: TASTResultType; override;
-    function IsMissing: Boolean; override;
-    function AsInteger: ASTInteger; override;
-    function AsFloat: ASTFloat; override;
+    function Evaluate: boolean; override;
   end;
 
   { TUnaryExpr }
@@ -552,11 +528,7 @@ type
   public
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function ResultType: TASTResultType; override;
-  public
-    function AsBoolean: Boolean; override;
-    function AsInteger: ASTInteger; override;
-    function AsFloat: ASTFloat; override;
-    function IsMissing: Boolean; override;
+    function Evaluate: boolean; override;
   end;
 
   { TBinaryExpr }
@@ -1688,6 +1660,13 @@ uses
   epi_script_function_systemfunctions,
   epi_script_function_observations,
   math, variants, LazUTF8, LazFileUtils;
+
+{ TLiteral }
+
+function TLiteral.Evaluate: boolean;
+begin
+  result := true;
+end;
 
 { TProgram }
 
@@ -4901,16 +4880,12 @@ end;
 constructor TMissingLiteral.Create;
 begin
   inherited Create(otMissingLiteral, nil, nil);
+  FEvalValue.Missing := true;
 end;
 
 function TMissingLiteral.ResultType: TASTResultType;
 begin
   Result := rtAny;
-end;
-
-function TMissingLiteral.IsMissing: Boolean;
-begin
-  Result := true;
 end;
 
 { TRecNumberLiteral }
@@ -4926,19 +4901,11 @@ begin
   Result := rtInteger;
 end;
 
-function TRecNumberLiteral.IsMissing: Boolean;
+function TRecNumberLiteral.Evaluate: boolean;
 begin
-  Result := false;
-end;
-
-function TRecNumberLiteral.AsInteger: ASTInteger;
-begin
-  Result := FExecutor.GetCurrentRecordNo + 1;
-end;
-
-function TRecNumberLiteral.AsFloat: ASTFloat;
-begin
-  Result := FExecutor.GetCurrentRecordNo + 1;
+  Result := inherited Evaluate;
+  FEvalValue.IntVal := FExecutor.GetCurrentRecordNo + 1;
+  FEvalValue.FloatVal := FExecutor.GetCurrentRecordNo + 1;
 end;
 
 { TAbstractSyntaxTreeBase }
@@ -5613,6 +5580,14 @@ begin
   Result := FL.ResultType;
 end;
 
+function TUnaryExpr.Evaluate: boolean;
+begin
+  if (
+
+
+  Result := true;
+end;
+
 function TUnaryExpr.AsBoolean: Boolean;
 begin
   if IsMissing then
@@ -6197,7 +6172,12 @@ end;
 constructor TBooleanLiteral.Create(const Value: Boolean);
 begin
   inherited Create(otBoolLiteral, nil, nil);
-  FValue := Value;
+  FEvalValue.BoolVal   := Value;
+  FEvalValue.IntVal    := ASTInteger(Value);
+  FEvalValue.FloatVal  := ASTFloat(Value);
+  FEvalValue.DateVal   := EpiDate(Value);
+  FEvalValue.TimeVal   := EpiTime(Value);
+  FEvalValue.StringVal := BoolToStr(Value, True)^;
 end;
 
 function TBooleanLiteral.ResultType: TASTResultType;
@@ -6205,42 +6185,17 @@ begin
   Result := rtBoolean;
 end;
 
-function TBooleanLiteral.AsBoolean: Boolean;
-begin
-  Result := FValue;
-end;
-
-function TBooleanLiteral.AsInteger: ASTInteger;
-begin
-  Result := ASTInteger(AsBoolean);
-end;
-
-function TBooleanLiteral.AsFloat: ASTFloat;
-begin
-  Result := ASTFloat(AsInteger);
-end;
-
-function TBooleanLiteral.AsDate: EpiDate;
-begin
-  Result := AsInteger;
-end;
-
-function TBooleanLiteral.AsTime: EpiDateTime;
-begin
-  Result := AsFloat;
-end;
-
-function TBooleanLiteral.AsString: EpiString;
-begin
-  Result := BoolToStr(AsBoolean, true);
-end;
-
 { TIntegerLiteral }
 
 constructor TIntegerLiteral.Create(const Value: ASTInteger);
 begin
   inherited Create(otIntegerLiteral, nil, nil);
-  FValue := Value;
+  FEvalValue.BoolVal   := Boolean(Value);
+  FEvalValue.IntVal    := Value;
+  FEvalValue.FloatVal  := ASTFloat(Value);
+  FEvalValue.DateVal   := EpiDate(Value);
+  FEvalValue.TimeVal   := EpiTime(Value);
+  FEvalValue.StringVal := IntToStr(Value)^;
 end;
 
 function TIntegerLiteral.ResultType: TASTResultType;
@@ -6248,43 +6203,17 @@ begin
   Result := rtInteger;
 end;
 
-function TIntegerLiteral.AsBoolean: Boolean;
-begin
-  Result := Boolean(AsInteger);
-end;
-
-function TIntegerLiteral.AsInteger: ASTInteger;
-begin
-  Result := FValue;
-end;
-
-function TIntegerLiteral.AsFloat: ASTFloat;
-begin
-  Result := AsInteger;
-end;
-
-function TIntegerLiteral.AsDate: EpiDate;
-begin
-  Result := AsInteger;
-end;
-
-function TIntegerLiteral.AsTime: EpiDateTime;
-begin
-  Result := AsFloat;
-end;
-
-function TIntegerLiteral.AsString: EpiString;
-begin
-  Result := IntToStr(AsInteger);
-end;
-
-
 { TFloatLiteral }
 
 constructor TFloatLiteral.Create(const Value: ASTFloat);
 begin
   inherited Create(otFloatLiteral, nil, nil);
-  FValue := Value;
+  FEvalValue.BoolVal   := Boolean(Trunc(Value));
+  FEvalValue.IntVal    := Trunc(Value);
+  FEvalValue.FloatVal  := Value;
+  FEvalValue.DateVal   := FEvalValue.IntVal;
+  FEvalValue.TimeVal   := EpiTime(Value);
+  FEvalValue.StringVal := IntToStr(Value)^;
 end;
 
 function TFloatLiteral.ResultType: TASTResultType;
@@ -6325,59 +6254,33 @@ end;
 { TStringLiteral }
 
 constructor TStringLiteral.Create(const Value: EpiString);
+var
+  Val: Boolean;
+  Dummy: string;
 begin
   inherited Create(otStringLiteral, nil, nil);
-  FValue := Value;
-end;
 
-destructor TStringLiteral.Destroy;
-begin
-  FValue := '';
-  inherited Destroy;
+  if not (TryStrToBool(Value, FEvalValue.BoolVal))
+    FEvalValue.BoolVal := false;
+
+  if not (TryStrToInt64(Value, FEvalValue.IntVal)) then
+    FEvalValue.IntVal := TEpiIntField.DefaultMissing;
+
+  if not TryStrToFloat(FValue, FEvalValue.FloatVal) then
+    FEvalValue.FloatVal := TEpiFloatField.DefaultMissing;
+
+  if not EpiStrToDateGuess(FValue, FEvalValue.DateVal, Dummy) then
+    FEvalValue.DateVal := TEpiDateField.DefaultMissing;
+
+  if not EpiStrToTimeGues(FValue, FEvalValue.TimeVal, Dummy) then
+    FEvalValue.TimeVal := TEpiDateTimeField.DefaultMissing;
+
+  FEvalValue.StringVal := Value;
 end;
 
 function TStringLiteral.ResultType: TASTResultType;
 begin
   Result := rtString;
-end;
-
-function TStringLiteral.AsBoolean: Boolean;
-begin
-  if (not TryStrToBool(AsString, Result))  then
-    Result := false;
-end;
-
-function TStringLiteral.AsInteger: ASTInteger;
-begin
-  if not TryStrToInt64(FValue, Result) then
-    Result := TEpiIntField.DefaultMissing;
-end;
-
-function TStringLiteral.AsFloat: ASTFloat;
-begin
-  if not TryStrToFloat(FValue, Result) then
-    Result := TEpiFloatField.DefaultMissing;
-end;
-
-function TStringLiteral.AsDate: EpiDate;
-var
-  Dummy: string;
-begin
-  if not EpiStrToDateGuess(FValue, Result, Dummy) then
-    Result := TEpiDateField.DefaultMissing;
-end;
-
-function TStringLiteral.AsTime: EpiDateTime;
-var
-  Dummy: string;
-begin
-  if not EpiStrToTimeGues(FValue, Result, Dummy) then
-    Result := TEpiDateTimeField.DefaultMissing;
-end;
-
-function TStringLiteral.AsString: EpiString;
-begin
-  Result := FValue;
 end;
 
 { TTypeCast }
@@ -6825,6 +6728,11 @@ end;
 
 { TExpr }
 
+function TExpr.GetAsString: EpiString;
+begin
+  result := FEvalValue.StringVal^;
+end;
+
 function TExpr.CommonType(const A, B: TExpr): TASTResultType;
 begin
   result := TASTResultType(Math.Max(Ord(A.ResultType), Ord(B.ResultType)));
@@ -6851,6 +6759,8 @@ begin
   FR := R;
   ObserveObject(L);
   ObserveObject(R);
+  FEvalValue := Default(TExprValue);
+  FEvalValue.Missing := false;
 end;
 
 destructor TExpr.Destroy;
@@ -6886,6 +6796,11 @@ function TExpr.ResultType: TASTResultType;
 begin
   // Default result type is rtUndefined
   result := rtUndefined;
+end;
+
+function TExpr.Evaluate: boolean;
+begin
+
 end;
 
 function TExpr.AsBoolean: Boolean;
@@ -6932,7 +6847,7 @@ end;
 
 function TExpr.IsMissing: Boolean;
 begin
-  result := false;
+  result := FEvalValue.Missing;
 end;
 
 function TExpr.IsUserMissing: Boolean;
