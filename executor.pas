@@ -3125,6 +3125,8 @@ begin
 
   if (Assigned(ST.ParentFunction)) then
     ST.ParentFunction.ActualdReturnStatement := ST;
+
+//  ST.ReturnExpression.;
 end;
 
 procedure TExecutor.ExecFunction(ST: TFunctionDefinition);

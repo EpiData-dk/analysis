@@ -377,6 +377,8 @@ type
     FStatements: TStatementList;
     FReturnStatements: TReturnStatementList;
     FActualdReturnStatement: TReturn;
+  protected
+    function GetRequireOpenProject: Boolean; override;
   public
     constructor Create(Const Ident: UTF8String;
       ParameterTypeList: TParamDeclerationTypeList;
@@ -3836,6 +3838,11 @@ begin
 end;
 
 { TFunctionDefinition }
+
+function TFunctionDefinition.GetRequireOpenProject: Boolean;
+begin
+  Result := false;
+end;
 
 constructor TFunctionDefinition.Create(const Ident: UTF8String;
   ParameterTypeList: TParamDeclerationTypeList; ReturnType: TASTResultType;
