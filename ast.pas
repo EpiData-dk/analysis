@@ -452,7 +452,7 @@ type
     property Left: TExpr read FL;
     property Right: TExpr read FR;
   public
-    function Evaluate: boolean; virtual; abstract;
+    function Evaluate: boolean; virtual;
     property AsBoolean: Boolean read FEvalValue.BoolVal;
     property AsInteger: ASTInteger read FEvalValue.IntVal;
     property AsFloat:   ASTFloat read FEvalValue.FloatVal;
@@ -537,14 +537,7 @@ type
   public
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function ResultType: TASTResultType; override;
-  public
-    function AsBoolean: Boolean; override;
-    function AsInteger: ASTInteger; override;
-    function AsFloat: ASTFloat; override;
-    function AsString: EpiString; override;
-    function AsDate: EpiDate; override;
-    function Astime: EpiTime; override;
-    function IsMissing: Boolean; override;
+    function Evaluate: boolean; override;
   end;
 
   { TRelationalExpr }
@@ -553,13 +546,7 @@ type
   public
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function ResultType: TASTResultType; override;
-  public
-    function AsBoolean: Boolean; override;
-    function AsInteger: ASTInteger; override;
-    function AsFloat: ASTFloat; override;
-    function AsDate: EpiDate; override;
-    function AsTime: EpiDateTime; override;
-    function AsString: EpiString; override;
+    function Evaluate: boolean; override;
   end;
 
   { TParamList }
@@ -1665,6 +1652,8 @@ uses
 
 function TLiteral.Evaluate: boolean;
 begin
+  inherited Evaluate;
+  FEvalValue.Missing := false;
   result := true;
 end;
 
@@ -5112,6 +5101,94 @@ begin
   Result := rtBoolean;
 end;
 
+function TRelationalExpr.Evaluate: boolean;
+var
+  CType: TASTResultType;
+begin
+  Result := inherited Evaluate;
+
+  if Left.IsMissing or Right.IsMissing then
+  begin
+    case Operation of
+      otEQ:  FEvalValue.BoolVal := not (Left.IsMissing xor Right.IsMissing);
+      otNEQ: FEvalValue.BoolVal := Left.IsMissing xor Right.IsMissing;
+      otLT:  FEvalValue.BoolVal := false;
+      otLTE: FEvalValue.BoolVal := false;
+      otGT:  FEvalValue.BoolVal := false;
+      otGTE: FEvalValue.BoolVal := false;
+    end;
+
+    Exit;
+  end;
+
+  CType := CommonType(Left, Right);
+  case CType of
+    rtBoolean:
+      case Operation of
+        otEQ:  FEvalValue.BoolVal := Left.AsBoolean =  Right.AsBoolean;
+        otNEQ: FEvalValue.BoolVal := Left.AsBoolean <> Right.AsBoolean;
+        otLT:  FEvalValue.BoolVal := Left.AsBoolean <  Right.AsBoolean;
+        otLTE: FEvalValue.BoolVal := Left.AsBoolean <= Right.AsBoolean;
+        otGT:  FEvalValue.BoolVal := Left.AsBoolean >  Right.AsBoolean;
+        otGTE: FEvalValue.BoolVal := Left.AsBoolean >= Right.AsBoolean;
+      end;
+
+    rtDate:
+      case Operation of
+        otEQ:  FEvalValue.BoolVal := Left.AsDate =  Right.AsDate;
+        otNEQ: FEvalValue.BoolVal := Left.AsDate <> Right.AsDate;
+        otLT:  FEvalValue.BoolVal := Left.AsDate <  Right.AsDate;
+        otLTE: FEvalValue.BoolVal := Left.AsDate <= Right.AsDate;
+        otGT:  FEvalValue.BoolVal := Left.AsDate >  Right.AsDate;
+        otGTE: FEvalValue.BoolVal := Left.AsDate >= Right.AsDate;
+      end;
+
+    rtInteger:
+      case Operation of
+        otEQ:  FEvalValue.BoolVal := Left.AsInteger =  Right.AsInteger;
+        otNEQ: FEvalValue.BoolVal := Left.AsInteger <> Right.AsInteger;
+        otLT:  FEvalValue.BoolVal := Left.AsInteger <  Right.AsInteger;
+        otLTE: FEvalValue.BoolVal := Left.AsInteger <= Right.AsInteger;
+        otGT:  FEvalValue.BoolVal := Left.AsInteger >  Right.AsInteger;
+        otGTE: FEvalValue.BoolVal := Left.AsInteger >= Right.AsInteger;
+      end;
+
+    rtTime:
+      case Operation of
+        otEQ:  FEvalValue.BoolVal := Left.AsTime =  Right.AsTime;
+        otNEQ: FEvalValue.BoolVal := Left.AsTime <> Right.AsTime;
+        otLT:  FEvalValue.BoolVal := Left.AsTime <  Right.AsTime;
+        otLTE: FEvalValue.BoolVal := Left.AsTime <= Right.AsTime;
+        otGT:  FEvalValue.BoolVal := Left.AsTime >  Right.AsTime;
+        otGTE: FEvalValue.BoolVal := Left.AsTime >= Right.AsTime;
+      end;
+
+
+    rtFloat:
+      case Operation of
+        otEQ:  FEvalValue.BoolVal :=                                    SameValue(Left.AsFloat, Right.AsFloat, 0.0);
+        otNEQ: FEvalValue.BoolVal :=                                not SameValue(Left.AsFloat, Right.AsFloat, 0.0);
+        otLT:  FEvalValue.BoolVal :=  Left.AsFloat < Right.AsFloat;
+        otLTE: FEvalValue.BoolVal := (Left.AsFloat < Right.AsFloat) or (SameValue(Left.AsFloat, Right.AsFloat, 0.0));
+        otGT:  FEvalValue.BoolVal :=  Left.AsFloat > Right.AsFloat;
+        otGTE: FEvalValue.BoolVal := (Left.AsFloat > Right.AsFloat) or (SameValue(Left.AsFloat, Right.AsFloat, 0.0));
+      end;
+
+    rtString:
+      begin
+        Res := UTF8CompareStr(Left.AsString, Right.AsString);
+        case Operation of
+          otEQ:  FEvalValue.BoolVal := Res = 0;
+          otNEQ: FEvalValue.BoolVal := Res <> 0;
+          otLT:  FEvalValue.BoolVal := Res < 0;
+          otLTE: FEvalValue.BoolVal := Res <= 0;
+          otGT:  FEvalValue.BoolVal := Res > 0;
+          otGTE: FEvalValue.BoolVal := Res >= 0;
+        end;
+      end;
+  end;
+end;
+{
 function TRelationalExpr.AsBoolean: Boolean;
 var
   CType: TASTResultType;
@@ -5241,7 +5318,7 @@ begin
     Result := TEpiStringField.DefaultMissing
   else
     Result := BoolToStr(AsBoolean, true);
-end;
+end;                   }
 
 { TBinaryExpr }
 
@@ -5401,7 +5478,54 @@ begin
   end;
 end;
 
-function TBinaryExpr.AsBoolean: Boolean;
+function TBinaryExpr.Evaluate: boolean;
+begin
+  Result := inherited Evaluate;
+
+  if (Left.IsMissing or Right.IsMissing) then
+    Exit;
+
+  case ResultType of
+    rtBoolean:
+      case Operation of
+        otXor: FEvalValue.BoolVal := Left.AsBoolean xor Right.AsBoolean;
+        otOr:  FEvalValue.BoolVal := Left.AsBoolean or  Right.AsBoolean;
+        otAnd: FEvalValue.BoolVal := Left.AsBoolean and Right.AsBoolean;
+      end;
+
+    rtInteger:
+      case Operation of
+        otXor:         FEvalValue.IntValue := Left.AsInteger xor Right.AsInteger;
+        otOr:          FEvalValue.IntValue := Left.AsInteger or  Right.AsInteger;
+        otAnd:         FEvalValue.IntValue := Left.AsInteger and Right.AsInteger;
+        otPlus:        FEvalValue.IntValue := Left.AsInteger +   Right.AsInteger;
+        otMinus:       FEvalValue.IntValue := Left.AsInteger -   Right.AsInteger;
+        otMult:        FEvalValue.IntValue := Left.AsInteger *   Right.AsInteger;
+        otDiv:         FEvalValue.IntValue := Left.AsInteger div Right.AsInteger;
+        otMod:         FEvalValue.IntValue := Left.AsInteger mod Right.AsInteger;
+        otExponential: FEvalValue.IntValue := Left.AsInteger **  Right.AsInteger;
+        otShl:         FEvalValue.IntValue := Left.AsInteger shl Right.AsInteger;
+        otShr:         FEvalValue.IntValue := Left.AsInteger shr Right.AsInteger;
+      end;
+
+    rtFloat:
+      case Operation of
+        otPlus:        FEvalValue.FloatVal := Left.AsFloat + Right.AsFloat;
+        otMinus:       FEvalValue.FloatVal := Left.AsFloat - Right.AsFloat;
+        otMult:        FEvalValue.FloatVal := Left.AsFloat * Right.AsFloat;
+        otDivide:      FEvalValue.FloatVal := Left.AsFloat / Right.AsFloat;
+        otExponential: FEvalValue.FloatVal := Left.AsFloat ** Right.AsFloat;
+      end;
+
+    rtString:
+      case Operation of
+        otPlus:        FEvalValue.StringVal := Left.AsString + Right.AsString;
+      end;
+  end;
+
+end;
+
+{function TBinaryExpr.AsBoolean: Boolean;
 begin
   Result := inherited AsBoolean;
 
@@ -5541,7 +5665,7 @@ end;
 function TBinaryExpr.IsMissing: Boolean;
 begin
   Result := Left.IsMissing or Right.IsMissing;
-end;
+end;                            }
 
 { TUnaryExpr }
 
@@ -5577,50 +5701,34 @@ end;
 
 function TUnaryExpr.ResultType: TASTResultType;
 begin
-  Result := FL.ResultType;
+  Result := Left.ResultType;
 end;
 
 function TUnaryExpr.Evaluate: boolean;
 begin
-  if (
+  inherited Evaluate;
 
+  if (Left.IsMissing) then
+    Exit(true);
+
+  case ResultType of
+    rtBoolean:
+      case Operation of
+        otNot: FEvalValue.BoolVal := (not Left.AsBoolean);
+      end;
+
+    rtInteger:
+      case Operation of
+        otMinus: FEvalValue.IntVal := -(Left.AsInteger);
+      end;
+
+    rtFloat:
+      case Operation of
+        otMinus: FEvalValue.FloatVal := -(Left.AsFloat;
+      end;
+  end;
 
   Result := true;
-end;
-
-function TUnaryExpr.AsBoolean: Boolean;
-begin
-  if IsMissing then
-    Result := inherited AsBoolean
-  else
-    case Operation of
-      otNot: result := (not Left.AsBoolean);
-    end;
-end;
-
-function TUnaryExpr.AsInteger: ASTInteger;
-begin
-  if IsMissing then
-    Result := inherited AsInteger
-  else
-  case Operation of
-    otMinus: result := -Left.AsInteger;
-  end;
-end;
-
-function TUnaryExpr.AsFloat: ASTFloat;
-begin
-  if IsMissing then
-    Result := inherited AsFloat
-  else
-  case Operation of
-    otMinus: result := -Left.AsFloat;
-  end;
-end;
-
-function TUnaryExpr.IsMissing: Boolean;
-begin
-  Result := Left.IsMissing;
 end;
 
 { TFunctionCall }
@@ -6759,8 +6867,15 @@ begin
   FR := R;
   ObserveObject(L);
   ObserveObject(R);
+
   FEvalValue := Default(TExprValue);
-  FEvalValue.Missing := false;
+  FEvalValue.BoolVal := false;
+  FEvalValue.DateVal := TEpiDateField.DefaultMissing;
+  FEvalValue.FloatVal := TEpiFloatField.DefaultMissing;
+  FEvalValue.IntVal := TEpiIntField.DefaultMissing;
+  FEvalValue.StringVal := TEpiStringField.DefaultMissing;
+  FEvalValue.TimeVal := TEpiDateTimeField.DefaultMissing;
+  FEvalValue.Missing := true;
 end;
 
 destructor TExpr.Destroy;
@@ -6800,7 +6915,12 @@ end;
 
 function TExpr.Evaluate: boolean;
 begin
+  Result := true;
+  if (Assigned(Left)) then
+    Result := Result and Left.Evaluate;
 
+  if (Assigned(Right)) then
+    Result := Result and Right.Evaluate;
 end;
 
 function TExpr.AsBoolean: Boolean;
