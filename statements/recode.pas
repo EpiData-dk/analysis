@@ -16,7 +16,7 @@ type
     // Aux. methods
     function GetValueLabelName(ToVariable: TCustomVariable): UTF8String;
     function CreateToField(ToVariable: TCustomVariable): TEpiField;
-    function CreateValueLabel(ToVariable: TCustomVariable): TEpiValueLabelSet;
+    function CreateValueLabelSet(ST: TRecodeCommand): TEpiValueLabelSet;
   private
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
@@ -78,16 +78,18 @@ begin
   Result.Length := lLeft;
 end;
 
-function TRecode.CreateValueLabel(ToVariable: TCustomVariable
-  ): TEpiValueLabelSet;
+function TRecode.CreateValueLabelSet(ST: TRecodeCommand): TEpiValueLabelSet;
 var
   ValueLabelName: UTF8String;
 begin
-  ValueLabelName := GetValueLabelName(ToVariable);
+  ValueLabelName := GetValueLabelName(ST.ToVariable);
   Result := FExecutor.Document.ValueLabelSets.GetValueLabelSetByName(ValueLabelName);
 
   if (Assigned(Result)) then
     FreeAndNil(Result);
+
+  if (ST.HasOption('nvl')) then
+    Exit(nil);
 
   Result := FExecutor.Document.ValueLabelSets.NewValueLabelSet(ftInteger);
   Result.Name := ValueLabelName;
@@ -99,54 +101,67 @@ var
   Opt: TOption;
   i: Integer;
 begin
-  // With no '!min' specified always start at 0
-  if (not (Options.HasOption('min'))) then
-    begin
-      Result := 0;
-      Exit;
-    end;
-
   // A specific value was given, return it
-  if (Options.HasOption('min', Opt)) and
-     (Assigned(Opt.Expr))
-  then
+  if (Options.HasOption('min', Opt)) then
     begin
       Result := Opt.Expr.AsFloat;
       Exit;
     end;
 
-  // Only '!min' was given, find the lowest value.
-  Result := Math.MaxFloat;
-  for i := 0 to FromVariable.Size - 1 do
-    Result := Math.Min(Result, FromVariable.AsFloat[i]);
+  // With no '!min' specified always start at 0
+  Result := 0;
 end;
 
 procedure TRecode.DoByRecode(ST: TRecodeCommand);
 var
   FromVariable, ToVariable: TEpiField;
-  MinValue, MaxValue: ASTFloat;
+  MinValue, MaxValue, MissingValue: ASTFloat;
   Value: Extended;
-  i, Group, MinValueFloot: Integer;
+  i, Group, IntGroupOffset: Integer;
   Opt: TOption;
-  IsIntegerGroups: Boolean;
+  IsIntegerGroups, HasMissingValue: Boolean;
   IntervalValue: ASTInteger;
   VLSet: TEpiValueLabelSet;
   ValueLabel: TEpiCustomValueLabel;
+
+  procedure CreateValueLabel(IsMissingValue: Boolean = false);
+  begin
+    if (not VLSet.ValueLabelExists[Group]) then
+      begin
+        ValueLabel := VLSet.NewValueLabel;
+        ValueLabel.IsMissingValue := IsMissingValue;
+
+        TEpiIntValueLabel(ValueLabel).Value := Group;
+
+        if (IsIntegerGroups) then
+          Group := (Group - IntGroupOffset) * IntervalValue;
+        ValueLabel.TheLabel.Text := Format('%d - %d', [Group, Group + IntervalValue - 1]);
+      end;
+  end;
+
 begin
   FromVariable := FExecutor.DataFile.Fields.FieldByName[ST.FromVariable.Ident];
   ToVariable   := CreateToField(ST.ToVariable);
-  VLSet        := CreateValueLabel(ST.ToVariable);
+  VLSet        := CreateValueLabelSet(ST);
   ToVariable.ValueLabelSet := VLSet;
 
   // Determin start value:
   MinValue      := FindStartValue(ST.Options, FromVariable);
-  MinValueFloot := Floor(MinValue);
   MaxValue      := Math.MaxFloat;
   if (ST.HasOption('max', Opt)) then
     MaxValue := Opt.Expr.AsFloat;
 
   IntervalValue   := ST.Options.Option['by'].Expr.AsInteger;
   IsIntegerGroups := ST.HasOption('i', Opt);
+  IntGroupOffset  := 0;
+  if ((IsIntegerGroups) and
+      (Assigned(Opt.Expr)))
+  then
+    IntGroupOffset := Opt.Expr.AsInteger;
+
+  HasMissingValue := ST.HasOption('m', Opt);
+  if HasMissingValue then
+    MissingValue := Opt.Expr.AsFloat;
 
   for i := 0 to FromVariable.Size - 1 do
     begin
@@ -154,24 +169,28 @@ begin
         Continue;
 
       Value := FromVariable.AsFloat[i];
+
+      if ((HasMissingValue) and
+          (SameValue(Value, MissingValue)))
+      then
+        begin
+          ToVariable.AsInteger[i] := Trunc(Value);
+          CreateValueLabel(true);
+          Continue;
+        end;
+
       if (Value > MaxValue) or (Value < MinValue) then
         Continue;
 
-      Group := Floor((Value - MinValueFloot) / IntervalValue);
-      if (not IsIntegerGroups) then
-          Group := Group * IntervalValue + MinValueFloot;
+      Group := Floor(Value / IntervalValue);
+      if (IsIntegerGroups) then
+        Group := Group + IntGroupOffset
+      else
+        Group := Group * IntervalValue;
 
       ToVariable.AsInteger[i] := Group;
 
-      if (not VLSet.ValueLabelExists[Group]) then
-        begin
-          ValueLabel := VLSet.NewValueLabel;
-          TEpiIntValueLabel(ValueLabel).Value := Group;
-
-          if (IsIntegerGroups) then
-            Group := Group * IntervalValue + MinValueFloot;
-          ValueLabel.TheLabel.Text := Format('%d - %d', [Group, Group + IntervalValue - 1]);
-        end;
+      CreateValueLabel();
     end;
 
   VLSet.Sorted := true;
@@ -191,7 +210,7 @@ var
 begin
   FromVariable := FExecutor.DataFile.Fields.FieldByName[ST.FromVariable.Ident];
   ToVariable   := CreateToField(ST.ToVariable);
-  VLSet        := CreateValueLabel(ST.ToVariable);
+  VLSet        := CreateValueLabelSet(ST);
   ToVariable.ValueLabelSet := VLSet;
 
 
