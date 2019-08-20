@@ -17,6 +17,8 @@ type
   TCustomStatement = class;
   TAbstractSyntaxTreeBase = class;
   TExpr = class;
+  TExprValue = record;
+  PExprValue = ^TExprValue;
   TArray = class;
   TCustomVariable = class;
   TParamList = class;
@@ -62,6 +64,7 @@ type
     function GetDataFile: TEpiDataFile;
     function GetExecVariable(Const Ident: UTF8String): TCustomExecutorVariable;
     function GetVariableExecType(Const Ident: UTF8String): TExecutorVariableType;
+    function GetVariableValues(Const Sender: TCustomVariable; Values: PExprValue): boolean;
     function GetVariableValueBool(Const Sender: TCustomVariable): Boolean;
     function GetVariableValueInt(Const Sender: TCustomVariable): ASTInteger;
     function GetVariableValueFloat(Const Sender: TCustomVariable): ASTFloat;
@@ -661,16 +664,11 @@ type
     function  ResultType: TASTResultType; override;
     function  TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function  AsIdent: UTF8String; override;
+    function  Evaluate: boolean; override;
     property  Ident: UTF8String read GetIdent;
     property  VarType: TVariableType read FVarType;
 
   public
-    function  AsBoolean: Boolean; override;
-    function  AsInteger: ASTInteger; override;
-    function  AsFloat: ASTFloat; override;
-    function  AsDate: EpiDate; override;
-    function  AsTime: EpiDateTime; override;
-    function  AsString: EpiString; override;
     function  IsMissing: Boolean; override;
     function  IsUserMissing: Boolean; override;
 
@@ -704,6 +702,7 @@ type
     constructor Create(AVariable: TCustomVariable; AExecutor: IEpiScriptExecutor; AExprList: TParamList);
     destructor Destroy; override;
     function  TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
+    function  Evaluate: boolean; override;
     property  Expr[const Index: Integer]: TExpr read GetExpr;
     property  ParamCount: Integer read GetParamCount;
   end;
@@ -3987,6 +3986,18 @@ begin
     end;
 end;
 
+function TIndexVariable.Evaluate: boolean;
+var
+  i: Integer;
+begin
+  Result := true;
+
+  for i := 0 to ParamCount - 1 do
+    Result := Result and Expr[i].Evaluate;
+
+  Result := Result and (inherited Evaluate);
+end;
+
 { TCustomOptionsCommand }
 
 function TCustomOptionsCommand.GetAcceptedOptions: TStatementOptionsMap;
@@ -7010,7 +7021,17 @@ begin
   Result := Ident;
 end;
 
-function TCustomVariable.AsBoolean: Boolean;
+function TCustomVariable.Evaluate: boolean;
+begin
+  Result := inherited Evaluate;
+
+  if (not Result) then
+    Exit;
+
+  Executor.GetVariableValues(Self, @FEvalValue);
+end;
+
+{function TCustomVariable.AsBoolean: Boolean;
 begin
   Result := Executor.GetVariableValueBool(Self);
 end;
@@ -7038,7 +7059,7 @@ end;
 function TCustomVariable.AsString: EpiString;
 begin
   Result := Executor.GetVariableValueString(Self);
-end;
+end;}
 
 function TCustomVariable.IsMissing: Boolean;
 begin
