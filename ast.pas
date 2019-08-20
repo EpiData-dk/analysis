@@ -17,8 +17,6 @@ type
   TCustomStatement = class;
   TAbstractSyntaxTreeBase = class;
   TExpr = class;
-  TExprValue = record;
-  PExprValue = ^TExprValue;
   TArray = class;
   TCustomVariable = class;
   TParamList = class;
@@ -34,6 +32,16 @@ type
   ASTFloat = EpiFloat;
   ASTInteger = EpiInteger;
 
+  TExprValue = record
+    Missing: boolean;
+    BoolVal: boolean;
+    IntVal: ASTInteger;
+    DateVal: EpiDate;
+    FloatVal: ASTFloat;
+    TimeVal: EpiTime;
+    StringVal: EpiString;
+  end;
+  PExprValue = ^TExprValue;
 
 var
   ASTCurrentExecutionObject: TAbstractSyntaxTreeBase;
@@ -422,15 +430,6 @@ type
     property Expr: TExpr read FExpr;
   end;
 
-  TExprValue = record
-    Missing: boolean;
-    BoolVal: boolean;
-    IntVal: ASTInteger;
-    DateVal: EpiDate;
-    FloatVal: ASTFloat;
-    TimeVal: EpiTime;
-    StringVal: EpiString;
-  end;
 
   { TExpr }
 
@@ -606,7 +605,7 @@ type
     function ResultType: TASTResultType; override;
   public
     constructor Create(Const AOperation: TParserOperationType; Const ParamList: TParamList);
-    procedure Evaluate; override;
+    function Evaluate: Boolean; override;
     function IsMissing: Boolean; override;
   end;
 
@@ -722,12 +721,7 @@ type
     destructor Destroy; override;
     function ResultType: TASTResultType; override;
     function TypeCheck(TypeChecker: IEpiTypeChecker; ATypesAndFlags: TTypesAndFlagsRec): boolean; override;
-    function AsBoolean: Boolean; override;
-    function AsInteger: ASTInteger; override;
-    function AsFloat: ASTFloat; override;
-    function AsDate: EpiDate; override;
-    function AsTime: EpiDateTime; override;
-    function AsString: EpiString; override;
+    function Evaluate: boolean; override;
     function AsIdent: UTF8String; override;
     function IsMissing: Boolean; override;
   end;
@@ -3095,7 +3089,23 @@ begin
     end;
 end;
 
-function TReferencedVariable.AsBoolean: Boolean;
+function TReferencedVariable.Evaluate: boolean;
+begin
+  Result := inherited Evaluate and
+            ReferenceVariable.Evaluate;
+
+  if (not Result) then
+    Exit;
+
+  FEvalValue.BoolVal   := ReferenceVariable.AsBoolean;
+  FEvalValue.IntVal    := ReferenceVariable.AsInteger;
+  FEvalValue.DateVal   := ReferenceVariable.AsDate;
+  FEvalValue.FloatVal  := ReferenceVariable.AsFloat;
+  FEvalValue.TimeVal   := ReferenceVariable.AsTime;
+  FEvalValue.StringVal := ReferenceVariable.AsString;
+end;
+
+{function TReferencedVariable.AsBoolean: Boolean;
 begin
   Result := ReferenceVariable.AsBoolean;
 end;
@@ -3123,7 +3133,7 @@ end;
 function TReferencedVariable.AsString: EpiString;
 begin
   Result := ReferenceVariable.AsString;
-end;
+end;                             }
 
 function TReferencedVariable.AsIdent: UTF8String;
 begin
@@ -6405,7 +6415,7 @@ end;
 
 { TTypeCast }
 
-procedure TTypeCast.Evaluate;
+function TTypeCast.Evaluate: Boolean;
 begin
   Result := inherited Evaluate;
 

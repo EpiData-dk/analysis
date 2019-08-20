@@ -276,6 +276,7 @@ type
     function CheckVariableIndex(EV: TCustomExecutorVariable; CV: TCustomVariable; OutputError: boolean = true): boolean;
   public
     function GetVariableExecType(const Ident: UTF8String): TExecutorVariableType;
+    function GetVariableValues(const Sender: TCustomVariable; Values: PExprValue): boolean;
     function GetVariableValueBool(Const Sender: TCustomVariable): Boolean; virtual;
     function GetVariableValueInt(Const Sender: TCustomVariable): EpiInteger; virtual;
     function GetVariableValueFloat(Const Sender: TCustomVariable): EpiFloat; virtual;
@@ -3126,7 +3127,7 @@ begin
   if (Assigned(ST.ParentFunction)) then
     ST.ParentFunction.ActualdReturnStatement := ST;
 
-//  ST.ReturnExpression.;
+  ST.ReturnExpression.Evaluate;
 end;
 
 procedure TExecutor.ExecFunction(ST: TFunctionDefinition);
@@ -4358,6 +4359,12 @@ var
   L: TStrings;
 begin
   result := GetExecVariable(Ident).VarType;
+end;
+
+function TExecutor.GetVariableValues(const Sender: TCustomVariable;
+  Values: PExprValue): boolean;
+begin
+  //
 end;
 
 function TExecutor.GetVariableValueBool(const Sender: TCustomVariable): Boolean;
