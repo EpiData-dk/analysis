@@ -587,27 +587,14 @@ type
       Executor: IEpiScriptExecutor): TFunctionCall;
     destructor Destroy; override;
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
-    property   Param[Const Index: integer]: TExpr read GetParam;
-  public
-    function AsInteger: ASTInteger; override;
-    function AsFloat: ASTFloat; override;
-    function AsDate: EpiDate; override;
-    function AsTime: EpiDateTime; override;
-    function AsString: EpiString; override;
+    function Evaluate: boolean; override;
+    property Param[Const Index: integer]: TExpr read GetParam;
   end;
 
   { TTypeCast }
 
   TTypeCast = class(TFunctionCall)
   private
-    FEvaluated: boolean;
-    FBoolVal: boolean;
-    FIntVal: ASTInteger;
-    FDateVal: EpiDate;
-    FFloatVal: ASTFloat;
-    FTimeVal: EpiDateTime;
-    FStringVal: EpiString;
-    procedure Evaluate;
     procedure DoTypeCastError(Const Msg: UTF8String);
   protected
     function ParamCounts: TBoundArray; override;
@@ -616,12 +603,7 @@ type
     function ResultType: TASTResultType; override;
   public
     constructor Create(Const AOperation: TParserOperationType; Const ParamList: TParamList);
-    function AsBoolean: Boolean; override;
-    function AsInteger: ASTInteger; override;
-    function AsFloat: ASTFloat; override;
-    function AsDate: EpiDate; override;
-    function AsTime: EpiDateTime; override;
-    function AsString: EpiString; override;
+    procedure Evaluate; override;
     function IsMissing: Boolean; override;
   end;
 
@@ -629,7 +611,6 @@ type
 
   TUserFunction = class(TFunctionCall)
   private
-    FExecuted: Boolean;
     FFunctionDefinition: TFunctionDefinition;
     procedure ExecuteStatements;
   protected
@@ -640,12 +621,7 @@ type
     function ResultType: TASTResultType; override;
   public
     constructor Create(FunctionDefinition: TFunctionDefinition; const ParamList: TParamList);
-    function AsBoolean: Boolean; override;
-    function AsInteger: ASTInteger; override;
-    function AsFloat: ASTFloat; override;
-    function AsDate: EpiDate; override;
-    function AsTime: EpiDateTime; override;
-    function AsString: EpiString; override;
+    function Evaluate: boolean; override;
     function IsMissing: Boolean; override;
   end;
 
@@ -660,6 +636,7 @@ type
     constructor Create(Const AExprList: TParamList);
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function ResultType: TASTResultType; override;
+    function Evaluate: boolean; override;
     property ResultSubType: TASTResultType read FResultSubType;
     property ExprList: TParamList read FExprList;
     property Count: Integer read GetCount;
@@ -2610,6 +2587,17 @@ end;
 function TArray.ResultType: TASTResultType;
 begin
   Result := rtArray;
+end;
+
+function TArray.Evaluate: boolean;
+begin
+  Result := inherited Evaluate;
+
+  if (not Result) then
+    Exit;
+
+  for i := 0 to Count - 1 do
+    Result := Result and ExprList[i].Evaluate;
 end;
 
 { TCustomNewGlobal }
@@ -6005,6 +5993,17 @@ begin
   end;  // if assigned( ...
 end;
 
+function TFunctionCall.Evaluate: boolean;
+begin
+  Result := inherited Evaluate;
+
+  if (Result) then
+    begin
+      for i := 0 to ParamCount - 1 do
+        Param[i].Evaluate;
+    end;
+end;
+{
 function TFunctionCall.AsInteger: ASTInteger;
 begin
   if IsMissing then
@@ -6078,7 +6077,7 @@ begin
   else
     Result := inherited AsString;
   end;
-end;
+end;     }
 
 { TCustomNew }
 
@@ -6395,77 +6394,78 @@ end;
 
 procedure TTypeCast.Evaluate;
 begin
-  // TODO: Fix this, as it does not work for For-loops. (disabled for now)
-//  if FEvaluated then exit;
+  Result := inherited Evaluate;
+
+  if (not Result) then
+    exit;
 
   case Param[0].ResultType of
     rtBoolean:
       begin
-        FBoolVal   := Param[0].AsBoolean;
+        FEvalValue.BoolVal   := Param[0].AsBoolean;
 
-        FIntVal    := Integer(FBoolVal);
-        FFloatVal  := FIntVal;
-        FDateVal   := FIntVal;
-        FTimeVal   := FIntVal;
-        FStringVal := BoolToStr(FBoolVal, 'true', 'false');
+        FEvalValue.IntVal    := Integer(FBoolVal);
+        FEvalValue.FloatVal  := FIntVal;
+        FEvalValue.DateVal   := FIntVal;
+        FEvalValue.TimeVal   := FIntVal;
+        FEvalValue.StringVal := BoolToStr(FBoolVal, 'true', 'false');
       end;
 
     rtInteger:
       begin
-        FIntVal    := Param[0].AsInteger;
+        FEvalValue.IntVal    := Param[0].AsInteger;
 
-        FBoolVal   := Boolean(FIntVal);
-        FDateVal   := FIntVal;
-        FFloatVal  := FIntVal;
-        FTimeVal   := FIntVal;
-        FStringVal := IntToStr(FIntVal);
+        FEvalValue.BoolVal   := Boolean(FIntVal);
+        FEvalValue.DateVal   := FIntVal;
+        FEvalValue.FloatVal  := FIntVal;
+        FEvalValue.TimeVal   := FIntVal;
+        FEvalValue.StringVal := IntToStr(FIntVal);
       end;
 
     rtDate:
       begin
-        FDateVal   := Param[0].AsDate;
+        FEvalValue.DateVal   := Param[0].AsDate;
 
-        FBoolVal   := Boolean(FDateVal);
-        FIntVal    := FDateVal;
-        FFloatVal  := FDateVal;
-        FTimeVal   := FDateVal;
-        FStringVal := DateToStr(FDateVal);
+        FEvalValue.BoolVal   := Boolean(FDateVal);
+        FEvalValue.IntVal    := FDateVal;
+        FEvalValue.FloatVal  := FDateVal;
+        FEvalValue.TimeVal   := FDateVal;
+        FEvalValue.StringVal := DateToStr(FDateVal);
       end;
 
     rtFloat:
       begin
-        FFloatVal  := Param[0].AsFloat;
+        FEvalValue.FloatVal  := Param[0].AsFloat;
 
-        FBoolVal   := Not SameValue(FFloatVal, Extended(0));
-        FIntVal    := Trunc(FFloatVal);
-        FDateVal   := FIntVal;
-        FTimeVal   := FFloatVal;
-        FStringVal := FloatToStr(FFloatVal);
+        FEvalValue.BoolVal   := Not SameValue(FFloatVal, Extended(0));
+        FEvalValue.IntVal    := Trunc(FFloatVal);
+        FEvalValue.DateVal   := FIntVal;
+        FEvalValue.TimeVal   := FFloatVal;
+        FEvalValue.StringVal := FloatToStr(FFloatVal);
       end;
 
     rtTime:
       begin
-        FTimeVal := Param[0].AsTime;
+        FEvalValue.TimeVal := Param[0].AsTime;
 
-        FBoolVal   := SameValue(FTimeVal, EpiDateTime(0));
-        FIntVal    := Trunc(FTimeVal);
-        FDateVal   := FIntVal;
-        FFloatVal  := FTimeVal;
-        FStringVal := TimeToStr(FTimeVal);
+        FEvalValue.BoolVal   := SameValue(FTimeVal, EpiDateTime(0));
+        FEvalValue.IntVal    := Trunc(FTimeVal);
+        FEvalValue.DateVal   := FIntVal;
+        FEvalValue.FloatVal  := FTimeVal;
+        FEvalValue.StringVal := TimeToStr(FTimeVal);
       end;
 
     rtString:
       begin
-        FStringVal := Param[0].AsString;
+        FEvalValue.StringVal := Param[0].AsString;
 
-        FBoolVal   := (UTF8LowerString(FStringVal) = 'true');
-        FIntVal    := StrToInt64Def(FStringVal, TEpiIntField.DefaultMissing);
-        FDateVal   := StrToIntDef(FStringVal, TEpiDateField.DefaultMissing);
-        FFloatVal  := StrToFloatDef(FStringVal, TEpiFloatField.DefaultMissing);
-        FTimeVal   := StrToTimeDef(FStringVal, TEpiDateTimeField.DefaultMissing);
+        FEvalValue.BoolVal   := (UTF8LowerString(FStringVal) = 'true');
+        FEvalValue.IntVal    := StrToInt64Def(FStringVal, TEpiIntField.DefaultMissing);
+        FEvalValue.DateVal   := StrToIntDef(FStringVal, TEpiDateField.DefaultMissing);
+        FEvalValue.FloatVal  := StrToFloatDef(FStringVal, TEpiFloatField.DefaultMissing);
+        FEvalValue.TimeVal   := StrToTimeDef(FStringVal, TEpiDateTimeField.DefaultMissing);
       end;
   end;
-  FEvaluated := true;
 end;
 
 procedure TTypeCast.DoTypeCastError(const Msg: UTF8String);
@@ -6502,16 +6502,9 @@ constructor TTypeCast.Create(const AOperation: TParserOperationType;
 begin
   inherited Create(ParamList);
   FOp := AOperation;
-
-  FEvaluated := false;
-  FBoolVal   := false;
-  FIntVal    := TEpiIntField.DefaultMissing;
-  FDateVal   := TEpiDateField.DefaultMissing;
-  FFloatVal  := TEpiFloatField.DefaultMissing;
-  FTimeVal   := TEpiDateTimeField.DefaultMissing;
-  FStringVal := TEpiStringField.DefaultMissing;
 end;
 
+{
 function TTypeCast.AsBoolean: Boolean;
 begin
   result := inherited AsBoolean;
@@ -6674,7 +6667,7 @@ begin
     otTimeCast:    result := TimeToStr(FTimeVal);
     otStringCast:  result := FStringVal;
   end;
-end;
+end;    }
 
 function TTypeCast.IsMissing: Boolean;
 begin
@@ -6682,8 +6675,6 @@ begin
 
   if (not Result) then
     begin
-      Evaluate;
-
       case FOp of
         otStringCast:
           result := TEpiStringField.CheckMissing(FStringVal);
@@ -6703,60 +6694,13 @@ begin
         otTimeCast:
           result := TEpiDateTimeField.CheckMissing(FTimeVal);
       end;
-
-      { case Param[0].ResultType of
-        rtBoolean:
-          result := false;
-
-        rtInteger:
-          result := TEpiIntField.CheckMissing(FIntVal);
-
-        rtDate:
-          result := TEpiDateField.CheckMissing(FDateVal);
-
-        rtFloat:
-          result := TEpiFloatField.CheckMissing(FFloatVal);
-
-        rtTime:
-          result := TEpiDateTimeField.CheckMissing(FTimeVal);
-
-        rtString:
-          result := TEpiStringField.CheckMissing(FStringVal);
-      end; }
     end;
-
-
-
- { if (not result) then
-  begin
-    Case FOp of
-      otStringCast:
-        result := TEpiStringField.CheckMissing(Param[0].AsString);
-
-      otIntegerCast:
-        result := TEpiIntField.CheckMissing(Param[0].AsInteger);
-
-      otFloatCast:
-        result := TEpiFloatField.CheckMissing(Param[0].AsFloat);
-
-      otBoolCast: ;
-        // Boolean does not have a missing state.
-
-      otDateCast:
-        result := TEpiDateField.CheckMissing(Param[0].AsDate);
-
-      otTimeCast:
-        result := TEpiDateTimeField.CheckMissing(Param[0].AsTime);
-    end;
-  end;    }
 end;
 
 { TUserFunction }
 
 procedure TUserFunction.ExecuteStatements;
 begin
-  if (FExecuted) then exit;
-  FExecuted := true;
   FExecutor.ExecStatement(FFunctionDefinition);
 end;
 
@@ -6781,46 +6725,31 @@ begin
   FExecuted := false;;
 end;
 
-function TUserFunction.AsBoolean: Boolean;
+function TUserFunction.Evaluate: boolean;
+var
+  Expr: TExpr;
 begin
-  ExecuteStatements;
-  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.AsBoolean;
-end;
+  Result := inherited Evaluate;
 
-function TUserFunction.AsInteger: ASTInteger;
-begin
   ExecuteStatements;
-  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.AsInteger;
-end;
 
-function TUserFunction.AsFloat: ASTFloat;
-begin
-  ExecuteStatements;
-  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.AsFloat;
-end;
+  if (Assigned(FFunctionDefinition.ActualdReturnStatement)) then
+    begin
+      Expr := FFunctionDefinition.ActualdReturnStatement.ReturnExpression;
 
-function TUserFunction.AsDate: EpiDate;
-begin
-  ExecuteStatements;
-  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.AsDate;
-end;
-
-function TUserFunction.AsTime: EpiDateTime;
-begin
-  ExecuteStatements;
-  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.AsTime;
-end;
-
-function TUserFunction.AsString: EpiString;
-begin
-  ExecuteStatements;
-  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.AsString;
+      FEvalValue.BoolVal   := Expr.AsBoolean;
+      FEvalValue.IntVal    := Expr.AsInteger;
+      FEvalValue.DateVal   := Expr.AsDate;
+      FEvalValue.FloatVal  := Expr.AsFloat;
+      FEvalValue.TimeVal   := Expr.AsTime;
+      FEvalValue.StringVal := Expr.AsString;
+    end;
 end;
 
 function TUserFunction.IsMissing: Boolean;
 begin
-  ExecuteStatements;
-  Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.IsMissing;
+  if (Assigned(FFunctionDefinition.ActualdReturnStatement)) then
+    Result := FFunctionDefinition.ActualdReturnStatement.ReturnExpression.IsMissing;
 end;
 
 function TUserFunction.TypeCheck(TypeChecker: IEpiTypeChecker;
