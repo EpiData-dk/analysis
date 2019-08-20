@@ -2438,15 +2438,17 @@ begin
   // Group size
   Result.Insert('by',   [rtInteger]);
   // Custom starting value
-  Result.Insert('min',  [rtUndefined, rtFloat, rtInteger]);
+  Result.Insert('min',  [rtFloat, rtInteger]);
   // Custom starting value
-  Result.Insert('max',  [rtUndefined, rtFloat, rtInteger]);
-  // Create valuelabel for new groups
-  Result.Insert('vl',   [rtObject], [evtValuelabel], [evfInternal, evfExternal, evfAsObject]);
-  // Replace valuelabel set if already exists
+  Result.Insert('max',  [rtFloat, rtInteger]);
+  // Do not create valuelabel for new groups
+  Result.Insert('nvl',  [rtUndefined]);
+  // Replace variable & valuelabel set if already exists
   Result.Insert('replace', [rtUndefined]);
-  // Grouping values are integers
-  Result.Insert('i', [rtUndefined]);
+  // Grouping values are integers (if value is assigned, start from this and count up with 1)
+  Result.Insert('i', [rtUndefined, rtInteger]);
+  // Sets a specific value to be a missing value
+  Result.Insert('m', [rtInteger, rtFloat]);
 end;
 
 function TRecodeCommand.GetAcceptedVariableCount: TBoundArray;
