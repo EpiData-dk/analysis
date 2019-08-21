@@ -14,6 +14,7 @@ object EditorForm: TEditorForm
   OnDropFiles = FormDropFiles
   OnShow = FormShow
   Position = poDefault
+  ShowHint = True
   ShowInTaskBar = stAlways
   LCLVersion = '2.0.0.4'
   object StatusBar1: TStatusBar
