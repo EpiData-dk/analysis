@@ -20,19 +20,22 @@ type
   private
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
-    function FindStartValue(Options: TOptionList; FromVariable: TEpiField): ASTFloat;
-    procedure DoByRecode(ST: TRecodeCommand);
-    procedure DoIntervalRecode(ST: TRecodeCommand);
+  private
+    function FindStartValue(Options: TOptionList): ASTFloat;
+    function DoByRecode(ST: TRecodeCommand; PreparedDataFile: TEpiDataFile): boolean;
+  private
+    function SanityCheckIntervals(Intervals: TRecodeIntervalList): boolean;
+    function DoIntervalRecode(ST: TRecodeCommand; PreparedDataFile: TEpiDataFile): boolean;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
     destructor Destroy; override;
-    procedure ExecRecode(ST: TRecodeCommand);
+    procedure ExecRecode(ST: TRecodeCommand; PreparedDataFile: TEpiDataFile);
   end;
 
 implementation
 
 uses
-  Math, epidatafilestypes;
+  Math, epidatafilestypes, ana_globals;
 
 { TRecode }
 
@@ -95,8 +98,7 @@ begin
   Result.Name := ValueLabelName;
 end;
 
-function TRecode.FindStartValue(Options: TOptionList; FromVariable: TEpiField
-  ): ASTFloat;
+function TRecode.FindStartValue(Options: TOptionList): ASTFloat;
 var
   Opt: TOption;
   i: Integer;
@@ -112,9 +114,10 @@ begin
   Result := 0;
 end;
 
-procedure TRecode.DoByRecode(ST: TRecodeCommand);
+function TRecode.DoByRecode(ST: TRecodeCommand; PreparedDataFile: TEpiDataFile
+  ): boolean;
 var
-  FromVariable, ToVariable: TEpiField;
+  FromVariable, ToVariable, ObsNo: TEpiField;
   MinValue, MaxValue, MissingValue: ASTFloat;
   Value: Extended;
   i, Group, IntGroupOffset: Integer;
@@ -123,6 +126,7 @@ var
   IntervalValue: ASTInteger;
   VLSet: TEpiValueLabelSet;
   ValueLabel: TEpiCustomValueLabel;
+  Idx: Int64;
 
   procedure CreateValueLabel(IsMissingValue: Boolean = false);
   begin
@@ -144,9 +148,10 @@ begin
   ToVariable   := CreateToField(ST.ToVariable);
   VLSet        := CreateValueLabelSet(ST);
   ToVariable.ValueLabelSet := VLSet;
+  ObsNo        := PreparedDataFile.Fields.FieldByName[ANA_EXEC_PREPAREDS_OBSNO_FIELD];
 
   // Determin start value:
-  MinValue      := FindStartValue(ST.Options, FromVariable);
+  MinValue      := FindStartValue(ST.Options);
   MaxValue      := Math.MaxFloat;
   if (ST.HasOption('max', Opt)) then
     MaxValue := Opt.Expr.AsFloat;
@@ -163,12 +168,11 @@ begin
   if HasMissingValue then
     MissingValue := Opt.Expr.AsFloat;
 
-  for i := 0 to FromVariable.Size - 1 do
+  for i := 0 to ObsNo.Size - 1 do
     begin
-      if (FromVariable.IsMissing[i]) then
-        Continue;
+      Idx := ObsNo.AsInteger[i];
 
-      Value := FromVariable.AsFloat[i];
+      Value := FromVariable.AsFloat[Idx];
 
       if ((HasMissingValue) and
           (SameValue(Value, MissingValue)))
@@ -188,7 +192,7 @@ begin
       else
         Group := Group * IntervalValue;
 
-      ToVariable.AsInteger[i] := Group;
+      ToVariable.AsInteger[Idx] := Group;
 
       CreateValueLabel();
     end;
@@ -197,22 +201,83 @@ begin
   VLSet.OnSort := @DoSortVlSet;
   VLSet.Sort;
   VLSet.OnSort := nil;
+
+  Result := true;
 end;
 
-procedure TRecode.DoIntervalRecode(ST: TRecodeCommand);
+function CompareIntervals(const Item1, Item2: TRecodeInterval): Integer;
+begin
+  Result := CompareValue(Item1.FromValue.AsFloat, Item2.FromValue.AsFloat);
+  if (Result = EqualsValue) then
+    Result := CompareValue(Item1.ToValue.AsFloat, Item2.ToValue.AsFloat);
+end;
+
+function TRecode.SanityCheckIntervals(Intervals: TRecodeIntervalList): boolean;
 var
-  FromVariable, ToVariable: TEpiField;
+  First, Second: TRecodeInterval;
+  i: Integer;
+begin
+  Intervals.Sort(@CompareIntervals);
+
+  Result := False;
+  for i := 0 to Intervals.Count - 2 do
+    begin
+      First := Intervals[i];
+      Second := Intervals[i + 1];
+
+      if (Second.FromValue.AsFloat < First.ToValue.AsFloat) then
+        begin
+          FExecutor.Error(
+            Format('Intervals overlap: (%s - %s), (%s - %s)',
+                   [First.FromValue.AsString, First.ToValue.AsString,
+                    Second.FromValue.AsString, Second.ToValue.AsString])
+          );
+          Exit;
+        end;
+
+      if (First.FromValue.AsFloat > First.ToValue.AsFloat) then
+        begin
+          FExecutor.Error(
+            Format('Interval contains invalid boundries: (%s - %s)',
+                   [First.FromValue.AsString, First.ToValue.AsString])
+          );
+          Exit;
+        end;
+    end;
+
+  First := Intervals[Intervals.Count - 1];
+  if (First.FromValue.AsFloat > First.ToValue.AsFloat) then
+    begin
+      FExecutor.Error(
+        Format('Interval contains invalid boundries: (%s - %s)',
+               [First.FromValue.AsString, First.ToValue.AsString])
+      );
+      Exit;
+    end;
+
+  Result := True;
+end;
+
+function TRecode.DoIntervalRecode(ST: TRecodeCommand;
+  PreparedDataFile: TEpiDataFile): boolean;
+var
+  FromVariable, ToVariable, ObsNo: TEpiField;
   VLSet: TEpiValueLabelSet;
   RI: TRecodeInterval;
   IntVL: TEpiIntValueLabel;
   i: Integer;
   Value: Extended;
+  Idx: Int64;
 begin
+  Result := false;
+  if (not SanityCheckIntervals(ST.RecodeIntervalList)) then
+    Exit;
+
   FromVariable := FExecutor.DataFile.Fields.FieldByName[ST.FromVariable.Ident];
   ToVariable   := CreateToField(ST.ToVariable);
   VLSet        := CreateValueLabelSet(ST);
   ToVariable.ValueLabelSet := VLSet;
-
+  ObsNo        := PreparedDataFile.Fields.FieldByName[ANA_EXEC_PREPAREDS_OBSNO_FIELD];
 
   for RI in ST.RecodeIntervalList do
     begin
@@ -221,18 +286,21 @@ begin
       IntVL.TheLabel.Text := RI.ValueLabel.AsString;
     end;
 
-  for i := 0 to FromVariable.Size - 1 do
+  for i := 0 to ObsNo.Size - 1 do
     begin
-      Value := FromVariable.AsFloat[i];
+      Idx := ObsNo.AsInteger[i];
+      Value := FromVariable.AsFloat[Idx];
 
       for RI in ST.RecodeIntervalList do
         begin
           if (Value >= RI.FromValue.AsFloat) and
              (Value < RI.ToValue.AsFloat)
           then
-            ToVariable.AsInteger[i] := RI.LabelValue.AsInteger;
+            ToVariable.AsInteger[Idx] := RI.LabelValue.AsInteger;
         end;
     end;
+
+  Result := true;
 end;
 
 constructor TRecode.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator
@@ -247,9 +315,10 @@ begin
   inherited Destroy;
 end;
 
-procedure TRecode.ExecRecode(ST: TRecodeCommand);
+procedure TRecode.ExecRecode(ST: TRecodeCommand; PreparedDataFile: TEpiDataFile
+  );
 var
-  IsReplaceable: Boolean;
+  IsReplaceable, Res: Boolean;
   ValueLabelName: UTF8String;
 begin
   IsReplaceable := ST.HasOption('replace');
@@ -289,11 +358,12 @@ begin
     end;
 
   if (ST.HasOption('by')) then
-    DoByRecode(ST)
+    Res := DoByRecode(ST, PreparedDataFile)
   else
-    DoIntervalRecode(ST);
+    Res := DoIntervalRecode(ST, PreparedDataFile);
 
-  ST.ExecResult := csrSuccess;
+  if (Res) then
+    ST.ExecResult := csrSuccess;
 end;
 
 end.

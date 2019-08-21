@@ -3837,9 +3837,16 @@ end;
 procedure TExecutor.ExecRecode(ST: TRecodeCommand);
 var
   Recoder: TRecode;
+  FieldList: TStringListUTF8;
+  DF: TEpiDataFile;
 begin
+  FieldList := TStringListUTF8.Create;
+  FieldList.Add(ST.FromVariable.Ident);
+
+  DF := PrepareDatafile(FieldList, FieldList, [pdoAddOrgObsNo]);
+
   Recoder := TRecode.Create(self, FOutputCreator);
-  Recoder.ExecRecode(ST);
+  Recoder.ExecRecode(ST, DF);
   Recoder.Free;
 
   // We added a new var and possibly a new valuelabel
