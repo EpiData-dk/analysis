@@ -85,6 +85,8 @@ type
     procedure DMDocFileCreated(Sender: TObject; DocFile: TEpiDocumentFile);
     function SaveWarning(WarningType: TOpenEpiWarningType; const Msg: string
       ): TOpenEpiWarningResult;
+  public
+    procedure SetSaveOptions(Options: TOptionList);
 
   // PrepareDataFile
   private
@@ -716,6 +718,11 @@ begin
       DoError(S);
       Result := wrNo;
     end;
+end;
+
+procedure TExecutor.SetSaveOptions(Options: TOptionList);
+begin
+  FSaveOptions := Options;
 end;
 
 function TExecutor.PrepareDatafilePack(Sender: TEpiDataFile; Index: Integer;

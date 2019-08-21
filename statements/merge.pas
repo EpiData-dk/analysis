@@ -224,8 +224,8 @@ var
   DSName: String;
   MR: TEpiMasterRelation;
 const
-  ReadOptionNames: array[0..4] of EpiString = (
-    'd', 'q', 'h', 'pw', 'login'
+  ReadOptionNames: array[0..5] of EpiString = (
+    'd', 'q', 'h', 'pw', 'login', 'force'
   );
 
   function CompareTreeStructure(Const RelationListA, RelationListB: TEpiDatafileRelationList): boolean;
@@ -274,6 +274,7 @@ begin
         if ST.HasOption(S, Opt) then
           OptList.Add(Opt);
 
+      FExecutor.SetSaveOptions(OptList);
       ReadCMD := TReadCommand.Create(TStringLiteral.Create(FN), OptList);
 
       case aDM.OpenFile(ReadCMD, Docfile) of
@@ -282,6 +283,7 @@ begin
             FOutputCreator.DoInfoAll('Read cancelled!');
             FExecutor.Cancelled := true;
             ST.ExecResult := csrFailed;
+            FExecutor.SetSaveOptions(Nil);
             Exit;
           end;
 
@@ -289,12 +291,14 @@ begin
           begin
             FExecutor.Error('Error loading file: ' + ST.Filename);
             ST.ExecResult := csrFailed;
+            FExecutor.SetSaveOptions(Nil);
             Exit;
           end;
 
         dfrSuccess:
           ST.Filename := '';
       end;
+      FExecutor.SetSaveOptions(Nil);
     end
   else
     Docfile := FExecutor.DocFile;
@@ -838,6 +842,7 @@ var
   end;
 
 begin
+  Result := nil;
   MergeDocFile := nil;
 
   if (not InternalCheckAndOpenFile(ST, MergeDocFile)) then
@@ -870,6 +875,7 @@ begin
             'Use the option !ds := <id> to specify which on to use!'
           );
           ST.ExecResult := csrFailed;
+          MergeDocFile.Free;
           Exit;
         end;
 
@@ -878,11 +884,16 @@ begin
         begin
           FExecutor.Error('Key variables must be used when merging with an external dataset!');
           ST.ExecResult := csrFailed;
+          MergeDocFile.Free;
           Exit;
         end;
 
       if (not DoDatafilesCheck(MergeDocFile.Document.DataFiles)) then
-        Exit;
+        begin
+          ST.ExecResult := csrFailed;
+          MergeDocFile.Free;
+          Exit;
+        end;
 
       if (ST.HasOption('ds', Opt)) then
         MergeDF := MergeDocFile.Document.DataFiles.GetDataFileByName(Opt.Expr.AsIdent)
@@ -898,6 +909,7 @@ begin
           begin
             FExecutor.Error(Format('Variable "%s" not found in external dataset!', [V.Ident]));
             ST.ExecResult := csrFailed;
+            MergeDocFile.Free;
             Exit;
           end;
 
@@ -906,6 +918,7 @@ begin
           begin
             FExecutor.Error(Format('Variable "%s" in external dataset has a different type than in the internal dataset', [V.Ident]));
             ST.ExecResult := csrFailed;
+            MergeDocFile.Free;
             Exit;
           end;
         end;
