@@ -23,7 +23,7 @@ type
   public
     constructor Create(Const AOperation: TParserOperationType; const ParamList: TParamList);
     function ResultType: TASTResultType; override;
-    function AsBoolean: Boolean; override;
+    function Evaluate: boolean; override;
   end;
 
 implementation
@@ -57,6 +57,26 @@ begin
   Result := rtBoolean;
 end;
 
+function TEpiScriptFunction_ObsFunctions.Evaluate: boolean;
+begin
+  Result := inherited Evaluate;
+
+  if (Assigned(FParamList)) and
+     (FParamList.Count = 1)
+  then
+    Idx := Param[0].AsInteger
+  else
+    Idx := FExecutor.GetCurrentRecordNo;
+
+  case FOp of
+    otFuncDeleted:
+      FEvalValue.BoolVal := FExecutor.DataFile.Deleted[Idx];
+
+    otFuncVerified:
+      FEvalValue.BoolVal := FExecutor.DataFile.Verified[Idx];
+  end;
+end;
+{
 function TEpiScriptFunction_ObsFunctions.AsBoolean: Boolean;
 var
   Idx: ASTInteger;
@@ -78,6 +98,6 @@ begin
       Result := FExecutor.DataFile.Verified[Idx];
   end;
 end;
-
+}
 end.
 

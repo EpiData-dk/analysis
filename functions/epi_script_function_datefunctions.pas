@@ -20,11 +20,7 @@ type
   public
     constructor Create(Const AOperation: TParserOperationType; const ParamList: TParamList);
     function ResultType: TASTResultType; override;
-    function AsInteger: EpiInteger; override;
-    function AsDate: EpiDate; override;
-    function AsFloat: ASTFloat; override;
-    function AsTime: EpiDateTime; override;
-    function AsString: EpiString; override;
+    function Evaluate: boolean; override;
   end;
 
 implementation
@@ -86,6 +82,30 @@ begin
   end;
 end;
 
+function TEpiScriptFunction_DateFunctions.Evaluate: boolean;
+begin
+  Result := inherited Evaluate;
+
+  case FOp of
+    otFuncToday:
+      FEvalValue.IntValue := Trunc(Today);
+    otFuncDay:
+      FEvalValue.IntValue := DayOf(Param[0].AsInteger);
+    otFuncMonth:
+      FEvalValue.IntValue := MonthOf(Param[0].AsInteger);
+    otFuncYear:
+      FEvalValue.IntValue := YearOf(Param[0].AsInteger);
+    otFuncDayOfWeek:
+      begin
+        FEvalValue.IntValue := ((Param[0].AsInteger - 1) mod 7);
+        If (FEvalValue.IntValue<=0) then
+          Inc(FEvalValue.IntValue,7);
+      end;
+    otFuncWeek:
+      FEvalValue.IntValue := WeekOf(Param[0].AsInteger);
+  end;
+end;
+
 function TEpiScriptFunction_DateFunctions.AsInteger: EpiInteger;
 begin
   result := inherited;
@@ -109,7 +129,7 @@ begin
       result := WeekOf(Param[0].AsInteger);
   end;
 end;
-
+             {
 function TEpiScriptFunction_DateFunctions.AsDate: EpiDate;
 begin
   result := AsInteger;
@@ -132,6 +152,6 @@ begin
   else
     Result := inherited;
 end;
-
+}
 end.
 

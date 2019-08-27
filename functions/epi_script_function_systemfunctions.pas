@@ -29,6 +29,7 @@ type
     constructor Create(Const AOperation: TParserOperationType; const ParamList: TParamList);
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function ResultType: TASTResultType; override;
+    function Evaluate: boolean; override;
     function AsInteger: ASTInteger; override;
     function AsString: EpiString; override;
     function AsDate: EpiDate; override;
@@ -244,6 +245,124 @@ begin
   end;
 end;
 
+function TEpiScriptFunction_SystemFunctions.Evaluate: boolean;
+var
+  lParam: TExpr;
+  ExecVar: TCustomExecutorVariable;
+begin
+  Result := inherited Evaluate;
+
+  case FOp of
+    otFuncIdentExists:
+      FEvalValue.BoolVal := Assigned(FExecutor.GetExecVariable(Param[0].AsIdent));
+
+    otFuncIdentType:
+      begin
+        lParam := Param[0];
+        FEvalValue.IntVal := Integer(FExecutor.GetVariableExecType(lParam.AsIdent));
+        FEvalValue.StringVal := ExecutorVariableTypeString[TExecutorVariableType(FEvalValue.IntVal)];
+      end;
+
+    otFuncDataType:
+      begin
+        lParam := Param[0];
+        ExecVar := FExecutor.GetExecVariable(lParam.AsIdent);
+
+        case ExecVar.VarType of
+          evtGlobal,
+          evtGlobalVector,
+          evtField,
+          evtResultConst,
+          evtResultVector,
+          evtResultMatrix:
+            FEvalValue.IntVal := Integer(TCustomExecutorDataVariable(ExecVar).DataType);
+
+          evtValuelabel:
+            FEvalValue.IntVal := Integer(TExecutorValuelabelsetVariable(ExecVar).Valuelabelset.LabelType);
+        else
+          FEvalValue.IntVal := -1;
+        end;
+
+        if (FEvalValue.IntVal >= 0) then
+          FEvalValue.StringVal := EpiTypeNames[TEpiFieldType(I)]
+        else
+          FEvalValue.StringVal := 'Identifier has no data type';
+      end;
+
+    otFuncSize:
+      begin
+        lParam := Param[0];
+        ExecVar := FExecutor.GetExecVariable(lParam.AsIdent);
+
+        case ExecVar.VarType of
+          evtGlobal:
+            FEvalValue.IntVal := 1;
+
+          evtGlobalVector:
+            FEvalValue.IntVal := TExecVarGlobalVector(ExecVar).Length;
+
+          evtField:
+            FEvalValue.IntVal := TExecVarField(ExecVar).Length;
+
+          evtDataset:
+            FEvalValue.IntVal := TExecutorDatasetVariable(ExecVar).DataFile.Size;
+
+          evtValuelabel:
+            FEvalValue.IntVal := TExecutorValuelabelsetVariable(ExecVar).Valuelabelset.Count;
+
+          evtResultConst:
+            FEvalValue.IntVal := 1;
+
+          evtResultVector:
+            FEvalValue.IntVal := TExecVarVector(ExecVar).Length;
+
+          evtResultMatrix:
+           FEvalValue.IntVal result := -1; // TExecVarMatrix(ExecVar).Rows;
+        end;
+      end;
+
+    otFuncIif:
+      if Param[0].AsBoolean then
+        begin
+          FEvalValue.IntVal := Param[1].AsInteger;
+          FEvalValue.StringVal := Param[1].AsString;
+          FEvalValue.FloatVal := Param[1].AsFloat;
+          FEvalValue.DateVal := Param[1].AsDate;
+          FEvalValue.TimeVal := Param[1].AsTime;
+          FEvalValue.BoolVal := Param[1].AsBoolean;
+        end
+      else
+        begin
+          FEvalValue.IntVal := Param[2].AsInteger;
+          FEvalValue.StringVal := Param[2].AsString;
+          FEvalValue.FloatVal := Param[2].AsFloat;
+          FEvalValue.DateVal := Param[2].AsDate;
+          FEvalValue.TimeVal := Param[2].AsTime;
+          FEvalValue.BoolVal := Param[2].AsBoolean;
+        end;
+
+    otFuncLabel:
+      begin
+        lParam := Param[0];
+        ExecVar := FExecutor.GetExecVariable(lParam.AsIdent);
+
+        case ExecVar.VarType of
+          evtField:
+            result := TExecVarField(ExecVar).Field.Question.Text;
+
+          evtDataset:
+            result := TExecutorDatasetVariable(ExecVar).DataFile.Caption.Text;
+
+        else
+          result := '';
+        end;
+      end;
+
+    otFuncCwd:
+      result := GetCurrentDirUTF8;
+  end;
+end;
+{
 function TEpiScriptFunction_SystemFunctions.AsInteger: ASTInteger;
 var
   lParam: TExpr;
@@ -422,6 +541,6 @@ begin
       Result := Assigned(FExecutor.GetExecVariable(Param[0].AsIdent));
   end
 end;
-
+}
 end.
 

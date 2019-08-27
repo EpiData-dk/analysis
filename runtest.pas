@@ -81,7 +81,7 @@ type
     FRunTest: TRunTest;
   public
     constructor Create(ARunTest: TRunTest; const ParamList: TParamList);
-    function AsFloat: EpiFloat; override;
+    function Evaluate: boolean; override;
   end;
 
 { TRunTestMathFunction }
@@ -106,9 +106,10 @@ begin
   FRunTest := ARunTest;
 end;
 
-function TRunTestMathFunction.AsFloat: EpiFloat;
+function TRunTestMathFunction.Evaluate: boolean;
 begin
-  Result := FRunTest.DoLRE(FParamList);
+  result := inherited Evaluate;
+  FRunTest.DoLRE(FParamList);
 end;
 
 { TRuntestExecutor }

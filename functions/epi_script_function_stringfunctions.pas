@@ -20,8 +20,7 @@ type
   public
     constructor Create(Const AOperation: TParserOperationType; const ParamList: TParamList);
     function ResultType: TASTResultType; override;
-    function AsInteger: EpiInteger; override;
-    function AsString: EpiString; override;
+    function Evaluate: boolean; override;
   end;
 
   EEpiScriptFunction_StringFunctions = class(Exception);
@@ -99,6 +98,72 @@ begin
   end;
 end;
 
+function TEpiScriptFunction_StringFunctions.Evaluate: boolean;
+var
+  T: EpiString;
+  S: String;
+begin
+  Result := inherited Evaluate;
+
+  case FOp of
+    otFuncPos:
+      begin
+        if (Param[0].IsMissing or Param[1].IsMissing) then
+          begin
+            FEvalValue.IntVal := 0
+            Exit;
+          end;
+
+        FEvalValue.IntVal := UTF8Pos(Param[1].AsString, Param[0].AsString);
+      end;
+
+    otFuncLength:
+      if Param[0].IsMissing then
+        FEvalValue.IntVal := 0
+      else
+        FEvalValue.IntVal := UTF8Length(Param[0].AsString);
+
+
+    otFuncLower:
+      FEvalValue.StringVal := UTF8LowerCase(Param[0].AsString);
+
+    otFuncUpper:
+      FEvalValue.StringVal := UTF8UpperCase(Param[0].AsString);
+
+    otFuncSubString:
+      begin
+        if Param[0].IsMissing then Exit;
+
+        if Param[1].IsMissing or Param[2].IsMissing then
+          RuntimeError(EEpiScriptFunction_StringFunctions, 'Substring: Pos or Len value is missing!') // TODO : Error in execution
+        else
+          FEvalValue.StringVal := UTF8Copy(Param[0].AsString, Param[1].AsInteger, Param[2].AsInteger);
+      end;
+
+    otFuncTrim:
+      if Param[0].IsMissing then
+        FEvalValue.StringVal := Param[0].AsString
+      else
+        FEvalValue.StringVal := UTF8Trim(Param[0].AsString);
+
+    otFuncConcat:
+      begin
+        T := Param[0].AsString;
+
+        S := '';
+        for i := 1 to FParamList.Count - 1 do
+          if Param[i].IsMissing then
+            S := S + T
+          else
+            S := S + Param[i].AsString;
+
+        FEvalValue.StringVal := S;
+      end;
+  end;
+end;
+
+{
+
 function TEpiScriptFunction_StringFunctions.AsInteger: EpiInteger;
 begin
   result := inherited;
@@ -161,6 +226,6 @@ begin
       end;
   end;
 end;
-
+}
 end.
 

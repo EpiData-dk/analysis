@@ -20,11 +20,7 @@ type
   public
     constructor Create(Const AOperation: TParserOperationType; const ParamList: TParamList);
     function ResultType: TASTResultType; override;
-    function AsInteger: EpiInteger; override;
-    function AsDate: EpiDate; override;
-    function AsFloat: EpiFloat; override;
-    function AsTime: EpiDateTime; override;
-    function AsString: EpiString; override;
+    function Evaluate: boolean; override;
   end;
 
 implementation
@@ -80,6 +76,22 @@ begin
   end;
 end;
 
+function TEpiScriptFunction_TimeFunctions.Evaluate: boolean;
+begin
+  Result := inherited Evaluate;
+
+  case FOp of
+    otFuncHour:
+      result := HourOf(Param[0].AsTime);
+    otFuncMinut:
+      result := MinuteOf(Param[0].AsTime);
+    otFuncSecond:
+      result := SecondOf(Param[0].AsTime);
+    otFuncNow:
+      result := frac(Now);
+  end;
+end;
+{
 function TEpiScriptFunction_TimeFunctions.AsInteger: EpiInteger;
 begin
   Result := inherited;
@@ -123,6 +135,6 @@ begin
       Result := TimeToStr(AsTime);
   end;}
 end;
-
+}
 end.
 

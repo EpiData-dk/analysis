@@ -18,6 +18,7 @@ type
     function ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec; override;
   public
     function ResultType: TASTResultType; override;
+    function Evaluate: boolean; override;
     function AsDate: EpiDate; override;
     function AsInteger: ASTInteger; override;
   end;
@@ -54,6 +55,13 @@ end;
 function TEpiScriptFunction_CreateDate.ResultType: TASTResultType;
 begin
   Result := rtDate;
+end;
+
+function TEpiScriptFunction_CreateDate.Evaluate: boolean;
+begin
+  Result := inherited Evaluate;
+
+
 end;
 
 function TEpiScriptFunction_CreateDate.AsDate: EpiDate;

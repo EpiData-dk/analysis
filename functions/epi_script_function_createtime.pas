@@ -18,6 +18,7 @@ type
     function ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec; override;
   public
     function ResultType: TASTResultType; override;
+    function Evaluate: boolean; override;
     function AsInteger: EpiInteger; override;
     function AsTime: EpiTime; override;
     function IsMissing: Boolean; override;
@@ -55,6 +56,44 @@ begin
   Result := rtTime;
 end;
 
+function TEpiScriptFunction_CreateTime.Evaluate: boolean;
+begin
+  Result := inherited Evaluate;
+
+  if FParamList.Count = 1 then
+  begin
+    if not EpiStrToTimeGues(Param[0].AsString, FEvalValue.TimeVal, Msg) then
+      RuntimeError(EEpiScriptFunction_CreateTime, Msg);
+    Exit;
+  end;
+
+  if FParamList.Count = 3 then
+  begin
+    Hour := Param[0];
+    Minut := Param[1];
+    Sec   := Param[2];
+
+    if Sec.IsMissing then
+      S := 0
+    else
+      S := Sec.AsInteger;
+
+    if Minut.IsMissing then
+      M := 0
+    else
+      M := Minut.AsInteger;
+
+    if Hour.IsMissing then
+      result := inherited AsTime
+    else
+      if (not TryEncodeTime(Hour.AsInteger, M, S, 0, FEvalValue.TimeVal)) then
+        RuntimeError(EEpiScriptFunction_CreateTime, Msg);
+
+    Exit;
+  end;
+
+end;
+{
 function TEpiScriptFunction_CreateTime.AsInteger: EpiInteger;
 begin
   Result := trunc(AsFloat);
@@ -139,6 +178,6 @@ begin
       result := not TryEncodeTime(Hour.AsInteger, M, S, 0, Dummy);
   end;
 end;
-
+ }
 end.
 
