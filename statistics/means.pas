@@ -706,8 +706,21 @@ begin
 
   CountVarName := ST.VariableList[0].Ident;
   StratifyVarName := '';
-  if ST.HasOption('by', Opt) then
-    StratifyVarName := Opt.Expr.AsIdent;
+  // check for more than one !by
+  for Opt in ST.Options do
+  begin
+   if (Opt.Ident = 'by') then
+     if (StratifyVarName = '') then
+       StratifyVarName := Opt.Expr.AsIdent
+     else
+       begin
+         ST.ExecResult := csrFailed;
+         FExecutor.Error('Can only have one !by option');
+         exit;
+       end;
+  end;
+//  if ST.HasOption('by', Opt) then
+//    StratifyVarName := Opt.Expr.AsIdent;
 
   ResultDF := DoCalcMeans(DataFile, CountVarName, StratifyVarName);
   DoResultVariables(ResultDF);
