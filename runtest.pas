@@ -79,9 +79,10 @@ type
   TRunTestMathFunction = class(TEpiScriptFunction_MathFunctions)
   private
     FRunTest: TRunTest;
+  protected
+    function DoEvaluate: boolean; override;
   public
     constructor Create(ARunTest: TRunTest; const ParamList: TParamList);
-    function Evaluate: boolean; override;
   end;
 
 { TRunTestMathFunction }
@@ -106,10 +107,10 @@ begin
   FRunTest := ARunTest;
 end;
 
-function TRunTestMathFunction.Evaluate: boolean;
+function TRunTestMathFunction.DoEvaluate: boolean;
 begin
-  result := inherited Evaluate;
-  FRunTest.DoLRE(FParamList);
+  result := inherited DoEvaluate;
+  FEvalValue.FloatVal := FRunTest.DoLRE(FParamList);
 end;
 
 { TRuntestExecutor }
@@ -198,7 +199,7 @@ begin
 
   if (Res) then
     if (ST.Statement.InheritsFrom(TExpr)) then
-      Res := TExpr(ST.Statement).AsBoolean
+      Res := TExpr(ST.Statement).Evaluate.AsBoolean
     else
       begin
         FInternalExecutor.ExecStatement(ST.Statement);

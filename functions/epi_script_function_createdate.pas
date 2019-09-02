@@ -16,9 +16,9 @@ type
   protected
     function ParamCounts: TBoundArray; override;
     function ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec; override;
+    function DoEvaluate: boolean; override;
   public
     function ResultType: TASTResultType; override;
-    function Evaluate: boolean; override;
   end;
 
   EEpiScriptFunction_CreateDate = class(Exception);
@@ -55,7 +55,7 @@ begin
   Result := rtDate;
 end;
 
-function TEpiScriptFunction_CreateDate.Evaluate: boolean;
+function TEpiScriptFunction_CreateDate.DoEvaluate: boolean;
 var
   DateResult: EpiDate;
   S: EpiString;
@@ -64,7 +64,8 @@ var
   Day, Month, Year: TExpr;
   D, M: Integer;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
+
   if (not Result) then
     Exit;
 

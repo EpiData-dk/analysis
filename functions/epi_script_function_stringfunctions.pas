@@ -17,10 +17,10 @@ type
   protected
     function ParamCounts: TBoundArray; override;
     function ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec; override;
+    function DoEvaluate: boolean; override;
   public
     constructor Create(Const AOperation: TParserOperationType; const ParamList: TParamList);
     function ResultType: TASTResultType; override;
-    function Evaluate: boolean; override;
   end;
 
   EEpiScriptFunction_StringFunctions = class(Exception);
@@ -98,13 +98,13 @@ begin
   end;
 end;
 
-function TEpiScriptFunction_StringFunctions.Evaluate: boolean;
+function TEpiScriptFunction_StringFunctions.DoEvaluate: boolean;
 var
   T: EpiString;
   S: String;
   i: Integer;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
 
   if (not Result) then
     Exit;

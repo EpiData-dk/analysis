@@ -105,7 +105,7 @@ type
     function DoOption(R: TReduction): TOption;
 
     // expressions
-    function DoOptionalExpressionList(R: TReduction; OwnerList: TParamList): TParamList;
+    function DoOptionalExpressionList(R: TReduction): TParamList;
     function DoExpressionList(R: TReduction; OwnerList: TParamList): TParamList;
     function DoOptionalExpression(R: TReduction): TExpr;
     function DoExpression(R: TReduction): TExpr;
@@ -1314,7 +1314,7 @@ begin
   T := R.Tokens[0];
   Result := TFunctionCall.CreateFunction(
     T.DataVar,
-    DoOptionalExpressionList(R.Tokens[2].Reduction, nil),
+    DoOptionalExpressionList(R.Tokens[2].Reduction),
     FExecutor
   );
 
@@ -1684,18 +1684,17 @@ begin
   result := DoOptionalIndexedVariableList(OptReduction, result);
 end;
 
-function TASTBuilder.DoOptionalExpressionList(R: TReduction; OwnerList: TParamList
-  ): TParamList;
+function TASTBuilder.DoOptionalExpressionList(R: TReduction): TParamList;
 begin
 {
   <Optional Expression List>  ::= <Expression List>
                               |
 }
-  result := nil;
+  Result := TParamList.Create;
 
   if R.TokenCount = 0 then exit;
 
-  result := DoExpressionList(R.Tokens[0].Reduction, OwnerList);
+  Result := DoExpressionList(R.Tokens[0].Reduction, Result);
 end;
 
 function TASTBuilder.DoExpressionList(R: TReduction; OwnerList: TParamList

@@ -2641,15 +2641,10 @@ begin
         FCurrentRecNo := 0;
         I := 0;
 
-        ST.Expr.Evaluate;
-
         if (EV.VarType = evtGlobalVector) then
-          begin
-            TIndexVariable(V).Expr[0].Evaluate;
-            I:= TIndexVariable(V).Expr[0].AsInteger - 1;
-          end;
+          I:= TIndexVariable(V).Expr[0].Evaluate.AsInteger - 1;
 
-        if ST.Expr.IsMissing then
+        if ST.Expr.Evaluate.IsMissing then
           EV.IsMissing[I] := true
         else
           case V.ResultType of
@@ -2679,10 +2674,10 @@ begin
       begin
         if (V.VarType = vtIndexed) then
           begin
-            FCurrentRecNo := TIndexVariable(V).Expr[0].AsInteger - 1;
+            FCurrentRecNo := TIndexVariable(V).Expr[0].Evaluate.AsInteger - 1;
             SelectRecNo := SelectVector.AsInteger[FCurrentRecNo];
 
-            if ST.Expr.IsMissing then
+            if ST.Expr.Evaluate.IsMissing then
               EV.IsMissing[SelectRecNo] := true
             else
               case V.ResultType of
@@ -2711,12 +2706,13 @@ begin
           begin
             FAssignmentChanges := 0;
             TExecVarField(EV).Field.RegisterOnChangeHook(@AssignmentDataChangeHook, true);
+
             for i := 0 to SelectVector.Size - 1 do
               begin
                 FCurrentRecNo := i;
                 SelectRecNo := SelectVector.AsInteger[FCurrentRecNo];
 
-                if ST.Expr.IsMissing then
+                if ST.Expr.Evaluate.IsMissing then
                   EV.IsMissing[SelectRecNo] := true
                 else
                   case V.ResultType of
@@ -2761,7 +2757,7 @@ end;
 
 procedure TExecutor.ExecIfThen(ST: TIfThen);
 begin
-  if ST.Expr.AsBoolean
+  if ST.Expr.Evaluate.AsBoolean
   then
     DoStatement(ST.ThenStatement)
   else
@@ -2791,8 +2787,8 @@ begin
   case ST.ForType of
     ftRange:
       begin
-        SVal := ST.StartExpr.AsInteger;
-        EVal := ST.EndExpr.AsInteger;
+        SVal := ST.StartExpr.Evaluate.AsInteger;
+        EVal := ST.EndExpr.Evaluate.AsInteger;
 
         case ST.Direction of
           fdTo:
@@ -2821,6 +2817,7 @@ begin
     ftArray:
       begin
         AVal := ST.ArrayVal;
+        AVal.Evaluate;
 
         for i := 0 to AVal.Count - 1 do
           begin
@@ -2933,7 +2930,7 @@ begin
   for i := 0 to SelectVector.Size - 1 do
     begin
       FCurrentRecNo := i;
-      if ST.Expr.AsBoolean then
+      if ST.Expr.Evaluate.AsBoolean then
         begin
           F.AsInteger[Runner] := SelectVector.AsInteger[FCurrentRecNo];
           Inc(Runner);
@@ -2965,7 +2962,7 @@ end;
 procedure TExecutor.ExecEval(ST: TEvalExpression);
 begin
   ST.ExecResult := csrFailed;
-  DoInfo(OutputCreatorNormalizeText(ST.Expr.AsString));
+  DoInfo(OutputCreatorNormalizeText(ST.Expr.Evaluate.AsString));
   ST.ExecResult := csrSuccess;
 end;
 
@@ -2982,10 +2979,7 @@ begin
 
   if (Res) then
     if (ST.Statement.InheritsFrom(TExpr)) then
-      begin
-        TExpr(ST.Statement).Evaluate;
-        Res := TExpr(ST.Statement).AsBoolean
-      end
+      Res := TExpr(ST.Statement).Evaluate.AsBoolean
     else
       begin
         DoStatement(ST.Statement);
@@ -3070,7 +3064,7 @@ begin
       Exit;
     end;
 
-  S := UTF8UpperString(ST.OptionExpr.AsString);
+  S := UTF8UpperString(ST.OptionExpr.Evaluate.AsString);
 
   // Set <option name>, list only that single key,value pair.
   if (not Assigned(ST.AssignmentExpr)) and
@@ -3111,7 +3105,7 @@ begin
 
       try
         OldVal := Data.Value;
-        Data.Value := ST.AssignmentExpr.AsString;
+        Data.Value := ST.AssignmentExpr.Evaluate.AsString;
       except
         on E: ESetOption do
           begin
@@ -4373,6 +4367,12 @@ function TExecutor.GetVariableValues(const Sender: TCustomVariable;
   Values: PExprValue): boolean;
 begin
   // TODO : OPTIMIZE!!!!!
+  if (not Assigned(GetExecDataVariable(Sender.Ident))) then
+    begin
+      Values^.Missing := true;
+      Exit;
+    end;
+
   Values^.BoolVal   := GetVariableValueBool(Sender);
   Values^.IntVal    := GetVariableValueInt(Sender);
   Values^.FloatVal  := GetVariableValueFloat(Sender);

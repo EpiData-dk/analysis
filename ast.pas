@@ -439,10 +439,15 @@ type
     FL:  TExpr;
     FR:  TExpr;
     function GetAsBoolean: Boolean;
+    function GetAsDate: EpiDate;
+    function GetAsFloat: ASTFloat;
+    function GetAsInteger: ASTInteger;
     function GetAsString: EpiString;
+    function GetAsTime: EpiDateTime;
   protected
     FEvalValue: TExprValue;
     function CommonType(Const A, B: TExpr): TASTResultType;
+    function DoEvaluate: boolean; virtual;
     procedure DoObservedChange(Sender: TObject); override;
     procedure RuntimeError(EClass: TExceptionClass; Const Msg: string);
   public
@@ -454,13 +459,15 @@ type
     property Operation: TParserOperationType read FOp;
     property Left: TExpr read FL;
     property Right: TExpr read FR;
+  private
+    FEvaluated: boolean;
   public
-    function Evaluate: boolean; virtual;
+    function Evaluate:  TExpr;
     property AsBoolean: Boolean read GetAsBoolean;
-    property AsInteger: ASTInteger read FEvalValue.IntVal;
-    property AsFloat:   ASTFloat read FEvalValue.FloatVal;
-    property AsDate:    EpiDate read FEvalValue.DateVal;
-    property AsTime:    EpiDateTime read FEvalValue.TimeVal;
+    property AsInteger: ASTInteger read GetAsInteger;
+    property AsFloat:   ASTFloat read GetAsFloat;
+    property AsDate:    EpiDate read GetAsDate;
+    property AsTime:    EpiDateTime read GetAsTime;
     property AsString:  EpiString read GetAsString;
     function AsIdent:   UTF8String; virtual;
     function IsMissing: Boolean; virtual;
@@ -470,8 +477,8 @@ type
   { TLiteral }
 
   TLiteral = class(TExpr)
-  public
-    function Evaluate: boolean; override;
+  protected
+    function DoEvaluate: boolean; override;
   end;
 
   { TBooleanLiteral }
@@ -509,6 +516,8 @@ type
   { TMissingLiteral }
 
   TMissingLiteral = class(TLiteral)
+  protected
+    function DoEvaluate: boolean; override;
   public
     constructor Create;
     function ResultType: TASTResultType; override;
@@ -519,37 +528,41 @@ type
   TRecNumberLiteral = class(TLiteral)
   private
     FExecutor: IEpiScriptExecutor;
+  protected
+    function DoEvaluate: boolean; override;
   public
     constructor Create(Executor: IEpiScriptExecutor);
     function ResultType: TASTResultType; override;
-    function Evaluate: boolean; override;
   end;
 
   { TUnaryExpr }
 
   TUnaryExpr = class(TExpr)
+  protected
+    function DoEvaluate: boolean; override;
   public
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function ResultType: TASTResultType; override;
-    function Evaluate: boolean; override;
   end;
 
   { TBinaryExpr }
 
   TBinaryExpr = class(TExpr)
+  protected
+    function DoEvaluate: boolean; override;
   public
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function ResultType: TASTResultType; override;
-    function Evaluate: boolean; override;
   end;
 
   { TRelationalExpr }
 
   TRelationalExpr = class(TExpr)
+  protected
+    function DoEvaluate: boolean; override;
   public
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function ResultType: TASTResultType; override;
-    function Evaluate: boolean; override;
   end;
 
   { TParamList }
@@ -584,13 +597,13 @@ type
     constructor Create(Const ParamList: TParamList); virtual;
     function ParamCounts: TBoundArray; virtual;
     function ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec; virtual;
+    function DoEvaluate: boolean; override;
   public
     class function CreateFunction(Const FunctionName: string;
       Const ParamList: TParamList;
       Executor: IEpiScriptExecutor): TFunctionCall;
     destructor Destroy; override;
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
-    function Evaluate: boolean; override;
     property Param[Const Index: integer]: TExpr read GetParam;
   end;
 
@@ -602,11 +615,11 @@ type
   protected
     function ParamCounts: TBoundArray; override;
     function ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec; override;
+    function DoEvaluate: Boolean; override;
   public
     function ResultType: TASTResultType; override;
   public
     constructor Create(Const AOperation: TParserOperationType; Const ParamList: TParamList);
-    function Evaluate: Boolean; override;
     function IsMissing: Boolean; override;
   end;
 
@@ -619,12 +632,12 @@ type
   protected
     function ParamCounts: TBoundArray; override;
     function ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec; override;
+    function DoEvaluate: boolean; override;
   public
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function ResultType: TASTResultType; override;
   public
     constructor Create(FunctionDefinition: TFunctionDefinition; const ParamList: TParamList);
-    function Evaluate: boolean; override;
     function IsMissing: Boolean; override;
   end;
 
@@ -635,11 +648,12 @@ type
     FExprList: TParamList;
     FResultSubType: TASTResultType;
     function GetCount: Integer;
+  protected
+    function DoEvaluate: boolean; override;
   public
     constructor Create(Const AExprList: TParamList);
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function ResultType: TASTResultType; override;
-    function Evaluate: boolean; override;
     property ResultSubType: TASTResultType read FResultSubType;
     property ExprList: TParamList read FExprList;
     property Count: Integer read GetCount;
@@ -657,6 +671,7 @@ type
     FVarType: TVariableType;
     class function FieldTypeToParserType(FieldType: TEpiFieldType): TASTResultType;
     function GetIdent: UTF8String; virtual;
+    function DoEvaluate: boolean; override;
     property Executor: IEpiScriptExecutor read FExecutor;
   public
     constructor Create(Const AIdent: UTF8String; AExecutor: IEpiScriptExecutor);
@@ -664,7 +679,6 @@ type
     function  ResultType: TASTResultType; override;
     function  TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function  AsIdent: UTF8String; override;
-    function  Evaluate: boolean; override;
     property  Ident: UTF8String read GetIdent;
     property  VarType: TVariableType read FVarType;
 
@@ -698,11 +712,11 @@ type
   protected
     function GetParamCount: Integer; virtual;
     function GetExpr(const Index: Integer): TExpr; virtual;
+    function DoEvaluate: boolean; override;
   public
     constructor Create(AVariable: TCustomVariable; AExecutor: IEpiScriptExecutor; AExprList: TParamList);
     destructor Destroy; override;
     function  TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
-    function  Evaluate: boolean; override;
     property  Expr[const Index: Integer]: TExpr read GetExpr;
     property  ParamCount: Integer read GetParamCount;
   end;
@@ -717,12 +731,12 @@ type
   protected
     property ReferenceVariable: TCustomVariable read GetReferenceVariable;
     function GetIdent: UTF8String; override;
+    function DoEvaluate: boolean; override;
   public
     constructor Create(AExpr: TExpr; AExecutor: IEpiScriptExecutor);
     destructor Destroy; override;
     function ResultType: TASTResultType; override;
     function TypeCheck(TypeChecker: IEpiTypeChecker; ATypesAndFlags: TTypesAndFlagsRec): boolean; override;
-    function Evaluate: boolean; override;
     function AsIdent: UTF8String; override;
     function IsMissing: Boolean; override;
   end;
@@ -1621,9 +1635,9 @@ uses
 
 { TLiteral }
 
-function TLiteral.Evaluate: boolean;
+function TLiteral.DoEvaluate: boolean;
 begin
-  inherited Evaluate;
+  inherited DoEvaluate;
   FEvalValue.Missing := false;
   result := true;
 end;
@@ -2585,17 +2599,17 @@ begin
   Result := rtArray;
 end;
 
-function TArray.Evaluate: boolean;
+function TArray.DoEvaluate: boolean;
 var
   i: Integer;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
 
   if (not Result) then
     Exit;
 
   for i := 0 to Count - 1 do
-    Result := Result and ExprList[i].Evaluate;
+    Result := Result and ExprList[i].DoEvaluate;
 end;
 
 { TCustomNewGlobal }
@@ -3039,10 +3053,9 @@ end;
 
 function TReferencedVariable.GetReferenceVariable: TCustomVariable;
 begin
-  if (Assigned(FReferenceVariable)) then
-    FreeAndNil(FReferenceVariable);
+  if (not Assigned(FReferenceVariable)) then
+    FReferenceVariable := TVariable.Create(FExpr.Evaluate.AsString, Executor);
 
-  FReferenceVariable := TVariable.Create(FExpr.AsString, Executor);
   result := FReferenceVariable;
 end;
 
@@ -3092,10 +3105,10 @@ begin
     end;
 end;
 
-function TReferencedVariable.Evaluate: boolean;
+function TReferencedVariable.DoEvaluate: boolean;
 begin
-  Result := inherited Evaluate and
-            ReferenceVariable.Evaluate;
+  Result := inherited DoEvaluate;{ and
+            ReferenceVariable.DoEvaluate;
 
   if (not Result) then
     Exit;
@@ -3105,7 +3118,7 @@ begin
   FEvalValue.DateVal   := ReferenceVariable.AsDate;
   FEvalValue.FloatVal  := ReferenceVariable.AsFloat;
   FEvalValue.TimeVal   := ReferenceVariable.AsTime;
-  FEvalValue.StringVal := ReferenceVariable.AsString;
+  FEvalValue.StringVal := ReferenceVariable.AsString; }
 end;
 
 {function TReferencedVariable.AsBoolean: Boolean;
@@ -3999,16 +4012,16 @@ begin
     end;
 end;
 
-function TIndexVariable.Evaluate: boolean;
+function TIndexVariable.DoEvaluate: boolean;
 var
   i: Integer;
 begin
   Result := true;
 
   for i := 0 to ParamCount - 1 do
-    Result := Result and Expr[i].Evaluate;
+    Result := Result and Expr[i].DoEvaluate;
 
-  Result := Result and (inherited Evaluate);
+  Result := Result and (inherited DoEvaluate);
 end;
 
 { TCustomOptionsCommand }
@@ -4228,7 +4241,7 @@ begin
         begin
           if (Opt.Variable is TIndexVariable) then
             begin
-              DoTypeCheckError('Option "%s" cannot have and index!', [Opt.Variable.Ident], TypeChecker);
+              DoTypeCheckError('Option "%s" cannot have an index!', [Opt.Variable.Ident], TypeChecker);
               Exit;
             end;
 
@@ -4311,23 +4324,8 @@ begin
               Exit;
             end;
 
-{          if (Opt.Expr is TCustomVariable) then
-            begin
-              if (not (rtObject in Prts)) then
-                begin
-                  DoTypeCheckError('Options "' + Opt.Ident + '" does not accept variables!', TypeChecker);
-                  Exit;
-                end;
-            end
-          else
-            begin
-              if (not (Opt.Expr.ResultType in Prts)) then
-                begin
-                  DoTypeCheckError('Option "' + Opt.Ident + '" is not the right type!', TypeChecker);
-                  result := false;
-                  Exit;
-                end;
-            end;}
+          // Pre evaluate ALL options!
+          Opt.Expr.Evaluate;
         end;
       end;
   finally
@@ -4880,10 +4878,15 @@ end;
 
 { TMissingLiteral }
 
+function TMissingLiteral.DoEvaluate: boolean;
+begin
+  Result := inherited DoEvaluate;
+  FEvalValue.Missing := true;
+end;
+
 constructor TMissingLiteral.Create;
 begin
   inherited Create(otMissingLiteral, nil, nil);
-  FEvalValue.Missing := true;
 end;
 
 function TMissingLiteral.ResultType: TASTResultType;
@@ -4904,11 +4907,11 @@ begin
   Result := rtInteger;
 end;
 
-function TRecNumberLiteral.Evaluate: boolean;
+function TRecNumberLiteral.DoEvaluate: boolean;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
+
   FEvalValue.IntVal := FExecutor.GetCurrentRecordNo + 1;
-  FEvalValue.FloatVal := FExecutor.GetCurrentRecordNo + 1;
 end;
 
 { TAbstractSyntaxTreeBase }
@@ -5115,12 +5118,17 @@ begin
   Result := rtBoolean;
 end;
 
-function TRelationalExpr.Evaluate: boolean;
+function TRelationalExpr.DoEvaluate: boolean;
 var
   CType: TASTResultType;
   Res: PtrInt;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
+
+  if (not Result) then
+    Exit;
+
+  FEvalValue.Missing := false;
 
   if Left.IsMissing or Right.IsMissing then
   begin
@@ -5493,9 +5501,9 @@ begin
   end;
 end;
 
-function TBinaryExpr.Evaluate: boolean;
+function TBinaryExpr.DoEvaluate: boolean;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
 
   if (Left.IsMissing or Right.IsMissing) then
     Exit;
@@ -5733,12 +5741,14 @@ begin
   Result := Left.ResultType;
 end;
 
-function TUnaryExpr.Evaluate: boolean;
+function TUnaryExpr.DoEvaluate: boolean;
 begin
-  inherited Evaluate;
+  Result := inherited DoEvaluate;
 
   if (Left.IsMissing) then
     Exit(true);
+
+  FEvalValue.Missing := false;
 
   case ResultType of
     rtBoolean:
@@ -6034,16 +6044,16 @@ begin
   end;  // if assigned( ...
 end;
 
-function TFunctionCall.Evaluate: boolean;
+function TFunctionCall.DoEvaluate: boolean;
 var
   i: Integer;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
 
   if (Result) then
     begin
-      for i := 0 to ParamCount - 1 do
-        Param[i].Evaluate;
+      for i := 0 to FParamList.Count - 1 do
+        Param[i].DoEvaluate;
     end;
 end;
 {
@@ -6323,11 +6333,11 @@ constructor TBooleanLiteral.Create(const Value: Boolean);
 begin
   inherited Create(otBoolLiteral, nil, nil);
   FEvalValue.BoolVal   := Value;
-  FEvalValue.IntVal    := ASTInteger(Value);
+{  FEvalValue.IntVal    := ASTInteger(Value);
   FEvalValue.FloatVal  := ASTFloat(FEvalValue.IntVal);
   FEvalValue.DateVal   := EpiDate(Value);
   FEvalValue.TimeVal   := EpiTime(FEvalValue.IntVal);
-  FEvalValue.StringVal := BoolToStr(Value, True);
+  FEvalValue.StringVal := BoolToStr(Value, True);      }
 end;
 
 function TBooleanLiteral.ResultType: TASTResultType;
@@ -6340,12 +6350,12 @@ end;
 constructor TIntegerLiteral.Create(const Value: ASTInteger);
 begin
   inherited Create(otIntegerLiteral, nil, nil);
-  FEvalValue.BoolVal   := Boolean(Value);
+//  FEvalValue.BoolVal   := Boolean(Value);
   FEvalValue.IntVal    := Value;
-  FEvalValue.FloatVal  := ASTFloat(Value);
+{  FEvalValue.FloatVal  := ASTFloat(Value);
   FEvalValue.DateVal   := EpiDate(Value);
   FEvalValue.TimeVal   := EpiTime(Value);
-  FEvalValue.StringVal := IntToStr(Value);
+  FEvalValue.StringVal := IntToStr(Value);      }
 end;
 
 function TIntegerLiteral.ResultType: TASTResultType;
@@ -6358,12 +6368,12 @@ end;
 constructor TFloatLiteral.Create(const Value: ASTFloat);
 begin
   inherited Create(otFloatLiteral, nil, nil);
-  FEvalValue.BoolVal   := Boolean(Trunc(Value));
-  FEvalValue.IntVal    := Trunc(Value);
   FEvalValue.FloatVal  := Value;
+{  FEvalValue.BoolVal   := Boolean(Trunc(Value));
+  FEvalValue.IntVal    := Trunc(Value);
   FEvalValue.DateVal   := FEvalValue.IntVal;
   FEvalValue.TimeVal   := EpiTime(Value);
-  FEvalValue.StringVal := FloatToStr(Value);
+  FEvalValue.StringVal := FloatToStr(Value);      }
 end;
 
 function TFloatLiteral.ResultType: TASTResultType;
@@ -6410,7 +6420,7 @@ var
 begin
   inherited Create(otStringLiteral, nil, nil);
 
-  if not (TryStrToBool(Value, FEvalValue.BoolVal)) then
+{  if not (TryStrToBool(Value, FEvalValue.BoolVal)) then
     FEvalValue.BoolVal := false;
 
   if not (TryStrToInt64(Value, FEvalValue.IntVal)) then
@@ -6423,7 +6433,7 @@ begin
     FEvalValue.DateVal := TEpiDateField.DefaultMissing;
 
   if not EpiStrToTimeGues(Value, FEvalValue.TimeVal, Dummy) then
-    FEvalValue.TimeVal := TEpiDateTimeField.DefaultMissing;
+    FEvalValue.TimeVal := TEpiDateTimeField.DefaultMissing;   }
 
   FEvalValue.StringVal := Value;
 end;
@@ -6435,9 +6445,9 @@ end;
 
 { TTypeCast }
 
-function TTypeCast.Evaluate: Boolean;
+function TTypeCast.DoEvaluate: Boolean;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
 
   if (not Result) then
     exit;
@@ -6767,11 +6777,11 @@ begin
   FFunctionDefinition := FunctionDefinition;
 end;
 
-function TUserFunction.Evaluate: boolean;
+function TUserFunction.DoEvaluate: boolean;
 var
   Expr: TExpr;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
 
   ExecuteStatements;
 
@@ -6809,24 +6819,96 @@ end;
 
 function TExpr.GetAsString: EpiString;
 begin
-  result := FEvalValue.StringVal;
+  case ResultType of
+    rtBoolean: result := BoolToStr(FEvalValue.BoolVal, True);
+    rtInteger: result := IntToStr(FEvalValue.IntVal);
+    rtDate:    result := DateToStr(FEvalValue.DateVal);
+    rtFloat:   result := FloatToStr(FEvalValue.FloatVal);
+    rtTime:    result := TimeToStr(FEvalValue.TimeVal);
+    rtString:  result := FEvalValue.StringVal;
+  end;
+end;
+
+function TExpr.GetAsTime: EpiDateTime;
+var
+  Msg: string;
+begin
+  case ResultType of
+    rtBoolean: result := Integer(FEvalValue.BoolVal);
+    rtInteger: result := FEvalValue.IntVal;
+    rtDate:    result := FEvalValue.DateVal;
+    rtFloat:   result := FEvalValue.FloatVal;
+    rtTime:    result := FEvalValue.TimeVal;
+    rtString:  if (not EpiStrToTimeGues(FEvalValue.StringVal, Result, Msg)) then
+                  Result := TEpiDateTimeField.DefaultMissing;
+  end;
 end;
 
 function TExpr.GetAsBoolean: Boolean;
 begin
   case ResultType of
     rtBoolean: result := FEvalValue.BoolVal;
-    rtInteger: ;
-    rtDate: ;
-    rtFloat: ;
-    rtTime: ;
-    rtString: ;
+    rtInteger: result := Boolean(FEvalValue.IntVal);
+    rtDate:    result := Boolean(FEvalValue.DateVal);
+    rtFloat:   result := FEvalValue.FloatVal > 0;
+    rtTime:    result := FEvalValue.TimeVal > 0;
+    rtString:  result := StrToBoolDef(FEvalValue.StringVal, False);
+  end;
+end;
+
+function TExpr.GetAsDate: EpiDate;
+var
+  Msg: string;
+begin
+  case ResultType of
+    rtBoolean: result := EpiDate(FEvalValue.BoolVal);
+    rtInteger: result := FEvalValue.IntVal;
+    rtDate:    result := FEvalValue.DateVal;
+    rtFloat:   result := Trunc(FEvalValue.FloatVal);
+    rtTime:    result := Trunc(FEvalValue.TimeVal);
+    rtString:  if (not EpiStrToDateGuess(FEvalValue.StringVal, Result, Msg)) then
+                  Result := TEpiDateField.DefaultMissing;
+  end;
+end;
+
+function TExpr.GetAsFloat: ASTFloat;
+begin
+  case ResultType of
+    rtBoolean: result := Integer(FEvalValue.BoolVal);
+    rtInteger: result := FEvalValue.IntVal;
+    rtDate:    result := FEvalValue.DateVal;
+    rtFloat:   result := FEvalValue.FloatVal;
+    rtTime:    result := FEvalValue.TimeVal;
+    rtString:  result := StrToFloatDef(FEvalValue.StringVal, TEpiFloatField.DefaultMissing);
+  end;
+end;
+
+function TExpr.GetAsInteger: ASTInteger;
+begin
+  case ResultType of
+    rtBoolean: result := Integer(FEvalValue.BoolVal);
+    rtInteger: result := FEvalValue.IntVal;
+    rtDate:    result := FEvalValue.DateVal;
+    rtFloat:   result := Trunc(FEvalValue.FloatVal);
+    rtTime:    result := Trunc(FEvalValue.TimeVal);
+    rtString:  result := StrToInt64Def(FEvalValue.StringVal, TEpiIntField.DefaultMissing);
   end;
 end;
 
 function TExpr.CommonType(const A, B: TExpr): TASTResultType;
 begin
   result := TASTResultType(Math.Max(Ord(A.ResultType), Ord(B.ResultType)));
+end;
+
+function TExpr.DoEvaluate: boolean;
+begin
+  Result := true;
+
+  if (Assigned(Left)) then
+    Result := Result and Left.DoEvaluate;
+
+  if (Assigned(Right)) then
+    Result := Result and Right.DoEvaluate;
 end;
 
 procedure TExpr.DoObservedChange(Sender: TObject);
@@ -6896,14 +6978,15 @@ begin
   result := rtUndefined;
 end;
 
-function TExpr.Evaluate: boolean;
+function TExpr.Evaluate: TExpr;
 begin
-  Result := true;
-  if (Assigned(Left)) then
-    Result := Result and Left.Evaluate;
+  if (FEvaluated) then
+    Raise Exception.Create('Double Evaluation!');
 
-  if (Assigned(Right)) then
-    Result := Result and Right.Evaluate;
+  DoEvaluate;
+
+  FEvaluated := true;
+  result := self;
 end;
 
 {function TExpr.AsBoolean: Boolean;
@@ -7062,9 +7145,9 @@ begin
   Result := Ident;
 end;
 
-function TCustomVariable.Evaluate: boolean;
+function TCustomVariable.DoEvaluate: boolean;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
 
   if (not Result) then
     Exit;

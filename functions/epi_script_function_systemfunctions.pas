@@ -25,11 +25,11 @@ type
   protected
     function ParamCounts: TBoundArray; override;
     function ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec; override;
+    function DoEvaluate: boolean; override;
   public
     constructor Create(Const AOperation: TParserOperationType; const ParamList: TParamList);
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function ResultType: TASTResultType; override;
-    function Evaluate: boolean; override;
   end;
 
 implementation
@@ -239,12 +239,12 @@ begin
   end;
 end;
 
-function TEpiScriptFunction_SystemFunctions.Evaluate: boolean;
+function TEpiScriptFunction_SystemFunctions.DoEvaluate: boolean;
 var
   lParam: TExpr;
   ExecVar: TCustomExecutorVariable;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
 
   if (not Result) then
     Exit;

@@ -17,10 +17,10 @@ type
   protected
     function ParamCounts: TBoundArray; override;
     function ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec; override;
+    function DoEvaluate: boolean; override;
   public
     constructor Create(Const AOperation: TParserOperationType; const ParamList: TParamList);
     function ResultType: TASTResultType; override;
-    function Evaluate: boolean; override;
   end;
 
 implementation
@@ -82,9 +82,9 @@ begin
   end;
 end;
 
-function TEpiScriptFunction_DateFunctions.Evaluate: boolean;
+function TEpiScriptFunction_DateFunctions.DoEvaluate: boolean;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
 
   if (not Result) then
     Exit;
@@ -94,18 +94,24 @@ begin
   case FOp of
     otFuncToday:
       FEvalValue.DateVal:= Trunc(Today);
+
     otFuncDay:
       FEvalValue.IntVal := DayOf(Param[0].AsInteger);
+
     otFuncMonth:
       FEvalValue.IntVal := MonthOf(Param[0].AsInteger);
+
     otFuncYear:
       FEvalValue.IntVal := YearOf(Param[0].AsInteger);
+
     otFuncDayOfWeek:
       begin
         FEvalValue.IntVal := ((Param[0].AsInteger - 1) mod 7);
+
         If (FEvalValue.IntVal<=0) then
           Inc(FEvalValue.IntVal,7);
       end;
+
     otFuncWeek:
       FEvalValue.IntVal := WeekOf(Param[0].AsInteger);
   end;

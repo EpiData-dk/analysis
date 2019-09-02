@@ -193,7 +193,7 @@ begin
   FN := '';
 
   if Assigned(ST.StringExpr) then
-    FN := ST.StringExpr.AsString;
+    FN := ST.StringExpr.Evaluate.AsString;
 
   if (FN = '') and (not ImpClipBrd)
   then

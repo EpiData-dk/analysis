@@ -20,10 +20,10 @@ type
   protected
     function ParamCounts: TBoundArray; override;
     function ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec; override;
+    function DoEvaluate: boolean; override;
   public
     constructor Create(Const AOperation: TParserOperationType; const ParamList: TParamList);
     function ResultType: TASTResultType; override;
-    function Evaluate: boolean; override;
   end;
 
 implementation
@@ -57,11 +57,11 @@ begin
   Result := rtBoolean;
 end;
 
-function TEpiScriptFunction_ObsFunctions.Evaluate: boolean;
+function TEpiScriptFunction_ObsFunctions.DoEvaluate: boolean;
 var
   Idx: ASTInteger;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
 
   if (not Result) then
     Exit;

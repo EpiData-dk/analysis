@@ -16,9 +16,9 @@ type
   protected
     function ParamCounts: TBoundArray; override;
     function ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec; override;
+    function DoEvaluate: boolean; override;
   public
     function ResultType: TASTResultType; override;
-    function Evaluate: boolean; override;
   end;
 
   EEpiScriptFunction_CreateTime = class(Exception);
@@ -53,13 +53,13 @@ begin
   Result := rtTime;
 end;
 
-function TEpiScriptFunction_CreateTime.Evaluate: boolean;
+function TEpiScriptFunction_CreateTime.DoEvaluate: boolean;
 var
   Msg: string;
   Hour, Minut, Sec: TExpr;
   S, M: Integer;
 begin
-  Result := inherited Evaluate;
+  Result := inherited DoEvaluate;
 
   if (not Result) then
     Exit;
