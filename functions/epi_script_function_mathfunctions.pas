@@ -167,6 +167,11 @@ var
 begin
   Result := inherited Evaluate;
 
+  if (not Result) then
+    Exit;
+
+  FEvalValue.Missing := false;
+
   case FOp of
     otFuncSameValue:
       if FParamList.Count =  2 then

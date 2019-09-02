@@ -80,15 +80,20 @@ function TEpiScriptFunction_TimeFunctions.Evaluate: boolean;
 begin
   Result := inherited Evaluate;
 
+  if (not Result) then
+    Exit;
+
+  FEvalValue.Missing := false;
+
   case FOp of
     otFuncHour:
-      result := HourOf(Param[0].AsTime);
+      FEvalValue.IntVal := HourOf(Param[0].AsTime);
     otFuncMinut:
-      result := MinuteOf(Param[0].AsTime);
+      FEvalValue.IntVal := MinuteOf(Param[0].AsTime);
     otFuncSecond:
-      result := SecondOf(Param[0].AsTime);
+      FEvalValue.IntVal := SecondOf(Param[0].AsTime);
     otFuncNow:
-      result := frac(Now);
+      FEvalValue.TimeVal := frac(Now);
   end;
 end;
 {

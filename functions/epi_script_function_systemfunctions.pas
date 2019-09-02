@@ -30,12 +30,6 @@ type
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     function ResultType: TASTResultType; override;
     function Evaluate: boolean; override;
-    function AsInteger: ASTInteger; override;
-    function AsString: EpiString; override;
-    function AsDate: EpiDate; override;
-    function AsTime: EpiDateTime; override;
-    function AsFloat: ASTFloat; override;
-    function AsBoolean: Boolean; override;
   end;
 
 implementation
@@ -252,6 +246,11 @@ var
 begin
   Result := inherited Evaluate;
 
+  if (not Result) then
+    Exit;
+
+  FEvalValue.Missing := false;
+
   case FOp of
     otFuncIdentExists:
       FEvalValue.BoolVal := Assigned(FExecutor.GetExecVariable(Param[0].AsIdent));
@@ -284,7 +283,7 @@ begin
         end;
 
         if (FEvalValue.IntVal >= 0) then
-          FEvalValue.StringVal := EpiTypeNames[TEpiFieldType(I)]
+          FEvalValue.StringVal := EpiTypeNames[TEpiFieldType(FEvalValue.IntVal)]
         else
           FEvalValue.StringVal := 'Identifier has no data type';
       end;
@@ -317,7 +316,7 @@ begin
             FEvalValue.IntVal := TExecVarVector(ExecVar).Length;
 
           evtResultMatrix:
-           FEvalValue.IntVal result := -1; // TExecVarMatrix(ExecVar).Rows;
+           FEvalValue.IntVal := -1; // TExecVarMatrix(ExecVar).Rows;
         end;
       end;
 
@@ -348,18 +347,18 @@ begin
 
         case ExecVar.VarType of
           evtField:
-            result := TExecVarField(ExecVar).Field.Question.Text;
+            FEvalValue.StringVal := TExecVarField(ExecVar).Field.Question.Text;
 
           evtDataset:
-            result := TExecutorDatasetVariable(ExecVar).DataFile.Caption.Text;
+            FEvalValue.StringVal := TExecutorDatasetVariable(ExecVar).DataFile.Caption.Text;
 
         else
-          result := '';
+          FEvalValue.StringVal := '';
         end;
       end;
 
     otFuncCwd:
-      result := GetCurrentDirUTF8;
+      FEvalValue.StringVal := GetCurrentDirUTF8;
   end;
 end;
 {

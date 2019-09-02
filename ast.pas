@@ -438,6 +438,7 @@ type
     FOp: TParserOperationType;
     FL:  TExpr;
     FR:  TExpr;
+    function GetAsBoolean: Boolean;
     function GetAsString: EpiString;
   protected
     FEvalValue: TExprValue;
@@ -455,7 +456,7 @@ type
     property Right: TExpr read FR;
   public
     function Evaluate: boolean; virtual;
-    property AsBoolean: Boolean read FEvalValue.BoolVal;
+    property AsBoolean: Boolean read GetAsBoolean;
     property AsInteger: ASTInteger read FEvalValue.IntVal;
     property AsFloat:   ASTFloat read FEvalValue.FloatVal;
     property AsDate:    EpiDate read FEvalValue.DateVal;
@@ -2585,6 +2586,8 @@ begin
 end;
 
 function TArray.Evaluate: boolean;
+var
+  i: Integer;
 begin
   Result := inherited Evaluate;
 
@@ -5115,6 +5118,7 @@ end;
 function TRelationalExpr.Evaluate: boolean;
 var
   CType: TASTResultType;
+  Res: PtrInt;
 begin
   Result := inherited Evaluate;
 
@@ -5496,6 +5500,8 @@ begin
   if (Left.IsMissing or Right.IsMissing) then
     Exit;
 
+  FEvalValue.Missing := false;
+
   case ResultType of
     rtBoolean:
       case Operation of
@@ -5506,17 +5512,23 @@ begin
 
     rtInteger:
       case Operation of
-        otXor:         FEvalValue.IntValue := Left.AsInteger xor Right.AsInteger;
-        otOr:          FEvalValue.IntValue := Left.AsInteger or  Right.AsInteger;
-        otAnd:         FEvalValue.IntValue := Left.AsInteger and Right.AsInteger;
-        otPlus:        FEvalValue.IntValue := Left.AsInteger +   Right.AsInteger;
-        otMinus:       FEvalValue.IntValue := Left.AsInteger -   Right.AsInteger;
-        otMult:        FEvalValue.IntValue := Left.AsInteger *   Right.AsInteger;
-        otDiv:         FEvalValue.IntValue := Left.AsInteger div Right.AsInteger;
-        otMod:         FEvalValue.IntValue := Left.AsInteger mod Right.AsInteger;
-        otExponential: FEvalValue.IntValue := Left.AsInteger **  Right.AsInteger;
-        otShl:         FEvalValue.IntValue := Left.AsInteger shl Right.AsInteger;
-        otShr:         FEvalValue.IntValue := Left.AsInteger shr Right.AsInteger;
+        otXor:         FEvalValue.IntVal := Left.AsInteger xor Right.AsInteger;
+        otOr:          FEvalValue.IntVal := Left.AsInteger or  Right.AsInteger;
+        otAnd:         FEvalValue.IntVal := Left.AsInteger and Right.AsInteger;
+        otPlus:        FEvalValue.IntVal := Left.AsInteger +   Right.AsInteger;
+        otMinus:       FEvalValue.IntVal := Left.AsInteger -   Right.AsInteger;
+        otMult:        FEvalValue.IntVal := Left.AsInteger *   Right.AsInteger;
+        otDiv:         FEvalValue.IntVal := Left.AsInteger div Right.AsInteger;
+        otMod:         FEvalValue.IntVal := Left.AsInteger mod Right.AsInteger;
+        otExponential: FEvalValue.IntVal := Left.AsInteger **  Right.AsInteger;
+        otShl:         FEvalValue.IntVal := Left.AsInteger shl Right.AsInteger;
+        otShr:         FEvalValue.IntVal := Left.AsInteger shr Right.AsInteger;
+      end;
+
+    rtDate:
+      case Operation of
+        otPlus:        FEvalValue.DateVal := Left.AsDate + Right.AsDate;
+        otMinus:       FEvalValue.DateVal := Left.AsDate - Right.AsDate;
       end;
 
     rtFloat:
@@ -5526,6 +5538,12 @@ begin
         otMult:        FEvalValue.FloatVal := Left.AsFloat * Right.AsFloat;
         otDivide:      FEvalValue.FloatVal := Left.AsFloat / Right.AsFloat;
         otExponential: FEvalValue.FloatVal := Left.AsFloat ** Right.AsFloat;
+      end;
+
+    rtTime:
+      case Operation of
+        otPlus:        FEvalValue.TimeVal := Left.AsTime + Right.AsTime;
+        otMinus:       FEvalValue.TimeVal := Left.AsTime - Right.AsTime;
       end;
 
     rtString:
@@ -5735,7 +5753,7 @@ begin
 
     rtFloat:
       case Operation of
-        otMinus: FEvalValue.FloatVal := -(Left.AsFloat;
+        otMinus: FEvalValue.FloatVal := -(Left.AsFloat);
       end;
   end;
 
@@ -6017,6 +6035,8 @@ begin
 end;
 
 function TFunctionCall.Evaluate: boolean;
+var
+  i: Integer;
 begin
   Result := inherited Evaluate;
 
@@ -6304,10 +6324,10 @@ begin
   inherited Create(otBoolLiteral, nil, nil);
   FEvalValue.BoolVal   := Value;
   FEvalValue.IntVal    := ASTInteger(Value);
-  FEvalValue.FloatVal  := ASTFloat(Value);
+  FEvalValue.FloatVal  := ASTFloat(FEvalValue.IntVal);
   FEvalValue.DateVal   := EpiDate(Value);
-  FEvalValue.TimeVal   := EpiTime(Value);
-  FEvalValue.StringVal := BoolToStr(Value, True)^;
+  FEvalValue.TimeVal   := EpiTime(FEvalValue.IntVal);
+  FEvalValue.StringVal := BoolToStr(Value, True);
 end;
 
 function TBooleanLiteral.ResultType: TASTResultType;
@@ -6325,7 +6345,7 @@ begin
   FEvalValue.FloatVal  := ASTFloat(Value);
   FEvalValue.DateVal   := EpiDate(Value);
   FEvalValue.TimeVal   := EpiTime(Value);
-  FEvalValue.StringVal := IntToStr(Value)^;
+  FEvalValue.StringVal := IntToStr(Value);
 end;
 
 function TIntegerLiteral.ResultType: TASTResultType;
@@ -6343,14 +6363,14 @@ begin
   FEvalValue.FloatVal  := Value;
   FEvalValue.DateVal   := FEvalValue.IntVal;
   FEvalValue.TimeVal   := EpiTime(Value);
-  FEvalValue.StringVal := IntToStr(Value)^;
+  FEvalValue.StringVal := FloatToStr(Value);
 end;
 
 function TFloatLiteral.ResultType: TASTResultType;
 begin
   Result := rtFloat;
 end;
-
+{
 function TFloatLiteral.AsBoolean: Boolean;
 begin
   Result := Boolean(AsInteger);
@@ -6380,7 +6400,7 @@ function TFloatLiteral.AsString: EpiString;
 begin
   Result := FloatToStr(AsFloat);
 end;
-
+ }
 { TStringLiteral }
 
 constructor TStringLiteral.Create(const Value: EpiString);
@@ -6390,19 +6410,19 @@ var
 begin
   inherited Create(otStringLiteral, nil, nil);
 
-  if not (TryStrToBool(Value, FEvalValue.BoolVal))
+  if not (TryStrToBool(Value, FEvalValue.BoolVal)) then
     FEvalValue.BoolVal := false;
 
   if not (TryStrToInt64(Value, FEvalValue.IntVal)) then
     FEvalValue.IntVal := TEpiIntField.DefaultMissing;
 
-  if not TryStrToFloat(FValue, FEvalValue.FloatVal) then
+  if not TryStrToFloat(Value, FEvalValue.FloatVal) then
     FEvalValue.FloatVal := TEpiFloatField.DefaultMissing;
 
-  if not EpiStrToDateGuess(FValue, FEvalValue.DateVal, Dummy) then
+  if not EpiStrToDateGuess(Value, FEvalValue.DateVal, Dummy) then
     FEvalValue.DateVal := TEpiDateField.DefaultMissing;
 
-  if not EpiStrToTimeGues(FValue, FEvalValue.TimeVal, Dummy) then
+  if not EpiStrToTimeGues(Value, FEvalValue.TimeVal, Dummy) then
     FEvalValue.TimeVal := TEpiDateTimeField.DefaultMissing;
 
   FEvalValue.StringVal := Value;
@@ -6427,66 +6447,66 @@ begin
       begin
         FEvalValue.BoolVal   := Param[0].AsBoolean;
 
-        FEvalValue.IntVal    := Integer(FBoolVal);
-        FEvalValue.FloatVal  := FIntVal;
-        FEvalValue.DateVal   := FIntVal;
-        FEvalValue.TimeVal   := FIntVal;
-        FEvalValue.StringVal := BoolToStr(FBoolVal, 'true', 'false');
+        FEvalValue.IntVal    := Integer(FEvalValue.BoolVal);
+        FEvalValue.FloatVal  := FEvalValue.IntVal;
+        FEvalValue.DateVal   := FEvalValue.IntVal;
+        FEvalValue.TimeVal   := FEvalValue.IntVal;
+        FEvalValue.StringVal := BoolToStr(FEvalValue.BoolVal, 'true', 'false');
       end;
 
     rtInteger:
       begin
         FEvalValue.IntVal    := Param[0].AsInteger;
 
-        FEvalValue.BoolVal   := Boolean(FIntVal);
-        FEvalValue.DateVal   := FIntVal;
-        FEvalValue.FloatVal  := FIntVal;
-        FEvalValue.TimeVal   := FIntVal;
-        FEvalValue.StringVal := IntToStr(FIntVal);
+        FEvalValue.BoolVal   := Boolean(FEvalValue.IntVal);
+        FEvalValue.DateVal   := FEvalValue.IntVal;
+        FEvalValue.FloatVal  := FEvalValue.IntVal;
+        FEvalValue.TimeVal   := FEvalValue.IntVal;
+        FEvalValue.StringVal := IntToStr(FEvalValue.IntVal);
       end;
 
     rtDate:
       begin
         FEvalValue.DateVal   := Param[0].AsDate;
 
-        FEvalValue.BoolVal   := Boolean(FDateVal);
-        FEvalValue.IntVal    := FDateVal;
-        FEvalValue.FloatVal  := FDateVal;
-        FEvalValue.TimeVal   := FDateVal;
-        FEvalValue.StringVal := DateToStr(FDateVal);
+        FEvalValue.BoolVal   := Boolean(FEvalValue.DateVal);
+        FEvalValue.IntVal    := FEvalValue.DateVal;
+        FEvalValue.FloatVal  := FEvalValue.DateVal;
+        FEvalValue.TimeVal   := FEvalValue.DateVal;
+        FEvalValue.StringVal := DateToStr(FEvalValue.DateVal);
       end;
 
     rtFloat:
       begin
         FEvalValue.FloatVal  := Param[0].AsFloat;
 
-        FEvalValue.BoolVal   := Not SameValue(FFloatVal, Extended(0));
-        FEvalValue.IntVal    := Trunc(FFloatVal);
-        FEvalValue.DateVal   := FIntVal;
-        FEvalValue.TimeVal   := FFloatVal;
-        FEvalValue.StringVal := FloatToStr(FFloatVal);
+        FEvalValue.BoolVal   := Not SameValue(FEvalValue.FloatVal, Extended(0));
+        FEvalValue.IntVal    := Trunc(FEvalValue.FloatVal);
+        FEvalValue.DateVal   := FEvalValue.IntVal;
+        FEvalValue.TimeVal   := FEvalValue.FloatVal;
+        FEvalValue.StringVal := FloatToStr(FEvalValue.FloatVal);
       end;
 
     rtTime:
       begin
         FEvalValue.TimeVal := Param[0].AsTime;
 
-        FEvalValue.BoolVal   := SameValue(FTimeVal, EpiDateTime(0));
-        FEvalValue.IntVal    := Trunc(FTimeVal);
-        FEvalValue.DateVal   := FIntVal;
-        FEvalValue.FloatVal  := FTimeVal;
-        FEvalValue.StringVal := TimeToStr(FTimeVal);
+        FEvalValue.BoolVal   := SameValue(FEvalValue.TimeVal, EpiDateTime(0));
+        FEvalValue.IntVal    := Trunc(FEvalValue.TimeVal);
+        FEvalValue.DateVal   := FEvalValue.IntVal;
+        FEvalValue.FloatVal  := FEvalValue.TimeVal;
+        FEvalValue.StringVal := TimeToStr(FEvalValue.TimeVal);
       end;
 
     rtString:
       begin
         FEvalValue.StringVal := Param[0].AsString;
 
-        FEvalValue.BoolVal   := (UTF8LowerString(FStringVal) = 'true');
-        FEvalValue.IntVal    := StrToInt64Def(FStringVal, TEpiIntField.DefaultMissing);
-        FEvalValue.DateVal   := StrToIntDef(FStringVal, TEpiDateField.DefaultMissing);
-        FEvalValue.FloatVal  := StrToFloatDef(FStringVal, TEpiFloatField.DefaultMissing);
-        FEvalValue.TimeVal   := StrToTimeDef(FStringVal, TEpiDateTimeField.DefaultMissing);
+        FEvalValue.BoolVal   := (UTF8LowerString(FEvalValue.StringVal) = 'true');
+        FEvalValue.IntVal    := StrToInt64Def(FEvalValue.StringVal, TEpiIntField.DefaultMissing);
+        FEvalValue.DateVal   := StrToIntDef(FEvalValue.StringVal, TEpiDateField.DefaultMissing);
+        FEvalValue.FloatVal  := StrToFloatDef(FEvalValue.StringVal, TEpiFloatField.DefaultMissing);
+        FEvalValue.TimeVal   := StrToTimeDef(FEvalValue.StringVal, TEpiDateTimeField.DefaultMissing);
       end;
   end;
 end;
@@ -6700,22 +6720,22 @@ begin
     begin
       case FOp of
         otStringCast:
-          result := TEpiStringField.CheckMissing(FStringVal);
+          result := TEpiStringField.CheckMissing(FEvalValue.StringVal);
 
         otIntegerCast:
-          result := TEpiIntField.CheckMissing(FIntVal);
+          result := TEpiIntField.CheckMissing(FEvalValue.IntVal);
 
         otFloatCast:
-          result := TEpiFloatField.CheckMissing(FFloatVal);
+          result := TEpiFloatField.CheckMissing(FEvalValue.FloatVal);
 
         otBoolCast:
           result := false; // Boolean does not have a missing state.
 
         otDateCast:
-          result := TEpiDateField.CheckMissing(FDateVal);
+          result := TEpiDateField.CheckMissing(FEvalValue.DateVal);
 
         otTimeCast:
-          result := TEpiDateTimeField.CheckMissing(FTimeVal);
+          result := TEpiDateTimeField.CheckMissing(FEvalValue.TimeVal);
       end;
     end;
 end;
@@ -6745,7 +6765,6 @@ begin
   inherited Create(ParamList);
 
   FFunctionDefinition := FunctionDefinition;
-  FExecuted := false;;
 end;
 
 function TUserFunction.Evaluate: boolean;
@@ -6790,7 +6809,19 @@ end;
 
 function TExpr.GetAsString: EpiString;
 begin
-  result := FEvalValue.StringVal^;
+  result := FEvalValue.StringVal;
+end;
+
+function TExpr.GetAsBoolean: Boolean;
+begin
+  case ResultType of
+    rtBoolean: result := FEvalValue.BoolVal;
+    rtInteger: ;
+    rtDate: ;
+    rtFloat: ;
+    rtTime: ;
+    rtString: ;
+  end;
 end;
 
 function TExpr.CommonType(const A, B: TExpr): TASTResultType;
@@ -6875,7 +6906,7 @@ begin
     Result := Result and Right.Evaluate;
 end;
 
-function TExpr.AsBoolean: Boolean;
+{function TExpr.AsBoolean: Boolean;
 begin
   ASTCurrentExecutionObject := self;
   result := false; //TEpiBoolField.DefaultMissing;
@@ -6910,7 +6941,7 @@ begin
   ASTCurrentExecutionObject := self;
   result := TEpiStringField.DefaultMissing;
 end;
-
+ }
 function TExpr.AsIdent: UTF8String;
 begin
 //  result := '';

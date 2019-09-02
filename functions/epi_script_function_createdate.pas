@@ -19,8 +19,6 @@ type
   public
     function ResultType: TASTResultType; override;
     function Evaluate: boolean; override;
-    function AsDate: EpiDate; override;
-    function AsInteger: ASTInteger; override;
   end;
 
   EEpiScriptFunction_CreateDate = class(Exception);
@@ -58,12 +56,77 @@ begin
 end;
 
 function TEpiScriptFunction_CreateDate.Evaluate: boolean;
+var
+  DateResult: EpiDate;
+  S: EpiString;
+  Ft: TEpiFieldType;
+  Msg: string;
+  Day, Month, Year: TExpr;
+  D, M: Integer;
 begin
   Result := inherited Evaluate;
+  if (not Result) then
+    Exit;
 
+  FEvalValue.Missing := false;
 
+  if FParamList.Count = 1 then
+  begin
+    if (not EpiStrToDateGuess(Param[0].AsString, DateResult, Msg)) then
+      RuntimeError(EEpiScriptFunction_CreateDate, Msg);
+
+    FEvalValue.DateVal := DateResult;
+    Exit;
+  end;
+
+  if FParamList.Count = 2 then
+  begin
+    S := LowerCase(Param[1].AsString);
+    case S of
+      'dmy': Ft := ftDMYDate;
+      'mdy': Ft := ftMDYDate;
+      'ymd': Ft := ftYMDDate;
+    else
+      RuntimeError(EEpiScriptFunction_CreateDate, 'Incorrect format specified: ' + Param[1].AsString);
+    end;
+
+    if not (
+         (EpiStrToDate(Param[0].AsString, '-', ft, DateResult, Msg)) or
+         (EpiStrToDate(Param[0].AsString, '/', ft, DateResult, Msg)) or
+         (EpiStrToDate(Param[0].AsString, '.', ft, DateResult, Msg))
+       )
+    then
+      RuntimeError(EEpiScriptFunction_CreateDate, Msg);
+
+    FEvalValue.DateVal := DateResult;
+    Exit;
+  end;
+
+  if FParamList.Count = 3 then
+  begin
+    Day   := Param[0];
+    Month := Param[1];
+    Year  := Param[2];
+
+    if Day.IsMissing then
+      D := 1
+    else
+      D := Day.AsInteger;
+
+    if Month.IsMissing then
+      M := 1
+    else
+      M := Month.AsInteger;
+
+    if Year.IsMissing then
+      FEvalValue.Missing := true
+    else
+      FEvalValue.DateVal := Trunc(EncodeDate(Year.AsInteger, M, D));
+
+    Exit;
+  end;
 end;
-
+{
 function TEpiScriptFunction_CreateDate.AsDate: EpiDate;
 var
   Day, Month, Year: TExpr;
@@ -136,6 +199,6 @@ function TEpiScriptFunction_CreateDate.AsInteger: ASTInteger;
 begin
   Result := AsDate;
 end;
-
+}
 end.
 

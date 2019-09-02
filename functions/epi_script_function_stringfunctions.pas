@@ -102,15 +102,21 @@ function TEpiScriptFunction_StringFunctions.Evaluate: boolean;
 var
   T: EpiString;
   S: String;
+  i: Integer;
 begin
   Result := inherited Evaluate;
+
+  if (not Result) then
+    Exit;
+
+  FEvalValue.Missing := false;
 
   case FOp of
     otFuncPos:
       begin
         if (Param[0].IsMissing or Param[1].IsMissing) then
           begin
-            FEvalValue.IntVal := 0
+            FEvalValue.IntVal := 0;
             Exit;
           end;
 

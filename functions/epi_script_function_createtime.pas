@@ -19,9 +19,6 @@ type
   public
     function ResultType: TASTResultType; override;
     function Evaluate: boolean; override;
-    function AsInteger: EpiInteger; override;
-    function AsTime: EpiTime; override;
-    function IsMissing: Boolean; override;
   end;
 
   EEpiScriptFunction_CreateTime = class(Exception);
@@ -57,8 +54,17 @@ begin
 end;
 
 function TEpiScriptFunction_CreateTime.Evaluate: boolean;
+var
+  Msg: string;
+  Hour, Minut, Sec: TExpr;
+  S, M: Integer;
 begin
   Result := inherited Evaluate;
+
+  if (not Result) then
+    Exit;
+
+  FEvalValue.Missing := false;
 
   if FParamList.Count = 1 then
   begin
@@ -84,7 +90,7 @@ begin
       M := Minut.AsInteger;
 
     if Hour.IsMissing then
-      result := inherited AsTime
+      FEvalValue.Missing := true
     else
       if (not TryEncodeTime(Hour.AsInteger, M, S, 0, FEvalValue.TimeVal)) then
         RuntimeError(EEpiScriptFunction_CreateTime, Msg);

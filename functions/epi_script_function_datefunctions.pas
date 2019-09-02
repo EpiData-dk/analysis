@@ -86,26 +86,31 @@ function TEpiScriptFunction_DateFunctions.Evaluate: boolean;
 begin
   Result := inherited Evaluate;
 
+  if (not Result) then
+    Exit;
+
+  FEvalValue.Missing := false;
+
   case FOp of
     otFuncToday:
-      FEvalValue.IntValue := Trunc(Today);
+      FEvalValue.DateVal:= Trunc(Today);
     otFuncDay:
-      FEvalValue.IntValue := DayOf(Param[0].AsInteger);
+      FEvalValue.IntVal := DayOf(Param[0].AsInteger);
     otFuncMonth:
-      FEvalValue.IntValue := MonthOf(Param[0].AsInteger);
+      FEvalValue.IntVal := MonthOf(Param[0].AsInteger);
     otFuncYear:
-      FEvalValue.IntValue := YearOf(Param[0].AsInteger);
+      FEvalValue.IntVal := YearOf(Param[0].AsInteger);
     otFuncDayOfWeek:
       begin
-        FEvalValue.IntValue := ((Param[0].AsInteger - 1) mod 7);
-        If (FEvalValue.IntValue<=0) then
-          Inc(FEvalValue.IntValue,7);
+        FEvalValue.IntVal := ((Param[0].AsInteger - 1) mod 7);
+        If (FEvalValue.IntVal<=0) then
+          Inc(FEvalValue.IntVal,7);
       end;
     otFuncWeek:
-      FEvalValue.IntValue := WeekOf(Param[0].AsInteger);
+      FEvalValue.IntVal := WeekOf(Param[0].AsInteger);
   end;
 end;
-
+{
 function TEpiScriptFunction_DateFunctions.AsInteger: EpiInteger;
 begin
   result := inherited;
@@ -129,7 +134,6 @@ begin
       result := WeekOf(Param[0].AsInteger);
   end;
 end;
-             {
 function TEpiScriptFunction_DateFunctions.AsDate: EpiDate;
 begin
   result := AsInteger;

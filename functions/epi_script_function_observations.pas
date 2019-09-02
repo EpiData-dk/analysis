@@ -58,8 +58,15 @@ begin
 end;
 
 function TEpiScriptFunction_ObsFunctions.Evaluate: boolean;
+var
+  Idx: ASTInteger;
 begin
   Result := inherited Evaluate;
+
+  if (not Result) then
+    Exit;
+
+  FEvalValue.Missing := false;
 
   if (Assigned(FParamList)) and
      (FParamList.Count = 1)

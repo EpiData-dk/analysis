@@ -2641,8 +2641,13 @@ begin
         FCurrentRecNo := 0;
         I := 0;
 
+        ST.Expr.Evaluate;
+
         if (EV.VarType = evtGlobalVector) then
-          I:= TIndexVariable(V).Expr[0].AsInteger - 1;
+          begin
+            TIndexVariable(V).Expr[0].Evaluate;
+            I:= TIndexVariable(V).Expr[0].AsInteger - 1;
+          end;
 
         if ST.Expr.IsMissing then
           EV.IsMissing[I] := true
@@ -2977,7 +2982,10 @@ begin
 
   if (Res) then
     if (ST.Statement.InheritsFrom(TExpr)) then
-      Res := TExpr(ST.Statement).AsBoolean
+      begin
+        TExpr(ST.Statement).Evaluate;
+        Res := TExpr(ST.Statement).AsBoolean
+      end
     else
       begin
         DoStatement(ST.Statement);
@@ -4364,7 +4372,13 @@ end;
 function TExecutor.GetVariableValues(const Sender: TCustomVariable;
   Values: PExprValue): boolean;
 begin
-  //
+  // TODO : OPTIMIZE!!!!!
+  Values^.BoolVal   := GetVariableValueBool(Sender);
+  Values^.IntVal    := GetVariableValueInt(Sender);
+  Values^.FloatVal  := GetVariableValueFloat(Sender);
+  Values^.DateVal   := GetVariableValueDate(Sender);
+  Values^.TimeVal   := GetVariableValueTime(Sender);
+  Values^.StringVal := GetVariableValueString(Sender);
 end;
 
 function TExecutor.GetVariableValueBool(const Sender: TCustomVariable): Boolean;
