@@ -130,7 +130,9 @@ var
 
   procedure CreateValueLabel(IsMissingValue: Boolean = false);
   begin
-    if (not VLSet.ValueLabelExists[Group]) then
+    if (Assigned(VLSet) and
+       (not VLSet.ValueLabelExists[Group]))
+    then
       begin
         ValueLabel := VLSet.NewValueLabel;
         ValueLabel.IsMissingValue := IsMissingValue;
@@ -197,10 +199,13 @@ begin
       CreateValueLabel();
     end;
 
-  VLSet.Sorted := true;
-  VLSet.OnSort := @DoSortVlSet;
-  VLSet.Sort;
-  VLSet.OnSort := nil;
+  if (Assigned(VLSet)) then
+    begin
+      VLSet.Sorted := true;
+      VLSet.OnSort := @DoSortVlSet;
+      VLSet.Sort;
+      VLSet.OnSort := nil;
+    end;
 
   Result := true;
 end;
@@ -238,7 +243,7 @@ begin
       if (First.FromValue.AsFloat > First.ToValue.AsFloat) then
         begin
           FExecutor.Error(
-            Format('Interval contains invalid boundries: (%s - %s)',
+            Format('Interval invalid: (%s - %s)',
                    [First.FromValue.AsString, First.ToValue.AsString])
           );
           Exit;
@@ -249,7 +254,7 @@ begin
   if (First.FromValue.AsFloat > First.ToValue.AsFloat) then
     begin
       FExecutor.Error(
-        Format('Interval contains invalid boundries: (%s - %s)',
+        Format('Interval invalid: (%s - %s)',
                [First.FromValue.AsString, First.ToValue.AsString])
       );
       Exit;
@@ -268,10 +273,20 @@ var
   i: Integer;
   Value: Extended;
   Idx: Int64;
+  Opt: TOption;
 begin
   Result := false;
+
   if (not SanityCheckIntervals(ST.RecodeIntervalList)) then
     Exit;
+
+  if (ST.HasOption('m', Opt)) and
+     (Opt.Expr.AsFloat <= ST.RecodeIntervalList.Last.ToValue.AsFloat)
+  then
+    begin
+      FExecutor.Error('Missing value overlap intervals: ' + Opt.Expr.AsString);
+      Exit;
+    end;
 
   FromVariable := FExecutor.DataFile.Fields.FieldByName[ST.FromVariable.Ident];
   ToVariable   := CreateToField(ST.ToVariable);
@@ -281,9 +296,17 @@ begin
 
   for RI in ST.RecodeIntervalList do
     begin
-      IntVL               := TEpiIntValueLabel(VLSet.NewValueLabel);
-      IntVL.Value         := RI.LabelValue.AsInteger;
-      IntVL.TheLabel.Text := RI.ValueLabel.AsString;
+      IntVL := TEpiIntValueLabel(VLSet.NewValueLabel);
+
+      if Assigned(RI.ValueLabel) then
+        IntVL.TheLabel.Text := RI.ValueLabel.AsString
+      else
+        IntVL.TheLabel.Text := Format('%s - %s', [RI.FromValue.AsString, RI.ToValue.AsString]);
+
+      if Assigned(RI.LabelValue) then
+        IntVL.Value         := RI.LabelValue.AsInteger
+      else
+        IntVL.Value         := RI.FromValue.AsInteger;
     end;
 
   for i := 0 to ObsNo.Size - 1 do
@@ -296,7 +319,10 @@ begin
           if (Value >= RI.FromValue.AsFloat) and
              (Value < RI.ToValue.AsFloat)
           then
-            ToVariable.AsInteger[Idx] := RI.LabelValue.AsInteger;
+            if Assigned(RI.LabelValue) then
+              ToVariable.AsInteger[Idx] := RI.LabelValue.AsInteger
+            else
+              ToVariable.AsInteger[Idx] := RI.FromValue.AsInteger;
         end;
     end;
 
@@ -321,6 +347,7 @@ var
   IsReplaceable, Res: Boolean;
   ValueLabelName: UTF8String;
 begin
+  ST.ExecResult := csrFailed;
   IsReplaceable := ST.HasOption('replace');
 
   // To Variable must not exist.

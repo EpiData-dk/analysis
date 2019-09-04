@@ -182,7 +182,7 @@ opSet         = 'set'
 <Recode Interval List>                     ::= <Recode Interval> <Recode Interval List>
                                            |   <Recode Interval>
 
-<Recode Interval>                          ::= '(' <Expression> ',' <Expression> ',' <Expression> ',' <Expression> ')'
+<Recode Interval>                          ::= '(' <Expression List> ')'
 
 !  =====================================================
 !        VARIABLES
