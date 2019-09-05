@@ -150,6 +150,7 @@ begin
   STOptionList.Insert('h',        [rtBoolean]);
   STOptionList.Insert('pw',       [rtString]);
   STOptionList.Insert('login',    [rtString]);
+  STOptionList.Insert('force',    [rtUndefined]);
 end;
 
 procedure AddSortingOptions(STOptionList: TStatementOptionsMap);

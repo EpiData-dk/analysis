@@ -1294,14 +1294,31 @@ end;
 function TASTBuilder.DoRecodeInterval(R: TReduction): TRecodeInterval;
 var
   FromValue, ToValue, LabelValue, ValueLabel: TExpr;
+  ExprList: TParamList;
 begin
-{                        0       1        2       3        4       5        6       7        8
-  <Recode Interval> ::= '(' <Expression> ',' <Expression> ',' <Expression> ',' <Expression> ')'
+{                        0       1             2
+  <Recode Interval> ::= '(' <Expression List> ')'
 }
-  FromValue  := DoExpression(R.Tokens[1].Reduction);
-  ToValue    := DoExpression(R.Tokens[3].Reduction);
-  LabelValue := DoExpression(R.Tokens[5].Reduction);
-  ValueLabel := DoExpression(R.Tokens[7].Reduction);
+  Result := nil;
+
+  ExprList := DoExpressionList(R.Tokens[1].Reduction, nil);
+
+  if (ExprList.Count < 2) then
+    DoError('At least 2 values needed for a recode interval!', R.Tokens[1]);
+
+  if (ExprList.Count > 4) then
+    DoError('No more than 4 values allowed for a recode interval!', R.Tokens[1]);
+
+  FromValue  := ExprList[0];
+  ToValue    := ExprList[1];
+  ValueLabel := nil;
+  LabelValue := nil;
+
+  if (ExprList.Count >= 3) then
+    ValueLabel := ExprList[2];
+
+  if (ExprList.Count = 4) then
+    LabelValue := ExprList[3];
 
   Result := TRecodeInterval.Create(FromValue, ToValue, LabelValue, ValueLabel);
 end;

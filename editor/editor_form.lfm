@@ -14,12 +14,13 @@ object EditorForm: TEditorForm
   OnDropFiles = FormDropFiles
   OnShow = FormShow
   Position = poDefault
+  ShowHint = True
   ShowInTaskBar = stAlways
   LCLVersion = '2.0.0.4'
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 21
-    Top = 648
+    Height = 19
+    Top = 650
     Width = 823
     Panels = <    
       item
@@ -41,7 +42,7 @@ object EditorForm: TEditorForm
   end
   object TabControl1: TTabControl
     Left = 0
-    Height = 648
+    Height = 650
     Top = 0
     Width = 823
     HotTrack = True
@@ -51,7 +52,7 @@ object EditorForm: TEditorForm
     TabOrder = 1
     inline SynEdit1: TSynEdit
       Left = 2
-      Height = 620
+      Height = 622
       Top = 26
       Width = 819
       Align = alClient
@@ -640,6 +641,7 @@ object EditorForm: TEditorForm
       'CLOSE'
       'CLS'
       'COUNT'
+      'DESCRIBE'
       'DIR'
       'DROP'
       'EDIT'
@@ -651,6 +653,7 @@ object EditorForm: TEditorForm
       'NEW'
       'QUIT'
       'READ'
+      'RECODE'
       'REORDER'
       'RESET'
       'RUN'
@@ -659,6 +662,7 @@ object EditorForm: TEditorForm
       'SET'
       'SORT'
       'USE'
+      'VERSION'
     )
     NumberAttri.Foreground = clNavy
     StringAttri.Foreground = clBlue

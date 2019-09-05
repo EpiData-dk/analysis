@@ -85,6 +85,8 @@ type
     procedure DMDocFileCreated(Sender: TObject; DocFile: TEpiDocumentFile);
     function SaveWarning(WarningType: TOpenEpiWarningType; const Msg: string
       ): TOpenEpiWarningResult;
+  public
+    procedure SetSaveOptions(Options: TOptionList);
 
   // PrepareDataFile
   private
@@ -737,6 +739,11 @@ begin
       DoError(S);
       Result := wrNo;
     end;
+end;
+
+procedure TExecutor.SetSaveOptions(Options: TOptionList);
+begin
+  FSaveOptions := Options;
 end;
 
 function TExecutor.PrepareDatafilePack(Sender: TEpiDataFile; Index: Integer;
@@ -1796,16 +1803,25 @@ var
   OptionList: TStatementOptionsMap;
   Item: TStatementOptionsMap.TIterator;
   S: String;
+  L: Integer;
 begin
   OptionList := Options.GetAcceptedOptions;
   S := 'No options';
   if (OptionList.Size > 0) then
     begin
-      S := 'Options: ';
       Item := OptionList.Min;
+      S := 'Options: ' + Item.GetKey;
+      L := 80;
       while Item.Next do
-        S := S + Item.GetKey + ', ';
-      S := S + Item.GetKey;
+      begin
+        S := S + ', ';
+        if (Length(S) > L) then
+        begin
+          S := S + LineEnding + '         ';
+          L := Length(S) + 80;
+        end;
+        S := S + Item.GetKey;
+      end;
     end;
   FOutputCreator.DoInfoAll(S);
 end;
@@ -3299,23 +3315,31 @@ var
   L: TStrings;
   DF: TEpiDataFile;
   opt: TOption;
+  HasBy: Boolean;
 begin
-  // Jamie: Why?? will only fail on conditions belowW
-  // Torsten: It is good practice to set the initial value to failed, such that only
-  //          when all things have executed correctly, the result is set to succeed.
-  //          In this case M.ExecMean - did not correctly set the ExecResult to csrSuccess.
   ST.ExecResult := csrFailed;
   L := ST.VariableList.GetIdentsAsList;
-
-  if ST.HasOption('by', opt) then
-    begin
-      if (L[0] = Opt.Expr.AsIdent) then
-        begin
-          DoError('Cannot stratify by the same variable');
-          Exit;
-        end;
-
-      L.Add(Opt.Expr.AsIdent);
+  HasBy := false;
+  ST.ExecResult := csrFailed;
+// check for more than one !by
+  for Opt in ST.Options do
+  begin
+   if (Opt.Ident = 'by') then
+     if (HasBy) then
+       begin
+         DoError('Can only stratify by one variable; !by:=' + Opt.Expr.AsIdent + ' is invalid');
+         exit;
+       end
+    else
+      begin
+        HasBy := true;
+        if (L[0] = Opt.Expr.AsIdent) then
+          begin
+            DoError('Cannot stratify by the same variable: ' + Opt.expr.AsIdent);
+            Exit;
+          end;
+        L.Add(Opt.Expr.AsIdent);
+       end;
     end;
 
   M := nil;
@@ -3877,9 +3901,16 @@ end;
 procedure TExecutor.ExecRecode(ST: TRecodeCommand);
 var
   Recoder: TRecode;
+  FieldList: TStringListUTF8;
+  DF: TEpiDataFile;
 begin
+  FieldList := TStringListUTF8.Create;
+  FieldList.Add(ST.FromVariable.Ident);
+
+  DF := PrepareDatafile(FieldList, FieldList, [pdoAddOrgObsNo]);
+
   Recoder := TRecode.Create(self, FOutputCreator);
-  Recoder.ExecRecode(ST);
+  Recoder.ExecRecode(ST, DF);
   Recoder.Free;
 
   // We added a new var and possibly a new valuelabel
