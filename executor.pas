@@ -3950,6 +3950,12 @@ begin
           Exit;
         end;
 
+      // Pre evaluate statement if needed
+      if (Supports(ST, IOptionCheck, Options)) and
+         (Assigned(Options.GetOptionList))
+      then
+        Options.GetOptionList.EvaluateOptions;
+
       case ST.StatementType of
       // Atypical statements
         stStatementList:

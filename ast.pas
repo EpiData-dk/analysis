@@ -1144,6 +1144,7 @@ type
     destructor  Destroy; override;
     procedure   Add(Option: TOption);
     procedure   Remove(Option: TOption);
+    procedure   EvaluateOptions;
     function    HasOption(Const Ident: UTF8String; out AOption: TOption): boolean; overload;
     function    HasOption(Const Ident: UTF8String): boolean; overload;
     function    GetEnumerator: TOptionListEnumerator;
@@ -4323,9 +4324,6 @@ begin
               result := false;
               Exit;
             end;
-
-          // Pre evaluate ALL options!
-          Opt.Expr.Evaluate;
         end;
       end;
   finally
@@ -4573,6 +4571,15 @@ end;
 procedure TOptionList.Remove(Option: TOption);
 begin
   FOptList.Remove(Option);
+end;
+
+procedure TOptionList.EvaluateOptions;
+var
+  Opt: TOption;
+begin
+  for Opt in Self do
+    if (Assigned(Opt.Expr)) then
+      Opt.Expr.Evaluate;
 end;
 
 function TOptionList.HasOption(const Ident: UTF8String; out AOption: TOption
