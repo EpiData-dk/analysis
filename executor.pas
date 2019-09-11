@@ -1836,22 +1836,23 @@ begin
   FOptions.Insert(ANA_SO_SHOW_INFO,                      SOpt);
   FOptions.Insert(ANA_SO_SHOW_WARNING,                   TSetOption.Create('ON', rtBoolean));
 
-  FOptions.Insert(ANA_SO_EDITOR_FONT_SIZE,               TSetOption.Create('10',      rtInteger));
+  FOptions.Insert(ANA_SO_EDITOR_FONT_SIZE,               TSetOption.Create('10', rtInteger));
   FOptions.Insert(ANA_SO_EDITOR_FONT_NAME,               TSetOption.Create({$IFDEF MSWINDOWS}'Courier New'{$ENDIF}{$IFDEF LINUX}'DejaVu Sans Mono'{$ENDIF}{$IFDEF DARWIN}'Courier New'{$ENDIF}, rtString));
+  FOptions.Insert(ANA_SO_EDITOR_HISTORY,                 TSetOption.Create('ON', rtBoolean));
 
-  FOptions.Insert(ANA_SO_OUTPUT_FONT_SIZE,               TSetOption.Create('10',      rtInteger));
+  FOptions.Insert(ANA_SO_OUTPUT_FONT_SIZE,               TSetOption.Create('10', rtInteger));
   FOptions.Insert(ANA_SO_OUTPUT_FONT_NAME,               TSetOption.Create({$IFDEF MSWINDOWS}'Courier New'{$ENDIF}{$IFDEF LINUX}'DejaVu Sans Mono'{$ENDIF}{$IFDEF DARWIN}'Courier New'{$ENDIF}, rtString));
   FOptions.Insert(ANA_SO_OUTPUT_FONT_COLOR,              TFontColorOption.Create('#000000', rtString));
   FOptions.Insert(ANA_SO_OUTPUT_FONT_STYLE,              TFontStyleOption.Create('',        rtString));
   FOptions.Insert(ANA_SO_OUTPUT_BG_COLOR,                TFontColorOption.Create('#FFFFFF', rtString));
 
-  FOptions.Insert(ANA_SO_CMDEDIT_FONT_SIZE,              TSetOption.Create('10',      rtInteger));
+  FOptions.Insert(ANA_SO_CMDEDIT_FONT_SIZE,              TSetOption.Create('10', rtInteger));
   FOptions.Insert(ANA_SO_CMDEDIT_FONT_NAME,              TSetOption.Create({$IFDEF MSWINDOWS}'Courier New'{$ENDIF}{$IFDEF LINUX}'DejaVu Sans Mono'{$ENDIF}{$IFDEF DARWIN}'Courier New'{$ENDIF}, rtString));
   FOptions.Insert(ANA_SO_CMDEDIT_FONT_COLOR,             TFontColorOption.Create('#000000', rtString));
   FOptions.Insert(ANA_SO_CMDEDIT_FONT_STYLE,             TFontStyleOption.Create('',        rtString));
   FOptions.Insert(ANA_SO_CMDEDIT_BG_COLOR,               TFontColorOption.Create('#FFFFFF', rtString));
 
-  FOptions.Insert(ANA_SO_BROWSER_FONT_SIZE,              TSetOption.Create('10',      rtInteger));
+  FOptions.Insert(ANA_SO_BROWSER_FONT_SIZE,              TSetOption.Create('10', rtInteger));
   FOptions.Insert(ANA_SO_BROWSER_FONT_NAME,              TSetOption.Create({$IFDEF MSWINDOWS}'Courier New'{$ENDIF}{$IFDEF LINUX}'DejaVu Sans Mono'{$ENDIF}{$IFDEF DARWIN}'Courier New'{$ENDIF}, rtString));
   FOptions.Insert(ANA_SO_BROWSER_FONT_COLOR,             TFontColorOption.Create('#000000', rtString));
   FOptions.Insert(ANA_SO_BROWSER_FONT_STYLE,             TFontStyleOption.Create('',        rtString));

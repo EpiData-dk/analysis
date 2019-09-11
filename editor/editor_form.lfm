@@ -1,7 +1,7 @@
 object EditorForm: TEditorForm
-  Left = 2328
+  Left = 2545
   Height = 694
-  Top = 220
+  Top = 195
   Width = 823
   ActiveControl = SynEdit1
   AllowDropFiles = True

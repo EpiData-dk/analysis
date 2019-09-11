@@ -189,6 +189,7 @@ type
     FOldLineNo: Integer;
     FExecuting: boolean;
     FParserStartPoint: TPoint;
+    FExecutingLines: TStrings;
     FHistory: THistory;
     FErrorToken: TToken;
     procedure DoParser(Const S: UTF8String);
@@ -1070,8 +1071,13 @@ begin
 
   if P.ParseText(S, Prgm) then
     begin
+      FExecutingLines.Clear;
       FOldLineNo := FHistory.Lines.Count;
-      FHistory.AddLines(S);
+
+      if (FExecutor.SetOptionValue[ANA_SO_EDITOR_HISTORY] = 'ON') then
+        FHistory.AddLines(S);
+      FExecutingLines.AddText(S);
+
       FExecuting := true;
       FExecutor.Execute(Prgm);
       FExecuting := false;
@@ -1197,8 +1203,8 @@ begin
 
   Statement.AddCustomData(EDITOR_COMMAND_OUTPUT, TObject(1));
 
-  Idx := FOldLineNo + Statement.LineNo - 1;
-  FOutputCreator.DoCommand('.' + OutputCreatorNormalizeText(FHistory.Lines[Idx]));
+  Idx := Statement.LineNo - 1;
+  FOutputCreator.DoCommand('.' + OutputCreatorNormalizeText(FExecutingLines[Idx]));
 end;
 
 procedure TEditorForm.StartSearch(const SearchText: UTF8String; Dlg: TFindDialog
@@ -1328,6 +1334,7 @@ begin
   inherited Create(TheOwner);
 
   TabControl1.Options := [nboDoChangeOnSetIndex];
+  FExecutingLines := TStringListUTF8.Create;
 
   BuildRecentFilesActions;
   NewTab;
