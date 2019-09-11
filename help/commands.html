@@ -75,7 +75,7 @@
       </td>
       <td>
        <ul>
-        <li><a href="#checkgrp"> Consistency and Validity Checks</a></li>
+        <li><a href="#checkgrp">Consistency and Validity Checks</a></li>
         <li><a href="#reportsgrp">Reports</a></li>
        </ul>
       </td>
@@ -1306,6 +1306,46 @@ read "bromar.epx";               // Load the project
 reorder kmgrp agegrp decgrp;     // Moves the variables kmgrpm, agegrp, and decgrp to the front of the list
 reorder age km !before := agegrp // Moved the variables age and km in front of agegrp</font>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="recode" id="recode">recode</a></td>
+      <td>
+       <font class="cmd">recode &lt;from variable&gt; to &lt;to variable&gt; !by := &lt;value&gt; [!options]
+recode A to B (&lt;lower bound&gt;, &lt;upper bound&gt; [, &lt;Label Text&gt; [, &lt;Label Value&gt;]]) .. [!options]</font><br/>
+       <p>Recode transforms data from the &lt;from variable&gt; to the &lt;to variable&gt; but groups data within the same range to a given values.<br/>
+          Recode can be used in two forms:
+      <ul>
+        <li>Recode using a specific interval:
+          <p>In the simple form data are recoded using a specific interval. The size of this interval is specified with the !by := &lt;value&gt; option and starts a 0.
+          If there is no data for a given interval, no value label will be created.</p>
+        </li> 
+        <li>Recode using custom intervals:
+          <p>With this form it is possible to control all (or partial) aspects of the intervals during the data transformation. At the least the range(s) needs to be specified by
+          the &lt;lower bound&gt; and &lt;upper bound&gt;. In addition to this it is possible to specify a label for the interval and a userdefine value for the interval.</p>
+        </li>
+      </ul>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+       <ul>
+        <li><font class="option">!by := &lt;value&gt;</font>size of the intervals. Cannot be used in combination with custrom intervals.</li>
+        <li><font class="option">!replace</font>If either the &lt;to variable&gt; or the resulting value label set already exists an error will occur.<br/>
+        <li><font class="option">!max := &lt;value&gt;</font>All data above the max value will be recoded as missing data.</li>
+        <li><font class="option">!nvl</font>Do not create a value label set for the TO variable</li>
+        <li><font class="option">!replace</font>If either the &lt;to variable&gt; or the resulting value label set already exists an error will occur.<br/>
+            Use !replace to overwrite.</li>
+        <li><font class="option">!i [:= &lt;value&gt;]</font>Instead of using the lower bound of an interval as the recoded data, start first interval with 1.<br/>
+            If a value is specified, start with this instead of 1</li>
+        <li><font class="option">!m := &lt;value&gt;</font>All data with this value will be added as user defined missing value.</li>
+       </ul>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+       <font class="cmd">
+read "bromar.epx";               // Load the project
+recode age to ag10 !by := 10     // Recodes data in intervals of 10:  [0, 10) [10, 20) [20, 30) ....
+recode age to ag (0, 10, "Label A") (10, 25) (30, 50, "Label B", 2)  // Recodes data to intervals: [0, 10) [10,25) [30, 50)
+                                                                     // note: [0, 10)  will have value label:  0 = "Label A"
+                                                                     //       [10, 25) will have value label: 10 = "10 - 25"  (default value/label naming scheme)
+                                                                     //       [30, 50) will have value label:  2 = "Label B"
       </td>
      </tr>
      <tr valign="top">
