@@ -2723,12 +2723,16 @@ begin
             FAssignmentChanges := 0;
             TExecVarField(EV).Field.RegisterOnChangeHook(@AssignmentDataChangeHook, true);
 
+            // TODO: This is not correct for statements involving [_n], function calls, etc.
+            //       It MUST be done inside the for loop
+            ST.Expr.Evaluate;
+
             for i := 0 to SelectVector.Size - 1 do
               begin
                 FCurrentRecNo := i;
                 SelectRecNo := SelectVector.AsInteger[FCurrentRecNo];
 
-                if ST.Expr.Evaluate.IsMissing then
+                if ST.Expr.IsMissing then
                   EV.IsMissing[SelectRecNo] := true
                 else
                   case V.ResultType of
