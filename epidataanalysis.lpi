@@ -674,6 +674,7 @@
       </Item9>
       <Item10>
         <Name Value="Exception"/>
+        <Enabled Value="False"/>
       </Item10>
       <Item11>
         <Name Value="EAggrFunc"/>

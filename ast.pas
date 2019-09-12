@@ -463,6 +463,7 @@ type
     FEvaluated: boolean;
   public
     function Evaluate:  TExpr;
+    procedure ResetEvaluation;
     property AsBoolean: Boolean read GetAsBoolean;
     property AsInteger: ASTInteger read GetAsInteger;
     property AsFloat:   ASTFloat read GetAsFloat;
@@ -6994,6 +6995,11 @@ begin
 
   FEvaluated := true;
   result := self;
+end;
+
+procedure TExpr.ResetEvaluation;
+begin
+  FEvaluated := false;
 end;
 
 {function TExpr.AsBoolean: Boolean;

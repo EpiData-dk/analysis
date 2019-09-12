@@ -1782,6 +1782,7 @@ begin
             IV.TypeCheck(Self, TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData, [evfInternal, evfAsValue]));
             ExecAssignment(TAssignment.Create(IV, GV.ValueExpr));
             P.Free;
+            GV.ValueExpr.ResetEvaluation;
           end;
     end
   else
@@ -2723,12 +2724,10 @@ begin
             FAssignmentChanges := 0;
             TExecVarField(EV).Field.RegisterOnChangeHook(@AssignmentDataChangeHook, true);
 
-            // TODO: This is not correct for statements involving [_n], function calls, etc.
-            //       It MUST be done inside the for loop
-            ST.Expr.Evaluate;
-
             for i := 0 to SelectVector.Size - 1 do
               begin
+                ST.Expr.Evaluate;
+
                 FCurrentRecNo := i;
                 SelectRecNo := SelectVector.AsInteger[FCurrentRecNo];
 
@@ -2754,6 +2753,8 @@ begin
                     rtString:
                       EV.AsStringVector[SelectRecNo]  := ST.Expr.AsString;
                   end;
+
+                ST.Expr.ResetEvaluation;
               end;
             TExecVarField(EV).Field.UnRegisterOnChangeHook(@AssignmentDataChangeHook);
             Changes := FAssignmentChanges;
