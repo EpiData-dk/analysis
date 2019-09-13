@@ -2637,7 +2637,7 @@ begin
       begin
         FOptions['SHOW ERROR'].Value := OldErrorVal;
         FCancelled := OldCancelled;
-        DoInfo('No Data!');
+        DoInfo('   No Data!');
         ST.ExecResult := csrSuccess;
         Exit;
       end;
@@ -2726,10 +2726,10 @@ begin
 
             for i := 0 to SelectVector.Size - 1 do
               begin
-                ST.Expr.Evaluate;
-
                 FCurrentRecNo := i;
                 SelectRecNo := SelectVector.AsInteger[FCurrentRecNo];
+
+                ST.Expr.Evaluate;
 
                 if ST.Expr.IsMissing then
                   EV.IsMissing[SelectRecNo] := true
@@ -4409,7 +4409,9 @@ function TExecutor.GetVariableValues(const Sender: TCustomVariable;
   Values: PExprValue): boolean;
 begin
   // TODO : OPTIMIZE!!!!!
-  if (not Assigned(GetExecDataVariable(Sender.Ident))) then
+  if (not Assigned(GetExecDataVariable(Sender.Ident))) or
+     (GetVariableValueMissing(Sender))
+  then
     begin
       Values^.Missing := true;
       Exit;
