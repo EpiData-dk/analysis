@@ -1746,6 +1746,7 @@ begin
   if ST is TNewGlobalVector then
     begin
       GV := TNewGlobalVector(ST);
+      GV.VectorExpr.Evaluate;
 
       if (not FConsts.Find(ST.Variable.Ident, Idx)) then
         Idx := FConsts.Add(ST.Variable.Ident, TExecVarGlobalVector.Create(ST.Variable.Ident, GV.NewType, GV.VectorExpr.AsInteger));
@@ -2659,7 +2660,7 @@ begin
         I := 0;
 
         if (EV.VarType = evtGlobalVector) then
-          I:= TIndexVariable(V).Expr[0].Evaluate.AsInteger - 1;
+          I:= TIndexVariable(V).Expr[0].AsInteger - 1;
 
         if ST.Expr.Evaluate.IsMissing then
           EV.IsMissing[I] := true
@@ -2691,7 +2692,7 @@ begin
       begin
         if (V.VarType = vtIndexed) then
           begin
-            FCurrentRecNo := TIndexVariable(V).Expr[0].Evaluate.AsInteger - 1;
+            FCurrentRecNo := TIndexVariable(V).Expr[0].AsInteger - 1;
             SelectRecNo := SelectVector.AsInteger[FCurrentRecNo];
 
             if ST.Expr.Evaluate.IsMissing then
@@ -4359,7 +4360,7 @@ begin
 
     evtGlobalVector:
       begin
-        Idx := IV.Expr[0].AsInteger;
+        Idx := IV.Expr[0].Evaluate.AsInteger;
         if (Idx < 1) or (Idx > TExecVarGlobalVector(EV).Length) then
           DoLocalError(TExecVarVector(EV).Length);
       end;
@@ -4374,7 +4375,7 @@ begin
     evtField:
       begin
         if CV.VarType = vtIndexed then
-          Idx := IV.Expr[0].AsInteger
+          Idx := IV.Expr[0].Evaluate.AsInteger
         else
           Idx := FCurrentRecNo + 1;  // +1 becase FCurrentRecNo is 0-indext and user provided Idx is 1-indexed.;
 
@@ -4384,11 +4385,11 @@ begin
 
     evtResultMatrix:
       begin
-        Idx := IV.Expr[0].AsInteger;
+        Idx := IV.Expr[0].Evaluate.AsInteger;
         if (Idx < 1) or (Idx > TExecVarMatrix(EV).Cols) then
           DoLocalError(TExecVarMatrix(EV).Cols);
 
-        Idx := IV.Expr[1].AsInteger;
+        Idx := IV.Expr[1].Evaluate.AsInteger;
         if (Idx < 1) or (Idx > TExecVarMatrix(EV).Rows) then
           DoLocalError(TExecVarMatrix(EV).Rows);
       end;
@@ -4408,7 +4409,6 @@ end;
 function TExecutor.GetVariableValues(const Sender: TCustomVariable;
   Values: PExprValue): boolean;
 begin
-  // TODO : OPTIMIZE!!!!!
   if (not Assigned(GetExecDataVariable(Sender.Ident))) or
      (GetVariableValueMissing(Sender))
   then
@@ -4417,12 +4417,14 @@ begin
       Exit;
     end;
 
+  // TODO : OPTIMIZE!!!!!
   Values^.BoolVal   := GetVariableValueBool(Sender);
   Values^.IntVal    := GetVariableValueInt(Sender);
   Values^.FloatVal  := GetVariableValueFloat(Sender);
   Values^.DateVal   := GetVariableValueDate(Sender);
   Values^.TimeVal   := GetVariableValueTime(Sender);
   Values^.StringVal := GetVariableValueString(Sender);
+  Values^.Missing   := false;
 end;
 
 function TExecutor.GetVariableValueBool(const Sender: TCustomVariable): Boolean;

@@ -430,7 +430,6 @@ type
     property Expr: TExpr read FExpr;
   end;
 
-
   { TExpr }
 
   TExpr = class(TCustomStatement)
@@ -444,6 +443,7 @@ type
     function GetAsInteger: ASTInteger;
     function GetAsString: EpiString;
     function GetAsTime: EpiDateTime;
+    procedure ResetEvalValue;
   protected
     FEvalValue: TExprValue;
     function CommonType(Const A, B: TExpr): TASTResultType;
@@ -485,6 +485,10 @@ type
   { TBooleanLiteral }
 
   TBooleanLiteral = class(TLiteral)
+  private
+    FOriginalVal: Boolean;
+  protected
+    function DoEvaluate: boolean; override;
   public
     constructor Create(Const Value: Boolean); overload;
     function ResultType: TASTResultType; override;
@@ -493,6 +497,10 @@ type
   { TIntegerLiteral }
 
   TIntegerLiteral = class(TLiteral)
+  private
+    FOriginalVal: ASTInteger;
+  protected
+    function DoEvaluate: boolean; override;
   public
     constructor Create(const Value: ASTInteger);
     function ResultType: TASTResultType; override;
@@ -501,6 +509,10 @@ type
   { TFloatLiteral }
 
   TFloatLiteral = class(TLiteral)
+  private
+    FOriginalVal: ASTFloat;
+  protected
+    function DoEvaluate: boolean; override;
   public
     constructor Create(const Value: ASTFloat);
     function ResultType: TASTResultType; override;
@@ -509,6 +521,10 @@ type
   { TStringLiteral }
 
   TStringLiteral = class(TLiteral)
+  private
+    FOriginalVal: EpiString;
+  protected
+    function DoEvaluate: boolean; override;
   public
     constructor Create(const Value: EpiString);
     function ResultType: TASTResultType; override;
@@ -1634,15 +1650,6 @@ uses
   epi_script_function_systemfunctions,
   epi_script_function_observations,
   math, variants, LazUTF8, LazFileUtils;
-
-{ TLiteral }
-
-function TLiteral.DoEvaluate: boolean;
-begin
-  inherited DoEvaluate;
-  FEvalValue.Missing := false;
-  result := true;
-end;
 
 { TProgram }
 
@@ -4918,7 +4925,6 @@ end;
 function TRecNumberLiteral.DoEvaluate: boolean;
 begin
   Result := inherited DoEvaluate;
-
   FEvalValue.IntVal := FExecutor.GetCurrentRecordNo + 1;
 end;
 
@@ -6335,12 +6341,26 @@ begin
     result := ElseStatement.TypeCheck(Parser);}
 end;
 
+{ TLiteral }
+
+function TLiteral.DoEvaluate: boolean;
+begin
+  Result := inherited DoEvaluate;
+  FEvalValue.Missing := false;
+end;
+
 { TBooleanLiteral }
+
+function TBooleanLiteral.DoEvaluate: boolean;
+begin
+  Result := inherited DoEvaluate;
+  FEvalValue.BoolVal := FOriginalVal;
+end;
 
 constructor TBooleanLiteral.Create(const Value: Boolean);
 begin
   inherited Create(otBoolLiteral, nil, nil);
-  FEvalValue.BoolVal   := Value;
+  FOriginalVal := Value;
 {  FEvalValue.IntVal    := ASTInteger(Value);
   FEvalValue.FloatVal  := ASTFloat(FEvalValue.IntVal);
   FEvalValue.DateVal   := EpiDate(Value);
@@ -6355,11 +6375,17 @@ end;
 
 { TIntegerLiteral }
 
+function TIntegerLiteral.DoEvaluate: boolean;
+begin
+  Result := inherited DoEvaluate;
+  FEvalValue.IntVal := FOriginalVal;
+end;
+
 constructor TIntegerLiteral.Create(const Value: ASTInteger);
 begin
   inherited Create(otIntegerLiteral, nil, nil);
 //  FEvalValue.BoolVal   := Boolean(Value);
-  FEvalValue.IntVal    := Value;
+  FOriginalVal := Value;
 {  FEvalValue.FloatVal  := ASTFloat(Value);
   FEvalValue.DateVal   := EpiDate(Value);
   FEvalValue.TimeVal   := EpiTime(Value);
@@ -6373,10 +6399,16 @@ end;
 
 { TFloatLiteral }
 
+function TFloatLiteral.DoEvaluate: boolean;
+begin
+  Result := inherited DoEvaluate;
+  FEvalValue.FloatVal := FOriginalVal;
+end;
+
 constructor TFloatLiteral.Create(const Value: ASTFloat);
 begin
   inherited Create(otFloatLiteral, nil, nil);
-  FEvalValue.FloatVal  := Value;
+  FOriginalVal := Value;
 {  FEvalValue.BoolVal   := Boolean(Trunc(Value));
   FEvalValue.IntVal    := Trunc(Value);
   FEvalValue.DateVal   := FEvalValue.IntVal;
@@ -6421,12 +6453,19 @@ end;
  }
 { TStringLiteral }
 
+function TStringLiteral.DoEvaluate: boolean;
+begin
+  Result := inherited DoEvaluate;
+  FEvalValue.StringVal := FOriginalVal;
+end;
+
 constructor TStringLiteral.Create(const Value: EpiString);
 var
   Val: Boolean;
   Dummy: string;
 begin
   inherited Create(otStringLiteral, nil, nil);
+  FOriginalVal := Value;
 
 {  if not (TryStrToBool(Value, FEvalValue.BoolVal)) then
     FEvalValue.BoolVal := false;
@@ -6442,8 +6481,6 @@ begin
 
   if not EpiStrToTimeGues(Value, FEvalValue.TimeVal, Dummy) then
     FEvalValue.TimeVal := TEpiDateTimeField.DefaultMissing;   }
-
-  FEvalValue.StringVal := Value;
 end;
 
 function TStringLiteral.ResultType: TASTResultType;
@@ -6852,6 +6889,18 @@ begin
   end;
 end;
 
+procedure TExpr.ResetEvalValue;
+begin
+//  FEvalValue := Default(TExprValue);
+  FEvalValue.BoolVal   := false;
+  FEvalValue.DateVal   := TEpiDateField.DefaultMissing;
+  FEvalValue.FloatVal  := TEpiFloatField.DefaultMissing;
+  FEvalValue.IntVal    := TEpiIntField.DefaultMissing;
+  FEvalValue.StringVal := TEpiStringField.DefaultMissing;
+  FEvalValue.TimeVal   := TEpiDateTimeField.DefaultMissing;
+  FEvalValue.Missing   := true;
+end;
+
 function TExpr.GetAsBoolean: Boolean;
 begin
   case ResultType of
@@ -6912,6 +6961,8 @@ function TExpr.DoEvaluate: boolean;
 begin
   Result := true;
 
+  ResetEvalValue;
+
   if (Assigned(Left)) then
     Result := Result and Left.DoEvaluate;
 
@@ -6940,15 +6991,7 @@ begin
   FR := R;
   ObserveObject(L);
   ObserveObject(R);
-
-  FEvalValue := Default(TExprValue);
-  FEvalValue.BoolVal := false;
-  FEvalValue.DateVal := TEpiDateField.DefaultMissing;
-  FEvalValue.FloatVal := TEpiFloatField.DefaultMissing;
-  FEvalValue.IntVal := TEpiIntField.DefaultMissing;
-  FEvalValue.StringVal := TEpiStringField.DefaultMissing;
-  FEvalValue.TimeVal := TEpiDateTimeField.DefaultMissing;
-  FEvalValue.Missing := true;
+  ResetEvalValue;
 end;
 
 destructor TExpr.Destroy;

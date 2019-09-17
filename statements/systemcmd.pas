@@ -60,7 +60,7 @@ begin
   S := '';
 
   if Assigned(ST.StringExpr) then
-    S := ST.StringExpr.AsString;
+    S := ST.StringExpr.Evaluate.AsString;
 
   if (S = '') then
     begin
