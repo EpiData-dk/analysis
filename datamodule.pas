@@ -196,7 +196,7 @@ begin
     FN := ExpandFileName(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
   //  FN := ST.StringExpr.AsString;
 
-  if (DirectoryExists(FN)) then
+  if (DirectoryExistsUTF8(FN)) then
     begin
       Result := dfrError;
       DoError(FN + ' is a directory.');
