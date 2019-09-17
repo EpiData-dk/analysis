@@ -193,7 +193,14 @@ begin
   FN := '';
 
   if Assigned(ST.StringExpr) then
-    FN := ST.StringExpr.AsString;
+    FN := ExpandFileName(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
+  //  FN := ST.StringExpr.AsString;
+
+  if (DirectoryExists(FN)) then
+    begin
+      Result := dfrError;
+      DoError(FN + ' is a directory.');
+    end;
 
   if (FN = '') and (not ImpClipBrd)
   then

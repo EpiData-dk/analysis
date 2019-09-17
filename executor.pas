@@ -2014,8 +2014,7 @@ begin
   FN := '';
 
   if Assigned(St.StringExpr) then
-    FN := ExpandFileName(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
-ST.StringExpr.AsString;
+    ST.StringExpr.AsString;
 
   if Modified and
      (not ST.HasOption('c'))
