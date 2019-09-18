@@ -295,15 +295,14 @@ begin
     Files.Sort;
 
     for Fn in Files do
-      if (Fn <> 'commandlog.pgm') then
-        begin
-          RunFile(Fn);
+      begin
+        RunFile(Fn);
 
-          if (FExternalExecutor.Cancelled) or
-             (Halted)
-          then
-            Exit;
-        end;
+        if (FExternalExecutor.Cancelled) or
+           (Halted)
+        then
+          Exit;
+      end;
 
   finally
     FS.Free;

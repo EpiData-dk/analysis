@@ -2397,7 +2397,9 @@ begin
   if Assigned(ST.StringExpr) then
     FN := ExpandFileNameUTF8(ST.StringExpr.AsString);
 
-  if (not DirectoryExistsUTF8(FN)) then
+  if (FN <> '') and
+     (not DirectoryExistsUTF8(FN))
+  then
     begin
       DoInfo('"' + FN + '"' + ' does not exist');
       ST.ExecResult := csrFailed;
