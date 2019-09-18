@@ -295,14 +295,15 @@ begin
     Files.Sort;
 
     for Fn in Files do
-      begin
-        RunFile(Fn);
+      if (Fn <> 'commandlog.pgm') then
+        begin
+          RunFile(Fn);
 
-        if (FExternalExecutor.Cancelled) or
-           (Halted)
-        then
-          Exit;
-      end;
+          if (FExternalExecutor.Cancelled) or
+             (Halted)
+          then
+            Exit;
+        end;
 
   finally
     FS.Free;
@@ -399,7 +400,7 @@ begin
   T.Cell[2, FDatafile.Size + 1].Text := IntToStr(SumFound);
   T.Cell[3, FDatafile.Size + 1].Text := IntToStr(SumError);
   if (SumError > 0) then
-    T.Cell[6, FDatafile.Size + 1].Text := '{\b Assert Errors Exits!}';
+    T.Cell[6, FDatafile.Size + 1].Text := '{\b Assert Errors Exist!}';
 
   T.SetColAlignment(0, taLeftJustify);
   T.SetColAlignment(6, taLeftJustify);

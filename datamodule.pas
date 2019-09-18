@@ -193,7 +193,7 @@ begin
   FN := '';
 
   if Assigned(ST.StringExpr) then
-    FN := ExpandFileName(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
+    FN := ExpandFileNameUTF8(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
   //  FN := ST.StringExpr.AsString;
 
   if (DirectoryExistsUTF8(FN)) then

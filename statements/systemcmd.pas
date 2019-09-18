@@ -60,7 +60,7 @@ begin
   S := '';
 
   if Assigned(ST.StringExpr) then
-    S := ExpandFileName(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
+    S := ExpandFileNameUTF8(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
 //    S := ST.StringExpr.AsString;
 
   if (S = '') then
@@ -97,7 +97,7 @@ begin
   S := '';
 
   if Assigned(ST.StringExpr) then
-    S := ExpandFileName(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
+    S := ExpandFileNameUTF8(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
 //    S := ST.StringExpr.AsString;
 
   if (S = '') then
@@ -228,7 +228,7 @@ begin
   S := '';
 
   if Assigned(ST.StringExpr) then
-    S := ExpandFileName(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
+    S := ExpandFileNameUTF8(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
 //    S := ST.StringExpr.AsString;
 
   if FileExistsUTF8(S) then

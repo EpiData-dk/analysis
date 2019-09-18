@@ -2130,7 +2130,7 @@ begin
     end;
 
   if Assigned(ST.StringExpr) then
-    FN := ST.StringExpr.AsString;
+    FN := ExpandFileNameUTF8(ST.StringExpr.AsString);
 
   if (FN = '') then
     begin
@@ -2335,7 +2335,7 @@ begin
   FN := '';
 
   if Assigned(ST.StringExpr) then
-    FN := ST.StringExpr.AsString;
+    FN := ExpandFileNameUTF8(ST.StringExpr.AsString);
 
   if (FN = '') then
     begin
@@ -2349,7 +2349,7 @@ begin
 
   if (not FileExistsUTF8(FN)) then
   begin
-    DoError('File "' + FN + '" does not exits');
+    DoError('File "' + FN + '" does not exist');
     Exit;
   end;
 
@@ -2388,7 +2388,14 @@ begin
   FN := '';
 
   if Assigned(ST.StringExpr) then
-    FN := ST.StringExpr.AsString;
+    FN := ExpandFileNameUTF8(ST.StringExpr.AsString);
+
+  if (not DirectoryExistsUTF8(FN)) then
+    begin
+      DoInfo('"' + FN + '"' + ' does not exist');
+      ST.ExecResult := csrFailed;
+      Exit;
+    end;
 
   if (FN = '') then
     begin
