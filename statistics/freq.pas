@@ -57,7 +57,7 @@ type
 implementation
 
 uses
-  epimiscutils, options_utils, statfunctions, aggregate, aggregate_types;
+  epimiscutils, options_utils, statfunctions, aggregate, aggregate_types, LazUTF8Classes;
 
 type
 
@@ -274,6 +274,9 @@ var
   RefMap: TEpiReferenceMap;
   Variables: TStrings;
   Variable: String;
+  PrepDF: TEpiDataFile;
+  PrepareVariable: TStringListUTF8;
+  HasMissing: Boolean;
 begin
   FExecutor.ClearResults('$freq');
 
@@ -282,9 +285,28 @@ begin
   FDecimals            := DecimalFromOption(ST.Options);
 
   Variables := ST.VariableList.GetIdentsAsList;
+  PrepareVariable := TStringListUTF8.Create;
+  HasMissing := ST.HasOption('m');
+
   for Variable in Variables do
     begin
-      ResDF := DoCalcFreqTable(DF, Variable, RefMap);
+      PrepareVariable.Clear;
+      PrepareVariable.Add(Variable);
+
+      if (HasMissing) then
+        PrepDF := FExecutor.PrepareDatafile(PrepareVariable, nil)
+      else
+        PrepDF := FExecutor.PrepareDatafile(PrepareVariable, PrepareVariable);
+
+      if (PrepDF.Size = 0) then
+        begin
+          FOutputCreator.DoWarning('Variable "' + Variable + '" contains no data!');
+          FOutputCreator.DoNormal('');
+          PrepDF.Free;
+          Continue;
+        end;
+
+      ResDF := DoCalcFreqTable(PrepDF, Variable, RefMap);
       DoResultVariables(ResDF, Variable);
 
       if (not ST.HasOption('q')) then
@@ -292,7 +314,9 @@ begin
 
       RefMap.Free;
       ResDF.Free;
+      PrepDF.Free;
     end;
+  PrepareVariable.Free;
 end;
 
 function TFreqCommand.CalcFreq(DF: TEpiDataFile; VariableName: String;

@@ -3346,21 +3346,9 @@ var
 begin
   L := ST.VariableList.GetIdentsAsList;
   F := nil;
-  DF := nil;
-
-  if ST.HasOption('m') then
-    DF := DoPrepareDatafile(L, nil)
-  else
-    DF := DoPrepareDatafile(L, L);
+  DF := DoPrepareDatafile(L, nil);
 
   try
-    if DF.Size = 0 then
-      begin
-        DoError('No data!');
-        ST.ExecResult := csrFailed;
-        Exit;
-      end;
-
     F := TFreqCommand.Create(Self, FOutputCreator);
     F.ExecFreq(DF, ST);
   finally
