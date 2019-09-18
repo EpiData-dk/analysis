@@ -54,15 +54,15 @@ object MainForm: TMainForm
     end
     object Label1: TLabel
       Left = 307
-      Height = 17
+      Height = 15
       Top = 18
-      Width = 90
+      Width = 89
       Caption = 'Redraw Time:'
       ParentColor = False
     end
     object Label2: TLabel
       Left = 400
-      Height = 17
+      Height = 15
       Top = 18
       Width = 43
       Caption = 'Label2'
@@ -125,13 +125,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 266
+          Width = 268
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 226
+          Width = 228
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -191,7 +191,7 @@ object MainForm: TMainForm
   end
   object Label3: TLabel
     Left = 10
-    Height = 17
+    Height = 15
     Top = 10
     Width = 43
     Caption = 'Label3'

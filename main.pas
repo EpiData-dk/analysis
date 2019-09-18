@@ -431,11 +431,18 @@ begin
   FHistory := THistory.Create(Executor, FOutputCreator);
 
   FCmdEdit := TCmdEdit.Create(Self);
-  FCmdEdit.Parent := Self;//CenterPanel;
-  FCmdEdit.Align := alBottom;
+  FCmdEdit.Parent := Self; //CenterPanel;
   FCmdEdit.OnRunCommand := @CmdEditRunCommand;
   FCmdEdit.Executor := Executor;
   FCmdEdit.History := FHistory;
+
+  FCmdEdit.Align := alBottom;
+
+  //FCmdEdit.Anchors := [];
+  //FCmdEdit.AnchorToNeighbour(akTop, 0, PageControl1);
+  //FCmdEdit.AnchorParallel(akLeft, 0, PageControl1);
+  //FCmdEdit.AnchorParallel(akRight, 0, PageControl1);
+  //FCmdEdit.AnchorToNeighbour(akBottom, 0, FStatusbar);
 
   aDM.OnProgress := @ReadDataProgress;
   aDM.OutputCreator := FOutputCreator;
@@ -1616,6 +1623,8 @@ begin
 
   ParentPanel          := ToggleItem.Parent;
   ParentPanel.Visible  := ToggleItem.Visible or Sibling.Visible;
+
+
 
   if (ToggleItem.CanSetFocus) then
     begin

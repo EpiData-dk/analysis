@@ -2014,7 +2014,7 @@ begin
   FN := '';
 
   if Assigned(St.StringExpr) then
-    ST.StringExpr.AsString;
+    FN := ExpandFileNameUTF8(ST.StringExpr.AsString);
 
   if Modified and
      (not ST.HasOption('c'))
@@ -2035,11 +2035,18 @@ begin
   if (FN <> '') then
     begin
       if (not FileExistsUTF8(FN)) then
-      begin
-        DoError('File does not exist: ' + FN);
-        ST.ExecResult := csrFailed;
-        Exit;
-      end;
+        begin
+          DoError('File does not exist: ' + FN);
+          ST.ExecResult := csrFailed;
+          Exit;
+        end;
+
+      if (DirectoryExistsUTF8(FN)) then
+        begin
+          DoError(FN + ' is a folder, not a file!');
+          ST.ExecResult := csrFailed;
+          Exit;
+        end;
     end;
 
   try
@@ -3875,7 +3882,7 @@ begin
   FieldList := TStringListUTF8.Create;
   FieldList.Add(ST.FromVariable.Ident);
 
-  DF := PrepareDatafile(FieldList, FieldList, [pdoAddOrgObsNo]);
+  DF := PrepareDatafile(FieldList, nil, [pdoAddOrgObsNo]);
 
   Recoder := TRecode.Create(self, FOutputCreator);
   Recoder.ExecRecode(ST, DF);

@@ -2322,7 +2322,7 @@ begin
   // Grouping values are integers (if value is assigned, start from this and count up with 1)
   Result.Insert('i', [rtUndefined, rtInteger]);
   // Sets a specific value to be a missing value
-  Result.Insert('m', [rtInteger, rtFloat]);
+  Result.Insert('m', [rtInteger]);
 end;
 
 function TRecodeCommand.GetAcceptedVariableCount: TBoundArray;
