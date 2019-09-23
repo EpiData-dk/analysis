@@ -1334,10 +1334,21 @@ recode A to B (&lt;lower bound&gt;, &lt;upper bound&gt; [, &lt;Label Text&gt; [,
         <li><font class="option">!nvl</font>Do not create a value label set for the TO variable</li>
         <li><font class="option">!replace</font>If either the &lt;to variable&gt; or the resulting value label set already exists an error will occur.<br/>
             Use !replace to overwrite.</li>
-        <li><font class="option">!i [:= &lt;value&gt;]</font>Instead of using the lower bound of an interval as the recoded data, start first interval with 1.<br/>
-            If a value is specified, start with this instead of 1</li>
-        <li><font class="option">!m := &lt;value&gt;</font>All data with this value will be added as user defined missing value.</li>
+        <li><font class="option">!i [:= &lt;value&gt;]</font>The lowest interval is recoded to the value 1 and given the value label according to the 
+            interval values. Subsequent intervals are recoded to 2,3,4 etc.<br/>If a value is specified, start with this instead of 1, subsequent intervals
+            are recoded to &lt;value&gt;+1, +2, +3, etc. </li>
+        <li><font class="option">!m := &lt;value&gt;</font>All observations with value . (system missing) in the &lt;to variable&gt;
+            will get this value and the value will be marked as missing in the value label defined by the recode command.</li>
        </ul>
+       <p><font class="limit">Hint: </font>If the user indicates recoding of system missing values with the !m option,
+         then the user must ensure this does not conflict with other recoding. The &lt;to variable&gt; variable can have sysmis (".")  in the followoing ways:<br/>
+         <ul>
+          <li>Copy all sysmis values in the <from> variable:  Do not use the  !m option</li>
+          <li>To recode an interval to sysmis: Exclude the interval from the declaration.</li>
+          <li>To recode values below or above a give value to sysmis: use !min and !max options, e.g.</li>
+          <li>Recode age to agegrp !by:=5 !min:=10 !max:=75</li>
+         </ul>
+       </p>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
        <font class="cmd">
 read "bromar.epx";               // Load the project

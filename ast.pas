@@ -2323,6 +2323,8 @@ begin
   Result.Insert('i', [rtUndefined, rtInteger]);
   // Sets a specific value to be a missing value
   Result.Insert('m', [rtInteger]);
+  // Assign a label to ?
+  Result.Insert('label', AllResultDataTypes);
 end;
 
 function TRecodeCommand.GetAcceptedVariableCount: TBoundArray;

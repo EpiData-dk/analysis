@@ -15,7 +15,7 @@ type
   private
     // Aux. methods
     function GetValueLabelName(ToVariable: TCustomVariable): UTF8String;
-    function CreateToField(ToVariable: TCustomVariable): TEpiField;
+    function CreateToField(ST: TRecodeCommand): TEpiField;
     function CreateValueLabelSet(ST: TRecodeCommand): TEpiValueLabelSet;
   private
     FExecutor: TExecutor;
@@ -46,17 +46,18 @@ end;
 
 function TRecode.GetValueLabelName(ToVariable: TCustomVariable): UTF8String;
 begin
-  result := 'lbl_' + ToVariable.Ident;
+  result := '_' + ToVariable.Ident;
 end;
 
-function TRecode.CreateToField(ToVariable: TCustomVariable): TEpiField;
+function TRecode.CreateToField(ST: TRecodeCommand): TEpiField;
 var
   VariableName: UTF8String;
   Section: TEpiSection;
   OldV: TEpiField;
   lTop, lLeft: Integer;
+  Opt: TOption;
 begin
-  VariableName := ToVariable.Ident;
+  VariableName := ST.ToVariable.Ident;
 
   Result := FExecutor.DataFile.Fields.FieldByName[VariableName];
   if (Assigned(Result)) then
@@ -79,6 +80,9 @@ begin
   Result.Name := VariableName;
   Result.Top := lTop;
   Result.Length := lLeft;
+
+  if (ST.HasOption('label', Opt)) then
+    Result.Question.Text := Opt.Expr.AsString;
 end;
 
 function TRecode.CreateValueLabelSet(ST: TRecodeCommand): TEpiValueLabelSet;
@@ -151,6 +155,7 @@ var
     then
       begin
         ValueLabel := VLSet.NewValueLabel;
+        ValueLabel.IsMissingValue := true;
         TEpiIntValueLabel(ValueLabel).Value := MissingValue;
         ValueLabel.TheLabel.Text := 'missing';
       end;
@@ -158,7 +163,7 @@ var
 
 begin
   FromVariable := FExecutor.DataFile.Fields.FieldByName[ST.FromVariable.Ident];
-  ToVariable   := CreateToField(ST.ToVariable);
+  ToVariable   := CreateToField(ST);
   VLSet        := CreateValueLabelSet(ST);
   ToVariable.ValueLabelSet := VLSet;
   ObsNo        := PreparedDataFile.Fields.FieldByName[ANA_EXEC_PREPAREDS_OBSNO_FIELD];
@@ -298,6 +303,7 @@ var
     then
       begin
         ValueLabel := VLSet.NewValueLabel;
+        ValueLabel.IsMissingValue := true;
         TEpiIntValueLabel(ValueLabel).Value := MissingValue;
         ValueLabel.TheLabel.Text := 'missing';
       end;
@@ -314,7 +320,7 @@ begin
     MissingValue := Opt.Expr.AsInteger;
 
   FromVariable := FExecutor.DataFile.Fields.FieldByName[ST.FromVariable.Ident];
-  ToVariable   := CreateToField(ST.ToVariable);
+  ToVariable   := CreateToField(ST);
   VLSet        := CreateValueLabelSet(ST);
   ToVariable.ValueLabelSet := VLSet;
   ObsNo        := PreparedDataFile.Fields.FieldByName[ANA_EXEC_PREPAREDS_OBSNO_FIELD];
