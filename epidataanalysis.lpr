@@ -31,7 +31,7 @@ uses
   epi_script_function_observations, options_filesoptions, aggregate,
   aggregate_types, tables, tables_types, options_table, tables_stat_chi2,
   tables_stat_fexp, tables_stat_or, tables_stat_rr, ctable, wizard_form,
-  commandtree, recode, select_datafile;
+  commandtree, recode, select_datafile, history_form;
 
 {$R *.res}
 

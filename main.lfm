@@ -1,13 +1,13 @@
 object MainForm: TMainForm
-  Left = 2344
-  Height = 483
-  Top = 277
-  Width = 981
+  Left = 2401
+  Height = 568
+  Top = 361
+  Width = 909
   ActiveControl = Panel2
   AllowDropFiles = True
   Caption = 'AMainForm'
-  ClientHeight = 458
-  ClientWidth = 981
+  ClientHeight = 543
+  ClientWidth = 909
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -17,11 +17,12 @@ object MainForm: TMainForm
   Position = poDefault
   LCLVersion = '2.0.0.4'
   object PageControl1: TPageControl
-    Left = 216
-    Height = 408
+    Left = 245
+    Height = 493
     Top = 50
-    Width = 564
+    Width = 463
     Align = alClient
+    Anchors = [akTop, akLeft, akRight]
     ShowTabs = False
     TabOrder = 5
   end
@@ -29,10 +30,10 @@ object MainForm: TMainForm
     Left = 0
     Height = 50
     Top = 0
-    Width = 981
+    Width = 909
     Align = alTop
     ClientHeight = 50
-    ClientWidth = 981
+    ClientWidth = 909
     TabOrder = 0
     object Button2: TButton
       Left = 16
@@ -70,39 +71,20 @@ object MainForm: TMainForm
     end
   end
   object RightSidePanel: TPanel
-    Left = 785
-    Height = 408
+    Left = 713
+    Height = 493
     Top = 50
     Width = 196
     Align = alRight
-    ClientHeight = 408
+    ClientHeight = 493
     ClientWidth = 196
     TabOrder = 1
     Visible = False
-    object HistoryListBox: TListBox
-      Tag = 1
-      Left = 1
-      Height = 195
-      Top = 212
-      Width = 194
-      Align = alBottom
-      ItemHeight = 0
-      MultiSelect = True
-      OnDblClick = HistoryListBoxDblClick
-      OnDrawItem = HistoryListBoxDrawItem
-      OnKeyDown = HistoryListBoxKeyDown
-      PopupMenu = HistoryPopupMenu
-      ScrollWidth = 190
-      Style = lbOwnerDrawFixed
-      TabOrder = 0
-      TopIndex = -1
-      Visible = False
-    end
     object RightPanelSplitter: TSplitter
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 207
+      Top = 290
       Width = 194
       Align = alBottom
       AutoSnap = False
@@ -113,7 +95,7 @@ object MainForm: TMainForm
     object VarnamesList: TVirtualStringTree
       Cursor = 63
       Left = 1
-      Height = 206
+      Height = 289
       Top = 1
       Width = 194
       Align = alClient
@@ -125,13 +107,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 268
+          Width = 270
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 228
+          Width = 230
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -140,16 +122,35 @@ object MainForm: TMainForm
           Width = 10
         end>
       Header.Options = [hoAutoResize, hoColumnResize, hoDblClickResize, hoDrag, hoShowImages, hoShowSortGlyphs, hoVisible, hoAutoSpring]
-      TabOrder = 2
+      TabOrder = 1
       TreeOptions.MiscOptions = [toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning]
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowVertGridLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection]
       TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
       Visible = False
     end
+    object HistoryListBox: TListBox
+      Tag = 1
+      Left = 1
+      Height = 197
+      Top = 295
+      Width = 194
+      Align = alBottom
+      ItemHeight = 0
+      MultiSelect = True
+      OnDblClick = HistoryListBoxDblClick
+      OnDrawItem = HistoryListBoxDrawItem
+      OnKeyDown = HistoryListBoxKeyDown
+      PopupMenu = HistoryPopupMenu
+      ScrollWidth = 190
+      Style = lbOwnerDrawFixed
+      TabOrder = 2
+      TopIndex = -1
+      Visible = False
+    end
   end
   object RightSideSplitter: TSplitter
-    Left = 780
-    Height = 408
+    Left = 708
+    Height = 493
     Top = 50
     Width = 5
     Align = alRight
@@ -160,21 +161,23 @@ object MainForm: TMainForm
     Visible = False
   end
   object LeftSidePanel: TPanel
+    AnchorSideRight.Control = LeftSideSplitter
     Left = 0
-    Height = 408
+    Height = 493
     Top = 50
-    Width = 211
+    Width = 240
     Align = alLeft
-    ClientHeight = 408
-    ClientWidth = 211
+    Anchors = []
+    ClientHeight = 493
+    ClientWidth = 240
     TabOrder = 2
     Visible = False
     object LeftPanelSplitter: TSplitter
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 402
-      Width = 209
+      Top = 487
+      Width = 238
       Align = alBottom
       AutoSnap = False
       Beveled = True
@@ -182,12 +185,11 @@ object MainForm: TMainForm
     end
   end
   object LeftSideSplitter: TSplitter
-    Left = 211
-    Height = 408
+    Left = 240
+    Height = 493
     Top = 50
     Width = 5
     Beveled = True
-    Visible = False
   end
   object Label3: TLabel
     Left = 10
@@ -425,16 +427,6 @@ object MainForm: TMainForm
       OnExecute = BrowseActionExecute
       ShortCut = 117
     end
-    object CopyAllHistoryAction: TAction
-      Category = 'History'
-      Caption = 'Copy all to clipboard'
-      OnExecute = CopyAllHistoryActionExecute
-    end
-    object CopySelectedHistoryAction: TAction
-      Category = 'History'
-      Caption = 'Copy selected to clipboard'
-      OnExecute = CopySelectedHistoryActionExecute
-    end
     object ShowEditorAction: TAction
       Category = 'Window'
       Caption = 'Editor'
@@ -451,11 +443,6 @@ object MainForm: TMainForm
       Caption = 'Commands Overview'
       OnExecute = CommandsHelpActionExecute
       ShortCut = 112
-    end
-    object ClearHistoryAction: TAction
-      Category = 'History'
-      Caption = 'Clear History'
-      OnExecute = ClearHistoryActionExecute
     end
     object DefaultWindowPositionAction: TAction
       Category = 'Window'
@@ -502,15 +489,34 @@ object MainForm: TMainForm
       Caption = 'Save Output'
       OnExecute = SaveOutputActionExecute
     end
+    object CopyAllHistoryAction: TAction
+      Category = 'History'
+      Caption = 'Copy all to clipboard'
+      OnExecute = CopyAllHistoryActionExecute
+    end
+    object CopySelectedHistoryAction: TAction
+      Category = 'History'
+      Caption = 'Copy selected to clipboard'
+      OnExecute = CopySelectedHistoryActionExecute
+    end
+    object ClearHistoryAction: TAction
+      Category = 'History'
+      Caption = 'Clear History'
+      OnExecute = ClearHistoryActionExecute
+    end
+  end
+  object RecentFilesActionList: TActionList
+    left = 660
+    top = 188
   end
   object HistoryPopupMenu: TPopupMenu
-    left = 864
-    top = 504
+    left = 816
+    top = 336
     object MenuItem23: TMenuItem
-      Action = CopySelectedHistoryAction
+      Action = CopyAllHistoryAction
     end
     object MenuItem24: TMenuItem
-      Action = CopyAllHistoryAction
+      Action = CopySelectedHistoryAction
     end
     object MenuItem28: TMenuItem
       Caption = '-'
@@ -518,9 +524,5 @@ object MainForm: TMainForm
     object MenuItem29: TMenuItem
       Action = ClearHistoryAction
     end
-  end
-  object RecentFilesActionList: TActionList
-    left = 660
-    top = 188
   end
 end

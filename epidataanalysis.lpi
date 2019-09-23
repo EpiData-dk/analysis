@@ -29,7 +29,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -59,7 +59,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -89,7 +89,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -119,7 +119,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -152,7 +152,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -238,7 +238,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="84">
+    <Units Count="85">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -601,6 +601,12 @@
         <Filename Value="executor/select_datafile.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit83>
+      <Unit84>
+        <Filename Value="sidewindows/history_form.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="HistoryForm"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit84>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -610,7 +616,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);grammar"/>
-      <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree"/>
+      <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

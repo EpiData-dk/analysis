@@ -1,0 +1,61 @@
+object HistoryForm: THistoryForm
+  Left = 2789
+  Height = 474
+  Top = 265
+  Width = 477
+  Caption = 'HistoryList'
+  ClientHeight = 474
+  ClientWidth = 477
+  Position = poOwnerFormCenter
+  LCLVersion = '2.0.0.4'
+  object HistoryListBox: TListBox
+    Tag = 1
+    Left = 0
+    Height = 474
+    Top = 0
+    Width = 477
+    Align = alClient
+    ItemHeight = 0
+    MultiSelect = True
+    OnDblClick = HistoryListBoxDblClick
+    OnDrawItem = HistoryListBoxDrawItem
+    OnKeyDown = HistoryListBoxKeyDown
+    PopupMenu = HistoryPopupMenu
+    ScrollWidth = 473
+    Style = lbOwnerDrawFixed
+    TabOrder = 0
+    TopIndex = -1
+  end
+  object HistoryPopupMenu: TPopupMenu
+    left = 128
+    top = 184
+    object MenuItem23: TMenuItem
+      Action = CopyAllHistoryAction
+    end
+    object MenuItem24: TMenuItem
+      Action = CopySelectedHistoryAction
+    end
+    object MenuItem28: TMenuItem
+      Caption = '-'
+    end
+    object MenuItem29: TMenuItem
+      Action = ClearHistoryAction
+    end
+  end
+  object HistoryListActionList: TActionList
+    left = 272
+    top = 176
+    object CopyAllHistoryAction: TAction
+      Caption = 'Copy all to clipboard'
+      OnExecute = CopyAllHistoryActionExecute
+    end
+    object CopySelectedHistoryAction: TAction
+      Caption = 'Copy selected to clipboard'
+      OnExecute = CopySelectedHistoryActionExecute
+    end
+    object ClearHistoryAction: TAction
+      Caption = 'Clear History'
+      OnExecute = ClearHistoryActionExecute
+    end
+  end
+end

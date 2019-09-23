@@ -12,7 +12,7 @@ uses
   epiv_datamodule, epidatafiles, outputgenerator_base, history, cmdedit,
   options_hashmap, epiv_projecttreeview_frame, epicustombase,
   analysis_statusbar, epidocument, epiopenfile, outputviewer_types,
-  commandtree,
+  commandtree, history_form,
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -25,6 +25,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    HistoryListBox: TListBox;
     MenuItem43: TMenuItem;
     SaveOutputAction: TAction;
     Label3: TLabel;
@@ -78,7 +79,6 @@ type
     Button3: TButton;
     SaveDialog1: TSaveDialog;
     RightSidePanel: TPanel;
-    HistoryListBox: TListBox;
     RightPanelSplitter: TSplitter;
     ToggleCmdTreeAction: TAction;
     ToggleVarnamesListAction: TAction;
@@ -170,6 +170,8 @@ type
     Executor: TExecutor;
     procedure CommandTreeCommandDoubleClick(const CommandString: UTF8String);
     procedure CommandTreePressEnterKey(const CommandString: UTF8String);
+    procedure HistoryWindowClearHistory(Sender: TObject);
+    procedure HistoryWindowLineAction(Sender: TObject; LineText: UTF8String);
     procedure LeftPanelChange(Sender: TObject);
     procedure RightPanelChange(Sender: TObject);
     procedure ShowEditor(Const Filename: UTF8String = '');
@@ -218,6 +220,7 @@ type
 
   { History / CmdEdit }
   private
+    FHistoryWindow: THistoryForm;
     FHistory: THistory;
     FCmdEdit: TCmdEdit;
     function  CmdEditRunCommand(Sender: TObject; const S: UTF8String): boolean;
@@ -359,7 +362,6 @@ begin
   RestoreDefaultPos;
 end;
 
-
 procedure TMainForm.QuitActionExecute(Sender: TObject);
 begin
   Close;
@@ -431,7 +433,7 @@ begin
   FHistory := THistory.Create(Executor, FOutputCreator);
 
   FCmdEdit := TCmdEdit.Create(Self);
-  FCmdEdit.Parent := Self; //CenterPanel;
+//  FCmdEdit.Parent := CenterPanel;
   FCmdEdit.OnRunCommand := @CmdEditRunCommand;
   FCmdEdit.Executor := Executor;
   FCmdEdit.History := FHistory;
@@ -443,6 +445,11 @@ begin
   //FCmdEdit.AnchorParallel(akLeft, 0, PageControl1);
   //FCmdEdit.AnchorParallel(akRight, 0, PageControl1);
   //FCmdEdit.AnchorToNeighbour(akBottom, 0, FStatusbar);
+  //FCmdEdit.Height := 24;
+
+  FHistoryWindow := THistoryForm.Create(Self, FHIstory);
+  FHistoryWindow.OnClearHistoryAction := @HistoryWindowClearHistory;
+  FHistoryWindow.OnLineAction := @HistoryWindowLineAction;
 
   aDM.OnProgress := @ReadDataProgress;
   aDM.OutputCreator := FOutputCreator;
@@ -463,6 +470,7 @@ begin
   FreeAndNil(FHistory);
   Executor.Free;
 end;
+
 procedure TMainForm.FormShow(Sender: TObject);
 var
   Lst: TStringList;
@@ -470,7 +478,6 @@ var
   i: Integer;
 begin
   DoUpdateTitle;
-  ActiveControl := FCmdEdit;
 
   // This creates the output viewer (Html, Text)
   OutputViewerChanges(nil);
@@ -479,6 +486,8 @@ begin
   UpdateShortCuts;
   OutputFontChange(nil);
   CmdEditFontChangeEvent(nil);
+
+  ActiveControl := FCmdEdit;
 
   UpdateRecentFiles;
   LoadTutorials;
@@ -509,6 +518,8 @@ begin
 
   FOutputCreator.DoInfoAll(GetProgramInfo);
   FOutputCreator.DoNormal('');
+
+  FHistoryWindow.Show;
 
 
   // For some odd reason, the Statusbar has an incorrect height but changing the size
@@ -914,6 +925,18 @@ begin
   FCmdEdit.Text := CommandString;
   if (FCmdEdit.CanFocus) then
     FCmdEdit.SetFocus;
+end;
+
+procedure TMainForm.HistoryWindowClearHistory(Sender: TObject);
+begin
+  ClearHistoryActionExecute(nil);
+end;
+
+procedure TMainForm.HistoryWindowLineAction(Sender: TObject;
+  LineText: UTF8String);
+begin
+  // TODO : Not correct, but will do for now
+  CommandTreePressEnterKey(LineText);
 end;
 
 procedure TMainForm.RightPanelChange(Sender: TObject);
@@ -1403,6 +1426,9 @@ begin
       Sheet := TOldHtmlSheet.Create(Self);
   end;
 
+  FCmdEdit.Parent := Sheet;
+  FCmdEdit.Align := alBottom;
+
   Sheet.Parent := PageControl1;
   PageControl1.ActivePage := Sheet;
   Supports(Sheet, IAnaOutputViewer, FOutputViewer);
@@ -1674,6 +1700,8 @@ begin
 
   HistoryListBox.Items.EndUpdate;
   HistoryListBox.TopIndex := HistoryListBox.Items.Count - 1;
+
+  FHistoryWindow.UpdateHistory;
 end;
 
 procedure TMainForm.AddSetOptionHandlers;
