@@ -12,7 +12,7 @@ uses
   epiv_datamodule, epidatafiles, outputgenerator_base, history, cmdedit,
   options_hashmap, epiv_projecttreeview_frame, epicustombase,
   analysis_statusbar, epidocument, epiopenfile, outputviewer_types,
-  commandtree, history_form,
+  commandtree, history_form, varnames_form,
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -206,6 +206,10 @@ type
 
   { Variable List }
   private
+    FVarnamesWindow: TVariablesForm;
+    function VarnamesFormGetFieldList(Sender: TObject): TEpiFields;
+    procedure VarnamesWindowLineAction(Sender: TObject;
+      const LineText: UTF8String; ChangeFocus: boolean);
     procedure VarnamesListGetImageIndex(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var ImageIndex: Integer);
@@ -451,6 +455,10 @@ begin
   FHistoryWindow.OnClearHistoryAction := @HistoryWindowClearHistory;
   FHistoryWindow.OnLineAction := @HistoryWindowLineAction;
 
+  FVarnamesWindow := TVariablesForm.Create(Self);
+  FVarnamesWindow.OnGetFieldList := @VarnamesFormGetFieldList;
+  FVarnamesWindow.OnLineAction   := @VarnamesWindowLineAction;
+
   aDM.OnProgress := @ReadDataProgress;
   aDM.OutputCreator := FOutputCreator;
   aDM.OnDialogFilename := @DialogFilenameHack;
@@ -520,7 +528,7 @@ begin
   FOutputCreator.DoNormal('');
 
   FHistoryWindow.Show;
-
+  FVarnamesWindow.Show;
 
   // For some odd reason, the Statusbar has an incorrect height but changing the size
   // of the main form recalculates it all. This is only needed right after programstart.
@@ -1505,6 +1513,21 @@ begin
   LoadTutorials;
 end;
 
+procedure TMainForm.VarnamesWindowLineAction(Sender: TObject;
+  const LineText: UTF8String; ChangeFocus: boolean);
+begin
+  FCmdEdit.Text := FCmdEdit.Text + ' ' + LineText;
+  if (ChangeFocus) then
+    CmdEditFocusActionExecute(Self);
+end;
+
+function TMainForm.VarnamesFormGetFieldList(Sender: TObject): TEpiFields;
+begin
+  Result := nil;
+  if (Assigned(Executor.DataFile)) then
+    result := Executor.SortedFields;
+end;
+
 procedure TMainForm.ExecutorStart(Sender: TObject);
 begin
   FStatusbar.Update();
@@ -1689,6 +1712,8 @@ begin
 
   VarnamesList.InvalidateChildren(nil, true);
   VarnamesList.Header.AutoFitColumns(false);
+
+  FVarnamesWindow.UpdateVarNames;
 end;
 
 procedure TMainForm.DoUpdateHistory;

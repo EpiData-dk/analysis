@@ -279,8 +279,7 @@ begin
   Result := True;
 end;
 
-function TRecode.DoIntervalRecode(ST: TRecodeCommand;
-  PreparedDataFile: TEpiDataFile): boolean;
+function TRecode.DoIntervalRecode(ST: TRecodeCommand; PreparedDataFile: TEpiDataFile): boolean;
 var
   FromVariable, ToVariable, ObsNo: TEpiField;
   VLSet: TEpiValueLabelSet;
@@ -290,7 +289,7 @@ var
   Value: Extended;
   Idx: Int64;
   Opt: TOption;
-  HasMissingValue: Boolean;
+  HasMissingValue, UseIntergerGroups: Boolean;
   MissingValue: ASTInteger;
 
   procedure CreateMissingValueLabel();
@@ -306,6 +305,30 @@ var
         ValueLabel.IsMissingValue := true;
         TEpiIntValueLabel(ValueLabel).Value := MissingValue;
         ValueLabel.TheLabel.Text := 'missing';
+      end;
+  end;
+
+  procedure CreateValueLabels(RecodeIntervalList: TRecodeIntervalList);
+  var
+    RI: TRecodeInterval;
+  begin
+    UseIntergerGroups := ST.HasOption('i');
+
+    for RI in RecodeIntervalList do
+      begin
+        IntVL := TEpiIntValueLabel(VLSet.NewValueLabel);
+
+        if Assigned(RI.ValueLabel) then
+          IntVL.TheLabel.Text := RI.ValueLabel.AsString
+        else
+          IntVL.TheLabel.Text := Format('%s - %s', [RI.FromValue.AsString, RI.ToValue.AsString]);
+
+        if Assigned(RI.LabelValue) then
+          IntVL.Value         := RI.LabelValue.AsInteger
+        else if (UseIntergerGroups) then
+          IntVL.Value         := RecodeIntervalList.IndexOf(RI) + 1
+        else
+          IntVL.Value         := RI.FromValue.AsInteger;
       end;
   end;
 
@@ -325,20 +348,10 @@ begin
   ToVariable.ValueLabelSet := VLSet;
   ObsNo        := PreparedDataFile.Fields.FieldByName[ANA_EXEC_PREPAREDS_OBSNO_FIELD];
 
-  for RI in ST.RecodeIntervalList do
-    begin
-      IntVL := TEpiIntValueLabel(VLSet.NewValueLabel);
+  if (Assigned(VLSet)) then
+    CreateValueLabels(ST.RecodeIntervalList);
 
-      if Assigned(RI.ValueLabel) then
-        IntVL.TheLabel.Text := RI.ValueLabel.AsString
-      else
-        IntVL.TheLabel.Text := Format('%s - %s', [RI.FromValue.AsString, RI.ToValue.AsString]);
-
-      if Assigned(RI.LabelValue) then
-        IntVL.Value         := RI.LabelValue.AsInteger
-      else
-        IntVL.Value         := RI.FromValue.AsInteger;
-    end;
+  UseIntergerGroups := ST.HasOption('i');
 
   for i := 0 to ObsNo.Size - 1 do
     begin
@@ -352,6 +365,8 @@ begin
           then
             if Assigned(RI.LabelValue) then
               ToVariable.AsInteger[Idx] := RI.LabelValue.AsInteger
+            else if (UseIntergerGroups) then
+              ToVariable.AsInteger[Idx] := ST.RecodeIntervalList.IndexOf(RI) + 1
             else
               ToVariable.AsInteger[Idx] := RI.FromValue.AsInteger;
         end;
