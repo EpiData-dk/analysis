@@ -1,0 +1,11 @@
+object ProjectTreeForm: TProjectTreeForm
+  Left = 2634
+  Height = 452
+  Top = 287
+  Width = 482
+  Caption = 'Project Tree'
+  OnClose = FormClose
+  OnDestroy = FormDestroy
+  OnShow = FormShow
+  LCLVersion = '2.0.0.4'
+end

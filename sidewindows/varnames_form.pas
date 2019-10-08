@@ -16,6 +16,9 @@ type
 
   TVariablesForm = class(TForm)
     VarnamesList: TVirtualStringTree;
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
+    procedure FormDestroy(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     FOnGetFieldList: TVariablesFormGetFieldList;
     function GetFieldList: TEpiFields;
@@ -51,9 +54,25 @@ implementation
 {$R *.lfm}
 
 uses
-  epiv_datamodule, LCLType, strutils, epimiscutils, epifields_helper;
+  epiv_datamodule, LCLType, strutils, epimiscutils, epifields_helper, ana_procs;
 
 { TVariablesForm }
+
+procedure TVariablesForm.FormShow(Sender: TObject);
+begin
+  LoadFormPosition(Self, Self.Name);
+end;
+
+procedure TVariablesForm.FormClose(Sender: TObject;
+  var CloseAction: TCloseAction);
+begin
+  SaveFormPosition(Self, Self.Name);
+end;
+
+procedure TVariablesForm.FormDestroy(Sender: TObject);
+begin
+  SaveFormPosition(Self, Self.Name);
+end;
 
 function TVariablesForm.GetFieldList: TEpiFields;
 begin

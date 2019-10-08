@@ -3,10 +3,12 @@ object VariablesForm: TVariablesForm
   Height = 511
   Top = 284
   Width = 562
-  Caption = 'VariablesForm'
+  Caption = 'Variables'
   ClientHeight = 511
   ClientWidth = 562
-  Position = poOwnerFormCenter
+  OnClose = FormClose
+  OnDestroy = FormDestroy
+  OnShow = FormShow
   LCLVersion = '2.0.0.4'
   object VarnamesList: TVirtualStringTree
     Cursor = 63

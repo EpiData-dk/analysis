@@ -1,0 +1,11 @@
+object CommandTreeForm: TCommandTreeForm
+  Left = 2568
+  Height = 477
+  Top = 239
+  Width = 613
+  Caption = 'Commands'
+  OnClose = FormClose
+  OnDestroy = FormDestroy
+  OnShow = FormShow
+  LCLVersion = '2.0.0.4'
+end

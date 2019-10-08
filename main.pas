@@ -12,7 +12,7 @@ uses
   epiv_datamodule, epidatafiles, outputgenerator_base, history, cmdedit,
   options_hashmap, epiv_projecttreeview_frame, epicustombase,
   analysis_statusbar, epidocument, epiopenfile, outputviewer_types,
-  commandtree, history_form, varnames_form,
+  commandtree, history_form, varnames_form, projecttree_form, commandtree_form,
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -168,11 +168,16 @@ type
   { Other internals }
   private
     Executor: TExecutor;
+    FCommandTreeForm: TCommandTreeForm;
     procedure CommandTreeCommandDoubleClick(const CommandString: UTF8String);
+    procedure CommandTreeFormLineAction(Sender: TObject;
+      const LineText: UTF8String; ChangeFocus: boolean);
     procedure CommandTreePressEnterKey(const CommandString: UTF8String);
     procedure HistoryWindowClearHistory(Sender: TObject);
     procedure HistoryWindowLineAction(Sender: TObject; LineText: UTF8String);
     procedure LeftPanelChange(Sender: TObject);
+    procedure ProjectTreeFormLineAction(Sender: TObject;
+      const LineText: UTF8String);
     procedure RightPanelChange(Sender: TObject);
     procedure ShowEditor(Const Filename: UTF8String = '');
     procedure DoUpdateTitle;
@@ -203,6 +208,7 @@ type
     procedure DelayCmdEditFocus(Data: PtrInt);
     procedure ApplicationActivate(Sender: TObject);
     procedure TutorialChange(Sender: TObject);
+    procedure DisplayForm(AForm: TForm; TopOffset: Integer);
 
   { Variable List }
   private
@@ -235,6 +241,7 @@ type
   { LeftSidePanel }
   private
     // Project Tree
+    FProjectTreeForm: TProjectTreeForm;
     FProjectTree: TEpiVProjectTreeViewFrame;
     procedure ProjectTreeHint(Sender: TObject; const AObject: TEpiCustomBase;
       ObjectType: TEpiVTreeNodeObjectType; var HintText: string);
@@ -459,6 +466,12 @@ begin
   FVarnamesWindow.OnGetFieldList := @VarnamesFormGetFieldList;
   FVarnamesWindow.OnLineAction   := @VarnamesWindowLineAction;
 
+  FProjectTreeForm := TProjectTreeForm.Create(Self, Executor);
+  FProjectTreeForm.OnLineAction := @ProjectTreeFormLineAction;
+
+  FCommandTreeForm := TCommandTreeForm.Create(Self);
+  FCommandTreeForm.OnLineAction := @CommandTreeFormLineAction;
+
   aDM.OnProgress := @ReadDataProgress;
   aDM.OutputCreator := FOutputCreator;
   aDM.OnDialogFilename := @DialogFilenameHack;
@@ -526,9 +539,6 @@ begin
 
   FOutputCreator.DoInfoAll(GetProgramInfo);
   FOutputCreator.DoNormal('');
-
-  FHistoryWindow.Show;
-  FVarnamesWindow.Show;
 
   // For some odd reason, the Statusbar has an incorrect height but changing the size
   // of the main form recalculates it all. This is only needed right after programstart.
@@ -660,22 +670,26 @@ end;
 procedure TMainForm.ToggleCmdTreeActionExecute(Sender: TObject);
 begin
   ToggleSidebar(FCommandTree, FProjectTree, LeftPanelSplitter, LeftSideSplitter);
+  DisplayForm(FCommandTreeForm, (Self.Height * 1) div 4);
 end;
 
 procedure TMainForm.ToggleProjectTreeExecute(Sender: TObject);
 begin
   ToggleSidebar(FProjectTree, FCommandTree, LeftPanelSplitter, LeftSideSplitter);
+  DisplayForm(FProjectTreeForm, (Self.Height * 3) div 4);
 end;
 
 procedure TMainForm.ToggleVarnamesListActionExecute(Sender: TObject);
 begin
   ToggleSidebar(VarnamesList, HistoryListBox, RightPanelSplitter, RightSideSplitter);
+  DisplayForm(FVarnamesWindow, 0);
 end;
 
 procedure TMainForm.ToggleHistoryListActionExecute(Sender: TObject);
 begin
   ToggleSidebar(HistoryListBox, VarnamesList, RightPanelSplitter, RightSideSplitter);
   HistoryListBox.TopIndex := HistoryListBox.Count - 1;
+  DisplayForm(FHistoryWindow, (Self.Height * 2) div 4);
 end;
 
 procedure TMainForm.VarnamesListGetText(Sender: TBaseVirtualTree;
@@ -922,10 +936,25 @@ begin
     ToggleSidebar(FProjectTree, FCommandTree, LeftPanelSplitter, LeftSideSplitter, Value);
 end;
 
+procedure TMainForm.ProjectTreeFormLineAction(Sender: TObject;
+  const LineText: UTF8String);
+begin
+  InterfaceRunCommand('use ' + LineText + ';');
+  CmdEditFocusAction.Execute;
+end;
+
 procedure TMainForm.CommandTreeCommandDoubleClick(
   const CommandString: UTF8String);
 begin
   FCmdEdit.Text := CommandString;
+end;
+
+procedure TMainForm.CommandTreeFormLineAction(Sender: TObject;
+  const LineText: UTF8String; ChangeFocus: boolean);
+begin
+  FCmdEdit.Text := LineText;
+  if (ChangeFocus) then
+    CmdEditFocusAction.Execute;
 end;
 
 procedure TMainForm.CommandTreePressEnterKey(const CommandString: UTF8String);
@@ -1014,6 +1043,7 @@ begin
       then
         begin
           FProjectTree.AddDocument(Executor.Document);
+          FProjectTreeForm.AddDocument(Executor.Document);
           FStatusbar.DocFile  := Executor.DocFile;
           FStatusbar.Datafile := Executor.DataFile;
           UpdateSetOptions;
@@ -1024,6 +1054,7 @@ begin
       then
         begin
           FProjectTree.AddDocument(Executor.Document);
+          FProjectTreeForm.AddDocument(Executor.Document);
           FStatusbar.DocFile  := Executor.DocFile;
           FStatusbar.Datafile := Executor.DataFile;
           UpdateSetOptions;
@@ -1344,7 +1375,10 @@ begin
       end;
 
     gaProjectTree:
-      FProjectTree.UpdateTree;
+      begin
+        FProjectTree.UpdateTree;
+        FProjectTreeForm.UpdateProjectTree;
+      end;
 
     gaVariableList:
       DoUpdateVarnames;
@@ -1511,6 +1545,20 @@ end;
 procedure TMainForm.TutorialChange(Sender: TObject);
 begin
   LoadTutorials;
+end;
+
+procedure TMainForm.DisplayForm(AForm: TForm; TopOffset: Integer);
+begin
+  if (not Assigned(AForm)) then
+    Exit;
+
+  AForm.Left   := Self.Left + Self.Width + 15;
+  AForm.Top    := Self.Top + TopOffset;
+  AForm.Width  := 400;
+  AForm.Height := 600;
+  AForm.Show;
+  AForm.BringToFront;
+  AForm.SetFocus;
 end;
 
 procedure TMainForm.VarnamesWindowLineAction(Sender: TObject;

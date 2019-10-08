@@ -29,6 +29,9 @@ type
     procedure ClearHistoryActionExecute(Sender: TObject);
     procedure CopyAllHistoryActionExecute(Sender: TObject);
     procedure CopySelectedHistoryActionExecute(Sender: TObject);
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
+    procedure FormDestroy(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure HistoryListBoxDblClick(Sender: TObject);
     procedure HistoryListBoxDrawItem(Control: TWinControl; Index: Integer;
       ARect: TRect; State: TOwnerDrawState);
@@ -56,7 +59,7 @@ implementation
 {$R *.lfm}
 
 uses
-  Clipbrd, LCLType, VirtualTrees;
+  Clipbrd, LCLType, VirtualTrees, ana_procs;
 
 { THistoryForm }
 
@@ -79,6 +82,22 @@ end;
 procedure THistoryForm.CopySelectedHistoryActionExecute(Sender: TObject);
 begin
   DoCopySelectedHistory;
+end;
+
+procedure THistoryForm.FormClose(Sender: TObject; var CloseAction: TCloseAction
+  );
+begin
+  SaveFormPosition(Self, Self.Name);
+end;
+
+procedure THistoryForm.FormDestroy(Sender: TObject);
+begin
+  SaveFormPosition(Self, Self.Name);
+end;
+
+procedure THistoryForm.FormShow(Sender: TObject);
+begin
+  LoadFormPosition(Self, Self.Name);
 end;
 
 procedure THistoryForm.HistoryListBoxDrawItem(Control: TWinControl;

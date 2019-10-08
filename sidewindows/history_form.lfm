@@ -3,10 +3,12 @@ object HistoryForm: THistoryForm
   Height = 474
   Top = 265
   Width = 477
-  Caption = 'HistoryList'
+  Caption = 'History'
   ClientHeight = 474
   ClientWidth = 477
-  Position = poOwnerFormCenter
+  OnClose = FormClose
+  OnDestroy = FormDestroy
+  OnShow = FormShow
   LCLVersion = '2.0.0.4'
   object HistoryListBox: TListBox
     Tag = 1
