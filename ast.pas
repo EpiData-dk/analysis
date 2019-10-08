@@ -3767,7 +3767,11 @@ begin
     stMerge:     Result := TMergeCommand.Create(AVariableList, AOptionList);
     stReorder:   Result := TReorderCommand.Create(AVariableList, AOptionList);
     stAggregate: Result := TAggregateCommand.Create(AVariableList, AOptionList);
-    stTables:    Result := TTablesCommand.Create(AVariableList, AOptionList);
+    // Ugly hack, but requested by JL Oct. 2019
+    stTables:    if AVariableList.Count = 1 then
+                   Result := TFreqCommand.Create(AVariableList, AOptionList)
+                 else
+                   Result := TTablesCommand.Create(AVariableList, AOptionList);
     stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
     stDescribe:  Result := TDescribeCommand.Create(AVariablelist, AOptionList);
   else
