@@ -518,7 +518,15 @@ begin
   LoadSplitterPosition(RightSideSplitter, 'SidebarSplitter');
   LoadSplitterPosition(RightPanelSplitter, 'SidebarBottomSplitter');
 
-  // At this point it is possible to run the first commands
+  // For Cocoa widget set, must add left margin to Main output window
+  // and to bottom of command line to see the entire element
+
+  {IFDEF LCLCocoa}
+     PageControl1.BorderSpacing.Left := 10;
+     FCmdEdit.BorderSpacing.Bottom := 10;
+   {ENDIF}
+
+   // At this point it is possible to run the first commands
   if Application.HasOption('i') then
     S := ExpandFileNameUTF8(Application.GetOptionValue('i'))
   else
