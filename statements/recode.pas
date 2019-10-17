@@ -79,7 +79,7 @@ begin
   Result := FExecutor.DataFile.NewField(ftInteger);
   Result.Name := VariableName;
   Result.Top := lTop;
-  Result.Length := lLeft;
+  Result.Left := lLeft;
 
   if (ST.HasOption('label', Opt)) then
     Result.Question.Text := Opt.Expr.AsString;
@@ -223,6 +223,7 @@ begin
       VLSet.OnSort := nil;
     end;
 
+  ToVariable.Length := ToVariable.ValueLabelSet.MaxValueLength;
   Result := true;
 end;
 
@@ -380,6 +381,7 @@ begin
         end;
     end;
 
+  ToVariable.Length := ToVariable.ValueLabelSet.MaxValueLength;
   Result := true;
 end;
 
@@ -448,4 +450,3 @@ begin
 end;
 
 end.
-
