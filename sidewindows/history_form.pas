@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, Menus,
-  ActnList, Types, history;
+  ActnList, Types, history, auto_position_form;
 
 type
 
@@ -15,23 +15,12 @@ type
 
   { THistoryForm }
 
-  THistoryForm = class(TForm)
-    CopyAllHistoryAction: TAction;
-    CopySelectedHistoryAction: TAction;
-    ClearHistoryAction: TAction;
-    HistoryListActionList: TActionList;
-    HistoryListBox: TListBox;
-    HistoryPopupMenu: TPopupMenu;
-    MenuItem23: TMenuItem;
-    MenuItem24: TMenuItem;
-    MenuItem28: TMenuItem;
-    MenuItem29: TMenuItem;
+  THistoryForm = class(TCustomAutoPositionForm)
+  private
+    FHistoryListBox: TListBox;
     procedure ClearHistoryActionExecute(Sender: TObject);
     procedure CopyAllHistoryActionExecute(Sender: TObject);
     procedure CopySelectedHistoryActionExecute(Sender: TObject);
-    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
-    procedure FormDestroy(Sender: TObject);
-    procedure FormShow(Sender: TObject);
     procedure HistoryListBoxDblClick(Sender: TObject);
     procedure HistoryListBoxDrawItem(Control: TWinControl; Index: Integer;
       ARect: TRect; State: TOwnerDrawState);
@@ -51,12 +40,7 @@ type
     property OnClearHistoryAction: THistoryFormClearHistoryAction read FOnClearHistoryAction write FOnClearHistoryAction;
   end;
 
-var
-  HistoryForm: THistoryForm;
-
 implementation
-
-{$R *.lfm}
 
 uses
   Clipbrd, LCLType, VirtualTrees, ana_procs;
@@ -65,8 +49,8 @@ uses
 
 procedure THistoryForm.HistoryListBoxDblClick(Sender: TObject);
 begin
-  if (HistoryListBox.ItemIndex <> -1) then
-    DoLineAction(HistoryListBox.Items[HistoryListBox.ItemIndex]);
+  if (FHistoryListBox.ItemIndex <> -1) then
+    DoLineAction(FHistoryListBox.Items[FHistoryListBox.ItemIndex]);
 end;
 
 procedure THistoryForm.CopyAllHistoryActionExecute(Sender: TObject);
@@ -84,32 +68,16 @@ begin
   DoCopySelectedHistory;
 end;
 
-procedure THistoryForm.FormClose(Sender: TObject; var CloseAction: TCloseAction
-  );
-begin
-  SaveFormPosition(Self, Self.Name);
-end;
-
-procedure THistoryForm.FormDestroy(Sender: TObject);
-begin
-  SaveFormPosition(Self, Self.Name);
-end;
-
-procedure THistoryForm.FormShow(Sender: TObject);
-begin
-  LoadFormPosition(Self, Self.Name);
-end;
-
 procedure THistoryForm.HistoryListBoxDrawItem(Control: TWinControl;
   Index: Integer; ARect: TRect; State: TOwnerDrawState);
 var
   ACanvas: TCanvas;
   TS: TTextStyle;
 begin
-  ACanvas := HistoryListBox.Canvas;
+  ACanvas := FHistoryListBox.Canvas;
   ACanvas.FillRect(ARect);
 
-  if (Index < 0) or (Index > HistoryListBox.Count) then exit;
+  if (Index < 0) or (Index > FHistoryListBox.Count) then exit;
 
   if FHistory.Custom[Index] then
     ACanvas.Font.Color := clBlue;
@@ -120,7 +88,7 @@ begin
   TS := ACanvas.TextStyle;
   TS.Layout := tlCenter;
   ACanvas.TextStyle := TS;
-  ACanvas.TextRect(ARect, ARect.Left + 2, ARect.Top, HistoryListBox.Items[Index]);
+  ACanvas.TextRect(ARect, ARect.Left + 2, ARect.Top, FHistoryListBox.Items[Index]);
 end;
 
 procedure THistoryForm.HistoryListBoxKeyDown(Sender: TObject; var Key: Word;
@@ -132,8 +100,8 @@ begin
   if (Key = VK_RETURN) and
      (Shift = [])
   then
-    if HistoryListBox.ItemIndex <> -1 then
-      DoLineAction(HistoryListBox.Items[HistoryListBox.ItemIndex]);
+    if FHistoryListBox.ItemIndex <> -1 then
+      DoLineAction(FHistoryListBox.Items[FHistoryListBox.ItemIndex]);
 
   if (Key = VK_C) and
      (Shift = [ssCtrlOS])
@@ -158,12 +126,12 @@ var
   S: String;
   i: Integer;
 begin
-  if HistoryListBox.ItemIndex <> -1 then
+  if FHistoryListBox.ItemIndex <> -1 then
     begin
       S := '';
-      for i := 0 to HistoryListBox.Count - 1 do
-        if (HistoryListBox.Selected[i]) then
-          S := S + LineEnding + HistoryListBox.Items[i];
+      for i := 0 to FHistoryListBox.Count - 1 do
+        if (FHistoryListBox.Selected[i]) then
+          S := S + LineEnding + FHistoryListBox.Items[i];
 
       S := TrimLeft(S);
       Clipboard.AsText := S;
@@ -171,20 +139,59 @@ begin
 end;
 
 constructor THistoryForm.Create(TheOwner: TComponent; History: THistory);
+var
+  HistoryPopupMenu: TPopupMenu;
+
+  procedure CreateActionAndMenuItem(Caption: string; ExecuteMethod: TNotifyEvent);
+  var
+    AAction: TAction;
+    MenuItem: TMenuItem;
+  begin
+    AAction := TAction.Create(Self);
+    AAction.Caption := Caption;
+    AAction.OnExecute := ExecuteMethod;
+
+    MenuItem := TMenuItem.Create(HistoryPopupMenu);
+    MenuItem.Action := AAction;
+
+    HistoryPopupMenu.Items.Add(MenuItem);
+  end;
+
 begin
   inherited Create(TheOwner);
+
+  Caption := 'History';
+
+  HistoryPopupMenu := TPopupMenu.Create(Self);
+  CreateActionAndMenuItem('Copy all to clipboard', @CopyAllHistoryActionExecute);
+  CreateActionAndMenuItem('Copy selected to clipboard', @CopySelectedHistoryActionExecute);
+  CreateActionAndMenuItem('Clear History', @ClearHistoryActionExecute);
+
+  FHistoryListBox := TListBox.Create(Self);
+  with FHistoryListBox do
+  begin
+    Parent      := Self;
+    Align       := alClient;
+    MultiSelect := True;
+    OnDblClick  := @HistoryListBoxDblClick;
+    OnDrawItem  := @HistoryListBoxDrawItem;
+    OnKeyDown   := @HistoryListBoxKeyDown;
+    PopupMenu   := HistoryPopupMenu;
+    Style       := lbOwnerDrawFixed;
+  end;
+
   FHistory := History;
 end;
 
 procedure THistoryForm.UpdateHistory;
 begin
-  HistoryListBox.Items.BeginUpdate;
+  FHistoryListBox.Items.BeginUpdate;
 
-  HistoryListBox.Clear;
-  HistoryListBox.Items.Assign(FHistory.Lines);
+  FHistoryListBox.Clear;
+  FHistoryListBox.Items.Assign(FHistory.Lines);
 
-  HistoryListBox.Items.EndUpdate;
-  HistoryListBox.TopIndex := HistoryListBox.Items.Count - 1;
+  FHistoryListBox.Items.EndUpdate;
+  FHistoryListBox.TopIndex := FHistoryListBox.Items.Count - 1;
 end;
 
 end.

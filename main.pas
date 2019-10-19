@@ -208,12 +208,11 @@ type
     procedure DelayCmdEditFocus(Data: PtrInt);
     procedure ApplicationActivate(Sender: TObject);
     procedure TutorialChange(Sender: TObject);
-    procedure DisplayForm(AForm: TForm; TopOffset: Integer);
+    procedure DisplayForm(AForm: TCustomForm);
 
   { Variable List }
   private
     FVarnamesWindow: TVariablesForm;
-    function VarnamesFormGetFieldList(Sender: TObject): TEpiFields;
     procedure VarnamesWindowLineAction(Sender: TObject;
       const LineText: UTF8String; ChangeFocus: boolean);
     procedure VarnamesListGetImageIndex(Sender: TBaseVirtualTree;
@@ -438,9 +437,9 @@ begin
   FStatusbar.Parent := Self;
   FStatusbar.Align := alBottom;
   FStatusbar.Update(sucDocFile);
-  {IFDEF DARWIN}
+  {$IFDEF DARWIN}
   SetCurrentDirUTF8(ResolveDots(ProgramDirectory + '../../..'));
-  {ENDIF}
+  {$ENDIF}
   FHistory := THistory.Create(Executor, FOutputCreator);
 
   FCmdEdit := TCmdEdit.Create(Self);
@@ -463,7 +462,6 @@ begin
   FHistoryWindow.OnLineAction := @HistoryWindowLineAction;
 
   FVarnamesWindow := TVariablesForm.Create(Self);
-  FVarnamesWindow.OnGetFieldList := @VarnamesFormGetFieldList;
   FVarnamesWindow.OnLineAction   := @VarnamesWindowLineAction;
 
   FProjectTreeForm := TProjectTreeForm.Create(Self, Executor);
@@ -521,10 +519,10 @@ begin
   // For Cocoa widget set, must add left margin to Main output window
   // and to bottom of command line to see the entire element
 
-  {IFDEF LCLCocoa}
+  {$IFDEF LCLCocoa}
      PageControl1.BorderSpacing.Left := 10;
      FCmdEdit.BorderSpacing.Bottom := 10;
-   {ENDIF}
+  {$ENDIF}
 
    // At this point it is possible to run the first commands
   if Application.HasOption('i') then
@@ -678,26 +676,26 @@ end;
 procedure TMainForm.ToggleCmdTreeActionExecute(Sender: TObject);
 begin
   ToggleSidebar(FCommandTree, FProjectTree, LeftPanelSplitter, LeftSideSplitter);
-  DisplayForm(FCommandTreeForm, (Self.Height * 1) div 4);
+  DisplayForm(FCommandTreeForm);
 end;
 
 procedure TMainForm.ToggleProjectTreeExecute(Sender: TObject);
 begin
   ToggleSidebar(FProjectTree, FCommandTree, LeftPanelSplitter, LeftSideSplitter);
-  DisplayForm(FProjectTreeForm, (Self.Height * 3) div 4);
+  DisplayForm(FProjectTreeForm);
 end;
 
 procedure TMainForm.ToggleVarnamesListActionExecute(Sender: TObject);
 begin
   ToggleSidebar(VarnamesList, HistoryListBox, RightPanelSplitter, RightSideSplitter);
-  DisplayForm(FVarnamesWindow, 0);
+  DisplayForm(FVarnamesWindow);
 end;
 
 procedure TMainForm.ToggleHistoryListActionExecute(Sender: TObject);
 begin
   ToggleSidebar(HistoryListBox, VarnamesList, RightPanelSplitter, RightSideSplitter);
   HistoryListBox.TopIndex := HistoryListBox.Count - 1;
-  DisplayForm(FHistoryWindow, (Self.Height * 2) div 4);
+  DisplayForm(FHistoryWindow);
 end;
 
 procedure TMainForm.VarnamesListGetText(Sender: TBaseVirtualTree;
@@ -1094,6 +1092,7 @@ begin
       end;
   end;
 
+  FVarnamesWindow.DataFile := Executor.DataFile;
   FStatusbar.Update();
   LeftSideSplitter.Visible := LeftSidePanel.Visible;
 end;
@@ -1555,15 +1554,11 @@ begin
   LoadTutorials;
 end;
 
-procedure TMainForm.DisplayForm(AForm: TForm; TopOffset: Integer);
+procedure TMainForm.DisplayForm(AForm: TCustomForm);
 begin
   if (not Assigned(AForm)) then
     Exit;
 
-  AForm.Left   := Self.Left + Self.Width + 15;
-  AForm.Top    := Self.Top + TopOffset;
-  AForm.Width  := 400;
-  AForm.Height := 600;
   AForm.Show;
   AForm.BringToFront;
   AForm.SetFocus;
@@ -1575,13 +1570,6 @@ begin
   FCmdEdit.Text := FCmdEdit.Text + ' ' + LineText;
   if (ChangeFocus) then
     CmdEditFocusActionExecute(Self);
-end;
-
-function TMainForm.VarnamesFormGetFieldList(Sender: TObject): TEpiFields;
-begin
-  Result := nil;
-  if (Assigned(Executor.DataFile)) then
-    result := Executor.SortedFields;
 end;
 
 procedure TMainForm.ExecutorStart(Sender: TObject);
@@ -1715,6 +1703,8 @@ var
   end;
 
 begin
+  Exit;
+
   case ToggleMode of
     tmToggle:     Tmp := (not ToggleItem.Visible) or (not ToggleItem.Focused);
     tmForceOpen:  Tmp := true;
@@ -1769,7 +1759,7 @@ begin
   VarnamesList.InvalidateChildren(nil, true);
   VarnamesList.Header.AutoFitColumns(false);
 
-  FVarnamesWindow.UpdateVarNames;
+//  FVarnamesWindow.UpdateVarNames;
 end;
 
 procedure TMainForm.DoUpdateHistory;
@@ -1897,16 +1887,23 @@ end;
 
 procedure TMainForm.RestoreDefaultPos;
 begin
-  TEditorForm.RestoreDefaultPos;
-  TAboutForm.RestoreDefaultPos;
-  TBrowseForm4.RestoreDefaultPos;
-
   BeginFormUpdate;
   Width := 700;
   Height := 600;
   Top := 5;
   Left := 5;
   EndFormUpdate;
+
+  Application.ProcessMessages;
+
+  TEditorForm.RestoreDefaultPos;
+  TAboutForm.RestoreDefaultPos;
+  TBrowseForm4.RestoreDefaultPos;
+
+  TCommandTreeForm.RestoreDefaultPos(FCommandTreeForm);
+  THistoryForm.RestoreDefaultPos(FHistoryWindow);
+  TProjectTreeForm.RestoreDefaultPos(FProjectTreeForm);
+  TVariablesForm.RestoreDefaultPos(FVarnamesWindow);
 
   SaveFormPosition(Self, 'MainForm');
 end;

@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, epiv_projecttreeview_frame,
-  epicustombase, executor, epidocument;
+  epicustombase, executor, epidocument, auto_position_form;
 
 type
 
@@ -14,7 +14,7 @@ type
 
   { TProjectTreeForm }
 
-  TProjectTreeForm = class(TForm)
+  TProjectTreeForm = class(TCustomAutoPositionForm)
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -38,12 +38,7 @@ type
     property OnLineAction: TProjectTreeFormLineAction read FOnLineAction write FOnLineAction;
   end;
 
-var
-  ProjectTreeForm: TProjectTreeForm;
-
 implementation
-
-{$R *.lfm}
 
 uses
   epidatafilerelations, ana_procs;
@@ -105,6 +100,9 @@ end;
 constructor TProjectTreeForm.Create(TheOwner: TComponent; Executor: TExecutor);
 begin
   inherited Create(TheOwner);
+
+  Caption := 'Project Tree';
+
   FExecutor := Executor;
 
   FProjectTree := TEpiVProjectTreeViewFrame.Create(Self);

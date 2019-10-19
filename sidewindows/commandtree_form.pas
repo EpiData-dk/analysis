@@ -5,7 +5,7 @@ unit commandtree_form;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, commandtree;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, auto_position_form, commandtree;
 
 type
 
@@ -13,10 +13,7 @@ type
 
   { TCommandTreeForm }
 
-  TCommandTreeForm = class(TForm)
-    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
-    procedure FormDestroy(Sender: TObject);
-    procedure FormShow(Sender: TObject);
+  TCommandTreeForm = class(TCustomAutoPositionForm)
   private
     FCommandTree: TCommandTree;
     FOnLineAction: TCommandTreeFormLineAction;
@@ -29,33 +26,12 @@ type
      property OnLineAction: TCommandTreeFormLineAction read FOnLineAction write FOnLineAction;
   end;
 
-var
-  CommandTreeForm: TCommandTreeForm;
-
 implementation
-
-{$R *.lfm}
 
 uses
   ana_procs;
 
 { TCommandTreeForm }
-
-procedure TCommandTreeForm.FormClose(Sender: TObject;
-  var CloseAction: TCloseAction);
-begin
-  SaveFormPosition(Self, Self.Name);
-end;
-
-procedure TCommandTreeForm.FormDestroy(Sender: TObject);
-begin
-   SaveFormPosition(Self, Self.Name);
-end;
-
-procedure TCommandTreeForm.FormShow(Sender: TObject);
-begin
-  LoadFormPosition(Self, Self.Name);
-end;
 
 procedure TCommandTreeForm.CommandTreeCommandDoubleClick(
   const CommandString: UTF8String);
@@ -80,6 +56,8 @@ constructor TCommandTreeForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
+  Caption := 'Commands';
+
   FCommandTree := TCommandTree.Create(Self);
   FCommandTree.Visible := true;
   FCommandTree.Parent := self;
@@ -87,7 +65,6 @@ begin
   FCommandTree.Tag := 1;
   FCommandTree.OnCommandDoubleClick := @CommandTreeCommandDoubleClick;
   FCommandTree.OnCommandPressEnterKey := @CommandTreePressEnterKey;
-
 end;
 
 end.

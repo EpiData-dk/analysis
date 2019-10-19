@@ -5,7 +5,8 @@ unit varnames_form;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, VirtualTrees, epidatafiles;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, VirtualTrees, epidatafiles,
+  auto_position_form, epicustombase;
 
 type
 
@@ -14,18 +15,21 @@ type
 
   { TVariablesForm }
 
-  TVariablesForm = class(TForm)
-    VarnamesList: TVirtualStringTree;
-    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
-    procedure FormDestroy(Sender: TObject);
-    procedure FormShow(Sender: TObject);
+  TVariablesForm = class(TCustomAutoPositionForm)
   private
+    FVarnamesList: TVirtualStringTree;
     FOnGetFieldList: TVariablesFormGetFieldList;
-    function GetFieldList: TEpiFields;
+    procedure DataFileChangeEvent(const Sender: TEpiCustomBase;
+      const Initiator: TEpiCustomBase; EventGroup: TEpiEventGroup;
+      EventType: Word; Data: Pointer);
     procedure FieldListMissingError;
+    procedure UpdateTree;
     procedure DoLineAction(Const LineText: UTF8String; ChangeFocus: boolean);
   private
+    FDataFile: TEpiDataFile;
     FOnLineAction: TVariablesFormLineAction;
+    function GetFieldList: TEpiFields;
+    procedure SetDataFile(AValue: TEpiDataFile);
     procedure VarnamesListGetImageIndex(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var ImageIndex: Integer);
@@ -41,50 +45,46 @@ type
     property FieldList: TEpiFields read GetFieldList;
   public
     constructor Create(TheOwner: TComponent);
-    procedure UpdateVarNames;
-    property OnGetFieldList: TVariablesFormGetFieldList read FOnGetFieldList write FOnGetFieldList;
+    property DataFile: TEpiDataFile read FDataFile write SetDataFile;
     property OnLineAction: TVariablesFormLineAction read FOnLineAction write FOnLineAction ;
   end;
 
-var
-  VariablesForm: TVariablesForm;
-
 implementation
-
-{$R *.lfm}
 
 uses
   epiv_datamodule, LCLType, strutils, epimiscutils, epifields_helper, ana_procs;
 
 { TVariablesForm }
 
-procedure TVariablesForm.FormShow(Sender: TObject);
+procedure TVariablesForm.DataFileChangeEvent(const Sender: TEpiCustomBase;
+  const Initiator: TEpiCustomBase; EventGroup: TEpiEventGroup; EventType: Word;
+  Data: Pointer);
 begin
-  LoadFormPosition(Self, Self.Name);
-end;
+  if (Initiator = FDataFile) and
+     (EventGroup = eegCustomBase) and
+     (TEpiCustomChangeEventType(EventType) = ecceDestroy)
+  then
+    begin
+      DataFile := nil;
+      Exit;
+    end;
 
-procedure TVariablesForm.FormClose(Sender: TObject;
-  var CloseAction: TCloseAction);
-begin
-  SaveFormPosition(Self, Self.Name);
-end;
-
-procedure TVariablesForm.FormDestroy(Sender: TObject);
-begin
-  SaveFormPosition(Self, Self.Name);
-end;
-
-function TVariablesForm.GetFieldList: TEpiFields;
-begin
-  if Assigned(OnGetFieldList) then
-    result := OnGetFieldList(Self)
-  else
-
+  UpdateTree;
 end;
 
 procedure TVariablesForm.FieldListMissingError;
 begin
   raise Exception.Create('OnGetFieldList not assigned!');
+end;
+
+procedure TVariablesForm.UpdateTree;
+begin
+  if (not Assigned(FieldList)) then
+    FVarnamesList.RootNodeCount := 0
+  else
+    FVarnamesList.RootNodeCount := FieldList.Count;
+
+  FVarnamesList.InvalidateChildren(nil, true);
 end;
 
 procedure TVariablesForm.DoLineAction(const LineText: UTF8String;
@@ -105,6 +105,31 @@ begin
 
   F := FieldList[Node^.Index];
   ImageIndex := DM.GetImageIndex(F.FieldType);
+end;
+
+procedure TVariablesForm.SetDataFile(AValue: TEpiDataFile);
+begin
+  if FDataFile = AValue then Exit;
+
+  if (Assigned(FDataFile)) then
+    FDataFile.UnRegisterOnChangeHook(@DataFileChangeEvent);
+
+  FDataFile := AValue;
+
+  if (Assigned(FDataFile)) then
+    FDataFile.RegisterOnChangeHook(@DataFileChangeEvent, true);
+
+  UpdateTree;
+
+  FVarnamesList.Header.AutoFitColumns(false);
+end;
+
+function TVariablesForm.GetFieldList: TEpiFields;
+begin
+  Result := nil;
+
+  if Assigned(FDataFile) then
+    Result := FDataFile.Fields;
 end;
 
 procedure TVariablesForm.VarnamesListGetText(Sender: TBaseVirtualTree;
@@ -134,7 +159,7 @@ begin
     Exit;
 
   S := '';
-  for Node in VarnamesList.SelectedNodes() do
+  for Node in FVarnamesList.SelectedNodes() do
     begin
       F := FieldList[Node^.Index];
       S := S + ' ' + F.Name;
@@ -157,37 +182,70 @@ procedure TVariablesForm.VarnamesListAfterGetMaxColumnWidth(
 var
   W: Integer;
 begin
-  W := VarnamesList.Canvas.GetTextWidth(Sender.Columns[Column].Text) +
+  W := FVarnamesList.Canvas.GetTextWidth(Sender.Columns[Column].Text) +
        // apparently Margin and TextMargin are cummulative...
-       (VarnamesList.TextMargin * 2) +
-       (VarnamesList.Margin * 2);
+       (FVarnamesList.TextMargin * 2) +
+       (FVarnamesList.Margin * 2);
 
   if (W > MaxWidth) then
     MaxWidth := W;
 end;
 
 constructor TVariablesForm.Create(TheOwner: TComponent);
+var
+  Column: TVirtualTreeColumn;
 begin
   inherited Create(TheOwner);
 
-  with VarnamesList do
-  begin
-    Images := DM.Icons16;
+  FVarnamesList := TVirtualStringTree.Create(Self);
+  with FVarnamesList do
+    begin
+      Parent := Self;
+      Align  := alClient;
 
-    OnAfterGetMaxColumnWidth := @VarnamesListAfterGetMaxColumnWidth;
-    OnGetText                := @VarnamesListGetText;
-    OnKeyDown                := @VarnamesListKeyDown;
-    OnNodeDblClick           := @VarnamesListNodeDblClick;
-    OnGetImageIndex          := @VarnamesListGetImageIndex;
-  end;
-end;
+      // Name
+      Column := Header.Columns.Add;
+      with Column do
+        begin
+          MinWidth := 100;
+          Options := [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable];
+          Position := 0;
+          Text := 'Name';
+        end;
 
-procedure TVariablesForm.UpdateVarNames;
-begin
-  if (not Assigned(FieldList)) then
-    VarnamesList.RootNodeCount := 0
-  else
-    VarnamesList.RootNodeCount := FieldList.Count;
+      // Type
+      Column := Header.Columns.Add;
+      with Column do
+        begin
+          MinWidth := 50;
+          Options := [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable];
+          Position := 1;
+          Text := 'Type';
+        end;
+
+      // Label
+      Column := Header.Columns.Add;
+      with Column do
+        begin
+          Options := [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable];
+          Position := 2;
+          Text := 'Label';
+        end;
+
+      Header.AutoSizeIndex := 2;
+      Header.Options := [hoAutoResize, hoColumnResize, hoDblClickResize, hoDrag, hoShowImages, hoShowSortGlyphs, hoVisible, hoAutoSpring];
+      TreeOptions.MiscOptions := [toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning];
+      TreeOptions.PaintOptions := [toShowButtons, toShowDropmark, toShowVertGridLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection];
+      TreeOptions.SelectionOptions := [toFullRowSelect, toMultiSelect];
+
+      Images := DM.Icons16;
+
+      OnAfterGetMaxColumnWidth := @VarnamesListAfterGetMaxColumnWidth;
+      OnGetText                := @VarnamesListGetText;
+      OnKeyDown                := @VarnamesListKeyDown;
+      OnNodeDblClick           := @VarnamesListNodeDblClick;
+      OnGetImageIndex          := @VarnamesListGetImageIndex;
+    end;
 end;
 
 end.
