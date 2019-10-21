@@ -1,8 +1,8 @@
 object aDM: TaDM
   OldCreateOrder = False
   Height = 324
-  HorizontalOffset = 1155
-  VerticalOffset = 416
+  HorizontalOffset = 1093
+  VerticalOffset = 624
   Width = 475
   PPI = 96
   object OpenDialog1: TOpenDialog

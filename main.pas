@@ -521,6 +521,7 @@ begin
 
   {$IFDEF LCLCocoa}
      PageControl1.BorderSpacing.Left := 10;
+     PageControl1.BorderSpacing.Right := 10;
      FCmdEdit.BorderSpacing.Bottom := 10;
   {$ENDIF}
 

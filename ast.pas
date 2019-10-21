@@ -4709,6 +4709,7 @@ begin
     Exit;
 
   case EV.VarType of
+    evtField,
     evtGlobal,
     evtResultConst:
         // A global or result can be accepted as either Value or Object.
@@ -4717,7 +4718,6 @@ begin
     evtDataset,
     evtValuelabel,
     evtGlobalVector,
-    evtField,
     evtResultVector,
     evtResultMatrix:
       begin
@@ -4726,7 +4726,6 @@ begin
         Result := (evfAsObject in TypesAndFlags.Flags);
 
         if (not Result) then
- { TODO -oJamie : Why not just recast this as having the default index? }
         begin
           DoTypeCheckError('Identifier "' + Ident + '" must have an index', TypeChecker);
           Exit;
