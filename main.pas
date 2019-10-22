@@ -1560,6 +1560,9 @@ begin
   if (not Assigned(AForm)) then
     Exit;
 
+  FOutputCreator.DoInfoAll('Press F2, F3, F5, F6, F7, F8 and move windows to desired screen position');
+  RedrawOutput;
+
   AForm.Show;
   AForm.BringToFront;
   AForm.SetFocus;

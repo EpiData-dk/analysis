@@ -188,6 +188,7 @@ var
   ImpClipBrd: Boolean;
   OldWarning: TOpenEpiWarningEvent;
 begin
+  DocFile := nil;
   ImpClipBrd := ST.HasOption('cb');
   FReadCmd := ST;
   FN := '';
@@ -204,11 +205,11 @@ begin
       OpenDialog1.Options    := [ofNoChangeDir];
 //      OpenDialog1.LastSelectionChangeFilename := '';
       if OpenDialog1.Execute then
-      begin
-        FN := OpenDialog1.FileName;
-        DoDialogFilename(FN);
-        SetCurrentDirUTF8(ExtractFilePath(FN));    // just to be sure
-      end
+        begin
+          FN := OpenDialog1.FileName;
+          DoDialogFilename(FN);
+          SetCurrentDirUTF8(ExtractFilePath(FN));    // just to be sure
+        end
       else
         Exit(dfrCanceled);
     end;

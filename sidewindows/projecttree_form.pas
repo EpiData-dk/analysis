@@ -101,7 +101,7 @@ constructor TProjectTreeForm.Create(TheOwner: TComponent; Executor: TExecutor);
 begin
   inherited Create(TheOwner);
 
-  Caption := 'Project Tree';
+  Caption := 'Dataset List';
 
   FExecutor := Executor;
 

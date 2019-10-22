@@ -348,9 +348,9 @@ begin
       Row := T.RowCount - 1;
 
       T.Cell[PostInc(Idx), T.RowCount - 1].Text             := IntToStr(Table.ColTotal[Col]);
-      if ShowRowPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(Table.ColTotal[Col] / Table.Total, RowOption);
+      if ShowRowPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(Table.ColTotalPct[Col], RowOption);
       if ShowColPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(1, ColOption);
-      if ShowTotPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(Table.ColTotal[Col] / Table.Total, TotOption);
+      if ShowTotPercent then T.Cell[PostInc(Idx), Row].Text := FormatPercent(Table.ColTotalPct[Col], TotOption);
     end;
 
   // Row Totals
@@ -360,8 +360,8 @@ begin
 
       T.Cell[PostInc(Idx), Row + 1].Text := IntToStr(Table.RowTotal[Row]);
       if ShowRowPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(1, RowOption);
-      if ShowColPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.RowTotal[Row] / Table.Total, ColOption);
-      if ShowTotPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.RowTotal[Row] / Table.Total, TotOption);
+      if ShowColPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.RowTotalPct[Row], ColOption);
+      if ShowTotPercent then T.Cell[PostInc(Idx), Row + 1].Text := FormatPercent(Table.RowTotalPct[Row], TotOption);
     end;
 
   // Grand total

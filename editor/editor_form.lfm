@@ -11,6 +11,7 @@ object EditorForm: TEditorForm
   Menu = MainMenu1
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
+  OnDestroy = FormDestroy
   OnDropFiles = FormDropFiles
   OnShow = FormShow
   Position = poDefault

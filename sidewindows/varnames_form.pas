@@ -22,7 +22,6 @@ type
     procedure DataFileChangeEvent(const Sender: TEpiCustomBase;
       const Initiator: TEpiCustomBase; EventGroup: TEpiEventGroup;
       EventType: Word; Data: Pointer);
-    procedure FieldListMissingError;
     procedure UpdateTree;
     procedure DoLineAction(Const LineText: UTF8String; ChangeFocus: boolean);
   private
@@ -70,11 +69,6 @@ begin
     end;
 
   UpdateTree;
-end;
-
-procedure TVariablesForm.FieldListMissingError;
-begin
-  raise Exception.Create('OnGetFieldList not assigned!');
 end;
 
 procedure TVariablesForm.UpdateTree;
@@ -196,6 +190,8 @@ var
   Column: TVirtualTreeColumn;
 begin
   inherited Create(TheOwner);
+
+  Caption := 'Variables';
 
   FVarnamesList := TVirtualStringTree.Create(Self);
   with FVarnamesList do

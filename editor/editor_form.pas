@@ -105,6 +105,7 @@ type
     procedure EditPreferencesActionExecute(Sender: TObject);
     procedure FindNextActionExecute(Sender: TObject);
     procedure FindPrevActionExecute(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure MenuItem28Click(Sender: TObject);
     procedure QuitActionExecute(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -320,6 +321,11 @@ procedure TEditorForm.FindPrevActionExecute(Sender: TObject);
 begin
   FActiveSearchOptions := FActiveSearchOptions + [ssoBackwards];
   InternalSearch(FActiveSearchText);
+end;
+
+procedure TEditorForm.FormDestroy(Sender: TObject);
+begin
+  SaveFormPosition(Self, 'Editor');
 end;
 
 procedure TEditorForm.MenuItem28Click(Sender: TObject);
