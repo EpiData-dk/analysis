@@ -2088,7 +2088,8 @@ begin
   for Rel in Document.Relations do
     if (not Rel.ProtectedItem) then
       break;
-
+// TODO: need check here that data file does not have a variable with the same
+//       name as an existing global variable
   DoUseDatafile(Rel.Datafile);
 
   FDocFile.Document.Modified := false;
