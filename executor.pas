@@ -2950,7 +2950,6 @@ begin
   FCurrentRecNo := 0;
   F.Size := Runner;
 
-  DoInfo('Selecting complete!');
   DoInfo(Format('(%d of %d selected)', [F.Size, SelectVector.Size]), 0);
 
   FOutputCreator.DoNormal('');

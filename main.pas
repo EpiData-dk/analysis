@@ -25,8 +25,10 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    CloseAllWindowsAction: TAction;
     HistoryListBox: TListBox;
     MenuItem43: TMenuItem;
+    MenuItem44: TMenuItem;
     SaveOutputAction: TAction;
     Label3: TLabel;
     MenuItem36: TMenuItem;
@@ -124,6 +126,7 @@ type
     ShowShortcutAction: TAction;
     procedure Button2Click(Sender: TObject);
     procedure CancelExecActionExecute(Sender: TObject);
+    procedure CloseAllWindowsActionExecute(Sender: TObject);
     procedure CmdEditFocusActionExecute(Sender: TObject);
     procedure CopyAllHistoryActionExecute(Sender: TObject);
     procedure CopySelectedHistoryActionExecute(Sender: TObject);
@@ -169,6 +172,7 @@ type
   private
     Executor: TExecutor;
     FCommandTreeForm: TCommandTreeForm;
+    procedure CloseWindows(CloseAll: boolean = false);
     procedure CommandTreeCommandDoubleClick(const CommandString: UTF8String);
     procedure CommandTreeFormLineAction(Sender: TObject;
       const LineText: UTF8String; ChangeFocus: boolean);
@@ -208,7 +212,6 @@ type
     procedure DelayCmdEditFocus(Data: PtrInt);
     procedure ApplicationActivate(Sender: TObject);
     procedure TutorialChange(Sender: TObject);
-    procedure DisplayForm(AForm: TCustomForm);
 
   { Variable List }
   private
@@ -253,6 +256,7 @@ type
   private
     type
       TToggleMode = (tmToggle, tmForceOpen, tmForceClose);
+    procedure DisplayForm(AForm: TCustomForm; ToggleMode: TToggleMode = tmForceOpen);
     procedure ToggleSidebar(ToggleItem, Sibling: TWinControl; MidSplitter, MainSplitter: TSplitter; ToggleMode: TToggleMode = tmToggle);
     procedure DoUpdateVarnames;
     procedure DoUpdateHistory;
@@ -324,6 +328,11 @@ begin
   Executor.Cancelled := true;
 end;
 
+procedure TMainForm.CloseAllWindowsActionExecute(Sender: TObject);
+begin
+  CloseWindows(true);
+end;
+
 procedure TMainForm.Button2Click(Sender: TObject);
 begin
   CheckAndStartWizard(GetStartupPgm);
@@ -369,6 +378,9 @@ end;
 
 procedure TMainForm.DefaultWindowPositionActionExecute(Sender: TObject);
 begin
+  FOutputCreator.DoInfoAll('Press F2, F3, F5, F6, F7, F8 and move windows to desired screen position');
+  RedrawOutput;
+
   RestoreDefaultPos;
 end;
 
@@ -938,9 +950,9 @@ begin
   end;
 
   if (Sender = Executor.SetOptions[ANA_SO_DISPAY_COMMANDTREE]) then
-    ToggleSidebar(FCommandTree, FProjectTree, LeftPanelSplitter, LeftSideSplitter, Value)
+    DisplayForm(FCommandTreeForm, Value)
   else
-    ToggleSidebar(FProjectTree, FCommandTree, LeftPanelSplitter, LeftSideSplitter, Value);
+    DisplayForm(FProjectTreeForm, Value);
 end;
 
 procedure TMainForm.ProjectTreeFormLineAction(Sender: TObject;
@@ -954,6 +966,21 @@ procedure TMainForm.CommandTreeCommandDoubleClick(
   const CommandString: UTF8String);
 begin
   FCmdEdit.Text := CommandString;
+end;
+
+procedure TMainForm.CloseWindows(CloseAll: boolean);
+begin
+  FCommandTreeForm.Close;
+  FVarnamesWindow.Close;
+  FProjectTreeForm.Close;
+  FHistoryWindow.Close;
+
+  if (CloseAll) then
+    begin
+      CloseBrowsers;
+      if (Assigned(EditorForm)) then
+        EditorForm.Close;
+    end;
 end;
 
 procedure TMainForm.CommandTreeFormLineAction(Sender: TObject;
@@ -993,9 +1020,9 @@ begin
   end;
 
   if (Sender = Executor.SetOptions[ANA_SO_DISPAY_HISTORY]) then
-    ToggleSidebar(HistoryListBox, VarnamesList, RightPanelSplitter, RightSideSplitter, Value)
+    DisplayForm(FHistoryWindow, Value)
   else
-    ToggleSidebar(VarnamesList, HistoryListBox, RightPanelSplitter, RightSideSplitter, Value);
+    DisplayForm(FVarnamesWindow, Value);
 end;
 
 procedure TMainForm.DoUpdateTitle;
@@ -1419,6 +1446,7 @@ begin
     VK_F6: BrowseActionExecute(nil);
     VK_F7: ToggleHistoryListActionExecute(nil);
     VK_F8: ToggleProjectTreeExecute(nil);
+    VK_F9: CloseWindows(true);
     VK_F12: ClearOutputActionExecute(nil);
   else
     Key := aKey;
@@ -1555,17 +1583,24 @@ begin
   LoadTutorials;
 end;
 
-procedure TMainForm.DisplayForm(AForm: TCustomForm);
+procedure TMainForm.DisplayForm(AForm: TCustomForm; ToggleMode: TToggleMode);
 begin
   if (not Assigned(AForm)) then
     Exit;
 
-  FOutputCreator.DoInfoAll('Press F2, F3, F5, F6, F7, F8 and move windows to desired screen position');
-  RedrawOutput;
-
-  AForm.Show;
-  AForm.BringToFront;
-  AForm.SetFocus;
+  Case ToggleMode of
+    tmToggle: ;  // Not used?
+    tmForceOpen:
+      begin
+        AForm.Show;
+        AForm.BringToFront;
+        AForm.SetFocus;
+      end;
+    tmForceClose:
+      begin
+        AForm.Close;
+      end;
+  end;
 end;
 
 procedure TMainForm.VarnamesWindowLineAction(Sender: TObject;
@@ -1903,6 +1938,8 @@ begin
   TEditorForm.RestoreDefaultPos;
   TAboutForm.RestoreDefaultPos;
   TBrowseForm4.RestoreDefaultPos;
+
+  CloseWindows();
 
   TCommandTreeForm.RestoreDefaultPos(FCommandTreeForm);
   THistoryForm.RestoreDefaultPos(FHistoryWindow);

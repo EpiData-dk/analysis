@@ -283,7 +283,7 @@ begin
   CutAction.ShortCut   := SynEdit1.Keystrokes[SynEdit1.Keystrokes.FindCommand(ecCut)].ShortCut;
   PasteAction.ShortCut := SynEdit1.Keystrokes[SynEdit1.Keystrokes.FindCommand(ecPaste)].ShortCut;
 
-  LoadFormPosition(Self, Self.ClassName);
+  LoadFormPosition(Self, 'Editor');
 
   UpdateRecentFiles;
   UpdateShortCuts;
