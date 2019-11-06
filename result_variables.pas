@@ -52,6 +52,8 @@ const
     'result matrix'
   );
 
+function ExecutorVariableTypesAsString(ExecutorVariableTypes: TExecutorVariableTypes): UTF8String;
+
 type
 
   { TCustomExecutorVariable }
@@ -302,6 +304,19 @@ implementation
 
 uses
   LazFileUtils, LazUTF8;
+
+function ExecutorVariableTypesAsString(
+  ExecutorVariableTypes: TExecutorVariableTypes): UTF8String;
+var
+  evType: TExecutorVariableType;
+begin
+  Result := '';
+
+  for evType in ExecutorVariableTypes do
+    Result := Result + ExecutorVariableTypeString[evType] + ', ';
+
+  Delete(Result, Length(Result) - 1, 2);
+end;
 
 function ExecutorDataVariablesCompare(const Key1, Key2: UTF8String): Integer;
 begin

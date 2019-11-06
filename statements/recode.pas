@@ -223,7 +223,11 @@ begin
       VLSet.OnSort := nil;
     end;
 
-  ToVariable.Length := ToVariable.ValueLabelSet.MaxValueLength;
+  if (Assigned(ToVariable.ValueLabelSet)) then
+    ToVariable.Length := ToVariable.ValueLabelSet.MaxValueLength
+  else
+    ToVariable.Length := FromVariable.Length;
+
   Result := true;
 end;
 

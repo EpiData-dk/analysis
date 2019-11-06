@@ -1925,13 +1925,15 @@ begin
 end;
 
 procedure TMainForm.RestoreDefaultPos;
+var
+  W, H, T, L: Integer;
 begin
-  BeginFormUpdate;
-  Width := 700;
-  Height := 600;
-  Top := 5;
-  Left := 5;
-  EndFormUpdate;
+  W := 700;
+  H := 600;
+  T := Monitor.Top + 5;
+  L := Monitor.Left + 5;
+
+  SetBounds(L, T, W, H);
 
   Application.ProcessMessages;
 

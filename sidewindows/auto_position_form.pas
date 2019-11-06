@@ -66,13 +66,15 @@ end;
 class procedure TCustomAutoPositionForm.RestoreDefaultPos(AForm: TCustomForm);
 var
   W, H: integer;
+  MForm: TForm;
 begin
   DeleteFormPosition(ClassName);
 
   if (AForm is TCustomAutoPositionForm) then
     begin
-      H := AForm.Monitor.Height div 2;
-      W := AForm.Monitor.Width div 2;
+      MForm := Application.MainForm;
+      H := MForm.Height div 2;
+      W := MForm.Width div 2;
       AForm.SetBounds(AForm.Left, AForm.Top, W, H);
       TCustomAutoPositionForm(AForm).MoveToDefaultPosition;
     end;

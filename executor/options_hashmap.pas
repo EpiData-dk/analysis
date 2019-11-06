@@ -82,6 +82,10 @@ type
     procedure Insert(Key: UTF8String; ResultTypes: TASTResultTypes;
       ExecutorVariableTypes: TExecutorVariableTypes = ExecutorVariableTypesData;
       Flags: TExecutorVariableFlags = [evfInternal, evfAsValue]);
+    procedure Insert(MasterKey: UTF8String; SubKeys: array of UTF8String;
+      ResultTypes: TASTResultTypes;
+      ExecutorVariableTypes: TExecutorVariableTypes = ExecutorVariableTypesData;
+      Flags: TExecutorVariableFlags = [evfInternal, evfAsValue]);
     function HasOption(Const Key: UTF8String): Boolean;
     function GetTypesAndFlags(Const Key: UTF8String): PMapValues;
     function GetResultTypes(Const Key: UTF8String): TASTResultTypes;
@@ -131,6 +135,21 @@ begin
   MapValues^.Flags                 := Flags;
 
   Inherited Insert(Key, MapValues);
+end;
+
+procedure TStatementOptionsMap.Insert(MasterKey: UTF8String;
+  SubKeys: array of UTF8String; ResultTypes: TASTResultTypes;
+  ExecutorVariableTypes: TExecutorVariableTypes; Flags: TExecutorVariableFlags);
+var
+  Value: PMapValues;
+  Key: UTF8String;
+begin
+  Insert(MasterKey, ResultTypes, ExecutorVariableTypes, Flags);
+
+  // TryGetValue(MasterKey, Value);
+  // TODO : Make a connection between the master key and sub keys
+  for Key in SubKeys do
+    Insert(Key, ResultTypes, ExecutorVariableTypes, Flags);
 end;
 
 function TStatementOptionsMap.HasOption(const Key: UTF8String): Boolean;

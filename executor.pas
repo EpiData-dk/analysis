@@ -1113,7 +1113,7 @@ begin
   Len := F.Length;
   Dec := F.Decimals;
 
-  if (ST.HasOption('l', Opt)) then
+  if (ST.HasOption(['length', 'le'], Opt)) then
   begin
     Len := Opt.Expr.AsInteger;
     if (Len < 1) or ((F.FieldType = ftInteger) and (Len > 19)) then
@@ -1344,7 +1344,7 @@ begin
   Doc := FDocFile.CreateNewDocument('en');
   EpiAsyncHandlerGlobal.AddDocument(Doc);
 
-  if ST.HasOption('title', Opt) then
+  if ST.HasOption(['label', 'l'], Opt) then
     Doc.Study.Title.Text := Opt.Expr.AsString
   else
     Doc.Study.Title.Text := 'Untitled';
@@ -1522,10 +1522,10 @@ begin
   if ST.HasOption('r', Opt) then
     F.Name := Opt.Expr.AsIdent;
 
-  if ST.HasOption('label', Opt) then
+  if ST.HasOption(['label', 'l'], Opt) then
     F.Question.Text := Opt.Expr.AsString;
 
-  if ST.HasOption('l', Opt) then
+  if ST.HasOption(['length', 'le'], Opt) then
     F.Length := Opt.Expr.AsInteger;
 
   if ST.HasOption('d', Opt) then
@@ -4867,7 +4867,7 @@ begin
     begin
       EVTypes := VariableChecker.GetAcceptedVariableTypesAndFlags(Index).ExecutorVariableTypes;
 
-      // Help out user a little by adding a '$' in cast they missed it
+      // Help out user a little by adding a '$' in case they missed it
       if (([evtResultConst, evtResultVector, evtResultMatrix] * EVTypes) <> []) and
          (S[1] <> '$')
       then
@@ -4917,7 +4917,7 @@ begin
 
       if (AVariableList.Count = 0) then
         begin
-          DoError('No identifiers match "' + Sender.Ident + '"');
+          DoError('No ' + ExecutorVariableTypesAsString(EVTypes) + ' match "' + Sender.Ident + '"');
           Result := false;
           Exit;
         end;
