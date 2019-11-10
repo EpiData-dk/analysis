@@ -203,11 +203,25 @@ var
   Rel: TEpiMasterRelation;
   S, T: String;
   DFs: TEpiDataFiles;
-  i: Integer;
+  i, Count: Integer;
   DF: TEpiDataFile;
 begin
   S := '';
   T := '';
+
+  if (ST.HasOption('all')) then
+    begin
+      DFS := FExecutor.Document.Relations.GetOrderedDataFiles;
+      Count := DFS.Count;
+      DFS.Free;
+
+      FExecutor.Document.DataFiles.ClearAndFree;
+
+      FOutputCreator.DoInfoAll(IntToStr(Count) + ' datasets dropped');
+
+      ST.ExecResult := csrSuccess;
+      Exit;
+    end;
 
   for V in ST.Variables do
     if (not Assigned(FExecutor.Document.Relations.MasterRelationFromDatafileName(V.Ident))) then

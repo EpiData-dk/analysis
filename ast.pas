@@ -3052,14 +3052,15 @@ begin
     ccData:
       result.Insert('del', [rtUndefined]);
 
-    ccVariable: ;
-    ccDataset: ;
-    ccProject: ;
-    ccValuelabel: ;
+    ccVariable:
+      ;
+    ccProject:
+      ;
+    ccDataset:
+      result.Insert('all', [rtUndefined]);
+    ccValuelabel,
     ccGlobal:
-      begin
-        result.Insert('all', [rtUndefined, rtString]);
-      end;
+      result.Insert('all', [rtUndefined, rtString]);
 
     ccResult: ;
   end;
