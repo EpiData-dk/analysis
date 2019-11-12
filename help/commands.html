@@ -38,7 +38,7 @@
 <body class="bodywhite">
   <!-- put here all tags for old commands -->
   <a name="top" id="top"></a><h2>EpiData Analysis: Command and Function Reference Guide &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-     <font style="font-size: 0.85em;">Document version 2.7</font></h2>
+     <font style="font-size: 0.85em;">Document version 2.8</font></h2>
   <table border="1" cellpadding="3" cellspacing="1" width="100%">
     <tbody>
       <tr valign="top">
@@ -356,7 +356,8 @@ read fn;                // expression using the variable fn
          <font class="option">!ds := &lt;dataset&gt;</font> Specifies which dataset to use. It is only needed if the multiple datasets exist (either as related datasets or in an external file).
         </li>
         <li>
-          <font class="option">!label := "&lt;text&gt;"</font>
+          <font class="option">!label := "&lt;text&gt;"</font><br/>
+          <br/><font class="option">!l := "&lt;text&gt;"</font>
           Assign the descriptive text as a caption/label for the resulting dataset.<br/>
         </li >
         <li><font class="option">!table</font> The external file is used as a lookup table. e.g. to add person information to a file with clinical results</li>
@@ -559,7 +560,8 @@ use datafile_id_2;</font>
               as a top-level dataform.<br/>
             </li>
             <li>
-              <font class="option">!label := "&lt;text&gt;"</font>
+              <font class="option">!label := "&lt;text&gt;"</font><br/>
+               <font class="option">!l := "&lt;text&gt;"</font>
               Assign the descriptive text as a caption/label for the dataset.
             </li>
             <li>
@@ -597,22 +599,23 @@ use datafile_id_2;</font>
             If no expression is given, all values will be missing.</p>
           <ul>
             <li>
-              <font class="option">!label := "&lt;text&gt;"</font>
+              <font class="option">!label := "&lt;text&gt;"</font><font class="option">!l := "&lt;text&gt;"</font>
               Assign the descriptive text as a label for the variable.
               An existing variable label will be replaced with the new one.
             </li>
             <li>
-              <font class="option">!valuelabel := &lt;valuelabel name&gt;</font>
+              <font class="option">!valuelabel := &lt;valuelabel name&gt;</font><font class="option">!vl := &lt;valuelabel name&gt;</font>
               Assign an existing valuelabel set to the variable.
               An existing assignment will be replaced but not deleted. To delete the existing valuelabel
               set see <a href="#deletegrp">deleting content</a>
             </li>
             <li>
-              <font class="option">!length := &lt;integer&gt;</font>
+              <font class="option">!length := &lt;integer&gt;</font><font class="option">!le := &lt;integer&gt;</font>
               Changes the entry length of a variable
             </li>
+			
             <li>
-              <font class="option">!decimal := &lt;integer&gt;</font>
+              <font class="option">!decimal := &lt;integer&gt;</font><font class="option">!dec := &lt;integer&gt;</font>
               Changed the decimal entry length for floating point variables. Changing the decimal length for other variable types have no impact
             </li>
             <li>
