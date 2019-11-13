@@ -106,7 +106,7 @@ begin
   Decimals     := DecimalFromOption(ST.Options);
   FunctionList.UpdateAllResultLabels(Decimals);
 
-  if (ST.HasOption('h', Opt)) then
+  if (ST.HasOption('hd', Opt)) then
     begin
       // If not value is assigned to !headers - this is a flag to delete all variable labels
       if (not Assigned(Opt.Expr)) then

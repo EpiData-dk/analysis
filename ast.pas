@@ -1703,7 +1703,7 @@ begin
   Result.Insert('nt',      [rtUndefined]);
   Result.Insert('replace', [rtUndefined]);
   Result.Insert('label',   AllResultDataTypes);
-  Result.Insert('h',       [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
+  Result.Insert('hd',      [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
   Result.Insert('ds',      [rtObject],               [evtDataset],      [evfInternal, evfExternal, evfAsObject]);
   Result.Insert('u',       [rtUndefined]);
   Result.Insert('full',    [rtUndefined]);
@@ -3051,7 +3051,6 @@ begin
   case SubCommand of
     ccData:
       result.Insert('del', [rtUndefined]);
-
     ccVariable:
       ;
     ccProject:
