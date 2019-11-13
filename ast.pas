@@ -967,7 +967,6 @@ type
     function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
   public
     constructor Create(AVariable: TCustomVariable; AOptionList: TOptionList; ASubCommand: TCrudCommand);
-    property Variable: TCustomVariable read GetVariable;
   end;
 
   { TDropCommand }
@@ -979,8 +978,17 @@ type
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
   public
+    constructor Create(AVariables: TVariableList; AOptionList: TOptionList; ASubCommand: TCrudCommand;
+      AStatementType: TASTStatementType = stDrop);
+  end;
+
+  { TKeepCommand }
+
+  TKeepCommand = class(TDropCommand)
+  protected
+    function GetAcceptedVariableCount: TBoundArray; override;
+  public
     constructor Create(AVariables: TVariableList; AOptionList: TOptionList; ASubCommand: TCrudCommand);
-    property Variables: TVariableList read FVariableList;
   end;
 
   { TUse }
@@ -3092,9 +3100,24 @@ begin
 end;
 
 constructor TDropCommand.Create(AVariables: TVariableList;
+  AOptionList: TOptionList; ASubCommand: TCrudCommand;
+  AStatementType: TASTStatementType);
+begin
+  inherited Create(AVariables, AOptionList, AStatementType, ASubCommand);
+end;
+
+{ TKeepCommand }
+
+function TKeepCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  Result[0] := -1;
+end;
+
+constructor TKeepCommand.Create(AVariables: TVariableList;
   AOptionList: TOptionList; ASubCommand: TCrudCommand);
 begin
-  inherited Create(AVariables, AOptionList, stDrop, ASubCommand);
+  inherited Create(AVariables, AOptionList, ASubCommand, stKeep);
 end;
 
 { TNewProject }

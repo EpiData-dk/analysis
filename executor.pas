@@ -206,6 +206,7 @@ type
     procedure ExecEdit(ST: TCustomCrudCommand); virtual;
     procedure ExecDrop(ST: TDropCommand); virtual;
     procedure ExecList(ST: TCustomCrudCommand); virtual;
+    procedure ExecKeep(ST: TKeepCommand); virtual;
 
     // Variable Commands
     procedure ExecBrowse(ST: TCustomVariableCommand); virtual;
@@ -3141,6 +3142,42 @@ begin
   EL.Free;
 end;
 
+procedure TExecutor.ExecKeep(ST: TKeepCommand);
+var
+  i: Integer;
+  F: TCustomExecutorDataVariable;
+  CurrentVarNames: TStrings;
+  InverseVariables: TVariableList;
+  Variable: TVariable;
+begin
+  // TKeepCommand is a decendant of TDropCommand, so we take the current set of
+  // variables and inverse it. The we send it off to the drop execution.
+
+  // Currently it is only Variable that can be kept. If we decide to extend this
+  // later on, the a seperate unit should implement this variable inversing.
+
+  InverseVariables := TVariableList.Create;
+  CurrentVarNames  := ST.Variables.GetIdentsAsList;
+  for i := 0 to Fields.Count -1 do
+    begin
+      F := Fields.Data[i];
+
+      if (CurrentVarNames.IndexOf(F.Ident) <> -1) then
+        Continue;
+
+      Variable := TVariable.Create(F.Ident, Self);
+      InverseVariables.Add(Variable);
+    end;
+
+  for i := ST.Variables.Count - 1 downto 0 do
+    ST.Variables.Delete(i);
+
+  for i := 0 to InverseVariables.Count - 1 do
+    ST.Variables.Add(InverseVariables[i]);
+
+  ExecDrop(ST);
+end;
+
 procedure TExecutor.ExecEdit(ST: TCustomCrudCommand);
 var
   EE: TExecEdit;
@@ -3985,6 +4022,9 @@ begin
 
         stDrop:
           ExecDrop(TDropCommand(ST));
+
+        stKeep:
+          ExecKeep(TKeepCommand(ST));
 
       // Variable Commands;
 

@@ -939,6 +939,7 @@ begin
                   |   opEdit <Variable>         <Edit SubSystem>                               <Option List>
                   |   opDrop <Variable>         <Optional Variable List>                       <Option List>
                   |   opList <Variable>         <Optional Variable List>                       <Option List>
+                  |   opkeep <Variable>         <Optional Variable List>                       <Option List>
 }
   result := nil;
   S := UTF8LowerString(DoCommandName(R));
@@ -951,7 +952,8 @@ begin
       result := DoEdit(R);
 
     'drop',
-    'list':
+    'list',
+    'keep':
       result := DoSimpleCrud(R);
   end;
 
@@ -1048,6 +1050,7 @@ begin
 {                      0        1                    2                          3
 <Crud Commands> ::=  opDrop <Variable>  <Optional Indexed Variable List>  <Option List>
                 |    opList <Variable>  <Optional Indexed Variable List>  <Option List>
+                |    opKeep <Variable>  <Optional Indexed Variable List>  <Option List>
 }
 
   Result := nil;
@@ -1065,6 +1068,13 @@ begin
                   DoOptionalIndexedVariableList(R.Tokens[2].Reduction),
                   DoOptionList(R.Tokens[3].Reduction, nil),
                   FamilyIdents(R.Tokens[1].Reduction)
+                );
+
+    'keep':
+      result := TKeepCommand.Create(
+                  DoOptionalIndexedVariableList(R.Tokens[2].Reduction),
+                  DoOptionList(R.Tokens[3].Reduction, nil),
+                  FamilyIdents(R.Tokens[1].Reduction, [ccVariable])
                 );
   end;
 
