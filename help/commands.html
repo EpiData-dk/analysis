@@ -432,7 +432,7 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
           <li><font class="option">!ds := &lt;dataset&gt;</font> Save the aggregated dataset as it's own dataset with given name</li>
           <li><font class="option">!replace</font> use in combination with !ds to replace an existing dataset</li>
           <li><font class="option">!caption := "&lt;string&gt;"</font> give the dataset a caption (used both in output and with !ds)</li>
-          <li><font class="option">!h := &lt;global string vector&gt;</font> give a custom label for the generated variables
+          <li><font class="option">!hd := &lt;global string vector&gt;</font> give a custom label for the generated variables
               and show these as column descriptors in table head</li>
           <li><font class="option">!u</font> use in combination with !ds. Use the generated dataset after this command completes.
               Cannot be used with an active select!</li>
@@ -463,13 +463,13 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
          </ul>
        <font class="cmd">Example <br/>
 // define a global vectore for column texts:
-new global columnhead[5] string;
+new global columntxt[5] string;
 columntxt[1] := "Group";
 columntxt[2] := "N Total";
 columntxt[3] := "n (observed)";
 columntxt[4] := "Mean";
 columntxt[5] := .;
-agg sex age !by:=family !header:=columntxt  !mci:=economy !mci:=children ;
+agg sex age family !hd:=columntxt  !mci:=economy !mci:=children ;
        </font>
        </td>
      </tr>
@@ -1101,6 +1101,31 @@ for i := 2 to 5 do
          <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
         </td>
       </tr>
+    <tr valign="top">
+      <td>
+        <a name="dropdata" id="dropdata">drop data</a><br/>
+        drop d
+      </td>
+      <td>
+        <font class="cmd">drop data [!del]</font><br/>
+       <p>Drops all data within current select from memory. Save the data first if you wish to keep any changes.</p>
+       <ul>
+        <li><font class="option">!del</font> Drops all observations marked for deletion.
+		<font class="limit">Note: </font>Make sure to test whether this creates a problem in a related dataset with the check command		</li>
+
+       </ul>
+       Examples:<br/>
+        <font class="cmd">
+read "bromar.epx";
+select (id > 1000) do
+  drop data;  // Drops all observations where id > 1000, but keeps the rest.
+
+read "bromar.epx";
+drop data !del ; // drop all observations "marked for deletion"
+        </font>
+      </td>
+    </tr>
+
       <tr valign="top">
       <td>
        <a name="dropvariable" id="dropvariable">drop variable</a><br/>
@@ -1113,6 +1138,21 @@ for i := 2 to 5 do
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
       </td>
      </tr>
+
+      <tr valign="top">
+      <td>
+       <a name="keepvariable" id="keepvariable">keep variable</a><br/>
+       keep var<br/>
+       keep v
+      </td>
+      <td>
+       <font class="cmd">keep variable <i>variable<sub>1</sub></i> [<i>variable<sub>2</sub></i> ...]</font><br/>
+       <p>Keep the variables listed, and DROP all other variables from the current dataset <u>in memory</u></p>
+       <p><font class="limit">Hint: </font>To get a dropped variable back into memory again, You must read the data from disk. </p>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+      </td>
+     </tr>
+
       <tr valign="top">
         <td>
           <a name="dropglobals" id="dropglobals">drop global</a><br/>
@@ -1122,8 +1162,9 @@ for i := 2 to 5 do
           <font class="cmd">drop global [<i>variable<sub>1</sub></i> ...] [!all [:= &lt;type&gt;]]</font><br/>
           <p>Remove the listed global variables from memory</p>
           <ul>
-            <li><font class="option">!all</font> Removes ALL global variables. If this option is used, then no variables must be listed.</li>
-            <li><font class="option">!all := &lt;type&gt;</font> Removes ALL global variables of a certain <a href="types">type</a> . If this option is used, then no variables must be listed.</li>
+            <li><font class="option">!all</font> Removes ALL global variables. </li
+            <li><font class="option">!all := &lt;type&gt;</font> Removes ALL global variables of the indicated <a href="types">type</a>. 
+	    <li><font class="option"> Note that with !all do not specify any global variable. This will give an error message.</li>
           </ul>
           Example:<br/>
           <font class="cmd">
@@ -1150,31 +1191,7 @@ drop global !all;             // drops i1 and s1 (because they are left)
          <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
         </td>
       </tr>
-      <tr valign="top">
-      <td>
-        <a name="dropdata" id="dropdata">drop data</a><br/>
-        drop d
-      </td>
-      <td>
-        <font class="cmd">drop data [!del]</font><br/>
-       <p>Drops all data within current select from memory. Save the data first if you wish to keep any changes.</p>
-       <ul>
-        <li><font class="option">!del</font> Drops all observations marked for deletion.
-		<font class="limit">Note: </font>Make sure to test whether this creates a problem in a related dataset with the check command		</li>
-
-       </ul>
-       Examples:<br/>
-        <font class="cmd">
-read "bromar.epx";
-select (id > 1000) do
-  drop data;  // Drops all observations where id > 1000, but keeps the rest.
-
-read "bromar.epx";
-drop data !del ; // drop all observations "marked for deletion"
-        </font>
-      </td>
-    </tr>
-
+  
      <!--
       ######################################################3
       Select observations
