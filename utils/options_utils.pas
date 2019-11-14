@@ -144,10 +144,9 @@ end;
 
 procedure AddReadOptions(STOptionList: TStatementOptionsMap);
 begin
-  STOptionList.Insert('fn',       [rtString, rtUndefined]);
   STOptionList.Insert('d',        [rtString]);
   STOptionList.Insert('q',        [rtString]);
-  STOptionList.Insert('h',        [rtBoolean]);
+  STOptionList.Insert('fn',       [rtString, rtUndefined]);
   STOptionList.Insert('pw',       [rtString]);
   STOptionList.Insert('login',    [rtString]);
   STOptionList.Insert('force',    [rtUndefined]);

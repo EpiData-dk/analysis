@@ -620,7 +620,7 @@ var
   S: String;
   Opt: TOption;
 begin
-  if (Ast.HasOption('caption', Opt)) then
+  if (Ast.HasOption(['title', 't'], Opt)) then
     begin
       Caption := Opt.Expr.AsString;
       Exit;

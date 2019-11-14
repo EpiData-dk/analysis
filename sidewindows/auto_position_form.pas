@@ -12,6 +12,8 @@ type
   { TCustomAutoPositionForm }
 
   TCustomAutoPositionForm = class(TCustomForm)
+  private
+    FFirstShow: boolean;
   protected
     procedure DoShow; override;
     procedure DoDestroy; override;
@@ -32,12 +34,16 @@ procedure TCustomAutoPositionForm.DoShow;
 begin
   inherited DoShow;
 
+  FFirstShow := true;
   LoadFormPosition(Self, ClassName);
 end;
 
 procedure TCustomAutoPositionForm.DoDestroy;
 begin
-  SaveFormPosition(Self, ClassName);
+  // If the form has not been shown but only created, then all boundries will
+  // have default values.
+  if (FFirstShow) then
+    SaveFormPosition(Self, ClassName);
 
   inherited DoDestroy;
 end;
@@ -53,15 +59,25 @@ constructor TCustomAutoPositionForm.Create(AOwner: TComponent);
 begin
   inherited CreateNew(AOwner);
 
+  FFirstShow := false;
   Position := poOwnerFormCenter;
 end;
 
 class procedure TCustomAutoPositionForm.RestoreDefaultPos(AForm: TCustomForm);
+var
+  W, H: integer;
+  MForm: TForm;
 begin
   DeleteFormPosition(ClassName);
 
   if (AForm is TCustomAutoPositionForm) then
-    TCustomAutoPositionForm(AForm).MoveToDefaultPosition;
+    begin
+      MForm := Application.MainForm;
+      H := MForm.Height div 2;
+      W := MForm.Width div 2;
+      AForm.SetBounds(AForm.Left, AForm.Top, W, H);
+      TCustomAutoPositionForm(AForm).MoveToDefaultPosition;
+    end;
 end;
 
 end.

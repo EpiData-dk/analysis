@@ -211,6 +211,7 @@ type
     procedure ExecEdit(ST: TCustomCrudCommand); virtual;
     procedure ExecDrop(ST: TDropCommand); virtual;
     procedure ExecList(ST: TCustomCrudCommand); virtual;
+    procedure ExecKeep(ST: TKeepCommand); virtual;
 
     // Variable Commands
     procedure ExecBrowse(ST: TCustomVariableCommand); virtual;
@@ -1134,7 +1135,7 @@ begin
   Len := F.Length;
   Dec := F.Decimals;
 
-  if (ST.HasOption('l', Opt)) then
+  if (ST.HasOption(['length', 'le'], Opt)) then
   begin
     Len := Opt.Expr.AsInteger;
     if (Len < 1) or ((F.FieldType = ftInteger) and (Len > 19)) then
@@ -1365,7 +1366,7 @@ begin
   Doc := FDocFile.CreateNewDocument('en');
   EpiAsyncHandlerGlobal.AddDocument(Doc);
 
-  if ST.HasOption('title', Opt) then
+  if ST.HasOption(['label', 'l'], Opt) then
     Doc.Study.Title.Text := Opt.Expr.AsString
   else
     Doc.Study.Title.Text := 'Untitled';
@@ -1543,10 +1544,10 @@ begin
   if ST.HasOption('r', Opt) then
     F.Name := Opt.Expr.AsIdent;
 
-  if ST.HasOption('label', Opt) then
+  if ST.HasOption(['label', 'l'], Opt) then
     F.Question.Text := Opt.Expr.AsString;
 
-  if ST.HasOption('l', Opt) then
+  if ST.HasOption(['length', 'le'], Opt) then
     F.Length := Opt.Expr.AsInteger;
 
   if ST.HasOption('d', Opt) then
@@ -2979,7 +2980,6 @@ begin
   FCurrentRecNo := 0;
   F.Size := Runner;
 
-  DoInfo('Selecting complete!');
   DoInfo(Format('(%d of %d selected)', [F.Size, SelectVector.Size]), 0);
 
   FOutputCreator.DoNormal('');
@@ -3186,6 +3186,42 @@ begin
   EL := TExecList.Create(Self, FOutputCreator);
   EL.ExecList(ST);
   EL.Free;
+end;
+
+procedure TExecutor.ExecKeep(ST: TKeepCommand);
+var
+  i: Integer;
+  F: TCustomExecutorDataVariable;
+  CurrentVarNames: TStrings;
+  InverseVariables: TVariableList;
+  Variable: TVariable;
+begin
+  // TKeepCommand is a decendant of TDropCommand, so we take the current set of
+  // variables and inverse it. The we send it off to the drop execution.
+
+  // Currently it is only Variable that can be kept. If we decide to extend this
+  // later on, the a seperate unit should implement this variable inversing.
+
+  InverseVariables := TVariableList.Create;
+  CurrentVarNames  := ST.Variables.GetIdentsAsList;
+  for i := 0 to Fields.Count -1 do
+    begin
+      F := Fields.Data[i];
+
+      if (CurrentVarNames.IndexOf(F.Ident) <> -1) then
+        Continue;
+
+      Variable := TVariable.Create(F.Ident, Self);
+      InverseVariables.Add(Variable);
+    end;
+
+  for i := ST.Variables.Count - 1 downto 0 do
+    ST.Variables.Delete(i);
+
+  for i := 0 to InverseVariables.Count - 1 do
+    ST.Variables.Add(InverseVariables[i]);
+
+  ExecDrop(ST);
 end;
 
 procedure TExecutor.ExecEdit(ST: TCustomCrudCommand);
@@ -4046,6 +4082,9 @@ begin
 
         stDrop:
           ExecDrop(TDropCommand(ST));
+
+        stKeep:
+          ExecKeep(TKeepCommand(ST));
 
       // Variable Commands;
 
@@ -5017,7 +5056,7 @@ begin
     begin
       EVTypes := VariableChecker.GetAcceptedVariableTypesAndFlags(Index).ExecutorVariableTypes;
 
-      // Help out user a little by adding a '$' in cast they missed it
+      // Help out user a little by adding a '$' in case they missed it
       if (([evtResultConst, evtResultVector, evtResultMatrix] * EVTypes) <> []) and
          (S[1] <> '$')
       then
@@ -5067,7 +5106,7 @@ begin
 
       if (AVariableList.Count = 0) then
         begin
-          DoError('No identifiers match "' + Sender.Ident + '"');
+          DoError('No ' + ExecutorVariableTypesAsString(EVTypes) + ' match "' + Sender.Ident + '"');
           Result := false;
           Exit;
         end;

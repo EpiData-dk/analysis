@@ -1,7 +1,7 @@
 object BrowseForm4: TBrowseForm4
-  Left = 694
+  Left = 2321
   Height = 520
-  Top = 299
+  Top = 337
   Width = 735
   Caption = 'Browser'
   KeyPreview = True
@@ -9,7 +9,7 @@ object BrowseForm4: TBrowseForm4
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   Position = poDefault
-  LCLVersion = '1.9.0.0'
+  LCLVersion = '2.0.0.4'
   object ActionList1: TActionList
     left = 360
     top = 189

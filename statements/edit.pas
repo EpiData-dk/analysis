@@ -40,7 +40,7 @@ procedure TExecEdit.DoEditProject(ST: TEditProject);
 var
   Opt: TOption;
 begin
-  if ST.HasOption('title', Opt) then
+  if ST.HasOption(['label', 'l'], Opt) then
     FExecutor.Document.Study.Title.Text := Opt.Expr.AsString;
 
   if ST.HasOption('pw', Opt) then

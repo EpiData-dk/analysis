@@ -87,6 +87,7 @@ type
     stList,
     stEdit,
     stDrop,
+    stKeep,
     stMeans,
     stAggregate,
     stUse,

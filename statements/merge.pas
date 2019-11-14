@@ -224,8 +224,8 @@ var
   DSName: String;
   MR: TEpiMasterRelation;
 const
-  ReadOptionNames: array[0..5] of EpiString = (
-    'd', 'q', 'h', 'pw', 'login', 'force'
+  ReadOptionNames: array[0..4] of EpiString = (
+    'd', 'q', 'pw', 'login', 'force'
   );
 
   function CompareTreeStructure(Const RelationListA, RelationListB: TEpiDatafileRelationList): boolean;

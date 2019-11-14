@@ -837,6 +837,8 @@ type
       ASubCommand: TCrudCommand); virtual;
     property OptionList: TOptionList read GetOptionList;
     property SubCommand: TCrudCommand read FSubCommand;
+    // Return the first found option in ident array
+    function HasOption(Idents: array of UTF8String; out AOption: TOption): boolean; overload;
     function HasOption(Const Ident: UTF8String; out AOption: TOption): boolean; overload;
     function HasOption(Const Ident: UTF8String): boolean; overload;
   end;
@@ -1084,7 +1086,6 @@ type
     function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
   public
     constructor Create(AVariable: TCustomVariable; AOptionList: TOptionList; ASubCommand: TCrudCommand);
-    property Variable: TCustomVariable read GetVariable;
   end;
 
   { TDropCommand }
@@ -1096,8 +1097,17 @@ type
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
   public
+    constructor Create(AVariables: TVariableList; AOptionList: TOptionList; ASubCommand: TCrudCommand;
+      AStatementType: TASTStatementType = stDrop);
+  end;
+
+  { TKeepCommand }
+
+  TKeepCommand = class(TDropCommand)
+  protected
+    function GetAcceptedVariableCount: TBoundArray; override;
+  public
     constructor Create(AVariables: TVariableList; AOptionList: TOptionList; ASubCommand: TCrudCommand);
-    property Variables: TVariableList read FVariableList;
   end;
 
   { TUse }
@@ -1211,6 +1221,8 @@ type
   public
     constructor Create(AOptionList: TOptionList; Const ACommand: UTF8String);
     constructor Create(AOptionList: TOptionList; ST: TASTStatementType);
+    // Return the first found option in ident array
+    function HasOption(Idents: array of UTF8String; out AOption: TOption): boolean; overload;
     function HasOption(Const Ident: UTF8String; out AOption: TOption): boolean; overload;
     function HasOption(Const Ident: UTF8String): boolean; overload;
     property Options: TOptionList read GetOptionList;
@@ -1842,7 +1854,7 @@ begin
   Result.Insert('nt',      [rtUndefined]);
   Result.Insert('replace', [rtUndefined]);
   Result.Insert('label',   AllResultDataTypes);
-  Result.Insert('h',       [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
+  Result.Insert('hd',      [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
   Result.Insert('ds',      [rtObject],               [evtDataset],      [evfInternal, evfExternal, evfAsObject]);
   Result.Insert('u',       [rtUndefined]);
   Result.Insert('full',    [rtUndefined]);
@@ -2378,7 +2390,7 @@ end;
 function TBrowseCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  Result.Insert('caption', [rtString]);
+  Result.Insert('title', ['t'], [rtString]);
   Result.Insert('c',       [rtUndefined]);
   Result.Insert('a',       [rtUndefined]);
   Result.Insert('del',     [rtUndefined]);
@@ -2701,8 +2713,8 @@ function TEditVariable.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  result.Insert('label',        [rtString]);
-  result.Insert('l',            [rtInteger]);
+  result.Insert('label',  ['l'],  AllResultDataTypes);
+  result.Insert('length', ['le'], [rtInteger]);
   result.Insert('d',            [rtInteger]);
   result.Insert('vl',           [rtObject], [evtValuelabel], [evfInternal, evfAsObject]);
   result.Insert('novl',         [rtUndefined]);
@@ -2786,7 +2798,7 @@ function TEditProject.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  Result.Insert('title', [rtString]);
+  Result.Insert('label', ['l'], [rtString]);
   Result.Insert('pw',    [rtString]);
 end;
 
@@ -2909,21 +2921,21 @@ function TNewVariable.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  result.Insert('label',      AllResultDataTypes);
-  result.Insert('l',          [rtInteger]);
-  result.Insert('d',          [rtInteger]);
-  result.Insert('vl',         [rtObject], [evtValuelabel], [evfInternal, evfAsObject]);
-  result.Insert('min',        AllResultDataTypes);
-  result.Insert('max',        AllResultDataTypes);
-  result.Insert('entry',      [rtInteger]);
-  result.Insert('confirm',    [rtUndefined]);
-  result.Insert('key',        [rtUndefined]);
-  result.Insert('cmpEQ',      [rtObject], [evtField], [evfInternal, evfAsObject]);
-  result.Insert('cmpNE',      [rtObject], [evtField], [evfInternal, evfAsObject]);
-  result.Insert('cmpGT',      [rtObject], [evtField], [evfInternal, evfAsObject]);
-  result.Insert('cmpLT',      [rtObject], [evtField], [evfInternal, evfAsObject]);
-  result.Insert('cmpGE',      [rtObject], [evtField], [evfInternal, evfAsObject]);
-  result.Insert('cmpLE',      [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('label',  ['l'],  AllResultDataTypes);
+  result.Insert('length', ['le'], [rtInteger]);
+  result.Insert('d',              [rtInteger]);
+  result.Insert('vl',             [rtObject], [evtValuelabel], [evfInternal, evfAsObject]);
+  result.Insert('min',            AllResultDataTypes);
+  result.Insert('max',            AllResultDataTypes);
+  result.Insert('entry',          [rtInteger]);
+  result.Insert('confirm',        [rtUndefined]);
+  result.Insert('key',            [rtUndefined]);
+  result.Insert('cmpEQ',          [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('cmpNE',          [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('cmpGT',          [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('cmpLT',          [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('cmpGE',          [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('cmpLE',          [rtObject], [evtField], [evfInternal, evfAsObject]);
 
   case NewType of
     ftBoolean: ;  // No extra options for boolean
@@ -3218,15 +3230,15 @@ begin
   case SubCommand of
     ccData:
       result.Insert('del', [rtUndefined]);
-
-    ccVariable: ;
-    ccDataset: ;
-    ccProject: ;
-    ccValuelabel: ;
+    ccVariable:
+      ;
+    ccProject:
+      ;
+    ccDataset:
+      result.Insert('all', [rtUndefined]);
+    ccValuelabel,
     ccGlobal:
-      begin
-        result.Insert('all', [rtUndefined, rtString]);
-      end;
+      result.Insert('all', [rtUndefined, rtString]);
 
     ccResult: ;
   end;
@@ -3259,9 +3271,24 @@ begin
 end;
 
 constructor TDropCommand.Create(AVariables: TVariableList;
+  AOptionList: TOptionList; ASubCommand: TCrudCommand;
+  AStatementType: TASTStatementType);
+begin
+  inherited Create(AVariables, AOptionList, AStatementType, ASubCommand);
+end;
+
+{ TKeepCommand }
+
+function TKeepCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  Result[0] := -1;
+end;
+
+constructor TKeepCommand.Create(AVariables: TVariableList;
   AOptionList: TOptionList; ASubCommand: TCrudCommand);
 begin
-  inherited Create(AVariables, AOptionList, stDrop, ASubCommand);
+  inherited Create(AVariables, AOptionList, ASubCommand, stKeep);
 end;
 
 { TNewProject }
@@ -3270,10 +3297,10 @@ function TNewProject.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  Result.Insert('size',  [rtInteger]);
-  Result.Insert('title', [rtString]);
-  Result.Insert('c',     [rtUndefined]);
-  Result.Insert('pw',    [rtString]);
+  Result.Insert('label', ['l'], [rtString]);
+  Result.Insert('size',         [rtInteger]);
+  Result.Insert('c',            [rtUndefined]);
+  Result.Insert('pw',           [rtString]);
 end;
 
 constructor TNewProject.Create(AOptionList: TOptionList);
@@ -3581,6 +3608,18 @@ begin
   inherited Create(AStatementType);
   FOptionList := AOptionList;
   FSubCommand := ASubCommand;
+end;
+
+function TCustomCrudCommand.HasOption(Idents: array of UTF8String; out
+  AOption: TOption): boolean;
+var
+  Ident: UTF8String;
+begin
+  for Ident in Idents do
+    if HasOption(Ident, AOption) then
+      Exit(true);
+
+  Result := false;
 end;
 
 function TCustomCrudCommand.HasOption(const Ident: UTF8String; out
@@ -4061,6 +4100,18 @@ begin
   inherited Create(ST);
 
   FOptions := AOptionList;
+end;
+
+function TCustomOptionsCommand.HasOption(Idents: array of UTF8String; out
+  AOption: TOption): boolean;
+var
+  Ident: UTF8String;
+begin
+  for Ident in Idents do
+    if HasOption(Ident, AOption) then
+      Exit(true);
+
+  Result := false;
 end;
 
 function TCustomOptionsCommand.HasOption(const Ident: UTF8String; out

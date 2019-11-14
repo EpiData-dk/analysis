@@ -24,7 +24,7 @@ type
     function  DropPackFunction(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
   protected
     procedure DoDropData(ST: TDropCommand);
-    procedure DoDroptVar(ST: TDropCommand);
+    procedure DoDropVar(ST: TDropCommand);
     procedure DoDropGlobal(ST: TDropCommand);
     procedure DoDropDataset(ST: TDropCommand);
     procedure DoDropValuelabel(ST: TDropCommand);
@@ -81,7 +81,7 @@ begin
     FOutputCreator.DoInfoAll(Format('(%d observations dropped)', [Len]));
 end;
 
-procedure TExecDrop.DoDroptVar(ST: TDropCommand);
+procedure TExecDrop.DoDropVar(ST: TDropCommand);
 var
   Idx: LongInt;
   V: TCustomVariable;
@@ -89,6 +89,9 @@ var
   i: Integer;
   Fields: TEpiFields;
   F: TEpiField;
+  FTs: TEpiFieldTypes;
+  Opt: TOption;
+  Ft: TEpiFieldType;
 begin
   S := '';
   T := '';
@@ -147,6 +150,8 @@ begin
           FTs := [Ft];
       end;
 
+      S := '';
+
       lConsts := FExecutor.Consts;
       for i := lConsts.Count - 1 downto 0 do
       begin
@@ -185,6 +190,11 @@ begin
       Delete(T, 1, 2);
       FOutputCreator.DoInfoAll(T + ' not found!');
     end;
+
+  if (T = '') and
+     (S = '')
+  then
+    FOutputCreator.DoInfoAll('Nothing dropped');
 end;
 
 procedure TExecDrop.DoDropDataset(ST: TDropCommand);
@@ -203,11 +213,25 @@ var
   Rel: TEpiMasterRelation;
   S, T: String;
   DFs: TEpiDataFiles;
-  i: Integer;
+  i, Count: Integer;
   DF: TEpiDataFile;
 begin
   S := '';
   T := '';
+
+  if (ST.HasOption('all')) then
+    begin
+      DFS := FExecutor.Document.Relations.GetOrderedDataFiles;
+      Count := DFS.Count;
+      DFS.Free;
+
+      FExecutor.Document.DataFiles.ClearAndFree;
+
+      FOutputCreator.DoInfoAll(IntToStr(Count) + ' datasets dropped');
+
+      ST.ExecResult := csrSuccess;
+      Exit;
+    end;
 
   for V in ST.Variables do
     if (not Assigned(FExecutor.Document.Relations.MasterRelationFromDatafileName(V.Ident))) then
@@ -240,6 +264,11 @@ begin
       FOutputCreator.DoInfoAll(T + ' not found!');
     end;
 
+  if (T = '') and
+     (S = '')
+  then
+    FOutputCreator.DoInfoAll('Nothing dropped');
+
   ST.ExecResult := csrSuccess;
   FExecutor.UpdateDatasetResultVar;
 end;
@@ -249,22 +278,53 @@ var
   S, T: String;
   V: TCustomVariable;
   VLSet: TEpiValueLabelSet;
+  VLSets: TEpiValueLabelSets;
+  Opt: TOption;
+  Ft: TEpiFieldType;
+  FTs: TEpiFieldTypes;
+  i: Integer;
 begin
   S := '';
   T := '';
 
-  for V in ST.Variables do
-  begin
-    VLSet := FExecutor.Document.ValueLabelSets.GetValueLabelSetByName(V.Ident);
+  if ST.HasOption('all', Opt) then
+    begin
+      FTs := AllFieldTypes;
 
-    if Assigned(VLSet) then
+      if Assigned(Opt.Expr) then
       begin
-        S := S + ', ' + VLSet.Name;
-        VLSet.Free;
-      end
-    else
-     T := T + ', ' + V.Ident;
-  end;
+        S :=  Opt.Expr.AsString;
+        if (EpiFieldTypeFromString(S, Ft)) then
+          FTs := [Ft];
+      end;
+
+      S := '';
+      VLSets := FExecutor.Document.ValueLabelSets;
+      for i := VLSets.Count - 1 downto 0 do
+        begin
+          VLSet := VLSets[i];
+          if (VLSet.LabelType in FTs) then
+            begin
+              S := S + ', ' + VLSet.Name;
+              VLSet.Free;
+            end;
+        end;
+    end
+  else
+    begin
+      for V in ST.Variables do
+      begin
+        VLSet := FExecutor.Document.ValueLabelSets.GetValueLabelSetByName(V.Ident);
+
+        if Assigned(VLSet) then
+          begin
+            S := S + ', ' + VLSet.Name;
+            VLSet.Free;
+          end
+        else
+         T := T + ', ' + V.Ident;
+      end;
+    end;
 
   if (S <> '') then
     begin
@@ -277,6 +337,11 @@ begin
       Delete(T, 1, 2);
       FOutputCreator.DoInfoAll(T + ' not found!');
     end;
+
+  if (T = '') and
+     (S = '')
+  then
+    FOutputCreator.DoInfoAll('Nothing dropped');
 
   ST.ExecResult := csrSuccess;
   FExecutor.UpdateValuelabelsResultVar;
@@ -301,7 +366,7 @@ begin
       DoDropData(ST);
 
     ccVariable:
-      DoDroptVar(ST);
+      DoDropVar(ST);
 
     ccDataset:
       DoDropDataset(ST);

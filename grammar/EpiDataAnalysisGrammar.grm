@@ -38,6 +38,7 @@ opNew         = 'new'
 opList        = 'lis'('t')?
 opEdit        = 'edi'('t')?
 opDrop        = 'dro'('p')?
+opKeep        = 'kee'('p')?
 
 !Check/Report
 opCheck       = 'check'
@@ -115,6 +116,7 @@ opSet         = 'set'
                                            |   opEdit <Variable>  <Edit SubSystem>                  <Option List>
                                            |   opDrop <Variable>  <Optional Indexed Variable List>  <Option List>
                                            |   opList <Variable>  <Optional Indexed Variable List>  <Option List>
+                                           |   opKeep <Variable>  <Optional Indexed Variable List>  <Option List>
 
 <New SubSystem>                            ::= <Indexed Variable> <Variable> <Optional Assignment> ! New global (vector), variable
                                            |   <Indexed Variable> <Variable> <Value Label Pairs>   ! New value label
