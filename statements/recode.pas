@@ -15,7 +15,7 @@ type
   private
     // Aux. methods
     function GetValueLabelName(ToVariable: TCustomVariable): UTF8String;
-    function CreateToField(ToVariable: TCustomVariable): TEpiField;
+    function CreateToField(ST: TRecodeCommand): TEpiField;
     function CreateValueLabelSet(ST: TRecodeCommand): TEpiValueLabelSet;
   private
     FExecutor: TExecutor;
@@ -46,17 +46,18 @@ end;
 
 function TRecode.GetValueLabelName(ToVariable: TCustomVariable): UTF8String;
 begin
-  result := 'lbl_' + ToVariable.Ident;
+  result := '_' + ToVariable.Ident;
 end;
 
-function TRecode.CreateToField(ToVariable: TCustomVariable): TEpiField;
+function TRecode.CreateToField(ST: TRecodeCommand): TEpiField;
 var
   VariableName: UTF8String;
   Section: TEpiSection;
   OldV: TEpiField;
   lTop, lLeft: Integer;
+  Opt: TOption;
 begin
-  VariableName := ToVariable.Ident;
+  VariableName := ST.ToVariable.Ident;
 
   Result := FExecutor.DataFile.Fields.FieldByName[VariableName];
   if (Assigned(Result)) then
@@ -78,7 +79,10 @@ begin
   Result := FExecutor.DataFile.NewField(ftInteger);
   Result.Name := VariableName;
   Result.Top := lTop;
-  Result.Length := lLeft;
+  Result.Left := lLeft;
+
+  if (ST.HasOption('label', Opt)) then
+    Result.Question.Text := Opt.Expr.AsString;
 end;
 
 function TRecode.CreateValueLabelSet(ST: TRecodeCommand): TEpiValueLabelSet;
@@ -118,25 +122,23 @@ function TRecode.DoByRecode(ST: TRecodeCommand; PreparedDataFile: TEpiDataFile
   ): boolean;
 var
   FromVariable, ToVariable, ObsNo: TEpiField;
-  MinValue, MaxValue, MissingValue: ASTFloat;
+  MinValue, MaxValue: ASTFloat;
   Value: Extended;
   i, Group, IntGroupOffset: Integer;
   Opt: TOption;
   IsIntegerGroups, HasMissingValue: Boolean;
-  IntervalValue: ASTInteger;
+  IntervalValue, MissingValue: ASTInteger;
   VLSet: TEpiValueLabelSet;
   ValueLabel: TEpiCustomValueLabel;
   Idx: Int64;
 
-  procedure CreateValueLabel(IsMissingValue: Boolean = false);
+  procedure CreateValueLabel();
   begin
-    if (Assigned(VLSet) and
-       (not VLSet.ValueLabelExists[Group]))
+    if (Assigned(VLSet)) and
+       (not (VLSet.ValueLabelExists[Group]))
     then
       begin
         ValueLabel := VLSet.NewValueLabel;
-        ValueLabel.IsMissingValue := IsMissingValue;
-
         TEpiIntValueLabel(ValueLabel).Value := Group;
 
         if (IsIntegerGroups) then
@@ -145,9 +147,23 @@ var
       end;
   end;
 
+  procedure CreateMissingValueLabel();
+  begin
+    if (Assigned(VLSet)) and
+       (HasMissingValue) and
+       (not VLSet.ValueLabelExists[MissingValue])
+    then
+      begin
+        ValueLabel := VLSet.NewValueLabel;
+        ValueLabel.IsMissingValue := true;
+        TEpiIntValueLabel(ValueLabel).Value := MissingValue;
+        ValueLabel.TheLabel.Text := 'missing';
+      end;
+  end;
+
 begin
   FromVariable := FExecutor.DataFile.Fields.FieldByName[ST.FromVariable.Ident];
-  ToVariable   := CreateToField(ST.ToVariable);
+  ToVariable   := CreateToField(ST);
   VLSet        := CreateValueLabelSet(ST);
   ToVariable.ValueLabelSet := VLSet;
   ObsNo        := PreparedDataFile.Fields.FieldByName[ANA_EXEC_PREPAREDS_OBSNO_FIELD];
@@ -168,25 +184,25 @@ begin
 
   HasMissingValue := ST.HasOption('m', Opt);
   if HasMissingValue then
-    MissingValue := Opt.Expr.AsFloat;
+    MissingValue := Opt.Expr.AsInteger;
 
   for i := 0 to ObsNo.Size - 1 do
     begin
       Idx := ObsNo.AsInteger[i];
-
       Value := FromVariable.AsFloat[Idx];
 
-      if ((HasMissingValue) and
-          (SameValue(Value, MissingValue)))
+      if (FromVariable.IsMissing[Idx]) or
+         (Value > MaxValue) or
+         (Value < MinValue)
       then
         begin
-          ToVariable.AsInteger[i] := Trunc(Value);
-          CreateValueLabel(true);
+          if (not HasMissingValue) then
+            Continue;
+
+          ToVariable.AsInteger[Idx] := MissingValue;
+          CreateMissingValueLabel();
           Continue;
         end;
-
-      if (Value > MaxValue) or (Value < MinValue) then
-        Continue;
 
       Group := Floor(Value / IntervalValue);
       if (IsIntegerGroups) then
@@ -207,6 +223,7 @@ begin
       VLSet.OnSort := nil;
     end;
 
+  ToVariable.Length := ToVariable.ValueLabelSet.MaxValueLength;
   Result := true;
 end;
 
@@ -263,8 +280,7 @@ begin
   Result := True;
 end;
 
-function TRecode.DoIntervalRecode(ST: TRecodeCommand;
-  PreparedDataFile: TEpiDataFile): boolean;
+function TRecode.DoIntervalRecode(ST: TRecodeCommand; PreparedDataFile: TEpiDataFile): boolean;
 var
   FromVariable, ToVariable, ObsNo: TEpiField;
   VLSet: TEpiValueLabelSet;
@@ -274,40 +290,69 @@ var
   Value: Extended;
   Idx: Int64;
   Opt: TOption;
+  HasMissingValue, UseIntergerGroups: Boolean;
+  MissingValue: ASTInteger;
+
+  procedure CreateMissingValueLabel();
+  var
+    ValueLabel: TEpiCustomValueLabel;
+  begin
+    if (Assigned(VLSet)) and
+       (HasMissingValue) and
+       (not VLSet.ValueLabelExists[MissingValue])
+    then
+      begin
+        ValueLabel := VLSet.NewValueLabel;
+        ValueLabel.IsMissingValue := true;
+        TEpiIntValueLabel(ValueLabel).Value := MissingValue;
+        ValueLabel.TheLabel.Text := 'missing';
+      end;
+  end;
+
+  procedure CreateValueLabels(RecodeIntervalList: TRecodeIntervalList);
+  var
+    RI: TRecodeInterval;
+  begin
+    UseIntergerGroups := ST.HasOption('i');
+
+    for RI in RecodeIntervalList do
+      begin
+        IntVL := TEpiIntValueLabel(VLSet.NewValueLabel);
+
+        if Assigned(RI.ValueLabel) then
+          IntVL.TheLabel.Text := RI.ValueLabel.AsString
+        else
+          IntVL.TheLabel.Text := Format('%s - %s', [RI.FromValue.AsString, RI.ToValue.AsString]);
+
+        if Assigned(RI.LabelValue) then
+          IntVL.Value         := RI.LabelValue.AsInteger
+        else if (UseIntergerGroups) then
+          IntVL.Value         := RecodeIntervalList.IndexOf(RI) + 1
+        else
+          IntVL.Value         := RI.FromValue.AsInteger;
+      end;
+  end;
+
 begin
   Result := false;
 
   if (not SanityCheckIntervals(ST.RecodeIntervalList)) then
     Exit;
 
-  if (ST.HasOption('m', Opt)) and
-     (Opt.Expr.AsFloat <= ST.RecodeIntervalList.Last.ToValue.AsFloat)
-  then
-    begin
-      FExecutor.Error('Missing value overlap intervals: ' + Opt.Expr.AsString);
-      Exit;
-    end;
+  HasMissingValue := ST.HasOption('m', Opt);
+  if HasMissingValue then
+    MissingValue := Opt.Expr.AsInteger;
 
   FromVariable := FExecutor.DataFile.Fields.FieldByName[ST.FromVariable.Ident];
-  ToVariable   := CreateToField(ST.ToVariable);
+  ToVariable   := CreateToField(ST);
   VLSet        := CreateValueLabelSet(ST);
   ToVariable.ValueLabelSet := VLSet;
   ObsNo        := PreparedDataFile.Fields.FieldByName[ANA_EXEC_PREPAREDS_OBSNO_FIELD];
 
-  for RI in ST.RecodeIntervalList do
-    begin
-      IntVL := TEpiIntValueLabel(VLSet.NewValueLabel);
+  if (Assigned(VLSet)) then
+    CreateValueLabels(ST.RecodeIntervalList);
 
-      if Assigned(RI.ValueLabel) then
-        IntVL.TheLabel.Text := RI.ValueLabel.AsString
-      else
-        IntVL.TheLabel.Text := Format('%s - %s', [RI.FromValue.AsString, RI.ToValue.AsString]);
-
-      if Assigned(RI.LabelValue) then
-        IntVL.Value         := RI.LabelValue.AsInteger
-      else
-        IntVL.Value         := RI.FromValue.AsInteger;
-    end;
+  UseIntergerGroups := ST.HasOption('i');
 
   for i := 0 to ObsNo.Size - 1 do
     begin
@@ -321,11 +366,22 @@ begin
           then
             if Assigned(RI.LabelValue) then
               ToVariable.AsInteger[Idx] := RI.LabelValue.AsInteger
+            else if (UseIntergerGroups) then
+              ToVariable.AsInteger[Idx] := ST.RecodeIntervalList.IndexOf(RI) + 1
             else
               ToVariable.AsInteger[Idx] := RI.FromValue.AsInteger;
         end;
+
+      if ((ToVariable.IsMissing[Idx]) and
+          (HasMissingValue))
+      then
+        begin
+          ToVariable.AsInteger[Idx] := MissingValue;
+          CreateMissingValueLabel();
+        end;
     end;
 
+  ToVariable.Length := ToVariable.ValueLabelSet.MaxValueLength;
   Result := true;
 end;
 

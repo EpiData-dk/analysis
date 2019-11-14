@@ -12,7 +12,7 @@ uses
   epiv_datamodule, epidatafiles, outputgenerator_base, history, cmdedit,
   options_hashmap, epiv_projecttreeview_frame, epicustombase,
   analysis_statusbar, epidocument, epiopenfile, outputviewer_types,
-  commandtree,
+  commandtree, history_form, varnames_form, projecttree_form, commandtree_form,
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -25,6 +25,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    HistoryListBox: TListBox;
     MenuItem43: TMenuItem;
     SaveOutputAction: TAction;
     Label3: TLabel;
@@ -78,7 +79,6 @@ type
     Button3: TButton;
     SaveDialog1: TSaveDialog;
     RightSidePanel: TPanel;
-    HistoryListBox: TListBox;
     RightPanelSplitter: TSplitter;
     ToggleCmdTreeAction: TAction;
     ToggleVarnamesListAction: TAction;
@@ -168,9 +168,16 @@ type
   { Other internals }
   private
     Executor: TExecutor;
+    FCommandTreeForm: TCommandTreeForm;
     procedure CommandTreeCommandDoubleClick(const CommandString: UTF8String);
+    procedure CommandTreeFormLineAction(Sender: TObject;
+      const LineText: UTF8String; ChangeFocus: boolean);
     procedure CommandTreePressEnterKey(const CommandString: UTF8String);
+    procedure HistoryWindowClearHistory(Sender: TObject);
+    procedure HistoryWindowLineAction(Sender: TObject; LineText: UTF8String);
     procedure LeftPanelChange(Sender: TObject);
+    procedure ProjectTreeFormLineAction(Sender: TObject;
+      const LineText: UTF8String);
     procedure RightPanelChange(Sender: TObject);
     procedure ShowEditor(Const Filename: UTF8String = '');
     procedure DoUpdateTitle;
@@ -201,9 +208,13 @@ type
     procedure DelayCmdEditFocus(Data: PtrInt);
     procedure ApplicationActivate(Sender: TObject);
     procedure TutorialChange(Sender: TObject);
+    procedure DisplayForm(AForm: TCustomForm);
 
   { Variable List }
   private
+    FVarnamesWindow: TVariablesForm;
+    procedure VarnamesWindowLineAction(Sender: TObject;
+      const LineText: UTF8String; ChangeFocus: boolean);
     procedure VarnamesListGetImageIndex(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var ImageIndex: Integer);
@@ -218,6 +229,7 @@ type
 
   { History / CmdEdit }
   private
+    FHistoryWindow: THistoryForm;
     FHistory: THistory;
     FCmdEdit: TCmdEdit;
     function  CmdEditRunCommand(Sender: TObject; const S: UTF8String): boolean;
@@ -228,6 +240,7 @@ type
   { LeftSidePanel }
   private
     // Project Tree
+    FProjectTreeForm: TProjectTreeForm;
     FProjectTree: TEpiVProjectTreeViewFrame;
     procedure ProjectTreeHint(Sender: TObject; const AObject: TEpiCustomBase;
       ObjectType: TEpiVTreeNodeObjectType; var HintText: string);
@@ -359,7 +372,6 @@ begin
   RestoreDefaultPos;
 end;
 
-
 procedure TMainForm.QuitActionExecute(Sender: TObject);
 begin
   Close;
@@ -425,17 +437,38 @@ begin
   FStatusbar.Parent := Self;
   FStatusbar.Align := alBottom;
   FStatusbar.Update(sucDocFile);
-  {IFDEF DARWIN}
+  {$IFDEF DARWIN}
   SetCurrentDirUTF8(ResolveDots(ProgramDirectory + '../../..'));
-  {ENDIF}
+  {$ENDIF}
   FHistory := THistory.Create(Executor, FOutputCreator);
 
   FCmdEdit := TCmdEdit.Create(Self);
-  FCmdEdit.Parent := Self;//CenterPanel;
-  FCmdEdit.Align := alBottom;
+//  FCmdEdit.Parent := CenterPanel;
   FCmdEdit.OnRunCommand := @CmdEditRunCommand;
   FCmdEdit.Executor := Executor;
   FCmdEdit.History := FHistory;
+
+  FCmdEdit.Align := alBottom;
+
+  //FCmdEdit.Anchors := [];
+  //FCmdEdit.AnchorToNeighbour(akTop, 0, PageControl1);
+  //FCmdEdit.AnchorParallel(akLeft, 0, PageControl1);
+  //FCmdEdit.AnchorParallel(akRight, 0, PageControl1);
+  //FCmdEdit.AnchorToNeighbour(akBottom, 0, FStatusbar);
+  //FCmdEdit.Height := 24;
+
+  FHistoryWindow := THistoryForm.Create(Self, FHIstory);
+  FHistoryWindow.OnClearHistoryAction := @HistoryWindowClearHistory;
+  FHistoryWindow.OnLineAction := @HistoryWindowLineAction;
+
+  FVarnamesWindow := TVariablesForm.Create(Self);
+  FVarnamesWindow.OnLineAction   := @VarnamesWindowLineAction;
+
+  FProjectTreeForm := TProjectTreeForm.Create(Self, Executor);
+  FProjectTreeForm.OnLineAction := @ProjectTreeFormLineAction;
+
+  FCommandTreeForm := TCommandTreeForm.Create(Self);
+  FCommandTreeForm.OnLineAction := @CommandTreeFormLineAction;
 
   aDM.OnProgress := @ReadDataProgress;
   aDM.OutputCreator := FOutputCreator;
@@ -456,6 +489,7 @@ begin
   FreeAndNil(FHistory);
   Executor.Free;
 end;
+
 procedure TMainForm.FormShow(Sender: TObject);
 var
   Lst: TStringList;
@@ -463,7 +497,6 @@ var
   i: Integer;
 begin
   DoUpdateTitle;
-  ActiveControl := FCmdEdit;
 
   // This creates the output viewer (Html, Text)
   OutputViewerChanges(nil);
@@ -473,6 +506,8 @@ begin
   OutputFontChange(nil);
   CmdEditFontChangeEvent(nil);
 
+  ActiveControl := FCmdEdit;
+
   UpdateRecentFiles;
   LoadTutorials;
 
@@ -481,7 +516,16 @@ begin
   LoadSplitterPosition(RightSideSplitter, 'SidebarSplitter');
   LoadSplitterPosition(RightPanelSplitter, 'SidebarBottomSplitter');
 
-  // At this point it is possible to run the first commands
+  // For Cocoa widget set, must add left margin to Main output window
+  // and to bottom of command line to see the entire element
+
+  {$IFDEF LCLCocoa}
+     PageControl1.BorderSpacing.Left := 10;
+     PageControl1.BorderSpacing.Right := 10;
+     FCmdEdit.BorderSpacing.Bottom := 10;
+  {$ENDIF}
+
+   // At this point it is possible to run the first commands
   if Application.HasOption('i') then
     S := ExpandFileNameUTF8(Application.GetOptionValue('i'))
   else
@@ -502,7 +546,6 @@ begin
 
   FOutputCreator.DoInfoAll(GetProgramInfo);
   FOutputCreator.DoNormal('');
-
 
   // For some odd reason, the Statusbar has an incorrect height but changing the size
   // of the main form recalculates it all. This is only needed right after programstart.
@@ -634,22 +677,26 @@ end;
 procedure TMainForm.ToggleCmdTreeActionExecute(Sender: TObject);
 begin
   ToggleSidebar(FCommandTree, FProjectTree, LeftPanelSplitter, LeftSideSplitter);
+  DisplayForm(FCommandTreeForm);
 end;
 
 procedure TMainForm.ToggleProjectTreeExecute(Sender: TObject);
 begin
   ToggleSidebar(FProjectTree, FCommandTree, LeftPanelSplitter, LeftSideSplitter);
+  DisplayForm(FProjectTreeForm);
 end;
 
 procedure TMainForm.ToggleVarnamesListActionExecute(Sender: TObject);
 begin
   ToggleSidebar(VarnamesList, HistoryListBox, RightPanelSplitter, RightSideSplitter);
+  DisplayForm(FVarnamesWindow);
 end;
 
 procedure TMainForm.ToggleHistoryListActionExecute(Sender: TObject);
 begin
   ToggleSidebar(HistoryListBox, VarnamesList, RightPanelSplitter, RightSideSplitter);
   HistoryListBox.TopIndex := HistoryListBox.Count - 1;
+  DisplayForm(FHistoryWindow);
 end;
 
 procedure TMainForm.VarnamesListGetText(Sender: TBaseVirtualTree;
@@ -896,10 +943,25 @@ begin
     ToggleSidebar(FProjectTree, FCommandTree, LeftPanelSplitter, LeftSideSplitter, Value);
 end;
 
+procedure TMainForm.ProjectTreeFormLineAction(Sender: TObject;
+  const LineText: UTF8String);
+begin
+  InterfaceRunCommand('use ' + LineText + ';');
+  CmdEditFocusAction.Execute;
+end;
+
 procedure TMainForm.CommandTreeCommandDoubleClick(
   const CommandString: UTF8String);
 begin
   FCmdEdit.Text := CommandString;
+end;
+
+procedure TMainForm.CommandTreeFormLineAction(Sender: TObject;
+  const LineText: UTF8String; ChangeFocus: boolean);
+begin
+  FCmdEdit.Text := LineText;
+  if (ChangeFocus) then
+    CmdEditFocusAction.Execute;
 end;
 
 procedure TMainForm.CommandTreePressEnterKey(const CommandString: UTF8String);
@@ -907,6 +969,18 @@ begin
   FCmdEdit.Text := CommandString;
   if (FCmdEdit.CanFocus) then
     FCmdEdit.SetFocus;
+end;
+
+procedure TMainForm.HistoryWindowClearHistory(Sender: TObject);
+begin
+  ClearHistoryActionExecute(nil);
+end;
+
+procedure TMainForm.HistoryWindowLineAction(Sender: TObject;
+  LineText: UTF8String);
+begin
+  // TODO : Not correct, but will do for now
+  CommandTreePressEnterKey(LineText);
 end;
 
 procedure TMainForm.RightPanelChange(Sender: TObject);
@@ -976,6 +1050,7 @@ begin
       then
         begin
           FProjectTree.AddDocument(Executor.Document);
+          FProjectTreeForm.AddDocument(Executor.Document);
           FStatusbar.DocFile  := Executor.DocFile;
           FStatusbar.Datafile := Executor.DataFile;
           UpdateSetOptions;
@@ -986,6 +1061,7 @@ begin
       then
         begin
           FProjectTree.AddDocument(Executor.Document);
+          FProjectTreeForm.AddDocument(Executor.Document);
           FStatusbar.DocFile  := Executor.DocFile;
           FStatusbar.Datafile := Executor.DataFile;
           UpdateSetOptions;
@@ -1017,6 +1093,7 @@ begin
       end;
   end;
 
+  FVarnamesWindow.DataFile := Executor.DataFile;
   FStatusbar.Update();
   LeftSideSplitter.Visible := LeftSidePanel.Visible;
 end;
@@ -1306,7 +1383,10 @@ begin
       end;
 
     gaProjectTree:
-      FProjectTree.UpdateTree;
+      begin
+        FProjectTree.UpdateTree;
+        FProjectTreeForm.UpdateProjectTree;
+      end;
 
     gaVariableList:
       DoUpdateVarnames;
@@ -1396,6 +1476,9 @@ begin
       Sheet := TOldHtmlSheet.Create(Self);
   end;
 
+  FCmdEdit.Parent := Sheet;
+  FCmdEdit.Align := alBottom;
+
   Sheet.Parent := PageControl1;
   PageControl1.ActivePage := Sheet;
   Supports(Sheet, IAnaOutputViewer, FOutputViewer);
@@ -1470,6 +1553,27 @@ end;
 procedure TMainForm.TutorialChange(Sender: TObject);
 begin
   LoadTutorials;
+end;
+
+procedure TMainForm.DisplayForm(AForm: TCustomForm);
+begin
+  if (not Assigned(AForm)) then
+    Exit;
+
+  FOutputCreator.DoInfoAll('Press F2, F3, F5, F6, F7, F8 and move windows to desired screen position');
+  RedrawOutput;
+
+  AForm.Show;
+  AForm.BringToFront;
+  AForm.SetFocus;
+end;
+
+procedure TMainForm.VarnamesWindowLineAction(Sender: TObject;
+  const LineText: UTF8String; ChangeFocus: boolean);
+begin
+  FCmdEdit.Text := FCmdEdit.Text + ' ' + LineText;
+  if (ChangeFocus) then
+    CmdEditFocusActionExecute(Self);
 end;
 
 procedure TMainForm.ExecutorStart(Sender: TObject);
@@ -1603,6 +1707,8 @@ var
   end;
 
 begin
+  Exit;
+
   case ToggleMode of
     tmToggle:     Tmp := (not ToggleItem.Visible) or (not ToggleItem.Focused);
     tmForceOpen:  Tmp := true;
@@ -1616,6 +1722,8 @@ begin
 
   ParentPanel          := ToggleItem.Parent;
   ParentPanel.Visible  := ToggleItem.Visible or Sibling.Visible;
+
+
 
   if (ToggleItem.CanSetFocus) then
     begin
@@ -1654,6 +1762,8 @@ begin
 
   VarnamesList.InvalidateChildren(nil, true);
   VarnamesList.Header.AutoFitColumns(false);
+
+//  FVarnamesWindow.UpdateVarNames;
 end;
 
 procedure TMainForm.DoUpdateHistory;
@@ -1665,6 +1775,8 @@ begin
 
   HistoryListBox.Items.EndUpdate;
   HistoryListBox.TopIndex := HistoryListBox.Items.Count - 1;
+
+  FHistoryWindow.UpdateHistory;
 end;
 
 procedure TMainForm.AddSetOptionHandlers;
@@ -1779,16 +1891,23 @@ end;
 
 procedure TMainForm.RestoreDefaultPos;
 begin
-  TEditorForm.RestoreDefaultPos;
-  TAboutForm.RestoreDefaultPos;
-  TBrowseForm4.RestoreDefaultPos;
-
   BeginFormUpdate;
   Width := 700;
   Height := 600;
   Top := 5;
   Left := 5;
   EndFormUpdate;
+
+  Application.ProcessMessages;
+
+  TEditorForm.RestoreDefaultPos;
+  TAboutForm.RestoreDefaultPos;
+  TBrowseForm4.RestoreDefaultPos;
+
+  TCommandTreeForm.RestoreDefaultPos(FCommandTreeForm);
+  THistoryForm.RestoreDefaultPos(FHistoryWindow);
+  TProjectTreeForm.RestoreDefaultPos(FProjectTreeForm);
+  TVariablesForm.RestoreDefaultPos(FVarnamesWindow);
 
   SaveFormPosition(Self, 'MainForm');
 end;

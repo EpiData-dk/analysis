@@ -1859,22 +1859,23 @@ begin
   FOptions.Insert(ANA_SO_SHOW_INFO,                      SOpt);
   FOptions.Insert(ANA_SO_SHOW_WARNING,                   TSetOption.Create('ON', rtBoolean));
 
-  FOptions.Insert(ANA_SO_EDITOR_FONT_SIZE,               TSetOption.Create('10',      rtInteger));
+  FOptions.Insert(ANA_SO_EDITOR_FONT_SIZE,               TSetOption.Create('10', rtInteger));
   FOptions.Insert(ANA_SO_EDITOR_FONT_NAME,               TSetOption.Create({$IFDEF MSWINDOWS}'Courier New'{$ENDIF}{$IFDEF LINUX}'DejaVu Sans Mono'{$ENDIF}{$IFDEF DARWIN}'Courier New'{$ENDIF}, rtString));
+  FOptions.Insert(ANA_SO_EDITOR_HISTORY,                 TSetOption.Create('ON', rtBoolean));
 
-  FOptions.Insert(ANA_SO_OUTPUT_FONT_SIZE,               TSetOption.Create('10',      rtInteger));
+  FOptions.Insert(ANA_SO_OUTPUT_FONT_SIZE,               TSetOption.Create('10', rtInteger));
   FOptions.Insert(ANA_SO_OUTPUT_FONT_NAME,               TSetOption.Create({$IFDEF MSWINDOWS}'Courier New'{$ENDIF}{$IFDEF LINUX}'DejaVu Sans Mono'{$ENDIF}{$IFDEF DARWIN}'Courier New'{$ENDIF}, rtString));
   FOptions.Insert(ANA_SO_OUTPUT_FONT_COLOR,              TFontColorOption.Create('#000000', rtString));
   FOptions.Insert(ANA_SO_OUTPUT_FONT_STYLE,              TFontStyleOption.Create('',        rtString));
   FOptions.Insert(ANA_SO_OUTPUT_BG_COLOR,                TFontColorOption.Create('#FFFFFF', rtString));
 
-  FOptions.Insert(ANA_SO_CMDEDIT_FONT_SIZE,              TSetOption.Create('10',      rtInteger));
+  FOptions.Insert(ANA_SO_CMDEDIT_FONT_SIZE,              TSetOption.Create('10', rtInteger));
   FOptions.Insert(ANA_SO_CMDEDIT_FONT_NAME,              TSetOption.Create({$IFDEF MSWINDOWS}'Courier New'{$ENDIF}{$IFDEF LINUX}'DejaVu Sans Mono'{$ENDIF}{$IFDEF DARWIN}'Courier New'{$ENDIF}, rtString));
   FOptions.Insert(ANA_SO_CMDEDIT_FONT_COLOR,             TFontColorOption.Create('#000000', rtString));
   FOptions.Insert(ANA_SO_CMDEDIT_FONT_STYLE,             TFontStyleOption.Create('',        rtString));
   FOptions.Insert(ANA_SO_CMDEDIT_BG_COLOR,               TFontColorOption.Create('#FFFFFF', rtString));
 
-  FOptions.Insert(ANA_SO_BROWSER_FONT_SIZE,              TSetOption.Create('10',      rtInteger));
+  FOptions.Insert(ANA_SO_BROWSER_FONT_SIZE,              TSetOption.Create('10', rtInteger));
   FOptions.Insert(ANA_SO_BROWSER_FONT_NAME,              TSetOption.Create({$IFDEF MSWINDOWS}'Courier New'{$ENDIF}{$IFDEF LINUX}'DejaVu Sans Mono'{$ENDIF}{$IFDEF DARWIN}'Courier New'{$ENDIF}, rtString));
   FOptions.Insert(ANA_SO_BROWSER_FONT_COLOR,             TFontColorOption.Create('#000000', rtString));
   FOptions.Insert(ANA_SO_BROWSER_FONT_STYLE,             TFontStyleOption.Create('',        rtString));
@@ -2036,7 +2037,7 @@ begin
   FN := '';
 
   if Assigned(St.StringExpr) then
-    FN := ST.StringExpr.AsString;
+    FN := ExpandFileNameUTF8(ST.StringExpr.AsString);
 
   if Modified and
      (not ST.HasOption('c'))
@@ -2057,11 +2058,18 @@ begin
   if (FN <> '') then
     begin
       if (not FileExistsUTF8(FN)) then
-      begin
-        DoError('File does not exist: ' + FN);
-        ST.ExecResult := csrFailed;
-        Exit;
-      end;
+        begin
+          DoError('File does not exist: ' + FN);
+          ST.ExecResult := csrFailed;
+          Exit;
+        end;
+
+      if (DirectoryExistsUTF8(FN)) then
+        begin
+          DoError(FN + ' is a folder, not a file!');
+          ST.ExecResult := csrFailed;
+          Exit;
+        end;
     end;
 
   try
@@ -2103,7 +2111,8 @@ begin
   for Rel in Document.Relations do
     if (not Rel.ProtectedItem) then
       break;
-
+// TODO: need check here that data file does not have a variable with the same
+//       name as an existing global variable
   DoUseDatafile(Rel.Datafile);
 
   FDocFile.Document.Modified := false;
@@ -2152,7 +2161,7 @@ begin
     end;
 
   if Assigned(ST.StringExpr) then
-    FN := ST.StringExpr.AsString;
+    FN := ExpandFileNameUTF8(ST.StringExpr.AsString);
 
   if (FN = '') then
     begin
@@ -2357,7 +2366,7 @@ begin
   FN := '';
 
   if Assigned(ST.StringExpr) then
-    FN := ST.StringExpr.AsString;
+    FN := ExpandFileNameUTF8(ST.StringExpr.AsString);
 
   if (FN = '') then
     begin
@@ -2371,7 +2380,7 @@ begin
 
   if (not FileExistsUTF8(FN)) then
   begin
-    DoError('File "' + FN + '" does not exits');
+    DoError('File "' + FN + '" does not exist');
     Exit;
   end;
 
@@ -2410,7 +2419,16 @@ begin
   FN := '';
 
   if Assigned(ST.StringExpr) then
-    FN := ST.StringExpr.AsString;
+    FN := ExpandFileNameUTF8(ST.StringExpr.AsString);
+
+  if (FN <> '') and
+     (not DirectoryExistsUTF8(FN))
+  then
+    begin
+      DoInfo('"' + FN + '"' + ' does not exist');
+      ST.ExecResult := csrFailed;
+      Exit;
+    end;
 
   if (FN = '') then
     begin
@@ -3375,21 +3393,9 @@ var
 begin
   L := ST.VariableList.GetIdentsAsList;
   F := nil;
-  DF := nil;
-
-  if ST.HasOption('m') then
-    DF := DoPrepareDatafile(L, nil)
-  else
-    DF := DoPrepareDatafile(L, L);
+  DF := DoPrepareDatafile(L, nil);
 
   try
-    if DF.Size = 0 then
-      begin
-        DoError('No data!');
-        ST.ExecResult := csrFailed;
-        Exit;
-      end;
-
     F := TFreqCommand.Create(Self, FOutputCreator);
     F.ExecFreq(DF, ST);
   finally
@@ -3913,7 +3919,7 @@ begin
   FieldList := TStringListUTF8.Create;
   FieldList.Add(ST.FromVariable.Ident);
 
-  DF := PrepareDatafile(FieldList, FieldList, [pdoAddOrgObsNo]);
+  DF := PrepareDatafile(FieldList, nil, [pdoAddOrgObsNo]);
 
   Recoder := TRecode.Create(self, FOutputCreator);
   Recoder.ExecRecode(ST, DF);

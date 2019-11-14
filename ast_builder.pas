@@ -1427,6 +1427,7 @@ begin
   Options      := DoOptionList(R.Tokens[5].Reduction, nil);
 
   Result := TRecodeCommand.Create(FromVariable, ToVariable, RecodeList, Options);
+  Result.AssignToken(R.Tokens[0]);
 end;
 
 function TASTBuilder.DoIndexVariable(R: TReduction): TCustomVariable;

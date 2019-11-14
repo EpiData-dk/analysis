@@ -16,8 +16,9 @@ function GetRecentPGMIniFileName: string;
 function GetIniFileName: string;
 function GetStartupPgm: string;
 
-procedure SaveFormPosition(Const AForm: TForm; Const SectionName: string);
-procedure LoadFormPosition(AForm: TForm; Const SectionName: string);
+procedure SaveFormPosition(Const AForm: TCustomForm; Const SectionName: string);
+procedure LoadFormPosition(const AForm: TCustomForm; Const SectionName: string);
+procedure DeleteFormPosition(Const SectionName: string);
 procedure SaveSplitterPosition(Const ASplitter: TSplitter; Const SectionName: string);
 procedure LoadSplitterPosition(ASplitter: TSplitter; Const SectionName: string);
 
@@ -162,7 +163,7 @@ begin
   Result := GetAppConfigDirUTF8(false, true) + 'startup.pgm';
 end;
 
-procedure SaveFormPosition(const AForm: TForm; const SectionName: string);
+procedure SaveFormPosition(const AForm: TCustomForm; const SectionName: string);
 var
   Ini: TIniFile;
 begin
@@ -180,7 +181,7 @@ begin
   end;
 end;
 
-procedure LoadFormPosition(AForm: TForm; const SectionName: string);
+procedure LoadFormPosition(const AForm: TCustomForm; const SectionName: string);
 var
   Ini: TIniFile;
 begin
@@ -195,6 +196,18 @@ begin
       Height  := ReadInteger(SectionName, 'Height', Height);
       UnlockRealizeBounds;
     end;
+  finally
+    Ini.Free;
+  end;
+end;
+
+procedure DeleteFormPosition(const SectionName: string);
+var
+  Ini: TIniFile;
+begin
+  try
+    Ini := GetIniFile(GetIniFileName);
+    Ini.EraseSection(SectionName);
   finally
     Ini.Free;
   end;

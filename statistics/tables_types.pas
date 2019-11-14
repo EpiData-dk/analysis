@@ -167,6 +167,8 @@ type
     function GetCols(const Index: Integer): TTableVector;
     function GetRows(const Index: Integer): TTableVector;
     function GetCounts(Const Col, Row: Integer): Integer;
+    function GetColTotalPct(const Index: Integer): EpiFloat;
+    function GetRowTotalPct(const Index: Integer): EpiFloat;
     function GetTotal: EpiInteger;
     procedure CalcTotals;
   protected
@@ -186,6 +188,8 @@ type
     property Cell[const Col, Row: Cardinal]: TTableCell read GetCell;
     property ColTotal[const Index: Integer]: EpiInteger read GetColTotal;
     property RowTotal[const Index: Integer]: EpiInteger read GetRowTotal;
+    property ColTotalPct[const Index: Integer]: EpiFloat read GetColTotalPct;
+    property RowTotalPct[const Index: Integer]: EpiFloat read GetRowTotalPct;
     property Cols[Const Index: Integer]: TTableVector read GetCols;
     property Rows[Const Index: Integer]: TTableVector read GetRows;
 
@@ -389,7 +393,7 @@ end;
 
 function TTableCell.GetColPct: EpiFloat;
 begin
-  if (N = 0) then
+  if (FTable.ColTotal[FCol] = 0) then
     result := math.NaN
   else
     result := N / FTable.ColTotal[FCol];
@@ -397,7 +401,7 @@ end;
 
 function TTableCell.GetRowPct: EpiFloat;
 begin
-  if (N = 0) then
+  if (FTable.RowTotal[FRow] = 0) then
     result := math.NaN
   else
     result := N / FTable.RowTotal[FRow];
@@ -405,7 +409,7 @@ end;
 
 function TTableCell.GetTotalPct: EpiFloat;
 begin
-  if (N = 0) then
+  if (FTable.Total = 0) then
     result := math.NaN
   else
     result := N / FTable.Total;
@@ -509,6 +513,22 @@ end;
 function TTwoWayTable.GetCounts(const Col, Row: Integer): Integer;
 begin
   result := Cell[Col, Row].N;
+end;
+
+function TTwoWayTable.GetColTotalPct(const Index: Integer): EpiFloat;
+begin
+  if (Total = 0) then
+    result := math.NaN
+  else
+    result := ColTotal[Index] / Total;
+end;
+
+function TTwoWayTable.GetRowTotalPct(const Index: Integer): EpiFloat;
+begin
+  if (Total = 0) then
+    result := math.NaN
+  else
+    result := RowTotal[Index] / Total;
 end;
 
 function TTwoWayTable.GetTotal: EpiInteger;

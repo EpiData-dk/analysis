@@ -1,7 +1,7 @@
 object EditorForm: TEditorForm
-  Left = 2328
+  Left = 2545
   Height = 694
-  Top = 220
+  Top = 195
   Width = 823
   ActiveControl = SynEdit1
   AllowDropFiles = True
@@ -11,6 +11,7 @@ object EditorForm: TEditorForm
   Menu = MainMenu1
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
+  OnDestroy = FormDestroy
   OnDropFiles = FormDropFiles
   OnShow = FormShow
   Position = poDefault
