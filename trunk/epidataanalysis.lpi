@@ -1,0 +1,757 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="11"/>
+    <General>
+      <SessionStorage Value="InProjectDir"/>
+      <MainUnit Value="0"/>
+      <AutoCreateForms Value="False"/>
+      <Title Value="Analysis"/>
+      <ResourceType Value="res"/>
+      <UseXPManifest Value="True"/>
+      <Icon Value="0"/>
+    </General>
+    <VersionInfo>
+      <UseVersionInfo Value="True"/>
+      <MajorVersionNr Value="1"/>
+      <MinorVersionNr Value="5"/>
+      <BuildNr Value="18"/>
+      <Attributes pvaSpecialBuild="True"/>
+      <StringTable SpecialBuild="TRUNK"/>
+    </VersionInfo>
+    <BuildModes Count="7">
+      <Item1 Name="Default" Default="True"/>
+      <Item2 Name="Win32">
+        <MacroValues Count="1">
+          <Macro2 Name="LCLWidgetType" Value="win32"/>
+        </MacroValues>
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="epidataanalysis"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir);grammar"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="win32"/>
+            <Optimizations>
+              <OptimizationLevel Value="0"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <DebugInfoType Value="dsDwarf2Set"/>
+            </Debugging>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+        </CompilerOptions>
+      </Item2>
+      <Item3 Name="Win64">
+        <MacroValues Count="1">
+          <Macro3 Name="LCLWidgetType" Value="win32"/>
+        </MacroValues>
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="epidataanalysis"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir);grammar"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="x86_64"/>
+            <TargetOS Value="win64"/>
+            <Optimizations>
+              <OptimizationLevel Value="0"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <DebugInfoType Value="dsDwarf2Set"/>
+            </Debugging>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+        </CompilerOptions>
+      </Item3>
+      <Item4 Name="Linux32">
+        <MacroValues Count="1">
+          <Macro5 Name="LCLWidgetType" Value="gtk2"/>
+        </MacroValues>
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="epidataanalysis"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir);grammar"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="linux"/>
+            <Optimizations>
+              <OptimizationLevel Value="0"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <DebugInfoType Value="dsDwarf2Set"/>
+            </Debugging>
+          </Linking>
+        </CompilerOptions>
+      </Item4>
+      <Item5 Name="Linux64">
+        <MacroValues Count="1">
+          <Macro5 Name="LCLWidgetType" Value="gtk2"/>
+        </MacroValues>
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="epidataanalysis"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir);grammar"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="x86_64"/>
+            <TargetOS Value="linux"/>
+            <Optimizations>
+              <OptimizationLevel Value="0"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <DebugInfoType Value="dsDwarf2Set"/>
+            </Debugging>
+          </Linking>
+        </CompilerOptions>
+      </Item5>
+      <Item6 Name="Darwin32">
+        <MacroValues Count="1">
+          <Macro1 Name="LCLWidgetType" Value="carbon"/>
+        </MacroValues>
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="epidataanalysis"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir);grammar"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="darwin"/>
+            <Optimizations>
+              <OptimizationLevel Value="0"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <DebugInfoType Value="dsDwarf2Set"/>
+            </Debugging>
+          </Linking>
+        </CompilerOptions>
+      </Item6>
+      <Item7 Name="Darwin64">
+        <MacroValues Count="1">
+          <Macro4 Name="LCLWidgetType" Value="cocoa"/>
+        </MacroValues>
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="epidataanalysis"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir);grammar"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="x86_64"/>
+            <TargetOS Value="darwin"/>
+            <Optimizations>
+              <OptimizationLevel Value="0"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <DebugInfoType Value="dsDwarf2Set"/>
+            </Debugging>
+          </Linking>
+        </CompilerOptions>
+      </Item7>
+      <SharedMatrixOptions Count="5">
+        <Item1 ID="324748042522" Modes="Darwin32" Type="IDEMacro" MacroName="LCLWidgetType" Value="carbon"/>
+        <Item2 ID="123055442727" Modes="Win32" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
+        <Item3 ID="329491697955" Modes="Win64" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
+        <Item4 ID="081215147691" Modes="Darwin64" Type="IDEMacro" MacroName="LCLWidgetType" Value="cocoa"/>
+        <Item5 ID="279386422299" Modes="Linux32,Linux64" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
+      </SharedMatrixOptions>
+    </BuildModes>
+    <PublishOptions>
+      <Version Value="2"/>
+    </PublishOptions>
+    <RunParams>
+      <environment>
+        <UserOverrides Count="1">
+          <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
+        </UserOverrides>
+      </environment>
+      <FormatVersion Value="2"/>
+      <Modes Count="1">
+        <Mode0 Name="default">
+          <environment>
+            <UserOverrides Count="1">
+              <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
+            </UserOverrides>
+          </environment>
+        </Mode0>
+      </Modes>
+    </RunParams>
+    <RequiredPackages Count="13">
+      <Item1>
+        <PackageName Value="luicontrols"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="luicomponents"/>
+      </Item2>
+      <Item3>
+        <PackageName Value="ChsDet"/>
+      </Item3>
+      <Item4>
+        <PackageName Value="lnetbase"/>
+      </Item4>
+      <Item5>
+        <PackageName Value="lclextensions_package"/>
+      </Item5>
+      <Item6>
+        <PackageName Value="dcpcrypt"/>
+      </Item6>
+      <Item7>
+        <PackageName Value="BGRABitmapPack"/>
+      </Item7>
+      <Item8>
+        <PackageName Value="FrameViewer09"/>
+      </Item8>
+      <Item9>
+        <PackageName Value="virtualtreeview_package"/>
+      </Item9>
+      <Item10>
+        <PackageName Value="epidatacore_visuals"/>
+        <MinVersion Major="2" Valid="True"/>
+      </Item10>
+      <Item11>
+        <PackageName Value="epidatacore"/>
+        <MinVersion Major="2" Valid="True"/>
+      </Item11>
+      <Item12>
+        <PackageName Value="SynEdit"/>
+      </Item12>
+      <Item13>
+        <PackageName Value="LCL"/>
+      </Item13>
+    </RequiredPackages>
+    <Units Count="89">
+      <Unit0>
+        <Filename Value="epidataanalysis.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="project1"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="main.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="MainForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="executor.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="expr.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="ast.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="ast_types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="ast_builder.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="datamodule.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="aDM"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="DataModule"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="select_stack.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="result_variables.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="runtest.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="parser.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="statistics/means.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="utils/generalutils.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="auxunits/statfunctions.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="statistics/interval_types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="output/outputcreator.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="output/outputgenerator_base.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="output/outputgenerator_txt.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit18>
+      <Unit19>
+        <Filename Value="output/outputgenerator_html.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit19>
+      <Unit20>
+        <Filename Value="executor/options_hashmap.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="about.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="AboutForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit21>
+      <Unit22>
+        <Filename Value="statements/list.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit22>
+      <Unit23>
+        <Filename Value="statements/edit.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit23>
+      <Unit24>
+        <Filename Value="statements/drop.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit24>
+      <Unit25>
+        <Filename Value="auxunits/history.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit25>
+      <Unit26>
+        <Filename Value="cmdedit.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit26>
+      <Unit27>
+        <Filename Value="statusbar/analysis_statusbar.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit27>
+      <Unit28>
+        <Filename Value="statusbar/selected_count_statusbar_item.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit28>
+      <Unit29>
+        <Filename Value="statusbar/workingdir_statusbar_item.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit29>
+      <Unit30>
+        <Filename Value="statements/systemcmd.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit30>
+      <Unit31>
+        <Filename Value="parser_types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit31>
+      <Unit32>
+        <Filename Value="utils/ana_documentfile.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit32>
+      <Unit33>
+        <Filename Value="functions/epi_script_function_mathfunctions.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit33>
+      <Unit34>
+        <Filename Value="functions/epi_script_function_createdate.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit34>
+      <Unit35>
+        <Filename Value="functions/epi_script_function_createtime.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit35>
+      <Unit36>
+        <Filename Value="functions/epi_script_function_datefunctions.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit36>
+      <Unit37>
+        <Filename Value="functions/epi_script_function_resourcestrings.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit37>
+      <Unit38>
+        <Filename Value="functions/epi_script_function_stringfunctions.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit38>
+      <Unit39>
+        <Filename Value="functions/epi_script_function_timefunctions.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit39>
+      <Unit40>
+        <Filename Value="editor/editor_form.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="EditorForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit40>
+      <Unit41>
+        <Filename Value="statistics/freq.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit41>
+      <Unit42>
+        <Filename Value="statusbar/executing_statusbar_item.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit42>
+      <Unit43>
+        <Filename Value="functions/epi_script_function_systemfunctions.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit43>
+      <Unit44>
+        <Filename Value="parser/token.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Token"/>
+      </Unit44>
+      <Unit45>
+        <Filename Value="parser/goldparser.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="GOLDParser"/>
+      </Unit45>
+      <Unit46>
+        <Filename Value="parser/symbol.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Symbol"/>
+      </Unit46>
+      <Unit47>
+        <Filename Value="parser/fastate.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="FAState"/>
+      </Unit47>
+      <Unit48>
+        <Filename Value="parser/grammarreader.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="GrammarReader"/>
+      </Unit48>
+      <Unit49>
+        <Filename Value="parser/lraction.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="LRAction"/>
+      </Unit49>
+      <Unit50>
+        <Filename Value="parser/memleakfinder.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="MemLeakFinder"/>
+      </Unit50>
+      <Unit51>
+        <Filename Value="parser/rule.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Rule"/>
+      </Unit51>
+      <Unit52>
+        <Filename Value="parser/sourcefeeder.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="SourceFeeder"/>
+      </Unit52>
+      <Unit53>
+        <Filename Value="parser/variables.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Variables"/>
+      </Unit53>
+      <Unit54>
+        <Filename Value="utils/ana_procs.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit54>
+      <Unit55>
+        <Filename Value="statements/merge.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit55>
+      <Unit56>
+        <Filename Value="statements/integrity_tests.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit56>
+      <Unit57>
+        <Filename Value="output/htmlviewer.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit57>
+      <Unit58>
+        <Filename Value="output/textviewer.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit58>
+      <Unit59>
+        <Filename Value="output/outputviewer_types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit59>
+      <Unit60>
+        <Filename Value="output/oldhtmlviewer.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit60>
+      <Unit61>
+        <Filename Value="output/htmlviewer_osr.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit61>
+      <Unit62>
+        <Filename Value="utils/options_utils.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit62>
+      <Unit63>
+        <Filename Value="utils/ana_globals.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit63>
+      <Unit64>
+        <Filename Value="statements/browse4.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="BrowseForm4"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit64>
+      <Unit65>
+        <Filename Value="statements/report.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit65>
+      <Unit66>
+        <Filename Value="executor/options_fontoptions.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit66>
+      <Unit67>
+        <Filename Value="statements/save_output.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit67>
+      <Unit68>
+        <Filename Value="functions/epi_script_function_observations.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit68>
+      <Unit69>
+        <Filename Value="executor/options_filesoptions.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit69>
+      <Unit70>
+        <Filename Value="statements/aggregate.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit70>
+      <Unit71>
+        <Filename Value="statements/aggregate_types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit71>
+      <Unit72>
+        <Filename Value="statistics/tables.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit72>
+      <Unit73>
+        <Filename Value="statistics/tables_types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit73>
+      <Unit74>
+        <Filename Value="executor/options_table.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit74>
+      <Unit75>
+        <Filename Value="statistics/tables_stat_chi2.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit75>
+      <Unit76>
+        <Filename Value="statistics/tables_stat_fexp.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit76>
+      <Unit77>
+        <Filename Value="statistics/tables_stat_or.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit77>
+      <Unit78>
+        <Filename Value="statistics/tables_stat_rr.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit78>
+      <Unit79>
+        <Filename Value="statistics/ctable.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit79>
+      <Unit80>
+        <Filename Value="statistics/describe.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit80>
+      <Unit81>
+        <Filename Value="commandtree/commandtree.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit81>
+      <Unit82>
+        <Filename Value="statements/recode.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit82>
+      <Unit83>
+        <Filename Value="executor/select_datafile.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit83>
+      <Unit84>
+        <Filename Value="sidewindows/history_form.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="HistoryForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit84>
+      <Unit85>
+        <Filename Value="sidewindows/varnames_form.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="VariablesForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit85>
+      <Unit86>
+        <Filename Value="sidewindows/projecttree_form.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="ProjectTreeForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit86>
+      <Unit87>
+        <Filename Value="sidewindows/commandtree_form.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="CommandTreeForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit87>
+      <Unit88>
+        <Filename Value="sidewindows/auto_position_form.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit88>
+    </Units>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="11"/>
+    <Target>
+      <Filename Value="epidataanalysis"/>
+    </Target>
+    <SearchPaths>
+      <IncludeFiles Value="$(ProjOutDir);grammar"/>
+      <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+      <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+    </SearchPaths>
+    <Parsing>
+      <SyntaxOptions>
+        <IncludeAssertionCode Value="True"/>
+      </SyntaxOptions>
+    </Parsing>
+    <CodeGeneration>
+      <TargetCPU Value="x86_64"/>
+      <Optimizations>
+        <OptimizationLevel Value="0"/>
+      </Optimizations>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <DebugInfoType Value="dsDwarf2Set"/>
+      </Debugging>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
+    </Linking>
+    <Other>
+      <CustomOptions Value="-dEPI_CHROMIUM_HTML1
+-dEPI_BETA"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="13">
+      <Item1>
+        <Name Value="EAbort"/>
+      </Item1>
+      <Item2>
+        <Name Value="ECodetoolError"/>
+      </Item2>
+      <Item3>
+        <Name Value="EFOpenError"/>
+        <Enabled Value="False"/>
+      </Item3>
+      <Item4>
+        <Name Value="EEpiPasswordCanceled"/>
+        <Enabled Value="False"/>
+      </Item4>
+      <Item5>
+        <Name Value="ESetOption"/>
+        <Enabled Value="False"/>
+      </Item5>
+      <Item6>
+        <Name Value="EDuplicate"/>
+        <Enabled Value="False"/>
+      </Item6>
+      <Item7>
+        <Name Value="EExecutorZeroDataException"/>
+      </Item7>
+      <Item8>
+        <Name Value="EExecutorIndexException"/>
+      </Item8>
+      <Item9>
+        <Name Value="EKeyNotFoundException"/>
+        <Enabled Value="False"/>
+      </Item9>
+      <Item10>
+        <Name Value="Exception"/>
+        <Enabled Value="False"/>
+      </Item10>
+      <Item11>
+        <Name Value="EAggrFunc"/>
+        <Enabled Value="False"/>
+      </Item11>
+      <Item12>
+        <Name Value="ETwoWaySortException"/>
+        <Enabled Value="False"/>
+      </Item12>
+      <Item13>
+        <Name Value="EEpiBadPassword"/>
+      </Item13>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

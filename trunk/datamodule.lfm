@@ -1,0 +1,21 @@
+object aDM: TaDM
+  OldCreateOrder = False
+  Height = 324
+  HorizontalOffset = 1093
+  VerticalOffset = 624
+  Width = 475
+  PPI = 96
+  object OpenDialog1: TOpenDialog
+    left = 45
+    top = 34
+  end
+  object SaveDialog1: TSaveDialog
+    Options = [ofOverwritePrompt, ofEnableSizing, ofViewDetail]
+    left = 45
+    top = 128
+  end
+  object SelectDirectoryDialog1: TSelectDirectoryDialog
+    left = 201
+    top = 108
+  end
+end

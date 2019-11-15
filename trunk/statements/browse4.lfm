@@ -1,0 +1,185 @@
+object BrowseForm4: TBrowseForm4
+  Left = 2321
+  Height = 520
+  Top = 337
+  Width = 735
+  Caption = 'Browser'
+  KeyPreview = True
+  OnClose = FormClose
+  OnKeyDown = FormKeyDown
+  OnShow = FormShow
+  Position = poDefault
+  LCLVersion = '2.0.0.4'
+  object ActionList1: TActionList
+    left = 360
+    top = 189
+    object ShowValueAction: TAction
+      Category = 'Valuelabels'
+      Caption = 'Value'
+      OnExecute = ShowValueActionExecute
+    end
+    object CopyToClipboardAction: TAction
+      Caption = 'Copy'
+      OnExecute = CopyToClipboardActionExecute
+      ShortCut = 16451
+    end
+    object SelectAllAction: TAction
+      Caption = 'Select All'
+      OnExecute = SelectAllActionExecute
+      ShortCut = 16449
+    end
+    object ShowLabelAction: TAction
+      Category = 'Valuelabels'
+      Caption = 'Label'
+      OnExecute = ShowLabelActionExecute
+    end
+    object ShowValuelabelAction: TAction
+      Category = 'Valuelabels'
+      Caption = 'Value Label'
+      OnExecute = ShowValuelabelActionExecute
+    end
+    object ShowLabelvalueAction: TAction
+      Category = 'Valuelabels'
+      Caption = 'Label Value'
+      OnExecute = ShowLabelvalueActionExecute
+    end
+    object ShowVarLabelAction: TAction
+      Category = 'VariableLabels'
+      Caption = 'Label'
+      OnExecute = ShowVarLabelActionExecute
+    end
+    object ShowVarNameAction: TAction
+      Category = 'VariableLabels'
+      Caption = 'Name'
+      OnExecute = ShowVarNameActionExecute
+    end
+    object ShowVarLabelNameAction: TAction
+      Category = 'VariableLabels'
+      Caption = 'Label Name'
+      OnExecute = ShowVarLabelNameActionExecute
+    end
+    object ShowVarNameLabelAction: TAction
+      Category = 'VariableLabels'
+      Caption = 'Name Label'
+      OnExecute = ShowVarNameLabelActionExecute
+    end
+    object CopyToClipboardWithHeadersAction: TAction
+      Caption = 'Copy (with variable names)'
+      OnExecute = CopyToClipboardWithHeadersActionExecute
+      ShortCut = 24643
+    end
+    object ChooseFontAction: TAction
+      Caption = 'Font...'
+      OnExecute = ChooseFontActionExecute
+    end
+    object CalcColWidthAction: TAction
+      Caption = 'Fit column widths'
+      OnExecute = CalcColWidthActionExecute
+      ShortCut = 49239
+    end
+    object CloseBrowserAction: TAction
+      Category = 'File'
+      Caption = 'Close'
+      OnExecute = CloseBrowserActionExecute
+    end
+    object CloseAllAction: TAction
+      Category = 'File'
+      Caption = 'Close All Browsers'
+      OnExecute = CloseAllActionExecute
+    end
+    object CascadeWindows: TAction
+      Caption = 'Cascade Browsers'
+      OnExecute = CascadeWindowsExecute
+      ShortCut = 49219
+    end
+    object GotoRecordAction: TAction
+      Caption = 'Goto...'
+      OnExecute = GotoRecordActionExecute
+      ShortCut = 16455
+    end
+  end
+  object PopupMenu1: TPopupMenu
+    left = 252
+    top = 252
+    object ToogleValueLabelsMenuItem: TMenuItem
+      Caption = 'Value/Labels'
+      object MenuItem2: TMenuItem
+        Action = ShowValueAction
+        RadioItem = True
+      end
+      object MenuItem3: TMenuItem
+        Action = ShowLabelAction
+        RadioItem = True
+      end
+      object MenuItem4: TMenuItem
+        Action = ShowValuelabelAction
+        RadioItem = True
+      end
+      object MenuItem5: TMenuItem
+        Action = ShowLabelvalueAction
+        RadioItem = True
+      end
+    end
+    object MenuItem6: TMenuItem
+      Caption = 'Variable/Label'
+      object MenuItem7: TMenuItem
+        Action = ShowVarNameAction
+        RadioItem = True
+      end
+      object MenuItem8: TMenuItem
+        Action = ShowVarLabelAction
+        RadioItem = True
+      end
+      object MenuItem9: TMenuItem
+        Action = ShowVarNameLabelAction
+        RadioItem = True
+      end
+      object MenuItem10: TMenuItem
+        Action = ShowVarLabelNameAction
+        RadioItem = True
+      end
+    end
+    object MenuItem1: TMenuItem
+      Caption = '-'
+    end
+    object CopyMenuItem: TMenuItem
+      Action = CopyToClipboardAction
+    end
+    object MenuItem11: TMenuItem
+      Action = CopyToClipboardWithHeadersAction
+    end
+    object MenuItem12: TMenuItem
+      Caption = '-'
+    end
+    object MenuItem13: TMenuItem
+      Action = SelectAllAction
+    end
+    object MenuItem14: TMenuItem
+      Caption = '-'
+    end
+    object MenuItem20: TMenuItem
+      Action = CascadeWindows
+    end
+    object MenuItem16: TMenuItem
+      Action = CalcColWidthAction
+    end
+    object MenuItem15: TMenuItem
+      Action = ChooseFontAction
+    end
+    object MenuItem17: TMenuItem
+      Caption = '-'
+    end
+    object MenuItem18: TMenuItem
+      Action = CloseBrowserAction
+    end
+    object MenuItem19: TMenuItem
+      Action = CloseAllAction
+    end
+  end
+  object FontDialog1: TFontDialog
+    MinFontSize = 0
+    MaxFontSize = 0
+    left = 251
+    top = 189
+  end
+end

@@ -1,0 +1,156 @@
+/* An example of combining data with MERGE:
+
+Parent:
+---------------------------
+K1	V1	V2
+1	A	B
+2	.	D
+3	E	F
+
+Child:
+---------------------------
+K1	K2	V3	V1
+1	1	X	æ
+1	2	Y	.
+2	1	Z	å
+3	.	.	.
+
+
+Table
+---------------------------
+K1	T1
+1	Text 1
+2	Text 2
+3	Text 3
+
+
+
+Relation:
+---------------------------
+ - Parent
+   |- Child
+ - Table
+
+
+*/
+
+new global fn string  := "mergeA.epx";
+new global fn2 string := "mergeB.epx";
+
+read fn !c;
+merge;
+reorder k2 !after := k1;
+/*
+M1: merge C into P (no options = retain all data in parent, only create new vars from child dataset)
+[V1(parent) = V1(parent)]
+
+K1	K2	V1	V2	V3
+1	1	A	B	X
+1	2	A	B	Y
+2	1	.	D	Z
+3	.	E	F	.
+*/
+//list d;
+assert V1[1] = "A";
+assert V1[2] = "A";
+assert V1[3] = .;
+assert V1[4] = "E";
+
+read fn !c;
+merge !combine;
+reorder k2 !after := k1;
+/*
+M1: merge C into P (combine = only replace existing vars where data is sys.mis.)
+[V1(parent) = V1(child) if V1(parent) <> .]
+
+K1	K2	V1	V2	V3
+1	1	A	B	X
+1	2	A	B	Y
+2	1	å	D	Z
+3	.	E	F	.
+
+*/
+//list d;
+assert V1[1] = "A";
+assert V1[2] = "A";
+assert V1[3] = "å";
+assert V1[4] = "E";
+
+read fn !c;
+merge !update;
+reorder k2 !after := k1;
+/*
+M1: merge C into P (update = update existing vars with data that is not sys.missing )
+[V1(parent) = V1(child) if V1(child) <> .]
+
+K1	K2	V1	V2	V3
+1	1	æ	B	X
+1	2	A	B	Y
+2	1	å	D	Z
+3	.	E	F	.
+
+*/
+//list d;
+assert V1[1] = "æ";
+assert V1[2] = "A";
+assert V1[3] = "å";
+assert V1[4] = "E";
+
+read fn !c;
+merge !replace;
+reorder k2 !after := k1;
+/*
+M1: merge C into P (repace = unconditionally replace existing vars with data from child )
+[V1(parent) = V1(child)]
+
+K1	K2	V1	V2	V3
+1	1	æ	B	X
+1	2	.	B	Y
+2	1	å	D	Z
+3	.	.	F	.
+
+*/
+//list d;
+assert V1[1] = "æ";
+assert V1[2] = .;
+assert V1[3] = "å";
+assert V1[4] = .;
+
+
+// ========================================================================
+//    EXTERNAL MERGE
+// ========================================================================
+read fn !c;
+merge k1 !ds := Child !fn := fn2;
+reorder k2 !after := k1;
+assert V1[1] = "A";
+assert V1[2] = "A";
+assert V1[3] = .;
+assert V1[4] = "E";
+
+read fn !c;
+merge k1 !ds := Child !fn := fn2 !combine;
+reorder k2 !after := k1;
+assert V1[1] = "A";
+assert V1[2] = "A";
+assert V1[3] = "å";
+assert V1[4] = "E";
+
+read fn !c;
+merge k1 !ds := Child !fn := fn2 !update;
+reorder k2 !after := k1;
+assert V1[1] = "æ";
+assert V1[2] = "A";
+assert V1[3] = "å";
+assert V1[4] = "E";
+
+read fn !c;
+merge k1 !ds := Child !fn := fn2 !replace;
+reorder k2 !after := k1;
+assert V1[1] = "æ";
+assert V1[2] = .;
+assert V1[3] = "å";
+assert V1[4] = .;
+
+close;
+

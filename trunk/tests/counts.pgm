@@ -1,0 +1,17 @@
+cls;
+var;
+count;
+select (age>=50)
+begin
+  count;
+  select (age <=60)
+  begin
+    count;
+  end;
+  count;
+end;
+count;
+select (age>=50) count;
+select (age>=50) and (age<=60) count;
+select (age>=50) count;
+
