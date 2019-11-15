@@ -30,7 +30,8 @@ type
     evfExternal,     // Marks that the variable is to be loaded in during a statement/command and should be checked
                      // by the statement itself.
     evfAsObject,     // Marks that the variable is being read as object
-    evfAsValue       // Marks that the variable is being read as value
+    evfAsValue,      // Marks that the variable is being read as value
+    evfAsField       // Marks that the result variable is a field       for No_N
   );
   TExecutorVariableFlags = set of TExecutorVariableFlag;
 
@@ -51,6 +52,8 @@ const
     'result vector',
     'result matrix'
   );
+
+function ExecutorVariableTypesAsString(ExecutorVariableTypes: TExecutorVariableTypes): UTF8String;
 
 type
 
@@ -302,6 +305,19 @@ implementation
 
 uses
   LazFileUtils, LazUTF8;
+
+function ExecutorVariableTypesAsString(
+  ExecutorVariableTypes: TExecutorVariableTypes): UTF8String;
+var
+  evType: TExecutorVariableType;
+begin
+  Result := '';
+
+  for evType in ExecutorVariableTypes do
+    Result := Result + ExecutorVariableTypeString[evType] + ', ';
+
+  Delete(Result, Length(Result) - 1, 2);
+end;
 
 function ExecutorDataVariablesCompare(const Key1, Key2: UTF8String): Integer;
 begin

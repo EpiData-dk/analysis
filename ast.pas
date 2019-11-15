@@ -718,6 +718,8 @@ type
       ASubCommand: TCrudCommand); virtual;
     property OptionList: TOptionList read GetOptionList;
     property SubCommand: TCrudCommand read FSubCommand;
+    // Return the first found option in ident array
+    function HasOption(Idents: array of UTF8String; out AOption: TOption): boolean; overload;
     function HasOption(Const Ident: UTF8String; out AOption: TOption): boolean; overload;
     function HasOption(Const Ident: UTF8String): boolean; overload;
   end;
@@ -965,7 +967,6 @@ type
     function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
   public
     constructor Create(AVariable: TCustomVariable; AOptionList: TOptionList; ASubCommand: TCrudCommand);
-    property Variable: TCustomVariable read GetVariable;
   end;
 
   { TDropCommand }
@@ -977,8 +978,17 @@ type
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
   public
+    constructor Create(AVariables: TVariableList; AOptionList: TOptionList; ASubCommand: TCrudCommand;
+      AStatementType: TASTStatementType = stDrop);
+  end;
+
+  { TKeepCommand }
+
+  TKeepCommand = class(TDropCommand)
+  protected
+    function GetAcceptedVariableCount: TBoundArray; override;
+  public
     constructor Create(AVariables: TVariableList; AOptionList: TOptionList; ASubCommand: TCrudCommand);
-    property Variables: TVariableList read FVariableList;
   end;
 
   { TUse }
@@ -1091,6 +1101,8 @@ type
   public
     constructor Create(AOptionList: TOptionList; Const ACommand: UTF8String);
     constructor Create(AOptionList: TOptionList; ST: TASTStatementType);
+    // Return the first found option in ident array
+    function HasOption(Idents: array of UTF8String; out AOption: TOption): boolean; overload;
     function HasOption(Const Ident: UTF8String; out AOption: TOption): boolean; overload;
     function HasOption(Const Ident: UTF8String): boolean; overload;
     property Options: TOptionList read GetOptionList;
@@ -1699,7 +1711,7 @@ begin
   Result.Insert('nt',      [rtUndefined]);
   Result.Insert('replace', [rtUndefined]);
   Result.Insert('label',   AllResultDataTypes);
-  Result.Insert('h',       [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
+  Result.Insert('hd',      [rtUndefined, rtObject],  [evtGlobalVector], [evfInternal, evfAsObject]);
   Result.Insert('ds',      [rtObject],               [evtDataset],      [evfInternal, evfExternal, evfAsObject]);
   Result.Insert('u',       [rtUndefined]);
   Result.Insert('full',    [rtUndefined]);
@@ -2235,7 +2247,7 @@ end;
 function TBrowseCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  Result.Insert('caption', [rtString]);
+  Result.Insert('title', ['t'], [rtString]);
   Result.Insert('c',       [rtUndefined]);
   Result.Insert('a',       [rtUndefined]);
   Result.Insert('del',     [rtUndefined]);
@@ -2545,8 +2557,8 @@ function TEditVariable.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  result.Insert('label',        [rtString]);
-  result.Insert('l',            [rtInteger]);
+  result.Insert('label',  ['l'],  AllResultDataTypes);
+  result.Insert('length', ['le'], [rtInteger]);
   result.Insert('d',            [rtInteger]);
   result.Insert('vl',           [rtObject], [evtValuelabel], [evfInternal, evfAsObject]);
   result.Insert('novl',         [rtUndefined]);
@@ -2630,7 +2642,7 @@ function TEditProject.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  Result.Insert('title', [rtString]);
+  Result.Insert('label', ['l'], [rtString]);
   Result.Insert('pw',    [rtString]);
 end;
 
@@ -2753,21 +2765,21 @@ function TNewVariable.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  result.Insert('label',      AllResultDataTypes);
-  result.Insert('l',          [rtInteger]);
-  result.Insert('d',          [rtInteger]);
-  result.Insert('vl',         [rtObject], [evtValuelabel], [evfInternal, evfAsObject]);
-  result.Insert('min',        AllResultDataTypes);
-  result.Insert('max',        AllResultDataTypes);
-  result.Insert('entry',      [rtInteger]);
-  result.Insert('confirm',    [rtUndefined]);
-  result.Insert('key',        [rtUndefined]);
-  result.Insert('cmpEQ',      [rtObject], [evtField], [evfInternal, evfAsObject]);
-  result.Insert('cmpNE',      [rtObject], [evtField], [evfInternal, evfAsObject]);
-  result.Insert('cmpGT',      [rtObject], [evtField], [evfInternal, evfAsObject]);
-  result.Insert('cmpLT',      [rtObject], [evtField], [evfInternal, evfAsObject]);
-  result.Insert('cmpGE',      [rtObject], [evtField], [evfInternal, evfAsObject]);
-  result.Insert('cmpLE',      [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('label',  ['l'],  AllResultDataTypes);
+  result.Insert('length', ['le'], [rtInteger]);
+  result.Insert('d',              [rtInteger]);
+  result.Insert('vl',             [rtObject], [evtValuelabel], [evfInternal, evfAsObject]);
+  result.Insert('min',            AllResultDataTypes);
+  result.Insert('max',            AllResultDataTypes);
+  result.Insert('entry',          [rtInteger]);
+  result.Insert('confirm',        [rtUndefined]);
+  result.Insert('key',            [rtUndefined]);
+  result.Insert('cmpEQ',          [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('cmpNE',          [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('cmpGT',          [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('cmpLT',          [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('cmpGE',          [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('cmpLE',          [rtObject], [evtField], [evfInternal, evfAsObject]);
 
   case NewType of
     ftBoolean: ;  // No extra options for boolean
@@ -2821,9 +2833,14 @@ begin
 
   EFlags := TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData);
 
+  // ensure that fields do not need index, since this is an assignment
+  Include(EFlags.Flags, evfAsField);
+
   // Since assignment TO a variable should also accept a variable.
   if (SubCommand = ccVariable) then
+  begin
     Include(EFlags.Flags, evfAsObject);
+  end;
 
   if Assigned(ValueExpr) then
     result := result and ValueExpr.TypeCheck(Parser, EFlags);
@@ -3047,15 +3064,15 @@ begin
   case SubCommand of
     ccData:
       result.Insert('del', [rtUndefined]);
-
-    ccVariable: ;
-    ccDataset: ;
-    ccProject: ;
-    ccValuelabel: ;
+    ccVariable:
+      ;
+    ccProject:
+      ;
+    ccDataset:
+      result.Insert('all', [rtUndefined]);
+    ccValuelabel,
     ccGlobal:
-      begin
-        result.Insert('all', [rtUndefined, rtString]);
-      end;
+      result.Insert('all', [rtUndefined, rtString]);
 
     ccResult: ;
   end;
@@ -3088,9 +3105,24 @@ begin
 end;
 
 constructor TDropCommand.Create(AVariables: TVariableList;
+  AOptionList: TOptionList; ASubCommand: TCrudCommand;
+  AStatementType: TASTStatementType);
+begin
+  inherited Create(AVariables, AOptionList, AStatementType, ASubCommand);
+end;
+
+{ TKeepCommand }
+
+function TKeepCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  Result[0] := -1;
+end;
+
+constructor TKeepCommand.Create(AVariables: TVariableList;
   AOptionList: TOptionList; ASubCommand: TCrudCommand);
 begin
-  inherited Create(AVariables, AOptionList, stDrop, ASubCommand);
+  inherited Create(AVariables, AOptionList, ASubCommand, stKeep);
 end;
 
 { TNewProject }
@@ -3099,10 +3131,10 @@ function TNewProject.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  Result.Insert('size',  [rtInteger]);
-  Result.Insert('title', [rtString]);
-  Result.Insert('c',     [rtUndefined]);
-  Result.Insert('pw',    [rtString]);
+  Result.Insert('label', ['l'], [rtString]);
+  Result.Insert('size',         [rtInteger]);
+  Result.Insert('c',            [rtUndefined]);
+  Result.Insert('pw',           [rtString]);
 end;
 
 constructor TNewProject.Create(AOptionList: TOptionList);
@@ -3123,7 +3155,7 @@ function TCustomNewNamed.TypeCheck(Parser: IEpiTypeChecker): boolean;
 begin
   Result :=
     inherited TypeCheck(Parser) and
-    FVariable.TypeCheck(Parser, TypesAndFlags(AllResultTypes, ExecutorVariableTypesAll, [evfExternal, evfAsObject]));
+    FVariable.TypeCheck(Parser, TypesAndFlags(AllResultTypes, ExecutorVariableTypesAll, [evfExternal, evfAsObject, evfAsField]));
 end;
 
 { TCustomVariablesCrudCommand }
@@ -3412,6 +3444,18 @@ begin
   FSubCommand := ASubCommand;
 end;
 
+function TCustomCrudCommand.HasOption(Idents: array of UTF8String; out
+  AOption: TOption): boolean;
+var
+  Ident: UTF8String;
+begin
+  for Ident in Idents do
+    if HasOption(Ident, AOption) then
+      Exit(true);
+
+  Result := false;
+end;
+
 function TCustomCrudCommand.HasOption(const Ident: UTF8String; out
   AOption: TOption): boolean;
 begin
@@ -3688,6 +3732,18 @@ begin
   inherited Create(ST);
 
   FOptions := AOptionList;
+end;
+
+function TCustomOptionsCommand.HasOption(Idents: array of UTF8String; out
+  AOption: TOption): boolean;
+var
+  Ident: UTF8String;
+begin
+  for Ident in Idents do
+    if HasOption(Ident, AOption) then
+      Exit(true);
+
+  Result := false;
 end;
 
 function TCustomOptionsCommand.HasOption(const Ident: UTF8String; out
@@ -4471,16 +4527,20 @@ end;
 function TSelect.TypeCheck(Parser: IEpiTypeChecker): boolean;
 begin
   Result := inherited TypeCheck(Parser) and
-            Expr.TypeCheck(Parser, TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData, [evfInternal, evfAsObject, evfAsValue]));
+//  Expr.TypeCheck(Parser, TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData, [evfInternal, evfAsObject, evfAsValue]));
+  Expr.TypeCheck(Parser, TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsObject, evfAsValue, evfAsField]));
 
   if result and
      (not (Expr.ResultType = rtBoolean))
   then
+  begin
     DoTypeCheckError(
       rsExpressionReturnType1,
       [ASTResultTypeString[rtBoolean]],
       Parser
     );
+    Result := false;
+  end;
 
   Result := Result and Statement.TypeCheck(Parser);
 end;
@@ -4714,10 +4774,20 @@ begin
         // A global or result can be accepted as either Value or Object.
         Result := true;
 
+    evtField:
+      begin
+        Result := (evfAsObject in TypesAndFlags.Flags) and (evfAsField in TypesAndFlags.Flags);
+        // Field can be used without an index if the result variable is a field
+                if (not Result) then
+                 begin
+                  DoTypeCheckError('in TypeCheck, Identifier "' + Ident + '" must have an index', TypeChecker);
+                  Exit;
+                end;
+
+      end;
     evtDataset,
     evtValuelabel,
     evtGlobalVector,
-    evtField,
     evtResultVector,
     evtResultMatrix:
       begin
@@ -4726,8 +4796,7 @@ begin
         Result := (evfAsObject in TypesAndFlags.Flags);
 
         if (not Result) then
- { TODO -oJamie : Why not just recast this as having the default index? }
-        begin
+         begin
           DoTypeCheckError('Identifier "' + Ident + '" must have an index', TypeChecker);
           Exit;
         end;
@@ -5315,6 +5384,12 @@ begin
   result.ExecutorVariableTypes := ExecutorVariableTypesData;
   result.ResultTypes           := [rtUndefined];
   result.Flags                 := [evfInternal, evfAsValue];
+  // here, try adding Flag asField when var type is a field
+  if (evtField in result.ExecutorVariableTypes) then
+  begin
+//    include(result.Flags, evfAsField);
+    include(result.Flags, evfAsObject);
+  end;
 end;
 
 class function TFunctionCall.CreateFunction(const FunctionName: string;
@@ -5704,7 +5779,7 @@ begin
   Parser.SetTypeCheckErrorOutput(false);
 
   // Check field
-  EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject]);
+  EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject, evfAsField]);
   Result := FVariable.TypeCheck(Parser, EFlags);
 
   // Check globals
@@ -5726,7 +5801,7 @@ begin
 
       if (EV.VarType = evtField) then
         begin
-          EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject]);
+          EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject, evfAsField]);
           Result := FVariable.TypeCheck(Parser, EFlags);
           Exit;
         end
@@ -5741,8 +5816,10 @@ begin
 
   EFlags := TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData);
   if (EV.VarType = evtField) then
-    Include(EFlags.Flags, evfAsObject);
-
+    begin
+      Include(EFlags.Flags, evfAsObject);
+      Include(EFlags.Flags, evfAsField);                 // for No_N
+    end;
   if (not FExpr.TypeCheck(Parser, EFlags)) then
     begin
       result := false;
