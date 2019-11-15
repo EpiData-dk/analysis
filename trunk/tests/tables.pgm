@@ -1,6 +1,0 @@
-select (sex = 1) and (runok = 0) and (kmgrp = 4) do kmgrp := .;
-select (sex = 1) and (runok = 1) and (kmgrp = 3) do kmgrp := .;
-select (sex = 2) and (runok = 0) and (kmgrp = 2) do kmgrp := .;
-select (sex = 2) and (runok = 1) and (kmgrp = 1) do kmgrp := .;
-tab sex runok !by := kmgrp;
-

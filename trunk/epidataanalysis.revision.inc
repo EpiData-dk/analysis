@@ -1,1 +1,0 @@
-const RevisionStr = '617';

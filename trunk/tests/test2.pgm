@@ -1,4 +1,0 @@
-read "/home/torsten/BtSync/EpiData Arbejde/data//Analysis/merge_test.epx";
-new global fn string := "merge_extern_table.epx";
-
-merge key1 !ds := @fn:table;
