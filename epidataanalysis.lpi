@@ -211,11 +211,6 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
-      <environment>
-        <UserOverrides Count="1">
-          <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
-        </UserOverrides>
-      </environment>
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
@@ -229,39 +224,41 @@
     </RunParams>
     <RequiredPackages Count="13">
       <Item1>
-        <PackageName Value="luicontrols"/>
+        <PackageName Value="epidatacore_visuals"/>
+        <MaxVersion Major="4" Minor="6" Build="2" Valid="True"/>
+        <MinVersion Major="4" Minor="6" Build="2" Valid="True"/>
       </Item1>
       <Item2>
-        <PackageName Value="luicomponents"/>
+        <PackageName Value="epidatacore"/>
+        <MaxVersion Major="4" Minor="6" Build="2" Valid="True"/>
+        <MinVersion Major="4" Minor="6" Build="2" Valid="True"/>
       </Item2>
       <Item3>
-        <PackageName Value="ChsDet"/>
+        <PackageName Value="luicontrols"/>
       </Item3>
       <Item4>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="luicomponents"/>
       </Item4>
       <Item5>
-        <PackageName Value="lclextensions_package"/>
+        <PackageName Value="ChsDet"/>
       </Item5>
       <Item6>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="lnetbase"/>
       </Item6>
       <Item7>
-        <PackageName Value="BGRABitmapPack"/>
+        <PackageName Value="lclextensions_package"/>
       </Item7>
       <Item8>
-        <PackageName Value="FrameViewer09"/>
+        <PackageName Value="dcpcrypt"/>
       </Item8>
       <Item9>
-        <PackageName Value="virtualtreeview_package"/>
+        <PackageName Value="BGRABitmapPack"/>
       </Item9>
       <Item10>
-        <PackageName Value="epidatacore_visuals"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="FrameViewer09"/>
       </Item10>
       <Item11>
-        <PackageName Value="epidatacore"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="virtualtreeview_package"/>
       </Item11>
       <Item12>
         <PackageName Value="SynEdit"/>
