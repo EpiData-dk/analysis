@@ -14,10 +14,7 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="5"/>
-      <BuildNr Value="18"/>
-      <Attributes pvaSpecialBuild="True"/>
-      <StringTable SpecialBuild="TRUNK"/>
+      <MinorVersionNr Value="6"/>
     </VersionInfo>
     <BuildModes Count="7">
       <Item1 Name="Default" Default="True"/>
@@ -671,7 +668,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);grammar"/>
-      <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+      <OtherUnitFiles Value="auxunits;commandtree;editor;executor;functions;help;output;parser;sidewindows;statements;statistics;statusbar;utils"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
