@@ -2833,14 +2833,9 @@ begin
 
   EFlags := TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData);
 
-  // ensure that fields do not need index, since this is an assignment
-  Include(EFlags.Flags, evfAsField);
-
   // Since assignment TO a variable should also accept a variable.
   if (SubCommand = ccVariable) then
-  begin
     Include(EFlags.Flags, evfAsObject);
-  end;
 
   if Assigned(ValueExpr) then
     result := result and ValueExpr.TypeCheck(Parser, EFlags);
@@ -3155,7 +3150,7 @@ function TCustomNewNamed.TypeCheck(Parser: IEpiTypeChecker): boolean;
 begin
   Result :=
     inherited TypeCheck(Parser) and
-    FVariable.TypeCheck(Parser, TypesAndFlags(AllResultTypes, ExecutorVariableTypesAll, [evfExternal, evfAsObject, evfAsField]));
+    FVariable.TypeCheck(Parser, TypesAndFlags(AllResultTypes, ExecutorVariableTypesAll, [evfExternal, evfAsObject]));
 end;
 
 { TCustomVariablesCrudCommand }
@@ -3637,7 +3632,7 @@ begin
     evtResultConst:
       begin
         Result := false;
-        DoTypeCheckError('Identifier "' + Ident + '" does not accept an index', TypeChecker);
+        DoTypeCheckError(ExecutorVariableTypesAsString([EV.VarType]) + ' "' + Ident + '" does not accept an index', TypeChecker);
         Exit;
       end;
 
@@ -3649,14 +3644,14 @@ begin
 
         if (not Result) then
         begin
-          DoTypeCheckError('Identifier "' + Ident + '" does not accept an index', TypeChecker);
+          DoTypeCheckError(ExecutorVariableTypesAsString([EV.VarType]) + ' "' + Ident + '" does not accept an index here', TypeChecker);
           Exit;
         end;
 
         if (ParamCount > 1) then
         begin
           Result := false;
-          DoTypeCheckError('Identifier "' + Ident + '" only accepts one index', TypeChecker);
+          DoTypeCheckError(ExecutorVariableTypesAsString([EV.VarType]) + ' "' + Ident + '" only accepts one index', TypeChecker);
           Exit;
         end;
       end;
@@ -3667,14 +3662,14 @@ begin
 
         if (not Result) then
         begin
-          DoTypeCheckError('Identifier "' + Ident + '" does not accept an index', TypeChecker);
+          DoTypeCheckError(ExecutorVariableTypesAsString([EV.VarType]) + ' "' + Ident + '" does not accept an index', TypeChecker);
           Exit;
         end;
 
         if (ParamCount > 2) then
         begin
           Result := false;
-          DoTypeCheckError('Identifier "' + Ident + '" only accepts one index', TypeChecker);
+          DoTypeCheckError(ExecutorVariableTypesAsString([EV.VarType]) + '"' + Ident + '" only accepts one index', TypeChecker);
           Exit;
         end;
       end;
@@ -4527,20 +4522,16 @@ end;
 function TSelect.TypeCheck(Parser: IEpiTypeChecker): boolean;
 begin
   Result := inherited TypeCheck(Parser) and
-//  Expr.TypeCheck(Parser, TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData, [evfInternal, evfAsObject, evfAsValue]));
-  Expr.TypeCheck(Parser, TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsObject, evfAsValue, evfAsField]));
+            Expr.TypeCheck(Parser, TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData, [evfInternal, evfAsObject, evfAsValue]));
 
   if result and
      (not (Expr.ResultType = rtBoolean))
   then
-  begin
     DoTypeCheckError(
       rsExpressionReturnType1,
       [ASTResultTypeString[rtBoolean]],
       Parser
     );
-    Result := false;
-  end;
 
   Result := Result and Statement.TypeCheck(Parser);
 end;
@@ -4774,17 +4765,21 @@ begin
         // A global or result can be accepted as either Value or Object.
         Result := true;
 
-    evtField:
+    evtField:                   // no_n
       begin
-        Result := (evfAsObject in TypesAndFlags.Flags) and (evfAsField in TypesAndFlags.Flags);
-        // Field can be used without an index if the result variable is a field
-                if (not Result) then
-                 begin
-                  DoTypeCheckError('in TypeCheck, Identifier "' + Ident + '" must have an index', TypeChecker);
-                  Exit;
-                end;
+        // Since the AST found this to be a non-indexed field, it may only
+        // be accepted as an object unless used where evfAsField is valid (e.g. assignment)!
+        Result := (evfAsObject in TypesAndFlags.Flags) or
+                  (evfAsField in TypesAndFlags.Flags);
+
+        if (not Result) then
+         begin
+          DoTypeCheckError(ExecutorVariableTypesAsString([EV.VarType]) + ' "' + Ident + '" must have an index', TypeChecker);
+          Exit;
+        end;
 
       end;
+
     evtDataset,
     evtValuelabel,
     evtGlobalVector,
@@ -4793,11 +4788,12 @@ begin
       begin
         // Since the AST found this to be a non-indexed variable, it may only
         // be accepted as an object!
-        Result := (evfAsObject in TypesAndFlags.Flags);
+        Result := (evfAsObject in TypesAndFlags.Flags) and
+                  not (evfAsField in TypesAndFlags.Flags);       // no_n
 
         if (not Result) then
          begin
-          DoTypeCheckError('Identifier "' + Ident + '" must have an index', TypeChecker);
+          DoTypeCheckError(ExecutorVariableTypesAsString([EV.VarType]) + ' "' + Ident + '" must have an index', TypeChecker);
           Exit;
         end;
 
@@ -4992,6 +4988,7 @@ var
   BinaryTypesAndFlags: TTypesAndFlagsRec;
 begin
   BinaryTypesAndFlags := options_hashmap.TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData);
+  BinaryTypesAndFlags.Flags := TypesAndFlags.Flags;  // no_n
   Result := inherited TypeCheck(TypeChecker, BinaryTypesAndFlags);
 
   if result then
@@ -5384,12 +5381,6 @@ begin
   result.ExecutorVariableTypes := ExecutorVariableTypesData;
   result.ResultTypes           := [rtUndefined];
   result.Flags                 := [evfInternal, evfAsValue];
-  // here, try adding Flag asField when var type is a field
-  if (evtField in result.ExecutorVariableTypes) then
-  begin
-//    include(result.Flags, evfAsField);
-    include(result.Flags, evfAsObject);
-  end;
 end;
 
 class function TFunctionCall.CreateFunction(const FunctionName: string;
@@ -5779,7 +5770,7 @@ begin
   Parser.SetTypeCheckErrorOutput(false);
 
   // Check field
-  EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject, evfAsField]);
+  EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject]);
   Result := FVariable.TypeCheck(Parser, EFlags);
 
   // Check globals
@@ -5801,7 +5792,7 @@ begin
 
       if (EV.VarType = evtField) then
         begin
-          EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject, evfAsField]);
+          EFlags := TypesAndFlags(AllResultDataTypes, [evtField], [evfInternal, evfAsValue, evfAsObject, evfAsField]);  // no_n
           Result := FVariable.TypeCheck(Parser, EFlags);
           Exit;
         end
@@ -5818,7 +5809,7 @@ begin
   if (EV.VarType = evtField) then
     begin
       Include(EFlags.Flags, evfAsObject);
-      Include(EFlags.Flags, evfAsField);                 // for No_N
+      Include(EFlags.Flags, evfAsField);
     end;
   if (not FExpr.TypeCheck(Parser, EFlags)) then
     begin

@@ -4274,7 +4274,7 @@ var
 
 begin
   result := false;
-                             // TODO: -oJamie Why do we get here with nil EV??
+
   case EV.VarType of
     evtGlobal,
     evtResultConst:

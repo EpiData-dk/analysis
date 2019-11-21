@@ -31,7 +31,7 @@ type
                      // by the statement itself.
     evfAsObject,     // Marks that the variable is being read as object
     evfAsValue,      // Marks that the variable is being read as value
-    evfAsField       // Marks that the result variable is a field       for No_N
+    evfAsField       // Marks that the variable is a field and can be used without an index in assignments only
   );
   TExecutorVariableFlags = set of TExecutorVariableFlag;
 

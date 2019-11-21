@@ -107,13 +107,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 278
+          Width = 281
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 238
+          Width = 241
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -288,6 +288,9 @@ object MainForm: TMainForm
       end
       object MenuItem18: TMenuItem
         Action = ToggleProjectTree
+      end
+      object MenuItem44: TMenuItem
+        Action = CloseAllWindowsAction
       end
       object MenuItem30: TMenuItem
         Caption = '-'
@@ -503,6 +506,12 @@ object MainForm: TMainForm
       Category = 'History'
       Caption = 'Clear History'
       OnExecute = ClearHistoryActionExecute
+    end
+    object CloseAllWindowsAction: TAction
+      Category = 'Window'
+      Caption = 'Close All Windows'
+      OnExecute = CloseAllWindowsActionExecute
+      ShortCut = 120
     end
   end
   object RecentFilesActionList: TActionList
