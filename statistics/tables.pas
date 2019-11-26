@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, math, epidatafiles, ast, executor, result_variables,
-  outputcreator, epicustombase, tables_types;
+  outputcreator, epicustombase, tables_types, epifields_helper;
 
 type
 
@@ -47,7 +47,7 @@ type
     procedure DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
     procedure DoTableStatistics(Tables: TTwoWayTables; Statistics: TTableStatistics);
     function  DoSortTables(Tables: TTwoWayTables; ST: TOptionList): boolean;
-    procedure DoResultVariables(Tables: TTwoWayTables);
+    procedure DoResultVariables(Tables: TTwoWayTables; ValueLabelType: TEpiGetValueLabelType);
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
     destructor Destroy; override;
@@ -64,7 +64,7 @@ procedure RegisterTableStatistic(Statistic: TTableStatistic; StatClass: TTwoWayS
 implementation
 
 uses
-  aggregate, aggregate_types, epimiscutils, epidatafileutils, epifields_helper,
+  aggregate, aggregate_types, epimiscutils, epidatafileutils,
   options_utils, LazUTF8, ana_globals, epidatafilestypes, options_table,
   tables_stat_rr, tables_stat_or, tables_stat_chi2, tables_stat_fexp;
 // see note in tables_types.pas regarding order of statistics above
@@ -625,10 +625,11 @@ begin
     end;
 end;
 
-procedure TTables.DoResultVariables(Tables: TTwoWayTables);
+procedure TTables.DoResultVariables(Tables: TTwoWayTables;
+  ValueLabelType: TEpiGetValueLabelType);
 var
   i: Integer;
-  RTableNames, RStratNames: TExecVarVector;
+  RTableNames, RStratNames, RVector: TExecVarVector;
   S: UTF8String;
   Tab: TTwoWayTable;
   F: TEpiField;
@@ -646,7 +647,7 @@ var
       begin
         RStratValues := FExecutor.AddResultVector(Name + '_stratvalues', ftString, Length(Table.StratifyIndices));
 
-        for Col := Low(TAble.StratifyIndices) to High(Table.StratifyIndices) do
+        for Col := Low(Table.StratifyIndices) to High(Table.StratifyIndices) do
           RStratValues.AsStringVector[Col] := Tables.StratifyVariables[Col].AsString[Table.StratifyIndices[Col]];
       end;
 
@@ -666,10 +667,23 @@ var
     RTable.AsIntegerMatrix[RTable.Cols - 1, RTable.Rows - 1] := Table.Total;
   end;
 
+  procedure AddLabelVector(Name: UTF8String; Size: Integer; Field: TEpiField);
+  var
+    i: integer;
+  begin
+    RVector := FExecutor.AddResultVector(Name, ftString, Size);
+    for i := 0 to Size - 2 do
+      RVector.AsStringVector[i] := Field.GetValueLabel(i, ValueLabelType);
+    RVector.AsStringVector[Size - 1] := 'Total';
+  end;
+
 begin
   FExecutor.ClearResults('$tables_');
-  FExecutor.AddResultConst('$tables_cols', ftInteger).AsIntegerVector[0] := Tables.UnstratifiedTable.ColCount + 1;
-  FExecutor.AddResultConst('$tables_rows', ftInteger).AsIntegerVector[0] := Tables.UnstratifiedTable.RowCount + 1;
+  FExecutor.AddResultConst('$tables_col_count', ftInteger).AsIntegerVector[0] := Tables.UnstratifiedTable.ColCount + 1;
+  FExecutor.AddResultConst('$tables_row_count', ftInteger).AsIntegerVector[0] := Tables.UnstratifiedTable.RowCount + 1;
+
+  AddLabelVector('$table_col_labels', Tables.UnstratifiedTable.ColCount + 1, Tables.UnstratifiedTable.ColVariable);
+  AddLabelVector('$table_row_labels', Tables.UnstratifiedTable.RowCount + 1, Tables.UnstratifiedTable.RowVariable);
 
   i := 0;
   if (Assigned(Tables.StratifyVariables)) and
@@ -699,7 +713,6 @@ begin
   // Need to treat summary statistics differently
   for i := 0 to Tables.StatisticsCount - 1 do
     Tables.Statistics[i].CreateResultVariables(Tables, FExecutor);
-
 end;
 
 constructor TTables.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator
@@ -746,7 +759,7 @@ begin
     end;
   DoTableStatistics(AllTables, GetStatisticOptions(ST));
 
-  DoResultVariables(AllTables);
+  DoResultVariables(AllTables, ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions));
 
   if (not ST.HasOption('q')) then
     DoOutputTables(AllTables, ST);

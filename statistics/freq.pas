@@ -43,7 +43,7 @@ type
     FDecimals: Integer;
     function  DoCalcFreqTable(InputDF: TEpiDataFile; VariableName: String; Out RefMap: TEpiReferenceMap): TFreqDatafile;
     procedure PrepareResultVariables(Variables: TStrings);
-    procedure DoResultVariables(ResultDF: TFreqDatafile; VariableName: String);
+    procedure DoResultVariables(ResultDF: TFreqDatafile; VariableName: String; ValueLabelType: TEpiGetValueLabelType);
     procedure DoOutputFreqTable(ResultDF: TFreqDatafile; ST: TCustomVariableCommand);
   public
     constructor Create(AExecutor: TExecutor; OutputCreator: TOutputCreator);
@@ -172,24 +172,24 @@ begin
 end;
 
 procedure TFreqCommand.DoResultVariables(ResultDF: TFreqDatafile;
-  VariableName: String);
+  VariableName: String; ValueLabelType: TEpiGetValueLabelType);
 var
   RCount, RCateg, RPerc, RCum, RLowCI, RHighCI: TExecVarVector;
   i: Integer;
 begin
-  FExecutor.AddResultConst('$freq_total_' + VariableName, ftInteger).AsIntegerVector[0] := ResultDF.Sum;
-  FExecutor.AddResultConst('$freq_rows_' + VariableName, ftInteger).AsIntegerVector[0]  := ResultDF.Size;
-  RCount  := FExecutor.AddResultVector('$freq_count_' + VariableName,      ftInteger, ResultDF.Size);
-  RCateg  := FExecutor.AddResultVector('$freq_labels_' + VariableName,     ftString,  ResultDF.Size);
-  RPerc   := FExecutor.AddResultVector('$freq_rowpercent_' + VariableName, ftFloat,   ResultDF.Size);
-  RCum    := FExecutor.AddResultVector('$freq_cumpercent_' + VariableName, ftFloat,   ResultDF.Size);
-  RLowCI  := FExecutor.AddResultVector('$freq_lowCI_' + VariableName,      ftFloat,   ResultDF.Size);
-  RHighCI := FExecutor.AddResultVector('$freq_highCI_' + VariableName,     ftFloat,   ResultDF.Size);
+  FExecutor.AddResultConst(            '$freq_' + VariableName + '_total',      ftInteger).AsIntegerVector[0] := ResultDF.Sum;
+  FExecutor.AddResultConst(            '$freq_' + VariableName + '_rows',       ftInteger).AsIntegerVector[0]  := ResultDF.Size;
+  RCount  := FExecutor.AddResultVector('$freq_' + VariableName + '_count',      ftInteger, ResultDF.Size);
+  RCateg  := FExecutor.AddResultVector('$freq_' + VariableName + '_labels',     ftString,  ResultDF.Size);
+  RPerc   := FExecutor.AddResultVector('$freq_' + VariableName + '_rowpercent', ftFloat,   ResultDF.Size);
+  RCum    := FExecutor.AddResultVector('$freq_' + VariableName + '_cumpercent', ftFloat,   ResultDF.Size);
+  RLowCI  := FExecutor.AddResultVector('$freq_' + VariableName + '_lowCI',      ftFloat,   ResultDF.Size);
+  RHighCI := FExecutor.AddResultVector('$freq_' + VariableName + '_highCI',     ftFloat,   ResultDF.Size);
 
   for i := 0 to ResultDF.Size - 1 do
     begin
       RCount.AsIntegerVector[i] := ResultDF.Count.AsInteger[i];
-      RCateg.AsStringVector[i]  := ResultDF.Categ.AsString[i];
+      RCateg.AsStringVector[i]  := ResultDF.Categ.GetValueLabel(i, ValueLabelType);
       RPerc.AsFloatVector[i]    := ResultDF.Percent.AsFloat[i];
       RCum.AsFloatVector[i]     := ResultDF.CumPercent.AsFloat[i];
       RLowCI.AsFloatVector[i]   := ResultDF.LowCI.AsFloat[i];
@@ -307,7 +307,7 @@ begin
         end;
 
       ResDF := DoCalcFreqTable(PrepDF, Variable, RefMap);
-      DoResultVariables(ResDF, Variable);
+      DoResultVariables(ResDF, Variable, ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions));
 
       if (not ST.HasOption('q')) then
         DoOutputFreqTable(ResDF, ST);

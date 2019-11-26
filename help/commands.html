@@ -530,7 +530,7 @@ use datafile_id_2;</font>
               If omitted, no dataform is created and must be created manually.
             </li>
             <li>
-              <font class="option">!title:= "&lt;text&gt;"</font>
+              <font class="option">!label:= "&lt;text&gt;"</font>
               Adds a title to the project. If not used a default title is given.
             </li>
             <li>
@@ -613,7 +613,7 @@ use datafile_id_2;</font>
               <font class="option">!length := &lt;integer&gt;</font><font class="option">!le := &lt;integer&gt;</font>
               Changes the entry length of a variable
             </li>
-			
+
             <li>
               <font class="option">!decimal := &lt;integer&gt;</font><font class="option">!dec := &lt;integer&gt;</font>
               Changed the decimal entry length for floating point variables. Changing the decimal length for other variable types have no impact
@@ -880,7 +880,7 @@ new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "Thi
           <p>Edits a project.</p>
           <ul>
             <li>
-              <font class="option">!title:= "&lt;text&gt;"</font>
+              <font class="option">!label:= "&lt;text&gt;"</font>
               Adds a title to the project. If not used a default title is given.
             </li>
           </ul>
@@ -1163,8 +1163,8 @@ drop data !del ; // drop all observations "marked for deletion"
           <p>Remove the listed global variables from memory</p>
           <ul>
             <li><font class="option">!all</font> Removes ALL global variables. </li
-            <li><font class="option">!all := &lt;type&gt;</font> Removes ALL global variables of the indicated <a href="types">type</a>. 
-	    <li><font class="option"> Note that with !all do not specify any global variable. This will give an error message.</li>
+            <li><font class="option">!all := &lt;type&gt;</font> Removes ALL global variables of the indicated <a href="types">type</a>.
+	    <li><font class="limit"> Note:</font> with !all do not specify any variable names.</li>
           </ul>
           Example:<br/>
           <font class="cmd">
@@ -1191,7 +1191,7 @@ drop global !all;             // drops i1 and s1 (because they are left)
          <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
         </td>
       </tr>
-  
+
      <!--
       ######################################################3
       Select observations
@@ -1271,8 +1271,11 @@ new variable ID integer;   // this creates the new ID variable
 new global i integer;
 for i := 1 to size(@dataset[1]) do
 ID := i;
-// variable II now the sequential number that each observation has in a dataset.
+// variable ID now has the sequential number that each observation has in a dataset.
 // You may sort the data before doing so.
+//<font class='limit'>Note:</font> Another way to do this without a for command is
+new variable ID integer := _n;
+// _n is shorthand for the current record number
        </font>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
       </td>
@@ -1340,7 +1343,7 @@ recode A to B (&lt;lower bound&gt;, &lt;upper bound&gt; [, &lt;Label Text&gt; [,
         <li>Recode using a specific interval:
           <p>In the simple form data are recoded using a specific interval. The size of this interval is specified with the !by := &lt;value&gt; option and starts a 0.
           If there is no data for a given interval, no value label will be created.</p>
-        </li> 
+        </li>
         <li>Recode using custom intervals:
           <p>With this form it is possible to control all (or partial) aspects of the intervals during the data transformation. At the least the range(s) needs to be specified by
           the &lt;lower bound&gt; and &lt;upper bound&gt;. In addition to this it is possible to specify a label for the interval and a userdefine value for the interval.</p>
@@ -1354,7 +1357,7 @@ recode A to B (&lt;lower bound&gt;, &lt;upper bound&gt; [, &lt;Label Text&gt; [,
         <li><font class="option">!nvl</font>Do not create a value label set for the TO variable</li>
         <li><font class="option">!replace</font>If either the &lt;to variable&gt; or the resulting value label set already exists an error will occur.<br/>
             Use !replace to overwrite.</li>
-        <li><font class="option">!i [:= &lt;value&gt;]</font>The lowest interval is recoded to the value 1 and given the value label according to the 
+        <li><font class="option">!i [:= &lt;value&gt;]</font>The lowest interval is recoded to the value 1 and given the value label according to the
             interval values. Subsequent intervals are recoded to 2,3,4 etc.<br/>If a value is specified, start with this instead of 1, subsequent intervals
             are recoded to &lt;value&gt;+1, +2, +3, etc. </li>
         <li><font class="option">!m := &lt;value&gt;</font>All observations with value . (system missing) in the &lt;to variable&gt;
@@ -1576,12 +1579,8 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
         <li><font class="option">!ex</font> Fisher Exact test for 2x2 tables only</li>
         <li><font class="option">!odds</font> Odds Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data</li>
         <li><font class="option">!rr</font> Risk Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data</li>
-        <li><font class="option">!ar</font> Attack Rate table, with RR output</li>
          </ul>
        </li>
-      </ul>
-      <p>Additional options are available.</p>
-      <ul>
        <li> Attack rate table<br/>
        <ul>
         <li><font class="option">!ar</font> Show unstratified 2x2 tables, attack rates and risk ratios</li>
@@ -1592,8 +1591,8 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
        <ul>
         <li><font class="option">!sn</font> Sort the table rows by variable name</li>
         <li><font class="option">!sl</font> Sort the table rows by variable label</li>
-        <li><font class="option">!ss</font> Sort the table rows by key statistic, depending of estimation options<br>
-        - priority given to RR then OR then Fisher Exact P then Chi<sup>2</sup> P</li>
+        <li><font class="option">!ss</font> Sort the table rows by key statistic, depending on the estimation options<br>
+        - priority is given to RR then OR then Fisher Exact P then Chi<sup>2</sup> P</li>
         </ul>
         </li>
        </ul>
@@ -1642,7 +1641,7 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
        number of observations, number of unique values<br/>
        For numerical variables, the output will also include <br/>
        mean, standard deviation, minimum, median, maximum<br/>
-       If no options are specified, normally one output table is produced for each variable.</p>
+       If no options are specified, one output table is produced, with one line for each variable.</p>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
        <p>Use any combination of options to customize the output</p>
        <ul>
