@@ -3666,10 +3666,10 @@ begin
           Exit;
         end;
 
-        if (ParamCount > 2) then
+        if (ParamCount <> 2) then
         begin
           Result := false;
-          DoTypeCheckError('Identifier "' + Ident + '" only accepts one index', TypeChecker);
+          DoTypeCheckError('Identifier "' + Ident + '" must have 2 indices: [x, y]', TypeChecker);
           Exit;
         end;
       end;
