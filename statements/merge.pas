@@ -258,7 +258,7 @@ begin
       FN := '';
       if (Assigned(Opt.Expr)) then
         begin
-          FN := OPt.Expr.AsString;
+          FN := ExpandFileNameUTF8(OPt.Expr.AsString);
 
           if (not FileExistsUTF8(FN)) then
             begin

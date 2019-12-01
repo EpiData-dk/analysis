@@ -3669,7 +3669,7 @@ begin
         if (ParamCount > 2) then
         begin
           Result := false;
-          DoTypeCheckError(ExecutorVariableTypesAsString([EV.VarType]) + '"' + Ident + '" only accepts one index', TypeChecker);
+          DoTypeCheckError(ExecutorVariableTypesAsString([EV.VarType]) + '"' + Ident + '" only accepts two indexes', TypeChecker);
           Exit;
         end;
       end;
@@ -4522,7 +4522,8 @@ end;
 function TSelect.TypeCheck(Parser: IEpiTypeChecker): boolean;
 begin
   Result := inherited TypeCheck(Parser) and
-            Expr.TypeCheck(Parser, TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData, [evfInternal, evfAsObject, evfAsValue]));
+                Expr.TypeCheck(Parser, TypesAndFlags(AllResultDataTypes, [evtField], [evfAsObject, evfAsField]));      // no_n
+  //            Expr.TypeCheck(Parser, TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData, [evfInternal, evfAsObject, evfAsValue]));
 
   if result and
      (not (Expr.ResultType = rtBoolean))
@@ -4788,6 +4789,7 @@ begin
       begin
         // Since the AST found this to be a non-indexed variable, it may only
         // be accepted as an object!
+        // BUT we get here even if there is an index!
         Result := (evfAsObject in TypesAndFlags.Flags) and
                   not (evfAsField in TypesAndFlags.Flags);       // no_n
 
@@ -5380,7 +5382,7 @@ function TFunctionCall.ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec;
 begin
   result.ExecutorVariableTypes := ExecutorVariableTypesData;
   result.ResultTypes           := [rtUndefined];
-  result.Flags                 := [evfInternal, evfAsValue];
+  result.Flags                 := [evfInternal, evfAsValue, evfAsField];  // no_n NO - too broad
 end;
 
 class function TFunctionCall.CreateFunction(const FunctionName: string;
