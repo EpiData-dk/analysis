@@ -58,6 +58,30 @@ uses
 procedure TVariablesForm.DataFileChangeEvent(const Sender: TEpiCustomBase;
   const Initiator: TEpiCustomBase; EventGroup: TEpiEventGroup; EventType: Word;
   Data: Pointer);
+
+
+  function IsAddDelItem: boolean;
+  begin
+    result := (Initiator is TEpiFields) and
+              (EventGroup = eegCustomBase) and
+              (TEpiCustomChangeEventType(EventType) in [ecceAddItem, ecceDelItem]);
+  end;
+
+  function IsNameChange: boolean;
+  begin
+    result := (Initiator is TEpiField) and
+              (EventGroup = eegCustomBase) and
+              (TEpiCustomChangeEventType(EventType) = ecceName);
+  end;
+
+  function IsLabelChange: boolean;
+  begin
+    result := (Initiator is TEpiTranslatedText) and
+              (Initiator.Owner is TEpiField) and
+              (EventGroup = eegCustomBase) and
+              (TEpiCustomChangeEventType(EventType) = ecceText);
+  end;
+
 begin
   if (Initiator = FDataFile) and
      (EventGroup = eegCustomBase) and
@@ -68,7 +92,11 @@ begin
       Exit;
     end;
 
-  UpdateTree;
+  if (IsAddDelItem) or
+     (IsNameChange) or
+     (IsLabelChange)
+  then
+    UpdateTree;
 end;
 
 procedure TVariablesForm.UpdateTree;
