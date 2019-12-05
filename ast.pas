@@ -292,6 +292,7 @@ type
     FOp: TParserOperationType;
     FL:  TExpr;
     FR:  TExpr;
+    FChkMiss: Boolean;
   protected
     function CommonType(Const A, B: TExpr): TASTResultType;
     procedure DoObservedChange(Sender: TObject); override;
@@ -305,6 +306,7 @@ type
     property Operation: TParserOperationType read FOp;
     property Left: TExpr read FL;
     property Right: TExpr read FR;
+    property CheckMissing: Boolean read FChkMiss write FChkMiss;
   public
     function AsBoolean: Boolean; virtual;
     function AsInteger: ASTInteger; virtual;
@@ -5143,8 +5145,9 @@ function TBinaryExpr.AsBoolean: Boolean;
 begin
   Result := inherited AsBoolean;
 
-  if IsMissing then
-    Exit;
+  if CheckMissing then               // no_n
+    if IsMissing then
+      Exit;
 
   case Operation of
     otXor: result := Left.AsBoolean xor Right.AsBoolean;
@@ -5159,8 +5162,9 @@ var
 begin
   Result := inherited AsInteger;
 
-  if IsMissing then
-    Exit;
+  if CheckMissing then               // no_n
+    if IsMissing then
+      Exit;
 
   case ResultType of
     rtBoolean:
@@ -5197,6 +5201,7 @@ function TBinaryExpr.AsFloat: ASTFloat;
 begin
   Result := inherited AsFloat;
 
+  if CheckMissing then               // no_n
   if IsMissing then
     Exit;
 
@@ -5228,6 +5233,7 @@ function TBinaryExpr.AsString: EpiString;
 begin
   Result := inherited AsString;
 
+  if CheckMissing then               // no_n
   if IsMissing and
      (not (ResultType = rtString))
   then
@@ -5260,6 +5266,7 @@ function TBinaryExpr.AsDate: EpiDate;
 begin
   Result := inherited AsDate;
 
+  if CheckMissing then               // no_n
   if IsMissing then
     Exit;
 
@@ -5270,6 +5277,7 @@ function TBinaryExpr.Astime: EpiTime;
 begin
   Result := inherited Astime;
 
+  if CheckMissing then               // no_n
   if IsMissing then
     Exit;
 
@@ -6473,6 +6481,7 @@ begin
   FOp := Op;
   FL := L;
   FR := R;
+  FChkMiss := true;    //no_n
   ObserveObject(L);
   ObserveObject(R);
 end;

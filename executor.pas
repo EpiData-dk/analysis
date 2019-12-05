@@ -2610,6 +2610,7 @@ end;
 procedure TExecutor.ExecAssignment(ST: TAssignment);
 var
   V: TCustomVariable;
+  VType: TASTResultType;
   i, Changes: Integer;
   EV: TCustomExecutorDataVariable;
   SelectRecNo: Int64;
@@ -2620,6 +2621,7 @@ begin
   // than it is not possible to assign to evtResultVector, evtResultMatrix.
 
   V := ST.Variable;
+  VType := V.ResultType;
   EV := GetExecDataVariable(ST.Variable.Ident);
 
   ST.ExecResult := csrFailed;
@@ -2661,7 +2663,7 @@ begin
         if ST.Expr.IsMissing then
           EV.IsMissing[I] := true
         else
-          case V.ResultType of
+          case VType of
             rtBoolean:
               EV.AsBooleanVector[I] := ST.Expr.AsBoolean;
 
@@ -2694,7 +2696,7 @@ begin
             if ST.Expr.IsMissing then
               EV.IsMissing[SelectRecNo] := true
             else
-              case V.ResultType of
+              case VType of
                 rtBoolean:
                   EV.AsBooleanVector[SelectRecNo] := ST.Expr.AsBoolean;
 
@@ -2728,7 +2730,9 @@ begin
                 if ST.Expr.IsMissing then
                   EV.IsMissing[SelectRecNo] := true
                 else
-                  case V.ResultType of
+                  begin
+                  ST.Expr.CheckMissing := false;         // no_n
+                  case VType of
                     rtBoolean:
                       EV.AsBooleanVector[SelectRecNo] := ST.Expr.AsBoolean;
 
@@ -2747,13 +2751,14 @@ begin
                     rtString:
                       EV.AsStringVector[SelectRecNo]  := ST.Expr.AsString;
                   end;
+                end;
               end;
             TExecVarField(EV).Field.UnRegisterOnChangeHook(@AssignmentDataChangeHook);
             Changes := FAssignmentChanges;
           end;
       end
   else
-    // Should not be posible - must be caught in TypeChecker!
+    // Should not be possible - must be caught in TypeChecker!
     DoError('TExecutor.ExecAssignment: EV.VarType');
     ST.ExecResult := csrFailed;
     Exit;

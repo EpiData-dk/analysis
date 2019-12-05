@@ -14,10 +14,10 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="5"/>
-      <BuildNr Value="14"/>
+      <MinorVersionNr Value="6"/>
+      <BuildNr Value="1"/>
       <Attributes pvaSpecialBuild="True"/>
-      <StringTable SpecialBuild="TRUNK"/>
+      <StringTable SpecialBuild="branches no_n"/>
     </VersionInfo>
     <MacroValues Count="1">
       <Macro4 Name="LCLWidgetType" Value="cocoa"/>
@@ -688,7 +688,7 @@
     <CodeGeneration>
       <TargetCPU Value="x86_64"/>
       <Optimizations>
-        <OptimizationLevel Value="0"/>
+        <OptimizationLevel Value="3"/>
       </Optimizations>
     </CodeGeneration>
     <Linking>
@@ -702,6 +702,10 @@
       </Options>
     </Linking>
     <Other>
+      <Verbosity>
+        <ShowHints Value="False"/>
+        <ShowCond Value="True"/>
+      </Verbosity>
       <CustomOptions Value="-dEPI_CHROMIUM_HTML1
 -dEPI_BETA"/>
     </Other>
