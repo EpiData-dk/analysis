@@ -1422,7 +1422,7 @@ begin
   if (ST.HasOption('size', Opt)) then
     DF.Size := Opt.Expr.AsInteger;
 
-  if (ST.HasOption('label', Opt)) then
+  if (ST.HasOption(['label', 'l'], Opt)) then
     DF.Caption.Text := Opt.Expr.AsString;
 
   if (St.HasOption('childrec', Opt)) then
