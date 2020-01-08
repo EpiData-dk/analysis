@@ -2590,7 +2590,7 @@ end;
 function TEditDataset.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  Result.Insert('label',     [rtString]);
+  Result.Insert('label',     ['l'], [rtString]);
   Result.Insert('childobs',  [rtInteger]);
   Result.Insert('afterobs',  [rtInteger]);
   Result.Insert('statusbar', [rtString]);
@@ -2903,7 +2903,7 @@ begin
   Result := inherited GetAcceptedOptions;
 
   Result.Insert('parent',    [rtObject], [evtDataset], [evfInternal, evfAsObject]);
-  Result.Insert('label',     [rtString]);
+  Result.Insert('label',     ['l'], [rtString]);
   Result.Insert('childobs',  [rtInteger]);
   Result.Insert('afterobs',  [rtInteger]);
   Result.Insert('statusbar', [rtString]);
