@@ -78,14 +78,13 @@ var
   C: TOutputTableCell;
   B: TOutputTableCellBorder;
   Row, Col: Integer;
-  S, Style: String;
+  S, Style: UTF8String;
 begin
   WriteToStream(
     '<table cellspacing=0>' + LineEnding +
 //    '<table cellspacing=0 class=simple>' + LineEnding +
     '<caption class=caption>' + Table.Header.Text + '</caption>' + LineEnding
   );
-
 
   for Row := 0 to Table.RowCount - 1 do
   begin
@@ -129,8 +128,19 @@ begin
 
     WriteToStream('</tr>' + LineEnding);
   end;
+  WriteToStream('</tbody>');
 
   WriteToStream('</table>');
+
+  if (Table.Footer <> nil) then
+  begin
+    S := Table.Footer.Text;
+    S := StringsReplace(S, [LineEnding], ['<br>'], [rfReplaceAll]);
+    S := ReplaceStr(S,'{\S ','<sup>');       // *** jh this would be better with RegExp
+    S := ReplaceStr(S,'}','</sup>');
+    WriteToStream('<p>' + S + '</p>'); // most appropriate style ?
+  end;
+
 end;
 
 procedure TOutputGeneratorHTML.DoOutputLine(Line: TOutputLine);
