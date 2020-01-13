@@ -114,7 +114,7 @@ end;
 
 procedure TTwoWayStatisticRR.AddToOutput(OutputTable: TOutputTable; Options: TOptionList);
 var
-  S: String;
+  S: UTF8String;
 begin
   if (FRelativeRisk = TEpiFloatField.DefaultMissing) then
      S := 'Cannot estimate Risk Ratio. ' + FMessage

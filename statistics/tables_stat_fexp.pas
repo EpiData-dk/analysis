@@ -126,7 +126,7 @@ end;
 
 procedure TTwoWayStatisticFExP.AddToOutput(OutputTable: TOutputTable; Options: TOptionList);
 var
-  S: String;
+  S: UTF8String;
 begin
   if (FFExP = TEpiFloatField.DefaultMissing) then exit;
   S := 'Fisher Exact '+ FormatP(FFExP, true);

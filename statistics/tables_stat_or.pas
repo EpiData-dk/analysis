@@ -15,7 +15,7 @@ type
   TTwoWayStatisticOR = class(TTwoWayStatistic)
   private
     FConf: Integer;
-    FMName: String;
+    FMName: UTF8String;
     FOddsRatio: EpiFloat;
     FOddsRatioLL, FOddsRatioUL: EpiFloat;
     FMessage: UTF8String;
@@ -112,7 +112,7 @@ end;
 
 procedure TTwoWayStatisticOR.AddToOutput(OutputTable: TOutputTable; Options: TOptionList);
 var
-  S: String;
+  S: UTF8String;
 begin
   if (FOddsRatio = TEpiFloatField.DefaultMissing) then
     S := 'Cannot estimate the ' + FMName + '. '+ FMessage

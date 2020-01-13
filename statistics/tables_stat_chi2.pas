@@ -108,10 +108,10 @@ end;
 
 procedure TTwoWayStatisticChi2.AddToOutput(OutputTable: TOutputTable; Options: TOptionList);
 var
-  S: String;
+  S: UTF8String;
   PCt: Int64;
 begin
-  S := 'Chi{\S 2}: ' + Format('%.2f', [FChi2]) + ' Df(' + IntToStr(FOrgTable.DF)+')';
+  S := 'Chi{\S 2}: ' + Format('%.2f', [FChi2]) + ' Df(' + IntToStr(FOrgTable.DF)+') ';
 
   S := S + FormatP(FChiP, true);
 
