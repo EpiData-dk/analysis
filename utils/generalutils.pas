@@ -110,16 +110,20 @@ function PercentileIndexNIST(const Size: integer; const Percentile: Double; out 
 function FormatP(Val: EpiFloat; ShowP: Boolean): UTF8String;
 
 var
-  prefix: string = '';
+  prefix: UTF8string = '';
 begin
-  if (ShowP) then prefix := ' p';
+  if (ShowP) then prefix := 'p';
   if (Val < 0.0001) then
-    Result := prefix + '< 0.0001'
-  else
-    if (Val < 0.001) then
-      Result := prefix + '< 0.001'
-  else
-    if (ShowP) then prefix := prefix + '=';
+    begin
+      Result := prefix + '<0.0001';
+      exit;
+    end;
+  if (Val < 0.001) then
+    begin
+      Result := prefix + '<0.001';
+      exit;
+    end;
+  if (ShowP) then prefix := 'p=';
   if (Val = TEpiFloatField.DefaultMissing) then
     Result := prefix + '-'
   else
