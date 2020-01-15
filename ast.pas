@@ -681,6 +681,7 @@ type
     destructor  Destroy; override;
     procedure   Add(Variable: TCustomVariable);
     procedure   Delete(Index: Integer);
+    procedure   Clear;
     function    TypeCheck(VariableChecker: IVariableCheck; TypeChecker: IEpiTypeChecker): boolean; reintroduce;
     function    GetIdentsAsList: TStrings;
     function    GetEnumerator: TVariableListEnumerator;
@@ -6752,6 +6753,11 @@ end;
 procedure TVariableList.Delete(Index: Integer);
 begin
   FVarList.Delete(Index);
+end;
+
+procedure TVariableList.Clear;
+begin
+  FVarList.Clear;
 end;
 
 function TVariableList.TypeCheck(VariableChecker: IVariableCheck;

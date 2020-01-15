@@ -3147,8 +3147,9 @@ var
   i: Integer;
   F: TCustomExecutorDataVariable;
   CurrentVarNames: TStrings;
-  InverseVariables: TVariableList;
+  InverseVariables, OriginalVariables: TVariableList;
   Variable: TVariable;
+  V: TCustomVariable;
 begin
   // TKeepCommand is a decendant of TDropCommand, so we take the current set of
   // variables and inverse it. The we send it off to the drop execution.
@@ -3157,6 +3158,8 @@ begin
   // later on, the a seperate unit should implement this variable inversing.
 
   InverseVariables := TVariableList.Create;
+  OriginalVariables := TVariableList.Create;
+
   CurrentVarNames  := ST.Variables.GetIdentsAsList;
   for i := 0 to Fields.Count -1 do
     begin
@@ -3169,13 +3172,20 @@ begin
       InverseVariables.Add(Variable);
     end;
 
-  for i := ST.Variables.Count - 1 downto 0 do
-    ST.Variables.Delete(i);
+  for V in ST.Variables do
+    OriginalVariables.Add(V);
 
-  for i := 0 to InverseVariables.Count - 1 do
-    ST.Variables.Add(InverseVariables[i]);
+  ST.Variables.Clear;
+
+  for V in InverseVariables do
+    ST.Variables.Add(V);
 
   ExecDrop(ST);
+
+  // Restore original list of variables.
+  ST.Variables.Clear;
+  for V in OriginalVariables do
+    ST.Variables.Add(V);
 end;
 
 procedure TExecutor.ExecEdit(ST: TCustomCrudCommand);
