@@ -2725,7 +2725,9 @@ begin
                 FCurrentRecNo := i;
                 SelectRecNo := SelectVector.AsInteger[FCurrentRecNo];
 
-                if ST.Expr.IsMissing then
+                if (ST.Expr.IsMissing and
+                   (not (V.ResultType = rtString)))
+                then
                   EV.IsMissing[SelectRecNo] := true
                 else
                   case V.ResultType of
