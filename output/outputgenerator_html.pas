@@ -128,18 +128,19 @@ begin
 
     WriteToStream('</tr>' + LineEnding);
   end;
-  WriteToStream('</tbody>');
+
+    if (Table.Footer <> nil) then
+    begin
+      S := Table.Footer.Text;
+      S := StringsReplace(S, [LineEnding], ['<br>'], [rfReplaceAll]);
+      S := ReplaceStr(S,'{\S ','<sup>');       // *** jh this would be better with RegExp
+      S := ReplaceStr(S,'}','</sup>');
+      WriteToStream('<tfoot><td colspan="' + Table.ColCount.ToString + '">' + S + '&nbsp;</td></tfoot>'); // most appropriate style ?
+    end;
+
+    WriteToStream('</tbody>');
 
   WriteToStream('</table>');
-
-  if (Table.Footer <> nil) then
-  begin
-    S := Table.Footer.Text;
-    S := StringsReplace(S, [LineEnding], ['<br>'], [rfReplaceAll]);
-    S := ReplaceStr(S,'{\S ','<sup>');       // *** jh this would be better with RegExp
-    S := ReplaceStr(S,'}','</sup>');
-    WriteToStream('<p>' + S + '</p>'); // most appropriate style ?
-  end;
 
 end;
 
