@@ -121,7 +121,7 @@ begin
     S := FMName + ': '+ FormatRatio(FOddsRatio,Options);
     if (FOddsRatioLL <> TEpiFloatField.DefaultMissing) then
        S += ' ' + FormatCI(FOddsRatioLL, FOddsRatioUL, FConf, Options);
-    OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
+    OutputTable.Footer.Text := OutputTable.Footer.Text + S + LineEnding;
   end;
 end;
 

@@ -130,7 +130,7 @@ var
 begin
   if (FFExP = TEpiFloatField.DefaultMissing) then exit;
   S := 'Fisher Exact '+ FormatP(FFExP, true);
-  OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
+  OutputTable.Footer.Text := OutputTable.Footer.Text + S + LineEnding;
 end;
 
 procedure TTwoWayStatisticFExP.CreateResultVariables(Executor: TExecutor;

@@ -122,7 +122,7 @@ begin
     S := 'Risk Ratio: '+ FormatRatio(FRelativeRisk, Options);
   if (not IsInfinite(FRelativeRisk)) then
     S += ' ' + FormatCI(FRRLL, FRRUL, FConf, Options);
-  OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
+  OutputTable.Footer.Text := OutputTable.Footer.Text + S + LineEnding;
 end;
 
 procedure TTwoWayStatisticRR.CreateResultVariables(Executor: TExecutor;

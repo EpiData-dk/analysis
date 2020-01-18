@@ -122,7 +122,7 @@ begin
            Format(' (%d pct.)', [Pct]);
     end;
 
-  OutputTable.Footer.Text := OutputTable.Footer.Text + LineEnding + S;
+  OutputTable.Footer.Text := OutputTable.Footer.Text + S + LineEnding;
 end;
 
 procedure TTwoWayStatisticChi2.CreateResultVariables(Executor: TExecutor;
