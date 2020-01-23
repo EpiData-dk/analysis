@@ -2755,7 +2755,7 @@ begin
           end;
       end
   else
-    // Should not be posible - must be caught in TypeChecker!
+    // Should not be possible - must be caught in TypeChecker!
     DoError('TExecutor.ExecAssignment: EV.VarType');
     ST.ExecResult := csrFailed;
     Exit;

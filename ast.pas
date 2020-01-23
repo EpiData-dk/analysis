@@ -182,7 +182,7 @@ type
 
   TAssignment = class(TCustomStatement)
   private
-    FVAriable: TCustomVariable;
+    FVariable: TCustomVariable;
     FExpr: TExpr;
   protected
     procedure DoObservedChange(Sender: TObject); override;
@@ -4778,9 +4778,8 @@ begin
         Result := (evfAsObject in TypesAndFlags.Flags);
 
         if (not Result) then
- { TODO -oJamie : Why not just recast this as having the default index? }
-        begin
-          DoTypeCheckError('Identifier "' + Ident + '" must have an index', TypeChecker);
+         begin
+          DoTypeCheckError(ExecutorVariableTypesAsString([EV.VarType]) + ' "' + Ident + '" must have an index', TypeChecker);
           Exit;
         end;
 
@@ -4974,8 +4973,9 @@ var
   Rr: TASTResultType;
   BinaryTypesAndFlags: TTypesAndFlagsRec;
 begin
-  BinaryTypesAndFlags := options_hashmap.TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData);
-  Result := inherited TypeCheck(TypeChecker, BinaryTypesAndFlags);
+//  BinaryTypesAndFlags := options_hashmap.TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData, TypesAndFlags.Flags);
+//  Result := inherited TypeCheck(TypeChecker, BinaryTypesAndFlags);
+  Result := inherited TypeCheck(TypeChecker, TypesAndFlags);
 
   if result then
   begin
@@ -5366,7 +5366,7 @@ function TFunctionCall.ParamAcceptType(ParamNo: Integer): TTypesAndFlagsRec;
 begin
   result.ExecutorVariableTypes := ExecutorVariableTypesData;
   result.ResultTypes           := [rtUndefined];
-  result.Flags                 := [evfInternal, evfAsValue];
+  result.Flags                 := [evfInternal, evfAsValue, evfAsObject];
 end;
 
 class function TFunctionCall.CreateFunction(const FunctionName: string;
@@ -5750,6 +5750,10 @@ var
   EFlags: TTypesAndFlagsRec;
   EV: TCustomExecutorVariable;
 begin
+  // ==========================================
+  // = PART 1: Check left side of assignment  =
+  // ==========================================
+
   // Since assignment vary greatly, we need to make diffent check for combination.
   // eg. evtField may be AsValue and AsObject.
   // but evtGlobalVector can only be AsValue. Otherwise assignment fails.
@@ -5765,14 +5769,14 @@ begin
 
   Parser.SetTypeCheckErrorOutput(true);
 
-  EV := Parser.GetExecVariable(FVAriable.Ident);
+  EV := Parser.GetExecVariable(FVariable.Ident);
 
   // Just make sure we output the error.
   if (not Result) then
     begin
       if (not Assigned(EV) ) then
         begin
-          FVAriable.TypeCheck(Parser, EFlags);
+          FVariable.TypeCheck(Parser, EFlags);
           Exit;
         end;
 
@@ -5790,6 +5794,9 @@ begin
         end;
     end;
 
+  // ===========================================
+  // = PART 2: Check right side of assignment  =
+  // ===========================================
 
   EFlags := TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData);
   if (EV.VarType = evtField) then
@@ -6581,6 +6588,12 @@ function TCustomVariable.ResultType: TASTResultType;
 var
   ExecVarType: TExecutorVariableType;
 begin
+  if (not Assigned(Executor.GetExecVariable(Ident))) then
+    begin
+      Result := rtUndefined;
+      Exit;
+    end;
+
   ExecVarType := Executor.GetVariableExecType(Ident);
 
   case ExecVarType of
