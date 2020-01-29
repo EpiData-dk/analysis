@@ -232,6 +232,9 @@ begin
   c := ParamList[0].AsFloat;
   t := ParamList[1].AsFloat;
 
+  if (SameValue(c, t, 0.0)) then
+    Exit(15);
+
   if (t <> 0) then
     Result := min(15, -log10(abs((c - t) / t)))
   else

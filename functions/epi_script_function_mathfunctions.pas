@@ -287,6 +287,9 @@ begin
         c := Param[0].AsFloat;
         t := Param[1].AsFloat;
 
+        if (SameValue(c, t, 0.0)) then
+          Exit(15);
+
         if (t <> 0) then
           result := min(15, -log10(abs((c - t) / t)))
         else
