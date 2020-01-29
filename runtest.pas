@@ -41,6 +41,7 @@ type
     procedure RunFile(Const FN: UTF8String);
     procedure DoAssert(ST: TAssertCommand);
     function  DoLRE(ParamList: TParamList): EpiFloat;
+    procedure ExceptionInStatement(ST: TCustomStatement);
   public
     constructor Create(Executor: TExecutor; Output: TOutputCreator);
     destructor Destroy; override;
@@ -130,6 +131,7 @@ begin
   try
     inherited DoStatement(St);
   except
+    FRunTest.ExceptionInStatement(ST);
     FCancelled := true;
   end;
 end;
@@ -242,6 +244,11 @@ begin
 
   FPrecision.AsFloat[FDatafileIdx] := min(FPrecision.AsFloat[FDatafileIdx], Result);
   FAbsDiff.AsFloat[FDatafileIdx]   := min(FAbsDiff.AsFloat[FDatafileIdx], abs(c-t));
+end;
+
+procedure TRunTest.ExceptionInStatement(ST: TCustomStatement);
+begin
+  FComment.AsString[FDatafileIdx] := '{\b PROGRAM ERROR: Approx. Line ' + IntToStr(ST.LineNo) + ' }';
 end;
 
 procedure TRunTest.LexError(Sender: TObject; ErrorToken: TToken);
