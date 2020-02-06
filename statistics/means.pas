@@ -151,19 +151,22 @@ begin
     AvgDev.AsFloat[Idx]    := lAvgDev;
     SumSS.AsFloat[Idx]     := lSSqDev;
 
-    // Cannot calculate these statistics with 1 observation
+    // Cannot calculate these statistics with 1 observation or if there is no variation
     if (Obs > 1) then
       begin
-        if (Obs > 2) then
-          Skew.AsFloat[Idx]   := (Obs * sqrt(Obs - 1) * lSkew) / ((Obs - 2) * sqrt(lSSqDev * lSSqDev * lSSqDev));
-        if (Obs > 3) then
+        if ((Obs > 2) and (lSSqDev > 0)) then
           begin
-            lKurt             := (Obs * (Obs + 1) * (Obs - 1) * lKurt) / ((Obs - 2) * (Obs - 3) * lSSqDev * lSSqDev);
-            Kurt.AsFloat[Idx] := lKurt - (3 * (Obs - 1) * (Obs - 1)) / ((Obs - 2) * (Obs - 3)) // excess kurtosis
-          end;
+            Skew.AsFloat[Idx]   := (Obs * sqrt(Obs - 1) * lSkew) / ((Obs - 2) * sqrt(lSSqDev * lSSqDev * lSSqDev));
+          if (Obs > 3) then
+            begin
+              lKurt             := (Obs * (Obs + 1) * (Obs - 1) * lKurt) / ((Obs - 2) * (Obs - 3) * lSSqDev * lSSqDev);
+              Kurt.AsFloat[Idx] := lKurt - (3 * (Obs - 1) * (Obs - 1)) / ((Obs - 2) * (Obs - 3)) // excess kurtosis
+            end;
+        end;
         lSSqDev               := lSSqDev / (Obs - 1);
         StdVar.AsFloat[Idx]   := lSSqDev;
-        StdDev.AsFloat[Idx]   := sqrt(lSSqDev);
+        lStdDev               := sqrt(lSSqDev);
+        StdDev.AsFloat[Idx]   := lStdDev;
         lStdErr               := sqrt(lSSqDev / Obs);
         StdErr.AsFloat[Idx]   := lStdErr;
         lCfiVal               := PTDISTRINV(Obs - 1, 0.025) * lStdErr;
@@ -185,20 +188,19 @@ begin
       // t-test of mean=0 if only one result
       with ResultDF do
         begin
-          Tval := Mean.AsFloat[0] / (StdErr.AsFloat[0]);
+          if (StdErr.AsFloat[0] > 0) then
+            Tval := Mean.AsFloat[0] / (StdErr.AsFloat[0]);
           Obs  := N.AsInteger[0];
         end;
 
       with ResultDF.AnovaRecord do
         begin
-          F := Tval;     // Making use of F for the t-value
-
-          if (Obs < 2) or (isInfinite(Tval) or isNaN(Tval)) then
-            PROB := 1
-          else
-            PROB := tdist(F,Obs-1);
+          if (Obs > 1) and (ResultDF.StdErr.AsFloat[0] > 0) then
+            begin
+              F := Tval;
+              PROB := tdist(F,Obs-1);
+            end;
         end;
-
       Exit;
     end;
 
