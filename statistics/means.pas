@@ -7,7 +7,7 @@ interface
 
 uses
   Classes, SysUtils, StrUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
-  executor, result_variables, interval_types, epifields_helper,
+  executor, result_variables, interval_types, epifields_helper, ana_globals,
   outputcreator;
 
 type
@@ -37,6 +37,7 @@ type
   TMeans = class
   private
     FDecimals: Integer;
+    FConf: Integer;
     FValuelabelOutput: TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
     procedure FillDescriptor(ResultDF: TMeansDatafile; CountVar: TEpiField; SIdx, EIdx: Integer; ASum: EpiFloat);
@@ -82,6 +83,7 @@ var
   Idx, Obs, i: Integer;
   lMean, lAvgDev, lStdDev, lSSqDev, lStdErr, lSkew, lKurt, Val, lTvalue: EpiFloat;
   lCfiVal: Extended;
+  lConf: Extended;
 
   function GetPercentile(min, max, d: integer):EpiFloat;
   var
@@ -98,7 +100,7 @@ var
 
 begin
   Idx := ResultDF.NewRecords();
-
+  FConf := StrToInt(FExecutor.SetOptionValue[ANA_SO_CONFIDENCE_INTERVAL]);
   with ResultDF do
   begin
     // Observation found in category
@@ -169,7 +171,8 @@ begin
         StdDev.AsFloat[Idx]   := lStdDev;
         lStdErr               := sqrt(lSSqDev / Obs);
         StdErr.AsFloat[Idx]   := lStdErr;
-        lCfiVal               := PTDISTRINV(Obs - 1, 0.025) * lStdErr;
+        lConf                 := 0.005 * (100 - float(FConf));
+        lCfiVal               := PTDISTRINV(Obs - 1, lConf) * lStdErr;
         CfiL.AsFloat[Idx]     := lMean - lCfiVal;
         CfiH.AsFloat[Idx]     := lMean + lCfiVal;
       end;
@@ -518,7 +521,7 @@ begin
   T.Cell[2 + Offset, 0].Text := 'Mean';
   T.Cell[3 + Offset, 0].Text := 'Variance';
   T.Cell[4 + Offset, 0].Text := 'Std. Dev.';
-  T.Cell[5 + Offset, 0].Text := '( 95% CI';
+  T.Cell[5 + Offset, 0].Text := '( ' + IntToStr(FConf) + '% CI';
   T.Cell[6 + Offset, 0].Text := 'mean )';
   T.Cell[7 + Offset, 0].Text := 'Std. Err.';
   T.Cell[8 + Offset, 0].Text := 'Skewness';
