@@ -17,8 +17,8 @@
                 H2 { font-size: 1.05em;  margin-top: 0.5cm; direction: ltr; color: #000000; text-align: left; ; color : Blue}
                 H3 { font-size: 1.025em; margin-top: 0.5cm;  direction: ltr; color: #000000; text-align: left; ; color : Blue }
                 H4 { font-size: 1.0em; margin-top: 0.5cm;  direction: ltr; color: #000000; text-align: left; ; color : Blue }
-                ul { margin-left: 2px; margin-top: 0.5em ;padding: 0 1em 1em 1em;}
-                li { text-indent: 1px; margin-top: 0.0cm ; padding: 0.2em 0 0.2em 0.5.0em;}
+                ul { margin-left: 2px; margin-top: 0.5em ;padding: 0 0 0 1em;}
+                li { text-indent: 1px; margin-top: 0.0em ; padding: 0 0 0 0em;}
                 .heading   {color: blue; font-weight: bold; font-size: 1.05em; ALIGN=JUSTIFY}
                 .bodywhite {color: black; background-color:white; }
                 .body      {color: white ; background-color: white ; font-size: 1.0em ; font-weight: normal }
@@ -1454,8 +1454,7 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
        <td>
         <font class="cmd">count</font><br/>
         <p>Counts number of observations. Count may be used with select to count within a subgroup</p>
-        <br/>
-        Result variable: <font class="cmd">$count</font>. Use <font class="cmd">list results</font> for details<br/>
+        Result variable: <font class="cmd">$count</font>. Use <font class="cmd">list results</font> for details
        </td>
       </tr>
       <tr valign="top">
@@ -1614,20 +1613,27 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
       </td>
       <td>
        <font class="cmd">means <i>variable<sub>1</sub></i> [!by=<i>variable<sub>2</sub></i>] [!t]</font><br/>
-       <p>Basic descriptive statistics for variable1, optionally stratified by variable2 with analysis of variance<br/></p>
+       <p>Basic descriptive statistics for variable<sub>1</sub>, optionally stratified by variable<sub>2</sub> with analysis of variance.<br/>
+       Statistics: count, total, mean, variance, standard deviation, 95% confidence interval for the mean, standard error, skewness, excess kurtosis.<br>
+       Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.</p>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-
        <ul>
         <li><font class="option">!by:</font> Stratify by this variable</li>
         <li><font class="option">!t:</font> Analysis of Variance to test for homogeneity of the mean across strata,<br/>
          including Bartletts test for homogeneity of variance.<br/>
-         a T-test or F-test is provided, based on the number of strata.</li>
-        <li>Without <font class="cmd">!by</font> and with <font class="cmd">!t</font> : Test that mean=0<br/>
-         (e.g. as a paired T-test for difference in before and after measure)</li>
-        <li>Estimates are saved as result variables. Use <font class="cmd">list results</font> for details<br/></li>
+        With <font class="cmd">!by</font> (stratified), F-test is given.<br/>
+        Without <font class="cmd">!by</font> (one stratum), T-test that mean=0.<br/>
+         (e.g. as a paired T-test for the difference in before and after measures)</li>
+        <li>Estimates are saved as result variables. Use <font class="cmd">list results</font> for details</li>
         <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
        </ul>
-       <font class="limit">Note:</font> Confidence Intervals given are based on the T-distribution with N-1 degrees of freedom.
+       <font class="limit">Methodology notes:</font>
+       <ul>
+         <li>confidence intervals given are based on the t-distribution with N-1 degrees of freedom.</li>
+         <li>adjusted Fisher-Pearson coefficient of skewness: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm" target="_blank">NIST handbook 1.3.5.11</a></li>
+         <li>excess kurtosis: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm" target="_blank">NIST handbook 1.3.5.11</a></li>
+         <li>Bartlett's Test: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm" target="_blank">NIST handbook 1.3.5.7</a></li>
+       </ul>
       </td>
      </tr>
      <tr valign="top">
