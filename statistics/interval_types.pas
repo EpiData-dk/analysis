@@ -65,6 +65,7 @@ type
   end;
 
   TAnovaRecord = record
+    Valid: Boolean;
     SSB,       // Sum of Squares between instruments
     MSB,       // Mean squares between instruments
     SSW,       // Sum of squares within instruments

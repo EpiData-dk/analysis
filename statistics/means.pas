@@ -187,7 +187,7 @@ var
   ASSW, ASST, Tval: EpiFloat;
   TPoolVar, TSumLogs, TSumNs: EpiFloat;
 begin
-  if ResultDF.Size < 2 then
+  if ResultDF.StratifyVarText = '' then
     begin
       // t-test of mean=0 if only one result
       with ResultDF do
@@ -203,9 +203,11 @@ begin
             begin
               F := Tval;
               PROB := tdist(F,Obs-1);
+              Valid := true;
             end
           else
             begin
+              Valid := false;
               F := TEpiFloatField.DefaultMissing;
               Prob := TEpiFloatField.DefaultMissing;
             end;
@@ -236,6 +238,9 @@ begin
     DFT := Obs - 1;
     DFB := lStrata;
     DFW := DFT - DFB;
+    // validity check on denominators to avoid divison by zero
+    Valid := (SSW > 0) and (DFB > 0) and (DFW > 0) and (DFT > 0);
+    if (not Valid) then exit;
     MSB := SSB / DFB;
     MSW := SSW / DFW;
     MST := SST / DFT;
@@ -509,7 +514,7 @@ begin
   SmallNumFmt := '%8.2F';
   Sz := ResultDF.Size;
 
-  if Sz = 1 then
+  if (ResultDF.StratifyVarText = '') then
     begin
       Offset := 0;
       T.ColCount := 11;
@@ -629,7 +634,8 @@ var
 begin
   T := FOutputCreator.AddTable;
   T.Header.Text := 'Analysis of Variance';
-  if (isNaN(AnovaRec.F) or isInfinite(AnovaRec.F)) then
+  if (not AnovaRec.Valid) then
+//  if (isNaN(AnovaRec.F) or isInfinite(AnovaRec.F) or (AnovaRec.F = TEpiFloatField.DefaultMissing)) then
     begin
       T.ColCount := 1;
       T.RowCount := 1;
@@ -689,7 +695,8 @@ var
 begin
   T := FOutputCreator.AddTable;
   T.Header.Text := 'T-Test of Ho: mean=zero';
-  if (isNaN(AnovaRec.F) or isInfinite(AnovaRec.F)) then
+//  if (isNaN(AnovaRec.F) or isInfinite(AnovaRec.F) or (not AnovaRec.Valid)) then
+  if (not AnovaRec.Valid) then
     begin
       T.ColCount := 1;
       T.RowCount := 1;
@@ -721,20 +728,19 @@ var
   HasBy: Boolean;
   DataFile: TEpiDataFile;
 begin
-// TODO: {Jamie} reset result variables;
-    FExecutor.ClearResults('$means');
-// TODO: {Jamie} add checks for no data or duplicate !by variable
+// reset result variables;
+  FExecutor.ClearResults('$means');
+
   FDecimals := DecimalFromOption(ST.Options);
   FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
 
-  // ******
   Variables := ST.VariableList.GetIdentsAsList;
   HasBy := false;
   StratifyVarName := '';
   ST.ExecResult := csrFailed;
-// TODO: {Jamie} move these checks into means.pas
-// check for more than one !by
+
+  // check for more than one !by
   try
     for Opt in ST.Options do
     begin
@@ -766,7 +772,6 @@ begin
         Exit;
       end;
 
-  // ******
     CountVarName := ST.VariableList[0].Ident;
 
     ResultDF := DoCalcMeans(DataFile, CountVarName, StratifyVarName);
@@ -777,10 +782,11 @@ begin
         DoOutputMeans(ResultDF);
 
         if (ST.HasOption('t')) then
-          if (ResultDF.Size > 1) then
-            DoOutputAnova(ResultDF.AnovaRecord)
+//          if (ResultDF.Size > 1) then
+          if (ResultDF.StratifyVarText = '') then
+            DoOutputTTest(ResultDF.AnovaRecord)
           else
-            DoOutputTTest(ResultDF.AnovaRecord);
+            DoOutputAnova(ResultDF.AnovaRecord);
       end;
     ST.ExecResult := csrSuccess;
     ResultDF.Free;
