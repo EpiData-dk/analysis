@@ -1397,7 +1397,6 @@ type
   TReportValidateDoubleEntry = class(TCustomReportCommand)
   protected
     function GetAcceptedOptions: TStatementOptionsMap; override;
-    function GetAcceptedVariableCount: TBoundArray; override;
     function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec;
       override;
   public
@@ -1778,17 +1777,11 @@ begin
   Result.Insert('val', [rtUndefined]);
 end;
 
-function TReportValidateDoubleEntry.GetAcceptedVariableCount: TBoundArray;
-begin
-  Result := inherited GetAcceptedVariableCount;
-  Result[0] := 0;
-end;
-
 function TReportValidateDoubleEntry.GetAcceptedVariableTypesAndFlags(
   Index: Integer): TTypesAndFlagsRec;
 begin
   Result := inherited GetAcceptedVariableTypesAndFlags(Index);
-  Result.Flags := [evfInternal, evfExternal, evfAsObject];
+  Result.Flags := [evfInternal, evfAsObject];
 end;
 
 constructor TReportValidateDoubleEntry.Create(AVariableList: TVariableList;

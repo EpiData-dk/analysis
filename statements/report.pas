@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, fgl, ast, executor, result_variables, epidocument,
-  epidatafilestypes, epiopenfile, outputcreator, epidatafiles;
+  epidatafilestypes, epiopenfile, outputcreator, epidatafiles, epireport_generator_base;
 
 type
 
@@ -35,6 +35,7 @@ type
     procedure DBLValCallAllCallback(CommonRecords, MissingInMain,
       MissingInDupl, NonUniqueMain, NonUniqueDupl, ErrorRec,
       ErrorFields: integer);
+    procedure DoReportHeader(DocFile: TEpiDocumentFile; CoreReporter: TEpiReportGeneratorBase);
   protected
     procedure DoReportUsers;
     procedure DoReportCountById;
@@ -107,6 +108,24 @@ begin
   FNonUniqDuplRes.AsIntegerVector[FCurrentDblValDFIndex] := NonUniqueDupl;
   FErrorRecRes.AsIntegerVector[FCurrentDblValDFIndex]    := ErrorRec;
   FErrorVarRes.AsIntegerVector[FCurrentDblValDFIndex]    := ErrorFields;
+end;
+
+procedure TReports.DoReportHeader(DocFile: TEpiDocumentFile;
+  CoreReporter: TEpiReportGeneratorBase);
+var
+  DocumentFiles: TEpiDocumentFileList;
+  R: TEpiReportMainHeader;
+begin
+  DocumentFiles := TEpiDocumentFileList.Create;
+  DocumentFiles.Add(FExecutor.DocFile);
+  DocumentFiles.Add(Docfile);
+
+  R := TEpiReportMainHeader.Create(CoreReporter);
+  R.ProjectList := DocumentFiles;
+  R.Title := 'Double Entry Validation Report';
+  R.RunReport;
+  R.Free;
+  DocumentFiles.Free;
 end;
 
 procedure TReports.DoReportUsers;
@@ -467,6 +486,7 @@ var
   R: TEpiReportMainHeader;
   DocumentFiles: TEpiDocumentFileList;
   DblOptions: TEpiToolsDblEntryValidateOptions;
+  S: String;
 
   function CompareTreeStructure(Const RelationListA, RelationListB: TEpiDatafileRelationList): boolean;
   var
@@ -569,17 +589,6 @@ begin
   if FSt.HasOption('noc') then Exclude(DblOptions, devCaseSensitiveText);
   if FSt.HasOption('val') then Include(DblOptions, devAddVerifiedFlagToDF);
 
-  DocumentFiles := TEpiDocumentFileList.Create;
-  DocumentFiles.Add(FExecutor.DocFile);
-  DocumentFiles.Add(Docfile);
-
-  R := TEpiReportMainHeader.Create(CoreReporter);
-  R.ProjectList := DocumentFiles;
-  R.Title := 'Double Entry Validation Report';
-  R.RunReport;
-  R.Free;
-  DocumentFiles.Free;
-
   if ((FExecutor.Document.DataFiles.Count > 1) and (Docfile.Document.DataFiles.Count > 1)) and
      (not FSt.HasOption('ds'))
   then
@@ -591,8 +600,14 @@ begin
         begin
           FExecutor.Error('When comparing whole projects, it is not possible to select individual variables to compare!');
           FSt.ExecResult := csrFailed;
+
+          if (Docfile <> FExecutor.DocFile) then
+            Docfile.Free;
+
           Exit;
         end;
+
+      DoReportHeader(Docfile, CoreReporter);
 
       Fields := TEpiFields.Create(nil);
       Fields.ItemOwner := false;
@@ -616,6 +631,8 @@ begin
           Fields.Clear;
           Inc(FCurrentDblValDFIndex);
         end;
+
+      Fields.Free;
     end
   else
     begin
@@ -631,13 +648,37 @@ begin
       else
         List := FExecutor.DataFile.KeyFields.GetItemNames(false);
 
+      Fields := TEpiFields.Create(nil);
+      Fields.Sorted := false;
+
       JoinFields := TEpiFields.Create(nil);
       JoinFields.UniqueNames := false;
       JoinFields.Sorted := false;
       for i := 0 to List.Count - 1 do
-        JoinFields.AddItem(FExecutor.DataFile.Fields.FieldByName[List[i]]);
+        begin
+          F := FExecutor.DataFile.Fields.FieldByName[List[i]];
+          if (not DF.Fields.ItemExistsByName(F.Name)) then
+            Fields.AddItem(F);
+          JoinFields.AddItem(F);
+        end;
 
-      Fields := TEpiFields.Create(nil);
+      S := '';
+      if (Fields.Count > 0) then
+        begin
+          for F in Fields do
+            S := S + ', ' + F.Name;
+          Delete(S, 1, 2);
+
+          FOutputCreator.DoError('Variables not found in external dataset: ' + S);
+          FSt.ExecResult := csrFailed;
+          Fields.Free;
+          JoinFields.Free;
+
+          if (Docfile <> FExecutor.DocFile) then
+            Docfile.Free;
+
+          Exit;
+        end;
 
       for F in FExecutor.DataFile.Fields do
         begin
@@ -649,6 +690,8 @@ begin
 
           Fields.AddItem(F);
         end;
+
+      DoReportHeader(Docfile, CoreReporter);
 
       DBLValCreateResultVars(1);
 
