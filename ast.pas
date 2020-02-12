@@ -5171,6 +5171,8 @@ begin
 end;
 
 function TBinaryExpr.AsFloat: ASTFloat;
+var
+  Tmp: ASTFloat;
 begin
   Result := inherited AsFloat;
 
@@ -5256,6 +5258,9 @@ end;
 function TBinaryExpr.IsMissing: Boolean;
 begin
   Result := Left.IsMissing or Right.IsMissing;
+
+  if (FOp in [otDiv, otDivide]) then
+    Result := Result or (Right.AsFloat = 0);
 end;
 
 { TUnaryExpr }

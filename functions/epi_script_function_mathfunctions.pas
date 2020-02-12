@@ -312,34 +312,43 @@ begin
   end;
 end;
 
+{$ifdef FPC_HAS_TYPE_EXTENDED}
+operator mod(const a, b: Extended) c: Extended; inline;
+begin
+  c := a - b * Int(a / b);
+end;
+{$endif}
+
+operator mod(const a, b: double) c: double; inline;
+begin
+  c := a - b * Int(a / b);
+end;
+
 function TEpiScriptFunction_MathFunctions.IsMissing: Boolean;
 begin
   ASTCurrentExecutionObject := self;
 
+  if (FOp = otFuncSum) then
+     Exit(false);
+
+  result := Param[0].IsMissing;
+  if (Result) then
+    Exit;
+
   case FOp of
-    otFuncAbs,
-    otFuncExp,
-    otFuncFraction,
-    otFuncSqrt,
-    otFuncRandom,
-    otFuncRound,
-    otFuncTan,
-    otFuncArcTan,
-    otFuncSin,
-    otFuncCos:
-      result := Param[0].IsMissing;
+    otFuncTan:
+      result := SameValue(Abs(Param[0].AsFloat mod pi), pi / 2, 0.0);
+    otFuncSqrt:
+      result := (Param[0].AsFloat < 0);
     otFuncArcCos,
     otFuncArcSin:
       result := (Param[0].AsFloat < -1) or (Param[0].AsFloat > 1);
     otFuncLn,
     otFuncLog:
-      result := Param[0].IsMissing or
-                (Param[0].AsFloat = 0);
+      result := (Param[0].AsFloat <= 0);
     otFuncSameValue,
     otFuncLRE:
       result := Param[0].IsMissing or Param[1].IsMissing;
-    otFuncSum:
-      Result := false;
   end;
 end;
 
