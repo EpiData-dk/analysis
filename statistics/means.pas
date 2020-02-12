@@ -56,7 +56,8 @@ type
     destructor Destroy; override;
 
     // Method called from Executor, does calculation + result vars + output
-    procedure ExecMeans(DataFile: TEpiDataFile; ST: TMeansCommand);
+    procedure ExecMeans(ST: TMeansCommand);
+//    procedure ExecMeans(DataFile: TEpiDataFile; ST: TMeansCommand);
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
     function CalcMeans(DataFile: TEpiDataFile; Const CountVarName, StratifyVarName: UTF8String;
       ValueLabelOutput: TEpiGetValueLabelType = gvtValue; VariableLabelOutput: TEpiGetVariableLabelType = gvtVarName): TMeansDatafile;
@@ -191,9 +192,9 @@ begin
       // t-test of mean=0 if only one result
       with ResultDF do
         begin
-          if (StdErr.AsFloat[0] > 0) then
-            Tval := Mean.AsFloat[0] / (StdErr.AsFloat[0]);
           Obs  := N.AsInteger[0];
+          if (Obs > 1) and (StdErr.AsFloat[0] > 0) then
+              Tval := Mean.AsFloat[0] / (StdErr.AsFloat[0]);
         end;
 
       with ResultDF.AnovaRecord do
@@ -202,6 +203,11 @@ begin
             begin
               F := Tval;
               PROB := tdist(F,Obs-1);
+            end
+          else
+            begin
+              F := TEpiFloatField.DefaultMissing;
+              Prob := TEpiFloatField.DefaultMissing;
             end;
         end;
       Exit;
@@ -236,7 +242,13 @@ begin
     F   := MSB / MSW;
 
     if (isInfinite(F) or isNaN(F)) then
-      PROB := 1
+      begin
+        PROB := TEpiFloatField.DefaultMissing;
+        F := TEpiFloatField.DefaultMissing;
+        BART := TEpiFloatField.DefaultMissing;
+        PBART := TEpiFloatField.DefaultMissing;
+        exit; // Skip remaining statistics
+      end
     else
       PROB := fdist(F, DFB, DFW);
   end;
@@ -698,37 +710,85 @@ begin
   end;
 end;
 
-procedure TMeans.ExecMeans(DataFile: TEpiDataFile;
-  ST: TMeansCommand);
+//procedure TMeans.ExecMeans(DataFile: TEpiDataFile;
+procedure TMeans.ExecMeans(ST: TMeansCommand);
 var
+  Variables: TStrings;
+  Variable: String;
   ResultDF: TMeansDatafile;
   CountVarName, StratifyVarName: UTF8String;
   Opt: TOption;
+  HasBy: Boolean;
+  DataFile: TEpiDataFile;
 begin
+// TODO: {Jamie} reset result variables;
+    FExecutor.ClearResults('$means');
+// TODO: {Jamie} add checks for no data or duplicate !by variable
   FDecimals := DecimalFromOption(ST.Options);
   FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
 
-  CountVarName := ST.VariableList[0].Ident;
+  // ******
+  Variables := ST.VariableList.GetIdentsAsList;
+  HasBy := false;
   StratifyVarName := '';
-  if ST.HasOption('by', Opt) then
-    StratifyVarName := Opt.Expr.AsIdent;
-
-  ResultDF := DoCalcMeans(DataFile, CountVarName, StratifyVarName);
-  DoResultVariables(ResultDF);
-
-  if (not ST.HasOption('q')) then
+  ST.ExecResult := csrFailed;
+// TODO: {Jamie} move these checks into means.pas
+// check for more than one !by
+  try
+    for Opt in ST.Options do
     begin
-      DoOutputMeans(ResultDF);
+     if (Opt.Ident = 'by') then
+       if (HasBy) then
+         begin
+           FExecutor.Error('Can only stratify by one variable; !by:=' + Opt.Expr.AsIdent + ' is invalid');
+           exit;
+         end
+      else
+        begin
+          HasBy := true;
+          if (Variables[0] = Opt.Expr.AsIdent) then
+            begin
+              FExecutor.Error('Cannot stratify by the same variable: ' + Opt.expr.AsIdent);
+              Exit;
+            end;
+          StratifyVarName := Opt.Expr.AsIdent;
+          Variables.Add(StratifyVarName);
+         end;
+      end;
 
-      if (ST.HasOption('t')) then
-        if (ResultDF.Size > 1) then
-          DoOutputAnova(ResultDF.AnovaRecord)
-        else
-          DoOutputTTest(ResultDF.AnovaRecord);
-    end;
-  ST.ExecResult := csrSuccess;
-  ResultDF.Free;
+    DataFile := FExecutor.PrepareDatafile(Variables, Variables);
+
+    if DataFile.Size = 0 then
+      begin
+        FExecutor.Error('No data!');
+        DataFile.Free;
+        Exit;
+      end;
+
+  // ******
+    CountVarName := ST.VariableList[0].Ident;
+
+    ResultDF := DoCalcMeans(DataFile, CountVarName, StratifyVarName);
+    DoResultVariables(ResultDF);
+
+    if (not ST.HasOption('q')) then
+      begin
+        DoOutputMeans(ResultDF);
+
+        if (ST.HasOption('t')) then
+          if (ResultDF.Size > 1) then
+            DoOutputAnova(ResultDF.AnovaRecord)
+          else
+            DoOutputTTest(ResultDF.AnovaRecord);
+      end;
+    ST.ExecResult := csrSuccess;
+    ResultDF.Free;
+    DataFile.Free;
+  finally
+    Variables.Free;
+end;
+
 end;
 
 function TMeans.CalcMeans(DataFile: TEpiDataFile; const CountVarName,

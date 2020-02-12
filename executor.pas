@@ -3344,9 +3344,10 @@ var
   HasBy: Boolean;
 begin
   ST.ExecResult := csrFailed;
-  L := ST.VariableList.GetIdentsAsList;
+{  L := ST.VariableList.GetIdentsAsList;
   HasBy := false;
   ST.ExecResult := csrFailed;
+// TODO: {Jamie} move these checks into means.pas
 // check for more than one !by
   for Opt in ST.Options do
   begin
@@ -3377,15 +3378,15 @@ begin
         DoError('No data!');
         Exit;
       end;
-
+}
     M := TMeans.Create(Self, FOutputCreator);
-    M.ExecMeans(DF, TMeansCommand(ST));
-  finally
-    DF.Free;
+    M.ExecMeans(TMeansCommand(ST));
+//    M.ExecMeans(DF, TMeansCommand(ST));
+//  finally
+//    DF.Free;
     M.Free;
-    L.Free;
+//    L.Free;
   end;
-end;
 
 procedure TExecutor.ExecFreq(ST: TCustomVariableCommand);
 var
