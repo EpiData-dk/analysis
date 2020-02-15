@@ -128,7 +128,11 @@ procedure TTwoWayStatisticFExP.AddToOutput(OutputTable: TOutputTable; Options: T
 var
   S: UTF8String;
 begin
-  if (FFExP = TEpiFloatField.DefaultMissing) then exit;
+  if (FFExP = TEpiFloatField.DefaultMissing) then
+  begin
+    OutputTable.Footer.Text := OutputTable.Footer.Text + 'Fisher Exact P not calculated' + LineEnding;
+    exit;
+  end;
   S := 'Fisher Exact '+ FormatP(FFExP, true);
   OutputTable.Footer.Text := OutputTable.Footer.Text + S + LineEnding;
 end;

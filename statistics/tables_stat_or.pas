@@ -121,8 +121,8 @@ begin
     S := FMName + ': '+ FormatRatio(FOddsRatio,Options);
     if (FOddsRatioLL <> TEpiFloatField.DefaultMissing) then
        S += ' ' + FormatCI(FOddsRatioLL, FOddsRatioUL, FConf, Options);
-    OutputTable.Footer.Text := OutputTable.Footer.Text + S + LineEnding;
   end;
+  OutputTable.Footer.Text := OutputTable.Footer.Text + S + LineEnding;
 end;
 
 procedure TTwoWayStatisticOR.CreateResultVariables(Executor: TExecutor;
@@ -246,7 +246,7 @@ procedure TTwoWayStatisticsOR.CreateSummaryResultVariables(Executor: TExecutor;
   const NamePrefix: UTF8String);
 
 begin
-  if (StatisticsCount = 1) or (isInfinite(FMHOR)) then exit;   // No stratified tables
+  if (StatisticsCount = 1) then exit; //or (isInfinite(FMHOR) then exit;   // No stratified tables
 
   Executor.AddResultConst(NamePrefix + 'MHOR',   ftFloat).AsFloatVector[0] := FMHOR;
   Executor.AddResultConst(NamePrefix + 'MHORLL', ftFloat).AsFloatVector[0] := FMHORLL;
@@ -272,8 +272,10 @@ var
   SumPR     := 0;
   SumPSQR   := 0;
   SumSQ     := 0;
-
+  FMHOR     := TEpiFLoatField.DefaultMissing;
   for Tab in Tables do
+  // tables must be 2x2
+  if (Tab.ColCount = 2) and (Tab.RowCount = 2) then
   begin
     a := Tab.Cell[0,0].N;
     b := Tab.Cell[1,0].N;
@@ -294,6 +296,8 @@ var
       SumPSQR += (p*s) + (q*r);
       end;
    end;
+  if (SumS = 0) then
+    exit;
   FMHOR := SumR / SumS;
 
   // Estimate upper and lower confidence limits

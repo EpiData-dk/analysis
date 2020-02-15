@@ -81,6 +81,11 @@ var
 begin
   FOrgTable               := Table;
   FExpected               := TTwoWayTable.Create(FOrgTable.ColCount, FOrgTable.RowCount, TTableCellChi2Expected);
+  FChi2 := TEpiFloatField.DefaultMissing;
+  FChiP := TEpiFloatField.DefaultMissing;
+  if (Fexpected.RowCount <2) or (FExpected.ColCount < 2) then
+    exit;       // No statistic if only one row or column
+
   FChi2                   := 0;
   FExpectedCellsLessThan5 := 0;
 
@@ -111,17 +116,19 @@ var
   S: UTF8String;
   PCt: Int64;
 begin
-  S := 'Chi{\S 2}: ' + Format('%.2f', [FChi2]) + ' Df(' + IntToStr(FOrgTable.DF)+') ';
-
-  S := S + FormatP(FChiP, true);
-
-  if (FExpectedCellsLessThan5 > 5) then
+  if FChi2 = TEpiFloatField.DefaultMissing then
+    S := 'Chi{\S 2} not calculated'
+  else
     begin
-      PCt := Trunc((100 * FExpectedCellsLessThan5) / (FOrgTable.ColCount * FOrgTable.RowCount));
-      S := S + LineEnding + 'Cells (expected < 5): ' + IntToStr(FExpectedCellsLessThan5) +
-           Format(' (%d pct.)', [Pct]);
+    S := 'Chi{\S 2}: ' + Format('%.2f', [FChi2]) + ' Df(' + IntToStr(FOrgTable.DF)+') ';
+    S := S + FormatP(FChiP, true);
+    if (FExpectedCellsLessThan5 > 5) then
+      begin
+        PCt := Trunc((100 * FExpectedCellsLessThan5) / (FOrgTable.ColCount * FOrgTable.RowCount));
+        S := S + LineEnding + 'Cells (expected < 5): ' + IntToStr(FExpectedCellsLessThan5) +
+             Format(' (%d pct.)', [Pct]);
+      end;
     end;
-
   OutputTable.Footer.Text := OutputTable.Footer.Text + S + LineEnding;
 end;
 
@@ -175,9 +182,18 @@ begin
   OutputTable.Cell[ColIdx + 2, 0].Text := 'p';
 
   Stat := Statistics[0];
-  OutputTable.Cell[ColIdx    , 1].Text := Format('%.2f', [Stat.FChi2]);
-  OutputTable.Cell[ColIdx + 1, 1].Text := IntToStr(Stat.FOrgTable.DF);
-  OutputTable.Cell[ColIdx + 2, 1].Text := FormatP(Stat.FChiP, false);
+  if (Stat.FChi2 = TEpiFloatField.DefaultMissing) then
+    begin
+      OutputTable.Cell[ColIdx    , 1].Text := '-';
+      OutputTable.Cell[ColIdx + 1, 1].Text := '-';
+      OutputTable.Cell[ColIdx + 2, 1].Text := '-';
+    end
+  else
+    begin
+      OutputTable.Cell[ColIdx    , i + 1].Text := Format('%.2f', [Stat.FChi2]);
+      OutputTable.Cell[ColIdx + 1, i + 1].Text := IntToStr(Stat.FOrgTable.DF);
+      OutputTable.Cell[ColIdx + 2, i + 1].Text := FormatP(Stat.FChiP, false);
+    end;
 
   if (Stat.FOrgTable.DF = 1) then // 2x2 table
   begin
@@ -194,10 +210,12 @@ begin
   for i := 1 to StatisticsCount - 1 do
     begin
       Stat := Statistics[i];
-
-      OutputTable.Cell[ColIdx    , i + 2].Text := Format('%.2f', [Stat.FChi2]);
-      OutputTable.Cell[ColIdx + 1, i + 2].Text := IntToStr(Stat.FOrgTable.DF);
-      OutputTable.Cell[ColIdx + 2, i + 2].Text := FormatP(Stat.FChiP, false);
+      if (Stat.FChi2 <> TEpiFloatField.DefaultMissing) then
+      begin
+        OutputTable.Cell[ColIdx    , i + 2].Text := Format('%.2f', [Stat.FChi2]);
+        OutputTable.Cell[ColIdx + 1, i + 2].Text := IntToStr(Stat.FOrgTable.DF);
+        OutputTable.Cell[ColIdx + 2, i + 2].Text := FormatP(Stat.FChiP, false);
+      end;
     end;
 end;
 // M-H Chi-square for 2x2 stratified tables
@@ -211,7 +229,8 @@ var
 
   begin
   if (StatisticsCount = 1) then exit;   // No stratified tables
-
+  FMHChi2 := TEpiFloatField.DefaultMissing;
+  FMHChiP := FMHChi2;
   Tab := Tables.UnstratifiedTable;
   if (Tab.ColCount <> 2) or (Tab.RowCount <> 2) then exit;
   k         := 0;
@@ -276,6 +295,8 @@ begin
     if (StatisticsCount = 1) then
     // unstratified - crude result
     begin
+      if (FChi2 = TEpiFloatField.DefaultMissing) then exit;
+
       T.Cell[ColIdx    , RowIdx].Text := Format('%.2f', [FChi2]);
       T.Cell[ColIdx + 1, RowIdx].Text := IntToStr(FOrgTable.DF);
       T.Cell[ColIdx + 2, RowIdx].Text := FormatP(FChiP, false);
@@ -283,6 +304,7 @@ begin
     end;
   end;
   // stratified - summary result
+  if (FMHChi2 = TEpiFloatField.DefaultMissing) then exit;
   T.Cell[ColIdx    , RowIdx].Text := Format('%.2f', [FMHChi2]);
   T.Cell[ColIdx + 1, RowIdx].Text := '1';
   T.Cell[ColIdx + 2, RowIdx].Text := FormatP(FMHChiP, false);

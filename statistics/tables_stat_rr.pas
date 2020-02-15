@@ -338,19 +338,22 @@ begin
   for Tab in Tables do   // skips unstratified table
     begin
       with Tab do begin
-        a := Tab.Cell[0,0].N;
-        ab := Tab.RowTotal[0];
-        c := Tab.Cell[0,1].N;
-        cd := Tab.RowTotal[1];
-        n := Tab.Total;
-        if ((a + c) > 0) then
-        begin
-          r    := (a * cd) / n;
-          s    := (c * ab) / n;
-          SumR += r;
-          SumS += s;
-          SumV += ((cd * ab * (a + c)) - (a * c * n)) / (n * n);
-        end;
+        if (Tab.RowCount = 2) and (Tab.ColCount = 2) then
+          begin
+            a := Tab.Cell[0,0].N;
+            ab := Tab.RowTotal[0];
+            c := Tab.Cell[0,1].N;
+            cd := Tab.RowTotal[1];
+            n := Tab.Total;
+            if ((a + c) > 0) then
+            begin
+              r    := (a * cd) / n;
+              s    := (c * ab) / n;
+              SumR += r;
+              SumS += s;
+              SumV += ((cd * ab * (a + c)) - (a * c * n)) / (n * n);
+            end;
+          end;
       end;
     end;
 
