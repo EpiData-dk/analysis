@@ -319,7 +319,7 @@ uses
   epiv_custom_statusbar, datamodule, editor_form, LCLIntf, Symbol,
   ana_procs, ana_documentfile, LazFileUtils, LazUTF8Classes, epistringutils, ana_globals,
   browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform,
-  wizard_form;
+  wizard_form, editor_form2;
 
 { TMainForm }
 
@@ -328,14 +328,17 @@ begin
   Executor.Cancelled := true;
 end;
 
+procedure TMainForm.Button2Click(Sender: TObject);
+var
+  Test: TEditorForm2;
+begin
+  Test := TEditorForm2.Create(self);
+  Test.Show;
+end;
+
 procedure TMainForm.CloseAllWindowsActionExecute(Sender: TObject);
 begin
   CloseWindows(true);
-end;
-
-procedure TMainForm.Button2Click(Sender: TObject);
-begin
-  CheckAndStartWizard(GetStartupPgm);
 end;
 
 procedure TMainForm.CmdEditFocusActionExecute(Sender: TObject);

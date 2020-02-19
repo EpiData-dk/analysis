@@ -1,7 +1,7 @@
 object EditorForm: TEditorForm
-  Left = 2545
+  Left = 3840
   Height = 694
-  Top = 195
+  Top = 144
   Width = 823
   ActiveControl = SynEdit1
   AllowDropFiles = True
@@ -20,8 +20,8 @@ object EditorForm: TEditorForm
   LCLVersion = '2.0.0.4'
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 19
-    Top = 650
+    Height = 20
+    Top = 649
     Width = 823
     Panels = <    
       item
@@ -43,7 +43,7 @@ object EditorForm: TEditorForm
   end
   object TabControl1: TTabControl
     Left = 0
-    Height = 650
+    Height = 649
     Top = 0
     Width = 823
     HotTrack = True
@@ -53,7 +53,7 @@ object EditorForm: TEditorForm
     TabOrder = 1
     inline SynEdit1: TSynEdit
       Left = 2
-      Height = 622
+      Height = 621
       Top = 26
       Width = 819
       Align = alClient

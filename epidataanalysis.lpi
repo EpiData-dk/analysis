@@ -270,7 +270,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="89">
+    <Units Count="91">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -665,6 +665,14 @@
         <Filename Value="sidewindows/auto_position_form.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit88>
+      <Unit89>
+        <Filename Value="editor/editor_page.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit89>
+      <Unit90>
+        <Filename Value="editor/editor_form2.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit90>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
