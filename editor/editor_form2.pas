@@ -5,7 +5,7 @@ unit editor_form2;
 interface
 
 uses
-  Classes, SysUtils, auto_position_form, ComCtrls;
+  Classes, SysUtils, auto_position_form, ComCtrls, Dialogs, editor_page;
 
 type
 
@@ -24,9 +24,18 @@ type
     procedure SaveActionExecute(Sender: TObject);
     procedure SaveAsActionExecute(Sender: TObject);
   private
+    // File I/O
+    FOpenDialog: TOpenDialog;
+    function  DoOpenDialog: TStrings;
+    procedure DoOpenFile(FileName: UTF8String);
+    procedure DoOpenFiles(FileNames: TStrings);
+  private
+    // Accessors
+    function ActiveEditorPage: TEditorPage;
+  private
     // Components
-    PageControl: TPageControl;
-    StatusBar: TStatusBar;
+    FPageControl: TPageControl;
+    FStatusBar: TStatusBar;
     procedure CreateComponents;
     procedure CreateMainMenu;
     procedure CreateStatusBar;
@@ -37,7 +46,7 @@ type
 implementation
 
 uses
-  Controls, editor_page, SynEdit, Menus, ActnList, LCLType, Dialogs;
+  Controls, SynEdit, Menus, ActnList, LCLType, epimiscutils, LazFileUtils, LazUTF8Classes;
 
 { TEditorForm2 }
 
@@ -46,9 +55,14 @@ begin
   CreateMainMenu;
   CreateStatusBar;
 
-  PageControl := TPageControl.Create(Self);
-  PageControl.Align := alClient;
-  PageControl.Parent := Self;
+  FPageControl := TPageControl.Create(Self);
+  FPageControl.Align := alClient;
+  FPageControl.Parent := Self;
+
+  FOpenDialog := TOpenDialog.Create(self);
+  FOpenDialog.Options := [ofAllowMultiSelect,ofFileMustExist,ofEnableSizing,ofViewDetail];
+  FOpenDialog.Title := 'Open existing file';
+  FOpenDialog.Filter := GetEpiDialogFilter([dfPGM, dfAll]);
 end;
 
 procedure TEditorForm2.CreateMainMenu;
@@ -151,21 +165,13 @@ end;
 
 procedure TEditorForm2.AddNewTab;
 var
-  Sheet: TTabSheet;
   EditorPage: TEditorPage;
-  Editor: TSynEdit;
 begin
   BeginFormUpdate;
 
-  EditorPage := TEditorPage.Create;
-
-  Sheet := PageControl.AddTabSheet;
-  Sheet.Caption := EditorPage.Caption;
-
-  Editor := EditorPage.Editor;
-  Editor.Parent := Sheet;
-
-  PageControl.ActivePage := Sheet;
+  EditorPage := TEditorPage.Create(self);
+  EditorPage.PageControl := FPageControl;
+  FPageControl.ActivePage := EditorPage;
 
   EndFormUpdate;
 end;
@@ -210,30 +216,67 @@ begin
   //
 end;
 
+function TEditorForm2.DoOpenDialog: TStrings;
+begin
+  Result := TStringListUTF8.Create;
+
+  FOpenDialog.InitialDir := GetCurrentDirUTF8;
+  if (FOpenDialog.Execute) then
+    Result.Assign(FOpenDialog.Files)
+end;
+
+procedure TEditorForm2.DoOpenFile(FileName: UTF8String);
+var
+  FileNames: TStringListUTF8;
+begin
+  if (FileName = '') then exit;
+  if (not FileExistsUTF8(FileName)) then exit;
+
+  FileNames := TStringListUTF8.Create;
+  FileNames.Add(FileName);
+
+  DoOpenFiles(FileNames);
+
+  FileNames.Free;
+end;
+
+procedure TEditorForm2.DoOpenFiles(FileNames: TStrings);
+begin
+  if (not Assigned(FileNames)) then Exit;
+  if (FileNames.Count = 0) then exit;
+
+
+end;
+
+function TEditorForm2.ActiveEditorPage: TEditorPage;
+begin
+  result := TEditorPage(FPageControl.ActivePage);
+end;
+
 procedure TEditorForm2.CreateStatusBar;
 var
   StatusBarPanel: TStatusPanel;
 begin
-  StatusBar := TStatusBar.Create(self);
-  StatusBar.Align := alBottom;
-  StatusBar.Parent := Self;
-  StatusBar.SimplePanel := false;
-  StatusBar.Height := 20;
+  FStatusBar := TStatusBar.Create(self);
+  FStatusBar.Align := alBottom;
+  FStatusBar.Parent := Self;
+  FStatusBar.SimplePanel := false;
+  FStatusBar.Height := 20;
 
   // Line/Col
-  StatusBarPanel := StatusBar.Panels.Add;
+  StatusBarPanel := FStatusBar.Panels.Add;
   StatusBarPanel.Width := 100;
 
   // Modified
-  StatusBarPanel := StatusBar.Panels.Add;
+  StatusBarPanel := FStatusBar.Panels.Add;
   StatusBarPanel.Width := 75;
 
   // Insert/Overwrite
-  StatusBarPanel := StatusBar.Panels.Add;
+  StatusBarPanel := FStatusBar.Panels.Add;
   StatusBarPanel.Width := 75;
 
   // Filename
-  StatusBarPanel := StatusBar.Panels.Add;
+  StatusBarPanel := FStatusBar.Panels.Add;
   StatusBarPanel.Width := 75;
 end;
 

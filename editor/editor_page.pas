@@ -5,25 +5,25 @@ unit editor_page;
 interface
 
 uses
-  Classes, SysUtils, synedit;
+  Classes, SysUtils, synedit, ComCtrls;
 
 type
 
   { TEditorPage }
 
-  TEditorPage = class
+  TEditorPage = class(TTabSheet)
   private
     FEditor: TSynEdit;
     FFileName: UTF8String;
-    function GetCaption: UTF8String;
     procedure NoneExecuteAction(Sender: TObject);
     procedure SetFileName(AValue: UTF8String);
+  protected
+
   public
-    constructor Create;
+    constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
     property Editor: TSynEdit read FEditor;
     property FileName: UTF8String read FFileName write SetFileName;
-    property Caption: UTF8String read GetCaption;
   end;
 
 implementation
@@ -39,26 +39,15 @@ begin
   FFileName := AValue;
 end;
 
-function TEditorPage.GetCaption: UTF8String;
-begin
-  if (FileName = '') then
-    Result := 'Untitled'
-  else
-    Result := ExtractFileNameOnly(FFileName);
-
-  if (Editor.Modified) then
-    Result := Result + '*';
-end;
-
 procedure TEditorPage.NoneExecuteAction(Sender: TObject);
 begin
   ShowMessage('Action not implemented yet');
 end;
 
-constructor TEditorPage.Create;
+constructor TEditorPage.Create(TheOwner: TComponent);
 var
   PGMHighlighter: TPGMHighLighter;
-  PopupMenu: TPopupMenu;
+  LPopupMenu: TPopupMenu;
 
   function CreateActionAndMenuItem(Caption: TCaption; OnExecute: TNotifyEvent; ShortCut: TShortCut): TMenuItem;
   var
@@ -80,27 +69,31 @@ var
   end;
 
 begin
-  FEditor := TSynEdit.Create(nil);
+  inherited Create(TheOwner);
+
+  FEditor := TSynEdit.Create(self);
+  FEditor.Parent := Self;
   FEditor.Align := alClient;
   FEditor.SetDefaultKeystrokes;
   FEditor.Highlighter := TPGMHighLighter.Create(FEditor);
 
-  PopupMenu := TPopupMenu.Create(FEditor);
-  PopupMenu.Items.Add(CreateActionAndMenuItem('Copy', @NoneExecuteAction, 0));
-  PopupMenu.Items.Add(CreateActionAndMenuItem('Cut', @NoneExecuteAction, 0));
-  PopupMenu.Items.Add(CreateActionAndMenuItem('Paste', @NoneExecuteAction, 0));
-  PopupMenu.Items.Add(CreateDivider());
-  PopupMenu.Items.Add(CreateActionAndMenuItem('Run Selected', @NoneExecuteAction, 0));
-  PopupMenu.Items.Add(CreateActionAndMenuItem('Run All', @NoneExecuteAction, 0));
+  LPopupMenu := TPopupMenu.Create(FEditor);
+  LPopupMenu.Items.Add(CreateActionAndMenuItem('Copy', @NoneExecuteAction, 0));
+  LPopupMenu.Items.Add(CreateActionAndMenuItem('Cut', @NoneExecuteAction, 0));
+  LPopupMenu.Items.Add(CreateActionAndMenuItem('Paste', @NoneExecuteAction, 0));
+  LPopupMenu.Items.Add(CreateDivider());
+  LPopupMenu.Items.Add(CreateActionAndMenuItem('Run Selected', @NoneExecuteAction, 0));
+  LPopupMenu.Items.Add(CreateActionAndMenuItem('Run All', @NoneExecuteAction, 0));
 
-  FEditor.PopupMenu := PopupMenu;
+  FEditor.PopupMenu := LPopupMenu;
+
+  Caption := 'Untitled';
 
   FFileName := '';
 end;
 
 destructor TEditorPage.Destroy;
 begin
-  FEditor.Free;
   inherited Destroy;
 end;
 
