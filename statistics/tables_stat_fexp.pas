@@ -65,7 +65,8 @@ Begin
     FMessage := 'Table is not 2x2';
     exit;
   end;
-  if ((FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0)) then
+  if ((FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0) or
+      (FOrgTable.RowTotal[0] = 0) or (FOrgTable.RowTotal[1] = 0)) then
   begin
     FMessage := 'Table has a zero column marginal';
     exit;
@@ -130,7 +131,7 @@ var
 begin
   if (FFExP = TEpiFloatField.DefaultMissing) then
   begin
-    OutputTable.Footer.Text := OutputTable.Footer.Text + 'Fisher Exact P not calculated' + LineEnding;
+    OutputTable.Footer.Text := OutputTable.Footer.Text + 'Fisher Exact p not calculated' + LineEnding;
     exit;
   end;
   S := 'Fisher Exact '+ FormatP(FFExP, true);

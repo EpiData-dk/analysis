@@ -73,26 +73,26 @@ Begin
     exit;
   end;
 
+  ab    := FOrgTable.RowTotal[0];
+  cd    := FOrgTable.RowTotal[1];
+  if ((cd = 0) or (ab = 0) or
+      (FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0)) then
+  begin
+    FMessage := 'Table has a zero marginal.';
+    exit;
+  end;
+
   Zconf := PNormalInv((1 - (Conf / 100)) / 2);
   FConf := Conf;
   a     := FOrgTable.Cell[0,0].N;
-  ab    := FOrgTable.RowTotal[0];
   c     := FOrgTable.Cell[0,1].N;
-  cd    := FOrgTable.RowTotal[1];
   FAR0  := a / ab;
   FAR1  := c / cd;
   FA    := a;
   FAB   := ab;
   FC    := c;
   FCD   := cd;
-
-  if (cd = 0) or (ab = 0) or (FOrgTable.ColTotal[0] = 0) or (FOrgTable.ColTotal[1] = 0) then
-  begin
-    FMessage := 'Table has a zero marginal.';
-    exit;
-  end
-  else
-    FRelativeRisk := (a * cd) / (c * ab);
+  FRelativeRisk := (a * cd) / (c * ab);
 
   // Greenland/Robins confidence limits
   n := FOrgTable.Total;
@@ -340,11 +340,11 @@ begin
       with Tab do begin
         if (Tab.RowCount = 2) and (Tab.ColCount = 2) then
           begin
-            a := Tab.Cell[0,0].N;
+            a  := Tab.Cell[0,0].N;
             ab := Tab.RowTotal[0];
-            c := Tab.Cell[0,1].N;
+            c  := Tab.Cell[0,1].N;
             cd := Tab.RowTotal[1];
-            n := Tab.Total;
+            n  := Tab.Total;
             if ((a + c) > 0) then
             begin
               r    := (a * cd) / n;

@@ -190,9 +190,9 @@ begin
     end
   else
     begin
-      OutputTable.Cell[ColIdx    , i + 1].Text := Format('%.2f', [Stat.FChi2]);
-      OutputTable.Cell[ColIdx + 1, i + 1].Text := IntToStr(Stat.FOrgTable.DF);
-      OutputTable.Cell[ColIdx + 2, i + 1].Text := FormatP(Stat.FChiP, false);
+      OutputTable.Cell[ColIdx    , 1].Text := Format('%.2f', [Stat.FChi2]);
+      OutputTable.Cell[ColIdx + 1, 1].Text := IntToStr(Stat.FOrgTable.DF);
+      OutputTable.Cell[ColIdx + 2, 1].Text := FormatP(Stat.FChiP, false);
     end;
 
   if (Stat.FOrgTable.DF = 1) then // 2x2 table

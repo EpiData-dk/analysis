@@ -173,8 +173,8 @@ begin
       begin
       if (FOddsRatio = TEpiFloatField.DefaultMissing) then
       begin
-        OutputTable.Cell[ColIdx,     2].Text := '-';
-        OutputTable.Cell[ColIdx + 1, 2].Text := '';
+        OutputTable.Cell[ColIdx,     i + 2].Text := '-';
+        OutputTable.Cell[ColIdx + 1, i + 2].Text := '';
       end
       else
       begin
