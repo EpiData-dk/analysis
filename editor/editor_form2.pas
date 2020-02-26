@@ -241,10 +241,16 @@ begin
 end;
 
 procedure TEditorForm2.DoOpenFiles(FileNames: TStrings);
+var
+  FileName: String;
 begin
   if (not Assigned(FileNames)) then Exit;
   if (FileNames.Count = 0) then exit;
 
+  for FileName in FileNames do
+    begin
+      if (not FileExistsUTF8(FileName)) then Exit;
+    end;
 
 end;
 
