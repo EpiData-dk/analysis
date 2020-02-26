@@ -163,6 +163,8 @@ procedure TEditorPage.SaveToFile;
 begin
   Editor.Lines.SaveToFile(FileName);
   Editor.Modified := false;
+
+  DoStatusChange;
 end;
 
 end.
