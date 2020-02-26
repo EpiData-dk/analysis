@@ -229,7 +229,7 @@ begin
       else
       begin
         T.Cell[ColIdx    , RowIdx].Text := FormatRatio(FOddsRatio, Options);
-        if (IsInfinite(FOddsRatio)) then exit;
+        if (FOddsRatioLL = TEpiFloatField.DefaultMissing) then exit;
         T.Cell[ColIdx + 1, RowIdx].Text := FormatCI(FOddsRatioLL, FOddsRatioUL, 0, Options);
       end;
       exit;
@@ -238,7 +238,7 @@ begin
   // stratified - summary result
   if (FMHOR = TEpiFLoatField.DefaultMissing) then exit;
   T.Cell[ColIdx    , RowIdx].Text := FormatRatio(FMHOR, Options);
-  if (IsInfinite(FMHOR)) then exit;
+  if (FMHORLL = TEpiFloatField.DefaultMissing) then exit;
   T.Cell[ColIdx + 1, RowIdx].Text := FormatCI(FMHORLL, FMHORUL, 0, Options);
 end;
 

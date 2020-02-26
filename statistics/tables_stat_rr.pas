@@ -119,9 +119,13 @@ begin
   if (FRelativeRisk = TEpiFloatField.DefaultMissing) then
      S := 'Cannot estimate Risk Ratio. ' + FMessage
   else
-    S := 'Risk Ratio: '+ FormatRatio(FRelativeRisk, Options);
-  if (not IsInfinite(FRelativeRisk)) then
-    S += ' ' + FormatCI(FRRLL, FRRUL, FConf, Options);
+    begin
+      S := 'Risk Ratio: '+ FormatRatio(FRelativeRisk, Options);
+    if (not (FRRLL = TEpiFloatField.DefaultMissing)) then
+      S += ' ' + FormatCI(FRRLL, FRRUL, FConf, Options)
+    else
+      S += ' Cannot estimate CI';
+    end;
   OutputTable.Footer.Text := OutputTable.Footer.Text + S + LineEnding;
 end;
 
@@ -293,7 +297,7 @@ begin
             if (FRelativeRisk <> TEpiFloatField.DefaultMissing) then
               begin
                 T.Cell[ColIdx, RowIdx].Text := FormatRatio(FRelativeRisk, Options);
-                if (IsInfinite(FRelativeRisk)) then exit;
+                if (FRRLL = TEpiFloatField.DefaultMissing) then exit;
                 T.Cell[ColIdx + 1, RowIdx].Text := FormatCI(FRRLL, FRRUL, 0, Options);
               end;
             exit;
@@ -302,7 +306,7 @@ begin
       // stratified - summary result
         if (FMHRR = TEpiFLoatField.DefaultMissing) then exit;
         T.Cell[ColIdx, RowIdx].Text := FormatRatio(FMHRR, Options);
-        if (IsInfinite(FMHRR)) then exit;
+        if (FMHRRLL = TEpiFloatField.DefaultMissing) then exit;
         T.Cell[ColIdx + 1, RowIdx].Text := FormatCI(FMHRRLL, FMHRRUL, 0, Options);
     end;
   end;
