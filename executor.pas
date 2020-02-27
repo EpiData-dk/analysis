@@ -2761,6 +2761,10 @@ begin
     Exit;
   end;
 
+  // *** Jamie test
+  if (ST.Expr.ZeroDivide) then
+    DoInfo('Zero divide or other illegal math operation occurred. Check data.');
+  // *** Jamie test end
   if Changes > 1 then
     DoInfo(Format('(%d real changes)', [Changes]))
   else

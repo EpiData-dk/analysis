@@ -292,6 +292,8 @@ type
     FOp: TParserOperationType;
     FL:  TExpr;
     FR:  TExpr;
+    FZD: Boolean; // *** Jamie test   zero divide flag
+
   protected
     function CommonType(Const A, B: TExpr): TASTResultType;
     procedure DoObservedChange(Sender: TObject); override;
@@ -305,6 +307,7 @@ type
     property Operation: TParserOperationType read FOp;
     property Left: TExpr read FL;
     property Right: TExpr read FR;
+    property ZeroDivide: Boolean read FZD write FZD; // *** Jamie test
   public
     function AsBoolean: Boolean; virtual;
     function AsInteger: ASTInteger; virtual;
@@ -4759,10 +4762,10 @@ begin
         // A global or result can be accepted as either Value or Object.
         Result := true;
 
+    evtField,
     evtDataset,
     evtValuelabel,
     evtGlobalVector,
-    evtField,
     evtResultVector,
     evtResultMatrix:
       begin
@@ -4969,7 +4972,7 @@ begin
 //  BinaryTypesAndFlags := options_hashmap.TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData, TypesAndFlags.Flags);
 //  Result := inherited TypeCheck(TypeChecker, BinaryTypesAndFlags);
   Result := inherited TypeCheck(TypeChecker, TypesAndFlags);
-
+  ZeroDivide := false; // *** Jamie test
   if result then
   begin
     Lr := FL.ResultType;
@@ -5260,7 +5263,10 @@ begin
   Result := Left.IsMissing or Right.IsMissing;
 
   if (FOp in [otDiv, otDivide]) then
-    Result := Result or (Right.AsFloat = 0);
+    begin
+      Result := Result or (Right.AsFloat = 0);
+      ZeroDivide := ZeroDivide or (Right.AsFloat = 0);     // *** Jamie test
+    end;
 end;
 
 { TUnaryExpr }
