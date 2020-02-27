@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, auto_position_form, ComCtrls, Dialogs, UITypes,
-  editor_page, Forms;
+  editor_page, Forms, Menus;
 
 type
 
@@ -14,9 +14,11 @@ type
 
   TEditorForm2 = class(TCustomAutoPositionForm)
   private
+    procedure AsyncOpenRecent(Data: PtrInt);
     // Form
     procedure EditorClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure EditorCloseQuery(Sender: TObject; var CanClose: boolean);
+    procedure OpenRecentExecute(Sender: TObject);
   private
     // Actions
     procedure CloseTabActionExecute(Sender: TObject);
@@ -36,6 +38,10 @@ type
     procedure DoOpenFiles(FileNames: TStrings);
     function  DoSaveDialog: UTF8String;
     function  DoSaveFile(FileName: UTF8String): boolean;
+  private
+    // Recent files
+    FRecentFilesSubMenu: TMenuItem;
+    procedure UpdateRecentFiles;
   private
     // Accessors
     function ActiveEditorPage: TEditorPage;
@@ -68,7 +74,8 @@ type
 implementation
 
 uses
-  Controls, SynEdit, Menus, ActnList, LCLType, epimiscutils, LazFileUtils, LazUTF8Classes;
+  Controls, SynEdit, ActnList, LCLType, epimiscutils, LazFileUtils, LazUTF8Classes,
+  ana_procs;
 
 { TEditorForm2 }
 
@@ -129,7 +136,10 @@ begin
   TopMenuItem.Caption := '&File';
   TopMenuItem.Add(CreateActionAndMenuItem('&New',        @NewActionExecute,  ShortCut(VK_N, [ssCtrl])));
   TopMenuItem.Add(CreateActionAndMenuItem('&Open...',    @OpenActionExecute, ShortCut(VK_O, [ssCtrl])));
-  // Open Recent....
+
+  FRecentFilesSubMenu := TMenuItem.Create(Self);
+  FRecentFilesSubMenu.Caption := 'Open Recent...';
+  TopMenuItem.Add(FRecentFilesSubMenu);
   TopMenuItem.Add(CreateActionAndMenuItem('&Save',       @SaveActionExecute, ShortCut(VK_S, [ssCtrl])));
   TopMenuItem.Add(CreateActionAndMenuItem('Save &As...', @SaveAsActionExecute, ShortCut(VK_S, [ssCtrl, ssShift])));
   TopMenuItem.Add(CreateDivider());
@@ -244,6 +254,11 @@ begin
   EditorPage.Free;
 end;
 
+procedure TEditorForm2.AsyncOpenRecent(Data: PtrInt);
+begin
+  DoOpenFile(TAction(Data).Caption);
+end;
+
 procedure TEditorForm2.EditorClose(Sender: TObject;
   var CloseAction: TCloseAction);
 begin
@@ -271,6 +286,11 @@ begin
       if (not CanClose) then
         Exit;
     end;
+end;
+
+procedure TEditorForm2.OpenRecentExecute(Sender: TObject);
+begin
+  Application.QueueAsyncCall(@AsyncOpenRecent, PtrInt(Sender));
 end;
 
 procedure TEditorForm2.CloseTabActionExecute(Sender: TObject);
@@ -358,9 +378,11 @@ begin
         AddNewTab;
 
       ActiveEditorPage.LoadFromFile(FileName);
+      AddToRecent(FileName, GetRecentPGMIniFileName, RecentPGMFiles);
     end;
 
   UpdateStatusBar;
+  UpdateRecentFiles;
 end;
 
 function TEditorForm2.DoSaveDialog: UTF8String;
@@ -383,6 +405,41 @@ begin
   ActiveEditorPage.SaveToFile(FileName);
 
   result := true;
+end;
+
+procedure TEditorForm2.UpdateRecentFiles;
+var
+  i: Integer;
+  A: TAction;
+  Mi: TMenuItem;
+begin
+  LoadRecentFilesFromIni(GetRecentPGMIniFileName, RecentPGMFiles);
+
+  FRecentFilesSubMenu.Visible := RecentPGMFiles.Count > 0;
+  FRecentFilesSubMenu.Clear;
+
+  for i := 0 to MaxRecentFiles - 1 do
+  begin
+    // Main menu
+    A := TAction.Create(self);
+    A.ShortCut := KeyToShortCut(VK_1 + (i - 1), [ssShift, ssCtrl]);
+    A.OnExecute := @OpenRecentExecute;
+
+    // Disable actions if the list of RecentPGMFiles is not long enough.
+    if i >= RecentPGMFiles.Count then
+    begin
+      A.Enabled := false;
+      Continue;
+    end;
+
+    A.Enabled := true;
+    A.Caption := RecentPGMFiles[i];
+
+    Mi := TMenuItem.Create(FRecentFilesSubMenu);
+    Mi.Name := 'recent' + inttostr(i);
+    Mi.Action := A;
+    FRecentFilesSubMenu.Add(Mi);
+  end;
 end;
 
 function TEditorForm2.ActiveEditorPage: TEditorPage;
@@ -471,6 +528,7 @@ begin
 
   // Because first page never triggers the OnChangeEvent
   PageChangeEvent(FPageControl);
+  UpdateRecentFiles;
 end;
 
 procedure TEditorForm2.OpenFiles(FileNames: TStrings);
