@@ -71,7 +71,6 @@ begin
   begin
     if (not EpiStrToDateGuess(Param[0].AsString, DateResult, Msg)) then
       RuntimeError(EEpiScriptFunction_CreateDate, Msg);
-
     Result := DateResult;
     Exit;
   end;

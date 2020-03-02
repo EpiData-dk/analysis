@@ -292,8 +292,9 @@ type
     FOp: TParserOperationType;
     FL:  TExpr;
     FR:  TExpr;
-    FZD: Boolean; // *** Jamie test   zero divide flag
-
+//    FZD: Boolean; // *** Jamie test   zero divide flag
+    FZDn: Integer;    // *** Jamie test
+    FZEn: Integer;    // *** Jamie test
   protected
     function CommonType(Const A, B: TExpr): TASTResultType;
     procedure DoObservedChange(Sender: TObject); override;
@@ -307,7 +308,9 @@ type
     property Operation: TParserOperationType read FOp;
     property Left: TExpr read FL;
     property Right: TExpr read FR;
-    property ZeroDivide: Boolean read FZD write FZD; // *** Jamie test
+//    property ZeroDivide: Boolean read FZD write FZD; // *** Jamie test
+    property ZeroDivideCount: Integer read FZDn write FZDn;  // *** Jamie test
+    property InvalidCount: Integer read FZEn write FZEn; // *** Jamie test
   public
     function AsBoolean: Boolean; virtual;
     function AsInteger: ASTInteger; virtual;
@@ -484,6 +487,7 @@ type
 
   TFunctionCall = class(TExpr)
   private
+//    FIn: Integer; // *** Jamie
     function GetParam(const Index: integer): TExpr;
   protected
     FExecutor: IEpiScriptExecutor;
@@ -499,6 +503,7 @@ type
     function TypeCheck(TypeChecker: IEpiTypeChecker; TypesAndFlags: TTypesAndFlagsRec): boolean; override;
     property   Param[Const Index: integer]: TExpr read GetParam;
   public
+//    property InvalidCount: Integer read FIn write FIn; // *** Jamie
     function AsInteger: ASTInteger; override;
     function AsFloat: ASTFloat; override;
     function AsDate: EpiDate; override;
@@ -4972,7 +4977,8 @@ begin
 //  BinaryTypesAndFlags := options_hashmap.TypesAndFlags(AllResultDataTypes, ExecutorVariableTypesData, TypesAndFlags.Flags);
 //  Result := inherited TypeCheck(TypeChecker, BinaryTypesAndFlags);
   Result := inherited TypeCheck(TypeChecker, TypesAndFlags);
-  ZeroDivide := false; // *** Jamie test
+//  ZeroDivide := false; // *** Jamie test
+  ZeroDivideCount := 0; // *** Jamie test
   if result then
   begin
     Lr := FL.ResultType;
@@ -5261,12 +5267,38 @@ end;
 function TBinaryExpr.IsMissing: Boolean;
 begin
   Result := Left.IsMissing or Right.IsMissing;
-
-  if (FOp in [otDiv, otDivide]) then
-    begin
-      Result := Result or (Right.AsFloat = 0);
-      ZeroDivide := ZeroDivide or (Right.AsFloat = 0);     // *** Jamie test
+  // *** Jamie test divide by zero count
+  // *** I wonder if we should do this as assignments are slow enough without adding all of these checks
+//  ZeroDivide := ZeroDivide or Left.ZeroDivide or Right.ZeroDivide;
+  if (Right.ZeroDivideCount > 0) then begin
+    ZeroDivideCount := ZeroDivideCount + Right.ZeroDivideCount;
+    Right.ZeroDivideCount := 0;
     end;
+  if (Left.ZeroDivideCount > 0) then begin
+    ZeroDivideCount := ZeroDivideCount + Left.ZeroDivideCount;
+    Left.ZeroDivideCount := 0;
+    end;
+  if (Right.InvalidCount > 0) then begin
+    InvalidCount := InvalidCount + Right.InvalidCount;
+    Right.InvalidCount := 0;
+    end;
+  if (Left.InvalidCount > 0) then begin
+    InvalidCount := InvalidCount + Left.InvalidCount;
+    Left.InvalidCount := 0;
+    end;
+  // *** end
+  if (FOp in [otDiv, otDivide]) then
+//      Result := Result or (Right.AsFloat = 0);
+//      *** Jamie test divide by zero
+    begin
+      if (Right.AsFloat = 0) then
+        begin
+          Result := True;
+//          ZeroDivide := True;
+          ZeroDivideCount := 1 + ZeroDivideCount;
+        end;
+    end;
+  // *** end
 end;
 
 { TUnaryExpr }
@@ -5351,6 +5383,7 @@ end;
 constructor TFunctionCall.Create(const ParamList: TParamList);
 begin
   inherited Create(otFunction, nil, nil);
+  InvalidCount := 0; // *** Jamie
   FParamList := ParamList;
 end;
 
