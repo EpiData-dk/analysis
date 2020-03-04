@@ -333,6 +333,9 @@ var
   Test: TEditorForm2;
 begin
   Test := TEditorForm2.Create(self);
+  Test.Executor := Executor;
+  Test.History := FHistory;
+  Test.OutputCreator := FOutputCreator;
   Test.Show;
 end;
 

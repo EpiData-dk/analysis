@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, auto_position_form, ComCtrls, Dialogs, UITypes,
-  editor_page, Forms, Menus;
+  editor_page, Forms, Menus, executor, history, outputcreator, ast, Token;
 
 type
 
@@ -14,11 +14,17 @@ type
 
   TEditorForm2 = class(TCustomAutoPositionForm)
   private
-    procedure AsyncOpenRecent(Data: PtrInt);
+    FExecutor: TExecutor;
+    FHistory: THistory;
+    FOutputCreator: TOutputCreator;
+    procedure SetExecutor(AValue: TExecutor);
+    procedure SetHistory(AValue: THistory);
+    procedure SetOutputCreator(AValue: TOutputCreator);
+    procedure TutorialChange(Sender: TObject);
+  private
     // Form
     procedure EditorClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure EditorCloseQuery(Sender: TObject; var CanClose: boolean);
-    procedure OpenRecentExecute(Sender: TObject);
   private
     // Actions
     procedure CloseTabActionExecute(Sender: TObject);
@@ -29,6 +35,9 @@ type
     procedure QuitActionExecute(Sender: TObject);
     procedure SaveActionExecute(Sender: TObject);
     procedure SaveAsActionExecute(Sender: TObject);
+    procedure OpenRecentExecute(Sender: TObject);
+    procedure RunAllActionExecute(Sender: TObject);
+    procedure RunSelectedActionExecute(Sender: TObject);
   private
     // File I/O
     FOpenDialog: TOpenDialog;
@@ -42,13 +51,7 @@ type
     // Recent files
     FRecentFilesSubMenu: TMenuItem;
     procedure UpdateRecentFiles;
-  private
-    // Accessors
-    function ActiveEditorPage: TEditorPage;
-  private
-    // Tab
-    procedure AddNewTab;
-    function CloseTab(EditorPage: TEditorPage): boolean;
+    procedure AsyncOpenRecent(Data: PtrInt);
   private
     // Pagecontrol
     FPageControl: TPageControl;
@@ -56,6 +59,10 @@ type
     procedure PageChangingEvent(Sender: TObject; var AllowChange: Boolean);
     procedure PageStatusChange(Sender: TObject);
     procedure PageCloseTabEvent(Sender: TObject);
+    function ActiveEditorPage: TEditorPage;
+    function GetEditorPage(Index: Integer): TEditorPage;
+    procedure AddNewTab;
+    function CloseTab(EditorPage: TEditorPage): boolean;
   private
     // Statusbar
     FStatusBar: TStatusBar;
@@ -69,13 +76,16 @@ type
     constructor Create(AOwner: TComponent); override;
     procedure OpenFiles(FileNames: TStrings);
     procedure OpenFile(FileName: UTF8String);
+    property Executor: TExecutor read FExecutor write SetExecutor;
+    property History: THistory read FHistory write SetHistory;
+    property OutputCreator: TOutputCreator read FOutputCreator write SetOutputCreator;
   end;
 
 implementation
 
 uses
   Controls, SynEdit, ActnList, LCLType, epimiscutils, LazFileUtils, LazUTF8Classes,
-  ana_procs;
+  ana_procs, VirtualTrees, ana_globals, parser;
 
 { TEditorForm2 }
 
@@ -134,19 +144,19 @@ begin
   // File:
   TopMenuItem := TMenuItem.Create(Self);
   TopMenuItem.Caption := '&File';
-  TopMenuItem.Add(CreateActionAndMenuItem('&New',        @NewActionExecute,  ShortCut(VK_N, [ssCtrl])));
-  TopMenuItem.Add(CreateActionAndMenuItem('&Open...',    @OpenActionExecute, ShortCut(VK_O, [ssCtrl])));
+  TopMenuItem.Add(CreateActionAndMenuItem('&New',        @NewActionExecute,  ShortCut(VK_N, [ssCtrlOs])));
+  TopMenuItem.Add(CreateActionAndMenuItem('&Open...',    @OpenActionExecute, ShortCut(VK_O, [ssCtrlOs])));
 
   FRecentFilesSubMenu := TMenuItem.Create(Self);
   FRecentFilesSubMenu.Caption := 'Open Recent...';
   TopMenuItem.Add(FRecentFilesSubMenu);
-  TopMenuItem.Add(CreateActionAndMenuItem('&Save',       @SaveActionExecute, ShortCut(VK_S, [ssCtrl])));
-  TopMenuItem.Add(CreateActionAndMenuItem('Save &As...', @SaveAsActionExecute, ShortCut(VK_S, [ssCtrl, ssShift])));
+  TopMenuItem.Add(CreateActionAndMenuItem('&Save',       @SaveActionExecute, ShortCut(VK_S, [ssCtrlOs])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Save &As...', @SaveAsActionExecute, ShortCut(VK_S, [ssCtrlOs, ssShift])));
   TopMenuItem.Add(CreateDivider());
   TopMenuItem.Add(CreateActionAndMenuItem('&Font...',    @NoneActionExecute, 0));
   TopMenuItem.Add(CreateDivider());
-  TopMenuItem.Add(CreateActionAndMenuItem('&Close Tab',  @CloseTabActionExecute, ShortCut(VK_W, [ssCtrl])));
-  TopMenuItem.Add(CreateActionAndMenuItem('&Quit',       @NoneActionExecute, ShortCut(VK_Q, [ssShift])));
+  TopMenuItem.Add(CreateActionAndMenuItem('&Close Tab',  @CloseTabActionExecute, ShortCut(VK_W, [ssCtrlOs])));
+  TopMenuItem.Add(CreateActionAndMenuItem('&Quit',       @QuitActionExecute, ShortCut(VK_Q, [ssShift])));
   MainMenu.Items.Add(TopMenuItem);
 
   // Edit
@@ -174,8 +184,8 @@ begin
   // Run
   TopMenuItem := TMenuItem.Create(Self);
   TopMenuItem.Caption := '&Run';
-  TopMenuItem.Add(CreateActionAndMenuItem('Run Selected', @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Run All',      @NoneActionExecute, 0));
+  TopMenuItem.Add(CreateActionAndMenuItem('Run Selected', @RunSelectedActionExecute, ShortCut(VK_D, [ssCtrlOS])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Run All',      @RunAllActionExecute, ShortCut(VK_R, [ssCtrlOS])));
   MainMenu.Items.Add(TopMenuItem);
 
   // Window
@@ -213,6 +223,10 @@ begin
 
   EditorPage := TEditorPage.Create(self);
   EditorPage.PageControl := FPageControl;
+  EditorPage.Executor := FExecutor;
+  EditorPage.History  := FHistory;
+  EditorPage.OutputCreator := FOutputCreator;
+
   FPageControl.ActivePage := EditorPage;
   ActiveControl := EditorPage.Editor;
   UpdateStatusBar;
@@ -252,11 +266,75 @@ begin
     end;
 
   EditorPage.Free;
+  if (FPageControl.PageCount = 0) then
+    AddNewTab;
 end;
 
 procedure TEditorForm2.AsyncOpenRecent(Data: PtrInt);
 begin
   DoOpenFile(TAction(Data).Caption);
+end;
+
+procedure TEditorForm2.SetExecutor(AValue: TExecutor);
+var
+  i: Integer;
+begin
+  if FExecutor = AValue then Exit;
+  FExecutor := AValue;
+
+  for i := 0 to FPageControl.PageCount - 1 do
+    GetEditorPage(i).Executor := AValue;
+
+  FExecutor.SetOptions[ANA_SO_TUTORIAL_FOLDER].AddOnChangeHandler(@TutorialChange);
+end;
+
+procedure TEditorForm2.RunAllActionExecute(Sender: TObject);
+begin
+//  DoParse(ActiveEditorPage.Editor.Text);
+end;
+
+procedure TEditorForm2.RunSelectedActionExecute(Sender: TObject);
+//var
+//  ActiveEditor: TSynEdit;
+begin
+  //ActiveEditor := ActiveEditorPage.Editor;
+  //if ActiveEditor.SelAvail then
+  //  begin
+  //    FParserStartPoint := ActiveEditor.BlockBegin; //ActiveEditor.CharIndexToRowCol(ActiveEditor.SelStart);
+  //    DoParse(ActiveEditor.SelText)
+  //  end
+  //else
+  //  begin
+  //    FParserStartPoint := Point(1, ActiveEditor.CaretY);
+  //    DoParse(ActiveEditor.Lines[ActiveEditor.CaretY - 1]);
+  //  end;
+end;
+
+procedure TEditorForm2.SetHistory(AValue: THistory);
+var
+  i: Integer;
+begin
+  if FHistory = AValue then Exit;
+  FHistory := AValue;
+
+  for i := 0 to FPageControl.PageCount - 1 do
+    GetEditorPage(i).History := AValue;
+end;
+
+procedure TEditorForm2.SetOutputCreator(AValue: TOutputCreator);
+var
+  i: Integer;
+begin
+  if FOutputCreator = AValue then Exit;
+  FOutputCreator := AValue;
+
+  for i := 0 to FPageControl.PageCount - 1 do
+    GetEditorPage(i).OutputCreator := OutputCreator;
+end;
+
+procedure TEditorForm2.TutorialChange(Sender: TObject);
+begin
+
 end;
 
 procedure TEditorForm2.EditorClose(Sender: TObject;
@@ -324,7 +402,7 @@ end;
 
 procedure TEditorForm2.QuitActionExecute(Sender: TObject);
 begin
-  //
+  Close;
 end;
 
 procedure TEditorForm2.SaveActionExecute(Sender: TObject);
@@ -422,7 +500,8 @@ begin
   begin
     // Main menu
     A := TAction.Create(self);
-    A.ShortCut := KeyToShortCut(VK_1 + (i - 1), [ssShift, ssCtrl]);
+    if (i < 9) then
+      A.ShortCut := KeyToShortCut(VK_1 + i, [ssShift, ssCtrlOs]);
     A.OnExecute := @OpenRecentExecute;
 
     // Disable actions if the list of RecentPGMFiles is not long enough.
@@ -447,6 +526,11 @@ begin
   result := TEditorPage(FPageControl.ActivePage);
 end;
 
+function TEditorForm2.GetEditorPage(Index: Integer): TEditorPage;
+begin
+  result := TEditorPage(FPageControl.Pages[Index]);
+end;
+
 procedure TEditorForm2.PageChangeEvent(Sender: TObject);
 begin
   ActiveEditorPage.OnStatusChange := @PageStatusChange;
@@ -457,6 +541,7 @@ procedure TEditorForm2.PageChangingEvent(Sender: TObject;
   var AllowChange: Boolean);
 begin
   ActiveEditorPage.OnStatusChange := nil;
+  AllowChange := true;
 end;
 
 procedure TEditorForm2.PageStatusChange(Sender: TObject);

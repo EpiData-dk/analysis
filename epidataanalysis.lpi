@@ -15,7 +15,7 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="7"/>
-      <BuildNr Value="5"/>
+      <BuildNr Value="6"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -85,6 +85,9 @@
               </Win32>
             </Options>
           </Linking>
+          <Other>
+            <CustomOptions Value="-dEPI_BETA"/>
+          </Other>
         </CompilerOptions>
       </Item3>
       <Item4 Name="Linux32">

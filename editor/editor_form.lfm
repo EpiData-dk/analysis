@@ -1,12 +1,12 @@
 object EditorForm: TEditorForm
-  Left = 857
+  Left = 702
   Height = 694
-  Top = 23
+  Top = 96
   Width = 823
   ActiveControl = SynEdit1
   AllowDropFiles = True
   Caption = 'PGM Editor'
-  ClientHeight = 694
+  ClientHeight = 669
   ClientWidth = 823
   Menu = MainMenu1
   OnClose = FormClose
@@ -17,11 +17,11 @@ object EditorForm: TEditorForm
   Position = poDefault
   ShowHint = True
   ShowInTaskBar = stAlways
-  LCLVersion = '2.0.4.0'
+  LCLVersion = '2.0.0.4'
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 18
-    Top = 676
+    Height = 20
+    Top = 649
     Width = 823
     Panels = <    
       item
@@ -43,7 +43,7 @@ object EditorForm: TEditorForm
   end
   object TabControl1: TTabControl
     Left = 0
-    Height = 676
+    Height = 649
     Top = 0
     Width = 823
     HotTrack = True
@@ -53,9 +53,9 @@ object EditorForm: TEditorForm
     TabOrder = 1
     inline SynEdit1: TSynEdit
       Left = 2
-      Height = 614
-      Top = 30
-      Width = 813
+      Height = 621
+      Top = 26
+      Width = 819
       Align = alClient
       Font.Height = 13
       Font.Name = 'DejaVu Sans Mono'
