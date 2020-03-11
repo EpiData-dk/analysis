@@ -49,6 +49,7 @@ type
     FErrorToken: TToken;
     FExecuting: Boolean;
     FExecutingLines: TStrings;
+    procedure RunAsync(Data: PtrInt);
     procedure DoParse(Const S: UTF8String);
     procedure CommentError(Sender: TObject; ErrorToken: TToken);
     procedure SyntaxError(Sender: TObject; ErrorToken: TToken; TokenTable: TTokenStack);
@@ -75,7 +76,7 @@ implementation
 uses
   Controls, LazFileUtils, editor_pgm_highlighter, Menus, Dialogs, ActnList,
   SynEditTypes, VirtualTrees, ana_globals, parser, LazUTF8Classes, GOLDParser,
-  Symbol;
+  Symbol, Forms;
 
 
 const
@@ -311,14 +312,12 @@ begin
   ShowMessage('Action not implemented yet');
 end;
 
-function TEditorPage.GetModified: boolean;
+procedure TEditorPage.RunAsync(Data: PtrInt);
+var
+  Command: TSynEditorCommand;
 begin
-  result := Editor.Modified;
-end;
+  Command := TSynEditorCommand(Data);
 
-procedure TEditorPage.EditorCommand(Sender: TObject;
-  var Command: TSynEditorCommand; var AChar: TUTF8Char; Data: pointer);
-begin
   case Command of
     ecRunAllCommand:
       DoParse(Editor.Text);
@@ -335,6 +334,24 @@ begin
           DoParse(Editor.Lines[Editor.CaretY - 1]);
         end;
   end;
+
+end;
+
+function TEditorPage.GetModified: boolean;
+begin
+  result := Editor.Modified;
+end;
+
+procedure TEditorPage.EditorCommand(Sender: TObject;
+  var Command: TSynEditorCommand; var AChar: TUTF8Char; Data: pointer);
+begin
+  // If we run the parser here and an error occurs, the editor seems to be in an
+  // invalidated state => hence there is no text shown in the UI. If we relay the
+  // parsing and execution to the normal event queue then everything works
+  if (Command = ecRunAllCommand) or
+     (Command = ecRunSelectedCommand)
+  then
+     Application.QueueAsyncCall(@RunAsync, Command);
 end;
 
 procedure TEditorPage.EditorClick(Sender: TObject);
