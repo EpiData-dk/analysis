@@ -1350,6 +1350,9 @@ begin
   else
     Doc.Study.Title.Text := 'Untitled';
 
+  if ST.HasOption(['showFieldNames',   'sfn'], Opt) then Doc.ProjectSettings.ShowFieldNames   := Opt.Expr.AsBoolean;
+  if ST.HasOption(['showFieldBorders', 'sfb'], Opt) then Doc.ProjectSettings.ShowFieldBorders := Opt.Expr.AsBoolean;
+
   DoInfo('New project created: ' + Doc.Study.Title.Text);
 
   if (ST.HasOption('pw', Opt)) then
@@ -1618,13 +1621,14 @@ begin
   if ST.HasOption('cmpLT', Opt) then AddCompare(Opt.Expr.AsIdent, fcLT);
   if ST.HasOption('cmpGE', Opt) then AddCompare(Opt.Expr.AsIdent, fcGEq);
   if ST.HasOption('cmpLE', Opt) then AddCompare(Opt.Expr.AsIdent, fcLEq);
-
   if St.HasOption('nocmp') then
     if (Assigned(F.Comparison)) then
       begin
         F.Comparison.Free;
         F.Comparison := nil;
       end;
+
+  if ST.HasOption(['showValueLabel', 'svl'], Opt) then F.ShowValueLabel := Opt.Expr.AsBoolean;
 
   DoUpdateFieldResultVar;
 end;

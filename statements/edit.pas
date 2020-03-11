@@ -46,6 +46,9 @@ begin
   if ST.HasOption('pw', Opt) then
     FExecutor.Document.PassWord := Opt.Expr.AsString;
 
+  if ST.HasOption(['showFieldNames',   'sfn'], Opt) then FExecutor.Document.ProjectSettings.ShowFieldNames   := Opt.Expr.AsBoolean;
+  if ST.HasOption(['showFieldBorders', 'sfb'], Opt) then FExecutor.Document.ProjectSettings.ShowFieldBorders := Opt.Expr.AsBoolean;
+
   ST.ExecResult := csrSuccess;
 end;
 

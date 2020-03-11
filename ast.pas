@@ -2571,6 +2571,7 @@ begin
   result.Insert('cmpLT',        [rtObject], [evtField], [evfInternal, evfAsObject]);
   result.Insert('cmpGE',        [rtObject], [evtField], [evfInternal, evfAsObject]);
   result.Insert('cmpLE',        [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('showValueLabel',   ['svl'], [rtBoolean]);
 end;
 
 constructor TEditVariable.Create(AVariable: TCustomVariable;
@@ -2638,6 +2639,8 @@ begin
 
   Result.Insert('label', ['l'], [rtString]);
   Result.Insert('pw',    [rtString]);
+  result.Insert('showFieldNames',   ['sfn'], [rtBoolean]);
+  result.Insert('showFieldBorders', ['sfb'], [rtBoolean]);
 end;
 
 constructor TEditProject.Create(AOptionList: TOptionList);
@@ -2774,6 +2777,7 @@ begin
   result.Insert('cmpLT',          [rtObject], [evtField], [evfInternal, evfAsObject]);
   result.Insert('cmpGE',          [rtObject], [evtField], [evfInternal, evfAsObject]);
   result.Insert('cmpLE',          [rtObject], [evtField], [evfInternal, evfAsObject]);
+  result.Insert('showValueLabel',   ['svl'], [rtBoolean]);
 
   case NewType of
     ftBoolean: ;  // No extra options for boolean
@@ -3124,6 +3128,8 @@ begin
   Result.Insert('size',         [rtInteger]);
   Result.Insert('c',            [rtUndefined]);
   Result.Insert('pw',           [rtString]);
+  result.Insert('showFieldNames',   ['sfn'], [rtBoolean]);
+  result.Insert('showFieldBorders', ['sfb'], [rtBoolean]);
 end;
 
 constructor TNewProject.Create(AOptionList: TOptionList);
