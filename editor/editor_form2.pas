@@ -290,24 +290,11 @@ end;
 
 procedure TEditorForm2.RunAllActionExecute(Sender: TObject);
 begin
-//  DoParse(ActiveEditorPage.Editor.Text);
+
 end;
 
 procedure TEditorForm2.RunSelectedActionExecute(Sender: TObject);
-//var
-//  ActiveEditor: TSynEdit;
 begin
-  //ActiveEditor := ActiveEditorPage.Editor;
-  //if ActiveEditor.SelAvail then
-  //  begin
-  //    FParserStartPoint := ActiveEditor.BlockBegin; //ActiveEditor.CharIndexToRowCol(ActiveEditor.SelStart);
-  //    DoParse(ActiveEditor.SelText)
-  //  end
-  //else
-  //  begin
-  //    FParserStartPoint := Point(1, ActiveEditor.CaretY);
-  //    DoParse(ActiveEditor.Lines[ActiveEditor.CaretY - 1]);
-  //  end;
 end;
 
 procedure TEditorForm2.SetHistory(AValue: THistory);

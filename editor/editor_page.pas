@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, synedit, ComCtrls, executor, history, outputcreator,
-  ast, SynEditKeyCmds, Token, lcltype;
+  ast, SynEditKeyCmds, Token, lcltype, Graphics;
 
 type
 
@@ -16,8 +16,11 @@ type
   private
     FEditor: TSynEdit;
     FFileName: UTF8String;
+    procedure EditorClick(Sender: TObject);
     procedure EditorCommand(Sender: TObject; var Command: TSynEditorCommand;
       var AChar: TUTF8Char; Data: pointer);
+    procedure EditorSpecialLineColors(Sender: TObject; Line: integer;
+      var Special: boolean; var FG, BG: TColor);
     function GetModified: boolean;
     procedure NoneExecuteAction(Sender: TObject);
     procedure SetFileName(AValue: UTF8String);
@@ -71,7 +74,8 @@ implementation
 
 uses
   Controls, LazFileUtils, editor_pgm_highlighter, Menus, Dialogs, ActnList,
-  SynEditTypes, VirtualTrees, ana_globals, parser, LazUTF8Classes;
+  SynEditTypes, VirtualTrees, ana_globals, parser, LazUTF8Classes, GOLDParser,
+  Symbol;
 
 
 const
@@ -197,25 +201,94 @@ begin
 end;
 
 procedure TEditorPage.CommentError(Sender: TObject; ErrorToken: TToken);
+var
+  S: String;
 begin
+  FErrorToken := ErrorToken;
 
+  S := Format('Line %d: Unexpected end of comment!', [ErrorToken.LineNum]);
+  ShowMessage(S);
+
+  Editor.CaretY := ErrorToken.LineNum + (FParserStartPoint.Y - 1);
+  Editor.CaretX := ErrorToken.CaretNum + (FParserStartPoint.X - 1);
 end;
 
 procedure TEditorPage.SyntaxError(Sender: TObject; ErrorToken: TToken;
   TokenTable: TTokenStack);
+var
+  T: String;
+  i: Integer;
+  GP: TGOLDParser;
+  S: UTF8String;
 begin
+  GP := TParser(Sender).GoldParser;
+  S := ErrorToken.Name;
+  FErrorToken := ErrorToken;
 
+  T := '';
+
+  if TokenTable.Count > 0 then
+    begin
+      T := '"' + TokenTable[0].Name + '"';
+      for i := 1 to TokenTable.Count - 1 do
+        T := T + ', ' + '"' + TokenTable[i].Name + '"';
+    end;
+
+  if (ErrorToken.ParentSymbol.Kind = SymbolTypeEnd) then
+    begin
+      ShowMessage('Unexpected end of script!' + LineEnding +
+                  'Perhaps a ";" is missing at end of line?');
+    end
+  else
+    begin
+      if (Length(S) > 2) and
+         (S[1] = 'o') and
+         (S[2] = 'p')
+      then
+        S := 'Line %d: Syntax error at pos %d: %s: Reserved word'
+      else
+        S := 'Line %d: Syntax error at pos %d: %s';
+
+      ShowMessage(
+        Format(S,
+               [ErrorToken.LineNum + (FParserStartPoint.Y - 1),
+                ErrorToken.CaretNum + (FParserStartPoint.X - 1),
+                ErrorToken.DataVar]
+              ) + LineEnding +
+        'Expected: ' + LineEnding +
+        T
+      );
+
+      Editor.CaretY := ErrorToken.LineNum + (FParserStartPoint.Y - 1);
+      Editor.CaretX := ErrorToken.CaretNum + (FParserStartPoint.X - 1);
+    end;
 end;
-
 procedure TEditorPage.LexError(Sender: TObject; ErrorToken: TToken);
+var
+  S: String;
 begin
+  FErrorToken := ErrorToken;
 
+  S := Format('Line %d: Unrecognised symbol at pos %d - "%s"',
+              [ErrorToken.LineNum + (FParserStartPoint.Y - 1),
+               ErrorToken.CaretNum + (FParserStartPoint.X - 1),
+               ErrorToken.DataVar
+              ]
+       );
+  ShowMessage(S);
+
+  Editor.CaretY := ErrorToken.LineNum + (FParserStartPoint.Y - 1);
+  Editor.CaretX := ErrorToken.CaretNum + (FParserStartPoint.X - 1);
 end;
 
 procedure TEditorPage.ASTBuildError(Sender: TObject; const Msg: UTF8String;
   ErrorToken: TToken);
 begin
+  FErrorToken := ErrorToken;
 
+  ShowMessage(Msg);
+  Editor.CaretY := ErrorToken.LineNum + (FParserStartPoint.Y - 1);
+  Editor.CaretX := ErrorToken.CaretNum + (FParserStartPoint.X - 1);
 end;
 
 procedure TEditorPage.UpdateCaption;
@@ -262,6 +335,25 @@ begin
           DoParse(Editor.Lines[Editor.CaretY - 1]);
         end;
   end;
+end;
+
+procedure TEditorPage.EditorClick(Sender: TObject);
+begin
+  FErrorToken := nil;
+  FEditor.Invalidate;
+end;
+
+procedure TEditorPage.EditorSpecialLineColors(Sender: TObject; Line: integer;
+  var Special: boolean; var FG, BG: TColor);
+begin
+  if (Assigned(FErrorToken)) and
+     ((FErrorToken.LineNum + (FParserStartPoint.Y - 1)) = Line)
+  then
+    begin
+      Special := true;
+      FG := clWhite;
+      BG := clRed;
+    end;
 end;
 
 procedure TEditorPage.BeforeStatementHandler(Statement: TCustomStatement);
@@ -333,6 +425,8 @@ begin
   FEditor.Highlighter := TPGMHighLighter.Create(FEditor);
   FEditor.OnStatusChange := @EditorStatusChangeEvent;
   FEditor.OnCommandProcessed := @EditorCommand;
+  FEditor.OnSpecialLineColors := @EditorSpecialLineColors;
+  FEditor.OnClick := @EditorClick;
   ModifyShortCuts;
 
   LPopupMenu := TPopupMenu.Create(FEditor);
@@ -352,6 +446,15 @@ end;
 
 destructor TEditorPage.Destroy;
 begin
+  if (Assigned(FExecutor)) then
+    begin
+      FExecutor.RemoveOnBeforeStatementHandler(@BeforeStatementHandler);
+      FExecutor.RemoveOnAfterStatementHandler(@AfterStatementHandler);
+
+      FExecutor.SetOptions[ANA_SO_EDITOR_FONT_SIZE].RemoveOnChangeHandler(@FontChangeEvent);
+      FExecutor.SetOptions[ANA_SO_EDITOR_FONT_NAME].RemoveOnChangeHandler(@FontChangeEvent);
+    end;
+
   inherited Destroy;
 end;
 
