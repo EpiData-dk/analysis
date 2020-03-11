@@ -2761,12 +2761,6 @@ begin
     Exit;
   end;
 
-  // *** Jamie test
-  if (ST.Expr.ZeroDivideCount > 0) then
-    DoWarning('Zero divide occurred ' + IntToStr( ST.Expr.ZeroDivideCount ) + ' times. Check data.');
-  if (ST.Expr.InvalidCount > 0) then
-    DoWarning('Invalid value given to function ' + IntToStr(ST.Expr.InvalidCount) + ' times. Check data.');
-  // *** Jamie test end
   if Changes > 1 then
     DoInfo(Format('(%d real changes)', [Changes]))
   else
@@ -3344,16 +3338,55 @@ end;
 procedure TExecutor.ExecMean(ST: TCustomVariableCommand);
 var
   M: TMeans;
+  L: TStrings;
+  DF: TEpiDataFile;
+  opt: TOption;
+  HasBy: Boolean;
 begin
   ST.ExecResult := csrFailed;
+{  L := ST.VariableList.GetIdentsAsList;
+  HasBy := false;
+  ST.ExecResult := csrFailed;
+// TODO: {Jamie} move these checks into means.pas
+// check for more than one !by
+  for Opt in ST.Options do
+  begin
+   if (Opt.Ident = 'by') then
+     if (HasBy) then
+       begin
+         DoError('Can only stratify by one variable; !by:=' + Opt.Expr.AsIdent + ' is invalid');
+         exit;
+       end
+    else
+      begin
+        HasBy := true;
+        if (L[0] = Opt.Expr.AsIdent) then
+          begin
+            DoError('Cannot stratify by the same variable: ' + Opt.expr.AsIdent);
+            Exit;
+          end;
+        L.Add(Opt.Expr.AsIdent);
+       end;
+    end;
+
   M := nil;
+  DF := DoPrepareDatafile(L, L);
+
   try
+    if DF.Size = 0 then
+      begin
+        DoError('No data!');
+        Exit;
+      end;
+}
     M := TMeans.Create(Self, FOutputCreator);
     M.ExecMeans(TMeansCommand(ST));
-  finally
+//    M.ExecMeans(DF, TMeansCommand(ST));
+//  finally
+//    DF.Free;
     M.Free;
+//    L.Free;
   end;
-end;
 
 procedure TExecutor.ExecFreq(ST: TCustomVariableCommand);
 var

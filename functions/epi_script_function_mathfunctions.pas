@@ -325,8 +325,6 @@ begin
 end;
 
 function TEpiScriptFunction_MathFunctions.IsMissing: Boolean;
-var
-  invalid: Boolean;
 begin
   ASTCurrentExecutionObject := self;
 
@@ -336,26 +334,22 @@ begin
   result := Param[0].IsMissing;
   if (Result) then
     Exit;
-  invalid := false;
-  result := false;
+
   case FOp of
     otFuncTan:
-      invalid := SameValue(Abs(Param[0].AsFloat mod pi), pi / 2, 0.0);
+      result := SameValue(Abs(Param[0].AsFloat mod pi), pi / 2, 0.0);
     otFuncSqrt:
-      invalid := (Param[0].AsFloat < 0);
+      result := (Param[0].AsFloat < 0);
     otFuncArcCos,
     otFuncArcSin:
-      invalid := (Param[0].AsFloat < -1) or (Param[0].AsFloat > 1);
+      result := (Param[0].AsFloat < -1) or (Param[0].AsFloat > 1);
     otFuncLn,
     otFuncLog:
-      invalid := (Param[0].AsFloat <= 0);
+      result := (Param[0].AsFloat <= 0);
     otFuncSameValue,
     otFuncLRE:
       result := Param[0].IsMissing or Param[1].IsMissing;
   end;
-      // *** Jamie test
-  if (invalid) then InvalidCount := InvalidCount + 1;
-  result := result or invalid;
 end;
 
 end.
