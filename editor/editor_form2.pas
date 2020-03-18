@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, auto_position_form, ComCtrls, Dialogs, UITypes,
-  editor_page, Forms, Menus, executor, history, outputcreator, ast, Token;
+  editor_page, Forms, Menus, Graphics, executor, history, outputcreator, ast,
+  Token;
 
 type
 
@@ -38,6 +39,7 @@ type
     procedure OpenRecentExecute(Sender: TObject);
     procedure RunAllActionExecute(Sender: TObject);
     procedure RunSelectedActionExecute(Sender: TObject);
+    procedure OpenFontActionExecute(Sender: TObject);
   private
     // File I/O
     FOpenDialog: TOpenDialog;
@@ -47,6 +49,10 @@ type
     procedure DoOpenFiles(FileNames: TStrings);
     function  DoSaveDialog: UTF8String;
     function  DoSaveFile(FileName: UTF8String): boolean;
+  private
+    // Font
+    FFontDialog: TFontDialog;
+    procedure DoOpenFontDialog;
   private
     // Recent files
     FRecentFilesSubMenu: TMenuItem;
@@ -74,12 +80,16 @@ type
     procedure CreateStatusBar;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     procedure OpenFiles(FileNames: TStrings);
     procedure OpenFile(FileName: UTF8String);
     property Executor: TExecutor read FExecutor write SetExecutor;
     property History: THistory read FHistory write SetHistory;
     property OutputCreator: TOutputCreator read FOutputCreator write SetOutputCreator;
   end;
+
+var
+  EditorForm2: TEditorForm2;
 
 implementation
 
@@ -153,7 +163,7 @@ begin
   TopMenuItem.Add(CreateActionAndMenuItem('&Save',       @SaveActionExecute, ShortCut(VK_S, [ssCtrlOs])));
   TopMenuItem.Add(CreateActionAndMenuItem('Save &As...', @SaveAsActionExecute, ShortCut(VK_S, [ssCtrlOs, ssShift])));
   TopMenuItem.Add(CreateDivider());
-  TopMenuItem.Add(CreateActionAndMenuItem('&Font...',    @NoneActionExecute, 0));
+  TopMenuItem.Add(CreateActionAndMenuItem('&Font...',    @OpenFontActionExecute, 0));
   TopMenuItem.Add(CreateDivider());
   TopMenuItem.Add(CreateActionAndMenuItem('&Close Tab',  @CloseTabActionExecute, ShortCut(VK_W, [ssCtrlOs])));
   TopMenuItem.Add(CreateActionAndMenuItem('&Quit',       @QuitActionExecute, ShortCut(VK_Q, [ssCtrlOS])));
@@ -295,6 +305,11 @@ end;
 
 procedure TEditorForm2.RunSelectedActionExecute(Sender: TObject);
 begin
+end;
+
+procedure TEditorForm2.OpenFontActionExecute(Sender: TObject);
+begin
+  DoOpenFontDialog;
 end;
 
 procedure TEditorForm2.SetHistory(AValue: THistory);
@@ -472,6 +487,19 @@ begin
   result := true;
 end;
 
+procedure TEditorForm2.DoOpenFontDialog;
+var
+  FontDialog: TFontDialog;
+begin
+  FontDialog := TFontDialog.Create(Self);
+  FontDialog.Font.Assign(ActiveEditorPage.Editor.Font);
+
+  if FontDialog.Execute then
+    ActiveEditorPage.UpdateEditorFont(FontDialog.Font);
+
+  FontDialog.Free;
+end;
+
 procedure TEditorForm2.UpdateRecentFiles;
 var
   i: Integer;
@@ -601,6 +629,12 @@ begin
   // Because first page never triggers the OnChangeEvent
   PageChangeEvent(FPageControl);
   UpdateRecentFiles;
+end;
+
+destructor TEditorForm2.Destroy;
+begin
+  EditorForm2 := nil;
+  inherited Destroy;
 end;
 
 procedure TEditorForm2.OpenFiles(FileNames: TStrings);

@@ -329,14 +329,12 @@ begin
 end;
 
 procedure TMainForm.Button2Click(Sender: TObject);
-var
-  Test: TEditorForm2;
 begin
-  Test := TEditorForm2.Create(self);
-  Test.Executor := Executor;
-  Test.History := FHistory;
-  Test.OutputCreator := FOutputCreator;
-  Test.Show;
+  EditorForm2 := TEditorForm2.Create(self);
+  EditorForm2.Executor := Executor;
+  EditorForm2.History := FHistory;
+  EditorForm2.OutputCreator := FOutputCreator;
+  EditorForm2.Show;
 end;
 
 procedure TMainForm.CloseAllWindowsActionExecute(Sender: TObject);
@@ -504,6 +502,7 @@ procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(FStatusbar);
   FreeAndNil(EditorForm);
+  FreeAndNil(EditorForm2);
   FreeAndNil(FHistory);
   Executor.Free;
 end;

@@ -2090,12 +2090,14 @@ begin
   DoUpdateDatasetResultVar;
   DoUpdateValuelabelsResultVar;
 
+  Rel := nil;
   for Rel in Document.Relations do
     if (not Rel.ProtectedItem) then
       break;
 // TODO: need check here that data file does not have a variable with the same
 //       name as an existing global variable
-  DoUseDatafile(Rel.Datafile);
+  if (Assigned(Rel)) then
+    DoUseDatafile(Rel.Datafile);
 
   FDocFile.Document.Modified := false;
   DoInfo('Loaded file: ' + ExpandFileNameUTF8(FN));
@@ -2169,6 +2171,13 @@ begin
   then
     begin
       DoError('File exists.' + LineEnding + 'Add !REPLACE or erase file:' + LineEnding + FN);
+      ST.ExecResult := csrFailed;
+      Exit;
+    end;
+
+  if (not DirectoryExistsUTF8(ExtractFilePath(FN))) then
+    begin
+      DoError('Directory does not exist: ' + LineEnding + ExtractFilePath(FN));
       ST.ExecResult := csrFailed;
       Exit;
     end;

@@ -61,6 +61,7 @@ type
     procedure LoadFromFile(FileName: UTF8String);
     procedure SaveToFile(FileName: UTF8String); overload;
     procedure SaveToFile; overload;
+    procedure UpdateEditorFont(NewFont: TFont);
     property Editor: TSynEdit read FEditor;
     property FileName: UTF8String read FFileName;
     property Modified: boolean read GetModified;
@@ -383,7 +384,8 @@ begin
   Statement.AddCustomData(EDITOR_COMMAND_OUTPUT, TObject(1));
 
   Idx := Statement.LineNo - 1;
-  FOutputCreator.DoCommand('.' + OutputCreatorNormalizeText(FExecutingLines[Idx]));
+  if (Idx >= 0) then
+    FOutputCreator.DoCommand('.' + OutputCreatorNormalizeText(FExecutingLines[Idx]));
 end;
 
 procedure TEditorPage.FontChangeEvent(Sender: TObject);
@@ -496,6 +498,15 @@ begin
   Editor.Modified := false;
 
   DoStatusChange;
+end;
+
+procedure TEditorPage.UpdateEditorFont(NewFont: TFont);
+begin
+  if (NewFont.Size <> Editor.Font.Size) then
+    DoParse('set "' + ANA_SO_EDITOR_FONT_SIZE + '" := ' + IntToStr(NewFont.Size) + ';');
+
+  if (NewFont.Name <> Editor.Font.Name) then
+    DoParse('set "' + ANA_SO_EDITOR_FONT_NAME + '" := "' + NewFont.Name + '";');
 end;
 
 end.
