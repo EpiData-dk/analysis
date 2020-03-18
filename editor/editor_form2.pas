@@ -156,7 +156,7 @@ begin
   TopMenuItem.Add(CreateActionAndMenuItem('&Font...',    @NoneActionExecute, 0));
   TopMenuItem.Add(CreateDivider());
   TopMenuItem.Add(CreateActionAndMenuItem('&Close Tab',  @CloseTabActionExecute, ShortCut(VK_W, [ssCtrlOs])));
-  TopMenuItem.Add(CreateActionAndMenuItem('&Quit',       @QuitActionExecute, ShortCut(VK_Q, [ssShift])));
+  TopMenuItem.Add(CreateActionAndMenuItem('&Quit',       @QuitActionExecute, ShortCut(VK_Q, [ssCtrlOS])));
   MainMenu.Items.Add(TopMenuItem);
 
   // Edit

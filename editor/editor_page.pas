@@ -207,7 +207,7 @@ var
 begin
   FErrorToken := ErrorToken;
 
-  S := Format('Line %d: Unexpected end of comment!', [ErrorToken.LineNum]);
+  S := Format('Line %d: Unexpected end of comment!', [ErrorToken.LineNum + (FParserStartPoint.Y - 1)]);
   ShowMessage(S);
 
   Editor.CaretY := ErrorToken.LineNum + (FParserStartPoint.Y - 1);
@@ -334,7 +334,6 @@ begin
           DoParse(Editor.Lines[Editor.CaretY - 1]);
         end;
   end;
-
 end;
 
 function TEditorPage.GetModified: boolean;
@@ -389,7 +388,10 @@ end;
 
 procedure TEditorPage.FontChangeEvent(Sender: TObject);
 begin
-
+  Editor.Font.BeginUpdate;
+  Editor.Font.Name := Executor.SetOptions[ANA_SO_EDITOR_FONT_NAME].Value;
+  Editor.Font.Size := StrToInt(Executor.SetOptions[ANA_SO_EDITOR_FONT_SIZE].Value);
+  Editor.Font.EndUpdate;
 end;
 
 procedure TEditorPage.AfterStatementHandler(Statement: TCustomStatement);
