@@ -73,14 +73,23 @@ type
     procedure SaveToFile(FileName: UTF8String); overload;
     procedure SaveToFile; overload;
     procedure UpdateEditorFont(NewFont: TFont);
-    procedure PerformFind();
-    procedure PerformFindNext();
-    procedure PerformFindPrev();
-    procedure PerformReplace();
     property Editor: TSynEdit read FEditor;
     property FileName: UTF8String read FFileName;
     property Modified: boolean read GetModified;
     property OnStatusChange: TNotifyEvent read FOnStatusChange write FOnStatusChange;
+  public
+    // Editor Form Main Menu Actions
+    procedure PerformFind();
+    procedure PerformFindNext();
+    procedure PerformFindPrev();
+    procedure PerformReplace();
+    procedure PerformCut();
+    procedure PerformCopy();
+    procedure PerformPaste();
+    procedure PerformInsertHistory();
+    procedure PerformInsertSetOptions();
+    procedure PerformRunAll();
+    procedure PerformRunSelected();
   public
     property Executor: TExecutor read FExecutor write SetExecutor;
     property History: THistory read FHistory write SetHistory;
@@ -92,7 +101,7 @@ implementation
 uses
   Controls, LazFileUtils, editor_pgm_highlighter, Menus, ActnList,
   VirtualTrees, ana_globals, parser, LazUTF8Classes, GOLDParser,
-  Symbol, Forms, Math;
+  Symbol, Forms, Math, options_hashmap, LazUTF8, ast_types, strutils;
 
 
 const
@@ -482,8 +491,6 @@ end;
 
 procedure TEditorPage.EditorCommand(Sender: TObject;
   var Command: TSynEditorCommand; var AChar: TUTF8Char; Data: pointer);
-var
-  Dlg: TFindDialog;
 begin
   // If we run the parser here and an error occurs, the editor seems to be in an
   // invalidated state => hence there is no text shown in the UI. If we relay the
@@ -685,6 +692,103 @@ begin
   Dlg := TReplaceDialog.Create(nil);
   Dlg.Options := [frDown, frHidePromptOnReplace];
   StartSearch(GetSearchText(), Dlg);
+end;
+
+procedure TEditorPage.PerformCut();
+begin
+  Editor.ExecuteCommand(ecCut, '', nil);
+end;
+
+procedure TEditorPage.PerformCopy();
+begin
+  Editor.ExecuteCommand(ecCopy, '', nil);
+end;
+
+procedure TEditorPage.PerformPaste();
+begin
+  Editor.ExecuteCommand(ecPaste, '', nil);
+end;
+
+procedure TEditorPage.PerformInsertHistory();
+begin
+  Editor.InsertTextAtCaret(FHistory.Lines.Text);
+end;
+
+procedure TEditorPage.PerformInsertSetOptions();
+var
+  SOM: TSetOptionsMap;
+  SO:  TSetOption;
+  Iter:  TSetOptionsMap.TIterator;
+  S: UTF8String;
+  AList: TStringList;
+  MaxKeyWidth, MaxValWidth: Integer;
+  T: String;
+begin
+  SOM := Executor.SetOptions;
+  AList := TStringList.Create;
+
+  MaxKeyWidth := 0;
+  MaxValWidth := 0;
+  Iter := SOM.Min;
+  repeat
+    MaxKeyWidth := Max(MaxKeyWidth, UTF8Length(Iter.Key));
+    if Iter.Value.ASTType in [rtInteger, rtFloat] then
+      MaxValWidth := Max(MaxValWidth, UTF8Length(Iter.Value.Value))
+    else
+      MaxValWidth := Max(MaxValWidth, UTF8Length(Iter.Value.Value) + 2);
+  until (not Iter.Next);
+
+
+  Iter := SOM.Min;
+  repeat
+    S  := Iter.Key;
+    SO := Iter.Value;
+
+    S := 'set "' + S + '"' + DupeString(' ', MaxKeyWidth - UTF8Length(S)) + ' := ';
+
+    if SO.ASTType in [rtInteger, rtFloat] then
+      S := S + SO.Value + ';'
+    else
+      S := S + '"' + SO.Value + '";';
+
+    if (SO.LegalValues.Count > 0) or
+       (SO.LowRange <> '') or
+       (SO.HighRange <> '')
+    then
+      S := S + DupeString(' ', MaxValWidth - UTF8Length(SO.Value)) + ' // ';
+
+
+    if (SO.LegalValues.Count > 0) then
+      begin
+        S := S + ' legal values: ';
+        for T in SO.LegalValues do
+          S := S + T + ' / ';
+
+        Delete(S, Length(S) - 2, 3)
+      end;
+
+    if (SO.LowRange <> '') then
+      S := S + ' min = ' + SO.LowRange;
+
+    if (SO.HighRange <> '') then
+      S := S + ' max = ' + SO.HighRange;
+
+    AList.Add(S);
+  until (not Iter.Next);
+  Iter.Free;
+
+  Editor.InsertTextAtCaret(AList.Text);
+  AList.Free;
+end;
+
+procedure TEditorPage.PerformRunAll();
+begin
+  Editor.CommandProcessor(ecRunAllCommand, '', nil, []);
+end;
+
+procedure TEditorPage.PerformRunSelected();
+begin
+  Editor.CommandProcessor(ecRunSelectedCommand, '', nil, []);
 end;
 
 end.

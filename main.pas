@@ -335,11 +335,11 @@ procedure TMainForm.Button2Click(Sender: TObject);
 var
   Frm: TForm;
 begin
-  EditorForm2 := TEditorForm2.Create(self);
-  EditorForm2.Executor := Executor;
-  EditorForm2.History := FHistory;
-  EditorForm2.OutputCreator := FOutputCreator;
-  EditorForm2.Show;
+  EditorForm := TEditorForm.Create(self);
+  EditorForm.Executor := Executor;
+  EditorForm.History := FHistory;
+  EditorForm.OutputCreator := FOutputCreator;
+  EditorForm.Show;
 end;
 
 procedure TMainForm.CloseAllWindowsActionExecute(Sender: TObject);
@@ -922,18 +922,18 @@ end;
 
 procedure TMainForm.ShowEditor(const Filename: UTF8String);
 begin
-  if (not Assigned(EditorForm)) then
+  if (not Assigned(EditorForm2)) then
     begin
-      EditorForm := TEditorForm.Create(self);
-      EditorForm.Executor := Executor;
-      EditorForm.History := FHistory;
-      EditorForm.OutputCreator := FOutputCreator;
+      EditorForm2 := TEditorForm2.Create(self);
+      EditorForm2.Executor := Executor;
+      EditorForm2.History := FHistory;
+      EditorForm2.OutputCreator := FOutputCreator;
     end;
 
-  EditorForm.Show;
+  EditorForm2.Show;
 
   if FileExistsUTF8(Filename) then
-    EditorForm.OpenPgm(Filename);
+    EditorForm2.OpenFile(Filename);
 end;
 
 procedure TMainForm.LeftPanelChange(Sender: TObject);
