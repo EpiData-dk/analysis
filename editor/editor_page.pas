@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, synedit, ComCtrls, executor, history, outputcreator,
-  ast, SynEditKeyCmds, Token, lcltype, Graphics;
+  ast, SynEditKeyCmds, Token, lcltype, Graphics, SynEditTypes, Dialogs;
 
 type
 
@@ -43,6 +43,17 @@ type
     procedure SetHistory(AValue: THistory);
     procedure SetOutputCreator(AValue: TOutputCreator);
   private
+    // Search
+    FActiveSearchText: UTF8String; static;
+    FActiveSearchOptions: TSynSearchOptions; static;
+    procedure PerformSearchAsync(Data: PtrInt);
+    function GetSearchText(): UTF8String;
+    procedure StartSearch(Const SearchText: UTF8String; Dlg: TFindDialog);
+    procedure SearchFind(Sender: TObject);
+    procedure SearchDlgShow(Sender: TObject);
+    procedure SearchClose(Sender: TObject);
+    procedure InternalSearch(Const ReplaceText: UTF8String);
+  private
     // Parse and Run
     FOldLineNo: Integer;
     FParserStartPoint: TPoint;
@@ -62,6 +73,10 @@ type
     procedure SaveToFile(FileName: UTF8String); overload;
     procedure SaveToFile; overload;
     procedure UpdateEditorFont(NewFont: TFont);
+    procedure PerformFind();
+    procedure PerformFindNext();
+    procedure PerformFindPrev();
+    procedure PerformReplace();
     property Editor: TSynEdit read FEditor;
     property FileName: UTF8String read FFileName;
     property Modified: boolean read GetModified;
@@ -75,15 +90,19 @@ type
 implementation
 
 uses
-  Controls, LazFileUtils, editor_pgm_highlighter, Menus, Dialogs, ActnList,
-  SynEditTypes, VirtualTrees, ana_globals, parser, LazUTF8Classes, GOLDParser,
-  Symbol, Forms;
+  Controls, LazFileUtils, editor_pgm_highlighter, Menus, ActnList,
+  VirtualTrees, ana_globals, parser, LazUTF8Classes, GOLDParser,
+  Symbol, Forms, Math;
 
 
 const
   EDITOR_COMMAND_OUTPUT = 'EDITOR_COMMAND_OUTPUT';
-  ecRunAllCommand = ecUserFirst;
-  ecRunSelectedCommand = ecRunAllCommand + 1;
+  ecRunAllCommand       = ecUserFirst;
+  ecRunSelectedCommand  = ecRunAllCommand + 1;
+  ecFindCommand         = ecRunSelectedCommand + 1;
+  ecFindNextCommand     = ecFindCommand + 1;
+  ecFindPrevCommand     = ecFindNextCommand + 1;
+  ecReplaceCommand      = ecFindPrevCommand + 1;
 
 { TEditorPage }
 
@@ -148,6 +167,10 @@ begin
 
   ModifyKeyCodeCommand(VK_D, [ssCtrlOs], ecRunSelectedCommand);
   ModifyKeyCodeCommand(VK_R, [ssCtrlOs], ecRunAllCommand);
+  ModifyKeyCodeCommand(VK_F, [ssCtrlOs], ecFindCommand);
+  ModifyKeyCodeCommand(VK_F, [ssCtrlOs, ssShift], ecReplaceCommand);
+  ModifyKeyCodeCommand(VK_N, [ssCtrlOs, ssShift], ecFindNextCommand);
+  ModifyKeyCodeCommand(VK_P, [ssCtrlOs, ssShift], ecFindPrevCommand);
 end;
 
 procedure TEditorPage.SetExecutor(AValue: TExecutor);
@@ -172,6 +195,121 @@ procedure TEditorPage.SetOutputCreator(AValue: TOutputCreator);
 begin
   if FOutputCreator = AValue then Exit;
   FOutputCreator := AValue;
+end;
+
+procedure TEditorPage.PerformSearchAsync(Data: PtrInt);
+var
+  Command: TSynEditorCommand;
+begin
+  Command := TSynEditorCommand(Data);
+  case (Command) of
+    ecFindCommand:
+      PerformFind();
+    ecFindNextCommand:
+      PerformFindNext();
+    ecFindPrevCommand:
+      PerformFindPrev();
+    ecReplaceCommand:
+      PerformReplace();
+  end;
+end;
+
+function TEditorPage.GetSearchText(): UTF8String;
+begin
+  Result := FActiveSearchText;
+  if Editor.SelAvail then
+    Result := Editor.SelText;
+end;
+
+procedure TEditorPage.StartSearch(const SearchText: UTF8String; Dlg: TFindDialog
+  );
+var
+  FActiveDialog: TFindDialog;
+begin
+  //if (Assigned(FActiveDialog)) and
+  //   (FActiveDialog <> Dlg)
+  //then
+  //  FActiveDialog.CloseDialog;
+
+  FActiveDialog := Dlg;
+  FActiveDialog.FindText := SearchText;
+  FActiveDialog.OnFind := @SearchFind;
+  FActiveDialog.OnShow := @SearchDlgShow;
+  FActiveDialog.OnClose := @SearchClose;
+  if (FActiveDialog is TReplaceDialog) then TReplaceDialog(FActiveDialog).OnReplace := @SearchFind;
+  FActiveDialog.Execute;
+end;
+
+procedure TEditorPage.SearchFind(Sender: TObject);
+var
+  Dlg: TFindDialog absolute sender;
+  FindText, ReplaceText: String;
+  Options: TSynSearchOptions;
+begin
+  FindText := Dlg.FindText;
+  if (FindText = '') then exit;
+
+  ReplaceText := FindText;
+
+  Options := [];
+  if (frWholeWord       in Dlg.Options)  then include(Options, ssoWholeWord);
+  if (frMatchCase       in Dlg.Options)  then include(Options, ssoMatchCase);
+  if (frEntireScope     in Dlg.Options)  then include(Options, ssoEntireScope);
+  if (frPromptOnReplace in Dlg.Options)  then include(Options, ssoPrompt);
+  if (frReplace         in Dlg.Options)  then Include(Options, ssoReplace);
+  if (frReplaceAll      in Dlg.Options)  then Include(Options, ssoReplaceAll);
+  if (not (frFindNext   in Dlg.Options)) then ReplaceText := TReplaceDialog(Dlg).ReplaceText;
+  if (not (frDown       in Dlg.Options)) then include(Options, ssoBackwards);
+  if (frPromptOnReplace in Dlg.Options)  then include(Options, ssoPrompt);
+
+  FActiveSearchOptions := Options;
+  FActiveSearchText    := FindText;
+
+  InternalSearch(ReplaceText);
+end;
+
+procedure TEditorPage.SearchDlgShow(Sender: TObject);
+var
+  P: TPoint;
+  MfBound: TRect;
+begin
+  //MfBound   := BoundsRect;
+  //P.Y := MfBound.Top + (((MfBound.Bottom - MfBound.Top)  - FActiveDialog.Height) Div 2);
+  //P.X := MfBound.Left + (((MfBound.Right - MfBound.Left) - FActiveDialog.Width) Div 2);
+  //
+  //FActiveDialog.Position := P;
+end;
+
+procedure TEditorPage.SearchClose(Sender: TObject);
+begin
+  Application.ReleaseComponent(TComponent(Sender));
+end;
+
+procedure TEditorPage.InternalSearch(const ReplaceText: UTF8String);
+var
+  Res: Integer;
+  Pt: TPoint;
+begin
+  Pt := Editor.CaretXY;
+
+  if (Editor.SelAvail) and
+     (Editor.SelText = FActiveSearchText) and
+     ([ssoReplace, ssoReplaceAll] * FActiveSearchOptions <> [])
+  then
+    begin
+      if (ssoBackwards in FActiveSearchOptions) then
+        Pt.x := Max(Editor.BlockBegin.X, Editor.BlockEnd.X)
+      else
+        Pt.x := Min(Editor.BlockBegin.X, Editor.BlockEnd.X);
+    end;
+
+  Res := Editor.SearchReplaceEx(FActiveSearchText, ReplaceText, FActiveSearchOptions, Pt);
+
+  if (ssoReplace in FActiveSearchOptions) then
+    Res := Editor.SearchReplaceEx(FActiveSearchText, ReplaceText, FActiveSearchOptions - [ssoReplace], Pt);
+
+  if (Res = 0) then
+    ShowMessage('"' + FActiveSearchText + '" not found!');
 end;
 
 procedure TEditorPage.DoParse(const S: UTF8String);
@@ -344,6 +482,8 @@ end;
 
 procedure TEditorPage.EditorCommand(Sender: TObject;
   var Command: TSynEditorCommand; var AChar: TUTF8Char; Data: pointer);
+var
+  Dlg: TFindDialog;
 begin
   // If we run the parser here and an error occurs, the editor seems to be in an
   // invalidated state => hence there is no text shown in the UI. If we relay the
@@ -352,6 +492,14 @@ begin
      (Command = ecRunSelectedCommand)
   then
      Application.QueueAsyncCall(@RunAsync, Command);
+
+  case (Command) of
+    ecFindCommand,
+    ecFindNextCommand,
+    ecFindPrevCommand,
+    ecReplaceCommand:
+      Application.QueueAsyncCall(@PerformSearchAsync, Command);
+  end;
 end;
 
 procedure TEditorPage.EditorClick(Sender: TObject);
@@ -463,6 +611,7 @@ begin
   Caption := 'Untitled';
 
   FFileName := '';
+  FActiveSearchText := '';
 end;
 
 destructor TEditorPage.Destroy;
@@ -507,6 +656,35 @@ begin
 
   if (NewFont.Name <> Editor.Font.Name) then
     DoParse('set "' + ANA_SO_EDITOR_FONT_NAME + '" := "' + NewFont.Name + '";');
+end;
+
+procedure TEditorPage.PerformFind();
+var
+  Dlg: TFindDialog;
+begin
+  Dlg := TFindDialog.Create(nil);
+  StartSearch(GetSearchText(), Dlg);
+end;
+
+procedure TEditorPage.PerformFindNext();
+begin
+  FActiveSearchOptions := FActiveSearchOptions - [ssoBackwards];
+  InternalSearch(FActiveSearchText);
+end;
+
+procedure TEditorPage.PerformFindPrev();
+begin
+  FActiveSearchOptions := FActiveSearchOptions + [ssoBackwards];
+  InternalSearch(FActiveSearchText);
+end;
+
+procedure TEditorPage.PerformReplace();
+var
+  Dlg: TReplaceDialog;
+begin
+  Dlg := TReplaceDialog.Create(nil);
+  Dlg.Options := [frDown, frHidePromptOnReplace];
+  StartSearch(GetSearchText(), Dlg);
 end;
 
 end.

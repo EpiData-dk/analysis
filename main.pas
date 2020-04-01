@@ -302,6 +302,9 @@ type
     procedure UpdateRecentFiles;
 
   { Other }
+  private
+    FStartupFile: String;
+    procedure ASyncRunStartup(Data: PtrInt);
   public
     procedure RestoreDefaultPos;
   end;
@@ -329,6 +332,8 @@ begin
 end;
 
 procedure TMainForm.Button2Click(Sender: TObject);
+var
+  Frm: TForm;
 begin
   EditorForm2 := TEditorForm2.Create(self);
   EditorForm2.Executor := Executor;
@@ -512,6 +517,7 @@ var
   Lst: TStringList;
   S: String;
   i: Integer;
+  T: PString;
 begin
   DoUpdateTitle;
 
@@ -544,29 +550,14 @@ begin
 
    // At this point it is possible to run the first commands
   if Application.HasOption('i') then
-    S := ExpandFileNameUTF8(Application.GetOptionValue('i'))
+    FStartupFile := ExpandFileNameUTF8(Application.GetOptionValue('i'))
   else
-    S := GetStartupPgm;
-
-  if FileExistsUTF8(s) then
-    begin
-      FHistory.LoadingStartup := true;
-      Lst := TStringListUTF8.Create;
-      Lst.LoadFromFile(S);
-      FHistory.AddLines(Lst);
-      DoParseContent(Lst.Text);
-      Lst.Free;
-      FHistory.LoadingStartup := false;
-    end
-  else
-    InterfaceRunCommand('cls;');
-
-  FOutputCreator.DoInfoAll(GetProgramInfo);
-  FOutputCreator.DoNormal('');
+    FStartupFile := GetStartupPgm;
 
   // For some odd reason, the Statusbar has an incorrect height but changing the size
   // of the main form recalculates it all. This is only needed right after programstart.
   Application.QueueAsyncCall(@ChangeWidth, 0);
+  Application.QueueAsyncCall(@ASyncRunStartup, 0);
 
   {$IFDEF EPI_BETA}
   Panel2.Visible := true;
@@ -1929,6 +1920,28 @@ begin
   end;
 end;
 
+procedure TMainForm.ASyncRunStartup(Data: PtrInt);
+var
+  Lst: TStringListUTF8;
+begin
+  if FileExistsUTF8(FStartupFile) then
+    begin
+      FHistory.LoadingStartup := true;
+      Lst := TStringListUTF8.Create;
+      Lst.LoadFromFile(FStartupFile);
+      FHistory.AddLines(Lst);
+      DoParseContent(Lst.Text);
+      Lst.Free;
+      FHistory.LoadingStartup := false;
+      FStartupFile := '';
+    end
+  else
+    InterfaceRunCommand('cls;');
+
+  FOutputCreator.DoInfoAll(GetProgramInfo);
+  FOutputCreator.DoNormal('');
+end;
+
 procedure TMainForm.RestoreDefaultPos;
 var
   W, H, T, L: Integer;
@@ -1943,6 +1956,7 @@ begin
   Application.ProcessMessages;
 
   TEditorForm.RestoreDefaultPos;
+  TEditorForm2.RestoreDefaultPos(EditorForm2);
   TAboutForm.RestoreDefaultPos;
   TBrowseForm4.RestoreDefaultPos;
 

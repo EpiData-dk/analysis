@@ -40,6 +40,10 @@ type
     procedure RunAllActionExecute(Sender: TObject);
     procedure RunSelectedActionExecute(Sender: TObject);
     procedure OpenFontActionExecute(Sender: TObject);
+    procedure FindActionExecute(Sender: TObject);
+    procedure FindNextActionExecute(Sender: TObject);
+    procedure FindPrevActionExecute(Sender: TObject);
+    procedure ReplaceActionExecute(Sender: TObject);
   private
     // File I/O
     FOpenDialog: TOpenDialog;
@@ -185,10 +189,10 @@ begin
   // Search
   TopMenuItem := TMenuItem.Create(Self);
   TopMenuItem.Caption := '&Search';
-  TopMenuItem.Add(CreateActionAndMenuItem('Find...',       @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Find Next',     @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Find Previous', @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Replace...',    @NoneActionExecute, 0));
+  TopMenuItem.Add(CreateActionAndMenuItem('Find...',       @FindActionExecute,     ShortCut(VK_F, [ssCtrlOS])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Find Next',     @FindNextActionExecute, ShortCut(VK_N, [ssCtrlOs, ssShift])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Find Previous', @FindPrevActionExecute, ShortCut(VK_P, [ssCtrlOs, ssShift])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Replace...',    @ReplaceActionExecute,  ShortCut(VK_F, [ssCtrlOs, ssShift])));
   MainMenu.Items.Add(TopMenuItem);
 
   // Run
@@ -310,6 +314,26 @@ end;
 procedure TEditorForm2.OpenFontActionExecute(Sender: TObject);
 begin
   DoOpenFontDialog;
+end;
+
+procedure TEditorForm2.FindActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformFind();
+end;
+
+procedure TEditorForm2.FindNextActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformFindNext();
+end;
+
+procedure TEditorForm2.FindPrevActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformFindPrev();
+end;
+
+procedure TEditorForm2.ReplaceActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformReplace();
 end;
 
 procedure TEditorForm2.SetHistory(AValue: THistory);
