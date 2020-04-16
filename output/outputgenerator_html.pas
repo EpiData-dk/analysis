@@ -131,10 +131,7 @@ begin
 
     if (Table.Footer <> nil) then
     begin
-      S := Table.Footer.Text;
-      S := StringsReplace(S, [LineEnding], ['<br>'], [rfReplaceAll]);
-      S := ReplaceStr(S,'{\S ','<sup>');       // *** jh this would be better with RegExp
-      S := ReplaceStr(S,'}','</sup>');
+      S := TextToHtml(Table.Footer);
       WriteToStream('<tfoot><td colspan="' + Table.ColCount.ToString + '">' + S + '&nbsp;</td></tfoot>'); // most appropriate style ?
     end;
 

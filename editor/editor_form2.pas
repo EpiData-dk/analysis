@@ -26,6 +26,7 @@ type
     // Form
     procedure EditorClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure EditorCloseQuery(Sender: TObject; var CanClose: boolean);
+    procedure DropFiles(Sender: TObject; const FileNames: array of String);
   private
     // Actions
     procedure CloseTabActionExecute(Sender: TObject);
@@ -494,6 +495,19 @@ begin
     end;
 end;
 
+procedure TEditorForm2.DropFiles(Sender: TObject;
+  const FileNames: array of String);
+var
+  Files: TStringListUTF8;
+begin
+  Files := TStringListUTF8.Create;
+  Files.AddStrings(FileNames);
+
+  DoOpenFiles(Files);
+
+  Files.Free;
+end;
+
 procedure TEditorForm2.OpenRecentExecute(Sender: TObject);
 begin
   Application.QueueAsyncCall(@AsyncOpenRecent, PtrInt(Sender));
@@ -596,6 +610,7 @@ begin
   Result := '';
 
   FSaveDialog.InitialDir := GetCurrentDirUTF8;
+  FSaveDialog.FileName := ActiveEditorPage.FileName;
   if (FSaveDialog.Execute) then
     Result := FSaveDialog.FileName;
 end;
@@ -609,6 +624,8 @@ begin
     Exit(false);
 
   ActiveEditorPage.SaveToFile(FileName);
+  AddToRecent(FileName, GetRecentPGMIniFileName, RecentPGMFiles);
+  UpdateRecentFiles;
 
   result := true;
 end;
@@ -751,6 +768,8 @@ begin
 
   OnCloseQuery := @EditorCloseQuery;
   OnClose := @EditorClose;
+  AllowDropFiles := true;
+  OnDropFiles := @DropFiles;
 
   // Because first page never triggers the OnChangeEvent
   PageChangeEvent(FPageControl);
