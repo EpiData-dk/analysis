@@ -46,7 +46,6 @@ Type
     procedure Initialize;
     procedure RequestClose;
     procedure LoadFromStream(ST: TStream);
-    function GetOutputGeneratorClass: TOutputGeneratorClass;
     procedure UpdateFontAndSize(AExecutor: TExecutor);
 
 
@@ -201,11 +200,6 @@ begin
     FN := TFileStream(ST).FileName;
 
   fChromium.Load('file://' + FN);
-end;
-
-function TWebPanel.GetOutputGeneratorClass: TOutputGeneratorClass;
-begin
-  result := TOutputGeneratorHTML;
 end;
 
 procedure TWebPanel.UpdateFontAndSize(AExecutor: TExecutor);

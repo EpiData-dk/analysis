@@ -322,7 +322,7 @@ uses
   epiv_custom_statusbar, datamodule, editor_form, LCLIntf, Symbol,
   ana_procs, ana_documentfile, LazFileUtils, LazUTF8Classes, epistringutils, ana_globals,
   browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform,
-  wizard_form, editor_form2;
+  wizard_form, editor_form2, outputgenerator_txt;
 
 { TMainForm }
 
@@ -1854,7 +1854,17 @@ end;
 
 function TMainForm.CreateOutputGenerator(ST: TStream): TOutputGeneratorBase;
 begin
-  Result := (PageControl1.ActivePage as IAnaOutputViewer).GetOutputGeneratorClass.Create(FOutputCreator, ST);
+  case UTF8UpperString(Executor.SetOptionValue[ANA_SO_OUTPUT_FORMAT]) of
+    'OSR',
+    'OLDHTML',
+    'HTML':
+      begin
+        Result := TOutputGeneratorHTML.Create(FOutputCreator, ST);
+        TOutputGeneratorHTML(Result).CSSFileName := Executor.SetOptionValue[ANA_SO_OUTPUT_CSS_FILE];
+      end;
+    'TEXT':
+      Result := TOutputGeneratorTXT.Create(FOutputCreator, ST);
+  end;
 end;
 
 procedure TMainForm.RedrawOutput;

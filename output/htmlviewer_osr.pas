@@ -65,7 +65,6 @@ type
   public
     procedure Initialize;
     procedure LoadFromStream(ST: TStream);
-    function GetOutputGeneratorClass: TOutputGeneratorClass;
     procedure UpdateFontAndSize(AExecutor: TExecutor);
   end;
 
@@ -348,11 +347,6 @@ begin
     FN := TFileStream(ST).FileName;
 
   FChromiumOSR.Load('file://' + FN);
-end;
-
-function THTMLViewerOSR.GetOutputGeneratorClass: TOutputGeneratorClass;
-begin
-  result := TOutputGeneratorHTML;
 end;
 
 procedure THTMLViewerOSR.UpdateFontAndSize(AExecutor: TExecutor);

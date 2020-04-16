@@ -1884,6 +1884,7 @@ begin
   SOpt.LegalValues.Add('OSR');
   {$ENDIF}
   FOptions.Insert(ANA_SO_OUTPUT_SAVE_FORMAT, SOpt);
+  FOptions.Insert(ANA_SO_OUTPUT_CSS_FILE, TSetOption.Create('', rtString));
 
   SOpt := TSetOption.Create('L', rtString);
   SOpt.LegalValues.Add('L');

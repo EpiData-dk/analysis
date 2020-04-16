@@ -20,7 +20,6 @@ type
     procedure InvalidateView;
     procedure LoadFromStream(ST: TStream);
     procedure UpdateFontAndSize(AExecutor: TExecutor);
-    function GetOutputGeneratorClass: TOutputGeneratorClass;
 
   // Context menu
     function GetContextMenu: TOutputViewerPopup;

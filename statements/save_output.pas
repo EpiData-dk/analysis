@@ -111,7 +111,10 @@ begin
     FS := TFileStreamUTF8.Create(FN, fmCreate);
 
     if OutputType = 'html' then
-      OutputGenerator := TOutputGeneratorHTML.Create(FOutputCreator, FS)
+      begin
+        OutputGenerator := TOutputGeneratorHTML.Create(FOutputCreator, FS);
+        TOutputGeneratorHTML(OutputGenerator).CSSFileName := FExecutor.SetOptionValue[ANA_SO_OUTPUT_CSS_FILE];
+      end
     else
       OutputGenerator := TOutputGeneratorTXT.Create(FOutputCreator, FS);
     OutputGenerator.GenerateReport;

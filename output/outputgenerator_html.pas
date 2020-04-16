@@ -14,7 +14,9 @@ type
 
   TOutputGeneratorHTML = class(TOutputGeneratorBase)
   private
+    FCSSFileName: UTF8String;
     FHtmlText: UTF8String;
+    procedure SetCSSFileName(AValue: UTF8String);
     function  TextToHtml(IText: IOutputText): UTF8String;
   protected
     procedure TextOut(const S: UTF8String; TextFormat: TTextFormat); override;
@@ -25,13 +27,14 @@ type
     function GetDialogFilter: UTF8String; override;
   public
     procedure GenerateReport; override;
+    property CSSFileName: UTF8String read FCSSFileName write SetCSSFileName;
 //    procedure GenerateReport(out Text: UTF8String); override; overload;
   end;
 
 implementation
 
 uses
-  strutils;
+  strutils, LazFileUtils, LazUTF8Classes;
 
 { TOutputGeneratorHTML }
 
@@ -40,6 +43,17 @@ begin
   FHtmlText := '';
   ProcessIText(IText);
   Result := FHtmlText;
+end;
+
+procedure TOutputGeneratorHTML.SetCSSFileName(AValue: UTF8String);
+begin
+  if FCSSFileName = AValue then Exit;
+
+  FCSSFileName := '';
+  if (FileExistsUTF8(FCSSFileName)) then
+    Exit;
+
+  FCSSFileName := AValue;
 end;
 
 procedure TOutputGeneratorHTML.TextOut(const S: UTF8String;
@@ -165,8 +179,8 @@ end;
 procedure TOutputGeneratorHTML.GenerateReport;
 var
   i: Integer;
+  CSSStrings: TStringListUTF8;
 begin
-//  Text :=
   WriteToStream(
     '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">' + LineEnding +
     '<HTML>' + LineEnding +
@@ -177,44 +191,58 @@ begin
     '<meta name="Update_from:" content="Http://www.epidata.dk">' + LineEnding +
     '<meta name="Disclaimer" content="Http://www.epidata.dk/disclaim.htm">' + LineEnding +
     '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">' + LineEnding +
-    '' + LineEnding +
-    '<STYLE type="text/css">' + LineEnding +
+    '' + LineEnding
+  );
 
-    // Stylesheet
-    '<!--' + LineEnding +
-    '  .body {color: black; background-color: white;  font-size: 1.0em; font-weight: normal}' + LineEnding +
-    '' + LineEnding +
-    '   p {color: black ;font-size: 1.0em; font-family: proportional,monospace; font-weight: normal; margin: 0em }' + LineEnding +
-    '  h1 {color: blue; font-size: 1.25em; font-family: proportional,monospace; font-weight: bold}' + LineEnding +
-    '  h2 {color: blue; font-size: 1.20em; font-family: proportional,monospace; font-weight: bold}' + LineEnding +
-    '  h3 {color: blue; font-size: 1.15em; font-family: proportional,monospace; font-weight: bold}' + LineEnding +
-    '  .small {color: black; font-size: 0.85em; font-family: proportional,monospace; font-weight: normal}' + LineEnding +
-    '' + LineEnding +
-    '  .command {color: black; font-size: 0.85em; font-weight: normal; font-family: monospace}' + LineEnding +
-    '  .warning {color: black; font-size: 0.85em; font-weight: normal; font-family: monospace}' + LineEnding +
-    '  .info {color: green; font-size: 1.0em; font-weight: normal; font-family: monospace ;}' + LineEnding +
-    '  .error {color: red; font-family: monospace}' + LineEnding +
-    '' + LineEnding +
-    'table.simple  {color: black; font-size: 1.0em; font-family: proportional,monospace; font-weight: normal; border-left: solid 2px black; border-right: solid 2px black; border-bottom: solid 2px black; border-spacing: 0; margin-top: 1.25cm; }' + LineEnding +
-    'table.simple th,' + LineEnding +
-    'table.simple tr {padding: 0.2em}' + LineEnding +
-    'table.simple td {text-align: right; vertical-align: top; padding: 0.2em}' + LineEnding +
-    'table.simple .cell {text-align: left; vertical-align: top; padding: 0.2em;}' + LineEnding +
-    '' + LineEnding +
-    'table.simple .cellfoot {border-top: solid 2px black; font-size: 0.8em; text-align: left;}' + LineEnding +
-    'table.simple .caption {font-size: 1.1em; font-weight: bold; border-bottom: 2px solid black; text-align: center;}' + LineEnding +
-    '' + LineEnding +
-    'table.simple .firstrow {font-weight: bold; text-align: center; padding-right: 0.4em }' + LineEnding +
-    'table.simple .firstcol {font-weight: bold; text-align: right; padding-right: 0.4em}' + LineEnding +
-    '' + LineEnding +
-    '/* EpiData Reporting Minimalistic style sheet - white background' + LineEnding +
-    '   v1.0' + LineEnding +
-    '   Use the design table.system as a template for a new design. To be safe, define all styles for a design.' + LineEnding +
-    '   Note that a style followed by a comma will take the attributes at the end of the group, so do not sort this file.' + LineEnding +
-    '*/' + LineEnding +
-    '-->' + LineEnding +
+  if (FCSSFileName <> '') then
+    begin
+      CSSStrings := TStringListUTF8.Create;
+      CSSStrings.LoadFromFile(FCSSFileName);
+      WriteToStream(CSSStrings.Text);
+    end
+  else
+    begin
+      WriteToStream(
+        '<STYLE type="text/css">' + LineEnding +
 
-    '</STYLE>' + LineEnding +
+        // Stylesheet
+        '<!--' + LineEnding +
+        '  .body {color: black; background-color: white;  font-size: 1.0em; font-weight: normal}' + LineEnding +
+        '' + LineEnding +
+        '   p {color: black ;font-size: 1.0em; font-family: proportional,monospace; font-weight: normal; margin: 0em }' + LineEnding +
+        '  h1 {color: blue; font-size: 1.25em; font-family: proportional,monospace; font-weight: bold}' + LineEnding +
+        '  h2 {color: blue; font-size: 1.20em; font-family: proportional,monospace; font-weight: bold}' + LineEnding +
+        '  h3 {color: blue; font-size: 1.15em; font-family: proportional,monospace; font-weight: bold}' + LineEnding +
+        '  .small {color: black; font-size: 0.85em; font-family: proportional,monospace; font-weight: normal}' + LineEnding +
+        '' + LineEnding +
+        '  .command {color: black; font-size: 0.85em; font-weight: normal; font-family: monospace}' + LineEnding +
+        '  .warning {color: black; font-size: 0.85em; font-weight: normal; font-family: monospace}' + LineEnding +
+        '  .info {color: green; font-size: 1.0em; font-weight: normal; font-family: monospace ;}' + LineEnding +
+        '  .error {color: red; font-family: monospace}' + LineEnding +
+        '' + LineEnding +
+        'table.simple  {color: black; font-size: 1.0em; font-family: proportional,monospace; font-weight: normal; border-left: solid 2px black; border-right: solid 2px black; border-bottom: solid 2px black; border-spacing: 0; margin-top: 1.25cm; }' + LineEnding +
+        'table.simple th,' + LineEnding +
+        'table.simple tr {padding: 0.2em}' + LineEnding +
+        'table.simple td {text-align: right; vertical-align: top; padding: 0.2em}' + LineEnding +
+        'table.simple .cell {text-align: left; vertical-align: top; padding: 0.2em;}' + LineEnding +
+        '' + LineEnding +
+        'table.simple .cellfoot {border-top: solid 2px black; font-size: 0.8em; text-align: left;}' + LineEnding +
+        'table.simple .caption {font-size: 1.1em; font-weight: bold; border-bottom: 2px solid black; text-align: center;}' + LineEnding +
+        '' + LineEnding +
+        'table.simple .firstrow {font-weight: bold; text-align: center; padding-right: 0.4em }' + LineEnding +
+        'table.simple .firstcol {font-weight: bold; text-align: right; padding-right: 0.4em}' + LineEnding +
+        '' + LineEnding +
+        '/* EpiData Reporting Minimalistic style sheet - white background' + LineEnding +
+        '   v1.0' + LineEnding +
+        '   Use the design table.system as a template for a new design. To be safe, define all styles for a design.' + LineEnding +
+        '   Note that a style followed by a comma will take the attributes at the end of the group, so do not sort this file.' + LineEnding +
+        '*/' + LineEnding +
+        '-->' + LineEnding +
+
+        '</STYLE>' + LineEnding
+      );
+    end;
+  WriteToStream(
     '<TITLE>  </TITLE>' + LineEnding +
     '</HEAD>' + LineEnding +
     '<BODY class=body>' + LineEnding
