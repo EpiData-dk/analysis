@@ -67,7 +67,7 @@ begin
         end;
     end
   else
-    OutputType := UTF8LowerString(FExecutor.SetOptions[ANA_SO_OUTPUT_FORMAT].Value);
+    OutputType := UTF8LowerString(FExecutor.SetOptions[ANA_SO_OUTPUT_SAVE_FORMAT].Value);
 
   if Assigned(ST.StringExpr) then
     FN := ST.StringExpr.AsString;

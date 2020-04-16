@@ -52,6 +52,7 @@ const
   ANA_SO_OUTPUT_FONT_STYLE             = 'OUTPUT FONT STYLE';
   ANA_SO_OUTPUT_BG_COLOR               = 'OUTPUT BG COLOUR';
   ANA_SO_OUTPUT_FORMAT                 = 'OUTPUT FORMAT';
+  ANA_SO_OUTPUT_SAVE_FORMAT            = 'OUTPUT SAVE FORMAT';
 
   ANA_SO_SHOW_COMMAND                  = 'SHOW COMMAND';
   ANA_SO_SHOW_DEBUG                    = 'SHOW DEBUG';

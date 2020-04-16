@@ -1876,6 +1876,15 @@ begin
   {$ENDIF}
   FOptions.Insert(ANA_SO_OUTPUT_FORMAT, SOpt);
 
+  SOpt := TSetOption.Create('TEXT', rtString);
+  SOpt.LegalValues.Add('HTML');
+  SOpt.LegalValues.Add('TEXT');
+  {$IFDEF EPI_CHROMIUM_HTML}
+  SOpt.LegalValues.Add('OLDHTML');
+  SOpt.LegalValues.Add('OSR');
+  {$ENDIF}
+  FOptions.Insert(ANA_SO_OUTPUT_SAVE_FORMAT, SOpt);
+
   SOpt := TSetOption.Create('L', rtString);
   SOpt.LegalValues.Add('L');
   SOpt.LegalValues.Add('V');
