@@ -15,7 +15,7 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="7"/>
-      <BuildNr Value="10"/>
+      <BuildNr Value="11"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -220,7 +220,7 @@
         </UserOverrides>
       </environment>
       <FormatVersion Value="2"/>
-      <Modes Count="1">
+      <Modes Count="2">
         <Mode0 Name="default">
           <environment>
             <UserOverrides Count="1">
@@ -228,6 +228,14 @@
             </UserOverrides>
           </environment>
         </Mode0>
+        <Mode1 Name="Lang = Dansk (da_DK)">
+          <environment>
+            <UserOverrides Count="2">
+              <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
+              <Variable1 Name="LANG" Value="da_DK.utf8"/>
+            </UserOverrides>
+          </environment>
+        </Mode1>
       </Modes>
     </RunParams>
     <RequiredPackages Count="13">
@@ -273,7 +281,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="92">
+    <Units Count="93">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -680,6 +688,10 @@
         <Filename Value="editor/editor_pgm_highlighter.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit91>
+      <Unit92>
+        <Filename Value="functions/scandate_from_fpc.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit92>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -719,7 +731,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="13">
+    <Exceptions Count="14">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -767,6 +779,9 @@
       <Item13>
         <Name Value="EEpiBadPassword"/>
       </Item13>
+      <Item14>
+        <Name Value="EConvertError"/>
+      </Item14>
     </Exceptions>
   </Debugging>
 </CONFIG>

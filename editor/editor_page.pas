@@ -180,6 +180,7 @@ begin
   ModifyKeyCodeCommand(VK_F, [ssCtrlOs, ssShift], ecReplaceCommand);
   ModifyKeyCodeCommand(VK_N, [ssCtrlOs, ssShift], ecFindNextCommand);
   ModifyKeyCodeCommand(VK_P, [ssCtrlOs, ssShift], ecFindPrevCommand);
+  ModifyKeyCodeCommand(VK_DELETE, [ssCtrlOS], ecDeleteWord);
 end;
 
 procedure TEditorPage.SetExecutor(AValue: TExecutor);

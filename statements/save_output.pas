@@ -131,7 +131,7 @@ begin
   end;
   FS.Free;
 
-  FOutputCreator.DoInfoShort('Output save: ' + FN);
+  FOutputCreator.DoInfoShort('Output saved: ' + FN);
   ST.ExecResult := csrSuccess;
 end;
 

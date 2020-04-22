@@ -535,9 +535,9 @@ begin
   LoadTutorials;
 
   LoadFormPosition(Self, 'MainForm');
-  LoadSplitterPosition(LeftSideSplitter, 'ProjectSplitter');
-  LoadSplitterPosition(RightSideSplitter, 'SidebarSplitter');
-  LoadSplitterPosition(RightPanelSplitter, 'SidebarBottomSplitter');
+//  LoadSplitterPosition(LeftSideSplitter, 'ProjectSplitter');
+//  LoadSplitterPosition(RightSideSplitter, 'SidebarSplitter');
+//  LoadSplitterPosition(RightPanelSplitter, 'SidebarBottomSplitter');
 
   // For Cocoa widget set, must add left margin to Main output window
   // and to bottom of command line to see the entire element
@@ -556,7 +556,7 @@ begin
 
   // For some odd reason, the Statusbar has an incorrect height but changing the size
   // of the main form recalculates it all. This is only needed right after programstart.
-  Application.QueueAsyncCall(@ChangeWidth, 0);
+//  Application.QueueAsyncCall(@ChangeWidth, 0);
   Application.QueueAsyncCall(@ASyncRunStartup, 0);
 
   {$IFDEF EPI_BETA}
@@ -663,7 +663,7 @@ end;
 
 procedure TMainForm.SaveOutputActionExecute(Sender: TObject);
 begin
-  DoParseContent('save !output;');
+  InterfaceRunCommand('save !output;');
 end;
 
 procedure TMainForm.ShowAboutActionExecute(Sender: TObject);

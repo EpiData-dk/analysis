@@ -28,15 +28,16 @@ type
 implementation
 
 uses
-  epidatafiles, epiconvertutils;
+  epidatafiles, epiconvertutils, scandate_from_fpc;
 
 { TEpiScriptFunction_CreateTime }
 
 function TEpiScriptFunction_CreateTime.ParamCounts: TBoundArray;
 begin
-  SetLength(Result, 2);
+  SetLength(Result, 3);
   Result[0] := 1;
-  Result[1] := 3;
+  Result[1] := 2;
+  Result[2] := 3;
 end;
 
 function TEpiScriptFunction_CreateTime.ParamAcceptType(ParamNo: Integer
@@ -44,10 +45,9 @@ function TEpiScriptFunction_CreateTime.ParamAcceptType(ParamNo: Integer
 begin
   result := inherited ParamAcceptType(ParamNo);
 
-  if FParamList.Count = 1 then
-    result.ResultTypes := [rtString]
-  else
-    Result.ResultTypes := [rtAny, rtInteger];
+  if FParamList.Count = 1 then result.ResultTypes := [rtString];
+  if FParamList.Count = 2 then result.ResultTypes := [rtString];
+  if FParamList.Count = 3 then result.ResultTypes := [rtAny, rtInteger];
 end;
 
 function TEpiScriptFunction_CreateTime.ResultType: TASTResultType;
@@ -73,6 +73,16 @@ begin
   begin
     if not EpiStrToTimeGues(Param[0].AsString, Result, Msg) then
       RuntimeError(EEpiScriptFunction_CreateTime, Msg);
+    Exit;
+  end;
+
+  if FParamList.Count = 2 then
+  begin
+    try
+      Result := Frac(epi_scandatetime(Param[1].AsString, Param[0].AsString));
+    except
+      Result := TEpiDateTimeField.DefaultMissing;
+    end;
     Exit;
   end;
 
