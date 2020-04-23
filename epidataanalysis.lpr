@@ -33,7 +33,7 @@ uses
   tables_stat_fexp, tables_stat_or, tables_stat_rr, ctable, wizard_form,
   commandtree, recode, select_datafile, history_form, varnames_form,
   projecttree_form, commandtree_form, auto_position_form, editor_form2,
-  editor_page, editor_pgm_highlighter;
+  editor_page, editor_pgm_highlighter, scandate_from_fpc;
 
 {$R *.res}
 
@@ -49,7 +49,7 @@ end;
 
 
 begin
-  Application.Title := 'Analysis';
+  Application.Title:='Analysis';
   OnGetApplicationName := @EpiDataApplicationName;
   OnGetVendorName := @EpiDataVendorName;
 

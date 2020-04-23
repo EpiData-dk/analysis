@@ -302,6 +302,9 @@ type
     procedure UpdateRecentFiles;
 
   { Other }
+  private
+    FStartupFile: String;
+    procedure ASyncRunStartup(Data: PtrInt);
   public
     procedure RestoreDefaultPos;
   end;
@@ -319,7 +322,7 @@ uses
   epiv_custom_statusbar, datamodule, editor_form, LCLIntf, Symbol,
   ana_procs, ana_documentfile, LazFileUtils, LazUTF8Classes, epistringutils, ana_globals,
   browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform,
-  wizard_form, editor_form2;
+  wizard_form, editor_form2, outputgenerator_txt;
 
 { TMainForm }
 
@@ -329,12 +332,14 @@ begin
 end;
 
 procedure TMainForm.Button2Click(Sender: TObject);
+var
+  Frm: TForm;
 begin
-  EditorForm2 := TEditorForm2.Create(self);
-  EditorForm2.Executor := Executor;
-  EditorForm2.History := FHistory;
-  EditorForm2.OutputCreator := FOutputCreator;
-  EditorForm2.Show;
+  EditorForm := TEditorForm.Create(self);
+  EditorForm.Executor := Executor;
+  EditorForm.History := FHistory;
+  EditorForm.OutputCreator := FOutputCreator;
+  EditorForm.Show;
 end;
 
 procedure TMainForm.CloseAllWindowsActionExecute(Sender: TObject);
@@ -512,6 +517,7 @@ var
   Lst: TStringList;
   S: String;
   i: Integer;
+  T: PString;
 begin
   DoUpdateTitle;
 
@@ -529,9 +535,9 @@ begin
   LoadTutorials;
 
   LoadFormPosition(Self, 'MainForm');
-  LoadSplitterPosition(LeftSideSplitter, 'ProjectSplitter');
-  LoadSplitterPosition(RightSideSplitter, 'SidebarSplitter');
-  LoadSplitterPosition(RightPanelSplitter, 'SidebarBottomSplitter');
+//  LoadSplitterPosition(LeftSideSplitter, 'ProjectSplitter');
+//  LoadSplitterPosition(RightSideSplitter, 'SidebarSplitter');
+//  LoadSplitterPosition(RightPanelSplitter, 'SidebarBottomSplitter');
 
   // For Cocoa widget set, must add left margin to Main output window
   // and to bottom of command line to see the entire element
@@ -544,29 +550,14 @@ begin
 
    // At this point it is possible to run the first commands
   if Application.HasOption('i') then
-    S := ExpandFileNameUTF8(Application.GetOptionValue('i'))
+    FStartupFile := ExpandFileNameUTF8(Application.GetOptionValue('i'))
   else
-    S := GetStartupPgm;
-
-  if FileExistsUTF8(s) then
-    begin
-      FHistory.LoadingStartup := true;
-      Lst := TStringListUTF8.Create;
-      Lst.LoadFromFile(S);
-      FHistory.AddLines(Lst);
-      DoParseContent(Lst.Text);
-      Lst.Free;
-      FHistory.LoadingStartup := false;
-    end
-  else
-    InterfaceRunCommand('cls;');
-
-  FOutputCreator.DoInfoAll(GetProgramInfo);
-  FOutputCreator.DoNormal('');
+    FStartupFile := GetStartupPgm;
 
   // For some odd reason, the Statusbar has an incorrect height but changing the size
   // of the main form recalculates it all. This is only needed right after programstart.
-  Application.QueueAsyncCall(@ChangeWidth, 0);
+//  Application.QueueAsyncCall(@ChangeWidth, 0);
+  Application.QueueAsyncCall(@ASyncRunStartup, 0);
 
   {$IFDEF EPI_BETA}
   Panel2.Visible := true;
@@ -672,7 +663,7 @@ end;
 
 procedure TMainForm.SaveOutputActionExecute(Sender: TObject);
 begin
-  DoParseContent('save !output;');
+  InterfaceRunCommand('save !output;');
 end;
 
 procedure TMainForm.ShowAboutActionExecute(Sender: TObject);
@@ -931,18 +922,18 @@ end;
 
 procedure TMainForm.ShowEditor(const Filename: UTF8String);
 begin
-  if (not Assigned(EditorForm)) then
+  if (not Assigned(EditorForm2)) then
     begin
-      EditorForm := TEditorForm.Create(self);
-      EditorForm.Executor := Executor;
-      EditorForm.History := FHistory;
-      EditorForm.OutputCreator := FOutputCreator;
+      EditorForm2 := TEditorForm2.Create(self);
+      EditorForm2.Executor := Executor;
+      EditorForm2.History := FHistory;
+      EditorForm2.OutputCreator := FOutputCreator;
     end;
 
-  EditorForm.Show;
+  EditorForm2.Show;
 
   if FileExistsUTF8(Filename) then
-    EditorForm.OpenPgm(Filename);
+    EditorForm2.OpenFile(Filename);
 end;
 
 procedure TMainForm.LeftPanelChange(Sender: TObject);
@@ -1863,7 +1854,17 @@ end;
 
 function TMainForm.CreateOutputGenerator(ST: TStream): TOutputGeneratorBase;
 begin
-  Result := (PageControl1.ActivePage as IAnaOutputViewer).GetOutputGeneratorClass.Create(FOutputCreator, ST);
+  case UTF8UpperString(Executor.SetOptionValue[ANA_SO_OUTPUT_FORMAT]) of
+    'OSR',
+    'OLDHTML',
+    'HTML':
+      begin
+        Result := TOutputGeneratorHTML.Create(FOutputCreator, ST);
+        TOutputGeneratorHTML(Result).CSSFileName := Executor.SetOptionValue[ANA_SO_OUTPUT_CSS_FILE];
+      end;
+    'TEXT':
+      Result := TOutputGeneratorTXT.Create(FOutputCreator, ST);
+  end;
 end;
 
 procedure TMainForm.RedrawOutput;
@@ -1929,6 +1930,28 @@ begin
   end;
 end;
 
+procedure TMainForm.ASyncRunStartup(Data: PtrInt);
+var
+  Lst: TStringListUTF8;
+begin
+  if FileExistsUTF8(FStartupFile) then
+    begin
+      FHistory.LoadingStartup := true;
+      Lst := TStringListUTF8.Create;
+      Lst.LoadFromFile(FStartupFile);
+      FHistory.AddLines(Lst);
+      DoParseContent(Lst.Text);
+      Lst.Free;
+      FHistory.LoadingStartup := false;
+      FStartupFile := '';
+    end
+  else
+    InterfaceRunCommand('cls;');
+
+  FOutputCreator.DoInfoAll(GetProgramInfo);
+  FOutputCreator.DoNormal('');
+end;
+
 procedure TMainForm.RestoreDefaultPos;
 var
   W, H, T, L: Integer;
@@ -1943,6 +1966,7 @@ begin
   Application.ProcessMessages;
 
   TEditorForm.RestoreDefaultPos;
+  TEditorForm2.RestoreDefaultPos(EditorForm2);
   TAboutForm.RestoreDefaultPos;
   TBrowseForm4.RestoreDefaultPos;
 

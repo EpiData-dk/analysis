@@ -22,7 +22,6 @@ type
     procedure Initialize;
     procedure LoadFromStream(ST: TStream);
     procedure UpdateFontAndSize(AExecutor: TExecutor);
-    function GetOutputGeneratorClass: TOutputGeneratorClass;
     function GetLineAtCaret: String;
     function GetSelectedText: String;
     function GetCaretPos: TPoint;
@@ -81,11 +80,6 @@ end;
 procedure TOldHtmlSheet.UpdateFontAndSize(AExecutor: TExecutor);
 begin
   //
-end;
-
-function TOldHtmlSheet.GetOutputGeneratorClass: TOutputGeneratorClass;
-begin
-  result := TOutputGeneratorHTML;
 end;
 
 function TOldHtmlSheet.GetLineAtCaret: String;

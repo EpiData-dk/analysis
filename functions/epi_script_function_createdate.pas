@@ -27,7 +27,7 @@ type
 implementation
 
 uses
-  epidatafiles, epiconvertutils;
+  epidatafiles, epiconvertutils, scandate_from_fpc;
 
 { TEpiScriptFunction_CreateDate }
 
@@ -84,7 +84,14 @@ begin
       'mdy': Ft := ftMDYDate;
       'ymd': Ft := ftYMDDate;
     else
-      RuntimeError(EEpiScriptFunction_CreateDate, 'Incorrect format specified: ' + Param[1].AsString);
+      begin
+        try
+          Result := Trunc(epi_scandatetime(S, Param[0].AsString));
+        except
+          Result := TEpiDateField.DefaultMissing;
+        end;
+        Exit;
+      end;
     end;
 
     if not (

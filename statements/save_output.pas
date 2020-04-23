@@ -67,7 +67,7 @@ begin
         end;
     end
   else
-    OutputType := UTF8LowerString(FExecutor.SetOptions[ANA_SO_OUTPUT_FORMAT].Value);
+    OutputType := UTF8LowerString(FExecutor.SetOptions[ANA_SO_OUTPUT_SAVE_FORMAT].Value);
 
   if Assigned(ST.StringExpr) then
     FN := ST.StringExpr.AsString;
@@ -111,7 +111,10 @@ begin
     FS := TFileStreamUTF8.Create(FN, fmCreate);
 
     if OutputType = 'html' then
-      OutputGenerator := TOutputGeneratorHTML.Create(FOutputCreator, FS)
+      begin
+        OutputGenerator := TOutputGeneratorHTML.Create(FOutputCreator, FS);
+        TOutputGeneratorHTML(OutputGenerator).CSSFileName := FExecutor.SetOptionValue[ANA_SO_OUTPUT_CSS_FILE];
+      end
     else
       OutputGenerator := TOutputGeneratorTXT.Create(FOutputCreator, FS);
     OutputGenerator.GenerateReport;
@@ -128,7 +131,7 @@ begin
   end;
   FS.Free;
 
-  FOutputCreator.DoInfoShort('Output save: ' + FN);
+  FOutputCreator.DoInfoShort('Output saved: ' + FN);
   ST.ExecResult := csrSuccess;
 end;
 

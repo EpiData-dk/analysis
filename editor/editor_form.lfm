@@ -3,7 +3,7 @@ object EditorForm: TEditorForm
   Height = 694
   Top = 39
   Width = 823
-  ActiveControl = SynEdit1
+  ActiveControl = TabControl1
   AllowDropFiles = True
   Caption = 'PGM Editor'
   ClientHeight = 669
@@ -20,8 +20,8 @@ object EditorForm: TEditorForm
   LCLVersion = '2.0.0.4'
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 20
-    Top = 649
+    Height = 19
+    Top = 650
     Width = 823
     Panels = <    
       item
@@ -43,7 +43,7 @@ object EditorForm: TEditorForm
   end
   object TabControl1: TTabControl
     Left = 0
-    Height = 649
+    Height = 650
     Top = 0
     Width = 823
     HotTrack = True
@@ -53,7 +53,7 @@ object EditorForm: TEditorForm
     TabOrder = 1
     inline SynEdit1: TSynEdit
       Left = 2
-      Height = 621
+      Height = 622
       Top = 26
       Width = 819
       Align = alClient

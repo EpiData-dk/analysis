@@ -24,7 +24,6 @@ type
     procedure Initialize;
     procedure LoadFromStream(ST: TStream);
     procedure UpdateFontAndSize(AExecutor: TExecutor);
-    function GetOutputGeneratorClass: TOutputGeneratorClass;
     function GetLineAtCaret: String;
     function GetSelectedText: String;
     function GetCaretPos: TPoint;
@@ -220,11 +219,6 @@ begin
   TTextViewHighlighter(FHighlighter).UpdateAttributes(AFont);
 
   AFont.Free;
-end;
-
-function TTextPanel.GetOutputGeneratorClass: TOutputGeneratorClass;
-begin
-  result := TOutputGeneratorTXT;
 end;
 
 function TTextPanel.GetLineAtCaret: String;

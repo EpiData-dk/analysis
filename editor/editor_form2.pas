@@ -26,6 +26,7 @@ type
     // Form
     procedure EditorClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure EditorCloseQuery(Sender: TObject; var CanClose: boolean);
+    procedure DropFiles(Sender: TObject; const FileNames: array of String);
   private
     // Actions
     procedure CloseTabActionExecute(Sender: TObject);
@@ -40,6 +41,18 @@ type
     procedure RunAllActionExecute(Sender: TObject);
     procedure RunSelectedActionExecute(Sender: TObject);
     procedure OpenFontActionExecute(Sender: TObject);
+    procedure FindActionExecute(Sender: TObject);
+    procedure FindNextActionExecute(Sender: TObject);
+    procedure FindPrevActionExecute(Sender: TObject);
+    procedure ReplaceActionExecute(Sender: TObject);
+    procedure OpenPreferencesActionExecute(Sender: TObject);
+    procedure CutActionExecute(Sender: TObject);
+    procedure CopyActionExecute(Sender: TObject);
+    procedure PasteActionExecute(Sender: TObject);
+    procedure InsertHistoryActionExecute(Sender: TObject);
+    procedure InsertSetOptionsActionExecute(Sender: TObject);
+    procedure TutorialsWikiActionExecute(Sender: TObject);
+    procedure TutorialsWebActionExecute(Sender: TObject);
   private
     // File I/O
     FOpenDialog: TOpenDialog;
@@ -58,6 +71,10 @@ type
     FRecentFilesSubMenu: TMenuItem;
     procedure UpdateRecentFiles;
     procedure AsyncOpenRecent(Data: PtrInt);
+  private
+    // Tutorials
+    FTutorialsMenu: TMenuItem;
+    procedure LoadTutorials;
   private
     // Pagecontrol
     FPageControl: TPageControl;
@@ -95,7 +112,7 @@ implementation
 
 uses
   Controls, SynEdit, ActnList, LCLType, epimiscutils, LazFileUtils, LazUTF8Classes,
-  ana_procs, VirtualTrees, ana_globals, parser;
+  ana_procs, VirtualTrees, ana_globals, parser, main, epistringutils, FileUtil;
 
 { TEditorForm2 }
 
@@ -142,6 +159,12 @@ var
     Result.Action := TheAction;
   end;
 
+  function CreateMenuItemFromAction(Action: TAction): TMenuItem;
+  begin
+    Result := TMenuItem.Create(Self);
+    Result.Action := Action;
+  end;
+
   function CreateDivider(): TMenuItem;
   begin
     Result := TMenuItem.Create(Self);
@@ -172,23 +195,23 @@ begin
   // Edit
   TopMenuItem := TMenuItem.Create(Self);
   TopMenuItem.Caption := 'Edit';
-  TopMenuItem.Add(CreateActionAndMenuItem('Insert History',               @NoneActionExecute, ShortCut(VK_I, [ssAlt])));
-  TopMenuItem.Add(CreateActionAndMenuItem('Insert Set Options',           @NoneActionExecute, 0));
+  TopMenuItem.Add(CreateActionAndMenuItem('Insert History',     @InsertHistoryActionExecute, ShortCut(VK_I, [ssAlt])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Insert Set Options', @InsertSetOptionsActionExecute, 0));
   TopMenuItem.Add(CreateDivider());
-  TopMenuItem.Add(CreateActionAndMenuItem('Cut',                          @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Copy',                         @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Paste',                        @NoneActionExecute, 0));
+  TopMenuItem.Add(CreateActionAndMenuItem('Cut',                @CutActionExecute,   ShortCut(VK_X, [ssCtrlOS])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Copy',               @CopyActionExecute,  ShortCut(VK_C, [ssCtrlOS])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Paste',              @PasteActionExecute, ShortCut(VK_P, [ssCtrlOS])));
   TopMenuItem.Add(CreateDivider());
-  TopMenuItem.Add(CreateActionAndMenuItem('Preferences... (startup.pgm)', @NoneActionExecute, 0));
+  TopMenuItem.Add(CreateActionAndMenuItem('Preferences... (startup.pgm)', @OpenPreferencesActionExecute, 0));
   MainMenu.Items.Add(TopMenuItem);
 
   // Search
   TopMenuItem := TMenuItem.Create(Self);
   TopMenuItem.Caption := '&Search';
-  TopMenuItem.Add(CreateActionAndMenuItem('Find...',       @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Find Next',     @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Find Previous', @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Replace...',    @NoneActionExecute, 0));
+  TopMenuItem.Add(CreateActionAndMenuItem('Find...',       @FindActionExecute,     ShortCut(VK_F, [ssCtrlOS])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Find Next',     @FindNextActionExecute, ShortCut(VK_N, [ssCtrlOs, ssShift])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Find Previous', @FindPrevActionExecute, ShortCut(VK_P, [ssCtrlOs, ssShift])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Replace...',    @ReplaceActionExecute,  ShortCut(VK_F, [ssCtrlOs, ssShift])));
   MainMenu.Items.Add(TopMenuItem);
 
   // Run
@@ -201,25 +224,27 @@ begin
   // Window
   TopMenuItem := TMenuItem.Create(Self);
   TopMenuItem.Caption := '&Window';
-  TopMenuItem.Add(CreateActionAndMenuItem('Show Command Tree', @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Variables',         @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Command Prompt',    @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Editor',            @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Browse',            @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('History',           @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Dataset List',      @NoneActionExecute, 0));
+  TopMenuItem.Add(CreateMenuItemFromAction(MainForm.ToggleCmdTreeAction));
+  TopMenuItem.Add(CreateMenuItemFromAction(MainForm.ToggleVarnamesListAction));
+  TopMenuItem.Add(CreateMenuItemFromAction(MainForm.CmdEditFocusAction));
+  TopMenuItem.Add(CreateMenuItemFromAction(MainForm.ShowEditorAction));
+  TopMenuItem.Add(CreateMenuItemFromAction(MainForm.BrowseAction));
+  TopMenuItem.Add(CreateMenuItemFromAction(MainForm.ToggleHistoryListAction));
+  TopMenuItem.Add(CreateMenuItemFromAction(MainForm.ToggleProjectTree));
   TopMenuItem.Add(CreateDivider());
-  TopMenuItem.Add(CreateActionAndMenuItem('Default Windowing', @NoneActionExecute, 0));
+  TopMenuItem.Add(CreateMenuItemFromAction(MainForm.DefaultWindowPositionAction));
   MainMenu.Items.Add(TopMenuItem);
 
   // Help
   TopMenuItem := TMenuItem.Create(Self);
   TopMenuItem.Caption := '&Help';
-  TopMenuItem.Add(CreateActionAndMenuItem('Tutorials (Local)',        @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Tutorials (EpiData Wiki)', @NoneActionExecute, 0));
-  TopMenuItem.Add(CreateActionAndMenuItem('Tutorials On Web',         @NoneActionExecute, 0));
+  FTutorialsMenu := TMenuItem.Create(Self);
+  FTutorialsMenu.Caption := 'Tutorials (Local)';
+  TopMenuItem.Add(FTutorialsMenu);
+  TopMenuItem.Add(CreateActionAndMenuItem('Tutorials (EpiData Wiki)', @TutorialsWikiActionExecute, 0));
+  TopMenuItem.Add(CreateActionAndMenuItem('Tutorials On Web',         @TutorialsWebActionExecute, 0));
   TopMenuItem.Add(CreateDivider());
-  TopMenuItem.Add(CreateActionAndMenuItem('Commands Overview',        @NoneActionExecute, 0));
+  TopMenuItem.Add(CreateMenuItemFromAction(MainForm.CommandsHelpAction));
   MainMenu.Items.Add(TopMenuItem);
 
   Self.Menu := MainMenu;
@@ -285,6 +310,46 @@ begin
   DoOpenFile(TAction(Data).Caption);
 end;
 
+procedure TEditorForm2.LoadTutorials;
+var
+  FileList: TStringList;
+  MenuItem: TMenuItem;
+  i: Integer;
+  P: String;
+begin
+  // First delete all previous tutorials.. (could be a change in tutorial dir).
+  for i := FTutorialsMenu.Count - 1 downto 0 do
+  begin
+    MenuItem := FTutorialsMenu[i];
+    FTutorialsMenu.Delete(i);
+    MenuItem.Free;
+  end;
+
+  // Find all .pdf files in the directory set by TutorialsDirUTF8
+  FileList := TStringListUTF8.Create;
+  P := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER];
+  FindAllFiles(FileList, P, '*.pdf', false);
+  FindAllFiles(FileList, P, '*.html', false);
+  FileList.CustomSort(@EpiStringListSortStr);
+
+  for i := 0 to FileList.Count - 1 do
+  begin
+    MenuItem := TMenuItem.Create(FTutorialsMenu);
+    MenuItem.Name := 'TutorialMenuItem' + IntToStr(i);
+    MenuItem.Caption := ExtractFileName(FileList[i]);
+    MenuItem.OnClick := @MainForm.OpenTutorialMenuItemClick;
+
+    FTutorialsMenu.Add(MenuItem);
+  end;
+
+  if FileList.Count = 0 then
+    FTutorialsMenu.Enabled := false
+  else
+    FTutorialsMenu.Enabled := true;
+
+  FileList.Free;
+end;
+
 procedure TEditorForm2.SetExecutor(AValue: TExecutor);
 var
   i: Integer;
@@ -296,20 +361,82 @@ begin
     GetEditorPage(i).Executor := AValue;
 
   FExecutor.SetOptions[ANA_SO_TUTORIAL_FOLDER].AddOnChangeHandler(@TutorialChange);
+  LoadTutorials;
 end;
 
 procedure TEditorForm2.RunAllActionExecute(Sender: TObject);
 begin
-
+  ActiveEditorPage.PerformRunAll();
 end;
 
 procedure TEditorForm2.RunSelectedActionExecute(Sender: TObject);
 begin
+  ActiveEditorPage.PerformRunSelected();
 end;
 
 procedure TEditorForm2.OpenFontActionExecute(Sender: TObject);
 begin
   DoOpenFontDialog;
+end;
+
+procedure TEditorForm2.FindActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformFind();
+end;
+
+procedure TEditorForm2.FindNextActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformFindNext();
+end;
+
+procedure TEditorForm2.FindPrevActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformFindPrev();
+end;
+
+procedure TEditorForm2.ReplaceActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformReplace();
+end;
+
+procedure TEditorForm2.OpenPreferencesActionExecute(Sender: TObject);
+begin
+  DoOpenFile(GetStartupPgm);
+end;
+
+procedure TEditorForm2.CutActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformCut();
+end;
+
+procedure TEditorForm2.CopyActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformCopy();
+end;
+
+procedure TEditorForm2.PasteActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformPaste();
+end;
+
+procedure TEditorForm2.InsertHistoryActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformInsertHistory();
+end;
+
+procedure TEditorForm2.InsertSetOptionsActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformInsertSetOptions();
+end;
+
+procedure TEditorForm2.TutorialsWikiActionExecute(Sender: TObject);
+begin
+  MainForm.TutorialsWikiActionExecute(self);
+end;
+
+procedure TEditorForm2.TutorialsWebActionExecute(Sender: TObject);
+begin
+  MainForm.TutorialsWebActionExecute(self);
 end;
 
 procedure TEditorForm2.SetHistory(AValue: THistory);
@@ -336,7 +463,7 @@ end;
 
 procedure TEditorForm2.TutorialChange(Sender: TObject);
 begin
-
+  LoadTutorials;
 end;
 
 procedure TEditorForm2.EditorClose(Sender: TObject;
@@ -366,6 +493,19 @@ begin
       if (not CanClose) then
         Exit;
     end;
+end;
+
+procedure TEditorForm2.DropFiles(Sender: TObject;
+  const FileNames: array of String);
+var
+  Files: TStringListUTF8;
+begin
+  Files := TStringListUTF8.Create;
+  Files.AddStrings(FileNames);
+
+  DoOpenFiles(Files);
+
+  Files.Free;
 end;
 
 procedure TEditorForm2.OpenRecentExecute(Sender: TObject);
@@ -470,6 +610,7 @@ begin
   Result := '';
 
   FSaveDialog.InitialDir := GetCurrentDirUTF8;
+  FSaveDialog.FileName := ActiveEditorPage.FileName;
   if (FSaveDialog.Execute) then
     Result := FSaveDialog.FileName;
 end;
@@ -483,6 +624,8 @@ begin
     Exit(false);
 
   ActiveEditorPage.SaveToFile(FileName);
+  AddToRecent(FileName, GetRecentPGMIniFileName, RecentPGMFiles);
+  UpdateRecentFiles;
 
   result := true;
 end;
@@ -625,6 +768,8 @@ begin
 
   OnCloseQuery := @EditorCloseQuery;
   OnClose := @EditorClose;
+  AllowDropFiles := true;
+  OnDropFiles := @DropFiles;
 
   // Because first page never triggers the OnChangeEvent
   PageChangeEvent(FPageControl);
