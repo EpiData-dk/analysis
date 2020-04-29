@@ -1638,10 +1638,7 @@ var
   Section: TEpiSection;
   OldV, F: TEpiField;
   lTop, lLeft: Integer;
-  Opt: TOption;
-  R: TEpiRange;
   ft: TEpiFieldType;
-  Auto: Boolean;
 begin
   Section := FDataFile.MainSection;
 

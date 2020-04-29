@@ -107,13 +107,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 290
+          Width = 292
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 250
+          Width = 252
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -364,29 +364,6 @@ object MainForm: TMainForm
       Caption = 'Copy Version Info'
       OnExecute = CopyVersionInfoActionExecute
     end
-    object ToggleCmdTreeAction: TAction
-      Category = 'Window'
-      Caption = 'Show Command Tree'
-      OnExecute = ToggleCmdTreeActionExecute
-      ShortCut = 113
-    end
-    object ToggleVarnamesListAction: TAction
-      Category = 'Window'
-      Caption = 'Variables'
-      OnExecute = ToggleVarnamesListActionExecute
-      ShortCut = 114
-    end
-    object ToggleHistoryListAction: TAction
-      Category = 'Window'
-      Caption = 'History'
-      OnExecute = ToggleHistoryListActionExecute
-      ShortCut = 118
-    end
-    object CmdEditFocusAction: TAction
-      Caption = 'Command Prompt'
-      OnExecute = CmdEditFocusActionExecute
-      ShortCut = 115
-    end
     object QuitAction: TAction
       Category = 'File'
       Caption = '&Quit'
@@ -414,43 +391,15 @@ object MainForm: TMainForm
       OnExecute = ClearOutputActionExecute
       ShortCut = 123
     end
-    object ToggleProjectTree: TAction
-      Category = 'Window'
-      Caption = 'Dataset List'
-      OnExecute = ToggleProjectTreeExecute
-      ShortCut = 119
-    end
     object ChangeDirAction: TAction
       Category = 'File'
       Caption = 'Change Directory'
       OnExecute = ChangeDirActionExecute
     end
-    object BrowseAction: TAction
-      Caption = 'Browse'
-      OnExecute = BrowseActionExecute
-      ShortCut = 117
-    end
-    object ShowEditorAction: TAction
-      Category = 'Window'
-      Caption = 'Editor'
-      OnExecute = ShowEditorActionExecute
-      ShortCut = 116
-    end
     object CancelExecAction: TAction
       Caption = 'CancelExecAction'
       OnExecute = CancelExecActionExecute
       ShortCut = 27
-    end
-    object CommandsHelpAction: TAction
-      Category = 'Help'
-      Caption = 'Commands Overview'
-      OnExecute = CommandsHelpActionExecute
-      ShortCut = 112
-    end
-    object DefaultWindowPositionAction: TAction
-      Category = 'Window'
-      Caption = 'Default Windowing'
-      OnExecute = DefaultWindowPositionActionExecute
     end
     object ReadCBAction: TAction
       Category = 'File'
@@ -461,16 +410,6 @@ object MainForm: TMainForm
       Category = 'Window'
       Caption = 'Preferences... (Startup.pgm)'
       OnExecute = ShowEditorStartupActionExecute
-    end
-    object TutorialsWikiAction: TAction
-      Category = 'Help'
-      Caption = 'Tutorials (Epidata Wiki)'
-      OnExecute = TutorialsWikiActionExecute
-    end
-    object TutorialsWebAction: TAction
-      Category = 'Help'
-      Caption = 'Tutorials On Web'
-      OnExecute = TutorialsWebActionExecute
     end
     object CheckVersionOnlineAction: TAction
       Category = 'Help'
@@ -532,6 +471,71 @@ object MainForm: TMainForm
     end
     object MenuItem29: TMenuItem
       Action = ClearHistoryAction
+    end
+  end
+  object AlwaysAvailableActionList: TActionList
+    left = 365
+    top = 321
+    object ToggleCmdTreeAction: TAction
+      Category = 'Window'
+      Caption = 'Show Command Tree'
+      OnExecute = ToggleCmdTreeActionExecute
+      ShortCut = 113
+    end
+    object ToggleVarnamesListAction: TAction
+      Category = 'Window'
+      Caption = 'Variables'
+      OnExecute = ToggleVarnamesListActionExecute
+      ShortCut = 114
+    end
+    object CmdEditFocusAction: TAction
+      Caption = 'Command Prompt'
+      OnExecute = CmdEditFocusActionExecute
+      ShortCut = 115
+    end
+    object BrowseAction: TAction
+      Caption = 'Browse'
+      OnExecute = BrowseActionExecute
+      ShortCut = 117
+    end
+    object ShowEditorAction: TAction
+      Category = 'Window'
+      Caption = 'Editor'
+      OnExecute = ShowEditorActionExecute
+      ShortCut = 116
+    end
+    object ToggleHistoryListAction: TAction
+      Category = 'Window'
+      Caption = 'History'
+      OnExecute = ToggleHistoryListActionExecute
+      ShortCut = 118
+    end
+    object ToggleProjectTree: TAction
+      Category = 'Window'
+      Caption = 'Dataset List'
+      OnExecute = ToggleProjectTreeExecute
+      ShortCut = 119
+    end
+    object CommandsHelpAction: TAction
+      Category = 'Help'
+      Caption = 'Commands Overview'
+      OnExecute = CommandsHelpActionExecute
+      ShortCut = 112
+    end
+    object DefaultWindowPositionAction: TAction
+      Category = 'Window'
+      Caption = 'Default Windowing'
+      OnExecute = DefaultWindowPositionActionExecute
+    end
+    object TutorialsWikiAction: TAction
+      Category = 'Help'
+      Caption = 'Tutorials (Epidata Wiki)'
+      OnExecute = TutorialsWikiActionExecute
+    end
+    object TutorialsWebAction: TAction
+      Category = 'Help'
+      Caption = 'Tutorials On Web'
+      OnExecute = TutorialsWebActionExecute
     end
   end
 end

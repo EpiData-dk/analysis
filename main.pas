@@ -25,6 +25,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    AlwaysAvailableActionList: TActionList;
     CloseAllWindowsAction: TAction;
     HistoryListBox: TListBox;
     MenuItem43: TMenuItem;

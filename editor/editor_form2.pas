@@ -273,7 +273,11 @@ function TEditorForm2.CloseTab(EditorPage: TEditorPage): boolean;
 var
   S: TCaption;
   Res: TModalResult;
+  EditorPageWasEmpty: Boolean;
 begin
+  EditorPageWasEmpty := (not EditorPage.Modified) and
+                        (EditorPage.FileName = '');
+
   if (EditorPage.Modified) then
     begin
       FPageControl.ActivePage := EditorPage;
@@ -302,7 +306,10 @@ begin
 
   EditorPage.Free;
   if (FPageControl.PageCount = 0) then
-    AddNewTab;
+    if (EditorPageWasEmpty) then
+      Close
+    else
+      AddNewTab;
 end;
 
 procedure TEditorForm2.AsyncOpenRecent(Data: PtrInt);
