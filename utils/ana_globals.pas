@@ -4,6 +4,9 @@ unit ana_globals;
 
 interface
 
+uses
+ sysutils;
+
 const
   // Set Options Globals
 
@@ -55,6 +58,8 @@ const
   ANA_SO_OUTPUT_SAVE_FORMAT            = 'OUTPUT SAVE FORMAT';
   ANA_SO_OUTPUT_CSS_FILE               = 'OUTPUT CSS FILE';
 
+  ANA_SO_SHORT_MONTH_NAMES             = 'SHORT MONTH NAMES';
+
   ANA_SO_SHOW_COMMAND                  = 'SHOW COMMAND';
   ANA_SO_SHOW_DEBUG                    = 'SHOW DEBUG';
   ANA_SO_SHOW_ERROR                    = 'SHOW ERROR';
@@ -73,6 +78,7 @@ const
 
   //  Executor Field Names
   ANA_EXEC_PREPAREDS_OBSNO_FIELD       = '@obsno';
+
 
 implementation
 

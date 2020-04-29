@@ -35,7 +35,7 @@ type
     procedure SetLowRange(AValue: UTF8String);
     procedure SetHighRange(AValue: UTF8String);
   public
-    constructor Create(const AValue: UTF8String; AAstType: TASTResultType);
+    constructor Create(const AValue: UTF8String; AAstType: TASTResultType); virtual;
     property Name: UTF8String read FName;
     property Value: UTF8String read FValue write SetValue;
     property ASTType: TASTResultType read FASTType;

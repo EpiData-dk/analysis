@@ -28,16 +28,17 @@ type
 implementation
 
 uses
-  epidatafiles, epiconvertutils, scandate_from_fpc;
+  epidatafiles, epiconvertutils, scandate_from_fpc, LazUTF8;
 
 { TEpiScriptFunction_CreateTime }
 
 function TEpiScriptFunction_CreateTime.ParamCounts: TBoundArray;
 begin
-  SetLength(Result, 3);
+  SetLength(Result, 4);
   Result[0] := 1;
   Result[1] := 2;
   Result[2] := 3;
+  Result[3] := 4;
 end;
 
 function TEpiScriptFunction_CreateTime.ParamAcceptType(ParamNo: Integer
@@ -48,6 +49,11 @@ begin
   if FParamList.Count = 1 then result.ResultTypes := [rtString];
   if FParamList.Count = 2 then result.ResultTypes := [rtString];
   if FParamList.Count = 3 then result.ResultTypes := [rtAny, rtInteger];
+  if FParamList.Count = 4 then
+    if ParamNo <= 1 then
+      result.ResultTypes := [rtString]
+    else
+      result.ResultTypes := [rtInteger];
 end;
 
 function TEpiScriptFunction_CreateTime.ResultType: TASTResultType;
@@ -66,6 +72,8 @@ var
   M, S: EpiInteger;
   ResultTime: EpiTime;
   Msg: string;
+  SubString: UTF8String;
+  StartIdx, CharCount: ASTInteger;
 begin
   result := inherited;
 
@@ -109,6 +117,20 @@ begin
         result := inherited AsTime;
 
     Exit;
+  end;
+
+  if FParamList.Count = 4 then
+  begin
+    try
+      StartIdx := Param[2].AsInteger;
+      CharCount := (Param[3].AsInteger - StartIdx) + 1;
+      SubString := UTF8Copy(Param[0].AsString, StartIdx, CharCount);
+
+      Result := Frac(epi_scandatetime(Param[1].AsString, SubString));
+    except
+      Result := TEpiDateTimeField.DefaultMissing;
+    end;
+
   end;
 end;
 

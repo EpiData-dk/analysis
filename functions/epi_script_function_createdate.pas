@@ -27,16 +27,17 @@ type
 implementation
 
 uses
-  epidatafiles, epiconvertutils, scandate_from_fpc;
+  epidatafiles, epiconvertutils, scandate_from_fpc, ana_globals, LazUTF8Classes, LazUTF8;
 
 { TEpiScriptFunction_CreateDate }
 
 function TEpiScriptFunction_CreateDate.ParamCounts: TBoundArray;
 begin
-  SetLength(Result, 3);
+  SetLength(Result, 4);
   Result[0] := 1;
   Result[1] := 2;
   Result[2] := 3;
+  Result[3] := 4;
 end;
 
 function TEpiScriptFunction_CreateDate.ParamAcceptType(ParamNo: Integer
@@ -48,6 +49,11 @@ begin
       result.ResultTypes := [rtString];
     3:
       result.ResultTypes := [rtAny, rtInteger];
+    4:
+      if (ParamNo <= 1) then
+        Result.ResultTypes := [rtString]
+      else
+        Result.ResultTypes := [rtInteger];
   end;
 end;
 
@@ -63,7 +69,23 @@ var
   S: String;
   Ft: TEpiFieldType;
   Msg: string;
+  SubString: UTF8String;
   DateResult: EpiDate;
+  LocalFormat: TFormatSettings;
+  StartIdx, CharCount: ASTInteger;
+
+  function GetShortMonthNames(): TMonthNameArray;
+  var
+    AList: TStringListUTF8;
+    i: Integer;
+  begin
+    AList := TStringListUTF8.Create;
+    AList.CommaText := FExecutor.GetSetOptionValue(ANA_SO_SHORT_MONTH_NAMES);
+
+    for i := 0 to AList.Count -1 do
+      Result[i + 1] := AList[i];
+  end;
+
 begin
   result := inherited;
 
@@ -86,7 +108,9 @@ begin
     else
       begin
         try
-          Result := Trunc(epi_scandatetime(S, Param[0].AsString));
+          LocalFormat := DefaultFormatSettings;
+          LocalFormat.ShortMonthNames := GetShortMonthNames();
+          Result := Trunc(epi_scandatetime(S, Param[0].AsString, LocalFormat));
         except
           Result := TEpiDateField.DefaultMissing;
         end;
@@ -128,6 +152,23 @@ begin
       Result := Trunc(EncodeDate(Year.AsInteger, M, D));
 
     Exit;
+  end;
+
+  if FParamList.Count = 4 then
+  begin
+    try
+      LocalFormat := DefaultFormatSettings;
+      LocalFormat.ShortMonthNames := GetShortMonthNames();
+
+      StartIdx := Param[2].AsInteger;
+      CharCount := (Param[3].AsInteger - StartIdx) + 1;
+      SubString := UTF8Copy(Param[0].AsString, StartIdx, CharCount);
+
+      Result := Trunc(epi_scandatetime(Param[1].AsString, SubString, LocalFormat));
+    except
+      Result := TEpiDateField.DefaultMissing;
+    end;
+
   end;
 end;
 

@@ -128,10 +128,10 @@ type
     procedure DeleteExecVar(Const Ident: UTF8String);
     function  GetModified: boolean;
     procedure InitSetOptions;
-    function  GetSetOptionValue(const Key: UTF8String): UTF8String;
     procedure SetSetOptionValue(const Key: UTF8String; AValue: UTF8String);
     function  GetSortedFields: TEpiFields;
   public
+    function  GetSetOptionValue(const Key: UTF8String): UTF8String;
     function  AddResultConst(Const Ident: UTF8String; DataType: TEpiFieldType): TExecVarGlobal; virtual;
     function  AddResultVector(Const Ident: UTF8String; DataType: TEpiFieldType;
       Length: Integer): TExecVarVector; virtual;
@@ -328,7 +328,7 @@ uses
   about,
 
   // Set options
-  options_fontoptions, options_filesoptions, options_table,
+  options_fontoptions, options_filesoptions, options_table, options_string_array,
 
   // STATEMENTS
   list, edit, drop, systemcmd, merge, integrity_tests, report, save_output,
@@ -1830,6 +1830,8 @@ begin
   FOptions.Insert(ANA_SO_SHOW_COMMAND,                   TSetOption.Create('ON', rtBoolean));
   FOptions.Insert(ANA_SO_SHOW_DEBUG,                     TSetOption.Create('ON', rtBoolean));
   FOptions.Insert(ANA_SO_SHOW_ERROR,                     TSetOption.Create('ON', rtBoolean));
+
+  FOptions.Insert(ANA_SO_SHORT_MONTH_NAMES,              TStringArrayOption.Create(DefaultFormatSettings.ShortMonthNames, rtString));
 
   SOpt := TSetOption.Create('ON', rtString);
   SOpt.LegalValues.Add('ON');

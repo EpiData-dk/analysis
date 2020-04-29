@@ -15,7 +15,7 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="7"/>
-      <BuildNr Value="11"/>
+      <BuildNr Value="12"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -215,8 +215,9 @@
     </PublishOptions>
     <RunParams>
       <environment>
-        <UserOverrides Count="1">
+        <UserOverrides Count="2">
           <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
+          <Variable1 Name="LANG" Value="da_DK.utf8"/>
         </UserOverrides>
       </environment>
       <FormatVersion Value="2"/>
@@ -281,7 +282,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="93">
+    <Units Count="94">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -692,6 +693,10 @@
         <Filename Value="functions/scandate_from_fpc.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit92>
+      <Unit93>
+        <Filename Value="executor/options_string_array.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit93>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
