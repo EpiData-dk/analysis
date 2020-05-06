@@ -717,7 +717,6 @@ begin
   end;
 end;
 
-//procedure TMeans.ExecMeans(DataFile: TEpiDataFile;
 procedure TMeans.ExecMeans(ST: TMeansCommand);
 var
   Variables: TStrings;
@@ -782,7 +781,6 @@ begin
         DoOutputMeans(ResultDF);
 
         if (ST.HasOption('t')) then
-//          if (ResultDF.Size > 1) then
           if (ResultDF.StratifyVarText = '') then
             DoOutputTTest(ResultDF.AnovaRecord)
           else

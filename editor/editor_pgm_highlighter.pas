@@ -51,7 +51,7 @@ const
     'XOR'
   );
 
-  PGM_COMMANDS: array[1..32] of string = (
+  PGM_COMMANDS: array[1..33] of string = (
     'APPEND',
     'ASSERT',
     'BROWSE',
@@ -67,6 +67,7 @@ const
     'EDIT',
     'ERASE',
     'FREQ',
+    'KEEP',
     'LIST',
     'LS',
     'MEANS',

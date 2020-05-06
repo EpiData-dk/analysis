@@ -115,6 +115,7 @@ const
   ecFindNextCommand     = ecFindCommand + 1;
   ecFindPrevCommand     = ecFindNextCommand + 1;
   ecReplaceCommand      = ecFindPrevCommand + 1;
+  ecInsertN             = ecReplaceCommand + 1;
 
 { TEditorPage }
 
@@ -184,6 +185,7 @@ begin
   ModifyKeyCodeCommand(VK_N, [ssCtrlOs, ssShift], ecFindNextCommand);
   ModifyKeyCodeCommand(VK_P, [ssCtrlOs, ssShift], ecFindPrevCommand);
   ModifyKeyCodeCommand(VK_DELETE, [ssCtrlOS], ecDeleteWord);
+  ModifyKeyCodeCommand(VK_N, [ssAlt], ecInsertN);
 end;
 
 procedure TEditorPage.SetExecutor(AValue: TExecutor);
@@ -520,6 +522,9 @@ begin
     ecFindPrevCommand,
     ecReplaceCommand:
       Application.QueueAsyncCall(@PerformSearchAsync, Command);
+
+    ecInsertN:
+      FEditor.InsertTextAtCaret('[_n]');
   end;
 end;
 
