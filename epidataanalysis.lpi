@@ -215,9 +215,8 @@
     </PublishOptions>
     <RunParams>
       <environment>
-        <UserOverrides Count="2">
+        <UserOverrides Count="1">
           <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
-          <Variable1 Name="LANG" Value="da_DK.utf8"/>
         </UserOverrides>
       </environment>
       <FormatVersion Value="2"/>
