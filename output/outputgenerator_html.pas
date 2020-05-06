@@ -15,6 +15,7 @@ type
   TOutputGeneratorHTML = class(TOutputGeneratorBase)
   private
     FCSSFileName: UTF8String;
+    FEmbedCSSFile: boolean;
     FHtmlText: UTF8String;
     procedure SetCSSFileName(AValue: UTF8String);
     function  TextToHtml(IText: IOutputText): UTF8String;
@@ -28,6 +29,7 @@ type
   public
     procedure GenerateReport; override;
     property CSSFileName: UTF8String read FCSSFileName write SetCSSFileName;
+    property EmbedCSSFile: boolean read FEmbedCSSFile write FEmbedCSSFile;
 //    procedure GenerateReport(out Text: UTF8String); override; overload;
   end;
 
@@ -167,8 +169,8 @@ begin
     oltInfo:    cl := 'info';
   end;
 
-  WriteToStream('<p class="' + cl + '">' + TextToHtml(Line) + '</p>');
-//  result := '<p class="' + cl + '">' + TextToHtml(Line) + '</p>';
+  WriteToStream('<hr class="' + cl + '">' + TextToHtml(Line)); // Requested by Jens (Email of 2020-05-06)
+//  WriteToStream('<p class="' + cl + '">' + TextToHtml(Line) + '</p>');
 end;
 
 function TOutputGeneratorHTML.GetDialogFilter: UTF8String;
@@ -196,9 +198,14 @@ begin
 
   if (FCSSFileName <> '') then
     begin
-      CSSStrings := TStringListUTF8.Create;
-      CSSStrings.LoadFromFile(FCSSFileName);
-      WriteToStream(CSSStrings.Text);
+      if (FEmbedCSSFile) then
+        begin
+          CSSStrings := TStringListUTF8.Create;
+          CSSStrings.LoadFromFile(FCSSFileName);
+          WriteToStream(CSSStrings.Text);
+        end
+      else
+        WriteToStream('<link rel="stylesheet" href="' + FCSSFileName +'">');
     end
   else
     begin
@@ -213,6 +220,7 @@ begin
         '  h1 {color: blue; font-size: 1.25em; font-family: proportional,monospace; font-weight: bold}' + LineEnding +
         '  h2 {color: blue; font-size: 1.20em; font-family: proportional,monospace; font-weight: bold}' + LineEnding +
         '  h3 {color: blue; font-size: 1.15em; font-family: proportional,monospace; font-weight: bold}' + LineEnding +
+        '  hr.line {  border-top: 1px solid black; }' + LineEnding +
         '  .small {color: black; font-size: 0.85em; font-family: proportional,monospace; font-weight: normal}' + LineEnding +
         '' + LineEnding +
         '  .command {color: black; font-size: 0.85em; font-weight: normal; font-family: monospace}' + LineEnding +

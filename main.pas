@@ -1862,6 +1862,7 @@ begin
       begin
         Result := TOutputGeneratorHTML.Create(FOutputCreator, ST);
         TOutputGeneratorHTML(Result).CSSFileName := Executor.SetOptionValue[ANA_SO_OUTPUT_CSS_FILE];
+        TOutputGeneratorHTML(Result).EmbedCSSFile := UTF8UpperString(Executor.SetOptionValue[ANA_SO_OUTPUT_CSS_INTERNAL]) = 'YES';
       end;
     'TEXT':
       Result := TOutputGeneratorTXT.Create(FOutputCreator, ST);
