@@ -40,7 +40,6 @@ type
     procedure QuitActionExecute(Sender: TObject);
     procedure SaveActionExecute(Sender: TObject);
     procedure SaveAsActionExecute(Sender: TObject);
-    procedure PrintActionExecute(Sender: TObject);
     procedure OpenRecentExecute(Sender: TObject);
     procedure RunAllActionExecute(Sender: TObject);
     procedure RunSelectedActionExecute(Sender: TObject);
@@ -602,11 +601,6 @@ end;
 procedure TEditorForm2.SaveAsActionExecute(Sender: TObject);
 begin
   DoSaveFile('');
-end;
-
-procedure TEditorForm2.PrintActionExecute(Sender: TObject);
-begin
-//  ActiveEditorPage.Editor.P;
 end;
 
 function TEditorForm2.DoOpenDialog: TStrings;

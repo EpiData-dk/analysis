@@ -281,7 +281,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="94">
+    <Units Count="95">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -696,6 +696,10 @@
         <Filename Value="executor/options_string_array.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit93>
+      <Unit94>
+        <Filename Value="executor/options_cssfileoption.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit94>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -1910,7 +1910,7 @@ begin
   RecentFilesSubMenu.Visible := RecentDataFiles.Count > 0;
   RecentFilesSubMenu.Clear;
 
-  for i := 0 to 8 do
+  for i := 0 to 19 do
   begin
     // Main menu
     A := TAction(RecentFilesActionList.Actions[i]);
@@ -2103,7 +2103,8 @@ begin
   for i := 1 to MaxRecentFiles do
   begin
     A := TAction.Create(RecentFilesActionList);
-    A.ShortCut := KeyToShortCut(VK_1 + (i - 1), [ssShift, ssCtrlOS]);
+    if (i <= 9) then
+      A.ShortCut := KeyToShortCut(VK_1 + (i - 1), [ssShift, ssCtrlOS]);
     A.Enabled  := false;
     A.OnExecute := @OpenRecentMenuItemClick;
     A.ActionList := RecentFilesActionList;

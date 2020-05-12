@@ -179,9 +179,9 @@ begin
     end;
 
   ModifyKeyCodeCommand(VK_D, [ssCtrlOs], ecRunSelectedCommand);
-  ModifyKeyCodeCommand(VK_R, [ssCtrlOs], ecRunAllCommand);
+  ModifyKeyCodeCommand(VK_D, [ssCtrlOS, ssShift], ecRunAllCommand);
   ModifyKeyCodeCommand(VK_F, [ssCtrlOs], ecFindCommand);
-  ModifyKeyCodeCommand(VK_F, [ssCtrlOs, ssShift], ecReplaceCommand);
+  ModifyKeyCodeCommand(VK_R, [ssCtrlOs], ecReplaceCommand);
   ModifyKeyCodeCommand(VK_N, [ssCtrlOs, ssShift], ecFindNextCommand);
   ModifyKeyCodeCommand(VK_P, [ssCtrlOs, ssShift], ecFindPrevCommand);
   ModifyKeyCodeCommand(VK_DELETE, [ssCtrlOS], ecDeleteWord);

@@ -329,6 +329,7 @@ uses
 
   // Set options
   options_fontoptions, options_filesoptions, options_table, options_string_array,
+  options_cssfileoption,
 
   // STATEMENTS
   list, edit, drop, systemcmd, merge, integrity_tests, report, save_output,
@@ -1883,9 +1884,7 @@ begin
   SOpt.LegalValues.Add('OSR');
   {$ENDIF}
   FOptions.Insert(ANA_SO_OUTPUT_SAVE_FORMAT, SOpt);
-  SOpt := TFileOption.Create('', rtString);
-  TFileOption(SOpt).Options := [foAcceptEmptyFilename];
-  FOptions.Insert(ANA_SO_OUTPUT_CSS_FILE,     SOpt);
+  FOptions.Insert(ANA_SO_OUTPUT_CSS_FILE,     TCSSFileOption.Create(''));
   FOptions.Insert(ANA_SO_OUTPUT_CSS_INTERNAL, TSetOption.Create('YES', rtBoolean));
 
   SOpt := TSetOption.Create('L', rtString);
@@ -3152,7 +3151,11 @@ begin
             Exit;
           end;
       end;
-
+      if (Data.WarningMessage <> '') then
+        begin
+          DoWarning(Data.WarningMessage);
+          Data.WarningMessage := '';
+        end;
       DoInfo(S + ' = ' + Data.Value + '  (was: ' + OldVal + ' )');
 
       ST.ExecResult := csrSuccess;

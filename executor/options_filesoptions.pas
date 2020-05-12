@@ -18,7 +18,7 @@ type
 
   { TFileOption }
 
-  TFileOptionOption = (foAcceptEmptyFilename);
+  TFileOptionOption = (foAcceptEmptyFilename, foAcceptNonExistingFilename);
   TFileOptionOptions = set of TFileOptionOption;
 
   TFileOption = clasS(TSetOption)
@@ -56,7 +56,10 @@ begin
   if (AValue = '') and (not (foAcceptEmptyFilename in Options)) then
     DoError('Empty file is not allowed!');
 
-  if (AValue <> '') and (not FileExistsUTF8(AValue)) then
+  if (AValue <> '') and
+     (not FileExistsUTF8(AValue)) and
+     (not (foAcceptNonExistingFilename in Options))
+  then
     DoError('File: ' + AValue + LineEnding +
             'Does not exist!'
     );
