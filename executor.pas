@@ -128,10 +128,10 @@ type
     procedure DeleteExecVar(Const Ident: UTF8String);
     function  GetModified: boolean;
     procedure InitSetOptions;
-    function  GetSetOptionValue(const Key: UTF8String): UTF8String;
     procedure SetSetOptionValue(const Key: UTF8String; AValue: UTF8String);
     function  GetSortedFields: TEpiFields;
   public
+    function  GetSetOptionValue(const Key: UTF8String): UTF8String;
     function  AddResultConst(Const Ident: UTF8String; DataType: TEpiFieldType): TExecVarGlobal; virtual;
     function  AddResultVector(Const Ident: UTF8String; DataType: TEpiFieldType;
       Length: Integer): TExecVarVector; virtual;
@@ -328,7 +328,8 @@ uses
   about,
 
   // Set options
-  options_fontoptions, options_filesoptions, options_table,
+  options_fontoptions, options_filesoptions, options_table, options_string_array,
+  options_cssfileoption,
 
   // STATEMENTS
   list, edit, drop, systemcmd, merge, integrity_tests, report, save_output,
@@ -1638,10 +1639,7 @@ var
   Section: TEpiSection;
   OldV, F: TEpiField;
   lTop, lLeft: Integer;
-  Opt: TOption;
-  R: TEpiRange;
   ft: TEpiFieldType;
-  Auto: Boolean;
 begin
   Section := FDataFile.MainSection;
 
@@ -1834,6 +1832,8 @@ begin
   FOptions.Insert(ANA_SO_SHOW_DEBUG,                     TSetOption.Create('ON', rtBoolean));
   FOptions.Insert(ANA_SO_SHOW_ERROR,                     TSetOption.Create('ON', rtBoolean));
 
+  FOptions.Insert(ANA_SO_SHORT_MONTH_NAMES,              TStringArrayOption.Create(DefaultFormatSettings.ShortMonthNames, rtString));
+
   SOpt := TSetOption.Create('ON', rtString);
   SOpt.LegalValues.Add('ON');
   SOpt.LegalValues.Add('SHORT');
@@ -1884,7 +1884,8 @@ begin
   SOpt.LegalValues.Add('OSR');
   {$ENDIF}
   FOptions.Insert(ANA_SO_OUTPUT_SAVE_FORMAT, SOpt);
-  FOptions.Insert(ANA_SO_OUTPUT_CSS_FILE, TSetOption.Create('', rtString));
+  FOptions.Insert(ANA_SO_OUTPUT_CSS_FILE,     TCSSFileOption.Create(''));
+  FOptions.Insert(ANA_SO_OUTPUT_CSS_INTERNAL, TSetOption.Create('YES', rtBoolean));
 
   SOpt := TSetOption.Create('L', rtString);
   SOpt.LegalValues.Add('L');
@@ -3150,7 +3151,11 @@ begin
             Exit;
           end;
       end;
-
+      if (Data.WarningMessage <> '') then
+        begin
+          DoWarning(Data.WarningMessage);
+          Data.WarningMessage := '';
+        end;
       DoInfo(S + ' = ' + Data.Value + '  (was: ' + OldVal + ' )');
 
       ST.ExecResult := csrSuccess;

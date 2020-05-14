@@ -11,6 +11,7 @@ uses
 type
 
   { TEditorPage }
+  TFindDialogClass = class of TFindDialog;
 
   TEditorPage = class(TTabSheet)
   private
@@ -44,11 +45,12 @@ type
     procedure SetOutputCreator(AValue: TOutputCreator);
   private
     // Search
+    FActiveDialog: TFindDialog; static;
     FActiveSearchText: UTF8String; static;
     FActiveSearchOptions: TSynSearchOptions; static;
     procedure PerformSearchAsync(Data: PtrInt);
     function GetSearchText(): UTF8String;
-    procedure StartSearch(Const SearchText: UTF8String; Dlg: TFindDialog);
+    procedure StartSearch(Const SearchText: UTF8String; DialogClass: TFindDialogClass);
     procedure SearchFind(Sender: TObject);
     procedure SearchDlgShow(Sender: TObject);
     procedure SearchClose(Sender: TObject);
@@ -101,7 +103,8 @@ implementation
 uses
   Controls, LazFileUtils, editor_pgm_highlighter, Menus, ActnList,
   VirtualTrees, ana_globals, parser, LazUTF8Classes, GOLDParser,
-  Symbol, Forms, Math, options_hashmap, LazUTF8, ast_types, strutils;
+  Symbol, Forms, Math, options_hashmap, LazUTF8, ast_types, strutils,
+  LCLProc;
 
 
 const
@@ -112,6 +115,7 @@ const
   ecFindNextCommand     = ecFindCommand + 1;
   ecFindPrevCommand     = ecFindNextCommand + 1;
   ecReplaceCommand      = ecFindPrevCommand + 1;
+  ecInsertN             = ecReplaceCommand + 1;
 
 { TEditorPage }
 
@@ -175,12 +179,13 @@ begin
     end;
 
   ModifyKeyCodeCommand(VK_D, [ssCtrlOs], ecRunSelectedCommand);
-  ModifyKeyCodeCommand(VK_R, [ssCtrlOs], ecRunAllCommand);
+  ModifyKeyCodeCommand(VK_D, [ssCtrlOS, ssShift], ecRunAllCommand);
   ModifyKeyCodeCommand(VK_F, [ssCtrlOs], ecFindCommand);
-  ModifyKeyCodeCommand(VK_F, [ssCtrlOs, ssShift], ecReplaceCommand);
+  ModifyKeyCodeCommand(VK_R, [ssCtrlOs], ecReplaceCommand);
   ModifyKeyCodeCommand(VK_N, [ssCtrlOs, ssShift], ecFindNextCommand);
   ModifyKeyCodeCommand(VK_P, [ssCtrlOs, ssShift], ecFindPrevCommand);
   ModifyKeyCodeCommand(VK_DELETE, [ssCtrlOS], ecDeleteWord);
+  ModifyKeyCodeCommand(VK_N, [ssAlt], ecInsertN);
 end;
 
 procedure TEditorPage.SetExecutor(AValue: TExecutor);
@@ -231,21 +236,28 @@ begin
     Result := Editor.SelText;
 end;
 
-procedure TEditorPage.StartSearch(const SearchText: UTF8String; Dlg: TFindDialog
-  );
-var
-  FActiveDialog: TFindDialog;
+procedure TEditorPage.StartSearch(const SearchText: UTF8String;
+  DialogClass: TFindDialogClass);
 begin
-  //if (Assigned(FActiveDialog)) and
-  //   (FActiveDialog <> Dlg)
-  //then
-  //  FActiveDialog.CloseDialog;
+  if (Assigned(FActiveDialog)) then
+    begin
+      if (FActiveDialog.ClassType <> DialogClass) then
+        begin
+          FActiveDialog.CloseDialog;
+          FActiveDialog := DialogClass.Create(nil);
+          FActiveDialog.Options := [frDown, frHidePromptOnReplace];
+        end;
+    end
+  else
+    begin
+      FActiveDialog := DialogClass.Create(nil);
+      FActiveDialog.Options := [frDown, frHidePromptOnReplace];
+    end;
 
-  FActiveDialog := Dlg;
   FActiveDialog.FindText := SearchText;
-  FActiveDialog.OnFind := @SearchFind;
-  FActiveDialog.OnShow := @SearchDlgShow;
-  FActiveDialog.OnClose := @SearchClose;
+  FActiveDialog.OnFind   := @SearchFind;
+  FActiveDialog.OnShow   := @SearchDlgShow;
+  FActiveDialog.OnClose  := @SearchClose;
   if (FActiveDialog is TReplaceDialog) then TReplaceDialog(FActiveDialog).OnReplace := @SearchFind;
   FActiveDialog.Execute;
 end;
@@ -283,16 +295,19 @@ var
   P: TPoint;
   MfBound: TRect;
 begin
-  //MfBound   := BoundsRect;
-  //P.Y := MfBound.Top + (((MfBound.Bottom - MfBound.Top)  - FActiveDialog.Height) Div 2);
-  //P.X := MfBound.Left + (((MfBound.Right - MfBound.Left) - FActiveDialog.Width) Div 2);
-  //
-  //FActiveDialog.Position := P;
+  P := ClientOrigin;
+  MfBound := ClientRect;
+  OffsetRect(MfBound, P.X, P.Y);
+  P.Y := MfBound.Top + (((MfBound.Bottom - MfBound.Top)  - FActiveDialog.Height) Div 2);
+  P.X := MfBound.Left + (((MfBound.Right - MfBound.Left) - FActiveDialog.Width) Div 2);
+
+  FActiveDialog.Position := P;
 end;
 
 procedure TEditorPage.SearchClose(Sender: TObject);
 begin
   Application.ReleaseComponent(TComponent(Sender));
+  FActiveDialog := nil;
 end;
 
 procedure TEditorPage.InternalSearch(const ReplaceText: UTF8String);
@@ -507,6 +522,9 @@ begin
     ecFindPrevCommand,
     ecReplaceCommand:
       Application.QueueAsyncCall(@PerformSearchAsync, Command);
+
+    ecInsertN:
+      FEditor.InsertTextAtCaret('[_n]');
   end;
 end;
 
@@ -667,11 +685,8 @@ begin
 end;
 
 procedure TEditorPage.PerformFind();
-var
-  Dlg: TFindDialog;
 begin
-  Dlg := TFindDialog.Create(nil);
-  StartSearch(GetSearchText(), Dlg);
+  StartSearch(GetSearchText(), TFindDialog);
 end;
 
 procedure TEditorPage.PerformFindNext();
@@ -690,9 +705,7 @@ procedure TEditorPage.PerformReplace();
 var
   Dlg: TReplaceDialog;
 begin
-  Dlg := TReplaceDialog.Create(nil);
-  Dlg.Options := [frDown, frHidePromptOnReplace];
-  StartSearch(GetSearchText(), Dlg);
+  StartSearch(GetSearchText(), TReplaceDialog);
 end;
 
 procedure TEditorPage.PerformCut();

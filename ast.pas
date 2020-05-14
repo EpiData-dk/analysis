@@ -75,6 +75,7 @@ type
     procedure TypeCheckError(Const Msg: string;
       Const LineNo, ColNo, BytePos: integer);
     procedure SetTypeCheckErrorOutput(Active: boolean);
+    function  GetSetOptionValue(const Key: UTF8String): UTF8String;
     property DataFile: TEpiDataFile read GetDataFile;
   end;
 

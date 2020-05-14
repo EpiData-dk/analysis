@@ -22,9 +22,11 @@ type
     FValue: UTF8String;
     FASTType: TASTResultType;
     FLegalValues: TStrings;
+    FWarningMessage: UTF8String;
     procedure SetASTType(AValue: TASTResultType);
   protected
-    procedure DoError(Const Msg: String); virtual;
+    procedure DoError(Const Msg: UTF8String); virtual;
+    procedure DoWarning(Const Msg: UTF8String); virtual;
     procedure SetValue(AValue: UTF8String); virtual;
   private
     FLowRange: UTF8String;
@@ -35,13 +37,14 @@ type
     procedure SetLowRange(AValue: UTF8String);
     procedure SetHighRange(AValue: UTF8String);
   public
-    constructor Create(const AValue: UTF8String; AAstType: TASTResultType);
+    constructor Create(const AValue: UTF8String; AAstType: TASTResultType); virtual;
     property Name: UTF8String read FName;
     property Value: UTF8String read FValue write SetValue;
     property ASTType: TASTResultType read FASTType;
     property LegalValues: TStrings read FLegalValues;
     property LowRange: UTF8String read FLowRange write SetLowRange;
     property HighRange: UTF8String read FHighRange write SetHighRange;
+    property WarningMessage: UTF8String read FWarningMessage write FWarningMessage;
 
   // Handlers
   private
@@ -307,9 +310,14 @@ begin
   FASTType := AValue;
 end;
 
-procedure TSetOption.DoError(const Msg: String);
+procedure TSetOption.DoError(const Msg: UTF8String);
 begin
   raise ESetOption.Create(Msg);
+end;
+
+procedure TSetOption.DoWarning(const Msg: UTF8String);
+begin
+  FWarningMessage := Msg;
 end;
 
 procedure TSetOption.DoErrorLegals(const AValue: UTF8String);

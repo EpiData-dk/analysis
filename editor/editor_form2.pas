@@ -18,6 +18,9 @@ type
     FExecutor: TExecutor;
     FHistory: THistory;
     FOutputCreator: TOutputCreator;
+    procedure DelayedFocusActiveEditor(Data: PtrInt);
+    procedure PreviewKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState
+      );
     procedure SetExecutor(AValue: TExecutor);
     procedure SetHistory(AValue: THistory);
     procedure SetOutputCreator(AValue: TOutputCreator);
@@ -211,14 +214,14 @@ begin
   TopMenuItem.Add(CreateActionAndMenuItem('Find...',       @FindActionExecute,     ShortCut(VK_F, [ssCtrlOS])));
   TopMenuItem.Add(CreateActionAndMenuItem('Find Next',     @FindNextActionExecute, ShortCut(VK_N, [ssCtrlOs, ssShift])));
   TopMenuItem.Add(CreateActionAndMenuItem('Find Previous', @FindPrevActionExecute, ShortCut(VK_P, [ssCtrlOs, ssShift])));
-  TopMenuItem.Add(CreateActionAndMenuItem('Replace...',    @ReplaceActionExecute,  ShortCut(VK_F, [ssCtrlOs, ssShift])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Replace...',    @ReplaceActionExecute,  ShortCut(VK_R, [ssCtrlOs])));
   MainMenu.Items.Add(TopMenuItem);
 
   // Run
   TopMenuItem := TMenuItem.Create(Self);
   TopMenuItem.Caption := '&Run';
   TopMenuItem.Add(CreateActionAndMenuItem('Run Selected', @RunSelectedActionExecute, ShortCut(VK_D, [ssCtrlOS])));
-  TopMenuItem.Add(CreateActionAndMenuItem('Run All',      @RunAllActionExecute, ShortCut(VK_R, [ssCtrlOS])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Run All',      @RunAllActionExecute, ShortCut(VK_D, [ssCtrlOS, ssShift])));
   MainMenu.Items.Add(TopMenuItem);
 
   // Window
@@ -273,7 +276,11 @@ function TEditorForm2.CloseTab(EditorPage: TEditorPage): boolean;
 var
   S: TCaption;
   Res: TModalResult;
+  EditorPageWasEmpty: Boolean;
 begin
+  EditorPageWasEmpty := (not EditorPage.Modified) and
+                        (EditorPage.FileName = '');
+
   if (EditorPage.Modified) then
     begin
       FPageControl.ActivePage := EditorPage;
@@ -302,7 +309,10 @@ begin
 
   EditorPage.Free;
   if (FPageControl.PageCount = 0) then
-    AddNewTab;
+    if (EditorPageWasEmpty) then
+      Close
+    else
+      AddNewTab;
 end;
 
 procedure TEditorForm2.AsyncOpenRecent(Data: PtrInt);
@@ -362,6 +372,42 @@ begin
 
   FExecutor.SetOptions[ANA_SO_TUTORIAL_FOLDER].AddOnChangeHandler(@TutorialChange);
   LoadTutorials;
+end;
+
+procedure TEditorForm2.DelayedFocusActiveEditor(Data: PtrInt);
+begin
+  if (ActiveEditorPage.Editor.CanSetFocus) then
+    ActiveEditorPage.Editor.SetFocus;
+end;
+
+procedure TEditorForm2.PreviewKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  PageNo: Word;
+begin
+  // Handles shifting between tabs
+  if ((Shift = [ssAlt]) and (Key in [VK_1..VK_9])) then
+    begin
+      PageNo := Key - VK_0;
+      if (PageNo > FPageControl.PageCount) then exit;
+
+      Key := VK_UNKNOWN;
+      FPageControl.ActivePage := GetEditorPage(PageNo - 1);
+
+      Exit;
+    end;
+
+  if ((shift = [ssCtrlOS]) and (Key = VK_TAB)) then
+    begin
+      FPageControl.ActivePage := FPageControl.FindNextPage(FPageControl.ActivePage, true, true);
+      Key := VK_UNKNOWN;
+    end;
+
+  if ((shift = [ssCtrlOS, ssShift]) and (Key = VK_TAB)) then
+    begin
+      FPageControl.ActivePage := FPageControl.FindNextPage(FPageControl.ActivePage, false, true);
+      Key := VK_UNKNOWN;
+    end;
 end;
 
 procedure TEditorForm2.RunAllActionExecute(Sender: TObject);
@@ -693,6 +739,7 @@ procedure TEditorForm2.PageChangeEvent(Sender: TObject);
 begin
   ActiveEditorPage.OnStatusChange := @PageStatusChange;
   UpdateStatusBar;
+  Application.QueueAsyncCall(@DelayedFocusActiveEditor, 0);
 end;
 
 procedure TEditorForm2.PageChangingEvent(Sender: TObject;
@@ -770,6 +817,9 @@ begin
   OnClose := @EditorClose;
   AllowDropFiles := true;
   OnDropFiles := @DropFiles;
+
+  KeyPreview := true;
+  OnKeyDown := @PreviewKeyDown;
 
   // Because first page never triggers the OnChangeEvent
   PageChangeEvent(FPageControl);

@@ -44,7 +44,7 @@ implementation
 uses
   epidatafilestypes, epidatafilerelations_helper, LazUTF8, epitools_integritycheck,
   epicustombase, math, epivaluelabels, ast_types, Token, LazFileUtils, epidatafileutils,
-  epifields_helper;
+  epifields_helper, epimiscutils;
 
 const
   MERGE_CUSTOM_DATA = 'MERGE_CUSTOM_DATA';
@@ -417,20 +417,6 @@ begin
         begin
           AppendDF := AppendDoc.DataFiles.GetDataFileByName(DF.Name);
           AppendDataset(AppendDF, DF, DF.Fields);
-
-{          StartIdx := DF.Size;
-          DF.Size := DF.Size + AppendDF.Size;
-
-          for F in DF.Fields do
-            begin
-              AppendF := AppendDF.Fields.FieldByName[F.Name];
-
-              if (not Assigned(AppendF)) then
-                Continue;
-
-              for i := 0 to AppendDF.Size - 1 do
-                TransferData(F, AppendF, StartIdx + i, i);
-            end;    }
         end;
     end
   else
@@ -447,56 +433,11 @@ begin
         AppendDF := AppendDoc.DataFiles[0];
 
       AppendDataset(AppendDF, DF, LocalFields);
-
-      {
-
-      StartIdx := DF.Size;
-      DF.Size := DF.Size + AppendDF.Size;
-
-
-
-      for F in DF.Fields do
-        begin
-          AppendF := AppendDF.Fields.FieldByName[F.Name];
-
-          if (not Assigned(AppendF)) then
-            Continue;
-
-          for i := 0 to AppendDF.Size - 1 do
-            TransferData(F, AppendF, StartIdx + i, i);
-        end;       }
     end;
-             {
-  for DF in DFs do
-    begin
-      AppendDF := AppendDoc.DataFiles.GetDataFileByName(DF.Name);
 
-      if (not Assigned(AppendDF)) then
-        Continue;
-
-      StartIdx := DF.Size;
-      DF.Size := DF.Size + AppendDF.Size;
-
-      if ST.VariableList.Count > 0 then
-        LocalFields := FieldsFromStrings(ST.VariableList.GetIdentsAsList, DF)
-      else
-        LocalFields := DF.Fields;
-
-
-      for F in DF.Fields do
-        begin
-          AppendF := AppendDF.Fields.FieldByName[F.Name];
-
-          if (not Assigned(AppendF)) then
-            Continue;
-
-          for i := 0 to AppendDF.Size - 1 do
-            TransferData(F, AppendF, StartIdx + i, i);
-        end;
-    end;      }
   FOutputCreator.DoInfoAll('Complete');
-  FOutputCreator.DoWarning('Data may be in an inconsisten state if the dataset(s) use keys or has related data!' + LineEnding +
-                           'Use the data validator tool to check for inconsistencies!');
+  FOutputCreator.DoWarning('Check data for inconsistencies after appending!' + LineEnding +
+                           'Apply commands:  Check key / check relate / browse UPPER variables!');
 end;
 
 function TMerge.InternalMerge(ST: TMergeCommand; MergeDF: TEpiDataFile;
@@ -655,6 +596,8 @@ begin
   CombineVar.Question.Text := 'Source of information for each observation';
   CombineVar.Length := 1;
   CombineVar.ValueLabelSet := MainDF.ValueLabels.GetValueLabelSetByName('_mergevar_lbl');
+  CombineVar.Left := MainDF.Field[MainDF.Fields.Count - 1].Left;
+  CombineVar.Top  := MainDF.Field[MainDF.Fields.Count - 1].Top + 30;
 
   for i := 0 to CombineVar.Size - 1 do
     CombineVar.AsInteger[i] := 1;
@@ -815,6 +758,7 @@ var
   LastModified: TDateTime;
   TmpDoc: TEpiDocument;
   S: UTF8String;
+  VariableCheck: Boolean;
 
   function DoDatafilesCheck(Datafiles: TEpiDataFiles): boolean;
   var
@@ -900,6 +844,7 @@ begin
       else
         MergeDF := MergeDocFile.Document.DataFiles[0];
 
+      VariableCheck := True;
       for i := 0 to ST.VariableList.Count - 1 do
         begin
           V := ST.VariableList[i];
@@ -908,19 +853,23 @@ begin
           if not Assigned(MergeF) then
           begin
             FExecutor.Error(Format('Variable "%s" not found in external dataset!', [V.Ident]));
-            ST.ExecResult := csrFailed;
-            MergeDocFile.Free;
-            Exit;
+            VariableCheck := False;
+            Continue;
           end;
 
           MainF := FExecutor.DataFile.Fields.FieldByName[V.Ident];
           if (MainF.FieldType <> MergeF.FieldType) then
           begin
-            FExecutor.Error(Format('Variable "%s" in external dataset has a different type than in the internal dataset', [V.Ident]));
-            ST.ExecResult := csrFailed;
-            MergeDocFile.Free;
-            Exit;
+            FExecutor.Error(Format('Type conflict for variable "%s": External dataset: (%s). Internal dataset (%s)', [V.Ident, EpiTypeNames[MergeF.FieldType], EpiTypeNames[MainF.FieldType]]));
+            VariableCheck := False;
           end;
+        end;
+
+      if (not VariableCheck) then
+        begin
+          ST.ExecResult := csrFailed;
+          MergeDocFile.Free;
+          Exit;
         end;
 
       VarNames := ST.VariableList.GetIdentsAsList;
