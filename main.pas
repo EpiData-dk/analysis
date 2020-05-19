@@ -2076,11 +2076,12 @@ begin
   else
     S := '';
 
-  {$IFDEF DARWIN}
-  S := 'file://' + ResolveDots(ProgramDirectory + '../../../docs' + DirectorySeparator + 'commands.html' + S);
-  {$ELSE}
+//  {$IFDEF DARWIN} // No longer a problem. tutorials and commands.html bundled with app
+// TODO: Jamie: target (#xxxx) is ignored by OpenURL
+//  S := 'file://' + Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER] + DirectorySeparator + 'commands.html' + S; //ProgramDirectory
+//  {$ELSE}
   S := 'file://' + Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER] + DirectorySeparator + 'commands.html' + S;
-  {$ENDIF}
+//  {$ENDIF}
   OpenURL(S);
 end;
 

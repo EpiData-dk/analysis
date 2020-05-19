@@ -27,9 +27,6 @@ type
 
   TTwoWayStatisticsFExP = class(TTwoWayStatistics)
   private
-    // TODO: FResultFExp is not persistent - belongs to each 2x2 table in turn; should really return this,
-    //       BUT(!) it is different for each statistic; perhaps return as a Record, but then ctable needs to know
-    //       the structure
   protected
     function GetStatistics(const Index: Integer): TTwoWayStatisticFExP; override;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;

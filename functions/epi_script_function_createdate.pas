@@ -71,6 +71,7 @@ var
   Msg: string;
   SubString: UTF8String;
   DateResult: EpiDate;
+  EncodeResult: TDateTime;
   LocalFormat: TFormatSettings;
   StartIdx, CharCount: ASTInteger;
 
@@ -87,14 +88,16 @@ var
   end;
 
 begin
-  result := inherited;
+  result := inherited asDate;
 
   if FParamList.Count = 1 then
   begin
-    if (not EpiStrToDateGuess(Param[0].AsString, DateResult, Msg)) then
-      RuntimeError(EEpiScriptFunction_CreateDate, Msg);
+//    if (not EpiStrToDateGuess(Param[0].AsString, DateResult, Msg)) then
+//      RuntimeError(EEpiScriptFunction_CreateDate, Msg);
 
-    Result := DateResult;
+    if (EpiStrToDateGuess(Param[0].AsString, DateResult, Msg)) then
+      Result := DateResult;
+
     Exit;
   end;
 
@@ -118,15 +121,15 @@ begin
       end;
     end;
 
-    if not (
+    if ( // not (
          (EpiStrToDate(Param[0].AsString, '-', ft, DateResult, Msg)) or
          (EpiStrToDate(Param[0].AsString, '/', ft, DateResult, Msg)) or
          (EpiStrToDate(Param[0].AsString, '.', ft, DateResult, Msg))
        )
     then
-      RuntimeError(EEpiScriptFunction_CreateDate, Msg);
+//      RuntimeError(EEpiScriptFunction_CreateDate, Msg);
 
-    Result := DateResult;
+      Result := DateResult;
     Exit;
   end;
 
@@ -149,7 +152,11 @@ begin
     if Year.IsMissing then
       Result := inherited AsDate
     else
-      Result := Trunc(EncodeDate(Year.AsInteger, M, D));
+      if TryEncodeDate(Year.AsInteger, M, D, EncodeResult) then
+        Result := Trunc(EncodeResult)
+      else
+        Result := TEpiDateField.DefaultMissing;
+//      Result := Trunc(EncodeDate(Year.AsInteger, M, D));
 
     Exit;
   end;
