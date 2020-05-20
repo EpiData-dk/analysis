@@ -219,31 +219,16 @@ begin
   Obs    := 0;
   ASSW   := 0;
 
-  // check that all strata have more than one observation:
-    k := 0;
-    lStrata := ResultDf.Size - 1;
-    for i := 0 to lStrata do
-       if (ResultDf.N.AsInteger[i] < 2) then k := 1;
-
-    with ResultDF.AnovaRecord do
-    begin
-      Valid:=(k=0);
-      if (not Valid) then exit;
-      if(not Valid) then exit;     // cannot do a valid Anova.
-    end;
-
-  with ResultDF do      // check correct number of observations and sum Strata
+  with ResultDF do
   begin
     lStrata := Size - 1;
+
     for i := 0 to lStrata do
-     begin
-       ASSW += SumSS.AsFloat[i];
-       if (N.AsInteger[i] < 2) then k := 1;
-     end;
-     ASST := TotalSSQ;
+      ASSW += SumSS.AsFloat[i];
+
+    ASST := TotalSSQ;
     Obs  := TotalObs;
   end;
-
 
   with ResultDF.AnovaRecord do
   begin
@@ -285,7 +270,6 @@ begin
     begin
       for i := 0 to lStrata do
         begin
-          TSumLogs += (N.AsInteger[i] - 1) * ln(StdVar.AsFloat[i]); // (N[i]-1) * var[i]
           TSumLogs += (N.AsInteger[i] - 1) * ln(StdVar.AsFloat[i]); // (N[i]-1) * var[i]
           TSumNs   += (1/(N.AsInteger[i] - 1));                     // 1 / (N[i]-1)
           TPoolVar += (N.AsInteger[i] - 1) * StdVar.AsFloat[i]      // (N[i]-1) * var[i]
@@ -655,7 +639,7 @@ begin
     begin
       T.ColCount := 1;
       T.RowCount := 1;
-      T.Cell[0,0].Text := 'Cannot do ANOVA with these values-check N in each Stratum';
+      T.Cell[0,0].Text := 'Cannot do ANOVA with these values';
       exit
     end;
   T.ColCount := 6;
