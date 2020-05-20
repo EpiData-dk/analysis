@@ -2035,11 +2035,35 @@ report cby id !fn := filenames !ds := datasets</font>
                 <td>95</td> <!-- Default Value -->
                 <td>Set the default confidence interval to be estimated by <font class="cmd">table</font> or <font class="cmd">ctable</font></td> <!-- Comment -->
               </tr>
-             <tr>
+              <tr>
                 <td>CSV DELIMITER</td> <!-- Option -->
                 <td>&lt;any desired delimiter&gt;</td> <!-- Possible Values-->
                 <td>,</td> <!-- Default Value -->
                 <td>The separator used between variables when you export to the clipboard from the browser.</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>DISPLAY COMMANDTREE WINDOW</td> <!-- Option -->
+                <td>ON/OFF</td> <!-- Possible Values-->
+                <td>OFF</td> <!-- Default Value -->
+                <td>Opens/Closes the command tree window</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>DISPLAY DATASET WINDOW</td> <!-- Option -->
+                <td>ON/OFF</td> <!-- Possible Values-->
+                <td>OFF</td> <!-- Default Value -->
+                <td>Opens/Closes the dataset window</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>DISPLAY HISTORY WINDOW</td> <!-- Option -->
+                <td>ON/OFF</td> <!-- Possible Values-->
+                <td>OFF</td> <!-- Default Value -->
+                <td>Opens/Closes the history window</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>DISPLAY VARIABLE WINDOW</td> <!-- Option -->
+                <td>ON/OFF</td> <!-- Possible Values-->
+                <td>OFF</td> <!-- Default Value -->
+                <td>Opens/Closes the variable window</td> <!-- Comment -->
               </tr>
               <tr>
                 <td>ECHO</td>
@@ -2067,12 +2091,6 @@ report cby id !fn := filenames !ds := datasets</font>
                 <td>If "YES" the user is prompted on closing the program for saving if a project is open and has been modified</td> <!-- Comment -->
               </tr>
               <tr>
-                <td>EXITSAVE</td> <!-- Option -->
-                <td>YES/NO</td> <!-- Possible Values-->
-                <td>NO</td> <!-- Default Value -->
-                <td>If "YES" the user is prompted on closing the program for saving if a project is open and has been modified</td> <!-- Comment -->
-              </tr>
-              <tr>
                 <td>INCLUDE DELETED</td> <!-- Option -->
                 <td>ON/OFF</td> <!-- Possible Values-->
                 <td>OFF</td> <!-- Default Value -->
@@ -2083,6 +2101,20 @@ report cby id !fn := filenames !ds := datasets</font>
                 <td>&lt;hex colour code&gt;</td> <!-- Possible Values-->
                 <td>"#FFFFFF"</td> <!-- Default Value -->
                 <td>Adjust the colour of the output background. e.g. #000000 is black. </td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>OUTPUT CSS FILE</td> <!-- Option -->
+                <td>&lt;string&gt;</td> <!-- Possible Values-->
+                <td>(empty)</td> <!-- Default Value -->
+                <td>When using HTML output it is possible to use an external CSS file. If the file name specified does not exist a file will be created
+                    with the content of the built in CSS.</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>OUTPUT CSS INTERNAL</td> <!-- Option -->
+                <td>YES/NO</td> <!-- Possible Values-->
+                <td>YES</td> <!-- Default Value -->
+                <td>If set to YES, the content of the CSS FILE is embedded into the HTML.<br/>
+                    If set to NO the CSS FILE is referenced from within the HTML output.</td> <!-- Comment -->
               </tr>
               <tr>
                 <td>OUTPUT FONT COLOUR</td> <!-- Option -->
@@ -2112,7 +2144,20 @@ report cby id !fn := filenames !ds := datasets</font>
                 <td>OUTPUT FORMAT</td> <!-- Option -->
                 <td>TEXT/HTML</td> <!-- Possible Values-->
                 <td>TEXT</td> <!-- Default Value -->
-                <td>Format of the output window (currently only TEXT is implemented)</td> <!-- Comment -->
+                <td>Format of the output window<br> HTML viewing is current in beta</td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>OUTPUT SAVE FORMAT</td> <!-- Option -->
+                <td>TEXT/HTML</td> <!-- Possible Values-->
+                <td>TEXT</td> <!-- Default Value -->
+                <td>Set the default format when saving the output to file. </td> <!-- Comment -->
+              </tr>
+              <tr>
+                <td>SHORT MONTH NAMES</td> <!-- Option -->
+                <td>&lt;string&gt;</td> <!-- Possible Values-->
+                <td>(depends on the language of the operating system)<br/>eg. Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec</td> <!-- Default Value -->
+                <td>The function <b>createdate</b> will use these value when trying to match against the short month names.<br/>
+                    this list MUST contain 12 items seperated by commas</td> <!-- Comment -->
               </tr>
               <tr>
                 <td>SHOW COMMAND</td> <!-- Option -->
@@ -2715,17 +2760,28 @@ clh;
        <td>d</td>
        <td>createdate("31/12/2016") =&gt; 31/12/2016<br/>
         The form of <i>datestr</i> is automatically detected, but if the string is ambiguous the preference is always DMY over MDY.<br/>
-        If parts of the datestr are omitted, then these parts are filled with todays values.
+        If parts of the datestr are omitted, then these parts are filled with todays values.<br/>
+		If the string is not recognised as a date, system missing is returned.
        </td>
       </tr>
      <tr valign="top">
-      <td>createdate(datestr, fmt)</td>
+      <td>createdate(datestr,<br/>date-type)</td>
       <td>s, s</td>
       <td>d</td>
       <td>
        createdate("31/12/2016", "dmy") =&gt; 31/12/2016<br/>
        createdate("12/31/2016", "mdy") =&gt; 31/12/2016<br/>
        createdate("2016/12/31", "ymd") =&gt; 31/12/2016<br/>
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>createdate(datestr,<br/>fmt-string)</td>
+      <td>s, s</td>
+      <td>d</td>
+      <td>
+       Convers any string to a date based on the format specified in fmt-string. The format options can be found in the FPC source documentation <a href="https://www.freepascal.org/docs-html/rtl/sysutils/formatchars.html">here</a><br/>
+       createdate("31-dec-16", "dd-mmm-yy") =&gt; 31/12/2016<p/>
+       Note: For the "mmm" format it is possible to control the abbriviated month names using the <a href="#setgrp">set options</a>. The default is based on the language of the Operating System.
       </td>
      </tr>
      <tr valign="top">

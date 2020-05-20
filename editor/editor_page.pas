@@ -92,6 +92,8 @@ type
     procedure PerformInsertSetOptions();
     procedure PerformRunAll();
     procedure PerformRunSelected();
+    procedure PerformUndo();
+    procedure PerformRedo();
   public
     property Executor: TExecutor read FExecutor write SetExecutor;
     property History: THistory read FHistory write SetHistory;
@@ -803,6 +805,16 @@ end;
 procedure TEditorPage.PerformRunSelected();
 begin
   Editor.CommandProcessor(ecRunSelectedCommand, '', nil, []);
+end;
+
+procedure TEditorPage.PerformUndo();
+begin
+  Editor.CommandProcessor(ecUndo, '', nil, []);
+end;
+
+procedure TEditorPage.PerformRedo();
+begin
+  Editor.CommandProcessor(ecRedo, '', nil, []);
 end;
 
 end.
