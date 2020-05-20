@@ -130,7 +130,7 @@
         <td colspan="4" >
          <p>
           Syntax for all commands: <font class="cmd">command &lt;variables&gt; [!option] [!option := a|b]</font><br/>
-          <font class="indent">[ ] : optional specification.</font><br/>
+          <font class="indent">[ ] : optional specification of observation number.</font><br/>
           <font class="indent">{a|b|...} : indicates alternative choices</font><br/>
           <font class="indent">&lt;...&gt; : indicates user specified name/identifier</font><br/>
          </p>
@@ -370,10 +370,10 @@ read fn;                // expression using the variable fn
         To keep information in variables with an identical name (e.g. mergevar or name) from all files rename (using <a href="#editvariable">edit</a>)
         the variables <b>before</b> you merge the next file. e.g. <font class="cmd">
 read "pt.epx";
-edit variable name !rename := "ptname";
+edit variable name !r := "ptname";
 merge hospid !filename := "hospital.epx" !r := MergeDs;
 use MergeDs;
-edit variable name !rename := "hospname";
+edit variable name !r := "hospname";
 etc ....</font>
           <p>
            After <font class="cmd">merge</font> the variable <b>mergevar</b> indicates source of information for each observation (records).<br/>
@@ -1618,12 +1618,13 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
        Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.</p>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
        <ul>
-        <li><font class="option">!by:</font> Stratify by this variable</li>
+        <li><font class="option">!by:</font> Stratify by this variable		    </li>
         <li><font class="option">!t:</font> Analysis of Variance to test for homogeneity of the mean across strata,<br/>
          including Bartletts test for homogeneity of variance.<br/>
         With <font class="cmd">!by</font> (stratified), F-test is given.<br/>
         Without <font class="cmd">!by</font> (one stratum), T-test that mean=0.<br/>
-         (e.g. as a paired T-test for the difference in before and after measures)</li>
+         (e.g. as a paired T-test for the difference in before and after measures)
+		 <br><font class="limit">Warning: </font> Check results carefully if !by variable has only one observation in a stratum</li>
         <li>Estimates are saved as result variables. Use <font class="cmd">list results</font> for details</li>
         <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
        </ul>
@@ -2581,7 +2582,7 @@ clh;
         <td>s, any, ...</td>
         <td>s</td>
         <td>Concat(...) concatinates values s<sub>1</sub> -> s<sub>n</sub> into a string. If any of the s<sub>x</sub> parameters return system missing it will be replaced by the value of X<br/>
-        <font class="cmd">concat("X", "a", v1[_n]) =&gt; "aX" if v1 is missing, else a + the value of v1</font><br/>
+        <font class="cmd">concat("X", "a", v1) =&gt; "aX" if v1 is missing, else a + the value of v1</font><br/>
           <br/>
         <font class="limit">Note:</font> for user defined missing values, the actual value is added to the string.
         </td>
