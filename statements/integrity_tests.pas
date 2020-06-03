@@ -615,7 +615,6 @@ begin
       Exit;
     end;
 
-
   OrgRecsField := DF.Fields.FieldByName[ANA_EXEC_PREPAREDS_OBSNO_FIELD];
   LocalRecsField := DF.NewField(ftInteger);
   for i := 0 to DF.Size - 1 do
@@ -667,6 +666,8 @@ begin
   if EqualKeyCount > 0 then
     for i := 0 to EqualKeyCount do
       AddError(DFRunner - EqualKeyCount + i - 1, 1);
+
+  FExecutor.ClearResults('$check_key');
 
   if (Length(FailedRecords) = 0) then
     begin
