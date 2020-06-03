@@ -15,9 +15,9 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="7"/>
-      <BuildNr Value="15"/>
-      <Attributes pvaSpecialBuild="True"/>
-      <StringTable SpecialBuild="TRUNK"/>
+      <RevisionNr Value="99"/>
+      <Attributes pvaPreRelease="True" pvaSpecialBuild="True"/>
+      <StringTable SpecialBuild="PRE-RELEASE"/>
     </VersionInfo>
     <BuildModes Count="7">
       <Item1 Name="Default" Default="True"/>
@@ -214,11 +214,6 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
-      <environment>
-        <UserOverrides Count="1">
-          <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
-        </UserOverrides>
-      </environment>
       <FormatVersion Value="2"/>
       <Modes Count="2">
         <Mode0 Name="default">
