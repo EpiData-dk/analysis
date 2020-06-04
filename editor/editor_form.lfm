@@ -1,13 +1,14 @@
 object EditorForm: TEditorForm
-  Left = 3840
+  Left = 2975
   Height = 694
-  Top = 39
+  Top = 209
   Width = 823
   ActiveControl = TabControl1
   AllowDropFiles = True
   Caption = 'PGM Editor'
-  ClientHeight = 669
+  ClientHeight = 671
   ClientWidth = 823
+  DesignTimePPI = 94
   Menu = MainMenu1
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
@@ -21,40 +22,42 @@ object EditorForm: TEditorForm
   object StatusBar1: TStatusBar
     Left = 0
     Height = 19
-    Top = 650
+    Top = 652
     Width = 823
     Panels = <    
       item
         Text = 'Line: Col:'
-        Width = 100
+        Width = 98
       end    
       item
         Text = 'Modified'
-        Width = 75
+        Width = 73
       end    
       item
         Text = 'Ins/Over'
-        Width = 75
+        Width = 73
       end    
       item
-        Width = 50
+        Width = 49
       end>
+    ParentFont = False
     SimplePanel = False
   end
   object TabControl1: TTabControl
     Left = 0
-    Height = 650
+    Height = 652
     Top = 0
     Width = 823
     HotTrack = True
     OnChange = TabControl1Change
     OnChanging = TabControl1Changing
     Align = alClient
+    ParentFont = False
     TabOrder = 1
     inline SynEdit1: TSynEdit
       Left = 2
-      Height = 622
-      Top = 26
+      Height = 618
+      Top = 32
       Width = 819
       Align = alClient
       Font.Height = 13
@@ -440,8 +443,8 @@ object EditorForm: TEditorForm
     end
   end
   object MainMenu1: TMainMenu
-    left = 73
-    top = 32
+    left = 71
+    top = 31
     object MenuItem1: TMenuItem
       Caption = '&File'
       object MenuItem11: TMenuItem
@@ -597,8 +600,8 @@ object EditorForm: TEditorForm
     ExecCommandID = ecSynCompletionExecute
     Editor = SynEdit1
     ToggleReplaceWhole = False
-    left = 104
-    top = 272
+    left = 102
+    top = 266
   end
   object SynAnySyn1: TSynAnySyn
     Enabled = False
@@ -673,12 +676,12 @@ object EditorForm: TEditorForm
     Entity = False
     DollarVariables = False
     ActiveDot = False
-    left = 200
-    top = 272
+    left = 196
+    top = 266
   end
   object ActionList1: TActionList
-    left = 248
-    top = 32
+    left = 243
+    top = 31
     object RunAllAction: TAction
       Category = 'Run'
       Caption = 'Run All'
@@ -801,36 +804,36 @@ object EditorForm: TEditorForm
   object SaveDialog1: TSaveDialog
     DefaultExt = '.pgm'
     Options = [ofOverwritePrompt, ofEnableSizing, ofViewDetail]
-    left = 600
-    top = 48
+    left = 588
+    top = 47
   end
   object OpenDialog1: TOpenDialog
     Options = [ofAllowMultiSelect, ofFileMustExist, ofEnableSizing, ofViewDetail]
-    left = 496
-    top = 48
+    left = 486
+    top = 47
   end
   object RecentFilesActionList: TActionList
-    left = 248
-    top = 96
+    left = 243
+    top = 94
   end
   object FontDialog1: TFontDialog
     MinFontSize = 0
     MaxFontSize = 0
-    left = 496
-    top = 112
+    left = 486
+    top = 110
   end
   object ReplaceDialog1: TReplaceDialog
     Options = [frDown, frHidePromptOnReplace]
-    left = 600
-    top = 192
+    left = 588
+    top = 188
   end
   object FindDialog1: TFindDialog
-    left = 496
-    top = 192
+    left = 486
+    top = 188
   end
   object PopupMenu1: TPopupMenu
-    left = 73
-    top = 99
+    left = 71
+    top = 97
     object MenuItem38: TMenuItem
       Action = CopyAction
     end

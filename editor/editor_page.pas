@@ -92,6 +92,8 @@ type
     procedure PerformInsertSetOptions();
     procedure PerformRunAll();
     procedure PerformRunSelected();
+    procedure PerformUndo();
+    procedure PerformRedo();
   public
     property Executor: TExecutor read FExecutor write SetExecutor;
     property History: THistory read FHistory write SetHistory;
@@ -245,7 +247,7 @@ begin
         begin
           FActiveDialog.CloseDialog;
           FActiveDialog := DialogClass.Create(nil);
-          FActiveDialog.Options := [frDown, frHidePromptOnReplace];
+          FActiveDialog.Options := [frDown, frHidePromptOnReplace, frEntireScope];
         end;
     end
   else
@@ -335,6 +337,9 @@ begin
 
   if (Res = 0) then
     ShowMessage('"' + FActiveSearchText + '" not found!');
+
+  if (Res > 0) and (ssoReplaceAll in FActiveSearchOptions) then
+    ShowMessage(IntToStr(Res) + ' occurences replaced!');
 end;
 
 procedure TEditorPage.DoParse(const S: UTF8String);
@@ -803,6 +808,16 @@ end;
 procedure TEditorPage.PerformRunSelected();
 begin
   Editor.CommandProcessor(ecRunSelectedCommand, '', nil, []);
+end;
+
+procedure TEditorPage.PerformUndo();
+begin
+  Editor.CommandProcessor(ecUndo, '', nil, []);
+end;
+
+procedure TEditorPage.PerformRedo();
+begin
+  Editor.CommandProcessor(ecRedo, '', nil, []);
 end;
 
 end.
