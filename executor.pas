@@ -1150,7 +1150,7 @@ begin
       VL := FVLSets.Data[Idx].Valuelabelset;
       if (not F.AcceptsValuelabelSet(VL, Len, Dec)) then
         begin
-          DoError('Value label set does not match variable size/type');
+          DoError('The value label cannot be applied: check size/type: list v <varname>');
           Exit;
         end;
     end;
@@ -3372,49 +3372,11 @@ var
   HasBy: Boolean;
 begin
   ST.ExecResult := csrFailed;
-{  L := ST.VariableList.GetIdentsAsList;
-  HasBy := false;
-  ST.ExecResult := csrFailed;
-// TODO: {Jamie} move these checks into means.pas
-// check for more than one !by
-  for Opt in ST.Options do
-  begin
-   if (Opt.Ident = 'by') then
-     if (HasBy) then
-       begin
-         DoError('Can only stratify by one variable; !by:=' + Opt.Expr.AsIdent + ' is invalid');
-         exit;
-       end
-    else
-      begin
-        HasBy := true;
-        if (L[0] = Opt.Expr.AsIdent) then
-          begin
-            DoError('Cannot stratify by the same variable: ' + Opt.expr.AsIdent);
-            Exit;
-          end;
-        L.Add(Opt.Expr.AsIdent);
-       end;
-    end;
 
-  M := nil;
-  DF := DoPrepareDatafile(L, L);
-
-  try
-    if DF.Size = 0 then
-      begin
-        DoError('No data!');
-        Exit;
-      end;
-}
-    M := TMeans.Create(Self, FOutputCreator);
-    M.ExecMeans(TMeansCommand(ST));
-//    M.ExecMeans(DF, TMeansCommand(ST));
-//  finally
-//    DF.Free;
-    M.Free;
-//    L.Free;
-  end;
+  M := TMeans.Create(Self, FOutputCreator);
+  M.ExecMeans(TMeansCommand(ST));
+  M.Free;
+end;
 
 procedure TExecutor.ExecFreq(ST: TCustomVariableCommand);
 var

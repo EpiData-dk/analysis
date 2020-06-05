@@ -56,6 +56,8 @@ type
     procedure InsertSetOptionsActionExecute(Sender: TObject);
     procedure TutorialsWikiActionExecute(Sender: TObject);
     procedure TutorialsWebActionExecute(Sender: TObject);
+    procedure UndoActionExecute(Sender: TObject);
+    procedure RedoActionExecute(Sender: TObject);
   private
     // File I/O
     FOpenDialog: TOpenDialog;
@@ -204,6 +206,9 @@ begin
   TopMenuItem.Add(CreateActionAndMenuItem('Cut',                @CutActionExecute,   ShortCut(VK_X, [ssCtrlOS])));
   TopMenuItem.Add(CreateActionAndMenuItem('Copy',               @CopyActionExecute,  ShortCut(VK_C, [ssCtrlOS])));
   TopMenuItem.Add(CreateActionAndMenuItem('Paste',              @PasteActionExecute, ShortCut(VK_P, [ssCtrlOS])));
+  TopMenuItem.Add(CreateDivider());
+  TopMenuItem.Add(CreateActionAndMenuItem('Undo',               @UndoActionExecute, ShortCut(VK_Z, [ssCtrlOS])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Redo',               @RedoActionExecute, ShortCut(VK_Z, [ssCtrlOS, ssShift])));
   TopMenuItem.Add(CreateDivider());
   TopMenuItem.Add(CreateActionAndMenuItem('Preferences... (startup.pgm)', @OpenPreferencesActionExecute, 0));
   MainMenu.Items.Add(TopMenuItem);
@@ -410,6 +415,11 @@ begin
     end;
 end;
 
+procedure TEditorForm2.RedoActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformRedo();
+end;
+
 procedure TEditorForm2.RunAllActionExecute(Sender: TObject);
 begin
   ActiveEditorPage.PerformRunAll();
@@ -510,6 +520,11 @@ end;
 procedure TEditorForm2.TutorialChange(Sender: TObject);
 begin
   LoadTutorials;
+end;
+
+procedure TEditorForm2.UndoActionExecute(Sender: TObject);
+begin
+  ActiveEditorPage.PerformUndo();
 end;
 
 procedure TEditorForm2.EditorClose(Sender: TObject;

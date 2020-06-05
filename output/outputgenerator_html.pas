@@ -36,6 +36,12 @@ const
   HTML_OUTPUT_CSS =
         '<STYLE type="text/css">' + LineEnding +
         '<!--' + LineEnding +
+        '/* EpiData Reporting Minimalistic style sheet - white background' + LineEnding +
+        '   v1.0' + LineEnding +
+        '   Use the design table.system as a template for a new design. To be safe, define all styles for a design.' + LineEnding +
+        '   Note that a style followed by a comma will take the attributes at the end of the group, so do not sort this file.' + LineEnding +
+        '*/' + LineEnding +
+        '' + LineEnding +
         '  .body {color: black; background-color: white;  font-size: 1.0em; font-weight: normal}' + LineEnding +
         '' + LineEnding +
         '   p {color: black ;font-size: 1.0em; font-family: proportional,monospace; font-weight: normal; margin: 0em }' + LineEnding +
@@ -61,12 +67,6 @@ const
         '' + LineEnding +
         'table.simple .firstrow {font-weight: bold; text-align: center; padding-right: 0.4em }' + LineEnding +
         'table.simple .firstcol {font-weight: bold; text-align: right; padding-right: 0.4em}' + LineEnding +
-        '' + LineEnding +
-        '/* EpiData Reporting Minimalistic style sheet - white background' + LineEnding +
-        '   v1.0' + LineEnding +
-        '   Use the design table.system as a template for a new design. To be safe, define all styles for a design.' + LineEnding +
-        '   Note that a style followed by a comma will take the attributes at the end of the group, so do not sort this file.' + LineEnding +
-        '*/' + LineEnding +
         '-->' + LineEnding +
         '</STYLE>' + LineEnding;
 
