@@ -167,6 +167,8 @@
             <font class="option">&lt;filename&gt;</font>
             An optional filename may be given. The file format is detected based on the file extension, which must be one of .{csv|epx|epz|dta}.
             If no filename is given, the open file dialog is started.
+			<p>All EpiData products support reading Stata files from version 4 - > 16 (format 105 -> 118). Stata has a special .dta version (format 119) which is only for datasets with more than 32767 variables. This format may also be used in Stata 15 and 16, but is not the standard format. This format is not supported by EpiData.<br/>
+			See this <a href="https://www.stata.com/help.cgi?dta">link</a> for at technical description of the .dta formats</p>
            </li>
            <li>
              <font class="option">&lt;expression&gt;</font>
