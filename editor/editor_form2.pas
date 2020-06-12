@@ -205,7 +205,7 @@ begin
   TopMenuItem.Add(CreateDivider());
   TopMenuItem.Add(CreateActionAndMenuItem('Cut',                @CutActionExecute,   ShortCut(VK_X, [ssCtrlOS])));
   TopMenuItem.Add(CreateActionAndMenuItem('Copy',               @CopyActionExecute,  ShortCut(VK_C, [ssCtrlOS])));
-  TopMenuItem.Add(CreateActionAndMenuItem('Paste',              @PasteActionExecute, ShortCut(VK_P, [ssCtrlOS])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Paste',              @PasteActionExecute, ShortCut(VK_V, [ssCtrlOS])));
   TopMenuItem.Add(CreateDivider());
   TopMenuItem.Add(CreateActionAndMenuItem('Undo',               @UndoActionExecute, ShortCut(VK_Z, [ssCtrlOS])));
   TopMenuItem.Add(CreateActionAndMenuItem('Redo',               @RedoActionExecute, ShortCut(VK_Z, [ssCtrlOS, ssShift])));
