@@ -191,8 +191,6 @@ begin
   TopMenuItem.Add(CreateActionAndMenuItem('&Save',       @SaveActionExecute, ShortCut(VK_S, [ssCtrlOs])));
   TopMenuItem.Add(CreateActionAndMenuItem('Save &As...', @SaveAsActionExecute, ShortCut(VK_S, [ssCtrlOs, ssShift])));
   TopMenuItem.Add(CreateDivider());
-  TopMenuItem.Add(CreateActionAndMenuItem('&Font...',    @OpenFontActionExecute, 0));
-  TopMenuItem.Add(CreateDivider());
   TopMenuItem.Add(CreateActionAndMenuItem('&Close Tab',  @CloseTabActionExecute, ShortCut(VK_W, [ssCtrlOs])));
   TopMenuItem.Add(CreateActionAndMenuItem('&Quit',       @QuitActionExecute, ShortCut(VK_Q, [ssCtrlOS])));
   MainMenu.Items.Add(TopMenuItem);
@@ -200,6 +198,8 @@ begin
   // Edit
   TopMenuItem := TMenuItem.Create(Self);
   TopMenuItem.Caption := 'Edit';
+  TopMenuItem.Add(CreateActionAndMenuItem('&Font...',    @OpenFontActionExecute, 0));
+  TopMenuItem.Add(CreateDivider());
   TopMenuItem.Add(CreateActionAndMenuItem('Insert History',     @InsertHistoryActionExecute, ShortCut(VK_I, [ssAlt])));
   TopMenuItem.Add(CreateActionAndMenuItem('Insert Set Options', @InsertSetOptionsActionExecute, 0));
   TopMenuItem.Add(CreateDivider());

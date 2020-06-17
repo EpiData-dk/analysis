@@ -27,9 +27,15 @@ type
   TMainForm = class(TForm)
     AlwaysAvailableActionList: TActionList;
     CloseAllWindowsAction: TAction;
+    ColorDialog1: TColorDialog;
     HistoryListBox: TListBox;
     MenuItem43: TMenuItem;
     MenuItem44: TMenuItem;
+    MenuItem45: TMenuItem;
+    OutputBGColourMenuItem: TMenuItem;
+    OutputFontColourMenuItem: TMenuItem;
+    CMDBGColourMenuItem: TMenuItem;
+    CMDFontColourMenuItem: TMenuItem;
     SaveOutputAction: TAction;
     Label3: TLabel;
     MenuItem36: TMenuItem;
@@ -128,11 +134,15 @@ type
     procedure Button2Click(Sender: TObject);
     procedure CancelExecActionExecute(Sender: TObject);
     procedure CloseAllWindowsActionExecute(Sender: TObject);
+    procedure CMDBGColourMenuItemClick(Sender: TObject);
     procedure CmdEditFocusActionExecute(Sender: TObject);
+    procedure CMDFontColourMenuItemClick(Sender: TObject);
     procedure CopyAllHistoryActionExecute(Sender: TObject);
     procedure CopySelectedHistoryActionExecute(Sender: TObject);
     procedure CopyVersionInfoActionExecute(Sender: TObject);
     procedure DefaultWindowPositionActionExecute(Sender: TObject);
+    procedure OutputBGColourMenuItemClick(Sender: TObject);
+    procedure OutputFontColourMenuItemClick(Sender: TObject);
     procedure QuitActionExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -306,6 +316,7 @@ type
   private
     FStartupFile: String;
     procedure ASyncRunStartup(Data: PtrInt);
+    procedure ChangeColour(Const SetOptionName: UTF8String);
   public
     procedure RestoreDefaultPos;
   end;
@@ -348,6 +359,11 @@ begin
   CloseWindows(true);
 end;
 
+procedure TMainForm.CMDBGColourMenuItemClick(Sender: TObject);
+begin
+  ChangeColour(ANA_SO_CMDEDIT_BG_COLOR);
+end;
+
 procedure TMainForm.CmdEditFocusActionExecute(Sender: TObject);
 begin
   if (FCmdEdit.CanFocus) and
@@ -357,6 +373,11 @@ begin
       Self.SetFocus;
       FCmdEdit.SetFocus;
     end;
+end;
+
+procedure TMainForm.CMDFontColourMenuItemClick(Sender: TObject);
+begin
+  ChangeColour(ANA_SO_CMDEDIT_FONT_COLOR);
 end;
 
 procedure TMainForm.CopyAllHistoryActionExecute(Sender: TObject);
@@ -392,6 +413,16 @@ begin
   RedrawOutput;
 
   RestoreDefaultPos;
+end;
+
+procedure TMainForm.OutputBGColourMenuItemClick(Sender: TObject);
+begin
+  ChangeColour(ANA_SO_OUTPUT_BG_COLOR);
+end;
+
+procedure TMainForm.OutputFontColourMenuItemClick(Sender: TObject);
+begin
+  ChangeColour(ANA_SO_OUTPUT_FONT_COLOR);
 end;
 
 procedure TMainForm.QuitActionExecute(Sender: TObject);
@@ -462,22 +493,21 @@ begin
   {$IFDEF DARWIN}
   SetCurrentDirUTF8(ResolveDots(ProgramDirectory + '../../..'));
   {$ENDIF}
+
+  {$IFNDEF LINUX}
+  // Do not show font colour items unless on linux
+  CMDFontColourMenuItem.Visible := false;
+  OutputFontColourMenuItem.Visible := false;
+  {$ENDIF}
+
+
   FHistory := THistory.Create(Executor, FOutputCreator);
 
   FCmdEdit := TCmdEdit.Create(Self);
-//  FCmdEdit.Parent := CenterPanel;
   FCmdEdit.OnRunCommand := @CmdEditRunCommand;
   FCmdEdit.Executor := Executor;
   FCmdEdit.History := FHistory;
-
   FCmdEdit.Align := alBottom;
-
-  //FCmdEdit.Anchors := [];
-  //FCmdEdit.AnchorToNeighbour(akTop, 0, PageControl1);
-  //FCmdEdit.AnchorParallel(akLeft, 0, PageControl1);
-  //FCmdEdit.AnchorParallel(akRight, 0, PageControl1);
-  //FCmdEdit.AnchorToNeighbour(akBottom, 0, FStatusbar);
-  //FCmdEdit.Height := 24;
 
   FHistoryWindow := THistoryForm.Create(Self, FHIstory);
   FHistoryWindow.OnClearHistoryAction := @HistoryWindowClearHistory;
@@ -630,13 +660,6 @@ begin
     end;
 
   AFont := FontFromSetOptions(FN, FS, FC, FSt, Executor.SetOptions);
-
-{  AFont := TFont.Create;
-  AFont.Name := Executor.SetOptions[FN].Value;
-  AFont.Size := StrToInt(Executor.SetOptions[FS].Value);
-  AFont.Color := StrToInt(Executor.SetOptions[FC].Value);
-  AFont.Style := ;                                       }
-
   FontDialog1.Font.Assign(AFont);
   if FontDialog1.Execute then
     FontToSetOptions(FontDialog1.Font, FN, FS, FC, FSt, Executor.SetOptions);
@@ -1952,6 +1975,23 @@ begin
 
   FOutputCreator.DoInfoAll(GetProgramInfo);
   FOutputCreator.DoNormal('');
+end;
+
+procedure TMainForm.ChangeColour(const SetOptionName: UTF8String);
+var
+  Colour: TColor;
+  AFont: TFont;
+begin
+  Colour := TFontColorOption(Executor.SetOptions.GetValue(SetOptionName)).GetBGRValue;
+  ColorDialog1.Color := Colour;
+
+  if (ColorDialog1.Execute) then
+    begin
+      AFont := TFont.Create;
+      AFont.Color := ColorDialog1.Color;
+      FontToSetOptions(AFont, '', '', SetOptionName, '', Executor.SetOptions);
+      AFont.Free;
+    end;
 end;
 
 procedure TMainForm.RestoreDefaultPos;

@@ -1,13 +1,14 @@
 object MainForm: TMainForm
   Left = 2322
-  Height = 663
+  Height = 649
   Top = 233
-  Width = 1010
+  Width = 989
   ActiveControl = Panel2
   AllowDropFiles = True
   Caption = 'AMainForm'
-  ClientHeight = 638
-  ClientWidth = 1010
+  ClientHeight = 626
+  ClientWidth = 989
+  DesignTimePPI = 94
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -17,75 +18,82 @@ object MainForm: TMainForm
   Position = poDefault
   LCLVersion = '2.0.0.4'
   object PageControl1: TPageControl
-    Left = 245
-    Height = 588
-    Top = 50
-    Width = 564
+    Left = 240
+    Height = 577
+    Top = 49
+    Width = 552
     Align = alClient
     Anchors = [akTop, akLeft, akRight]
+    ParentFont = False
     ShowTabs = False
     TabOrder = 5
   end
   object Panel2: TPanel
     Left = 0
-    Height = 50
+    Height = 49
     Top = 0
-    Width = 1010
+    Width = 989
     Align = alTop
-    ClientHeight = 50
-    ClientWidth = 1010
+    ClientHeight = 49
+    ClientWidth = 989
+    ParentFont = False
     TabOrder = 0
     object Button2: TButton
       Left = 16
-      Height = 25
+      Height = 24
       Top = 13
-      Width = 75
+      Width = 73
       Caption = 'test'
       OnClick = Button2Click
+      ParentFont = False
       TabOrder = 0
     end
     object Button3: TButton
-      Left = 112
-      Height = 25
+      Left = 110
+      Height = 24
       Top = 13
-      Width = 75
+      Width = 73
       Caption = 'SaveHtml'
       OnClick = Button3Click
+      ParentFont = False
       TabOrder = 1
     end
     object Label1: TLabel
-      Left = 307
+      Left = 301
       Height = 15
       Top = 18
       Width = 89
       Caption = 'Redraw Time:'
       ParentColor = False
+      ParentFont = False
     end
     object Label2: TLabel
-      Left = 400
+      Left = 392
       Height = 15
       Top = 18
       Width = 43
       Caption = 'Label2'
       ParentColor = False
+      ParentFont = False
     end
   end
   object RightSidePanel: TPanel
-    Left = 814
-    Height = 588
-    Top = 50
-    Width = 196
+    Left = 797
+    Height = 577
+    Top = 49
+    Width = 192
     Align = alRight
-    ClientHeight = 588
-    ClientWidth = 196
+    ClientHeight = 577
+    ClientWidth = 192
+    ParentFont = False
     TabOrder = 1
     Visible = False
     object RightPanelSplitter: TSplitter
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 385
-      Width = 194
+      Top = 378
+      Width = 190
       Align = alBottom
       AutoSnap = False
       Beveled = True
@@ -95,9 +103,9 @@ object MainForm: TMainForm
     object VarnamesList: TVirtualStringTree
       Cursor = 63
       Left = 1
-      Height = 384
+      Height = 377
       Top = 1
-      Width = 194
+      Width = 190
       Align = alClient
       Colors.UnfocusedColor = clMedGray
       DefaultText = 'Node'
@@ -122,6 +130,7 @@ object MainForm: TMainForm
           Width = 10
         end>
       Header.Options = [hoAutoResize, hoColumnResize, hoDblClickResize, hoDrag, hoShowImages, hoShowSortGlyphs, hoVisible, hoAutoSpring]
+      ParentFont = False
       TabOrder = 1
       TreeOptions.MiscOptions = [toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning]
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowVertGridLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection]
@@ -131,17 +140,18 @@ object MainForm: TMainForm
     object HistoryListBox: TListBox
       Tag = 1
       Left = 1
-      Height = 197
-      Top = 390
-      Width = 194
+      Height = 193
+      Top = 383
+      Width = 190
       Align = alBottom
       ItemHeight = 0
       MultiSelect = True
       OnDblClick = HistoryListBoxDblClick
       OnDrawItem = HistoryListBoxDrawItem
       OnKeyDown = HistoryListBoxKeyDown
+      ParentFont = False
       PopupMenu = HistoryPopupMenu
-      ScrollWidth = 190
+      ScrollWidth = 188
       Style = lbOwnerDrawFixed
       TabOrder = 2
       TopIndex = -1
@@ -149,9 +159,9 @@ object MainForm: TMainForm
     end
   end
   object RightSideSplitter: TSplitter
-    Left = 809
-    Height = 588
-    Top = 50
+    Left = 792
+    Height = 577
+    Top = 49
     Width = 5
     Align = alRight
     AutoSnap = False
@@ -163,21 +173,22 @@ object MainForm: TMainForm
   object LeftSidePanel: TPanel
     AnchorSideRight.Control = LeftSideSplitter
     Left = 0
-    Height = 588
-    Top = 50
-    Width = 240
+    Height = 577
+    Top = 49
+    Width = 235
     Align = alLeft
     Anchors = []
-    ClientHeight = 588
-    ClientWidth = 240
+    ClientHeight = 577
+    ClientWidth = 235
+    ParentFont = False
     TabOrder = 2
     Visible = False
     object LeftPanelSplitter: TSplitter
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 582
-      Width = 238
+      Top = 571
+      Width = 233
       Align = alBottom
       AutoSnap = False
       Beveled = True
@@ -185,9 +196,9 @@ object MainForm: TMainForm
     end
   end
   object LeftSideSplitter: TSplitter
-    Left = 240
-    Height = 588
-    Top = 50
+    Left = 235
+    Height = 577
+    Top = 49
     Width = 5
     Beveled = True
   end
@@ -198,11 +209,12 @@ object MainForm: TMainForm
     Width = 43
     Caption = 'Label3'
     ParentColor = False
+    ParentFont = False
   end
   object MainMenu1: TMainMenu
     Images = DM.Icons16
-    left = 280
-    top = 192
+    left = 274
+    top = 188
     object MenuItem1: TMenuItem
       Caption = '&File'
       object MenuItem19: TMenuItem
@@ -244,6 +256,25 @@ object MainForm: TMainForm
         object CommandLineFontMenuItem: TMenuItem
           Caption = '&Command Line'
           OnClick = FontChangeClick
+        end
+      end
+      object MenuItem45: TMenuItem
+        Caption = 'Colour'
+        object OutputBGColourMenuItem: TMenuItem
+          Caption = 'Output Background Colour'
+          OnClick = OutputBGColourMenuItemClick
+        end
+        object OutputFontColourMenuItem: TMenuItem
+          Caption = 'Output Font Colour'
+          OnClick = OutputFontColourMenuItemClick
+        end
+        object CMDBGColourMenuItem: TMenuItem
+          Caption = 'Command Background Colour'
+          OnClick = CMDBGColourMenuItemClick
+        end
+        object CMDFontColourMenuItem: TMenuItem
+          Caption = 'Command Font Colour'
+          OnClick = CMDFontColourMenuItemClick
         end
       end
       object MenuItem40: TMenuItem
@@ -342,17 +373,17 @@ object MainForm: TMainForm
   object FontDialog1: TFontDialog
     MinFontSize = 0
     MaxFontSize = 0
-    left = 524
-    top = 313
+    left = 513
+    top = 306
   end
   object SaveDialog1: TSaveDialog
-    left = 360
-    top = 128
+    left = 353
+    top = 125
   end
   object ActionList1: TActionList
     Images = DM.Icons16
-    left = 376
-    top = 192
+    left = 368
+    top = 188
     object ShowAboutAction: TAction
       Category = 'Help'
       Caption = 'About'
@@ -454,12 +485,12 @@ object MainForm: TMainForm
     end
   end
   object RecentFilesActionList: TActionList
-    left = 660
-    top = 188
+    left = 646
+    top = 184
   end
   object HistoryPopupMenu: TPopupMenu
-    left = 816
-    top = 336
+    left = 799
+    top = 329
     object MenuItem23: TMenuItem
       Action = CopyAllHistoryAction
     end
@@ -474,8 +505,8 @@ object MainForm: TMainForm
     end
   end
   object AlwaysAvailableActionList: TActionList
-    left = 365
-    top = 321
+    left = 357
+    top = 314
     object ToggleCmdTreeAction: TAction
       Category = 'Window'
       Caption = 'Show Command Tree'
@@ -537,5 +568,32 @@ object MainForm: TMainForm
       Caption = 'Tutorials On Web'
       OnExecute = TutorialsWebActionExecute
     end
+  end
+  object ColorDialog1: TColorDialog
+    Color = clBlack
+    CustomColors.Strings = (
+      'ColorA=000000'
+      'ColorB=000080'
+      'ColorC=008000'
+      'ColorD=008080'
+      'ColorE=800000'
+      'ColorF=800080'
+      'ColorG=808000'
+      'ColorH=808080'
+      'ColorI=C0C0C0'
+      'ColorJ=0000FF'
+      'ColorK=00FF00'
+      'ColorL=00FFFF'
+      'ColorM=FF0000'
+      'ColorN=FF00FF'
+      'ColorO=FFFF00'
+      'ColorP=FFFFFF'
+      'ColorQ=C0DCC0'
+      'ColorR=F0CAA6'
+      'ColorS=F0FBFF'
+      'ColorT=A4A0A0'
+    )
+    left = 456
+    top = 188
   end
 end
