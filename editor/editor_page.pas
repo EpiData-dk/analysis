@@ -200,6 +200,8 @@ begin
 
   FExecutor.SetOptions[ANA_SO_EDITOR_FONT_SIZE].AddOnChangeHandler(@FontChangeEvent);
   FExecutor.SetOptions[ANA_SO_EDITOR_FONT_NAME].AddOnChangeHandler(@FontChangeEvent);
+
+  FontChangeEvent(nil);
 end;
 
 procedure TEditorPage.SetHistory(AValue: THistory);
