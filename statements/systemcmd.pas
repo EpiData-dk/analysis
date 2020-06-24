@@ -244,10 +244,8 @@ begin
       ST.ExecResult := csrSuccess;
     end
   else
-    begin
-      FExecutor.Error('"' + S + '"' + ' does not exist');
-      ST.ExecResult := csrFailed;
-    end;
+    FOutputCreator.DoWarning('"' + S + '"' + ' does not exist');
+    ST.ExecResult := csrSuccess;
 end;
 
 constructor TSystemCmd.Create(AExecutor: TExecutor;
