@@ -346,12 +346,13 @@ end;
 procedure TMainForm.Button2Click(Sender: TObject);
 var
   Frm: TForm;
+  EditorForm: TEditorForm;
 begin
-  EditorForm := TEditorForm.Create(self);
-  EditorForm.Executor := Executor;
-  EditorForm.History := FHistory;
-  EditorForm.OutputCreator := FOutputCreator;
-  EditorForm.Show;
+  //EditorForm := TEditorForm.Create(self);
+  //EditorForm.Executor := Executor;
+  //EditorForm.History := FHistory;
+  //EditorForm.OutputCreator := FOutputCreator;
+  //EditorForm.Show;
 end;
 
 procedure TMainForm.CloseAllWindowsActionExecute(Sender: TObject);
@@ -537,7 +538,7 @@ end;
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(FStatusbar);
-  FreeAndNil(EditorForm);
+ // FreeAndNil(EditorForm);
   FreeAndNil(EditorForm2);
   FreeAndNil(FHistory);
   Executor.Free;
@@ -862,8 +863,8 @@ procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 var
   Res: TModalResult;
 begin
-  if Assigned(EditorForm) then
-    CanClose := EditorForm.CloseQuery;
+  if Assigned(EditorForm2) then
+    CanClose := EditorForm2.CloseQuery;
 
   if (not CanClose) then exit;
 
@@ -998,8 +999,8 @@ begin
   if (CloseAll) then
     begin
       CloseBrowsers;
-      if (Assigned(EditorForm)) then
-        EditorForm.Close;
+      if (Assigned(EditorForm2)) then
+        EditorForm2.Close;
     end;
 end;
 
@@ -2084,14 +2085,14 @@ begin
       P := FOutputViewer.GetCaretPos;
     end;
 
-  if Assigned(EditorForm) and
-     EditorForm.SynEdit1.Focused
-  then
-    begin
-      S   := EditorForm.SynEdit1.SelText;
-      Txt := EditorForm.SynEdit1.LineText;
-      P   := EditorForm.SynEdit1.CaretXY;
-    end;
+  //if Assigned(EditorForm) and
+  //   EditorForm.SynEdit1.Focused
+  //then
+  //  begin
+  //    S   := EditorForm.SynEdit1.SelText;
+  //    Txt := EditorForm.SynEdit1.LineText;
+  //    P   := EditorForm.SynEdit1.CaretXY;
+  //  end;
 
   if (HistoryListBox.Focused) and
      (HistoryListBox.ItemIndex > -1)
