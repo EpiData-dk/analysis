@@ -8,11 +8,11 @@ interface
 uses
   Classes, SysUtils, Types, FileUtil, Forms, Controls, Graphics, Dialogs,
   StdCtrls, ActnList, Menus, ExtCtrls, ComCtrls, HtmlView, VirtualTrees,
-  Token, GOLDParser, executor, ast, outputcreator,
-  epiv_datamodule, epidatafiles, outputgenerator_base, history, cmdedit,
-  options_hashmap, epiv_projecttreeview_frame, epicustombase,
-  analysis_statusbar, epidocument, epiopenfile, outputviewer_types,
-  commandtree, history_form, varnames_form, projecttree_form, commandtree_form,
+  SynEdit, Token, GOLDParser, executor, ast, outputcreator, epiv_datamodule,
+  epidatafiles, outputgenerator_base, history, cmdedit, options_hashmap,
+  epiv_projecttreeview_frame, epicustombase, analysis_statusbar, epidocument,
+  epiopenfile, outputviewer_types, commandtree, history_form, varnames_form,
+  projecttree_form, commandtree_form,
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -2008,7 +2008,6 @@ begin
 
   Application.ProcessMessages;
 
-  TEditorForm.RestoreDefaultPos;
   TEditorForm2.RestoreDefaultPos(EditorForm2);
   TAboutForm.RestoreDefaultPos;
   TBrowseForm4.RestoreDefaultPos;
@@ -2065,6 +2064,7 @@ var
   S: String;
   P: TPoint;
   Txt: TCaption;
+  Editor: TSynEdit;
 begin
   S := '';
   Txt := '';
@@ -2085,14 +2085,15 @@ begin
       P := FOutputViewer.GetCaretPos;
     end;
 
-  //if Assigned(EditorForm) and
-  //   EditorForm.SynEdit1.Focused
-  //then
-  //  begin
-  //    S   := EditorForm.SynEdit1.SelText;
-  //    Txt := EditorForm.SynEdit1.LineText;
-  //    P   := EditorForm.SynEdit1.CaretXY;
-  //  end;
+  if Assigned(EditorForm2) and
+     EditorForm2.ActiveEditorPage.Editor.Focused
+  then
+    begin
+      Editor := EditorForm2.ActiveEditorPage.Editor;
+      S   := Editor.SelText;
+      Txt := Editor.LineText;
+      P   := Editor.CaretXY;
+    end;
 
   if (HistoryListBox.Focused) and
      (HistoryListBox.ItemIndex > -1)
