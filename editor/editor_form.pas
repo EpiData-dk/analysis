@@ -235,8 +235,8 @@ type
     property OutputCreator: TOutputCreator read FOutputCreator write SetOutputCreator;
   end;
 
-var
-  EditorForm: TEditorForm;
+//var
+//  EditorForm: TEditorForm;
 
 implementation
 
@@ -1364,7 +1364,7 @@ begin
 
   Screen.RemoveHandlerActiveFormChanged(@FormChanged);
 
-  EditorForm := nil;
+  //EditorForm := nil;
   inherited Destroy;
 end;
 
@@ -1377,9 +1377,9 @@ class procedure TEditorForm.RestoreDefaultPos;
 var
   AForm: TForm;
 begin
-  if (Assigned(EditorForm)) then
-    AForm := EditorForm
-  else
+ // if (Assigned(EditorForm)) then
+ //   AForm := EditorForm
+ // else
     AForm := TForm.Create(nil);
 
   Aform.Width := 500;
@@ -1388,7 +1388,7 @@ begin
   Aform.Left := (Screen.Monitors[0].Width - Aform.Width) div 2;
 
   SaveFormPosition(Aform, TEditorForm.ClassName);
-  if (AForm <> EditorForm) then
+//  if (AForm <> EditorForm) then
     AForm.free;
 end;
 

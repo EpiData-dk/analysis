@@ -1868,8 +1868,12 @@ begin
 
   // OUTPUT VIEWER
   SOpt := TSetOption.Create('TEXT', rtString);
+  {$IFDEF LCLCocoa}
+  SOpt.LegalValues.Add('TEXT');
+  {$ELSE}
   SOpt.LegalValues.Add('HTML');
   SOpt.LegalValues.Add('TEXT');
+  {$ENDIF}
   {$IFDEF EPI_CHROMIUM_HTML}
   SOpt.LegalValues.Add('OLDHTML');
   SOpt.LegalValues.Add('OSR');

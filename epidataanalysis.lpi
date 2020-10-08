@@ -7,35 +7,23 @@
       <MainUnit Value="0"/>
       <AutoCreateForms Value="False"/>
       <Title Value="Analysis"/>
-      <Scaled Value="True"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
-      <XPManifest>
-        <DpiAware Value="True"/>
-        <TextName Value="EpiDataAssociation.EpiData.Analysis"/>
-        <TextDesc Value="Analysis of data"/>
-      </XPManifest>
       <Icon Value="0"/>
-      <Resources Count="1">
-        <Resource_0 FileName="epidataanalysis.ico" Type="ICON" ResourceName="EPIDATAANALYSIS"/>
-      </Resources>
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="7"/>
-      <BuildNr Value="14"/>
-      <Attributes pvaDebug="True"/>
-      <StringTable Comments="macOS 64-bit Cocoa" CompanyName="EpiData Association" FileDescription="EpidataAnalysis"/>
+      <MajorVersionNr Value="3"/>
+      <MinorVersionNr Value="1"/>
+      <BuildNr Value="1"/>
+      <Attributes pvaSpecialBuild="True"/>
+      <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
-    <MacroValues Count="1">
-      <Macro3 Name="LCLWidgetType" Value="cocoa"/>
-    </MacroValues>
     <BuildModes Count="7">
       <Item1 Name="Default" Default="True"/>
       <Item2 Name="Win32">
         <MacroValues Count="1">
-          <Macro1 Name="LCLWidgetType" Value="win32"/>
+          <Macro2 Name="LCLWidgetType" Value="win32"/>
         </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
@@ -68,7 +56,7 @@
       </Item2>
       <Item3 Name="Win64">
         <MacroValues Count="1">
-          <Macro2 Name="LCLWidgetType" Value="win32"/>
+          <Macro3 Name="LCLWidgetType" Value="win32"/>
         </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
@@ -104,7 +92,7 @@
       </Item3>
       <Item4 Name="Linux32">
         <MacroValues Count="1">
-          <Macro4 Name="LCLWidgetType" Value="gtk2"/>
+          <Macro5 Name="LCLWidgetType" Value="gtk2"/>
         </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
@@ -132,7 +120,7 @@
       </Item4>
       <Item5 Name="Linux64">
         <MacroValues Count="1">
-          <Macro4 Name="LCLWidgetType" Value="gtk2"/>
+          <Macro5 Name="LCLWidgetType" Value="gtk2"/>
         </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
@@ -159,6 +147,9 @@
         </CompilerOptions>
       </Item5>
       <Item6 Name="Darwin32">
+        <MacroValues Count="1">
+          <Macro1 Name="LCLWidgetType" Value="carbon"/>
+        </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
@@ -185,7 +176,7 @@
       </Item6>
       <Item7 Name="Darwin64">
         <MacroValues Count="1">
-          <Macro3 Name="LCLWidgetType" Value="cocoa"/>
+          <Macro4 Name="LCLWidgetType" Value="cocoa"/>
         </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
@@ -198,27 +189,25 @@
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
-            <SmartLinkUnit Value="True"/>
-            <RelocatableUnit Value="True"/>
             <TargetCPU Value="x86_64"/>
             <TargetOS Value="darwin"/>
             <Optimizations>
-              <OptimizationLevel Value="3"/>
+              <OptimizationLevel Value="0"/>
             </Optimizations>
           </CodeGeneration>
           <Linking>
             <Debugging>
               <DebugInfoType Value="dsDwarf2Set"/>
             </Debugging>
-            <LinkSmart Value="True"/>
           </Linking>
         </CompilerOptions>
       </Item7>
-      <SharedMatrixOptions Count="4">
-        <Item1 ID="123055442727" Modes="Win32" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
-        <Item2 ID="329491697955" Modes="Win64" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
-        <Item3 ID="081215147691" Modes="Darwin64,Default" Type="IDEMacro" MacroName="LCLWidgetType" Value="cocoa"/>
-        <Item4 ID="279386422299" Modes="Linux32,Linux64" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
+      <SharedMatrixOptions Count="5">
+        <Item1 ID="324748042522" Modes="Darwin32" Type="IDEMacro" MacroName="LCLWidgetType" Value="carbon"/>
+        <Item2 ID="123055442727" Modes="Win32" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
+        <Item3 ID="329491697955" Modes="Win64" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
+        <Item4 ID="081215147691" Modes="Darwin64" Type="IDEMacro" MacroName="LCLWidgetType" Value="cocoa"/>
+        <Item5 ID="279386422299" Modes="Linux32,Linux64" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
       </SharedMatrixOptions>
     </BuildModes>
     <PublishOptions>
@@ -251,28 +240,28 @@
     </RunParams>
     <RequiredPackages Count="13">
       <Item1>
-        <PackageName Value="luicontrols"/>
+        <PackageName Value="FrameViewer09"/>
       </Item1>
       <Item2>
-        <PackageName Value="luicomponents"/>
+        <PackageName Value="luicontrols"/>
       </Item2>
       <Item3>
-        <PackageName Value="ChsDet"/>
+        <PackageName Value="luicomponents"/>
       </Item3>
       <Item4>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="ChsDet"/>
       </Item4>
       <Item5>
-        <PackageName Value="lclextensions_package"/>
+        <PackageName Value="lnetbase"/>
       </Item5>
       <Item6>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="lclextensions_package"/>
       </Item6>
       <Item7>
-        <PackageName Value="BGRABitmapPack"/>
+        <PackageName Value="dcpcrypt"/>
       </Item7>
       <Item8>
-        <PackageName Value="FrameViewer09"/>
+        <PackageName Value="BGRABitmapPack"/>
       </Item8>
       <Item9>
         <PackageName Value="virtualtreeview_package"/>
@@ -729,15 +718,12 @@
       </SyntaxOptions>
     </Parsing>
     <CodeGeneration>
-      <SmartLinkUnit Value="True"/>
-      <RelocatableUnit Value="True"/>
       <TargetCPU Value="x86_64"/>
     </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf2Set"/>
       </Debugging>
-      <LinkSmart Value="True"/>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>
@@ -745,7 +731,8 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dEPI_CHROMIUM_HTML1"/>
+      <CustomOptions Value="-dEPI_CHROMIUM_HTML1
+-dEPI_BETA"/>
     </Other>
   </CompilerOptions>
   <Debugging>
@@ -762,7 +749,6 @@
       </Item3>
       <Item4>
         <Name Value="EEpiPasswordCanceled"/>
-        <Enabled Value="False"/>
       </Item4>
       <Item5>
         <Name Value="ESetOption"/>
@@ -780,6 +766,7 @@
       </Item8>
       <Item9>
         <Name Value="EKeyNotFoundException"/>
+        <Enabled Value="False"/>
       </Item9>
       <Item10>
         <Name Value="Exception"/>

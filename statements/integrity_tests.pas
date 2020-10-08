@@ -669,13 +669,6 @@ begin
 
   FExecutor.ClearResults('$check_key');
 
-  if (Length(FailedRecords) = 0) then
-    begin
-      FOutputCreator.DoInfoAll('No Errors');
-      ST.ExecResult := csrSuccess;
-      Exit;
-    end;
-
   T := FOutputCreator.AddTable;
   T.Header.Text := DF.Caption.Text + '(' + DF.Name + ')';
   T.ColCount := 3 + KeyList.Count;

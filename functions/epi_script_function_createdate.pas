@@ -73,6 +73,7 @@ var
   DateResult: EpiDate;
   LocalFormat: TFormatSettings;
   StartIdx, CharCount: ASTInteger;
+  DateValue: TDateTime;
 
   function GetShortMonthNames(): TMonthNameArray;
   var
@@ -149,7 +150,10 @@ begin
     if Year.IsMissing then
       Result := inherited AsDate
     else
-      Result := Trunc(EncodeDate(Year.AsInteger, M, D));
+      if TryEncodeDate(Year.AsInteger, M, D, DateValue) then
+        Result := trunc(DateValue)
+      else
+        Result := inherited AsDate;
 
     Exit;
   end;

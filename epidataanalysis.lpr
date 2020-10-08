@@ -9,7 +9,7 @@ uses
     clocale,
   {$ENDIF}
   Interfaces,// this includes the LCL widgetset
-  sysutils, Forms, FrameViewer09, lclextensions_package, lnetbase, main,
+  sysutils, Forms, lclextensions_package, lnetbase, FrameViewer09, main,
   executor, expr, ast, ast_types, ast_builder, datamodule, select_stack,
   result_variables, runtest, parser, about, epidatacore, statfunctions, means,
   generalutils, interval_types, outputcreator, outputgenerator_base,

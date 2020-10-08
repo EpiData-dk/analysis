@@ -70,7 +70,8 @@ begin
     OutputType := UTF8LowerString(FExecutor.SetOptions[ANA_SO_OUTPUT_SAVE_FORMAT].Value);
 
   if Assigned(ST.StringExpr) then
-    FN := ST.StringExpr.AsString;
+    // allow use of ~ in file name
+    FN := ExpandFileNameUTF8(ST.StringExpr.AsString);
 
   if (FN = '') then
     begin

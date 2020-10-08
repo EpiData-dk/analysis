@@ -87,7 +87,7 @@ type
     procedure PageChangingEvent(Sender: TObject; var AllowChange: Boolean);
     procedure PageStatusChange(Sender: TObject);
     procedure PageCloseTabEvent(Sender: TObject);
-    function ActiveEditorPage: TEditorPage;
+    function GetActiveEditorPage: TEditorPage;
     function GetEditorPage(Index: Integer): TEditorPage;
     procedure AddNewTab;
     function CloseTab(EditorPage: TEditorPage): boolean;
@@ -108,6 +108,7 @@ type
     property Executor: TExecutor read FExecutor write SetExecutor;
     property History: THistory read FHistory write SetHistory;
     property OutputCreator: TOutputCreator read FOutputCreator write SetOutputCreator;
+    property ActiveEditorPage: TEditorPage read GetActiveEditorPage;
   end;
 
 var
@@ -191,8 +192,6 @@ begin
   TopMenuItem.Add(CreateActionAndMenuItem('&Save',       @SaveActionExecute, ShortCut(VK_S, [ssCtrlOs])));
   TopMenuItem.Add(CreateActionAndMenuItem('Save &As...', @SaveAsActionExecute, ShortCut(VK_S, [ssCtrlOs, ssShift])));
   TopMenuItem.Add(CreateDivider());
-  TopMenuItem.Add(CreateActionAndMenuItem('&Font...',    @OpenFontActionExecute, 0));
-  TopMenuItem.Add(CreateDivider());
   TopMenuItem.Add(CreateActionAndMenuItem('&Close Tab',  @CloseTabActionExecute, ShortCut(VK_W, [ssCtrlOs])));
   TopMenuItem.Add(CreateActionAndMenuItem('&Quit',       @QuitActionExecute, ShortCut(VK_Q, [ssCtrlOS])));
   MainMenu.Items.Add(TopMenuItem);
@@ -200,12 +199,14 @@ begin
   // Edit
   TopMenuItem := TMenuItem.Create(Self);
   TopMenuItem.Caption := 'Edit';
+  TopMenuItem.Add(CreateActionAndMenuItem('&Font...',    @OpenFontActionExecute, 0));
+  TopMenuItem.Add(CreateDivider());
   TopMenuItem.Add(CreateActionAndMenuItem('Insert History',     @InsertHistoryActionExecute, ShortCut(VK_I, [ssAlt])));
   TopMenuItem.Add(CreateActionAndMenuItem('Insert Set Options', @InsertSetOptionsActionExecute, 0));
   TopMenuItem.Add(CreateDivider());
   TopMenuItem.Add(CreateActionAndMenuItem('Cut',                @CutActionExecute,   ShortCut(VK_X, [ssCtrlOS])));
   TopMenuItem.Add(CreateActionAndMenuItem('Copy',               @CopyActionExecute,  ShortCut(VK_C, [ssCtrlOS])));
-  TopMenuItem.Add(CreateActionAndMenuItem('Paste',              @PasteActionExecute, ShortCut(VK_P, [ssCtrlOS])));
+  TopMenuItem.Add(CreateActionAndMenuItem('Paste',              @PasteActionExecute, ShortCut(VK_V, [ssCtrlOS])));
   TopMenuItem.Add(CreateDivider());
   TopMenuItem.Add(CreateActionAndMenuItem('Undo',               @UndoActionExecute, ShortCut(VK_Z, [ssCtrlOS])));
   TopMenuItem.Add(CreateActionAndMenuItem('Redo',               @RedoActionExecute, ShortCut(VK_Z, [ssCtrlOS, ssShift])));
@@ -381,8 +382,8 @@ end;
 
 procedure TEditorForm2.DelayedFocusActiveEditor(Data: PtrInt);
 begin
-  if (ActiveEditorPage.Editor.CanSetFocus) then
-    ActiveEditorPage.Editor.SetFocus;
+  if (GetActiveEditorPage.Editor.CanSetFocus) then
+    GetActiveEditorPage.Editor.SetFocus;
 end;
 
 procedure TEditorForm2.PreviewKeyDown(Sender: TObject; var Key: Word;
@@ -417,17 +418,17 @@ end;
 
 procedure TEditorForm2.RedoActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformRedo();
+  GetActiveEditorPage.PerformRedo();
 end;
 
 procedure TEditorForm2.RunAllActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformRunAll();
+  GetActiveEditorPage.PerformRunAll();
 end;
 
 procedure TEditorForm2.RunSelectedActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformRunSelected();
+  GetActiveEditorPage.PerformRunSelected();
 end;
 
 procedure TEditorForm2.OpenFontActionExecute(Sender: TObject);
@@ -437,22 +438,22 @@ end;
 
 procedure TEditorForm2.FindActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformFind();
+  GetActiveEditorPage.PerformFind();
 end;
 
 procedure TEditorForm2.FindNextActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformFindNext();
+  GetActiveEditorPage.PerformFindNext();
 end;
 
 procedure TEditorForm2.FindPrevActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformFindPrev();
+  GetActiveEditorPage.PerformFindPrev();
 end;
 
 procedure TEditorForm2.ReplaceActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformReplace();
+  GetActiveEditorPage.PerformReplace();
 end;
 
 procedure TEditorForm2.OpenPreferencesActionExecute(Sender: TObject);
@@ -462,27 +463,27 @@ end;
 
 procedure TEditorForm2.CutActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformCut();
+  GetActiveEditorPage.PerformCut();
 end;
 
 procedure TEditorForm2.CopyActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformCopy();
+  GetActiveEditorPage.PerformCopy();
 end;
 
 procedure TEditorForm2.PasteActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformPaste();
+  GetActiveEditorPage.PerformPaste();
 end;
 
 procedure TEditorForm2.InsertHistoryActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformInsertHistory();
+  GetActiveEditorPage.PerformInsertHistory();
 end;
 
 procedure TEditorForm2.InsertSetOptionsActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformInsertSetOptions();
+  GetActiveEditorPage.PerformInsertSetOptions();
 end;
 
 procedure TEditorForm2.TutorialsWikiActionExecute(Sender: TObject);
@@ -524,7 +525,7 @@ end;
 
 procedure TEditorForm2.UndoActionExecute(Sender: TObject);
 begin
-  ActiveEditorPage.PerformUndo();
+  GetActiveEditorPage.PerformUndo();
 end;
 
 procedure TEditorForm2.EditorClose(Sender: TObject;
@@ -576,7 +577,7 @@ end;
 
 procedure TEditorForm2.CloseTabActionExecute(Sender: TObject);
 begin
-  CloseTab(ActiveEditorPage);
+  CloseTab(GetActiveEditorPage);
 end;
 
 procedure TEditorForm2.FontActionExecute(Sender: TObject);
@@ -610,7 +611,7 @@ end;
 
 procedure TEditorForm2.SaveActionExecute(Sender: TObject);
 begin
-  DoSaveFile(ActiveEditorPage.FileName);
+  DoSaveFile(GetActiveEditorPage.FileName);
 end;
 
 procedure TEditorForm2.SaveAsActionExecute(Sender: TObject);
@@ -653,12 +654,12 @@ begin
     begin
       if (not FileExistsUTF8(FileName)) then Exit;
 
-      if (ActiveEditorPage.Modified) or
-         (ActiveEditorPage.FileName <> '')
+      if (GetActiveEditorPage.Modified) or
+         (GetActiveEditorPage.FileName <> '')
       then
         AddNewTab;
 
-      ActiveEditorPage.LoadFromFile(FileName);
+      GetActiveEditorPage.LoadFromFile(FileName);
       AddToRecent(FileName, GetRecentPGMIniFileName, RecentPGMFiles);
     end;
 
@@ -671,7 +672,7 @@ begin
   Result := '';
 
   FSaveDialog.InitialDir := GetCurrentDirUTF8;
-  FSaveDialog.FileName := ActiveEditorPage.FileName;
+  FSaveDialog.FileName := GetActiveEditorPage.FileName;
   if (FSaveDialog.Execute) then
     Result := FSaveDialog.FileName;
 end;
@@ -684,7 +685,7 @@ begin
   if (FileName = '') then
     Exit(false);
 
-  ActiveEditorPage.SaveToFile(FileName);
+  GetActiveEditorPage.SaveToFile(FileName);
   AddToRecent(FileName, GetRecentPGMIniFileName, RecentPGMFiles);
   UpdateRecentFiles;
 
@@ -696,10 +697,10 @@ var
   FontDialog: TFontDialog;
 begin
   FontDialog := TFontDialog.Create(Self);
-  FontDialog.Font.Assign(ActiveEditorPage.Editor.Font);
+  FontDialog.Font.Assign(GetActiveEditorPage.Editor.Font);
 
   if FontDialog.Execute then
-    ActiveEditorPage.UpdateEditorFont(FontDialog.Font);
+    GetActiveEditorPage.UpdateEditorFont(FontDialog.Font);
 
   FontDialog.Free;
 end;
@@ -740,7 +741,7 @@ begin
   end;
 end;
 
-function TEditorForm2.ActiveEditorPage: TEditorPage;
+function TEditorForm2.GetActiveEditorPage: TEditorPage;
 begin
   result := TEditorPage(FPageControl.ActivePage);
 end;
@@ -752,7 +753,7 @@ end;
 
 procedure TEditorForm2.PageChangeEvent(Sender: TObject);
 begin
-  ActiveEditorPage.OnStatusChange := @PageStatusChange;
+  GetActiveEditorPage.OnStatusChange := @PageStatusChange;
   UpdateStatusBar;
   Application.QueueAsyncCall(@DelayedFocusActiveEditor, 0);
 end;
@@ -760,7 +761,7 @@ end;
 procedure TEditorForm2.PageChangingEvent(Sender: TObject;
   var AllowChange: Boolean);
 begin
-  ActiveEditorPage.OnStatusChange := nil;
+  GetActiveEditorPage.OnStatusChange := nil;
   AllowChange := true;
 end;
 
@@ -778,10 +779,10 @@ procedure TEditorForm2.UpdateStatusBar;
 var
   Editor: TSynEdit;
 begin
-  Editor := ActiveEditorPage.Editor;
+  Editor := GetActiveEditorPage.Editor;
 
   FStatusBar.Panels[0].Text := Format('%d: %d', [Editor.CaretY, Editor.CaretX]);
-  if ActiveEditorPage.Modified then
+  if GetActiveEditorPage.Modified then
     FStatusBar.Panels[1].Text := 'Modified'
   else
     FStatusBar.Panels[1].Text := '';
@@ -789,7 +790,7 @@ begin
     FStatusBar.Panels[2].Text := 'Ins'
   else
     FStatusBar.Panels[2].Text := 'Ovr';
-  FStatusBar.Panels[3].Text := ActiveEditorPage.FileName;
+  FStatusBar.Panels[3].Text := GetActiveEditorPage.FileName;
 end;
 
 procedure TEditorForm2.CreateStatusBar;

@@ -8,11 +8,11 @@ interface
 uses
   Classes, SysUtils, Types, FileUtil, Forms, Controls, Graphics, Dialogs,
   StdCtrls, ActnList, Menus, ExtCtrls, ComCtrls, HtmlView, VirtualTrees,
-  Token, GOLDParser, executor, ast, outputcreator,
-  epiv_datamodule, epidatafiles, outputgenerator_base, history, cmdedit,
-  options_hashmap, epiv_projecttreeview_frame, epicustombase,
-  analysis_statusbar, epidocument, epiopenfile, outputviewer_types,
-  commandtree, history_form, varnames_form, projecttree_form, commandtree_form,
+  SynEdit, Token, GOLDParser, executor, ast, outputcreator, epiv_datamodule,
+  epidatafiles, outputgenerator_base, history, cmdedit, options_hashmap,
+  epiv_projecttreeview_frame, epicustombase, analysis_statusbar, epidocument,
+  epiopenfile, outputviewer_types, commandtree, history_form, varnames_form,
+  projecttree_form, commandtree_form,
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -27,9 +27,15 @@ type
   TMainForm = class(TForm)
     AlwaysAvailableActionList: TActionList;
     CloseAllWindowsAction: TAction;
+    ColorDialog1: TColorDialog;
     HistoryListBox: TListBox;
     MenuItem43: TMenuItem;
     MenuItem44: TMenuItem;
+    MenuItem45: TMenuItem;
+    OutputBGColourMenuItem: TMenuItem;
+    OutputFontColourMenuItem: TMenuItem;
+    CMDBGColourMenuItem: TMenuItem;
+    CMDFontColourMenuItem: TMenuItem;
     SaveOutputAction: TAction;
     Label3: TLabel;
     MenuItem36: TMenuItem;
@@ -128,11 +134,15 @@ type
     procedure Button2Click(Sender: TObject);
     procedure CancelExecActionExecute(Sender: TObject);
     procedure CloseAllWindowsActionExecute(Sender: TObject);
+    procedure CMDBGColourMenuItemClick(Sender: TObject);
     procedure CmdEditFocusActionExecute(Sender: TObject);
+    procedure CMDFontColourMenuItemClick(Sender: TObject);
     procedure CopyAllHistoryActionExecute(Sender: TObject);
     procedure CopySelectedHistoryActionExecute(Sender: TObject);
     procedure CopyVersionInfoActionExecute(Sender: TObject);
     procedure DefaultWindowPositionActionExecute(Sender: TObject);
+    procedure OutputBGColourMenuItemClick(Sender: TObject);
+    procedure OutputFontColourMenuItemClick(Sender: TObject);
     procedure QuitActionExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -306,6 +316,7 @@ type
   private
     FStartupFile: String;
     procedure ASyncRunStartup(Data: PtrInt);
+    procedure ChangeColour(Const SetOptionName: UTF8String);
   public
     procedure RestoreDefaultPos;
   end;
@@ -335,17 +346,23 @@ end;
 procedure TMainForm.Button2Click(Sender: TObject);
 var
   Frm: TForm;
+  EditorForm: TEditorForm;
 begin
-  EditorForm := TEditorForm.Create(self);
-  EditorForm.Executor := Executor;
-  EditorForm.History := FHistory;
-  EditorForm.OutputCreator := FOutputCreator;
-  EditorForm.Show;
+  //EditorForm := TEditorForm.Create(self);
+  //EditorForm.Executor := Executor;
+  //EditorForm.History := FHistory;
+  //EditorForm.OutputCreator := FOutputCreator;
+  //EditorForm.Show;
 end;
 
 procedure TMainForm.CloseAllWindowsActionExecute(Sender: TObject);
 begin
   CloseWindows(true);
+end;
+
+procedure TMainForm.CMDBGColourMenuItemClick(Sender: TObject);
+begin
+  ChangeColour(ANA_SO_CMDEDIT_BG_COLOR);
 end;
 
 procedure TMainForm.CmdEditFocusActionExecute(Sender: TObject);
@@ -357,6 +374,11 @@ begin
       Self.SetFocus;
       FCmdEdit.SetFocus;
     end;
+end;
+
+procedure TMainForm.CMDFontColourMenuItemClick(Sender: TObject);
+begin
+  ChangeColour(ANA_SO_CMDEDIT_FONT_COLOR);
 end;
 
 procedure TMainForm.CopyAllHistoryActionExecute(Sender: TObject);
@@ -392,6 +414,16 @@ begin
   RedrawOutput;
 
   RestoreDefaultPos;
+end;
+
+procedure TMainForm.OutputBGColourMenuItemClick(Sender: TObject);
+begin
+  ChangeColour(ANA_SO_OUTPUT_BG_COLOR);
+end;
+
+procedure TMainForm.OutputFontColourMenuItemClick(Sender: TObject);
+begin
+  ChangeColour(ANA_SO_OUTPUT_FONT_COLOR);
 end;
 
 procedure TMainForm.QuitActionExecute(Sender: TObject);
@@ -462,22 +494,21 @@ begin
   {$IFDEF DARWIN}
   SetCurrentDirUTF8(ResolveDots(ProgramDirectory + '../../..'));
   {$ENDIF}
+
+  {$IFNDEF LINUX}
+  // Do not show font colour items unless on linux
+  CMDFontColourMenuItem.Visible := false;
+  OutputFontColourMenuItem.Visible := false;
+  {$ENDIF}
+
+
   FHistory := THistory.Create(Executor, FOutputCreator);
 
   FCmdEdit := TCmdEdit.Create(Self);
-//  FCmdEdit.Parent := CenterPanel;
   FCmdEdit.OnRunCommand := @CmdEditRunCommand;
   FCmdEdit.Executor := Executor;
   FCmdEdit.History := FHistory;
-
   FCmdEdit.Align := alBottom;
-
-  //FCmdEdit.Anchors := [];
-  //FCmdEdit.AnchorToNeighbour(akTop, 0, PageControl1);
-  //FCmdEdit.AnchorParallel(akLeft, 0, PageControl1);
-  //FCmdEdit.AnchorParallel(akRight, 0, PageControl1);
-  //FCmdEdit.AnchorToNeighbour(akBottom, 0, FStatusbar);
-  //FCmdEdit.Height := 24;
 
   FHistoryWindow := THistoryForm.Create(Self, FHIstory);
   FHistoryWindow.OnClearHistoryAction := @HistoryWindowClearHistory;
@@ -507,7 +538,7 @@ end;
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(FStatusbar);
-  FreeAndNil(EditorForm);
+ // FreeAndNil(EditorForm);
   FreeAndNil(EditorForm2);
   FreeAndNil(FHistory);
   Executor.Free;
@@ -630,13 +661,6 @@ begin
     end;
 
   AFont := FontFromSetOptions(FN, FS, FC, FSt, Executor.SetOptions);
-
-{  AFont := TFont.Create;
-  AFont.Name := Executor.SetOptions[FN].Value;
-  AFont.Size := StrToInt(Executor.SetOptions[FS].Value);
-  AFont.Color := StrToInt(Executor.SetOptions[FC].Value);
-  AFont.Style := ;                                       }
-
   FontDialog1.Font.Assign(AFont);
   if FontDialog1.Execute then
     FontToSetOptions(FontDialog1.Font, FN, FS, FC, FSt, Executor.SetOptions);
@@ -839,8 +863,8 @@ procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 var
   Res: TModalResult;
 begin
-  if Assigned(EditorForm) then
-    CanClose := EditorForm.CloseQuery;
+  if Assigned(EditorForm2) then
+    CanClose := EditorForm2.CloseQuery;
 
   if (not CanClose) then exit;
 
@@ -975,8 +999,8 @@ begin
   if (CloseAll) then
     begin
       CloseBrowsers;
-      if (Assigned(EditorForm)) then
-        EditorForm.Close;
+      if (Assigned(EditorForm2)) then
+        EditorForm2.Close;
     end;
 end;
 
@@ -1885,7 +1909,7 @@ begin
       FOutputGenerator.GenerateReport;
       FOutputGenerator.Free;
       ST.Position := 0;
-
+// The following statement fails with LCL_COCOA when output format is HTML. Is there another way to do this?
       (PageControl1.ActivePage as IAnaOutputViewer).LoadFromStream(ST);
 
       ST.Free;
@@ -1954,6 +1978,23 @@ begin
   FOutputCreator.DoNormal('');
 end;
 
+procedure TMainForm.ChangeColour(const SetOptionName: UTF8String);
+var
+  Colour: TColor;
+  AFont: TFont;
+begin
+  Colour := TFontColorOption(Executor.SetOptions.GetValue(SetOptionName)).GetBGRValue;
+  ColorDialog1.Color := Colour;
+
+  if (ColorDialog1.Execute) then
+    begin
+      AFont := TFont.Create;
+      AFont.Color := ColorDialog1.Color;
+      FontToSetOptions(AFont, '', '', SetOptionName, '', Executor.SetOptions);
+      AFont.Free;
+    end;
+end;
+
 procedure TMainForm.RestoreDefaultPos;
 var
   W, H, T, L: Integer;
@@ -1967,7 +2008,6 @@ begin
 
   Application.ProcessMessages;
 
-  TEditorForm.RestoreDefaultPos;
   TEditorForm2.RestoreDefaultPos(EditorForm2);
   TAboutForm.RestoreDefaultPos;
   TBrowseForm4.RestoreDefaultPos;
@@ -2024,6 +2064,7 @@ var
   S: String;
   P: TPoint;
   Txt: TCaption;
+  Editor: TSynEdit;
 begin
   S := '';
   Txt := '';
@@ -2044,13 +2085,14 @@ begin
       P := FOutputViewer.GetCaretPos;
     end;
 
-  if Assigned(EditorForm) and
-     EditorForm.SynEdit1.Focused
+  if Assigned(EditorForm2) and
+     EditorForm2.ActiveEditorPage.Editor.Focused
   then
     begin
-      S   := EditorForm.SynEdit1.SelText;
-      Txt := EditorForm.SynEdit1.LineText;
-      P   := EditorForm.SynEdit1.CaretXY;
+      Editor := EditorForm2.ActiveEditorPage.Editor;
+      S   := Editor.SelText;
+      Txt := Editor.LineText;
+      P   := Editor.CaretXY;
     end;
 
   if (HistoryListBox.Focused) and
