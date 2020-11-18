@@ -1,0 +1,8 @@
+object StatDialog: TStatDialog
+  Left = 2706
+  Height = 240
+  Top = 396
+  Width = 320
+  Caption = 'StatDialog'
+  LCLVersion = '2.0.10.0'
+end

@@ -32,7 +32,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -65,7 +65,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -101,7 +101,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -129,7 +129,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -157,7 +157,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -185,7 +185,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -281,7 +281,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="95">
+    <Units Count="97">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -700,6 +700,16 @@
         <Filename Value="executor/options_cssfileoption.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit94>
+      <Unit95>
+        <Filename Value="dialogs/stat_dialog.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="StatDialog"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit95>
+      <Unit96>
+        <Filename Value="dialogs/stat_dialog_contribution.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit96>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -709,7 +719,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);grammar"/>
-      <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows"/>
+      <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
@@ -718,7 +728,6 @@
       </SyntaxOptions>
     </Parsing>
     <CodeGeneration>
-      <TargetCPU Value="x86_64"/>
       <Optimizations>
         <OptimizationLevel Value="0"/>
       </Optimizations>
@@ -739,7 +748,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="14">
+    <Exceptions Count="15">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -789,6 +798,9 @@
       <Item14>
         <Name Value="EConvertError"/>
       </Item14>
+      <Item15>
+        <Name Value="Unknown"/>
+      </Item15>
     </Exceptions>
   </Debugging>
 </CONFIG>
