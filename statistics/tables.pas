@@ -43,6 +43,7 @@ type
     procedure OutputSummaryTable(Tables: TTwoWayTables; ST: TTablesCommand);
     function  PackStratifiedDataset(Sender: TEpiDataFile; Index: Integer; Data: Pointer): boolean;
     function  GetStatisticOptions(ST: TTablesCommand): TTableStatistics;
+    function  CheckUniqueVariables(Varnames: TStrings; ByNames: TStrings; WeightName: UTF8String): boolean;
   protected
     procedure DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
     procedure DoTableStatistics(Tables: TTwoWayTables; Statistics: TTableStatistics);
@@ -66,7 +67,8 @@ implementation
 uses
   aggregate, aggregate_types, epimiscutils, epidatafileutils,
   options_utils, LazUTF8, ana_globals, epidatafilestypes, options_table,
-  tables_stat_rr, tables_stat_or, tables_stat_chi2, tables_stat_fexp;
+  tables_stat_rr, tables_stat_or, tables_stat_chi2, tables_stat_fexp,
+  LazUTF8Classes;
 // see note in tables_types.pas regarding order of statistics above
 
 type
@@ -506,6 +508,42 @@ begin
 
 end;
 
+function TTables.CheckUniqueVariables(Varnames: TStrings; ByNames: TStrings;
+  WeightName: UTF8String): boolean;
+var
+  CheckList: TStringList;
+  Name: UTF8String;
+  DummyIdx: Integer;
+
+  function CheckStrings(Strings: TStrings; ErrorMsg: UTF8String): boolean;
+  begin
+    for Name in Strings do
+      if (CheckList.Find(Name, DummyIdx)) then
+        begin
+          FExecutor.Error(ErrorMsg + Name);
+          Exit(false);
+        end
+    else
+      CheckList.Add(Name);
+
+    Result := true;
+  end;
+
+begin
+  CheckList := TStringListUTF8.Create;
+  CheckList.Sorted := true;
+
+  Result := CheckStrings(Varnames, 'Table command requires unique variable names: ');
+  if Assigned(ByNames) then
+    Result := Result and CheckStrings(ByNames, 'Table command requires unique !by variable names: ');
+
+  if CheckList.Find(WeightName, DummyIdx) then
+    begin
+      FExecutor.Error('Table command requires unique weigth name: ' + WeightName);
+      Exit(false);
+    end;
+end;
+
 procedure TTables.DoOutputTables(Tables: TTwoWayTables; ST: TTablesCommand);
 var
   Tab: TTwoWayTable;
@@ -749,6 +787,12 @@ begin
   WeightName := '';
   if (ST.HasOption('w', Opt)) then
     WeightName := Opt.Expr.AsIdent;
+
+  if (not CheckUniqueVariables(Varnames, StratifyVarnames, WeightName)) then
+    begin
+      ST.ExecResult := csrFailed;
+      Exit;
+    end;
 
   AllTables := DoCalcTables(DF, VarNames, StratifyVarnames, WeightName);
 
