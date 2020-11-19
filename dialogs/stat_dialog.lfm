@@ -1,8 +1,36 @@
 object StatDialog: TStatDialog
-  Left = 2706
-  Height = 240
-  Top = 396
-  Width = 320
+  Left = 592
+  Height = 276
+  Top = 260
+  Width = 391
   Caption = 'StatDialog'
-  LCLVersion = '2.0.10.0'
+  ClientHeight = 276
+  ClientWidth = 391
+  OnCreate = FormCreate
+  LCLVersion = '2.0.4.0'
+  object ButtonPanel1: TButtonPanel
+    Left = 6
+    Height = 36
+    Top = 234
+    Width = 379
+    OKButton.Name = 'OKButton'
+    OKButton.DefaultCaption = True
+    OKButton.OnClick = OKButtonClick
+    HelpButton.Name = 'HelpButton'
+    HelpButton.DefaultCaption = True
+    CloseButton.Name = 'CloseButton'
+    CloseButton.DefaultCaption = True
+    CancelButton.Name = 'CancelButton'
+    CancelButton.DefaultCaption = True
+    TabOrder = 0
+    ShowButtons = [pbOK, pbCancel]
+  end
+  object PageControl1: TPageControl
+    Left = 0
+    Height = 228
+    Top = 0
+    Width = 391
+    Align = alClient
+    TabOrder = 1
+  end
 end

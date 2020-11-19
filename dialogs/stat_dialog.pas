@@ -5,16 +5,22 @@ unit stat_dialog;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, stat_dialog_contribution;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ButtonPanel, ComCtrls,
+  ExtCtrls,
+  stat_dialog_contribution;
 
 type
 
   { TStatDialog }
 
   TStatDialog = class(TForm)
+    ButtonPanel1: TButtonPanel;
+    PageControl1: TPageControl;
+    procedure FormCreate(Sender: TObject);
+    procedure OKButtonClick(Sender: TObject);
   private
     FContribution: IStatDialogContribution;
-
+    procedure SetupViews;
   public
     constructor Create(TheOwner: TComponent; Contribution: IStatDialogContribution);
   end;
@@ -28,10 +34,35 @@ implementation
 
 { TStatDialog }
 
+procedure TStatDialog.FormCreate(Sender: TObject);
+begin
+  Caption := FContribution.getCaption();
+end;
+
+procedure TStatDialog.OKButtonClick(Sender: TObject);
+begin
+  FContribution.generateScript();
+end;
+
+procedure TStatDialog.SetupViews;
+var
+  View: TPanel;
+  NewSheet: TTabSheet;
+begin
+  for View in FContribution.getViews(self) do
+  begin
+    NewSheet := PageControl1.AddTabSheet;
+    View.Parent := NewSheet;
+    View.Align := alClient;
+  end;
+end;
+
 constructor TStatDialog.Create(TheOwner: TComponent;
   Contribution: IStatDialogContribution);
 begin
-  FContribution := IStatDialogContribution;
+  inherited Create(TheOwner);
+
+  FContribution := Contribution;
 end;
 
 end.
