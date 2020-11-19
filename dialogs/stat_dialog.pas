@@ -5,19 +5,20 @@ unit stat_dialog;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ButtonPanel, ComCtrls,
-  ExtCtrls,
-  stat_dialog_contribution;
+  Classes, SysUtils, auto_position_form, stat_dialog_contribution, ButtonPanel,
+  ComCtrls, ExtCtrls;
 
 type
-
   { TStatDialog }
 
-  TStatDialog = class(TForm)
-    ButtonPanel1: TButtonPanel;
-    PageControl1: TPageControl;
+  TStatDialog = class(TCustomAutoPositionForm)
+  private
+    ButtonPanel: TButtonPanel;
+    PageControl: TPageControl;
     procedure FormCreate(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
+    procedure PageControlChanging(Sender: TObject; var AllowChange: Boolean);
+    procedure PageControlChange(Sender: TObject);
   private
     FContribution: IStatDialogContribution;
     procedure SetupViews;
@@ -30,13 +31,26 @@ var
 
 implementation
 
-{$R *.lfm}
+uses
+  Controls;
+
+type
+
+  { TDialogViewTabSheet }
+
+  TDialogViewTabSheet = class(TTabSheet)
+  private
+    FDialogView: IStatDialogView;
+  public
+    property DialogView: IStatDialogView read FDialogView write FDialogView;
+  end;
 
 { TStatDialog }
 
 procedure TStatDialog.FormCreate(Sender: TObject);
 begin
   Caption := FContribution.getCaption();
+  SetupViews;
 end;
 
 procedure TStatDialog.OKButtonClick(Sender: TObject);
@@ -44,16 +58,32 @@ begin
   FContribution.generateScript();
 end;
 
+procedure TStatDialog.PageControlChanging(Sender: TObject;
+  var AllowChange: Boolean);
+begin
+  AllowChange := TDialogViewTabSheet(PageControl.ActivePage).DialogView.exitView();
+end;
+
+procedure TStatDialog.PageControlChange(Sender: TObject);
+begin
+  TDialogViewTabSheet(PageControl.ActivePage).DialogView.enterView();
+end;
+
 procedure TStatDialog.SetupViews;
 var
-  View: TPanel;
-  NewSheet: TTabSheet;
+  View: IStatDialogView;
+  NewSheet: TDialogViewTabSheet;
+  ViewControl: TControl;
 begin
   for View in FContribution.getViews(self) do
   begin
-    NewSheet := PageControl1.AddTabSheet;
-    View.Parent := NewSheet;
-    View.Align := alClient;
+    NewSheet := TDialogViewTabSheet.Create(PageControl);
+    NewSheet.PageControl := PageControl;
+    NewSheet.DialogView := View;
+    NewSheet.Caption := View.getViewCaption;
+    ViewControl := View.getControl(NewSheet);
+    ViewControl.Parent := NewSheet;
+    ViewControl.Align := alClient;
   end;
 end;
 
@@ -63,6 +93,16 @@ begin
   inherited Create(TheOwner);
 
   FContribution := Contribution;
+  ButtonPanel := TButtonPanel.Create(self);
+  ButtonPanel.Parent := self;
+
+  PageControl := TPageControl.Create(self);
+  PageControl.Align := alClient;
+  PageControl.Parent := self;
+  PageControl.OnChanging := @PageControlChanging;
+  PageControl.OnChange := @PageControlChange;
+
+  OnCreate := @FormCreate;
 end;
 
 end.

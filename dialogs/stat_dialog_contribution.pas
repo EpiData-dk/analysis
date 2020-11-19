@@ -6,11 +6,17 @@ unit stat_dialog_contribution;
 interface
 
 uses
-  Classes, SysUtils, fgl, ExtCtrls;
+  Classes, SysUtils, fgl, ExtCtrls, Controls;
 
 type
 
-  TStatDialogContributionViewList = specialize TFPGList<TPanel>;
+  IStatDialogView = interface['{93D8C128-08B0-4C02-98CA-FF9DBA1AF79F}']
+    function getControl(Owner: TComponent): TControl;
+    function getViewCaption: UTF8String;
+    procedure enterView();
+    function exitView(): boolean;
+  end;
+  TStatDialogContributionViewList = specialize TFPGList<IStatDialogView>;
 
   IStatDialogContribution = interface['{72DC9405-CBF8-4166-8710-F51A816F46CA}']
     function getCaption(): UTF8String;
@@ -18,20 +24,21 @@ type
     function generateScript(): UTF8String;
   end;
 
-  TContributionList = specialize TFPGList<IStatDialogContribution>;
+
+  TStatDialogContributionList = specialize TFPGList<IStatDialogContribution>;
 
   procedure RegisterStatDialogContribution(Contribution: IStatDialogContribution);
-  function GetStatDialogContributionList: TContributionList;
+  function GetStatDialogContributionList: TStatDialogContributionList;
 
 implementation
 
 var
-  ContributionList: TContributionList;
+  ContributionList: TStatDialogContributionList;
 
-function GetContributionList: TContributionList;
+function GetContributionList: TStatDialogContributionList;
 begin
   if (not Assigned(ContributionList)) then
-    ContributionList := TContributionList.Create;
+    ContributionList := TStatDialogContributionList.Create;
 
   result := ContributionList;
 end;
@@ -41,7 +48,7 @@ begin
   GetContributionList.Add(Contribution);
 end;
 
-function GetStatDialogContributionList: TContributionList;
+function GetStatDialogContributionList: TStatDialogContributionList;
 begin
   result := GetContributionList;
 end;

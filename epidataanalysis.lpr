@@ -34,7 +34,8 @@ uses
   commandtree, recode, select_datafile, history_form, varnames_form,
   projecttree_form, commandtree_form, auto_position_form, editor_form2,
   editor_page, editor_pgm_highlighter, scandate_from_fpc, options_string_array,
-  options_cssfileoption, stat_dialog, stat_dialog_contribution, tables_statdialog_contribution;
+  options_cssfileoption, stat_dialog_contribution,
+  tables_statdialog_contribution, stat_dialog, stat_dialog_action, tables_statdialog_view;
 
 {$R *.res}
 

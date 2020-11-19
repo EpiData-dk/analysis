@@ -6,7 +6,7 @@ object MainForm: TMainForm
   ActiveControl = Panel2
   AllowDropFiles = True
   Caption = 'AMainForm'
-  ClientHeight = 640
+  ClientHeight = 638
   ClientWidth = 1010
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
@@ -18,7 +18,7 @@ object MainForm: TMainForm
   LCLVersion = '2.0.10.0'
   object PageControl1: TPageControl
     Left = 245
-    Height = 590
+    Height = 588
     Top = 50
     Width = 564
     Align = alClient
@@ -78,11 +78,11 @@ object MainForm: TMainForm
   end
   object RightSidePanel: TPanel
     Left = 814
-    Height = 590
+    Height = 588
     Top = 50
     Width = 196
     Align = alRight
-    ClientHeight = 590
+    ClientHeight = 588
     ClientWidth = 196
     ParentFont = False
     TabOrder = 1
@@ -91,7 +91,7 @@ object MainForm: TMainForm
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 387
+      Top = 385
       Width = 194
       Align = alBottom
       AutoSnap = False
@@ -102,7 +102,7 @@ object MainForm: TMainForm
     object VarnamesList: TVirtualStringTree
       Cursor = 63
       Left = 1
-      Height = 386
+      Height = 384
       Top = 1
       Width = 194
       Align = alClient
@@ -114,13 +114,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 295
+          Width = 296
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 255
+          Width = 256
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -140,7 +140,7 @@ object MainForm: TMainForm
       Tag = 1
       Left = 1
       Height = 197
-      Top = 392
+      Top = 390
       Width = 194
       Align = alBottom
       ItemHeight = 0
@@ -159,7 +159,7 @@ object MainForm: TMainForm
   end
   object RightSideSplitter: TSplitter
     Left = 809
-    Height = 590
+    Height = 588
     Top = 50
     Width = 5
     Align = alRight
@@ -172,12 +172,12 @@ object MainForm: TMainForm
   object LeftSidePanel: TPanel
     AnchorSideRight.Control = LeftSideSplitter
     Left = 0
-    Height = 590
+    Height = 588
     Top = 50
     Width = 240
     Align = alLeft
     Anchors = []
-    ClientHeight = 590
+    ClientHeight = 588
     ClientWidth = 240
     ParentFont = False
     TabOrder = 2
@@ -186,7 +186,7 @@ object MainForm: TMainForm
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 584
+      Top = 582
       Width = 238
       Align = alBottom
       AutoSnap = False
@@ -196,7 +196,7 @@ object MainForm: TMainForm
   end
   object LeftSideSplitter: TSplitter
     Left = 240
-    Height = 590
+    Height = 588
     Top = 50
     Width = 5
     Beveled = True
@@ -295,6 +295,9 @@ object MainForm: TMainForm
       object MenuItem13: TMenuItem
         Action = ClearOutputAction
       end
+    end
+    object StatisticsMainMenuItem: TMenuItem
+      Caption = 'Analysis'
     end
     object MenuItem9: TMenuItem
       Caption = '&Window'

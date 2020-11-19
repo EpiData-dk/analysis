@@ -13,7 +13,7 @@ type
 
   TTableStatDialogContribution = class(IStatDialogContribution)
   private
-    function CreateMainView(Owner: TComponent): TPanel;
+    function CreateMainView(Owner: TComponent): IStatDialogView;
   public
     function generateScript(): UTF8String;
     function getCaption(): UTF8String;
@@ -22,11 +22,14 @@ type
 
 implementation
 
+uses
+  tables_statdialog_view;
+
 { TTableStatDialogContribution }
 
-function TTableStatDialogContribution.CreateMainView(Owner: TComponent): TPanel;
+function TTableStatDialogContribution.CreateMainView(Owner: TComponent): IStatDialogView;
 begin
-  result := TPanel.Create(Owner);
+  result := TTableStatDialogView.Create;
 end;
 
 function TTableStatDialogContribution.generateScript(): UTF8String;
@@ -43,6 +46,7 @@ function TTableStatDialogContribution.getViews(Owner: TComponent
   ): TStatDialogContributionViewList;
 begin
   result := TStatDialogContributionViewList.Create;
+  result.add(CreateMainView(Owner));
   result.add(CreateMainView(Owner));
 end;
 

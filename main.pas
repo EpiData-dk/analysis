@@ -6,13 +6,13 @@ unit main;
 interface
 
 uses
-  Classes, SysUtils, Types, FileUtil, Forms, Controls, Graphics, Dialogs,
+  Classes, SysUtils, Types, fgl, FileUtil, Forms, Controls, Graphics, Dialogs,
   StdCtrls, ActnList, Menus, ExtCtrls, ComCtrls, HtmlView, VirtualTrees,
   SynEdit, Token, GOLDParser, executor, ast, outputcreator, epiv_datamodule,
   epidatafiles, outputgenerator_base, history, cmdedit, options_hashmap,
   epiv_projecttreeview_frame, epicustombase, analysis_statusbar, epidocument,
   epiopenfile, outputviewer_types, commandtree, history_form, varnames_form,
-  projecttree_form, commandtree_form,
+  projecttree_form, commandtree_form, stat_dialog_contribution, stat_dialog_action,
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -32,6 +32,7 @@ type
     MenuItem43: TMenuItem;
     MenuItem44: TMenuItem;
     MenuItem45: TMenuItem;
+    StatisticsMainMenuItem: TMenuItem;
     OutputBGColourMenuItem: TMenuItem;
     OutputFontColourMenuItem: TMenuItem;
     CMDBGColourMenuItem: TMenuItem;
@@ -317,6 +318,7 @@ type
     FStartupFile: String;
     procedure ASyncRunStartup(Data: PtrInt);
     procedure ChangeColour(Const SetOptionName: UTF8String);
+    procedure BuildStatDialogMenu;
   public
     procedure RestoreDefaultPos;
   end;
@@ -528,6 +530,7 @@ begin
   aDM.OnDialogFilename := @DialogFilenameHack;
 
   BuildRecentFilesActions;
+  BuildStatDialogMenu;
 
   Screen.AddHandlerActiveFormChanged(@FormChanged);
   Application.AddOnKeyDownBeforeHandler(@PrimaryKeyHandler);
@@ -1993,6 +1996,24 @@ begin
       FontToSetOptions(AFont, '', '', SetOptionName, '', Executor.SetOptions);
       AFont.Free;
     end;
+end;
+
+procedure TMainForm.BuildStatDialogMenu;
+var
+  contributionList: TStatDialogContributionList;
+  contribution: IStatDialogContribution;
+  menuItem: TMenuItem;
+begin
+  contributionList := GetStatDialogContributionList;
+
+  for contribution in contributionList do
+  begin
+    menuItem := TMenuItem.Create(MainMenu1);
+    menuItem.Caption := contribution.getCaption();
+    menuItem.Action := TStatDialogAction.Create(MainMenu1, contribution);
+
+    StatisticsMainMenuItem.Add(menuItem);
+  end;
 end;
 
 procedure TMainForm.RestoreDefaultPos;
