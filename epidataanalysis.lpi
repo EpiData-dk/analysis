@@ -214,6 +214,9 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
+      <local>
+        <LaunchingApplication PathPlusParams=""/>
+      </local>
       <environment>
         <UserOverrides Count="1">
           <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
@@ -222,6 +225,9 @@
       <FormatVersion Value="2"/>
       <Modes Count="2">
         <Mode0 Name="default">
+          <local>
+            <LaunchingApplication PathPlusParams=""/>
+          </local>
           <environment>
             <UserOverrides Count="1">
               <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
@@ -229,6 +235,9 @@
           </environment>
         </Mode0>
         <Mode1 Name="Lang = Dansk (da_DK)">
+          <local>
+            <LaunchingApplication PathPlusParams=""/>
+          </local>
           <environment>
             <UserOverrides Count="2">
               <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
@@ -281,7 +290,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="100">
+    <Units Count="101">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -717,9 +726,13 @@
         <IsPartOfProject Value="True"/>
       </Unit98>
       <Unit99>
-        <Filename Value="dialogs/stat_dialogs/tables_statdialog_view.pas"/>
+        <Filename Value="dialogs/stat_dialogs/tables_statdialog_variables_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit99>
+      <Unit100>
+        <Filename Value="dialogs/stat_dialogs/tables_statdialog_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit100>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

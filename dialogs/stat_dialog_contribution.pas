@@ -11,17 +11,17 @@ uses
 type
 
   IStatDialogView = interface['{93D8C128-08B0-4C02-98CA-FF9DBA1AF79F}']
-    function getControl(Owner: TComponent): TControl;
-    function getViewCaption: UTF8String;
-    procedure enterView();
-    function exitView(): boolean;
+    function GetControl(): TControl;
+    function GetViewCaption(): UTF8String;
+    procedure EnterView();
+    function ExitView(): boolean;
   end;
   TStatDialogContributionViewList = specialize TFPGList<IStatDialogView>;
 
   IStatDialogContribution = interface['{72DC9405-CBF8-4166-8710-F51A816F46CA}']
-    function getCaption(): UTF8String;
-    function getViews(Owner: TComponent): TStatDialogContributionViewList;
-    function generateScript(): UTF8String;
+    function GetCaption(): UTF8String;
+    function GetViews(Owner: TComponent): TStatDialogContributionViewList;
+    function GenerateScript(): UTF8String;
   end;
 
 

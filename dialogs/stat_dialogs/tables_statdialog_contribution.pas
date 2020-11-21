@@ -23,13 +23,13 @@ type
 implementation
 
 uses
-  tables_statdialog_view;
+  tables_statdialog_variables_view;
 
 { TTableStatDialogContribution }
 
 function TTableStatDialogContribution.CreateMainView(Owner: TComponent): IStatDialogView;
 begin
-  result := TTableStatDialogView.Create;
+  result := TTableStatDialogVariablesView.Create(Owner);
 end;
 
 function TTableStatDialogContribution.generateScript(): UTF8String;
@@ -46,7 +46,6 @@ function TTableStatDialogContribution.getViews(Owner: TComponent
   ): TStatDialogContributionViewList;
 begin
   result := TStatDialogContributionViewList.Create;
-  result.add(CreateMainView(Owner));
   result.add(CreateMainView(Owner));
 end;
 

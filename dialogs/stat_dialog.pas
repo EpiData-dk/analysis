@@ -81,7 +81,7 @@ begin
     NewSheet.PageControl := PageControl;
     NewSheet.DialogView := View;
     NewSheet.Caption := View.getViewCaption;
-    ViewControl := View.getControl(NewSheet);
+    ViewControl := View.getControl();
     ViewControl.Parent := NewSheet;
     ViewControl.Align := alClient;
   end;
