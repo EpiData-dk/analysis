@@ -15,34 +15,37 @@ type
   private
     function CreateMainView(Owner: TComponent): IStatDialogView;
   public
-    function generateScript(): UTF8String;
-    function getCaption(): UTF8String;
-    function getViews(Owner: TComponent): TStatDialogContributionViewList;
+    function GenerateScript(): UTF8String;
+    function GetCaption(): UTF8String;
+    function GetViews(Owner: TComponent): TStatDialogContributionViewList;
   end;
 
 implementation
 
 uses
-  tables_statdialog_variables_view;
+  tables_statdialog_variables_view, tables_statdialog_model;
 
 { TTableStatDialogContribution }
 
 function TTableStatDialogContribution.CreateMainView(Owner: TComponent): IStatDialogView;
+var
+  View: TTableStatDialogVariablesView;
 begin
-  result := TTableStatDialogVariablesView.Create(Owner);
+  View := TTableStatDialogVariablesView.Create(Owner);
+  View.SetModel(TTableStatDialogVariableModel.Create(nil));
 end;
 
-function TTableStatDialogContribution.generateScript(): UTF8String;
+function TTableStatDialogContribution.GenerateScript(): UTF8String;
 begin
   result := '';
 end;
 
-function TTableStatDialogContribution.getCaption(): UTF8String;
+function TTableStatDialogContribution.GetCaption(): UTF8String;
 begin
   result := 'Tables';
 end;
 
-function TTableStatDialogContribution.getViews(Owner: TComponent
+function TTableStatDialogContribution.GetViews(Owner: TComponent
   ): TStatDialogContributionViewList;
 begin
   result := TStatDialogContributionViewList.Create;
