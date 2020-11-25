@@ -2000,19 +2000,19 @@ end;
 
 procedure TMainForm.BuildStatDialogMenu;
 var
-  contributionList: TStatDialogContributionList;
-  contribution: IStatDialogContribution;
-  menuItem: TMenuItem;
+  ContributionList: TStatDialogContributionList;
+  Contribution: IStatDialogContribution;
+  MenuItem: TMenuItem;
 begin
-  contributionList := GetStatDialogContributionList;
+  ContributionList := GetStatDialogContributionList;
 
-  for contribution in contributionList do
+  for Contribution in ContributionList do
   begin
-    menuItem := TMenuItem.Create(MainMenu1);
-    menuItem.Caption := contribution.getCaption();
-    menuItem.Action := TStatDialogAction.Create(MainMenu1, contribution);
+    MenuItem := TMenuItem.Create(MainMenu1);
+    MenuItem.Caption := Contribution.GetCaption();
+    MenuItem.Action := TStatDialogAction.Create(MainMenu1, Contribution, Executor);
 
-    StatisticsMainMenuItem.Add(menuItem);
+    StatisticsMainMenuItem.Add(MenuItem);
   end;
 end;
 

@@ -36,7 +36,7 @@ uses
   editor_page, editor_pgm_highlighter, scandate_from_fpc, options_string_array,
   options_cssfileoption, stat_dialog_contribution,
   tables_statdialog_contribution, stat_dialog, stat_dialog_action,
-  tables_statdialog_variables_view, tables_statdialog_model;
+  tables_statdialog_variables_view, tables_statdialog_model, fields_combobox;
 
 {$R *.res}
 

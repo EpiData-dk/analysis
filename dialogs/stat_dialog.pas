@@ -6,15 +6,16 @@ interface
 
 uses
   Classes, SysUtils, auto_position_form, stat_dialog_contribution, ButtonPanel,
-  ComCtrls, ExtCtrls;
+  ComCtrls, ExtCtrls, executor;
 
 type
   { TStatDialog }
 
-  TStatDialog = class(TCustomAutoPositionForm)
+  TStatDialog = class(TCustomAutoPositionForm, IStatDiaglogViewModified)
   private
-    ButtonPanel: TButtonPanel;
-    PageControl: TPageControl;
+    FButtonPanel: TButtonPanel;
+    FExcutor: TExecutor;
+    FPageControl: TPageControl;
     procedure FormCreate(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
     procedure PageControlChanging(Sender: TObject; var AllowChange: Boolean);
@@ -22,8 +23,11 @@ type
   private
     FContribution: IStatDialogContribution;
     procedure SetupViews;
+    procedure UpdateButtonPanel;
   public
-    constructor Create(TheOwner: TComponent; Contribution: IStatDialogContribution);
+    constructor Create(TheOwner: TComponent; Contribution: IStatDialogContribution;
+      Executor: TExecutor);
+    procedure OnViewModified(DataModel: IStatDialogModel);
   end;
 
 var
@@ -41,8 +45,10 @@ type
   TDialogViewTabSheet = class(TTabSheet)
   private
     FDialogView: IStatDialogView;
+    FIsDefined: boolean;
   public
     property DialogView: IStatDialogView read FDialogView write FDialogView;
+    property IsDefined: boolean read FIsDefined write FIsDefined;
   end;
 
 { TStatDialog }
@@ -50,6 +56,7 @@ type
 procedure TStatDialog.FormCreate(Sender: TObject);
 begin
   Caption := FContribution.getCaption();
+
   SetupViews;
 end;
 
@@ -61,12 +68,12 @@ end;
 procedure TStatDialog.PageControlChanging(Sender: TObject;
   var AllowChange: Boolean);
 begin
-  AllowChange := TDialogViewTabSheet(PageControl.ActivePage).DialogView.exitView();
+  AllowChange := TDialogViewTabSheet(FPageControl.ActivePage).DialogView.exitView();
 end;
 
 procedure TStatDialog.PageControlChange(Sender: TObject);
 begin
-  TDialogViewTabSheet(PageControl.ActivePage).DialogView.enterView();
+  TDialogViewTabSheet(FPageControl.ActivePage).DialogView.enterView();
 end;
 
 procedure TStatDialog.SetupViews;
@@ -75,34 +82,59 @@ var
   NewSheet: TDialogViewTabSheet;
   ViewControl: TControl;
 begin
-  for View in FContribution.getViews(self) do
+  for View in FContribution.GetViews(self, FExcutor) do
   begin
-    NewSheet := TDialogViewTabSheet.Create(PageControl);
-    NewSheet.PageControl := PageControl;
+    NewSheet := TDialogViewTabSheet.Create(FPageControl);
+    NewSheet.PageControl := FPageControl;
     NewSheet.DialogView := View;
     NewSheet.Caption := View.getViewCaption;
     ViewControl := View.getControl();
     ViewControl.Parent := NewSheet;
     ViewControl.Align := alClient;
+
+    View.SetOnModified(Self);
   end;
 end;
 
+procedure TStatDialog.UpdateButtonPanel;
+var
+  OkEnabled: Boolean;
+  i: Integer;
+begin
+  OkEnabled := true;
+
+  for i := 0 to FPageControl.PageCount - 1 do
+    OkEnabled := OkEnabled and TDialogViewTabSheet(FPageControl.Pages[i]).IsDefined;
+
+  FButtonPanel.OKButton.Enabled := OkEnabled;
+end;
+
 constructor TStatDialog.Create(TheOwner: TComponent;
-  Contribution: IStatDialogContribution);
+  Contribution: IStatDialogContribution; Executor: TExecutor);
 begin
   inherited Create(TheOwner);
 
   FContribution := Contribution;
-  ButtonPanel := TButtonPanel.Create(self);
-  ButtonPanel.Parent := self;
+  FExcutor := Executor;
 
-  PageControl := TPageControl.Create(self);
-  PageControl.Align := alClient;
-  PageControl.Parent := self;
-  PageControl.OnChanging := @PageControlChanging;
-  PageControl.OnChange := @PageControlChange;
+  FButtonPanel := TButtonPanel.Create(self);
+  FButtonPanel.Parent := self;
+  FButtonPanel.ShowButtons := [pbOK, pbCancel];
+  FButtonPanel.OKButton.Enabled := false;
+
+  FPageControl := TPageControl.Create(self);
+  FPageControl.Align := alClient;
+  FPageControl.Parent := self;
+  FPageControl.OnChanging := @PageControlChanging;
+  FPageControl.OnChange := @PageControlChange;
 
   OnCreate := @FormCreate;
+end;
+
+procedure TStatDialog.OnViewModified(DataModel: IStatDialogModel);
+begin
+  TDialogViewTabSheet(FPageControl.ActivePage).IsDefined := DataModel.IsDefined();
+  UpdateButtonPanel;
 end;
 
 end.
