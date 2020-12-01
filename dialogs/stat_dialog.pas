@@ -6,13 +6,14 @@ interface
 
 uses
   Classes, SysUtils, auto_position_form, stat_dialog_contribution, ButtonPanel,
-  ComCtrls, ExtCtrls, executor;
+  ComCtrls, ExtCtrls, executor, stat_dialog_footer;
 
 type
   { TStatDialog }
 
-  TStatDialog = class(TCustomAutoPositionForm, IStatDiaglogViewModified)
+  TStatDialog = class(TCustomAutoPositionForm, IStatDiaglogViewModified, IClickAction)
   private
+    FButtonFooter: TStatDiaglogFooterPanel;
     FButtonPanel: TButtonPanel;
     FExcutor: TExecutor;
     FPageControl: TPageControl;
@@ -25,6 +26,7 @@ type
     procedure SetupViews;
     procedure UpdateButtonPanel;
   public
+    procedure ActionPerformed(Sender: TButton);
     constructor Create(TheOwner: TComponent; Contribution: IStatDialogContribution;
       Executor: TExecutor);
     procedure OnViewModified(DataModel: IStatDialogModel);
@@ -109,6 +111,11 @@ begin
   FButtonPanel.OKButton.Enabled := OkEnabled;
 end;
 
+procedure TStatDialog.ActionPerformed(Sender: TButton);
+begin
+  //
+end;
+
 constructor TStatDialog.Create(TheOwner: TComponent;
   Contribution: IStatDialogContribution; Executor: TExecutor);
 begin
@@ -117,10 +124,9 @@ begin
   FContribution := Contribution;
   FExcutor := Executor;
 
-  FButtonPanel := TButtonPanel.Create(self);
-  FButtonPanel.Parent := self;
-  FButtonPanel.ShowButtons := [pbOK, pbCancel];
-  FButtonPanel.OKButton.Enabled := false;
+  FButtonFooter := TStatDiaglogFooterPanel.Create(self);
+  FButtonFooter.Parent := self;
+  FButtonFooter.OnCancelClick := self;
 
   FPageControl := TPageControl.Create(self);
   FPageControl.Align := alClient;
