@@ -21,32 +21,34 @@ type
     procedure ActionPerformed(Sender: TButton);
   end;
 
+  TStatDialogButton = (sdbRun, sdbExecute, sdbCancel, sdbHelp, sdbReset, sdbPaste);
+  TStatDialogButtons = set of TStatDialogButton;
+
   { TStatDiaglogFooterPanel }
 
   TStatDiaglogFooterPanel = class(TCustomPanel)
   private
-    FOnCancelClick: TClickAction;
-    FOnExecuteClick: TClickAction;
-    FOnHelpClick: TClickAction;
-    FOnPasteClick: TClickAction;
-    FOnResetClick: TClickAction;
-    FOnRunClick: TClickAction;
+    FOnCancelClick: IClickAction;
+    FOnExecuteClick: IClickAction;
+    FOnHelpClick: IClickAction;
+    FOnPasteClick: IClickAction;
+    FOnResetClick: IClickAction;
+    FOnRunClick: IClickAction;
     procedure ButtonClick(Sender: TObject);
   private
-    FRunButton: TButton;
-    FExecuteButton: TButton;
-    FPasteButton: TButton;
-    FHelpButton: TButton;
-    FResetButton: TButton;
-    FCancelButton: TButton;
+    FEnabledButtons: TStatDialogButtons;
+    FButtons: array[TStatDialogButton] of TButton;
+    procedure SetEnabledButtons(AValue: TStatDialogButtons);
+    procedure InitButtons();
   public
     constructor Create(TheOwner: TComponent); override;
-    property OnRunClick: TClickAction read FOnRunClick write FOnRunClick;
-    property OnExecuteClick: TClickAction read FOnExecuteClick write FOnExecuteClick;
-    property OnCancelClick: TClickAction read FOnCancelClick write FOnCancelClick;
-    property OnHelpClick: TClickAction read FOnHelpClick write FOnHelpClick;
-    property OnResetClick: TClickAction read FOnResetClick write FOnResetClick;
-    property OnPasteClick: TClickAction read FOnPasteClick write FOnPasteClick;
+    property OnRunClick: IClickAction read FOnRunClick write FOnRunClick;
+    property OnExecuteClick: IClickAction read FOnExecuteClick write FOnExecuteClick;
+    property OnCancelClick: IClickAction read FOnCancelClick write FOnCancelClick;
+    property OnHelpClick: IClickAction read FOnHelpClick write FOnHelpClick;
+    property OnResetClick: IClickAction read FOnResetClick write FOnResetClick;
+    property OnPasteClick: IClickAction read FOnPasteClick write FOnPasteClick;
+    property EnabledButtons: TStatDialogButtons read FEnabledButtons write SetEnabledButtons;
   end;
 
 implementation
@@ -59,7 +61,7 @@ uses
 procedure TStatDiaglogFooterPanel.ButtonClick(Sender: TObject);
 var
   Button: TButton;
-  ClickAction: TClickAction;
+  ClickAction: IClickAction;
 begin
   Button := TButton(Sender);
   case Button.Tag of
@@ -75,6 +77,72 @@ begin
     ClickAction.ActionPerformed(Button);
 end;
 
+procedure TStatDiaglogFooterPanel.SetEnabledButtons(AValue: TStatDialogButtons);
+var
+  Item: TStatDialogButton;
+begin
+  if FEnabledButtons = AValue then Exit;
+  FEnabledButtons := AValue;
+
+  DisableAutoSizing;
+
+  for Item in TStatDialogButton do
+    FButtons[Item].Enabled := false;
+
+  for Item in FEnabledButtons do
+    FButtons[Item].Enabled := true;
+
+  EnableAutoSizing;
+end;
+
+procedure TStatDiaglogFooterPanel.InitButtons();
+var
+  Button: TButton;
+
+  function InitButton(StatDialogButton: TStatDialogButton; Id: PtrInt; Caption: UTF8String): TButton;
+  begin
+    Result := TButton.Create(self);
+    Result.Caption := Caption;
+    Result.Tag := Id;
+    Result.OnClick := @ButtonClick;
+    Result.AutoSize := true;
+    Result.Parent := Self;
+    Result.Anchors := [];
+    FButtons[StatDialogButton] := Result;
+  end;
+
+begin
+  Button := InitButton(sdbRun, RUN_BUTTON_ID, '&Run');
+  Button.AnchorParallel(akTop, 10, self);
+  Button.AnchorParallel(akBottom, 10, self);
+  Button.AnchorParallel(akLeft, 10, self);
+
+  Button := InitButton(sdbExecute, EXECUTE_BUTTON_ID, '&Execute');
+  Button.AnchorToNeighbour(akLeft, 5, FButtons[sdbRun]);
+  Button.AnchorParallel(akTop, 10, self);
+  Button.AnchorParallel(akBottom, 10, self);
+
+  Button := InitButton(sdbPaste, HELP_BUTTON_ID, '&Paste');
+  Button.AnchorToNeighbour(akLeft, 5, FButtons[sdbExecute]);
+  Button.AnchorParallel(akTop, 10, self);
+  Button.AnchorParallel(akBottom, 10, self);
+
+  Button := InitButton(sdbHelp, PASTE_BUTTON_ID, '&?');
+  Button.AnchorParallel(akTop, 10, self);
+  Button.AnchorParallel(akBottom, 10, self);
+  Button.AnchorToNeighbour(akLeft, 5, FButtons[sdbPaste]);
+
+  Button := InitButton(sdbCancel, CANCEL_BUTTON_ID, '&Cancel');
+  Button.AnchorParallel(akTop, 10, self);
+  Button.AnchorParallel(akBottom, 10, self);
+  Button.AnchorParallel(akRight, 10, self);
+
+  Button := InitButton(sdbReset, RESET_BUTTON_ID, '&Reset');
+  Button.AnchorParallel(akTop, 10, self);
+  Button.AnchorParallel(akBottom, 10, self);
+  Button.AnchorToNeighbour(akRight, 5, FButtons[sdbCancel]);
+end;
+
 constructor TStatDiaglogFooterPanel.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
@@ -85,46 +153,9 @@ begin
   Caption    := '';
   AutoSize   := True;
 
-  FRunButton := TButton.Create(self);
-  FRunButton.Caption := '&Run';
-  FRunButton.Tag := RUN_BUTTON_ID;
-  FRunButton.OnClick := @ButtonClick;
-  FRunButton.AnchorParallel(akTop, 10, self);
-  FRunButton.AnchorParallel(akBottom, 10, self);
-  FRunButton.AnchorParallel(akLeft, 10, self);
-  FRunButton.AutoSize := true;
-  FRunButton.Parent := Self;
+  InitButtons();
 
-  FExecuteButton := TButton.Create(self);
-  FExecuteButton.Caption := '&Execute';
-  FExecuteButton.Tag := EXECUTE_BUTTON_ID;
-  FExecuteButton.OnClick := @ButtonClick;
-  FExecuteButton.AnchorParallel(akTop, 10, self);
-  FExecuteButton.AnchorParallel(akBottom, 10, self);
-  FExecuteButton.AnchorToNeighbour(akLeft, 5, FRunButton);
-  FExecuteButton.AutoSize := true;
-  FExecuteButton.Parent := Self;
-
-  FPasteButton := TButton.Create(self);
-  FPasteButton.Caption := '&Paste';
-  FPasteButton.Tag := PASTE_BUTTON_ID;
-  FPasteButton.OnClick := @ButtonClick;
-  FPasteButton.AnchorParallel(akTop, 10, self);
-  FPasteButton.AnchorParallel(akBottom, 10, self);
-  FPasteButton.AnchorToNeighbour(akLeft, 5, FExecuteButton);
-  FPasteButton.AutoSize := true;
-  FPasteButton.Parent := Self;
-
-  FHelpButton := TButton.Create(self);
-  FHelpButton.Caption := '&?';
-  FHelpButton.Tag := HELP_BUTTON_ID;
-  FHelpButton.OnClick := @ButtonClick;
-  FHelpButton.AnchorParallel(akTop, 10, self);
-  FHelpButton.AnchorParallel(akBottom, 10, self);
-  FHelpButton.AnchorToNeighbour(akLeft, 5, FPasteButton);
-  FHelpButton.AutoSize := true;
-  FHelpButton.Parent := Self;
-
+  EnabledButtons := [sdbRun, sdbExecute, sdbCancel, sdbHelp, sdbReset, sdbPaste];
 end;
 
 end.

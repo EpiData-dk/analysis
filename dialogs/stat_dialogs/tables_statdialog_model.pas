@@ -9,23 +9,28 @@ uses
 
 type
 
+  TTableStatDiaglogVariable = (tvX, tvY, tvWeight, tvBy);
+
   { TTableStatDialogVariableModel }
 
   TTableStatDialogVariableModel = class(IStatDialogModel)
   private
     FByVariables: TEpiFields;
+    FExecutor: TExecutor;
     FWeightVariable: TEpiField;
     FXVariable: TEpiField;
     FYVariable: TEpiField;
     procedure SetWeightVariable(AValue: TEpiField);
     procedure SetXVariable(AValue: TEpiField);
     procedure SetYVariable(AValue: TEpiField);
+    function IsUsed(Field: TEpiField): boolean;
   public
     function GenerateScript(): UTF8String;
     function IsDefined(): boolean;
   public
-    constructor Create;
+    constructor Create(Executor: TExecutor);
     procedure AddByVariable(Field: TEpiField);
+    function GetComboFields(TableVariable: TTableStatDiaglogVariable): TEpiFields;
     property XVariable: TEpiField read FXVariable write SetXVariable;
     property YVariable: TEpiField read FYVariable write SetYVariable;
     property WeightVariable: TEpiField read FWeightVariable write SetWeightVariable;
@@ -53,6 +58,15 @@ begin
   FYVariable := AValue;
 end;
 
+function TTableStatDialogVariableModel.IsUsed(Field: TEpiField): boolean;
+begin
+  result :=
+    (Field = FXVariable) or
+    (Field = FYVariable) or
+    (Field = FWeightVariable) or
+    (FByVariables.FieldExists(Field));
+end;
+
 function TTableStatDialogVariableModel.GenerateScript(): UTF8String;
 var
   Field: TEpiField;
@@ -74,8 +88,9 @@ begin
   result := Assigned(FXVariable);
 end;
 
-constructor TTableStatDialogVariableModel.Create;
+constructor TTableStatDialogVariableModel.Create(Executor: TExecutor);
 begin
+  FExecutor := Executor;
   FByVariables := TEpiFields.Create(nil);
   FByVariables.Sorted := false;
 end;
@@ -83,6 +98,19 @@ end;
 procedure TTableStatDialogVariableModel.AddByVariable(Field: TEpiField);
 begin
   FByVariables.AddItem(Field);
+end;
+
+function TTableStatDialogVariableModel.GetComboFields(
+  TableVariable: TTableStatDiaglogVariable): TEpiFields;
+var
+  Field: TEpiField;
+begin
+  Result := TEpiFields.Create(nil);
+  Result.Sorted := false;
+
+  for Field in FExecutor.SortedFields do
+    if (not IsUsed(Field)) then
+      Result.AddItem(Field);
 end;
 
 end.

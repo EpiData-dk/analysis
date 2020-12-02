@@ -35,7 +35,7 @@ var
   View: TTableStatDialogVariablesView;
 begin
   View := TTableStatDialogVariablesView.Create(Owner, Executor);
-  FVariablesModel := TTableStatDialogVariableModel.Create();
+  FVariablesModel := TTableStatDialogVariableModel.Create(Executor);
 
   View.SetModel(FVariablesModel);
 
