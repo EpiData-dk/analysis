@@ -19,6 +19,7 @@ type
   public
     function GenerateScript(): UTF8String;
     function GetCaption(): UTF8String;
+    function GetHelpText(): UTF8String;
     function GetViews(Owner: TComponent; Executor: TExecutor): TStatDialogContributionViewList;
   end;
 
@@ -34,7 +35,7 @@ function TTableStatDialogContribution.CreateMainView(Owner: TComponent;
 var
   View: TTableStatDialogVariablesView;
 begin
-  View := TTableStatDialogVariablesView.Create(Owner, Executor);
+  View := TTableStatDialogVariablesView.Create(Owner);
   FVariablesModel := TTableStatDialogVariableModel.Create(Executor);
 
   View.SetModel(FVariablesModel);
@@ -52,6 +53,14 @@ end;
 function TTableStatDialogContribution.GetCaption(): UTF8String;
 begin
   result := 'Tables';
+end;
+
+function TTableStatDialogContribution.GetHelpText(): UTF8String;
+begin
+  result :=
+    '1: Select Variables' + LineEnding +
+    '2: Click percentage, test, sorting etc.' + LineEnding +
+    '3: Run, Execute or Paste command';
 end;
 
 function TTableStatDialogContribution.GetViews(Owner: TComponent;

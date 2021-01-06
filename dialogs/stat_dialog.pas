@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, auto_position_form, stat_dialog_contribution,
-  ComCtrls, ExtCtrls, executor, stat_dialog_footer, StdCtrls;
+  ComCtrls, ExtCtrls, executor, stat_dialog_footer, StdCtrls, script_runner,
+  Controls;
 
 type
   { TStatDialog }
@@ -18,21 +19,31 @@ type
     FPageControl: TPageControl;
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure HintWindowClick(Sender: TObject);
+    procedure HintWindowMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     procedure OKButtonClick(Sender: TObject);
     procedure PageControlChanging(Sender: TObject; var AllowChange: Boolean);
     procedure PageControlChange(Sender: TObject);
   private
+    FScriptRunner: IScriptMediator;
     FViews: TStatDialogContributionViewList;
     FContribution: IStatDialogContribution;
+    procedure SetScriptRunner(AValue: IScriptMediator);
     procedure SetupViews();
     procedure UpdateButtonPanel();
+  private
+    // Actions
     procedure ResetViews();
+    procedure ExecuteScript(CloseAfterRun: Boolean);
+    procedure PasteScript();
+    procedure ShowHelp();
   protected
     procedure ActionPerformed(Sender: TButton);
     procedure OnViewModified(DataModel: IStatDialogModel);
   public
-    constructor Create(TheOwner: TComponent; Contribution: IStatDialogContribution;
-      Executor: TExecutor);
+    constructor Create(TheOwner: TComponent; Contribution: IStatDialogContribution; Executor: TExecutor);
+    property ScriptRunner: IScriptMediator read FScriptRunner write SetScriptRunner;
   end;
 
 var
@@ -41,7 +52,7 @@ var
 implementation
 
 uses
-  Controls, LCLType;
+  LCLType, LCLProc, Forms;
 
 type
 
@@ -72,6 +83,17 @@ begin
       Close;
       Exit;
     end;
+end;
+
+procedure TStatDialog.HintWindowClick(Sender: TObject);
+begin
+  //
+end;
+
+procedure TStatDialog.HintWindowMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  THintWindow(Sender).Close;
 end;
 
 procedure TStatDialog.OKButtonClick(Sender: TObject);
@@ -111,6 +133,12 @@ begin
   end;
 end;
 
+procedure TStatDialog.SetScriptRunner(AValue: IScriptMediator);
+begin
+  if FScriptRunner = AValue then Exit;
+  FScriptRunner := AValue;
+end;
+
 procedure TStatDialog.UpdateButtonPanel();
 var
   IsDefined: Boolean;
@@ -122,9 +150,9 @@ begin
     IsDefined := IsDefined and TDialogViewTabSheet(FPageControl.Pages[i]).IsDefined;
 
   if IsDefined then
-    FButtonFooter.EnabledButtons := FButtonFooter.EnabledButtons + [sdbRun, sdbExecute]
+    FButtonFooter.EnabledButtons := FButtonFooter.EnabledButtons + [sdbRun, sdbExecute, sdbPaste]
   else
-    FButtonFooter.EnabledButtons := FButtonFooter.EnabledButtons - [sdbRun, sdbExecute];
+    FButtonFooter.EnabledButtons := FButtonFooter.EnabledButtons - [sdbRun, sdbExecute, sdbPaste];
 end;
 
 procedure TStatDialog.ResetViews();
@@ -135,15 +163,47 @@ begin
     View.ResetView();
 end;
 
+procedure TStatDialog.ExecuteScript(CloseAfterRun: Boolean);
+begin
+  if (Assigned(ScriptRunner)) then
+    ScriptRunner.RunScript(FContribution.GenerateScript());
+
+  if (CloseAfterRun) then
+    Close;
+end;
+
+procedure TStatDialog.PasteScript();
+begin
+  if (Assigned(ScriptRunner)) then
+    ScriptRunner.PasteScript(FContribution.GenerateScript());
+end;
+
+procedure TStatDialog.ShowHelp();
+var
+  HintWindow: THintWindow;
+  HintRect: TRect;
+  HintPoint: TPoint;
+begin
+  HintWindow := THintWindow.Create(self);
+  HintWindow.HideInterval := 5000;
+  HintWindow.OnMouseDown := @HintWindowMouseDown;
+  HintWindow.OnClick := @HintWindowClick;
+
+  HintRect := HintWindow.CalcHintRect(0, FContribution.GetHelpText(), nil);
+  HintPoint := ClientToScreen(Point(FButtonFooter.Left, FButtonFooter.Top));
+  OffsetRect(HintRect, HintPoint.X, HintPoint.Y - HintRect.Bottom);
+  HintWindow.ActivateHint(HintRect, FContribution.GetHelpText());
+end;
+
 procedure TStatDialog.ActionPerformed(Sender: TButton);
 begin
   case Sender.Tag of
-    RUN_BUTTON_ID: ;
-    EXECUTE_BUTTON_ID: ;
-    PASTE_BUTTON_ID: ;
-    HELP_BUTTON_ID: ;
-    RESET_BUTTON_ID: ResetViews();
-    CANCEL_BUTTON_ID: Close;
+    RUN_BUTTON_ID:     ExecuteScript(true);
+    EXECUTE_BUTTON_ID: ExecuteScript(false);
+    PASTE_BUTTON_ID:   PasteScript();
+    HELP_BUTTON_ID:    ShowHelp();
+    RESET_BUTTON_ID:   ResetViews();
+    CANCEL_BUTTON_ID:  Close;
   end;
 end;
 
@@ -163,7 +223,7 @@ begin
   FButtonFooter.OnPasteClick := self;
   FButtonFooter.OnResetClick := self;
   FButtonFooter.OnRunClick := self;
-  FButtonFooter.EnabledButtons := [sdbCancel, sdbHelp, sdbReset, sdbPaste];
+  FButtonFooter.EnabledButtons := [sdbCancel, sdbHelp, sdbReset];
 
   FPageControl := TPageControl.Create(self);
   FPageControl.Align := alClient;

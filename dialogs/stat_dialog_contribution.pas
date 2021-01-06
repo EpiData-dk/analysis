@@ -32,6 +32,7 @@ type
 
   IStatDialogContribution = interface['{72DC9405-CBF8-4166-8710-F51A816F46CA}']
     function GetCaption(): UTF8String;
+    function GetHelpText(): UTF8String;
     function GetViews(Owner: TComponent; Executor: TExecutor): TStatDialogContributionViewList;
     function GenerateScript(): UTF8String;
   end;

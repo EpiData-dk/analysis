@@ -23,7 +23,7 @@ type
     procedure SetWeightVariable(AValue: TEpiField);
     procedure SetXVariable(AValue: TEpiField);
     procedure SetYVariable(AValue: TEpiField);
-    function IsUsed(Field: TEpiField): boolean;
+    function IsUsed(Field: TEpiField; TableVariable: TTableStatDiaglogVariable): boolean;
   public
     function GenerateScript(): UTF8String;
     function IsDefined(): boolean;
@@ -58,13 +58,12 @@ begin
   FYVariable := AValue;
 end;
 
-function TTableStatDialogVariableModel.IsUsed(Field: TEpiField): boolean;
+function TTableStatDialogVariableModel.IsUsed(Field: TEpiField;
+  TableVariable: TTableStatDiaglogVariable): boolean;
 begin
-  result :=
-    (Field = FXVariable) or
-    (Field = FYVariable) or
-    (Field = FWeightVariable) or
-    (FByVariables.FieldExists(Field));
+  result := (not (TableVariable = tvX)) and (Field = FXVariable);
+  result := result or ((not (TableVariable = tvY)) and (Field = FYVariable));
+  result := result or ((not (TableVariable = tvWeight)) and (Field = FWeightVariable));
 end;
 
 function TTableStatDialogVariableModel.GenerateScript(): UTF8String;
@@ -109,7 +108,7 @@ begin
   Result.Sorted := false;
 
   for Field in FExecutor.SortedFields do
-    if (not IsUsed(Field)) then
+    if (not IsUsed(Field, TableVariable)) then
       Result.AddItem(Field);
 end;
 

@@ -66,9 +66,10 @@ begin
   if (FNoItemText <> '') then
     AddItem(FNoItemText, nil);
 
-  for Field in FFields do
-    if (Field.FieldType in FFilter) then
-      AddItem(Field.Name, Field);
+  if (Assigned(FFields)) then
+    for Field in FFields do
+      if (Field.FieldType in FFilter) then
+        AddItem(Field.Name, Field);
 
   if (FNoItemText <> '') then
     ItemIndex := 0;
@@ -80,6 +81,7 @@ begin
 
   SetStyle(csDropDownList);
   FFilter := AllFieldTypes;
+  FFields := nil;
 end;
 
 end.

@@ -38,6 +38,7 @@ begin
     Exit;
 
   Dialog := TStatDialog.Create(Self, FContribution, FExecutor);
+  Dialog.ScriptRunner := MainForm;
   DialogResult := Dialog.ShowModal;
 
   if (DialogResult = mrOK) then

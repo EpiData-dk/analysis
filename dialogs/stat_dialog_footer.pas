@@ -122,12 +122,12 @@ begin
   Button.AnchorParallel(akTop, 10, self);
   Button.AnchorParallel(akBottom, 10, self);
 
-  Button := InitButton(sdbPaste, HELP_BUTTON_ID, '&Paste');
+  Button := InitButton(sdbPaste, PASTE_BUTTON_ID, '&Paste');
   Button.AnchorToNeighbour(akLeft, 5, FButtons[sdbExecute]);
   Button.AnchorParallel(akTop, 10, self);
   Button.AnchorParallel(akBottom, 10, self);
 
-  Button := InitButton(sdbHelp, PASTE_BUTTON_ID, '&?');
+  Button := InitButton(sdbHelp, HELP_BUTTON_ID, '&?');
   Button.AnchorParallel(akTop, 10, self);
   Button.AnchorParallel(akBottom, 10, self);
   Button.AnchorToNeighbour(akLeft, 5, FButtons[sdbPaste]);

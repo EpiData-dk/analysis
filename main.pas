@@ -13,6 +13,7 @@ uses
   epiv_projecttreeview_frame, epicustombase, analysis_statusbar, epidocument,
   epiopenfile, outputviewer_types, commandtree, history_form, varnames_form,
   projecttree_form, commandtree_form, stat_dialog_contribution, stat_dialog_action,
+  script_runner,
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -24,7 +25,7 @@ type
 
   { TMainForm }
 
-  TMainForm = class(TForm)
+  TMainForm = class(TForm, IScriptMediator)
     AlwaysAvailableActionList: TActionList;
     CloseAllWindowsAction: TAction;
     ColorDialog1: TColorDialog;
@@ -248,6 +249,9 @@ type
     FHistory: THistory;
     FCmdEdit: TCmdEdit;
     function  CmdEditRunCommand(Sender: TObject; const S: UTF8String): boolean;
+  protected
+    procedure RunScript(Script: UTF8String);
+    procedure PasteScript(Script: UTF8String);
   public
     procedure InterfaceRunCommand(const S: UTF8String);
 
@@ -1206,6 +1210,16 @@ begin
   FHistory.AddLine(S);
   DoParseContent(S);
   FOutputCreator.DoNormal('');
+end;
+
+procedure TMainForm.RunScript(Script: UTF8String);
+begin
+  InterfaceRunCommand(Script);
+end;
+
+procedure TMainForm.PasteScript(Script: UTF8String);
+begin
+  FCmdEdit.Text := Script;
 end;
 
 procedure TMainForm.ProjectTreeHint(Sender: TObject;

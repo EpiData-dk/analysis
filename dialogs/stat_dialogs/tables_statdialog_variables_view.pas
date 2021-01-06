@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, Controls, ExtCtrls,
-  StdCtrls, tables_statdialog_model, fields_combobox, executor;
+  StdCtrls, tables_statdialog_model, fields_combobox;
 
 type
 
@@ -22,7 +22,7 @@ type
   protected
     procedure DoModified();
   public
-    constructor Create(TheOwner: TComponent; Executor: TExecutor);
+    constructor Create(TheOwner: TComponent);
     procedure EnterView();
     function ExitView(): boolean;
     function GetControl(): TControl;
@@ -35,7 +35,7 @@ type
 implementation
 
 uses
-  epidatafilestypes, epidatafiles;
+  epidatafiles;
 
 const
   XVARIABLE_TAG = 0;
@@ -63,17 +63,28 @@ begin
       FDataModel.WeightVariable := Field;
   end;
 
+  UpdateCombos();
   DoModified();
 end;
 
 procedure TTableStatDialogVariablesView.UpdateCombos();
+const
+  TableVariables: Array[0..2] of TTableStatDiaglogVariable = (tvX, tvY, tvWeight);
 var
   Field: TEpiField;
+  ComboBox: TEpiFieldsComboBox;
+  i: Integer;
 begin
-  Field := TEpiField(FComboBoxes[0].Items[FComboBoxes[0].ItemIndex]);
-  FComboBoxes[0].Fields.Free;
-  FComboBoxes[0].Fields := FDataModel.GetComboFields(tvX);
-  FComboBoxes[0].ItemIndex := FComboBoxes[0].Items.IndexOfObject(Field);
+  for i := Low(FComboBoxes) to High(FComboBoxes) do
+    begin
+      ComboBox := FComboBoxes[i];
+
+      Field := TEpiField(ComboBox.Items.Objects[ComboBox.ItemIndex]);
+      ComboBox.Fields.Free;
+      ComboBox.Fields := nil;
+      ComboBox.Fields := FDataModel.GetComboFields(TableVariables[i]);
+      ComboBox.ItemIndex := ComboBox.Items.IndexOfObject(Field);
+    end;
 end;
 
 procedure TTableStatDialogVariablesView.DoModified();
@@ -82,8 +93,7 @@ begin
     FOnModified.OnViewModified(FDataModel);
 end;
 
-constructor TTableStatDialogVariablesView.Create(TheOwner: TComponent;
-  Executor: TExecutor);
+constructor TTableStatDialogVariablesView.Create(TheOwner: TComponent);
 var
   ComboBox: TEpiFieldsComboBox;
   PrevCombo: TEpiFieldsComboBox;
@@ -151,6 +161,11 @@ begin
   for Combobox in FComboBoxes do
     Combobox.ItemIndex := 0;
 
+  FDataModel.XVariable := nil;
+  FDataModel.YVariable := nil;
+  FDataModel.WeightVariable := nil;
+
+  UpdateCombos();
   DoModified();
 end;
 
