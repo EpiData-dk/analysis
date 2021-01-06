@@ -114,13 +114,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 297
+          Width = 299
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 257
+          Width = 259
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -297,7 +297,7 @@ object MainForm: TMainForm
       end
     end
     object StatisticsMainMenuItem: TMenuItem
-      Caption = 'Analysis'
+      Caption = '&Analysis'
     end
     object MenuItem9: TMenuItem
       Caption = '&Window'

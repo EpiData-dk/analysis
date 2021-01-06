@@ -38,9 +38,10 @@ uses
   epidatafiles;
 
 const
-  XVARIABLE_TAG = 0;
-  YVARIABLE_TAG = 1;
-  WEIGHTVARIABLE_TAG = 2;
+  XVARIABLE_TAG   = Ord(tvX);
+  YVARIABLE_TAG   = Ord(tvY);
+  BYVARIABLE1_TAG = Ord(tvBy1);
+  BYVARIABLE2_TAG = Ord(tvBy2);
 
 { TTableStatDialogVariablesView }
 
@@ -59,8 +60,11 @@ begin
     YVARIABLE_TAG:
       FDataModel.YVariable := Field;
 
-    WEIGHTVARIABLE_TAG:
-      FDataModel.WeightVariable := Field;
+    BYVARIABLE1_TAG:
+      FDataModel.ByVariable1 := Field;
+
+    BYVARIABLE2_TAG:
+      FDataModel.ByVariable2 := Field;
   end;
 
   UpdateCombos();
@@ -68,8 +72,6 @@ begin
 end;
 
 procedure TTableStatDialogVariablesView.UpdateCombos();
-const
-  TableVariables: Array[0..2] of TTableStatDiaglogVariable = (tvX, tvY, tvWeight);
 var
   Field: TEpiField;
   ComboBox: TEpiFieldsComboBox;
@@ -82,7 +84,7 @@ begin
       Field := TEpiField(ComboBox.Items.Objects[ComboBox.ItemIndex]);
       ComboBox.Fields.Free;
       ComboBox.Fields := nil;
-      ComboBox.Fields := FDataModel.GetComboFields(TableVariables[i]);
+      ComboBox.Fields := FDataModel.GetComboFields(TTableStatDiaglogVariable(i));
       ComboBox.ItemIndex := ComboBox.Items.IndexOfObject(Field);
     end;
 end;
@@ -100,7 +102,7 @@ var
 begin
   inherited Create(TheOwner);
 
-  SetLength(FComboBoxes, 3);
+  SetLength(FComboBoxes, Ord(High(TTableStatDiaglogVariable)) + 1);
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
   ComboBox.Parent := self;
@@ -109,7 +111,7 @@ begin
   ComboBox.AnchorParallel(akTop, 10, Self);
   ComboBox.OnSelect := @VariableSelect;
   ComboBox.Tag := XVARIABLE_TAG;
-  ComboBox.NoItemText := 'X Variable';
+  ComboBox.NoItemText := 'Column Variable';
   FComboBoxes[XVARIABLE_TAG] := ComboBox;
   PrevCombo := ComboBox;
 
@@ -120,7 +122,7 @@ begin
   ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
   ComboBox.OnSelect := @VariableSelect;
   ComboBox.Tag := YVARIABLE_TAG;
-  ComboBox.NoItemText := 'Y Variable (optional)';
+  ComboBox.NoItemText := 'Row Variable (optional)';
   FComboBoxes[YVARIABLE_TAG] := ComboBox;
   PrevCombo := ComboBox;
 
@@ -130,9 +132,20 @@ begin
   ComboBox.AnchorParallel(akRight, 10, Self);
   ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
   ComboBox.OnSelect := @VariableSelect;
-  ComboBox.Tag := WEIGHTVARIABLE_TAG;
-  ComboBox.NoItemText := 'Weight Variable (optional)';
-  FComboBoxes[WEIGHTVARIABLE_TAG] := ComboBox;
+  ComboBox.Tag := BYVARIABLE1_TAG;
+  ComboBox.NoItemText := 'By Variable (optional)';
+  FComboBoxes[BYVARIABLE1_TAG] := ComboBox;
+  PrevCombo := ComboBox;
+
+  ComboBox := TEpiFieldsComboBox.Create(TheOwner);
+  ComboBox.Parent := self;
+  ComboBox.AnchorParallel(akLeft, 10, Self);
+  ComboBox.AnchorParallel(akRight, 10, Self);
+  ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
+  ComboBox.OnSelect := @VariableSelect;
+  ComboBox.Tag := BYVARIABLE2_TAG;
+  ComboBox.NoItemText := 'By Variable (optional)';
+  FComboBoxes[BYVARIABLE2_TAG] := ComboBox;
 end;
 
 procedure TTableStatDialogVariablesView.EnterView();
@@ -163,7 +176,8 @@ begin
 
   FDataModel.XVariable := nil;
   FDataModel.YVariable := nil;
-  FDataModel.WeightVariable := nil;
+  FDataModel.ByVariable1 := nil;
+  FDataModel.ByVariable2 := nil;
 
   UpdateCombos();
   DoModified();

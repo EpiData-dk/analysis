@@ -5,13 +5,15 @@ unit stat_dialog_action;
 interface
 
 uses
-  Classes, SysUtils, stat_dialog, stat_dialog_contribution, executor;
+  Classes, SysUtils, stat_dialog, stat_dialog_contribution, executor, fgl,
+  StrHashMap;
 
 type
-
   { TStatDialogAction }
 
   TStatDialogAction = class(TBasicAction)
+  private
+    class var FDialogMap: TStringHashMap;
   private
     FContribution: IStatDialogContribution;
     FExecutor: TExecutor;
@@ -24,36 +26,37 @@ type
 implementation
 
 uses
-  main, UITypes;
+  main;
+
 { TStatDialogAction }
 
 procedure TStatDialogAction.StartDialog(Sender: TObject);
 var
   Dialog: TStatDialog;
-  Script: UTF8String;
-  DialogResult: Integer;
+  Index: Integer;
 begin
   // TODO: Should instead open a file
   if (not Assigned(FExecutor.DataFile)) then
     Exit;
 
-  Dialog := TStatDialog.Create(Self, FContribution, FExecutor);
-  Dialog.ScriptRunner := MainForm;
-  DialogResult := Dialog.ShowModal;
-
-  if (DialogResult = mrOK) then
+  Dialog := nil;
+  if (not FDialogMap.Find(FContribution.GetCaption(), Dialog)) then
     begin
-      Script := FContribution.GenerateScript();
-      MainForm.InterfaceRunCommand(Script);
+      Dialog := TStatDialog.Create(Self, FContribution, FExecutor);
+      Dialog.ScriptRunner := MainForm;
+      FDialogMap.Add(FContribution.GetCaption(), Dialog);
     end;
 
-  Dialog.Free;
+  Dialog.Show;
 end;
 
 constructor TStatDialogAction.Create(AOwner: TComponent;
   Contribution: IStatDialogContribution; Executor: TExecutor);
 begin
   inherited Create(AOwner);
+
+  if (not Assigned(FDialogMap)) then
+    FDialogMap := TStringHashMap.Create();
 
   FContribution := Contribution;
   FExecutor := Executor;

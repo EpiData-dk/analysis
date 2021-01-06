@@ -9,14 +9,21 @@ uses
   Classes, SysUtils, fgl, ExtCtrls, Controls, executor;
 
 type
+
+  { IStatDialogModel }
+
   IStatDialogModel = interface['{6C0D5628-6749-4785-9028-05956F1C00C8}']
     function IsDefined(): boolean;
     function GenerateScript(): UTF8String;
   end;
 
+  { IStatDiaglogViewModified }
+
   IStatDiaglogViewModified = interface['{7FCE1351-BFDB-449A-8BD7-0EB6F9527033}']
     procedure OnViewModified(DataModel: IStatDialogModel);
   end;
+
+  { IStatDialogView }
 
   IStatDialogView = interface['{93D8C128-08B0-4C02-98CA-FF9DBA1AF79F}']
     function GetControl(): TControl;

@@ -15,7 +15,7 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="3"/>
       <MinorVersionNr Value="1"/>
-      <BuildNr Value="4"/>
+      <BuildNr Value="5"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -281,7 +281,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="104">
+    <Units Count="105">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -736,6 +736,10 @@
         <Filename Value="script_runner.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit103>
+      <Unit104>
+        <Filename Value="dialogs/stat_dialogs/tables_statdialog_primaryoption_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit104>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

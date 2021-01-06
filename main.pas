@@ -13,7 +13,7 @@ uses
   epiv_projecttreeview_frame, epicustombase, analysis_statusbar, epidocument,
   epiopenfile, outputviewer_types, commandtree, history_form, varnames_form,
   projecttree_form, commandtree_form, stat_dialog_contribution, stat_dialog_action,
-  script_runner,
+  script_runner, stat_dialog,
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -2053,6 +2053,7 @@ begin
   THistoryForm.RestoreDefaultPos(FHistoryWindow);
   TProjectTreeForm.RestoreDefaultPos(FProjectTreeForm);
   TVariablesForm.RestoreDefaultPos(FVarnamesWindow);
+  TStatDialog.RestoreDefaultPos(nil);
 
   SaveFormPosition(Self, 'MainForm');
 end;

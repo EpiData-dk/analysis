@@ -18,6 +18,7 @@ type
     procedure DoShow; override;
     procedure DoDestroy; override;
     procedure DoClose(var CloseAction: TCloseAction); override;
+    class function SectionName: String;
   public
     constructor Create(AOwner: TComponent); override;
     class procedure RestoreDefaultPos(AForm: TCustomForm);
@@ -35,7 +36,7 @@ begin
   inherited DoShow;
 
   FFirstShow := true;
-  LoadFormPosition(Self, ClassName);
+  LoadFormPosition(Self, SectionName);
 end;
 
 procedure TCustomAutoPositionForm.DoDestroy;
@@ -43,16 +44,21 @@ begin
   // If the form has not been shown but only created, then all boundries will
   // have default values.
   if (FFirstShow) then
-    SaveFormPosition(Self, ClassName);
+    SaveFormPosition(Self, SectionName);
 
   inherited DoDestroy;
 end;
 
 procedure TCustomAutoPositionForm.DoClose(var CloseAction: TCloseAction);
 begin
-  SaveFormPosition(Self, ClassName);
+  SaveFormPosition(Self, SectionName);
 
   inherited DoClose(CloseAction);
+end;
+
+class function TCustomAutoPositionForm.SectionName: String;
+begin
+  result := ClassName;
 end;
 
 constructor TCustomAutoPositionForm.Create(AOwner: TComponent);
@@ -68,7 +74,7 @@ var
   W, H: integer;
   MForm: TForm;
 begin
-  DeleteFormPosition(ClassName);
+  DeleteFormPosition(SectionName);
 
   if (AForm is TCustomAutoPositionForm) then
     begin

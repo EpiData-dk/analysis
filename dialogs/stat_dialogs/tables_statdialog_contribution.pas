@@ -16,6 +16,7 @@ type
   private
     FVariablesModel: TTableStatDialogVariableModel;
     function CreateMainView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
+    function CreatePrimaryOptionView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
   public
     function GenerateScript(): UTF8String;
     function GetCaption(): UTF8String;
@@ -26,7 +27,7 @@ type
 implementation
 
 uses
-  tables_statdialog_variables_view;
+  tables_statdialog_variables_view, tables_statdialog_primaryoption_view;
 
 { TTableStatDialogContribution }
 
@@ -39,6 +40,16 @@ begin
   FVariablesModel := TTableStatDialogVariableModel.Create(Executor);
 
   View.SetModel(FVariablesModel);
+
+  Result := View;
+end;
+
+function TTableStatDialogContribution.CreatePrimaryOptionView(Owner: TComponent;
+  Executor: TExecutor): IStatDialogView;
+var
+  View: TTableStatPrimaryOptionsView;
+begin
+  View := TTableStatPrimaryOptionsView.Create(Owner);
 
   Result := View;
 end;
@@ -68,6 +79,7 @@ function TTableStatDialogContribution.GetViews(Owner: TComponent;
 begin
   result := TStatDialogContributionViewList.Create;
   result.add(CreateMainView(Owner, Executor));
+  result.Add(CreatePrimaryOptionView(Owner, Executor));
 end;
 
 initialization

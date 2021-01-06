@@ -9,18 +9,19 @@ uses
 
 type
 
-  TTableStatDiaglogVariable = (tvX, tvY, tvWeight, tvBy);
+  TTableStatDiaglogVariable = (tvX, tvY, tvBy1, tvBy2);
 
   { TTableStatDialogVariableModel }
 
   TTableStatDialogVariableModel = class(IStatDialogModel)
   private
-    FByVariables: TEpiFields;
+    FByVariable1: TEpiField;
+    FByVariable2: TEpiField;
     FExecutor: TExecutor;
-    FWeightVariable: TEpiField;
     FXVariable: TEpiField;
     FYVariable: TEpiField;
-    procedure SetWeightVariable(AValue: TEpiField);
+    procedure SetByVariable1(AValue: TEpiField);
+    procedure SetByVariable2(AValue: TEpiField);
     procedure SetXVariable(AValue: TEpiField);
     procedure SetYVariable(AValue: TEpiField);
     function IsUsed(Field: TEpiField; TableVariable: TTableStatDiaglogVariable): boolean;
@@ -29,11 +30,11 @@ type
     function IsDefined(): boolean;
   public
     constructor Create(Executor: TExecutor);
-    procedure AddByVariable(Field: TEpiField);
     function GetComboFields(TableVariable: TTableStatDiaglogVariable): TEpiFields;
     property XVariable: TEpiField read FXVariable write SetXVariable;
     property YVariable: TEpiField read FYVariable write SetYVariable;
-    property WeightVariable: TEpiField read FWeightVariable write SetWeightVariable;
+    property ByVariable1: TEpiField read FByVariable1 write SetByVariable1;
+    property ByVariable2: TEpiField read FByVariable2 write SetByVariable2;
   end;
 
 implementation
@@ -46,10 +47,16 @@ begin
   FXVariable := AValue;
 end;
 
-procedure TTableStatDialogVariableModel.SetWeightVariable(AValue: TEpiField);
+procedure TTableStatDialogVariableModel.SetByVariable1(AValue: TEpiField);
 begin
-  if FWeightVariable = AValue then Exit;
-  FWeightVariable := AValue;
+  if FByVariable1 = AValue then Exit;
+  FByVariable1 := AValue;
+end;
+
+procedure TTableStatDialogVariableModel.SetByVariable2(AValue: TEpiField);
+begin
+  if FByVariable2 = AValue then Exit;
+  FByVariable2 := AValue;
 end;
 
 procedure TTableStatDialogVariableModel.SetYVariable(AValue: TEpiField);
@@ -63,7 +70,8 @@ function TTableStatDialogVariableModel.IsUsed(Field: TEpiField;
 begin
   result := (not (TableVariable = tvX)) and (Field = FXVariable);
   result := result or ((not (TableVariable = tvY)) and (Field = FYVariable));
-  result := result or ((not (TableVariable = tvWeight)) and (Field = FWeightVariable));
+  result := result or ((not (TableVariable = tvBy1)) and (Field = FByVariable1));
+  result := result or ((not (TableVariable = tvBy2)) and (Field = FByVariable2));
 end;
 
 function TTableStatDialogVariableModel.GenerateScript(): UTF8String;
@@ -75,11 +83,11 @@ begin
   if Assigned(FYVariable) then
     result += ' ' + FYVariable.Name;
 
-  if Assigned(FWeightVariable) then
-    result += ' !w := ' + FWeightVariable.Name;
+  if Assigned(FByVariable1) then
+    result += ' !by := ' + FByVariable1.Name;
 
-  for Field in FByVariables do
-    result += ' !by := ' + Field.Name;
+  if Assigned(FByVariable2) then
+    result += ' !by := ' + FByVariable2.Name;
 end;
 
 function TTableStatDialogVariableModel.IsDefined(): boolean;
@@ -90,13 +98,6 @@ end;
 constructor TTableStatDialogVariableModel.Create(Executor: TExecutor);
 begin
   FExecutor := Executor;
-  FByVariables := TEpiFields.Create(nil);
-  FByVariables.Sorted := false;
-end;
-
-procedure TTableStatDialogVariableModel.AddByVariable(Field: TEpiField);
-begin
-  FByVariables.AddItem(Field);
 end;
 
 function TTableStatDialogVariableModel.GetComboFields(
