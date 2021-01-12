@@ -40,7 +40,7 @@ type
     procedure ShowHelp();
   protected
     procedure ActionPerformed(Sender: TButton);
-    procedure OnViewModified(DataModel: IStatDialogModel);
+    procedure OnViewModified(View: IStatDialogView);
   public
     constructor Create(TheOwner: TComponent; Contribution: IStatDialogContribution; Executor: TExecutor);
     property ScriptRunner: IScriptMediator read FScriptRunner write SetScriptRunner;
@@ -61,10 +61,8 @@ type
   TDialogViewTabSheet = class(TTabSheet)
   private
     FDialogView: IStatDialogView;
-    FIsDefined: boolean;
   public
     property DialogView: IStatDialogView read FDialogView write FDialogView;
-    property IsDefined: boolean read FIsDefined write FIsDefined;
   end;
 
 { TStatDialog }
@@ -72,7 +70,9 @@ type
 procedure TStatDialog.FormCreate(Sender: TObject);
 begin
   Caption := FContribution.getCaption();
+
   SetupViews();
+  UpdateButtonPanel();
 end;
 
 procedure TStatDialog.FormKeyDown(Sender: TObject; var Key: Word;
@@ -124,13 +124,15 @@ begin
     NewSheet := TDialogViewTabSheet.Create(FPageControl);
     NewSheet.PageControl := FPageControl;
     NewSheet.DialogView := View;
-    NewSheet.Caption := View.getViewCaption;
-    ViewControl := View.getControl();
+    NewSheet.Caption := View.GetViewCaption();
+    ViewControl := View.GetControl();
     ViewControl.Parent := NewSheet;
     ViewControl.Align := alClient;
 
     View.SetOnModified(Self);
   end;
+
+  ResetViews();
 end;
 
 procedure TStatDialog.SetScriptRunner(AValue: IScriptMediator);
@@ -147,7 +149,7 @@ begin
   IsDefined := true;
 
   for i := 0 to FPageControl.PageCount - 1 do
-    IsDefined := IsDefined and TDialogViewTabSheet(FPageControl.Pages[i]).IsDefined;
+    IsDefined := IsDefined and TDialogViewTabSheet(FPageControl.Pages[i]).DialogView.IsDefined();
 
   if IsDefined then
     FButtonFooter.EnabledButtons := FButtonFooter.EnabledButtons + [sdbRun, sdbExecute, sdbPaste]
@@ -236,9 +238,8 @@ begin
   KeyPreview := true;
 end;
 
-procedure TStatDialog.OnViewModified(DataModel: IStatDialogModel);
+procedure TStatDialog.OnViewModified(View: IStatDialogView);
 begin
-  TDialogViewTabSheet(FPageControl.ActivePage).IsDefined := DataModel.IsDefined();
   UpdateButtonPanel();
 end;
 

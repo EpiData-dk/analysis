@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
-  tables_statdialog_model;
+  tables_statdialog_model, tables_statdialog_primaryoption_model;
 
 type
   
@@ -14,6 +14,7 @@ type
 
   TTableStatDialogContribution = class(IStatDialogContribution)
   private
+    FPrimaryOptionsModel: TTableStatDialogPrimaryOptionModel;
     FVariablesModel: TTableStatDialogVariableModel;
     function CreateMainView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
     function CreatePrimaryOptionView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
@@ -50,6 +51,9 @@ var
   View: TTableStatPrimaryOptionsView;
 begin
   View := TTableStatPrimaryOptionsView.Create(Owner);
+  FPrimaryOptionsModel := TTableStatDialogPrimaryOptionModel.Create();
+
+  View.SetModel(FPrimaryOptionsModel);
 
   Result := View;
 end;
@@ -57,7 +61,8 @@ end;
 function TTableStatDialogContribution.GenerateScript(): UTF8String;
 begin
   result := 'tables ' +
-    FVariablesModel.GenerateScript() +
+    FVariablesModel.GenerateScript() + ' ' +
+    FPrimaryOptionsModel.GenerateScript() +
     ';';
 end;
 

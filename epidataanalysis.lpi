@@ -15,7 +15,7 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="3"/>
       <MinorVersionNr Value="1"/>
-      <BuildNr Value="5"/>
+      <BuildNr Value="6"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -220,7 +220,7 @@
         </UserOverrides>
       </environment>
       <FormatVersion Value="2"/>
-      <Modes Count="2">
+      <Modes Count="3">
         <Mode0 Name="default">
           <environment>
             <UserOverrides Count="1">
@@ -236,6 +236,17 @@
             </UserOverrides>
           </environment>
         </Mode1>
+        <Mode2 Name="CallGrind">
+          <local>
+            <HostApplicationFilename Value="/usr/bin/valgrind"/>
+            <CommandLineParams Value="--tool=callgrind"/>
+          </local>
+          <environment>
+            <UserOverrides Count="1">
+              <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
+            </UserOverrides>
+          </environment>
+        </Mode2>
       </Modes>
     </RunParams>
     <RequiredPackages Count="13">
@@ -281,7 +292,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="105">
+    <Units Count="106">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -740,6 +751,10 @@
         <Filename Value="dialogs/stat_dialogs/tables_statdialog_primaryoption_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit104>
+      <Unit105>
+        <Filename Value="dialogs/stat_dialogs/tables_statdialog_primaryoption_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit105>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -37,7 +37,8 @@ uses
   options_cssfileoption, stat_dialog_contribution,
   tables_statdialog_contribution, stat_dialog, stat_dialog_action,
   tables_statdialog_variables_view, tables_statdialog_model, fields_combobox,
-  stat_dialog_footer, script_runner, tables_statdialog_primaryoption_view;
+  stat_dialog_footer, script_runner, tables_statdialog_primaryoption_view,
+  tables_statdialog_primaryoption_model;
 
 {$R *.res}
 

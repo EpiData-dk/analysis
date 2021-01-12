@@ -28,6 +28,7 @@ type
     function GetControl(): TControl;
     function GetViewCaption(): UTF8String;
     procedure ResetView();
+    function IsDefined(): boolean;
     procedure SetModel(DataModel: TTableStatDialogVariableModel);
     procedure SetOnModified(OnModified: IStatDiaglogViewModified);
   end;
@@ -92,7 +93,7 @@ end;
 procedure TTableStatDialogVariablesView.DoModified();
 begin
   if (Assigned(FOnModified)) then
-    FOnModified.OnViewModified(FDataModel);
+    FOnModified.OnViewModified(Self);
 end;
 
 constructor TTableStatDialogVariablesView.Create(TheOwner: TComponent);
@@ -181,6 +182,11 @@ begin
 
   UpdateCombos();
   DoModified();
+end;
+
+function TTableStatDialogVariablesView.IsDefined(): boolean;
+begin
+  result := FDataModel.IsDefined();
 end;
 
 procedure TTableStatDialogVariablesView.SetModel(
