@@ -194,7 +194,9 @@ begin
   FReadCmd := ST;
   FN := '';
 
-  if Assigned(ST.StringExpr) then
+  if Assigned(ST.StringExpr) and
+     (ST.StringExpr.AsString <> '')
+  then
     FN := ExpandFileNameUTF8(ST.StringExpr.AsString);
 
   if (FN = '') and (not ImpClipBrd)

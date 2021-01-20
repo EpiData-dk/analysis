@@ -17,6 +17,10 @@ type
     FOnModified: IStatDiaglogViewModified;
     FDataModel: TTableStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
+    FPercentGroup: TCheckGroup;
+    FSortingGroup: TRadioGroup;
+    FValueLabelsGroup: TRadioGroup;
+    FVariableLabelsGroup: TRadioGroup;
     FVerticalDivider: TBevel;
     procedure CreateValueLabelsRadios(RadioGroup: TRadioGroup);
     procedure CreateVariableLabelsRadios(RadioGroup: TRadioGroup);
@@ -152,15 +156,13 @@ constructor TTableStatPrimaryOptionsView.Create(TheOwner: TComponent);
 var
   CheckBox: TCheckBox;
   PrevControl: TControl;
-  PercentGroup: TCheckGroup;
-  SortingGroup, VariableLabelsGroup, ValueLabelsGroup: TRadioGroup;
 begin
   inherited Create(TheOwner);
 
-  ValueLabelsGroup := TRadioGroup.Create(self);
-  VariableLabelsGroup := TRadioGroup.Create(self);
-  PercentGroup := TCheckGroup.Create(self);
-  SortingGroup := TRadioGroup.Create(self);
+  FValueLabelsGroup := TRadioGroup.Create(self);
+  FVariableLabelsGroup := TRadioGroup.Create(self);
+  FPercentGroup := TCheckGroup.Create(self);
+  FSortingGroup := TRadioGroup.Create(self);
 
   FHorizontalDivider := TBevel.Create(self);
   FHorizontalDivider.Parent := self;
@@ -180,42 +182,42 @@ begin
   FVerticalDivider.AnchorParallel(akTop, 5, Self);
   FVerticalDivider.AnchorParallel(akBottom, 0, Self);
 
-  ValueLabelsGroup.Parent := self;
-  ValueLabelsGroup.Caption := 'Value Labels';
-  ValueLabelsGroup.Anchors := [];
-  ValueLabelsGroup.AnchorParallel(akTop, 5, Self);
-  ValueLabelsGroup.AnchorParallel(akLeft, 5, self);
-  ValueLabelsGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
-  ValueLabelsGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
+  FValueLabelsGroup.Parent := self;
+  FValueLabelsGroup.Caption := 'Value Labels';
+  FValueLabelsGroup.Anchors := [];
+  FValueLabelsGroup.AnchorParallel(akTop, 5, Self);
+  FValueLabelsGroup.AnchorParallel(akLeft, 5, self);
+  FValueLabelsGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
+  FValueLabelsGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
 
-  VariableLabelsGroup.Parent := self;
-  VariableLabelsGroup.Caption := 'Variable Labels';
-  VariableLabelsGroup.Anchors := [];
-  VariableLabelsGroup.AnchorParallel(akTop, 5, Self);
-  VariableLabelsGroup.AnchorParallel(akRight, 5, self);
-  VariableLabelsGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
-  VariableLabelsGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
+  FVariableLabelsGroup.Parent := self;
+  FVariableLabelsGroup.Caption := 'Variable Labels';
+  FVariableLabelsGroup.Anchors := [];
+  FVariableLabelsGroup.AnchorParallel(akTop, 5, Self);
+  FVariableLabelsGroup.AnchorParallel(akRight, 5, self);
+  FVariableLabelsGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
+  FVariableLabelsGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
 
-  PercentGroup.Parent := self;
-  PercentGroup.Caption := 'Percents';
-  PercentGroup.Anchors := [];
-  PercentGroup.AnchorParallel(akLeft, 5, self);
-  PercentGroup.AnchorParallel(akBottom, 5, Self);
-  PercentGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
-  PercentGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
+  FPercentGroup.Parent := self;
+  FPercentGroup.Caption := 'Percents';
+  FPercentGroup.Anchors := [];
+  FPercentGroup.AnchorParallel(akLeft, 5, self);
+  FPercentGroup.AnchorParallel(akBottom, 5, Self);
+  FPercentGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
+  FPercentGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
 
-  SortingGroup.Parent := self;
-  SortingGroup.Caption := 'Sorting';
-  SortingGroup.Anchors := [];
-  SortingGroup.AnchorParallel(akRight, 5, self);
-  SortingGroup.AnchorParallel(akBottom, 5, Self);
-  SortingGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
-  SortingGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
+  FSortingGroup.Parent := self;
+  FSortingGroup.Caption := 'Sorting';
+  FSortingGroup.Anchors := [];
+  FSortingGroup.AnchorParallel(akRight, 5, self);
+  FSortingGroup.AnchorParallel(akBottom, 5, Self);
+  FSortingGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
+  FSortingGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
 
-  CreateValueLabelsRadios(ValueLabelsGroup);
-  CreateVariableLabelsRadios(VariableLabelsGroup);
-  CreatePercentCheckboxes(PercentGroup);
-  CreateSortingRadios(SortingGroup);
+  CreateValueLabelsRadios(FValueLabelsGroup);
+  CreateVariableLabelsRadios(FVariableLabelsGroup);
+  CreatePercentCheckboxes(FPercentGroup);
+  CreateSortingRadios(FSortingGroup);
 end;
 
 procedure TTableStatPrimaryOptionsView.EnterView();
@@ -245,13 +247,20 @@ begin
 end;
 
 procedure TTableStatPrimaryOptionsView.ResetView();
+var
+  i: Integer;
 begin
   FDataModel.Percentages := [];
   FDataModel.Sorting := sortAsc;
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
 
+  for i := 0 to FPercentGroup.Items.Count - 1 do
+    FPercentGroup.Checked[i] := false;
 
+  FSortingGroup.ItemIndex := 0;
+  FValueLabelsGroup.ItemIndex := 1;
+  FVariableLabelsGroup.ItemIndex := 1;
 end;
 
 procedure TTableStatPrimaryOptionsView.SetOnModified(

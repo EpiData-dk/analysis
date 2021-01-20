@@ -34,7 +34,6 @@ type
     procedure UpdateButtonPanel();
   private
     // Actions
-    procedure ResetViews();
     procedure ExecuteScript(CloseAfterRun: Boolean);
     procedure PasteScript();
     procedure ShowHelp();
@@ -43,6 +42,7 @@ type
     procedure OnViewModified(View: IStatDialogView);
   public
     constructor Create(TheOwner: TComponent; Contribution: IStatDialogContribution; Executor: TExecutor);
+    procedure ResetViews();
     property ScriptRunner: IScriptMediator read FScriptRunner write SetScriptRunner;
   end;
 

@@ -317,12 +317,17 @@ type
   public
     procedure UpdateRecentFiles;
 
+  { StatDialog }
+  private
+    FStatDialogFactory: TStatDialogFactory;
+    procedure BuildStatDialogMenu;
+
   { Other }
   private
     FStartupFile: String;
     procedure ASyncRunStartup(Data: PtrInt);
     procedure ChangeColour(Const SetOptionName: UTF8String);
-    procedure BuildStatDialogMenu;
+
   public
     procedure RestoreDefaultPos;
   end;
@@ -1129,11 +1134,13 @@ begin
         begin
           FStatusbar.DocFile  := nil;
           FStatusbar.Datafile := nil;
+          FStatDialogFactory.CloseAllDialogs();
         end;
 
     stUse:
       begin
         FStatusbar.Datafile := Executor.DataFile;
+        FStatDialogFactory.ResetAllDialogs();
       end;
 
     stSave:
@@ -2018,13 +2025,14 @@ var
   Contribution: IStatDialogContribution;
   MenuItem: TMenuItem;
 begin
+  FStatDialogFactory := TStatDialogFactory.Create(Self, Executor);
   ContributionList := GetStatDialogContributionList;
 
   for Contribution in ContributionList do
   begin
     MenuItem := TMenuItem.Create(MainMenu1);
     MenuItem.Caption := Contribution.GetCaption();
-    MenuItem.Action := TStatDialogAction.Create(MainMenu1, Contribution, Executor);
+    MenuItem.Action  := FStatDialogFactory.CreateDialogAction(Contribution);
 
     StatisticsMainMenuItem.Add(MenuItem);
   end;
@@ -2053,7 +2061,7 @@ begin
   THistoryForm.RestoreDefaultPos(FHistoryWindow);
   TProjectTreeForm.RestoreDefaultPos(FProjectTreeForm);
   TVariablesForm.RestoreDefaultPos(FVarnamesWindow);
-  TStatDialog.RestoreDefaultPos(nil);
+  FStatDialogFactory.RestoreDefaultPos();
 
   SaveFormPosition(Self, 'MainForm');
 end;
