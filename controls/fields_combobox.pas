@@ -16,6 +16,7 @@ type
     FFields: TEpiFields;
     FFilter: TEpiFieldTypes;
     FNoItemText: UTF8String;
+    function GetSelectedField: TEpiField;
     procedure SetFields(AValue: TEpiFields);
     procedure SetFilter(AValue: TEpiFieldTypes);
     procedure SetNoItemText(AValue: UTF8String);
@@ -25,6 +26,7 @@ type
     property Fields: TEpiFields read FFields write SetFields;
     property Filter: TEpiFieldTypes read FFilter write SetFilter;
     property NoItemText: UTF8String read FNoItemText write SetNoItemText;
+    property SelectedField: TEpiField read GetSelectedField;
   published
     property OnSelect;
   end;
@@ -39,6 +41,11 @@ begin
   FFields := AValue;
 
   UpdateItems();
+end;
+
+function TEpiFieldsComboBox.GetSelectedField: TEpiField;
+begin
+  Result := TEpiField(Items.Objects[ItemIndex]);
 end;
 
 procedure TEpiFieldsComboBox.SetFilter(AValue: TEpiFieldTypes);

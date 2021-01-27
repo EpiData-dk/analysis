@@ -92,7 +92,7 @@ end;
 
 function TTableStatDialogVariableModel.IsDefined(): boolean;
 begin
-  result := Assigned(FXVariable);
+  result := Assigned(FXVariable) and Assigned(FYVariable);
 end;
 
 constructor TTableStatDialogVariableModel.Create(Executor: TExecutor);

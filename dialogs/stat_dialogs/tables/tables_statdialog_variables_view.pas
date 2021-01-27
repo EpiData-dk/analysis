@@ -82,7 +82,7 @@ begin
     begin
       ComboBox := FComboBoxes[i];
 
-      Field := TEpiField(ComboBox.Items.Objects[ComboBox.ItemIndex]);
+      Field := ComboBox.SelectedField;
       ComboBox.Fields.Free;
       ComboBox.Fields := nil;
       ComboBox.Fields := FDataModel.GetComboFields(TTableStatDiaglogVariable(i));
@@ -123,7 +123,7 @@ begin
   ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
   ComboBox.OnSelect := @VariableSelect;
   ComboBox.Tag := YVARIABLE_TAG;
-  ComboBox.NoItemText := 'Row Variable (optional)';
+  ComboBox.NoItemText := 'Row Variable';
   FComboBoxes[YVARIABLE_TAG] := ComboBox;
   PrevCombo := ComboBox;
 
