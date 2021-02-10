@@ -14,7 +14,9 @@ type
   TFreqStatDialogContribution = class(IStatDialogContribution)
   private
     FVariableModel: IStatDialogModel;
+    FMainOptionsModel: IStatDialogModel;
     function CreateVariablesView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
+    function CreateMainOptionsView(Owner: TComponent): IStatDialogView;
   public
     function GenerateScript(): UTF8String;
     function GetCaption(): UTF8String;
@@ -26,7 +28,7 @@ type
 implementation
 
 uses
-  freq_variable_view, freq_variable_model;
+  freq_variable_view, freq_variable_model, freq_mainoptions_view, freq_mainoptions_model;
 
 { TFreqStatDialogContribution }
 
@@ -44,10 +46,25 @@ begin
   Result := View;
 end;
 
+function TFreqStatDialogContribution.CreateMainOptionsView(Owner: TComponent
+  ): IStatDialogView;
+var
+  View: TFreqMainOptionsView;
+  Model: TFreqMainOptionsModel;
+begin
+  View := TFreqMainOptionsView.Create(Owner);
+  Model := TFreqMainOptionsModel.Create();
+  View.SetDatamodel(Model);
+
+  FMainOptionsModel := Model;
+  Result := View;
+end;
+
 function TFreqStatDialogContribution.GenerateScript(): UTF8String;
 begin
   result := 'freq ' +
-    FVariableModel.GenerateScript() +
+    FVariableModel.GenerateScript() + ' ' +
+    FMainOptionsModel.GenerateScript() +
     ';';
 end;
 
@@ -66,6 +83,7 @@ function TFreqStatDialogContribution.GetViews(Owner: TComponent;
 begin
   Result := TStatDialogContributionViewList.Create;
   Result.Add(CreateVariablesView(Owner, Executor));
+  Result.Add(CreateMainOptionsView(Owner));
 end;
 
 initialization

@@ -41,7 +41,7 @@ uses
   freq_contribution, freq_variable_view,
   freq_variable_model, tables_statdialog_contribution,
   tables_statdialog_statisticoptions_view,
-  tables_statdialog_statisticoptions_model;
+  tables_statdialog_statisticoptions_model, freq_mainoptions_model, freq_mainoptions_view;
 
 {$R *.res}
 

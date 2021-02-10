@@ -80,7 +80,12 @@ begin
   Dialog := nil;
 
   if (not Assigned(FExecutor.DataFile)) then
-    Exit;
+    begin
+      Mainform.InterfaceRunCommand('read;');
+
+      if (not Assigned(FExecutor.DataFile)) then
+        Exit;
+    end;
 
   if (not FDialogMap.Find(Contribution.GetCaption(), Dialog)) then
     begin

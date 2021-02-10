@@ -20,7 +20,6 @@ type
     FExecutor: TExecutor;
     FXVariable: TEpiField;
     FYVariable: TEpiField;
-    FWVariable: TEpiField;
     procedure SetByVariable1(AValue: TEpiField);
     procedure SetByVariable2(AValue: TEpiField);
     procedure SetXVariable(AValue: TEpiField);

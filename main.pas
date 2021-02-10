@@ -1842,8 +1842,6 @@ begin
 
   VarnamesList.InvalidateChildren(nil, true);
   VarnamesList.Header.AutoFitColumns(false);
-
-//  FVarnamesWindow.UpdateVarNames;
 end;
 
 procedure TMainForm.DoUpdateHistory;
