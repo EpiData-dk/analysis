@@ -80,6 +80,7 @@ begin
   result := 'tables ' +
     FVariablesModel.GenerateScript() + ' ' +
     FPrimaryOptionsModel.GenerateScript() +
+    FStatisticsOptionsModel.GenerateScript() +
     ';';
 end;
 
