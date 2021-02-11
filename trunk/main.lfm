@@ -1,0 +1,601 @@
+object MainForm: TMainForm
+  Left = 2395
+  Height = 663
+  Top = 365
+  Width = 1010
+  ActiveControl = Panel2
+  AllowDropFiles = True
+  Caption = 'AMainForm'
+  ClientHeight = 638
+  ClientWidth = 1010
+  Menu = MainMenu1
+  OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnDropFiles = FormDropFiles
+  OnShow = FormShow
+  Position = poDefault
+  LCLVersion = '2.0.10.0'
+  object PageControl1: TPageControl
+    Left = 245
+    Height = 588
+    Top = 50
+    Width = 564
+    Align = alClient
+    Anchors = [akTop, akLeft, akRight]
+    ParentFont = False
+    ShowTabs = False
+    TabOrder = 5
+  end
+  object Panel2: TPanel
+    Left = 0
+    Height = 50
+    Top = 0
+    Width = 1010
+    Align = alTop
+    ClientHeight = 50
+    ClientWidth = 1010
+    ParentFont = False
+    TabOrder = 0
+    object Button2: TButton
+      Left = 16
+      Height = 25
+      Top = 13
+      Width = 75
+      Caption = 'test'
+      OnClick = Button2Click
+      ParentFont = False
+      TabOrder = 0
+    end
+    object Button3: TButton
+      Left = 112
+      Height = 25
+      Top = 13
+      Width = 75
+      Caption = 'SaveHtml'
+      OnClick = Button3Click
+      ParentFont = False
+      TabOrder = 1
+    end
+    object Label1: TLabel
+      Left = 307
+      Height = 15
+      Top = 18
+      Width = 90
+      Caption = 'Redraw Time:'
+      ParentColor = False
+      ParentFont = False
+    end
+    object Label2: TLabel
+      Left = 400
+      Height = 15
+      Top = 18
+      Width = 43
+      Caption = 'Label2'
+      ParentColor = False
+      ParentFont = False
+    end
+  end
+  object RightSidePanel: TPanel
+    Left = 814
+    Height = 588
+    Top = 50
+    Width = 196
+    Align = alRight
+    ClientHeight = 588
+    ClientWidth = 196
+    ParentFont = False
+    TabOrder = 1
+    Visible = False
+    object RightPanelSplitter: TSplitter
+      Cursor = crVSplit
+      Left = 1
+      Height = 5
+      Top = 385
+      Width = 194
+      Align = alBottom
+      AutoSnap = False
+      Beveled = True
+      ResizeAnchor = akBottom
+      Visible = False
+    end
+    object VarnamesList: TVirtualStringTree
+      Cursor = 63
+      Left = 1
+      Height = 384
+      Top = 1
+      Width = 194
+      Align = alClient
+      Colors.UnfocusedColor = clMedGray
+      DefaultText = 'Node'
+      Header.AutoSizeIndex = 2
+      Header.Columns = <      
+        item
+          Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
+          Position = 0
+          Text = 'Name'
+          Width = 300
+        end      
+        item
+          Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
+          Position = 1
+          Text = 'Type'
+          Width = 260
+        end      
+        item
+          Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
+          Position = 2
+          Text = 'Label'
+          Width = 10
+        end>
+      Header.Options = [hoAutoResize, hoColumnResize, hoDblClickResize, hoDrag, hoShowImages, hoShowSortGlyphs, hoVisible, hoAutoSpring]
+      ParentFont = False
+      TabOrder = 1
+      TreeOptions.MiscOptions = [toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning]
+      TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowVertGridLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection]
+      TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
+      Visible = False
+    end
+    object HistoryListBox: TListBox
+      Tag = 1
+      Left = 1
+      Height = 197
+      Top = 390
+      Width = 194
+      Align = alBottom
+      ItemHeight = 0
+      MultiSelect = True
+      OnDblClick = HistoryListBoxDblClick
+      OnDrawItem = HistoryListBoxDrawItem
+      OnKeyDown = HistoryListBoxKeyDown
+      ParentFont = False
+      PopupMenu = HistoryPopupMenu
+      ScrollWidth = 192
+      Style = lbOwnerDrawFixed
+      TabOrder = 2
+      TopIndex = -1
+      Visible = False
+    end
+  end
+  object RightSideSplitter: TSplitter
+    Left = 809
+    Height = 588
+    Top = 50
+    Width = 5
+    Align = alRight
+    AutoSnap = False
+    Beveled = True
+    MinSize = 40
+    ResizeAnchor = akRight
+    Visible = False
+  end
+  object LeftSidePanel: TPanel
+    AnchorSideRight.Control = LeftSideSplitter
+    Left = 0
+    Height = 588
+    Top = 50
+    Width = 240
+    Align = alLeft
+    Anchors = []
+    ClientHeight = 588
+    ClientWidth = 240
+    ParentFont = False
+    TabOrder = 2
+    Visible = False
+    object LeftPanelSplitter: TSplitter
+      Cursor = crVSplit
+      Left = 1
+      Height = 5
+      Top = 582
+      Width = 238
+      Align = alBottom
+      AutoSnap = False
+      Beveled = True
+      ResizeAnchor = akBottom
+    end
+  end
+  object LeftSideSplitter: TSplitter
+    Left = 240
+    Height = 588
+    Top = 50
+    Width = 5
+    Beveled = True
+  end
+  object Label3: TLabel
+    Left = 10
+    Height = 15
+    Top = 10
+    Width = 43
+    Caption = 'Label3'
+    ParentColor = False
+    ParentFont = False
+  end
+  object MainMenu1: TMainMenu
+    Images = DM.Icons16
+    Left = 280
+    Top = 192
+    object MenuItem1: TMenuItem
+      Caption = '&File'
+      object MenuItem19: TMenuItem
+        Action = ChangeDirAction
+      end
+      object MenuItem2: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem14: TMenuItem
+        Action = ReadAction
+      end
+      object RecentFilesSubMenu: TMenuItem
+        Caption = 'Open &Recent...'
+      end
+      object MenuItem34: TMenuItem
+        Action = ReadCBAction
+      end
+      object MenuItem15: TMenuItem
+        Action = SaveAction
+      end
+      object MenuItem17: TMenuItem
+        Action = CloseAction
+      end
+      object MenuItem16: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem8: TMenuItem
+        Action = QuitAction
+      end
+    end
+    object MenuItem36: TMenuItem
+      Caption = '&Edit'
+      object MenuItem37: TMenuItem
+        Caption = '&Font'
+        object OutputFontMenuItem: TMenuItem
+          Caption = '&Output'
+          OnClick = FontChangeClick
+        end
+        object CommandLineFontMenuItem: TMenuItem
+          Caption = '&Command Line'
+          OnClick = FontChangeClick
+        end
+      end
+      object MenuItem45: TMenuItem
+        Caption = 'Colour'
+        object OutputBGColourMenuItem: TMenuItem
+          Caption = 'Output Background Colour'
+          OnClick = OutputBGColourMenuItemClick
+        end
+        object OutputFontColourMenuItem: TMenuItem
+          Caption = 'Output Font Colour'
+          OnClick = OutputFontColourMenuItemClick
+        end
+        object CMDBGColourMenuItem: TMenuItem
+          Caption = 'Command Background Colour'
+          OnClick = CMDBGColourMenuItemClick
+        end
+        object CMDFontColourMenuItem: TMenuItem
+          Caption = 'Command Font Colour'
+          OnClick = CMDFontColourMenuItemClick
+        end
+      end
+      object MenuItem40: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem41: TMenuItem
+        Action = ShowEditorStartupAction
+      end
+      object MenuItem42: TMenuItem
+        Caption = 'Default Windowing'
+        OnClick = DefaultWindowPositionActionExecute
+      end
+    end
+    object MenuItem12: TMenuItem
+      Caption = '&Results'
+      object MenuItem39: TMenuItem
+        Action = SaveOutputAction
+      end
+      object MenuItem13: TMenuItem
+        Action = ClearOutputAction
+      end
+    end
+    object StatisticsMainMenuItem: TMenuItem
+      Caption = '&Analysis'
+    end
+    object MenuItem9: TMenuItem
+      Caption = '&Window'
+      object MenuItem43: TMenuItem
+        Action = ToggleCmdTreeAction
+      end
+      object MenuItem11: TMenuItem
+        Action = ToggleVarnamesListAction
+      end
+      object MenuItem25: TMenuItem
+        Action = CmdEditFocusAction
+      end
+      object MenuItem26: TMenuItem
+        Action = ShowEditorAction
+      end
+      object MenuItem22: TMenuItem
+        Action = BrowseAction
+      end
+      object MenuItem10: TMenuItem
+        Action = ToggleHistoryListAction
+      end
+      object MenuItem18: TMenuItem
+        Action = ToggleProjectTree
+      end
+      object MenuItem44: TMenuItem
+        Action = CloseAllWindowsAction
+      end
+      object MenuItem30: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem31: TMenuItem
+        Action = DefaultWindowPositionAction
+      end
+    end
+    object MenuItem5: TMenuItem
+      Caption = '&Help'
+      object TutorialSubMenu: TMenuItem
+        Caption = 'Tutorials (Local)'
+      end
+      object MenuItem33: TMenuItem
+        Action = TutorialsWikiAction
+      end
+      object MenuItem32: TMenuItem
+        Action = TutorialsWebAction
+      end
+      object MenuItem21: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem27: TMenuItem
+        Action = CommandsHelpAction
+      end
+      object MenuItem4: TMenuItem
+        Action = ShowShortcutAction
+      end
+      object MenuItem7: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem3: TMenuItem
+        Action = CopyVersionInfoAction
+      end
+      object MenuItem35: TMenuItem
+        Action = CheckVersionOnlineAction
+      end
+      object MenuItem38: TMenuItem
+        Action = ReleaseNotesAction
+      end
+      object MenuItem20: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem6: TMenuItem
+        Action = ShowAboutAction
+      end
+    end
+  end
+  object FontDialog1: TFontDialog
+    MinFontSize = 0
+    MaxFontSize = 0
+    Left = 524
+    Top = 313
+  end
+  object SaveDialog1: TSaveDialog
+    Left = 361
+    Top = 128
+  end
+  object ActionList1: TActionList
+    Images = DM.Icons16
+    Left = 376
+    Top = 192
+    object ShowAboutAction: TAction
+      Category = 'Help'
+      Caption = 'About'
+      ImageIndex = 38
+      OnExecute = ShowAboutActionExecute
+    end
+    object CopyVersionInfoAction: TAction
+      Category = 'Help'
+      Caption = 'Copy Version Info'
+      OnExecute = CopyVersionInfoActionExecute
+    end
+    object QuitAction: TAction
+      Category = 'File'
+      Caption = '&Quit'
+      OnExecute = QuitActionExecute
+    end
+    object ReadAction: TAction
+      Category = 'File'
+      Caption = 'Open...'
+      OnExecute = ReadActionExecute
+      ShortCut = 16463
+    end
+    object SaveAction: TAction
+      Category = 'File'
+      Caption = 'Save...'
+      OnExecute = SaveActionExecute
+    end
+    object CloseAction: TAction
+      Category = 'File'
+      Caption = 'Close'
+      OnExecute = CloseActionExecute
+    end
+    object ClearOutputAction: TAction
+      Category = 'Results'
+      Caption = 'Clear Output'
+      OnExecute = ClearOutputActionExecute
+      ShortCut = 123
+    end
+    object ChangeDirAction: TAction
+      Category = 'File'
+      Caption = 'Change Directory'
+      OnExecute = ChangeDirActionExecute
+    end
+    object CancelExecAction: TAction
+      Caption = 'CancelExecAction'
+      OnExecute = CancelExecActionExecute
+      ShortCut = 27
+    end
+    object ReadCBAction: TAction
+      Category = 'File'
+      Caption = 'Read from Clipboard'
+      OnExecute = ReadCBActionExecute
+    end
+    object ShowEditorStartupAction: TAction
+      Category = 'Window'
+      Caption = 'Preferences... (Startup.pgm)'
+      OnExecute = ShowEditorStartupActionExecute
+    end
+    object CheckVersionOnlineAction: TAction
+      Category = 'Help'
+      Caption = 'Check Version Online'
+      OnExecute = CheckVersionOnlineActionExecute
+    end
+    object ReleaseNotesAction: TAction
+      Category = 'Help'
+      Caption = 'Show Release Notes'
+      OnExecute = ReleaseNotesActionExecute
+    end
+    object ShowShortcutAction: TAction
+      Category = 'Help'
+      Caption = 'Show Shortcuts'
+      OnExecute = ShowShortcutActionExecute
+    end
+    object SaveOutputAction: TAction
+      Category = 'Results'
+      Caption = 'Save Output'
+      OnExecute = SaveOutputActionExecute
+    end
+    object CopyAllHistoryAction: TAction
+      Category = 'History'
+      Caption = 'Copy all to clipboard'
+      OnExecute = CopyAllHistoryActionExecute
+    end
+    object CopySelectedHistoryAction: TAction
+      Category = 'History'
+      Caption = 'Copy selected to clipboard'
+      OnExecute = CopySelectedHistoryActionExecute
+    end
+    object ClearHistoryAction: TAction
+      Category = 'History'
+      Caption = 'Clear History'
+      OnExecute = ClearHistoryActionExecute
+    end
+    object CloseAllWindowsAction: TAction
+      Category = 'Window'
+      Caption = 'Close All Windows'
+      OnExecute = CloseAllWindowsActionExecute
+      ShortCut = 120
+    end
+  end
+  object RecentFilesActionList: TActionList
+    Left = 660
+    Top = 188
+  end
+  object HistoryPopupMenu: TPopupMenu
+    Left = 816
+    Top = 336
+    object MenuItem23: TMenuItem
+      Action = CopyAllHistoryAction
+    end
+    object MenuItem24: TMenuItem
+      Action = CopySelectedHistoryAction
+    end
+    object MenuItem28: TMenuItem
+      Caption = '-'
+    end
+    object MenuItem29: TMenuItem
+      Action = ClearHistoryAction
+    end
+  end
+  object AlwaysAvailableActionList: TActionList
+    Left = 365
+    Top = 321
+    object ToggleCmdTreeAction: TAction
+      Category = 'Window'
+      Caption = 'Show Command Tree'
+      OnExecute = ToggleCmdTreeActionExecute
+      ShortCut = 113
+    end
+    object ToggleVarnamesListAction: TAction
+      Category = 'Window'
+      Caption = 'Variables'
+      OnExecute = ToggleVarnamesListActionExecute
+      ShortCut = 114
+    end
+    object CmdEditFocusAction: TAction
+      Caption = 'Command Prompt'
+      OnExecute = CmdEditFocusActionExecute
+      ShortCut = 115
+    end
+    object BrowseAction: TAction
+      Caption = 'Browse'
+      OnExecute = BrowseActionExecute
+      ShortCut = 117
+    end
+    object ShowEditorAction: TAction
+      Category = 'Window'
+      Caption = 'Editor'
+      OnExecute = ShowEditorActionExecute
+      ShortCut = 116
+    end
+    object ToggleHistoryListAction: TAction
+      Category = 'Window'
+      Caption = 'History'
+      OnExecute = ToggleHistoryListActionExecute
+      ShortCut = 118
+    end
+    object ToggleProjectTree: TAction
+      Category = 'Window'
+      Caption = 'Dataset List'
+      OnExecute = ToggleProjectTreeExecute
+      ShortCut = 119
+    end
+    object CommandsHelpAction: TAction
+      Category = 'Help'
+      Caption = 'Commands Overview'
+      OnExecute = CommandsHelpActionExecute
+      ShortCut = 112
+    end
+    object DefaultWindowPositionAction: TAction
+      Category = 'Window'
+      Caption = 'Default Windowing'
+      OnExecute = DefaultWindowPositionActionExecute
+    end
+    object TutorialsWikiAction: TAction
+      Category = 'Help'
+      Caption = 'Tutorials (Epidata Wiki)'
+      OnExecute = TutorialsWikiActionExecute
+    end
+    object TutorialsWebAction: TAction
+      Category = 'Help'
+      Caption = 'Tutorials On Web'
+      OnExecute = TutorialsWebActionExecute
+    end
+  end
+  object ColorDialog1: TColorDialog
+    Color = clBlack
+    CustomColors.Strings = (
+      'ColorA=000000'
+      'ColorB=000080'
+      'ColorC=008000'
+      'ColorD=008080'
+      'ColorE=800000'
+      'ColorF=800080'
+      'ColorG=808000'
+      'ColorH=808080'
+      'ColorI=C0C0C0'
+      'ColorJ=0000FF'
+      'ColorK=00FF00'
+      'ColorL=00FFFF'
+      'ColorM=FF0000'
+      'ColorN=FF00FF'
+      'ColorO=FFFF00'
+      'ColorP=FFFFFF'
+      'ColorQ=C0DCC0'
+      'ColorR=F0CAA6'
+      'ColorS=F0FBFF'
+      'ColorT=A4A0A0'
+    )
+    Left = 466
+    Top = 192
+  end
+end

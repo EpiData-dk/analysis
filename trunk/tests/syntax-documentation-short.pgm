@@ -1,0 +1,46 @@
+read "long-wide-v1.csv" !c;
+
+
+// Noget er helt galt:
+
+new var h2 i:= pos(hours[_n], "-");
+ select (h2 = 0) do h2:= pos(hours[_n], "+");
+
+new var h3 i := iif(
+                  (pos(hours[_n], "-") > 0),  /* Test condition */
+                  pos(hours[_n], "-"),        /* same value     */
+                  pos(hours[_n], "+")         /* else           */
+                   );
+
+h2 := h2-1;
+h3 := h3 -1;
+
+drop var h4 h5 h6;
+new var h4 s;
+new var h5 i;
+new var h6 i;
+
+select (_n < 5) do list data hours h? ;
+
+new global i i;
+for i := 1 to 5 /* size(ds1) */ do
+  begin
+    h4[i] := substring(hours[i], 1, h2[i]);
+    h5[i] := integer(h4[i]);
+    h6[i] := integer(substring(hours[i], 1, h3[i]));
+  end;
+// compare the two ways to find the correct length of the initial integer;
+
+for i := 1 to 5 /* size(ds1) */ do
+    h4[i] := substring(hours[i], 1, h2[i]);
+
+for i := 1 to 5 /* size(ds1) */ do
+    h5[i] := integer(h4[i]);
+
+for i := 1 to 5 /* size(ds1) */ do
+    h6[i] := integer(substring(hours[i], 1, h3[i]));
+
+
+select (_n < 5) do list data hours h? ;
+
+

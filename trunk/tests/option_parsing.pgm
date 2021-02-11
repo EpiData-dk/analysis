@@ -1,0 +1,14 @@
+new g fn string;
+fn := "/home/torsten/EpiData/data/bromar.epx";
+read fn !force;
+
+
+new global Opt string := "!cum";
+freq kmgrp !opt;
+
+new g Opt2 string := "!opt !d2";
+freq kmgrp !opt2;
+
+new g opt3[1] string := "!cum";
+freq kmgrp !opt3;
+

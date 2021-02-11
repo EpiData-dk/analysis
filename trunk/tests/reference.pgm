@@ -1,0 +1,41 @@
+new global InFiles string  := "/home/torsten/BtSync/EpiData Arbejde/data/";
+
+// #6# Testing the use af variable references "@<var>"
+
+new global str1    string := InFiles + "bromar.rec";
+new global str2    string := "str1";
+new global str3[1] string := InFiles + "bromar.rec";
+new global str4[1] string := "str1";
+new global str5    string := "str2";
+new global str6    string := "str3";
+new global str7    string := "str4";
+
+read InFiles + "bromar.rec";
+assert(size(ds1) = 4027);
+
+assert( read str1 );
+assert(size(ds1) = 4027);
+
+assert( read @{str2} );
+assert(size(ds1) = 4027);
+
+assert( read str3[1] );
+assert(size(ds1) = 4027);
+
+assert( read @{str4[1]} );
+assert(size(ds1) = 4027);
+
+assert( read @{@{str5}} );
+assert(size(ds1) = 4027);
+
+assert( read @{str6}[1] );
+assert(size(ds1) = 4027);
+
+assert( read @{@{str7}[1]} );
+assert(size(ds1) = 4027);
+
+drop global !all;
+
+close;
+
+
