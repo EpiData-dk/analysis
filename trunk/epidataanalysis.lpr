@@ -38,10 +38,14 @@ uses
   stat_dialog, stat_dialog_action,
   fields_combobox,
   stat_dialog_footer, script_runner,
-  freq_contribution, freq_variable_view,
-  freq_variable_model, tables_statdialog_contribution,
+  freq_contribution, freq_mainoptions_model, freq_mainoptions_view,
+  freq_variable_view, freq_variable_model,
+  tables_statdialog_contribution,
   tables_statdialog_statisticoptions_view,
-  tables_statdialog_statisticoptions_model, freq_mainoptions_model, freq_mainoptions_view;
+  tables_statdialog_statisticoptions_model,
+  ctable_statdialog_contribution,
+  ctable_statdialog_statisticoptions_view,
+  ctable_statdialog_statisticoptions_model;
 
 {$R *.res}
 
@@ -57,7 +61,7 @@ end;
 
 
 begin
-  Application.Title := 'Analysis';
+  Application.Title:='Analysis';
   OnGetApplicationName := @EpiDataApplicationName;
   OnGetVendorName := @EpiDataVendorName;
 
