@@ -291,7 +291,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="113">
+    <Units Count="114">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -782,6 +782,10 @@
         <Filename Value="dialogs/stat_dialogs/freq/freq_mainoptions_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit112>
+      <Unit113>
+        <Filename Value="dialogs/stat_dialog_custom_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit113>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

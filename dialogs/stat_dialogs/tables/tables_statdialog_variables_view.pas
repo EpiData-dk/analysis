@@ -6,31 +6,27 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, Controls, ExtCtrls,
-  StdCtrls, tables_statdialog_model, fields_combobox;
+  StdCtrls, tables_statdialog_model, fields_combobox, stat_dialog_custom_view;
 
 type
 
   { TTableStatDialogVariablesView }
 
-  TTableStatDialogVariablesView = class(TPanel, IStatDialogView)
+  TTableStatDialogVariablesView = class(TCustomStatDialogView)
   private
     FDataModel: TTableStatDialogVariableModel;
     FComboBoxes: Array of TEpiFieldsComboBox;
     FOnModified: IStatDiaglogViewModified;
     procedure VariableSelect(Sender: TObject);
     procedure UpdateCombos();
-  protected
-    procedure DoModified();
   public
     constructor Create(TheOwner: TComponent);
-    procedure EnterView();
-    function ExitView(): boolean;
-    function GetControl(): TControl;
-    function GetViewCaption(): UTF8String;
-    procedure ResetView();
-    function IsDefined(): boolean;
+    procedure EnterView(); override;
+    function ExitView(): boolean; override;
+    function GetViewCaption(): UTF8String; override;
+    procedure ResetView(); override;
+    function IsDefined(): boolean; override;
     procedure SetModel(DataModel: TTableStatDialogVariableModel);
-    procedure SetOnModified(OnModified: IStatDiaglogViewModified);
   end;
 
 implementation
@@ -88,12 +84,6 @@ begin
       ComboBox.Fields := FDataModel.GetComboFields(TTableStatDiaglogVariable(i));
       ComboBox.ItemIndex := ComboBox.Items.IndexOfObject(Field);
     end;
-end;
-
-procedure TTableStatDialogVariablesView.DoModified();
-begin
-  if (Assigned(FOnModified)) then
-    FOnModified.OnViewModified(Self);
 end;
 
 constructor TTableStatDialogVariablesView.Create(TheOwner: TComponent);
@@ -158,11 +148,6 @@ begin
   result := true;
 end;
 
-function TTableStatDialogVariablesView.GetControl(): TControl;
-begin
-  result := self;
-end;
-
 function TTableStatDialogVariablesView.GetViewCaption(): UTF8String;
 begin
   result := 'Variables';
@@ -195,12 +180,6 @@ begin
   FDataModel := DataModel;
 
   UpdateCombos();
-end;
-
-procedure TTableStatDialogVariablesView.SetOnModified(
-  OnModified: IStatDiaglogViewModified);
-begin
-  FOnModified := OnModified;
 end;
 
 end.

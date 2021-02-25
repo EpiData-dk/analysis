@@ -34,7 +34,8 @@ type
     procedure EnterView();
     function ExitView(): boolean;
     procedure ResetView();
-    procedure SetOnModified(OnModified: IStatDiaglogViewModified);
+    procedure AddOnModified(OnModified: IStatDiaglogViewModified);
+    procedure RemoveOnModified(OnModified: IStatDiaglogViewModified);
   end;
   TStatDialogContributionViewList = specialize TFPGList<IStatDialogView>;
 

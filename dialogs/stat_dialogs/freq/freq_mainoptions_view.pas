@@ -6,13 +6,13 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, freq_mainoptions_model,
-  Controls;
+  Controls, stat_dialog_custom_view;
 
 type
 
   { TFreqMainOptionsView }
 
-  TFreqMainOptionsView = class(TPanel, IStatDialogView)
+  TFreqMainOptionsView = class(TCustomStatDialogView)
   private
     FHorizontalDivider: TBevel;
     FOnModified: IStatDiaglogViewModified;
@@ -21,18 +21,14 @@ type
     FPercentageGroup: TCheckGroup;
     procedure OtherGroupItemCheck(Sender: TObject; Index: integer);
     procedure PercentageGroupClick(Sender: TObject; Index: integer);
-  protected
-    procedure DoModified();
   public
     constructor Create(TheOwner: TComponent); override;
-    procedure EnterView();
-    function ExitView(): boolean;
-    function GetControl(): TControl;
-    function GetViewCaption(): UTF8String;
-    function IsDefined(): boolean;
-    procedure ResetView();
+    procedure EnterView(); override;
+    function ExitView(): boolean; override;
+    function GetViewCaption(): UTF8String; override;
+    function IsDefined(): boolean; override;
+    procedure ResetView(); override;
     procedure SetDatamodel(DataModel: TFreqMainOptionsModel);
-    procedure SetOnModified(OnModified: IStatDiaglogViewModified);
   end;
 
 implementation
@@ -59,12 +55,6 @@ begin
   end;
 
   DoModified();
-end;
-
-procedure TFreqMainOptionsView.DoModified();
-begin
-  if (Assigned(FOnModified)) then
-    FOnModified.OnViewModified(self);
 end;
 
 constructor TFreqMainOptionsView.Create(TheOwner: TComponent);
@@ -115,11 +105,6 @@ begin
   result := true;
 end;
 
-function TFreqMainOptionsView.GetControl(): TControl;
-begin
-  result := self
-end;
-
 function TFreqMainOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Options';
@@ -149,11 +134,6 @@ end;
 procedure TFreqMainOptionsView.SetDatamodel(DataModel: TFreqMainOptionsModel);
 begin
   FDataModel := DataModel;
-end;
-
-procedure TFreqMainOptionsView.SetOnModified(OnModified: IStatDiaglogViewModified);
-begin
-  FOnModified := OnModified;
 end;
 
 end.

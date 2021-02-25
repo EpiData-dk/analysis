@@ -6,13 +6,14 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls,
-  Controls, tables_statdialog_statisticoptions_model;
+  Controls, tables_statdialog_statisticoptions_model,
+  stat_dialog_custom_view;
 
 type
 
   { TTableStatDialogStatisticOptionsView }
 
-  TTableStatDialogStatisticOptionsView = class(TPanel, IStatDialogView)
+  TTableStatDialogStatisticOptionsView = class(TCustomStatDialogView)
   private
     FOnModified: IStatDiaglogViewModified;
     FDataModel: TTableStatDialogStatisticOptionsModel;
@@ -22,29 +23,19 @@ type
 //    procedure CreateSortResultsRadio(RadioGroup: TRadioGroup);
     procedure StatisticsItemChecked(Sender: TObject; Index: integer);
 //    procedure SortResultsSelectionChanged(Sender: TObject);
-  protected
-    procedure DoModified();
   public
     constructor Create(TheOwner: TComponent); override;
-    procedure EnterView();
-    function ExitView(): boolean;
-    function GetControl(): TControl;
-    function GetViewCaption(): UTF8String;
-    function IsDefined(): boolean;
-    procedure ResetView();
+    procedure EnterView(); override;
+    function ExitView(): boolean; override;
+    function GetViewCaption(): UTF8String; override;
+    function IsDefined(): boolean; override;
+    procedure ResetView(); override;
     procedure SetModel(DataModel: TTableStatDialogStatisticOptionsModel);
-    procedure SetOnModified(OnModified: IStatDiaglogViewModified);
   end;
 
 implementation
 
 { TTableStatDialogStatisticOptionsView }
-
-procedure TTableStatDialogStatisticOptionsView.DoModified();
-begin
-  if (Assigned(FOnModified)) then
-    FOnModified.OnViewModified(Self);
-end;
 
 constructor TTableStatDialogStatisticOptionsView.Create(TheOwner: TComponent);
 begin
@@ -131,11 +122,6 @@ begin
   result := true;
 end;
 
-function TTableStatDialogStatisticOptionsView.GetControl(): TControl;
-begin
-  result := self;
-end;
-
 function TTableStatDialogStatisticOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Statistics'
@@ -162,12 +148,6 @@ procedure TTableStatDialogStatisticOptionsView.SetModel(
   DataModel: TTableStatDialogStatisticOptionsModel);
 begin
   FDataModel := DataModel;
-end;
-
-procedure TTableStatDialogStatisticOptionsView.SetOnModified(
-  OnModified: IStatDiaglogViewModified);
-begin
-  FOnModified := OnModified;
 end;
 
 end.

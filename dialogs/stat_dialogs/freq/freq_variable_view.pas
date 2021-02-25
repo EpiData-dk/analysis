@@ -5,14 +5,14 @@ unit freq_variable_view;
 interface
 
 uses
-  Classes, SysUtils, stat_dialog_contribution, ExtCtrls, freq_variable_model,
+  Classes, SysUtils, stat_dialog_custom_view, stat_dialog_contribution, ExtCtrls, freq_variable_model,
   Controls, epidatafiles, VirtualTrees;
 
 type
 
   { TFreqVariableView }
 
-  TFreqVariableView = class(TPanel, IStatDialogView)
+  TFreqVariableView = class(TCustomStatDialogView)
   private
     FFirstView: boolean;
     FDataModel: TFreqVariableModel;
@@ -32,18 +32,14 @@ type
     procedure UpdateTreeView();
     procedure UpdateSelectAllCheckbox();
     procedure CheckAllFields(Value: boolean);
-  protected
-    procedure DoModified();
   public
     constructor Create(TheOwner: TComponent); override;
-    procedure EnterView();
-    function ExitView(): boolean;
-    function GetControl(): TControl;
-    function GetViewCaption(): UTF8String;
-    function IsDefined(): boolean;
-    procedure ResetView();
+    procedure EnterView(); override;
+    function ExitView(): boolean; override;
+    function GetViewCaption(): UTF8String; override;
+    function IsDefined(): boolean; override;
+    procedure ResetView(); override;
     procedure SetModel(DataModel: TFreqVariableModel);
-    procedure SetOnModified(OnModified: IStatDiaglogViewModified);
   end;
 
 implementation
@@ -180,12 +176,6 @@ begin
   ImageIndex := DM.GetImageIndex(F.FieldType);
 end;
 
-procedure TFreqVariableView.DoModified();
-begin
-  if (Assigned(FOnModified)) then
-    FOnModified.OnViewModified(Self);
-end;
-
 constructor TFreqVariableView.Create(TheOwner: TComponent);
 var
   Column: TVirtualTreeColumn;
@@ -276,11 +266,6 @@ begin
   result := true;
 end;
 
-function TFreqVariableView.GetControl(): TControl;
-begin
-  result := self;
-end;
-
 function TFreqVariableView.GetViewCaption(): UTF8String;
 begin
   result := 'Variables';
@@ -301,11 +286,6 @@ procedure TFreqVariableView.SetModel(DataModel: TFreqVariableModel);
 begin
   FDataModel := DataModel;
   UpdateTreeView();
-end;
-
-procedure TFreqVariableView.SetOnModified(OnModified: IStatDiaglogViewModified);
-begin
-  FOnModified := OnModified;
 end;
 
 end.
