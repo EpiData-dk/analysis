@@ -21,14 +21,20 @@ Attack rate table
 !ar  : Show unstratified 2x2 tables, attack rates and risk ratios
 !en  : Show unstratified 2x2 tables
 
+Show non 2x2 tables
+!inc
 }
 uses
   Classes, SysUtils, stat_dialog_contribution;
 
 type
 
-  TStatisticType = (pChi, pFET, pOR, pRR, pAR, pEN);
-  TStatisticTypes = set of TStatisticType ;
+  TStatisticType   = (pChi, pFET, pOR, pRR);
+  TStatisticTypes  = set of TStatisticType ;
+  TAttackRateType  = (pAR, pEN);
+  TAttackRateTypes = set of TAttackRateType ;
+  TIncludeType     = (pInclude);
+  TIncludeTypes    = set of TIncludeType ;
 
   TTableSort = (sortName, sortLabel, sortStatistic);
 
@@ -37,8 +43,12 @@ type
   TCtableStatDialogStatisticOptionsModel = class(IStatDialogModel)
   private
     FStatisticTypes: TStatisticTypes;
+    FAttackRateTypes: TAttackRateTypes;
+    FIncludeTypes:    TIncludeTypes;
     FTableSort: TTableSort;
     procedure SetStatistics(AValue: TStatisticTypes);
+    procedure SetAttackRate(AValue: TAttackRateTypes);
+    procedure SetInclude(AValue: TIncludeTypes);
     procedure SetTableSort(AValue: TTableSort);
 
   public
@@ -47,6 +57,8 @@ type
     function IsDefined(): boolean;
   public
     property StatisticTypes: TStatisticTypes read FStatisticTypes write SetStatistics;
+    property AttackRateTypes: TAttackRateTypes read FAttackRateTypes write SetAttackRate;
+    property IncludeTypes: TIncludeTypes read FIncludeTypes write SetInclude;
     property TableSort: TTableSort read FTableSort write SetTableSort;
   end;
 
@@ -67,6 +79,18 @@ procedure TCtableStatDialogStatisticOptionsModel.SetStatistics(AValue: TStatisti
 begin
   if FStatisticTypes = AValue then Exit;
   FStatisticTypes := AValue;
+end;
+
+procedure TCtableStatDialogStatisticOptionsModel.SetAttackRate(AValue: TAttackRateTypes);
+begin
+  if FAttackRateTypes = AValue then Exit;
+  FAttackRateTypes := AValue;
+end;
+
+procedure TCtableStatDialogStatisticOptionsModel.SetInclude(AValue: TIncludeTypes);
+begin
+  if FIncludeTypes = AValue then Exit;
+  FIncludeTypes := AValue;
 end;
 
 procedure TCtableStatDialogStatisticOptionsModel.SetTableSort(AValue: TTableSort);
@@ -90,8 +114,11 @@ begin
   if (pFET in FStatisticTypes) then Result += '!ex ';
   if (pOR  in FStatisticTypes) then Result += '!odds ';
   if (pRR  in FStatisticTypes) then Result += '!rr ';
-  if (pAR  in FStatisticTypes) then Result += '!ar ';
-  if (pEN  in FStatisticTypes) then Result += '!en ';
+
+  if (pAR  in FAttackRateTypes) then Result += '!ar ';
+  if (pEN  in FAttackRateTypes) then Result += '!en ';
+
+  if (pInclude in FIncludeTypes) then Result += '!inc ';
 
   Result := UTF8Trim(Result);
 end;

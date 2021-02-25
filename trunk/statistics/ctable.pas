@@ -127,6 +127,9 @@ begin
   VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   RowIdx := T.RowCount;
   Tab    := Tables.UnstratifiedTable;
+
+  if ((not ST.HasOption('inc')) and ((Tab.RowCount <> 2) or (Tab.ColCount <> 2))) then exit;
+
   T.RowCount := RowIdx + 1;
   T.Cell[0, RowIdx].Text := Tab.RowVariable.GetVariableLabel(VariableLabelType);
   T.Cell[1, RowIdx].Text := IntToStr(Tab.Total);
@@ -256,6 +259,30 @@ var
   end;
   {end Compare}
 
+  {ValidateVar
+      Check for second varname the same as any of the following:
+         first varname
+         weight varname
+         stratifying varname
+  }
+  function ValidPair(TwoVars: TStrings) : Boolean;
+  var
+    var1, svar: UTF8String;
+  begin;
+    var1 := TwoVars[1];
+    result := 0 <> UTF8CompareText(var1,TwoVars[0]);
+    // for now, by variables are checked before CTable is executed
+    if ST.HasOption('by') then
+      begin
+        for svar in FStratifyVarNames do
+            result := result and (0 <> UTF8CompareText(var1,svar));
+      end;
+    if ST.HasOption('w') then
+      result := result and (0 <> UTF8CompareText(var1,FWeightName));
+  end;
+  {end ValidPair}
+
+
   {DoOneCTable}
   // invoke CalcTables for one pair of variables
   function DoOneCTable: Boolean;
@@ -271,13 +298,21 @@ var
       AllVarNames.AddStrings(FStratifyVarNames);
     if St.HasOption('w') then
       AllVarNames.Add(FWeightName);
+
+    try
+    // TODO: skip table if exposure variable is same as first var or any stratifying or weight variable
+    // if (....) then exit;
+
     if ST.HasOption('m') then
       DF := FExecutor.PrepareDatafile(AllVarNames, nil)
     else
       DF := FExecutor.PrepareDatafile(AllVarNames, AllVarNames);
-    try
+
       if (DF.Size = 0) then
-        FOutputCreator.DoWarning(AllVarNames[1] + ': No data')
+        begin
+          if (ST.HasOption('inc')) then
+            FOutputCreator.DoWarning(AllVarNames[1] + ': No data');
+        end
       else
       begin
         Table := TableData.CalcTables(DF, TwoVarNames, FStratifyVarNames, FWeightName,
@@ -372,6 +407,7 @@ begin
   for i := 1 to VarCount do
   begin
     TwoVarNames.Add(CrossVarNames[i-1]);
+    if (ValidPair(TwoVarNames)) then
     if (DoOneCTable) then
     begin
       TableCount += 1;
@@ -398,7 +434,7 @@ begin
   if (not ST.HasOption('q')) then
   begin
     HeaderDone := false;
-    if (ST.HasOption('rr') or ST.HasOption('or') or ST.HasOption('ex') or ST.HasOption('en') or ST.HasOption('ar')) then
+    if (ST.HasOption('rr') or ST.HasOption('odds') or ST.HasOption('ex') or ST.HasOption('en') or ST.HasOption('ar')) then
     // first find a 2x2 table to create the header and footer if RR, OR or FExP requested
       for i:= 0 to TableCount do
         if (FAllTables[i].UnstratifiedTable.ColCount = 2) then

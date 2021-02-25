@@ -27,9 +27,6 @@ type
 
   TTwoWayStatisticsFExP = class(TTwoWayStatistics)
   private
-    // TODO: FResultFExp is not persistent - belongs to each 2x2 table in turn; should really return this,
-    //       BUT(!) it is different for each statistic; perhaps return as a Record, but then ctable needs to know
-    //       the structure
   protected
     function GetStatistics(const Index: Integer): TTwoWayStatisticFExP; override;
     function GetTwoWayStatisticClass: TTwoWayStatisticClass; override;
@@ -203,7 +200,7 @@ begin
   Stat := Statistics[0];
   with Stat do
   begin
-    if (FMessage <> '') then
+    if ((FMessage <> '') and (Options.HasOption('inc'))) then
       T.Footer.Text := T.Footer.Text + LineEnding +
                        T.Cell[0,RowIdx].Text + ': ' + FMessage;
 

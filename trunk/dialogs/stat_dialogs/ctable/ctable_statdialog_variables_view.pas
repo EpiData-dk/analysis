@@ -42,6 +42,7 @@ const
   XVARIABLE_TAG   = Ord(tvX);
   YVARIABLE_TAG   = Ord(tvY);
   ZVARIABLE_TAG   = Ord(tvZ);
+  WVARIABLE_TAG   = Ord(tvW);
   BYVARIABLE1_TAG = Ord(tvBy1);
   BYVARIABLE2_TAG = Ord(tvBy2);
 
@@ -64,6 +65,9 @@ begin
 
     ZVARIABLE_TAG:
       FDataModel.ZVariable := Field;
+
+    WVARIABLE_TAG:
+      FDataModel.WVariable := Field;
 
     BYVARIABLE1_TAG:
       FDataModel.ByVariable1 := Field;
@@ -162,6 +166,16 @@ begin
   ComboBox.Tag := BYVARIABLE2_TAG;
   ComboBox.NoItemText := 'By Variable (optional)';
   FComboBoxes[BYVARIABLE2_TAG] := ComboBox;
+
+  ComboBox := TEpiFieldsComboBox.Create(TheOwner);
+  ComboBox.Parent := self;
+  ComboBox.AnchorParallel(akLeft, 10, Self);
+  ComboBox.AnchorParallel(akRight, 10, Self);
+  ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
+  ComboBox.OnSelect := @VariableSelect;
+  ComboBox.Tag := WVARIABLE_TAG;
+  ComboBox.NoItemText := 'Weight Variable (optional)';
+  FComboBoxes[WVARIABLE_TAG] := ComboBox;
 end;
 
 procedure TCtableStatDialogVariablesView.EnterView();

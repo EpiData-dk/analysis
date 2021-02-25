@@ -214,7 +214,7 @@ begin
   Stat := Statistics[0];
   with Stat do
   begin
-    if (Message <> '') then
+    if ((Message <> '') and (Options.HasOption('inc'))) then
       T.Footer.Text := T.Footer.Text + LineEnding +
                        T.Cell[0,RowIdx].Text + ': ' + Message;
 
