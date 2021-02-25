@@ -259,36 +259,38 @@ begin
           case Ft of
             dfREC:  I.ImportRec(FN, DF);
             dfDTA:  I.ImportStata(FN, DocFile.Document, DF);
-
             dfText:
               begin
-                if ImpClipBrd then
-                  Str := TStringStream.Create(Clipboard.AsText)
-                else
-                  Str := TFileStream.Create(FN, fmOpenRead);
-
-                Setting := TEpiTextImportSetting.Create;
-                Setting.OutputDatafile := DF;
-                Setting.ImportSteam := Str;
-
-                if ST.Options.HasOption('d', Opt) then
-                  Setting.Delimiter := Opt.Expr.AsString[1];
-
-                if ST.Options.HasOption('q', Opt) then
-                  if Opt.Expr.AsString = '' then
-                    Setting.QuoteCharacter := #0
+                try
+                  if ImpClipBrd then
+                    Str := TStringStream.Create(Clipboard.AsText)
                   else
-                    Setting.QuoteCharacter := Opt.Expr.AsString[1];
+                    Str := TFileStream.Create(FN, fmOpenRead);
 
-                if ST.HasOption('vn', Opt) then
-                  if Opt.Expr.AsBoolean then
-                    Setting.FirstLineIsHeader := eflTrue
-                  else
-                    Setting.FirstLineIsHeader := eflFalse;
+                  Setting := TEpiTextImportSetting.Create;
+                  Setting.OutputDatafile := DF;
+                  Setting.ImportSteam := Str;
 
-                I.ImportTxt(Setting);
-                Str.Free;
-                Setting.Free;
+                  if ST.Options.HasOption('d', Opt) then
+                    Setting.Delimiter := Opt.Expr.AsString[1];
+
+                  if ST.Options.HasOption('q', Opt) then
+                    if Opt.Expr.AsString = '' then
+                      Setting.QuoteCharacter := #0
+                    else
+                      Setting.QuoteCharacter := Opt.Expr.AsString[1];
+
+                  if ST.HasOption('vn', Opt) then
+                    if Opt.Expr.AsBoolean then
+                      Setting.FirstLineIsHeader := eflTrue
+                    else
+                      Setting.FirstLineIsHeader := eflFalse;
+
+                  I.ImportTxt(Setting);
+                finally
+                  Str.Free;
+                  Setting.Free;
+                end;
               end;
           end;
         except
@@ -305,7 +307,6 @@ begin
         if (not DocFile.OpenFile(FN)) then
           begin
             result := dfrError;
-//            DocFile.OnWarning := OldWarning;
             exit;
           end;
         T2 := Now;
