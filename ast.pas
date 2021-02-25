@@ -2642,6 +2642,8 @@ begin
   Result.Insert('pw',    [rtString]);
   result.Insert('showFieldNames',   ['sfn'], [rtBoolean]);
   result.Insert('showFieldBorders', ['sfb'], [rtBoolean]);
+  result.Insert('backupInterval',   ['bi'],  [rtInteger]);
+  result.Insert('backupOnShutdown', ['bos'], [rtBoolean]);
 end;
 
 constructor TEditProject.Create(AOptionList: TOptionList);
@@ -3131,6 +3133,8 @@ begin
   Result.Insert('pw',           [rtString]);
   result.Insert('showFieldNames',   ['sfn'], [rtBoolean]);
   result.Insert('showFieldBorders', ['sfb'], [rtBoolean]);
+  result.Insert('backupInterval',   ['bi'],  [rtInteger]);
+  result.Insert('backupOnShutdown', ['bos'], [rtBoolean]);
 end;
 
 constructor TNewProject.Create(AOptionList: TOptionList);

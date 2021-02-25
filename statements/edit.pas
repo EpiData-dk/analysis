@@ -48,6 +48,8 @@ begin
 
   if ST.HasOption(['showFieldNames',   'sfn'], Opt) then FExecutor.Document.ProjectSettings.ShowFieldNames   := Opt.Expr.AsBoolean;
   if ST.HasOption(['showFieldBorders', 'sfb'], Opt) then FExecutor.Document.ProjectSettings.ShowFieldBorders := Opt.Expr.AsBoolean;
+  if ST.HasOption(['backupInterval',   'bi'],  Opt) then FExecutor.Document.ProjectSettings.BackupInterval   := Opt.Expr.AsInteger;
+  if ST.HasOption(['backupOnShutdown', 'bos'], Opt) then FExecutor.Document.ProjectSettings.BackupOnShutdown := Opt.Expr.AsBoolean;
 
   ST.ExecResult := csrSuccess;
 end;

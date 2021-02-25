@@ -1353,6 +1353,8 @@ begin
 
   if ST.HasOption(['showFieldNames',   'sfn'], Opt) then Doc.ProjectSettings.ShowFieldNames   := Opt.Expr.AsBoolean;
   if ST.HasOption(['showFieldBorders', 'sfb'], Opt) then Doc.ProjectSettings.ShowFieldBorders := Opt.Expr.AsBoolean;
+  if ST.HasOption(['backupInterval',   'bi'],  Opt) then Doc.ProjectSettings.BackupInterval   := Opt.Expr.AsInteger;
+  if ST.HasOption(['backupOnShutdown', 'bos'], Opt) then Doc.ProjectSettings.BackupOnShutdown := Opt.Expr.AsBoolean;
 
   DoInfo('New project created: ' + Doc.Study.Title.Text);
 
