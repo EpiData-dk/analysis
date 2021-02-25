@@ -421,7 +421,7 @@ end;
 
 procedure TMainForm.DefaultWindowPositionActionExecute(Sender: TObject);
 begin
-  FOutputCreator.DoInfoAll('Press F2, F3, F5, F6, F7, F8 and move windows to desired screen position');
+  FOutputCreator.DoInfoAll('Press F2, F3, F5, F6, F7, F8 and move windows and dialogs to desired screen position');
   RedrawOutput;
 
   RestoreDefaultPos;
@@ -1007,6 +1007,7 @@ begin
   FVarnamesWindow.Close;
   FProjectTreeForm.Close;
   FHistoryWindow.Close;
+  FStatDialogFactory.CloseAllDialogs();
 
   if (CloseAll) then
     begin
@@ -2052,6 +2053,7 @@ begin
   TEditorForm2.RestoreDefaultPos(EditorForm2);
   TAboutForm.RestoreDefaultPos;
   TBrowseForm4.RestoreDefaultPos;
+  FStatDialogFactory.RestoreDefaultPos();
 
   CloseWindows();
 
@@ -2059,7 +2061,6 @@ begin
   THistoryForm.RestoreDefaultPos(FHistoryWindow);
   TProjectTreeForm.RestoreDefaultPos(FProjectTreeForm);
   TVariablesForm.RestoreDefaultPos(FVarnamesWindow);
-  FStatDialogFactory.RestoreDefaultPos();
 
   SaveFormPosition(Self, 'MainForm');
 end;
