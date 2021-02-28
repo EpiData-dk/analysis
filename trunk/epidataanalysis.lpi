@@ -15,7 +15,7 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="3"/>
       <MinorVersionNr Value="1"/>
-      <BuildNr Value="9"/>
+      <BuildNr Value="10"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -291,7 +291,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="120">
+    <Units Count="121">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -783,33 +783,37 @@
         <IsPartOfProject Value="True"/>
       </Unit112>
       <Unit113>
-        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_contribution.pas"/>
+        <Filename Value="dialogs/stat_dialog_custom_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit113>
       <Unit114>
-        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_model.pas"/>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_contribution.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit114>
       <Unit115>
-        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_primaryoption_model.pas"/>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit115>
       <Unit116>
-        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_primaryoption_view.pas"/>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_primaryoption_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit116>
       <Unit117>
-        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_statisticoptions_model.pas"/>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_primaryoption_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit117>
       <Unit118>
-        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_statisticoptions_view.pas"/>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_statisticoptions_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit118>
       <Unit119>
-        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_variables_view.pas"/>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_statisticoptions_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit119>
+      <Unit120>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_variables_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit120>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -827,6 +831,11 @@
         <IncludeAssertionCode Value="True"/>
       </SyntaxOptions>
     </Parsing>
+    <CodeGeneration>
+      <Optimizations>
+        <OptimizationLevel Value="0"/>
+      </Optimizations>
+    </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf2Set"/>
@@ -838,7 +847,8 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dEPI_CHROMIUM_HTML1"/>
+      <CustomOptions Value="-dEPI_CHROMIUM_HTML1
+-dEPI_BETA"/>
     </Other>
   </CompilerOptions>
   <Debugging>

@@ -104,7 +104,7 @@ begin
     result += ' ' + FYVariable.Name;
 
   if Assigned(FZVariable) then
-      result += ' -' + FZVariable.Name;
+      result += '-' + FZVariable.Name;
 
   if Assigned(FWVariable) then
       result += ' !w := ' + FWVariable.Name;

@@ -545,8 +545,16 @@ var
   Col, Row: Integer;
 begin
   FTotal := 0;
+
+  {$IFDEF CPU32}
   FillDWord(FColTotals[0], ColCount, 0);
   FillDWord(FRowTotals[0], RowCount, 0);
+  {$ENDIF}
+
+  {$IFDEF CPU64}
+  FillQWord(FColTotals[0], ColCount, 0);
+  FillQWord(FRowTotals[0], RowCount, 0);
+  {$ENDIF}
 
   for Col := 0 to ColCount - 1 do
     for Row := 0 to RowCount - 1 do

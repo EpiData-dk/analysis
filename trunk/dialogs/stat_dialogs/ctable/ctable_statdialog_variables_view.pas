@@ -6,31 +6,27 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, Controls, ExtCtrls,
-  StdCtrls, ctable_statdialog_model, fields_combobox;
+  StdCtrls, ctable_statdialog_model, fields_combobox, stat_dialog_custom_view;
 
 type
 
   { TCtableStatDialogVariablesView }
 
-  TCtableStatDialogVariablesView = class(TPanel, IStatDialogView)
+  TCtableStatDialogVariablesView = class(TCustomStatDialogView)
   private
     FDataModel: TCtableStatDialogVariableModel;
     FComboBoxes: Array of TEpiFieldsComboBox;
     FOnModified: IStatDiaglogViewModified;
     procedure VariableSelect(Sender: TObject);
     procedure UpdateCombos();
-  protected
-    procedure DoModified();
   public
     constructor Create(TheOwner: TComponent);
-    procedure EnterView();
-    function ExitView(): boolean;
-    function GetControl(): TControl;
-    function GetViewCaption(): UTF8String;
-    procedure ResetView();
-    function IsDefined(): boolean;
+    procedure EnterView(); override;
+    function ExitView(): boolean; override;
+    function GetViewCaption(): UTF8String; override;
+    procedure ResetView(); override;
+    function IsDefined(): boolean; override;
     procedure SetModel(DataModel: TCtableStatDialogVariableModel);
-    procedure SetOnModified(OnModified: IStatDiaglogViewModified);
   end;
 
 implementation
@@ -96,12 +92,6 @@ begin
       ComboBox.Fields := FDataModel.GetComboFields(TCtableStatDiaglogVariable(i));
       ComboBox.ItemIndex := ComboBox.Items.IndexOfObject(Field);
     end;
-end;
-
-procedure TCtableStatDialogVariablesView.DoModified();
-begin
-  if (Assigned(FOnModified)) then
-    FOnModified.OnViewModified(Self);
 end;
 
 constructor TCtableStatDialogVariablesView.Create(TheOwner: TComponent);
@@ -187,11 +177,6 @@ begin
   result := true;
 end;
 
-function TCtableStatDialogVariablesView.GetControl(): TControl;
-begin
-  result := self;
-end;
-
 function TCtableStatDialogVariablesView.GetViewCaption(): UTF8String;
 begin
   result := 'Variables';
@@ -207,6 +192,7 @@ begin
   FDataModel.XVariable := nil;
   FDataModel.YVariable := nil;
   FDataModel.ZVariable := nil;
+  FDataModel.WVariable := nil;
   FDataModel.ByVariable1 := nil;
   FDataModel.ByVariable2 := nil;
 
@@ -225,12 +211,6 @@ begin
   FDataModel := DataModel;
 
   UpdateCombos();
-end;
-
-procedure TCtableStatDialogVariablesView.SetOnModified(
-  OnModified: IStatDiaglogViewModified);
-begin
-  FOnModified := OnModified;
 end;
 
 end.

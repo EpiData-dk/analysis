@@ -543,6 +543,26 @@ use datafile_id_2;</font>
             <font class="option">!pw := &lt;string&gt;</font>
             Encrypts the data of the project with a single password. All data is encrypted with the <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES/Rijndael algorithm</a>, but metadata is not encrypted.
            </li>
+           <li>
+            <font class="option">!showFieldNames := &lt;boolean&gt;</font>
+            <font class="option">!sfn := &lt;boolean&gt;</font>
+            Show/Hide the field name next to the entry field in Manager and EntryClient
+           </li>
+           <li>
+            <font class="option">!showFieldBorders := &lt;boolean&gt;</font>
+            <font class="option">!sfb := &lt;boolean&gt;</font>
+            Show/Hide the border of the entry field in Manager and EntryClient
+           </li>
+           <li>
+            <font class="option">!backupInterval := &lt;integer&gt;</font>
+            <font class="option">!bi := &lt;integer&gt;</font>
+            Interval at witch Manager and EntryClient automatically saved the project
+           </li>
+           <li>
+            <font class="option">!backupOnShutdown := &lt;boolean&gt;</font>
+            <font class="option">!bos := &lt;boolean&gt;</font>
+            Perform a backup when closing the project. The name for the backup is based on the current date/time.
+           </li>
           </ul>
         </td>
       </tr>
@@ -885,6 +905,26 @@ new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "Thi
               <font class="option">!label:= "&lt;text&gt;"</font>
               Adds a title to the project. If not used a default title is given.
             </li>
+           <li>
+            <font class="option">!showFieldNames := &lt;boolean&gt;</font>
+            <font class="option">!sfn := &lt;boolean&gt;</font>
+            Show/Hide the field name next to the entry field in Manager and EntryClient
+           </li>
+           <li>
+            <font class="option">!showFieldBorders := &lt;boolean&gt;</font>
+            <font class="option">!sfb := &lt;boolean&gt;</font>
+            Show/Hide the border of the entry field in Manager and EntryClient
+           </li>
+           <li>
+            <font class="option">!backupInterval := &lt;integer&gt;</font>
+            <font class="option">!bi := &lt;integer&gt;</font>
+            Interval at witch Manager and EntryClient automatically saved the project
+           </li>
+           <li>
+            <font class="option">!backupOnShutdown := &lt;boolean&gt;</font>
+            <font class="option">!bos := &lt;boolean&gt;</font>
+            Perform a backup when closing the project. The name for the backup is based on the current date/time.
+           </li>
           </ul>
         </td>
       </tr>

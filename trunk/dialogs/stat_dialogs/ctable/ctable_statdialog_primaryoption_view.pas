@@ -6,13 +6,13 @@ interface
 
 uses
   Classes, SysUtils, ExtCtrls, Controls, stat_dialog_contribution,
-  ctable_statdialog_primaryoption_model;
+  ctable_statdialog_primaryoption_model, stat_dialog_custom_view;
 
 type
 
   { TCtableStatPrimaryOptionsView }
 
-  TCtableStatPrimaryOptionsView = class(TPanel, IStatDialogView)
+  TCtableStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
     FOnModified: IStatDiaglogViewModified;
     FDataModel: TCtableStatDialogPrimaryOptionModel;
@@ -30,17 +30,13 @@ type
     procedure SortingSelectionChanged(Sender: TObject);
     procedure ValueLabelSelectionChanged(Sender: TObject);
     procedure VariableLabelSelectionChanged(Sender: TObject);
-  protected
-    procedure DoModified();
   public
     constructor Create(TheOwner: TComponent); override;
-    procedure EnterView();
-    function ExitView(): boolean;
-    function GetControl(): TControl;
-    function GetViewCaption(): UTF8String;
-    function IsDefined(): boolean;
-    procedure ResetView();
-    procedure SetOnModified(OnModified: IStatDiaglogViewModified);
+    procedure EnterView(); override;
+    function ExitView(): boolean; override;
+    function GetViewCaption(): UTF8String; override;
+    function IsDefined(): boolean; override;
+    procedure ResetView(); override;
     procedure SetModel(DataModel: TCtableStatDialogPrimaryOptionModel);
   end;
 
@@ -146,12 +142,6 @@ begin
   DoModified();
 end;
 
-procedure TCtableStatPrimaryOptionsView.DoModified();
-begin
-  if (Assigned(FOnModified)) then
-    FOnModified.OnViewModified(Self);
-end;
-
 constructor TCtableStatPrimaryOptionsView.Create(TheOwner: TComponent);
 var
   CheckBox: TCheckBox;
@@ -231,11 +221,6 @@ begin
   result := true;
 end;
 
-function TCtableStatPrimaryOptionsView.GetControl(): TControl;
-begin
-  result := self;
-end;
-
 function TCtableStatPrimaryOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Options';
@@ -261,12 +246,6 @@ begin
   FSortingGroup.ItemIndex := 0;
   FValueLabelsGroup.ItemIndex := 1;
   FVariableLabelsGroup.ItemIndex := 1;
-end;
-
-procedure TCtableStatPrimaryOptionsView.SetOnModified(
-  OnModified: IStatDiaglogViewModified);
-begin
-  FOnModified := OnModified;
 end;
 
 procedure TCtableStatPrimaryOptionsView.SetModel(

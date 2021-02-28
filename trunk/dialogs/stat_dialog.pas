@@ -129,7 +129,7 @@ begin
     ViewControl.Parent := NewSheet;
     ViewControl.Align := alClient;
 
-    View.SetOnModified(Self);
+    View.AddOnModified(Self);
   end;
 
   ResetViews();

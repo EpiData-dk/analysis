@@ -34,18 +34,16 @@ uses
   commandtree, recode, select_datafile, history_form, varnames_form,
   projecttree_form, commandtree_form, auto_position_form, editor_form2,
   editor_page, editor_pgm_highlighter, scandate_from_fpc, options_string_array,
-  options_cssfileoption, stat_dialog_contribution,
-  stat_dialog, stat_dialog_action,
-  fields_combobox,
-  stat_dialog_footer, script_runner,
-  freq_contribution, freq_mainoptions_model, freq_mainoptions_view,
-  freq_variable_view, freq_variable_model,
-  tables_statdialog_contribution,
-  tables_statdialog_statisticoptions_view,
-  tables_statdialog_statisticoptions_model,
-  ctable_statdialog_contribution,
-  ctable_statdialog_statisticoptions_view,
-  ctable_statdialog_statisticoptions_model;
+  options_cssfileoption, stat_dialog_contribution, stat_dialog,
+  stat_dialog_action, fields_combobox, stat_dialog_footer, script_runner,
+  freq_contribution, freq_variable_view, freq_variable_model,
+  tables_statdialog_contribution, tables_statdialog_statisticoptions_view,
+  tables_statdialog_statisticoptions_model, freq_mainoptions_model,
+  freq_mainoptions_view, stat_dialog_custom_view,
+  ctable_statdialog_contribution, ctable_statdialog_model,
+  ctable_statdialog_primaryoption_model, ctable_statdialog_primaryoption_view,
+  ctable_statdialog_statisticoptions_model,
+  ctable_statdialog_statisticoptions_view, ctable_statdialog_variables_view;
 
 {$R *.res}
 
@@ -61,7 +59,7 @@ end;
 
 
 begin
-  Application.Title:='Analysis';
+  Application.Title := 'Analysis';
   OnGetApplicationName := @EpiDataApplicationName;
   OnGetVendorName := @EpiDataVendorName;
 
