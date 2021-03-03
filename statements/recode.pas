@@ -290,7 +290,7 @@ var
   VLSet: TEpiValueLabelSet;
   RI: TRecodeInterval;
   IntVL: TEpiIntValueLabel;
-  i: Integer;
+  i, MissingCount: Integer;
   Value: Extended;
   Idx: Int64;
   Opt: TOption;
@@ -358,6 +358,7 @@ begin
 
   UseIntergerGroups := ST.HasOption('i');
 
+  MissingCount := 0;
   for i := 0 to ObsNo.Size - 1 do
     begin
       Idx := ObsNo.AsInteger[i];
@@ -376,14 +377,18 @@ begin
               ToVariable.AsInteger[Idx] := RI.FromValue.AsInteger;
         end;
 
-      if ((ToVariable.IsMissing[Idx]) and
-          (HasMissingValue))
-      then
+      if (ToVariable.IsMissing[Idx]) then
         begin
-          ToVariable.AsInteger[Idx] := MissingValue;
-          CreateMissingValueLabel();
+          Inc(MissingCount);
+          if (HasMissingValue) then
+            begin
+              ToVariable.AsInteger[Idx] := MissingValue;
+              CreateMissingValueLabel();
+            end;
         end;
     end;
+
+  FOutputCreator.DoInfoAll(IntToStr(MissingCount) + ' number of missings in ' + ToVariable.Name);
 
   ToVariable.Length := ToVariable.ValueLabelSet.MaxValueLength;
   Result := true;

@@ -1,4 +1,4 @@
-program project1;
+program epidataanalysis;
 
 {$codepage UTF-8}
 {$mode objfpc}{$H+}

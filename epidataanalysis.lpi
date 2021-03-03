@@ -15,7 +15,7 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="3"/>
       <MinorVersionNr Value="1"/>
-      <BuildNr Value="10"/>
+      <BuildNr Value="11"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="TRUNK"/>
     </VersionInfo>
@@ -32,7 +32,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables;dialogs/stat_dialogs/ctable"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -65,7 +65,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables;dialogs/stat_dialogs/ctable"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -101,7 +101,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables;dialogs/stat_dialogs/ctable"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -157,7 +157,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables;dialogs/stat_dialogs/ctable"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -185,7 +185,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);grammar"/>
-            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables"/>
+            <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables;dialogs/stat_dialogs/ctable"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>

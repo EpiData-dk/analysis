@@ -4271,8 +4271,9 @@ var
     else
       begin
         if OutputError then
-          DoError('Index out of bounds (' + CV.Ident + '): ' + IntToStr(Idx) + LineEnding +
-                  'Size = ' + IntToStr(Size));
+          DoError('Exceeded number of observations in variable: ' + CV.Ident + LineEnding +
+                  'Attempted #: ' + IntToStr(Idx) + LineEnding +
+                  'Maximum #: ' + IntToStr(Size));
         raise EExecutorIndexException.Create('');
       end;
   end;
