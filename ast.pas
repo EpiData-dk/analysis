@@ -1653,6 +1653,7 @@ begin
 
   // Output silencing options
   Result.Insert('q',    [rtUndefined]);
+  Result.Insert('inc',  [rtUndefined]);  // include tables that are not 2x2
 
   // Sort table by variable name or label
   Result.Insert('sn',   [rtUndefined]);  // sort summary table by variable name

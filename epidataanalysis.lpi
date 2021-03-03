@@ -291,7 +291,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="114">
+    <Units Count="121">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -786,6 +786,34 @@
         <Filename Value="dialogs/stat_dialog_custom_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit113>
+      <Unit114>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_contribution.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit114>
+      <Unit115>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit115>
+      <Unit116>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_primaryoption_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit116>
+      <Unit117>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_primaryoption_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit117>
+      <Unit118>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_statisticoptions_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit118>
+      <Unit119>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_statisticoptions_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit119>
+      <Unit120>
+        <Filename Value="dialogs/stat_dialogs/ctable/ctable_statdialog_variables_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit120>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -795,7 +823,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);grammar"/>
-      <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables"/>
+      <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables;dialogs/stat_dialogs/ctable"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
