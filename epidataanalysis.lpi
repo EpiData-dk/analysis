@@ -17,7 +17,7 @@
       <MinorVersionNr Value="1"/>
       <RevisionNr Value="1"/>
       <Attributes pvaSpecialBuild="True"/>
-      <StringTable SpecialBuild="TRUNK"/>
+      <StringTable SpecialBuild="RC1"/>
     </VersionInfo>
     <BuildModes Count="7">
       <Item1 Name="Default" Default="True"/>
@@ -295,7 +295,6 @@
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="project1"/>
       </Unit0>
       <Unit1>
         <Filename Value="main.pas"/>
