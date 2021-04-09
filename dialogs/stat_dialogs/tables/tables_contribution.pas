@@ -1,4 +1,4 @@
-unit tables_statdialog_contribution;
+unit tables_contribution;
 
 {$mode objfpc}{$H+}
 
@@ -6,8 +6,8 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
-  tables_statdialog_model, tables_statdialog_primaryoption_model,
-  tables_statdialog_statisticoptions_model;
+  tables_model, tables_primaryoption_model,
+  tables_statisticoptions_model;
 
 type
   
@@ -31,8 +31,8 @@ type
 implementation
 
 uses
-  tables_statdialog_variables_view, tables_statdialog_primaryoption_view,
-  tables_statdialog_statisticoptions_view;
+  tables_variables_view, tables_primaryoption_view,
+  tables_statisticoptions_view;
 
 { TTableStatDialogContribution }
 

@@ -1,4 +1,4 @@
-unit ctable_statdialog_contribution;
+unit ctable_contribution;
 
 {$mode objfpc}{$H+}
 
@@ -6,8 +6,8 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
-  ctable_statdialog_model, ctable_statdialog_primaryoption_model,
-  ctable_statdialog_statisticoptions_model;
+  ctable_model, ctable_primaryoption_model,
+  ctable_statisticoptions_model;
 
 type
 
@@ -31,8 +31,8 @@ type
 implementation
 
 uses
-  ctable_statdialog_variables_view, ctable_statdialog_primaryoption_view,
-  ctable_statdialog_statisticoptions_view;
+  ctable_variables_view, ctable_primaryoption_view,
+  ctable_statisticoptions_view;
 
 { TCtableStatDialogContribution }
 

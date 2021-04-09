@@ -1,4 +1,4 @@
-unit ctable_statdialog_statisticoptions_model;
+unit ctable_statisticoptions_model;
 
 {$mode objfpc}{$H+}
 

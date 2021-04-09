@@ -1,4 +1,4 @@
-unit tables_statdialog_primaryoption_model;
+unit tables_primaryoption_model;
 
 {$mode objfpc}{$H+}
 
