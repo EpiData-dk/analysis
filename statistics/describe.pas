@@ -377,10 +377,10 @@ end;
 procedure TDescribeCommand.DoOutputRows(ST: TCustomVariableCommand; DoMeans: Boolean; T: TOutputTable);
 // add a single variable stats to the current output table
 var
-  aStr: String;
+//  aStr: String;
   RowIdx, NCat, Offset, i, mCount: Integer;
   VariableLabelType: TEpiGetVariableLabelType;
-  ValueLabelType: TEpiGetValueLabelType;
+//  ValueLabelType: TEpiGetValueLabelType;
 
   function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;  // from means.pas
     begin
@@ -393,7 +393,7 @@ var
 begin
 
   VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-  ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+//  ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
 
   if (FOneTable) then
   begin
@@ -428,7 +428,7 @@ begin
     Offset += 1;
   end;
 
-  aStr := FCategV.GetVariableLabel(VariableLabelType);
+//  aStr := FCategV.GetVariableLabel(VariableLabelType);
 
   // check stats one by one
   if (DoMeans) then with FMeansData do
@@ -465,7 +465,7 @@ var
   ix: Integer;
   FoundHighFreq: Boolean;
   aStr: String;
-  aPct: EpiFloat;
+//  aPct: EpiFloat;
 begin
   if (FPct) then
     FCountV := FFreqData.Percent;
