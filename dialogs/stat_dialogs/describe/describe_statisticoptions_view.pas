@@ -21,17 +21,17 @@ type
     FVerticalDivider: TBevel;
     FMeansGroup: TCheckGroup;
     FFreqGroup: TCheckGroup;
-    FMissingGroup:    TCheckGroup;
-    FCompactGroup: TCheckGroup;
+    FRangeGroup:    TCheckGroup;
+    FOtherGroup: TCheckGroup;
 
     procedure CreateMeansCheckboxes(CheckGroup: TCheckGroup);
     procedure CreateFreqCheckboxes(CheckGroup: TCheckGroup);
-    procedure CreateMissingCheckboxes(CheckGroup: TCheckGroup);
-    procedure CreateCompactCheckboxes(CheckGroup: TCheckGroup);
+    procedure CreateRangeCheckboxes(CheckGroup: TCheckGroup);
+    procedure CreateOtherCheckboxes(CheckGroup: TCheckGroup);
     procedure MeansItemChecked(Sender: TObject; Index: integer);
     procedure FreqItemChecked(Sender: TObject; Index: integer);
-    procedure MissingItemChecked(Sender: TObject; Index: integer);
-    procedure CompactItemChecked(Sender: TObject; Index: integer);
+    procedure RangeItemChecked(Sender: TObject; Index: integer);
+    procedure OtherItemChecked(Sender: TObject; Index: integer);
   public
     constructor Create(TheOwner: TComponent); override;
     procedure EnterView(); override;
@@ -53,8 +53,8 @@ begin
 //  Caption := 'Statistics Options';
   FMeansGroup   := TCheckGroup.Create(self);
   FFreqGroup    := TCheckGroup.Create(self);
-  FMissingGroup := TCheckGroup.Create(self);
-  FCompactGroup := TCheckGroup.Create(self);
+  FRangeGroup := TCheckGroup.Create(self);
+  FOtherGroup := TCheckGroup.Create(self);
 
   FVerticalDivider := TBevel.Create(self);
   FVerticalDivider.Parent := self;
@@ -82,13 +82,13 @@ begin
   FMeansGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
   FMeansGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
 
-  FCompactGroup.Parent := self;
-  FCompactGroup.Caption := 'Compact table';
-  FCompactGroup.Anchors := [];
-  FCompactGroup.AnchorParallel(akTop, 5, Self);
-  FCompactGroup.AnchorParallel(akRight, 5, self);
-  FCompactGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
-  FCompactGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
+  FOtherGroup.Parent := self;
+  FOtherGroup.Caption := 'Other options';
+  FOtherGroup.Anchors := [];
+  FOtherGroup.AnchorParallel(akRight, 5, Self);
+  FOtherGroup.AnchorParallel(akBottom, 5, self);
+  FOtherGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
+  FOtherGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
 
   FFreqGroup.Parent := self;
   FFreqGroup.Caption := 'Freq options';
@@ -98,27 +98,24 @@ begin
   FFreqGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
   FFreqGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
 
-  FMissingGroup.Parent := self;
-  FMissingGroup.Caption := 'Show missing';
-  FMissingGroup.Anchors := [];
-  FMissingGroup.AnchorParallel(akRight, 5, Self);
-  FMissingGroup.AnchorParallel(akBottom, 5, self);
-  FMissingGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
-  FMissingGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
+  FRangeGroup.Parent := self;
+  FRangeGroup.Caption := 'Range options';
+  FRangeGroup.Anchors := [];
+  FRangeGroup.AnchorParallel(akTop, 5, Self);
+  FRangeGroup.AnchorParallel(akRight, 5, self);
+  FRangeGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
+  FRangeGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
 
   CreateMeansCheckBoxes(FMeansGroup);
   CreateFreqCheckBoxes(FFreqGroup);
-  CreateMissingCheckBoxes(FMissingGroup);
-  CreateCompactCheckboxes(FCompactGroup);
+  CreateRangeCheckBoxes(FRangeGroup);
+  CreateOtherCheckboxes(FOtherGroup);
 end;
 
 procedure TDescribeStatisticOptionsView.CreateMeansCheckboxes(CheckGroup: TCheckGroup);
 begin
   CheckGroup.Items.Add('means, sd, sum');
   CheckGroup.Items.Add('mean and CI');
-  CheckGroup.Items.Add('min, median, max');
-  CheckGroup.Items.Add('interdecile range');
-  CheckGroup.Items.Add('interquartile range');
   CheckGroup.OnItemClick := @MeansItemChecked;
 end;
 
@@ -129,16 +126,19 @@ begin
   CheckGroup.OnItemClick := @FreqItemChecked;
 end;
 
-procedure TDescribeStatisticOptionsView.CreateMissingCheckboxes(CheckGroup: TCheckGroup);
+procedure TDescribeStatisticOptionsView.CreateRangeCheckboxes(CheckGroup: TCheckGroup);
 begin
-  CheckGroup.Items.Add('Missing value count');
-  CheckGroup.OnItemClick := @MissingItemChecked;
+  CheckGroup.Items.Add('min, median, max');
+  CheckGroup.Items.Add('interdecile range');
+  CheckGroup.Items.Add('interquartile range');
+  CheckGroup.OnItemClick := @RangeItemChecked;
 end;
 
-procedure TDescribeStatisticOptionsView.CreateCompactCheckboxes(CheckGroup: TCheckGroup);
+procedure TDescribeStatisticOptionsView.CreateOtherCheckboxes(CheckGroup: TCheckGroup);
 begin
+  CheckGroup.Items.Add('missing value count');
   CheckGroup.Items.Add('one row per variable if possible');
-  CheckGroup.OnItemClick := @CompactItemChecked;
+  CheckGroup.OnItemClick := @OtherItemChecked;
 end;
 
 procedure TDescribeStatisticOptionsView.MeansItemChecked(Sender: TObject; Index: integer);
@@ -148,9 +148,6 @@ begin
   case Index of
     0: NewState := [pMSD];
     1: NewState := [pMCI];
-    2: NewState := [pRM];
-    3: NewState := [pIDR];
-    4: NewState := [pIQR];
   end;
 
   if (TCheckGroup(Sender).Checked[Index]) then
@@ -176,33 +173,36 @@ begin
   DoModified();
 end;
 
-procedure TDescribeStatisticOptionsView.MissingItemChecked(Sender: TObject; Index: integer);
+procedure TDescribeStatisticOptionsView.RangeItemChecked(Sender: TObject; Index: integer);
 var
-  NewState: TMissingTypes;
+  NewState: TRangeTypes;
 begin
   case Index of
-    0: NewState := [pMissing];
+    0: NewState := [pRM];
+    1: NewState := [pIDR];
+    2: NewState := [pIQR];
   end;
 
   if (TCheckGroup(Sender).Checked[Index]) then
-    FDataModel.MissingTypes := FDataModel.MissingTypes + NewState
+    FDataModel.RangeTypes := FDataModel.RangeTypes + NewState
   else
-    FDataModel.MissingTypes := FDataModel.MissingTypes - NewState;
+    FDataModel.RangeTypes := FDataModel.RangeTypes - NewState;
   DoModified();
 end;
 
-procedure TDescribeStatisticOptionsView.CompactItemChecked(Sender: TObject; Index: integer);
+procedure TDescribeStatisticOptionsView.OtherItemChecked(Sender: TObject; Index: integer);
 var
-  NewState: TCompactTypes;
+  NewState: TOtherTypes;
 begin
   case Index of
-    0: NewState := [pCT];
+    1: NewState := [pCT];
+    0: NewState := [pMissing];
   end;
 
     if (TCheckGroup(Sender).Checked[Index]) then
-      FDataModel.CompactTypes := FDataModel.CompactTypes + NewState
+      FDataModel.OtherTypes := FDataModel.OtherTypes + NewState
     else
-      FDataModel.CompactTypes := FDataModel.CompactTypes - NewState;
+      FDataModel.OtherTypes := FDataModel.OtherTypes - NewState;
   DoModified();
 end;
 
@@ -232,8 +232,8 @@ var i: Integer;
 begin
   FDataModel.MeanTypes := [];
   FDataModel.FreqTypes := [];
-  FDataModel.CompactTypes := [];
-  FDataModel.MissingTypes := [];
+  FDataModel.OtherTypes := [];
+  FDataModel.RangeTypes := [];
 
   for i := 0 to FMeansGroup.Items.Count - 1 do
     FMeansGroup.Checked[i] := false;
@@ -241,8 +241,11 @@ begin
   for i := 0 to FFreqGroup.Items.Count - 1 do
     FFreqGroup.Checked[i] := false;
 
-  FMissingGroup.Checked[0] := false;
-  FCompactGroup.Checked[0] := false;
+  for i := 0 to FRangeGroup.Items.Count - 1 do
+    FRangeGroup.Checked[i] := false;
+
+  for i := 0 to FOtherGroup.Items.Count - 1 do
+    FOtherGroup.Checked[i] := false;
 end;
 
 procedure TDescribeStatisticOptionsView.SetModel(

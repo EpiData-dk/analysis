@@ -10,29 +10,32 @@ interface
 
  !msd:  mean, standard deviation and sum
  !mci:  mean and confidence interval. See set to change the confidence interval
+
  !rm:   minimum, median, maximum
  !idr:  10th percentile, median, 90th percentile
  !iqr:  25th percentile, median, 75th percentile
+
  !fh:   5 most frequent values
  !fl:   5 least frequent values
  !fb:   5 most frequent and 5 least frequent values
+
+ !m:    number of missing values
  !ct:   force one row per variable when the above options are specified.
         This will be ignored if one of !fh !fl !fb is specified.
- !m:    number of missing values
 }
 uses
   Classes, SysUtils, stat_dialog_contribution;
 
 type
 
-  TMeansType     = (pMSD, pMCI, pRM, pIDR, pIQR);
+  TMeansType     = (pMSD, pMCI);
   TMeansTypes    = set of TMeansType ;
   TFreqType      = (pFH, pFL);
   TFreqTypes     = set of TFreqType ;
-  TMissingType   = (pMissing);
-  TMissingTypes  = set of TMissingType;
-  TCompactType   = (pCT);
-  TCompactTypes  = set of TCompactType;
+  TRangeType     = (pRM, pIDR, pIQR);
+  TRangeTypes    = set of TRangeType;
+  TOtherType   = (pMissing, pCT);
+  TOtherTypes  = set of TOtherType;
 
   { TDescribeStatisticOptionsModel }
 
@@ -40,12 +43,12 @@ type
   private
     FMeansTypes:   TMeansTypes;
     FFreqTypes:    TFreqTypes;
-    FMissingTypes: TMissingTypes;
-    FCompactTypes: TCompactTypes;
+    FRangeTypes:   TRangeTypes;
+    FOtherTypes: TOtherTypes;
     procedure SetMeanOptions(AValue: TMeansTypes);
     procedure SetFreqOptions(AValue: TFreqTypes);
-    procedure SetMissing(AValue: TMissingTypes);
-    procedure SetCompact(AValue: TCompactTypes);
+    procedure SetRange(AValue: TRangeTypes);
+    procedure SetOther(AValue: TOtherTypes);
 
   public
     constructor Create();
@@ -54,8 +57,8 @@ type
   public
     property MeanTypes: TMeansTypes read FMeansTypes write SetMeanOptions;
     property FreqTypes: TFreqTypes read FFreqTypes write SetFreqOptions;
-    property MissingTypes: TMissingTypes read FMissingTypes write SetMissing;
-    property CompactTypes: TCompactTypes read FCompactTypes write SetCompact;
+    property RangeTypes: TRangeTypes read FRangeTypes write SetRange;
+    property OtherTypes: TOtherTypes read FOtherTypes write SetOther;
   end;
 
 
@@ -83,16 +86,16 @@ begin
   FFreqTypes := AValue;
 end;
 
-procedure TDescribeStatisticOptionsModel.SetMissing(AValue: TMissingTypes);
+procedure TDescribeStatisticOptionsModel.SetRange(AValue: TRangeTypes);
 begin
-  if FMissingTypes = AValue then Exit;
-  FMissingTypes := AValue;
+  if FRangeTypes = AValue then Exit;
+  FRangeTypes := AValue;
 end;
 
-procedure TDescribeStatisticOptionsModel.SetCompact(AValue: TCompactTypes);
+procedure TDescribeStatisticOptionsModel.SetOther(AValue: TOtherTypes);
 begin
-  if FCompactTypes = AValue then Exit;
-  FCompactTypes := AValue;
+  if FOtherTypes = AValue then Exit;
+  FOtherTypes := AValue;
 end;
 
 
@@ -102,16 +105,16 @@ begin
 
   if (pMSD in FMeansTypes) then Result += '!msd ';
   if (pMCI in FMeansTypes) then Result += '!mci ';
-  if (pRM  in FMeansTypes) then Result += '!rm ';
-  if (pIDR  in FMeansTypes) then Result += '!idr ';
-  if (pIQR  in FMeansTypes) then Result += '!iqr ';
 
   if (pFH  in FFreqTypes) then Result += '!fh ';
   if (pFL  in FFreqTypes) then Result += '!fl ';
 
-  if (pMissing in FMissingTypes) then Result += '!m ';
+  if (pRM   in FRangeTypes) then Result += '!rm ';
+  if (pIDR  in FRangeTypes) then Result += '!idr ';
+  if (pIQR  in FRangeTypes) then Result += '!iqr ';
 
-  if (pCT in FCompactTypes) then Result += '!ct ';
+  if (pMissing  in FOtherTypes) then Result += '!m ';
+  if (pCT in FOtherTypes) then Result += '!ct ';
 
   Result := UTF8Trim(Result);
 end;

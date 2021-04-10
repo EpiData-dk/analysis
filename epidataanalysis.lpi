@@ -291,7 +291,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="133">
+    <Units Count="135">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -861,6 +861,14 @@
         <Filename Value="dialogs/stat_dialogs/describe/describe_statisticoptions_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit132>
+      <Unit133>
+        <Filename Value="dialogs/stat_dialogs/describe/describe_statisticoptions_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit133>
+      <Unit134>
+        <Filename Value="dialogs/stat_dialogs/describe/describe_variables_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit134>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

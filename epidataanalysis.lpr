@@ -46,7 +46,8 @@ uses
   means_primaryoption_model, means_primaryoption_view,
   means_statisticoptions_model, means_statisticoptions_view,
   describe_contribution, describe_model, describe_primaryoption_model,
-  describe_primaryoption_view, describe_statisticoptions_model;
+  describe_primaryoption_view, describe_statisticoptions_model,
+  describe_statisticoptions_view, describe_variables_view;
 
 {$R *.res}
 
