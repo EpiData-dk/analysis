@@ -291,7 +291,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="128">
+    <Units Count="133">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -841,6 +841,26 @@
         <Filename Value="dialogs/stat_dialogs/means/means_statisticoptions_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit127>
+      <Unit128>
+        <Filename Value="dialogs/stat_dialogs/describe/describe_contribution.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit128>
+      <Unit129>
+        <Filename Value="dialogs/stat_dialogs/describe/describe_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit129>
+      <Unit130>
+        <Filename Value="dialogs/stat_dialogs/describe/describe_primaryoption_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit130>
+      <Unit131>
+        <Filename Value="dialogs/stat_dialogs/describe/describe_primaryoption_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit131>
+      <Unit132>
+        <Filename Value="dialogs/stat_dialogs/describe/describe_statisticoptions_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit132>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -850,7 +870,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);grammar"/>
-      <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables;dialogs/stat_dialogs/ctable;dialogs/stat_dialogs/means"/>
+      <OtherUnitFiles Value="functions;statistics;utils;auxunits;output;executor;statements;statusbar;help;editor;parser;commandtree;sidewindows;dialogs;dialogs/stat_dialogs;controls;dialogs/stat_dialogs/freq;dialogs/stat_dialogs/tables;dialogs/stat_dialogs/ctable;dialogs/stat_dialogs/means;dialogs/stat_dialogs/describe"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

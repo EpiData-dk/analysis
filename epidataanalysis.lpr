@@ -38,15 +38,15 @@ uses
   stat_dialog_action, fields_combobox, stat_dialog_footer, script_runner,
   freq_contribution, freq_variable_view, freq_variable_model,
   tables_contribution, tables_statisticoptions_view,
-  tables_statisticoptions_model, freq_mainoptions_model,
-  freq_mainoptions_view, stat_dialog_custom_view,
-  ctable_contribution, ctable_model,
+  tables_statisticoptions_model, freq_mainoptions_model, freq_mainoptions_view,
+  stat_dialog_custom_view, ctable_contribution, ctable_model,
   ctable_primaryoption_model, ctable_primaryoption_view,
-  ctable_statisticoptions_model,
-  ctable_statisticoptions_view, ctable_variables_view,
-  means_contribution, means_model, means_variables_view,
+  ctable_statisticoptions_model, ctable_statisticoptions_view,
+  ctable_variables_view, means_contribution, means_model, means_variables_view,
   means_primaryoption_model, means_primaryoption_view,
-  means_statisticoptions_model, means_statisticoptions_view;
+  means_statisticoptions_model, means_statisticoptions_view,
+  describe_contribution, describe_model, describe_primaryoption_model,
+  describe_primaryoption_view, describe_statisticoptions_model;
 
 {$R *.res}
 
