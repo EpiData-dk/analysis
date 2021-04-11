@@ -5,8 +5,8 @@ unit describe_statisticoptions_view;
 interface
 
 uses
-  Classes, SysUtils, stat_dialog_contribution, ExtCtrls,
-  Controls, describe_statisticoptions_model,
+  Classes, SysUtils, stat_dialog_contribution, ExtCtrls, ana_globals,
+  Controls, describe_statisticoptions_model, executor,
   stat_dialog_custom_view;
 
 type
@@ -50,7 +50,6 @@ constructor TDescribeStatisticOptionsView.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
-//  Caption := 'Statistics Options';
   FMeansGroup   := TCheckGroup.Create(self);
   FFreqGroup    := TCheckGroup.Create(self);
   FRangeGroup := TCheckGroup.Create(self);
@@ -113,9 +112,10 @@ begin
 end;
 
 procedure TDescribeStatisticOptionsView.CreateMeansCheckboxes(CheckGroup: TCheckGroup);
+
 begin
   CheckGroup.Items.Add('means, sd, sum');
-  CheckGroup.Items.Add('mean and CI');
+  CheckGroup.Items.Add('mean and confidence interval');
   CheckGroup.OnItemClick := @MeansItemChecked;
 end;
 
