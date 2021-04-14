@@ -1,4 +1,4 @@
-unit ctable_statdialog_variables_view;
+unit ctable_variables_view;
 
 {$mode objfpc}{$H+}
 
@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, Controls, ExtCtrls,
-  StdCtrls, ctable_statdialog_model, fields_combobox, stat_dialog_custom_view;
+  StdCtrls, ctable_model, fields_combobox, stat_dialog_custom_view;
 
 type
 
