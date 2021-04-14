@@ -602,12 +602,6 @@ begin
   // of the main form recalculates it all. This is only needed right after programstart.
 //  Application.QueueAsyncCall(@ChangeWidth, 0);
   Application.QueueAsyncCall(@ASyncRunStartup, 0);
-
-  {$IFDEF EPI_BETA}
-  Panel2.Visible := true;
-  {$ELSE}
-  Panel2.Visible := false;
-  {$ENDIF}
 end;
 
 procedure TMainForm.HistoryListBoxDblClick(Sender: TObject);
