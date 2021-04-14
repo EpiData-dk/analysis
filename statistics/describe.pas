@@ -25,7 +25,7 @@ interface
 uses
   Classes, SysUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
   executor, result_variables, epifields_helper, outputcreator, options_utils,
-  freq, means, math;
+  ana_globals, freq, means, math;
 
 type
   {ShowStat}
@@ -311,8 +311,8 @@ begin
     end;
     Offset := result.ColCount;
     result.ColCount := Offset + 2;
-    result.Cell[Offset,   0].Text := 'cfil';
-    result.Cell[Offset+1, 0].Text := 'cfih';
+    result.Cell[Offset,   0].Text := '[' + FExecutor.SetOptionValue[ANA_SO_CONFIDENCE_INTERVAL] + '%';//'cfil';
+    result.Cell[Offset+1, 0].Text := 'CI]';//'cfih';
     Fcfil := SetStat(Offset, 0);
     Fcfih := SetStat(Offset+1, 0);
   end;
@@ -377,10 +377,10 @@ end;
 procedure TDescribeCommand.DoOutputRows(ST: TCustomVariableCommand; DoMeans: Boolean; T: TOutputTable);
 // add a single variable stats to the current output table
 var
-  aStr: String;
+//  aStr: String;
   RowIdx, NCat, Offset, i, mCount: Integer;
   VariableLabelType: TEpiGetVariableLabelType;
-  ValueLabelType: TEpiGetValueLabelType;
+//  ValueLabelType: TEpiGetValueLabelType;
 
   function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;  // from means.pas
     begin
@@ -393,7 +393,7 @@ var
 begin
 
   VariableLabelType := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-  ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+//  ValueLabelType    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
 
   if (FOneTable) then
   begin
@@ -428,16 +428,16 @@ begin
     Offset += 1;
   end;
 
-  aStr := FCategV.GetVariableLabel(VariableLabelType);
+//  aStr := FCategV.GetVariableLabel(VariableLabelType);
 
   // check stats one by one
   if (DoMeans) then with FMeansData do
   begin
     if (Fsum.Show)    then T.Cell[Fsum.Col,   RowIdx + Fsum.Row   ].Text := Format(FStatFmt, [Sum.AsFloat[0]]);
-    if (Fmean.Show)   then T.Cell[Fmean.Col,  RowIdx + Fmean.Row  ].Text := Format(FStatFmt, [Mean.AsFloat[0]]);
-    if (Fsd.Show)     then T.Cell[Fsd.Col,    RowIdx + Fsd.Row    ].Text := StatFloatDisplay(FStatFmt, StdDev.AsFloat[0]);
-    if (Fcfih.Show)   then T.Cell[Fcfih.Col,  RowIdx + Fcfih.Row  ].Text := StatFloatDisplay(FStatFmt, Cfih.AsFloat[0]);
-    if (Fcfil.Show)   then T.Cell[Fcfil.Col,  RowIdx + Fcfil.Row  ].Text := StatFloatDisplay(FStatFmt, Cfil.AsFloat[0]);
+    if (Fmean.Show)   then T.Cell[Fmean.Col,  RowIdx + Fmean.Row  ].Text := trim(Format(FStatFmt, [Mean.AsFloat[0]]));
+    if (Fsd.Show)     then T.Cell[Fsd.Col,    RowIdx + Fsd.Row    ].Text := trim(StatFloatDisplay(FStatFmt, StdDev.AsFloat[0]));
+    if (Fcfih.Show)   then T.Cell[Fcfih.Col,  RowIdx + Fcfih.Row  ].Text := trim(StatFloatDisplay(FStatFmt, Cfih.AsFloat[0])) + ']';
+    if (Fcfil.Show)   then T.Cell[Fcfil.Col,  RowIdx + Fcfil.Row  ].Text := '[' + trim(StatFloatDisplay(FStatFmt, Cfil.AsFloat[0]));
     if (Fmin.Show)    then T.Cell[Fmin.Col,   RowIdx + Fmin.Row   ].Text := Format(FStatFmt, [Min.AsFloat[0]]);
     if (Fp10.Show)    then T.Cell[Fp10.Col,   RowIdx + Fp10.Row   ].Text := Format(FStatFmt, [P10.AsFloat[0]]);
     if (Fp25.Show)    then T.Cell[Fp25.Col,   RowIdx + Fp25.Row   ].Text := Format(FStatFmt, [P25.AsFloat[0]]);
@@ -465,7 +465,7 @@ var
   ix: Integer;
   FoundHighFreq: Boolean;
   aStr: String;
-  aPct: EpiFloat;
+//  aPct: EpiFloat;
 begin
   if (FPct) then
     FCountV := FFreqData.Percent;

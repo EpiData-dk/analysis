@@ -1,4 +1,4 @@
-unit tables_statdialog_primaryoption_view;
+unit ctable_primaryoption_view;
 
 {$mode objfpc}{$H+}
 
@@ -6,16 +6,16 @@ interface
 
 uses
   Classes, SysUtils, ExtCtrls, Controls, stat_dialog_contribution,
-  tables_statdialog_primaryoption_model, stat_dialog_custom_view;
+  ctable_primaryoption_model, stat_dialog_custom_view;
 
 type
 
-  { TTableStatPrimaryOptionsView }
+  { TCtableStatPrimaryOptionsView }
 
-  TTableStatPrimaryOptionsView = class(TCustomStatDialogView)
+  TCtableStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
     FOnModified: IStatDiaglogViewModified;
-    FDataModel: TTableStatDialogPrimaryOptionModel;
+    FDataModel: TCtableStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FPercentGroup: TCheckGroup;
     FSortingGroup: TRadioGroup;
@@ -37,7 +37,7 @@ type
     function GetViewCaption(): UTF8String; override;
     function IsDefined(): boolean; override;
     procedure ResetView(); override;
-    procedure SetModel(DataModel: TTableStatDialogPrimaryOptionModel);
+    procedure SetModel(DataModel: TCtableStatDialogPrimaryOptionModel);
   end;
 
 implementation
@@ -45,9 +45,9 @@ implementation
 uses
   StdCtrls, epifields_helper;
 
-{ TTableStatPrimaryOptionsView }
+{ TCtableStatPrimaryOptionsView }
 
-procedure TTableStatPrimaryOptionsView.CreateValueLabelsRadios(
+procedure TCtableStatPrimaryOptionsView.CreateValueLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Value');
@@ -58,7 +58,7 @@ begin
   RadioGroup.OnSelectionChanged := @ValueLabelSelectionChanged;
 end;
 
-procedure TTableStatPrimaryOptionsView.CreateVariableLabelsRadios(
+procedure TCtableStatPrimaryOptionsView.CreateVariableLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Variable Name');
@@ -69,7 +69,7 @@ begin
   RadioGroup.OnSelectionChanged := @VariableLabelSelectionChanged;
 end;
 
-procedure TTableStatPrimaryOptionsView.CreatePercentCheckboxes(
+procedure TCtableStatPrimaryOptionsView.CreatePercentCheckboxes(
   CheckGroup: TCheckGroup);
 begin
   CheckGroup.Items.Add('Row');
@@ -78,7 +78,7 @@ begin
   CheckGroup.OnItemClick := @PercentageItemChecked;
 end;
 
-procedure TTableStatPrimaryOptionsView.CreateSortingRadios(
+procedure TCtableStatPrimaryOptionsView.CreateSortingRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Ascending');
@@ -89,7 +89,7 @@ begin
   RadioGroup.OnSelectionChanged := @SortingSelectionChanged;
 end;
 
-procedure TTableStatPrimaryOptionsView.PercentageItemChecked(Sender: TObject;
+procedure TCtableStatPrimaryOptionsView.PercentageItemChecked(Sender: TObject;
   Index: integer);
 var
   NewState: TPercentages;
@@ -108,7 +108,7 @@ begin
   DoModified();
 end;
 
-procedure TTableStatPrimaryOptionsView.SortingSelectionChanged(Sender: TObject);
+procedure TCtableStatPrimaryOptionsView.SortingSelectionChanged(Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
     0: FDataModel.Sorting := sortAsc;
@@ -119,7 +119,7 @@ begin
   DoModified();
 end;
 
-procedure TTableStatPrimaryOptionsView.ValueLabelSelectionChanged(Sender: TObject);
+procedure TCtableStatPrimaryOptionsView.ValueLabelSelectionChanged(Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
     0: FDataModel.ValueLabelType := gvtValue;
@@ -130,7 +130,7 @@ begin
   DoModified();
 end;
 
-procedure TTableStatPrimaryOptionsView.VariableLabelSelectionChanged(
+procedure TCtableStatPrimaryOptionsView.VariableLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -142,7 +142,7 @@ begin
   DoModified();
 end;
 
-constructor TTableStatPrimaryOptionsView.Create(TheOwner: TComponent);
+constructor TCtableStatPrimaryOptionsView.Create(TheOwner: TComponent);
 var
   CheckBox: TCheckBox;
   PrevControl: TControl;
@@ -210,28 +210,28 @@ begin
   CreateSortingRadios(FSortingGroup);
 end;
 
-procedure TTableStatPrimaryOptionsView.EnterView();
+procedure TCtableStatPrimaryOptionsView.EnterView();
 begin
   FHorizontalDivider.Top := ((Self.Height - FHorizontalDivider.Height) div 2);
   FVerticalDivider.Left := ((Self.Width - FVerticalDivider.Width) div 2);
 end;
 
-function TTableStatPrimaryOptionsView.ExitView(): boolean;
+function TCtableStatPrimaryOptionsView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function TTableStatPrimaryOptionsView.GetViewCaption(): UTF8String;
+function TCtableStatPrimaryOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Options';
 end;
 
-function TTableStatPrimaryOptionsView.IsDefined(): boolean;
+function TCtableStatPrimaryOptionsView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure TTableStatPrimaryOptionsView.ResetView();
+procedure TCtableStatPrimaryOptionsView.ResetView();
 var
   i: Integer;
 begin
@@ -248,8 +248,8 @@ begin
   FVariableLabelsGroup.ItemIndex := 1;
 end;
 
-procedure TTableStatPrimaryOptionsView.SetModel(
-  DataModel: TTableStatDialogPrimaryOptionModel);
+procedure TCtableStatPrimaryOptionsView.SetModel(
+  DataModel: TCtableStatDialogPrimaryOptionModel);
 begin
   FDataModel := DataModel;
 end;

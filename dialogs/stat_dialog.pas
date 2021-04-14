@@ -15,7 +15,7 @@ type
   TStatDialog = class(TCustomAutoPositionForm, IStatDiaglogViewModified, IClickAction)
   private
     FButtonFooter: TStatDiaglogFooterPanel;
-    FExcutor: TExecutor;
+    FExecutor: TExecutor;
     FPageControl: TPageControl;
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -118,7 +118,7 @@ var
   NewSheet: TDialogViewTabSheet;
   ViewControl: TControl;
 begin
-  FViews := FContribution.GetViews(self, FExcutor);
+  FViews := FContribution.GetViews(self, FExecutor);
   for View in FViews do
   begin
     NewSheet := TDialogViewTabSheet.Create(FPageControl);
@@ -215,7 +215,7 @@ begin
   inherited Create(TheOwner);
 
   FContribution := Contribution;
-  FExcutor := Executor;
+  FExecutor := Executor;
 
   FButtonFooter := TStatDiaglogFooterPanel.Create(self);
   FButtonFooter.Parent := self;
