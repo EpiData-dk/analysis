@@ -1,0 +1,301 @@
+// test of how to create new variables:
+
+// read a complex file for _n and reference testing:
+
+read "long-wide-v1.csv" !c;
+
+// notice drop is now "forgiving":
+assert( drop v h h1 h2 h3 ) ;
+
+// simple copy of another variable:
+assert (new var h s:= hours);
+
+// assign id as sequence number with entrystatus "mustenter" :
+new var id i:= _n !entrymode:=1;
+
+// or within subsample:
+// implicitly those with _n > 25 gets missing
+select _n <= 25 do new var h1 s:= hours;
+
+/*
+
+now we can check if the above all worked
+
+*/
+
+// check that for n = 25 there is data, but not for n=26 no data in h1
+assert ( h1[25] <> "") ;
+
+assert ( h1[26] = .) !fail;   // is NOT ., but ""
+assert ( h1[26] = "") ;
+
+// something behaves different for age,
+// which is also a string variable, these two fail:
+   assert (age[2] = . )  !fail;
+   assert (age[2] = "" )      ;
+
+// but these two do not:
+   assert (age[2] = . )  ;
+   assert (age[2] = "" ) !fail     ;
+
+
+// next check that variables id and age have correct content:
+// notice that above id did get the mustenter flag:
+
+check data id age;
+assert ($check_data_total_mustenter = 0) ;
+
+// so we add mustenter to variable age also and check again:
+
+edit var age !entrymode:=1 ;
+check data id age;
+
+// now we should get 408 errors in mustenter:
+assert ($check_data_total_mustenter = 408) ;
+
+/*
+
+Since all of the above went fine we continue with function calls as part of assignments:
+
+Notice that in v0.8.6.2 the syntax is:
+NOT THIS:
+           new var h2 i:= pos(hours,"-");
+
+But this, since the function pos( , ) needs a value, not a vector
+           new var h2 i:= pos(hours[_n],"-");
+
+
+Also notice that more lines since we cannot do this:
+     New var h i:= max(pos(hours[_n],"-"),pos(hours[_n],"+")) - 1;
+
+That is: we do not (yet) have a max function
+
+*/
+
+// notice first six lines of data:
+
+drop var h2;
+select _n < 6 do list data h*;   // we look for- or + in data:
+  new var h2 i:= pos(hours[_n],"-");
+
+select h2 = 0 do h2:= pos(hours[_n],"+");
+  h2 := h2-1;
+
+select _n < 6 do list data h*;   // we found the correct position
+
+// now we are ready to extract an integer from the field hours:
+
+drop var h3;
+new var h3 s := substring(hours[_n],1,h2[_n]);
+new var h4 i := integer(h3[_n]);
+
+
+// but a bit strange that we cannot do it in one line:
+// in v0.8.6.2 h5 is ALL missing:
+drop var h5;
+select h2 > 0 do
+new var h5 i := integer(substring(hours[_n],1,h2[_n]));
+
+// testing: assert (integer(h5[_n]) = integer(h4[_n]));
+// testing: assert ( h5 = h4) ;
+assert (h5[_n] = h4[_n]);
+
+
+/*
+
+Now we should be ready to move values btw observations
+
+*/
+
+new global i i;
+
+// test first:
+
+// this does not work, since we must match age against ., not against "" :
+for i:= 2 to 5 do
+    begin
+     ? i + " : " + age[i-1];
+       if (age[i] = "") then
+          age[i] := age[i-1] ;
+     ? i + " : " + age[i] ;
+    end;
+
+// this does work:
+for i:= 2 to 5 do
+    begin
+     ? i + " : " + age[i-1];
+       if (age[i] = .) then
+          age[i] := age[i-1] ;
+     ? i + " : " + age[i] ;
+    end;
+
+// set "info" := "on";
+
+new global j i := 1;
+count ;
+for i:= 2 to ($count -1) do
+   begin
+     j := j+1;
+     if (age[i] = .) then age[i] := age[i-1] ;
+     if (diagnosis[i] = .) then diagnosis[i] := diagnosis[i-1] ;
+     if (procedures[i] = .) then procedures[i] := procedures[i-1] ;
+     if j > 5 then set "info" := "off";
+   end;
+   set "info" := "on";
+   select age = . do count;
+     assert( $count = 1);
+
+   select diagnosis = . do count;
+     assert( $count = 1);
+
+   select procedures = . do count;
+     assert( $count = 1);
+
+
+/* now try to move data to new variables accross.
+
+  use of @ to create new variables:
+
+did not work:/* now try to move data to new variables accross.
+
+  use of @ to create new variables:
+
+did not work:
+*/
+new var proc s := procedures;
+new global TmpVarName s;
+new var PPos integer;
+
+for j := 1 to 12 do
+  begin
+    PPos := pos(proc[_n], ",");
+      select (PPos > 0) do
+         begin
+           TmpVarName := "proc" + j;
+           new var @{TmpVarName} s;
+           @{TmpVarName} := substring(proc[_n], 1, PPos[_n] - 1);
+           proc := substring(proc[_n], (PPos[_n] + 1), 50);
+         end;
+   end;
+
+
+
+// manual try:
+
+drop var proc proc1 proc2 proc3 proc4 proc5 ;
+
+new var proc string := procedures + ",";
+new var proc1 string;
+new var proc2 string;
+new var proc3 string;
+new var proc4 string;
+new var proc5 string;
+
+  proc1 := substring(proc[_n],1,(pos(proc[_n],",")-1));
+
+        // if pos(proc[_n],",") > (length(proc1[_n])+1) then
+      // proc := substring(proc[_n],(pos(proc[_n],",")+1),50);
+        proc := substring(proc[_n], (length(proc1[_n])+2) ,50);
+
+          // else
+          // proc := "";
+
+  if pos(proc[_n],",") > 0  then
+     begin
+        proc2 := substring(proc[_n],1,(pos(proc[_n],",")));
+          proc := substring(proc[_n],(pos(proc[_n],",")+1),50);
+     end;
+
+     freq proc !m;
+
+  if pos(proc[_n],",") > 0 then
+     begin
+        proc3 := substring(proc[_n],1,(pos(proc[_n],",")-1));
+          proc := substring(proc[_n],(pos(proc[_n],",")+1),50);
+     end;
+     freq proc;
+
+  if pos(proc[_n],",") > 0 then
+     begin
+        proc4 := substring(proc[_n],1,(pos(proc[_n],",")-1));
+          proc := substring(proc[_n],(pos(proc[_n],",")+1),50) ;
+     end;
+     freq proc;
+
+  if pos(proc[_n],",") > 0 then
+     begin
+        proc5 := substring(proc[_n],1,(pos(proc[_n],",")-1));
+           proc := substring(proc[_n],(pos(proc[_n],",")+1),50) ;
+     end;
+
+     freq proc;
+
+/*
+
+
+new var proc s := procedures;
+for j := 1 to 12 do
+   begin
+      select pos(proc,",") > 0 do
+         begin
+           new global v s := ("proc" + @{j} ) ;
+           new var @{v} s
+           := substring(proc[_n],1,(pos(proc[_n],",")-1));
+           proc := substring(proc[_n],(pos(proc[_n],",")+1),50);
+         end;
+   end;
+
+*/
+
+// manual try:
+
+drop var proc proc1 proc2 proc3 proc4 proc5 ;
+
+new var proc string := procedures + ",";
+new var proc1 string;
+new var proc2 string;
+new var proc3 string;
+new var proc4 string;
+new var proc5 string;
+
+  proc1 := substring(proc[_n],1,(pos(proc[_n],",")-1));
+
+        // if pos(proc[_n],",") > (length(proc1[_n])+1) then
+      // proc := substring(proc[_n],(pos(proc[_n],",")+1),50);
+        proc := substring(proc[_n], (length(proc1[_n])+2) ,50);
+
+          // else
+          // proc := "";
+
+  if pos(proc[_n],",") > 0  then
+     begin
+        proc2 := substring(proc[_n],1,(pos(proc[_n],",")));
+          proc := substring(proc[_n],(pos(proc[_n],",")+1),50);
+     end;
+
+     freq proc !m;
+
+  if pos(proc[_n],",") > 0 then
+     begin
+        proc3 := substring(proc[_n],1,(pos(proc[_n],",")-1));
+          proc := substring(proc[_n],(pos(proc[_n],",")+1),50);
+     end;
+     freq proc;
+
+  if pos(proc[_n],",") > 0 then
+     begin
+        proc4 := substring(proc[_n],1,(pos(proc[_n],",")-1));
+          proc := substring(proc[_n],(pos(proc[_n],",")+1),50) ;
+     end;
+     freq proc;
+
+  if pos(proc[_n],",") > 0 then
+     begin
+        proc5 := substring(proc[_n],1,(pos(proc[_n],",")-1));
+           proc := substring(proc[_n],(pos(proc[_n],",")+1),50) ;
+     end;
+
+     freq proc;
+
+
+

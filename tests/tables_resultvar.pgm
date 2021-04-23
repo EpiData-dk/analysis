@@ -1,0 +1,34 @@
+cls;
+read "/home/torsten/BtSync/EpiData Arbejde/data/Analysis/bromar.epx" !force !c;
+tab kmgrp agegrp !by := sex;
+
+new g t i;
+new g col i;
+new g row i;
+
+new g s[$tables_rows] s;
+
+for t := 1 to size($tables_tablenames) do
+  begin
+    SET "ECHO" := "off";
+
+    for row := 1 to $tables_rows do
+      begin
+        s[row] := "";
+
+        for col := 1 to $tables_cols do
+          s[row] := s[row] + "  " + @{$tables_tablenames[t]}[col, row];
+
+      end;
+
+    SET "ECHO" := "on";
+
+    ? "";
+    ? "";
+    for row := 1 to size(s) do
+      ? s[row];
+    ? "";
+
+  end;
+
+drop g t col row s;

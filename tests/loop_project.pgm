@@ -1,0 +1,34 @@
+set "show command" := "off";
+drop global !all;
+
+new global i integer;
+new global j integer;
+new global fn string := "/home/torsten/EpiData/data/4.1 SecurityLog/Clinical Example v5.epx";
+read fn;
+
+cls;
+
+? "=============================================";
+? "  Listing content of file:";
+? fn;
+? "=============================================";
+? "";
+? "Number of Datasets: " + Size($dataset);
+? "";
+
+for i := 1 to size($dataset) do
+begin
+  use @$dataset[i];
+  ? "List of varibles for: " + $dataset[i];
+  ? "Number of variables: " + size($variable);
+
+  for j := 1 to size($variable) do
+  begin
+    ? $variable[j] + ": (" + datatype( @$variable[j] ) + ")";
+  end;
+  ? "";
+  ? "";
+end;
+set "show command" := "on";
+
+

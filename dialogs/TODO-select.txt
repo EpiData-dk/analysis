@@ -1,0 +1,27 @@
+Approach to Select options for dialogs
+
+* Common unit to be used with any command
+    dialog_common_select_model
+    dialog_common_select_view
+These are structured just like existing
+
+* Existing units must reference these
+    cmd_contribution
+Create instance of the model
+Create view as with other intrinsic views
+Add function to assess IsDefined for all models based on array of defined flags
+generate_script must put select first if it exists
+
+* in TStatDialog.UpdateButtonView
+Create array of defined flags, based on existing models
+Call cmd_contribution . IsDefined(Is DefinedFlags: Array of Boolean) : Boolean
+
+* Select view
+Has 1 variable drop down, 1 comparison dropdown and 1 constant
+Comparison dropdown different for numeric and string
+
+* Select model
+Is defined only if all three dropdowns are set
+
+* Next
+If this works, apply same principle to Variable List, for Freq and Describe, maybe CTable

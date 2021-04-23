@@ -1,0 +1,418 @@
+age;diagnosis;procedures; hours;number
+"0-15 years";"DS720, DS723";"KNFJ50";"72-96 hours";1
+;"DS722, DS723";"KNFJ62";"96-120 hours";1
+;"DS723";"KNFJ04";"120-144 hours";1
+;;;"144-168 hours";1
+;;"KNFJ24, KNFJ44, KNFU49";"168+ hours";1
+;;"KNFJ44";"72-96 hours";1
+;;"KNFJ54";"48-72 hours";1
+;"DS727";"KNFJ52";"48-72 hours";1
+"16-19 years";"DS720";"KNFJ70";"168+ hours";1
+;"DS723";"KNFJ54";"48-72 hours";1
+;;;"72-96 hours";1
+;"DS723, DS729";"KNFJ53";"144-168 hours";1
+;"DS724";"KNFJ65, KNFN09";"168+ hours";1
+;;"KNFJ75";"72-96 hours";1
+;"DS727";"KNFJ54";"168+ hours";1
+"20-29 years";"DS720, DS721";"KNFJ80";"120-144 hours";1
+;"DS720, DS721, DS723";"KNFJ54";"48-72 hours";1
+;"DS723";"KNFJ24, KNFJ54";"168+ hours";1
+;;"KNFJ54";"48-72 hours";1
+;;;"168+ hours";1
+;"DS724";"KNFJ65";"96-120 hours";1
+"30-49 years";"DS720";"KNFB20, KNFH00";"144-168 hours";1
+;;"KNFB40";"168+ hours";1
+;;"KNFJ51";"168+ hours";1
+;;"KNFJ70";"48-72 hours";3
+;;;"168+ hours";1
+;"DS721";"KNFJ51";"168+ hours";1
+;;"KNFJ81";"120-144 hours";1
+;;;"168+ hours";1
+;"DS722";"KNFJ51";"96-120 hours";1
+"50-64 years";"DS720";"KNFB20";"72-96 hours";1
+;;"KNFB30";"96-120 hours";1
+;;;"144-168 hours";1
+;;"KNFB40";"48-72 hours";1
+;;;"168+ hours";1
+;;"KNFJ51, KNFU49";"168+ hours";1
+;;"KNFJ70";"24-48 hours";3
+;;;"48-72 hours";1
+;;;"72-96 hours";2
+;;;"120-144 hours";2
+;;;"144-168 hours";1
+;;;"168+ hours";2
+;;"KNFJ80";"168+ hours";1
+;"DS720, DS721";"KNFB40";"144-168 hours";1
+;;"KNFJ40";"120-144 hours";1
+;;"KNFJ51";"120-144 hours";3
+;;"KNFJ52";"96-120 hours";1
+;;"KNFJ61";"120-144 hours";1
+;;"KNFJ80";"144-168 hours";1
+;;"KNFJ81";"144-168 hours";2
+;;;"168+ hours";1
+;"DS720, DS722";"KNFJ70";"144-168 hours";1
+;"DS720, DS729";"KNFJ80";"144-168 hours";1
+;"DS721";"KNFJ01, KNFJ51";"144-168 hours";1
+;;"KNFJ45, KNFJ52, KNFM29, KNFN19, KNFS99, KNFU49";"168+ hours";1
+;;"KNFJ51";"48-72 hours";1
+;;;"72-96 hours";1
+;;;"144-168 hours";2
+;;;"168+ hours";1
+;;"KNFJ61";"120-144 hours";1
+;;;"168+ hours";1
+;;"KNFJ81";"48-72 hours";2
+;;;"120-144 hours";1
+;"DS721B";"KNFJ61";"120-144 hours";1
+;"DS722";"KNFJ52";"48-72 hours";1
+;;;"72-96 hours";1
+;;;"120-144 hours";1
+;"DS723";"KNFJ24, KNFJ54, KNFU39";"168+ hours";1
+;;"KNFJ53";"144-168 hours";1
+;;"KNFJ64";"168+ hours";1
+;;"KNFJ65";"96-120 hours";1
+;;"KNFQ19, KNFQ29B";"168+ hours";1
+;"DS723, DS724";"KNFJ25";"24-48 hours";1
+;"DS724";"KNFJ45, KNFJ65";"168+ hours";1
+;"DS724C";"KNFJ25, KNFJ65, KNFU39";"168+ hours";1
+"65-79 years";"DS720";"BLHM7";"8-24 hours";1
+;;"BLHM7, KNFB02";"48-72 hours";2
+;;;"72-96 hours";2
+;;;"96-120 hours";1
+;;;"120-144 hours";3
+;;;"144-168 hours";8
+;;;"168+ hours";19
+;;"BLHM7, KNFB02, KNFH00";"96-120 hours";1
+;;"BLHM7, KNFB09";"168+ hours";1
+;;"BLHM7, KNFB40";"120-144 hours";1
+;;"BLHM7, KNFJ02";"96-120 hours";1
+;;"BLHM7, KNFJ40";"96-120 hours";1
+;;"BLHM7, KNFJ61";"168+ hours";1
+;;"BLHM7, KNFJ70";"24-48 hours";1
+;;;"48-72 hours";3
+;;;"72-96 hours";2
+;;;"96-120 hours";2
+;;;"120-144 hours";1
+;;;"168+ hours";8
+;;"BLHM7, KNFJ71";"96-120 hours";1
+;;"BLHM7, KNFJ80";"168+ hours";1
+;;"BLHM7, KNFJ81";"168+ hours";1
+;;"KNFB02";"72-96 hours";2
+;;;"120-144 hours";4
+;;;"168+ hours";4
+;;"KNFB09";"48-72 hours";1
+;;;"144-168 hours";2
+;;"KNFB20";"120-144 hours";1
+;;;"144-168 hours";1
+;;"KNFB30";"48-72 hours";1
+;;"KNFC20";"168+ hours";1
+;;"KNFJ70";"24-48 hours";1
+;;;"48-72 hours";1
+;;;"72-96 hours";3
+;;;"120-144 hours";2
+;;;"144-168 hours";3
+;;"KNFK19A";"24-48 hours";1
+;"DS720, DS721";"BLHM7, KNFB02";"144-168 hours";1
+;;"BLHM7, KNFB02, KNFC30";"168+ hours";1
+;;"BLHM7, KNFB20";"168+ hours";1
+;;"BLHM7, KNFJ51";"48-72 hours";1
+;;;"120-144 hours";1
+;;;"168+ hours";5
+;;"BLHM7, KNFJ51, KNFU49";"168+ hours";1
+;;"BLHM7, KNFJ61";"24-48 hours";1
+;;;"168+ hours";3
+;;"BLHM7, KNFJ70";"48-72 hours";1
+;;"BLHM7, KNFJ71";"96-120 hours";1
+;;"BLHM7, KNFJ80";"168+ hours";1
+;;"BLHM7, KNFJ81";"144-168 hours";1
+;;;"168+ hours";2
+;;"KNFJ51";"168+ hours";1
+;;"KNFJ60";"144-168 hours";1
+;;"KNFJ81";"72-96 hours";1
+;;;"144-168 hours";1
+;;;"168+ hours";1
+;"DS720, DS721, DS722";"KNFJ52";"168+ hours";1
+;"DS720, DS721B";"KNFJ81";"168+ hours";1
+;"DS720, DS722";"BLHM7, KNFJ52";"96-120 hours";1
+;;"KNFJ52";"168+ hours";1
+;"DS720, DS723";"BLHM7, KNFB09";"120-144 hours";1
+;;"KNFJ50, KNFJ54";"168+ hours";1
+;;"KNFJ54";"168+ hours";1
+;;"KNFJ65";"48-72 hours";1
+;"DS720, DS724";"KNFJ65";"72-96 hours";1
+;;;"168+ hours";1
+;"DS720, DS729";"BLHM7, KNFJ51";"168+ hours";1
+;"DS721";"BLHM7, KNFJ41, KNFJ51";"168+ hours";1
+;;"BLHM7, KNFJ51";"48-72 hours";1
+;;;"144-168 hours";4
+;;;"168+ hours";10
+;;"BLHM7, KNFJ51, KNFJ70, KNFU49";"168+ hours";1
+;;"BLHM7, KNFJ52";"96-120 hours";1
+;;"BLHM7, KNFJ61";"96-120 hours";1
+;;;"120-144 hours";1
+;;;"144-168 hours";1
+;;;"168+ hours";1
+;;"BLHM7, KNFJ70";"168+ hours";1
+;;"BLHM7, KNFJ71";"120-144 hours";1
+;;"BLHM7, KNFJ81";"72-96 hours";1
+;;;"168+ hours";4
+;;"KNFJ01, KNFJ51";"144-168 hours";1
+;;"KNFJ51";"120-144 hours";2
+;;;"168+ hours";2
+;;"KNFJ61";"72-96 hours";2
+;;;"120-144 hours";1
+;;;"144-168 hours";1
+;;;"168+ hours";3
+;;"KNFJ81";"168+ hours";1
+;"DS721, DS722";"BLHM7, KNFJ52";"120-144 hours";1
+;;;"168+ hours";1
+;;"KNFJ51";"168+ hours";1
+;;"KNFJ52";"168+ hours";1
+;"DS721, DS723";"KNFJ52";"72-96 hours";1
+;"DS722";"BLHM7, KNFJ51";"120-144 hours";1
+;;"BLHM7, KNFJ52";"168+ hours";3
+;;"KNFB30";"168+ hours";1
+;;"KNFJ51";"168+ hours";1
+;;"KNFJ52";"120-144 hours";1
+;;;"168+ hours";1
+;"DS722, DS723";"BLHM7, KNFJ12, KNFJ52";"168+ hours";1
+;"DS723";"KNFC22, KNFS19, KNFU10, KNFU12";"168+ hours";1
+;;"KNFJ04, KNFJ54";"168+ hours";1
+;;"KNFJ54";"168+ hours";1
+;;"KNFJ64";"168+ hours";1
+;"DS723, DS724";"KNFJ64";"48-72 hours";1
+;"DS723, DS727";"KNFJ20";"96-120 hours";1
+;"DS723, DS729";"KNFC22";"168+ hours";1
+;"DS724";"KNFJ65";"24-48 hours";1
+;;;"120-144 hours";1
+;;;"144-168 hours";1
+;;;"168+ hours";2
+;;"KNFQ19";"168+ hours";1
+;"DS724, DS724A";"KNFJ65";"120-144 hours";1
+"80-89 years";"DS720";"BLHM7, KNFB01";"168+ hours";3
+;;"BLHM7, KNFB02";"24-48 hours";1
+;;;"72-96 hours";3
+;;;"96-120 hours";1
+;;;"120-144 hours";3
+;;;"144-168 hours";13
+;;;"168+ hours";27
+;;"BLHM7, KNFB02, KNFU49";"168+ hours";1
+;;"BLHM7, KNFB03";"168+ hours";2
+;;"BLHM7, KNFB09";"72-96 hours";1
+;;;"120-144 hours";2
+;;"BLHM7, KNFB12";"168+ hours";1
+;;"BLHM7, KNFB20";"144-168 hours";1
+;;"BLHM7, KNFB40";"144-168 hours";1
+;;"BLHM7, KNFJ30";"72-96 hours";1
+;;"BLHM7, KNFJ60";"144-168 hours";1
+;;"BLHM7, KNFJ61";"24-48 hours";1
+;;"BLHM7, KNFJ70";"24-48 hours";1
+;;;"96-120 hours";2
+;;;"120-144 hours";1
+;;;"168+ hours";4
+;;"BLHM7, KNFJ80";"48-72 hours";1
+;;"BLHM7, KNFJ81";"168+ hours";1
+;;"KNFB02";"96-120 hours";1
+;;;"120-144 hours";3
+;;;"144-168 hours";2
+;;;"168+ hours";6
+;;"KNFB09";"96-120 hours";2
+;;"KNFB12, KNFH20";"120-144 hours";1
+;;"KNFC02, KNFU12";"168+ hours";1
+;;"KNFC22, KNFU12";"168+ hours";1
+;;"KNFG09";"120-144 hours";1
+;;"KNFJ70";"48-72 hours";1
+;;;"72-96 hours";1
+;;;"96-120 hours";1
+;;;"120-144 hours";1
+;;;"144-168 hours";1
+;;;"168+ hours";1
+;;"KNFJ81";"48-72 hours";1
+;;"KNFJ90";"168+ hours";1
+;;"KNFK59";"24-48 hours";1
+;;"KNFU10";"168+ hours";1
+;"DS720, DS721";"BLHM7, KNFB02";"72-96 hours";1
+;;;"96-120 hours";1
+;;"BLHM7, KNFJ51";"120-144 hours";2
+;;;"168+ hours";4
+;;"BLHM7, KNFJ61";"120-144 hours";1
+;;;"144-168 hours";1
+;;"BLHM7, KNFJ64";"168+ hours";1
+;;"BLHM7, KNFJ80";"72-96 hours";1
+;;"BLHM7, KNFJ81";"48-72 hours";1
+;;;"144-168 hours";1
+;;;"168+ hours";3
+;;"KNFJ01, KNFJ61";"24-48 hours";1
+;;"KNFJ51";"24-48 hours";1
+;;;"48-72 hours";1
+;;;"96-120 hours";1
+;;"KNFJ61";"144-168 hours";1
+;;"KNFJ81";"72-96 hours";1
+;;;"144-168 hours";1
+;"DS720, DS721, DS721B";"BLHM7, KNFJ51";"120-144 hours";1
+;;"BLHM7, KNFJ52";"168+ hours";1
+;"DS720, DS721, DS722";"BLHM7, KNFJ51";"144-168 hours";1
+;;"BLHM7, KNFJ53";"168+ hours";1
+;"DS720, DS721, DS723";"BLHM7, KNFJ51";"48-72 hours";1
+;"DS720, DS721B";"BLHM7, KNFJ81";"168+ hours";1
+;"DS720, DS722";"BLHM7, KNFB09";"144-168 hours";1
+;;"BLHM7, KNFJ52";"120-144 hours";1
+;;;"144-168 hours";1
+;;;"168+ hours";1
+;;"BLHM7, KNFJ81";"120-144 hours";1
+;;"KNFJ52";"144-168 hours";1
+;;;"168+ hours";1
+;"DS720, DS722, DS723";"BLHM7, KNFJ52";"168+ hours";1
+;"DS720, DS723";"KNFJ61";"168+ hours";1
+;;"KNFJ65";"168+ hours";1
+;"DS720, DS729";"BLHM7, KNFB02";"120-144 hours";1
+;;"KNFB40";"168+ hours";1
+;"DS721";"BLHM7, KNFJ01, KNFJ61";"168+ hours";1
+;;"BLHM7, KNFJ11";"24-48 hours";1
+;;"BLHM7, KNFJ15";"120-144 hours";1
+;;"BLHM7, KNFJ51";"48-72 hours";1
+;;;"72-96 hours";3
+;;;"144-168 hours";5
+;;;"168+ hours";13
+;;"BLHM7, KNFJ52";"168+ hours";1
+;;"BLHM7, KNFJ54";"72-96 hours";1
+;;"BLHM7, KNFJ61";"48-72 hours";1
+;;;"144-168 hours";1
+;;;"168+ hours";2
+;;"BLHM7, KNFJ81";"72-96 hours";1
+;;;"120-144 hours";1
+;;;"168+ hours";2
+;;"KNFC20, KNFU10";"168+ hours";1
+;;"KNFC30";"168+ hours";1
+;;"KNFJ51";"48-72 hours";1
+;;;"96-120 hours";1
+;;;"144-168 hours";2
+;;;"168+ hours";3
+;;"KNFJ61";"120-144 hours";2
+;;;"144-168 hours";1
+;;;"168+ hours";1
+;;"KNFJ81";"24-48 hours";1
+;;;"96-120 hours";1
+;;;"120-144 hours";1
+;;;"168+ hours";1
+;"DS721, DS721A";"KNFJ81";"168+ hours";1
+;"DS721, DS721B";"BLHM7, KNFJ61";"144-168 hours";1
+;;"BLHM7, KNFJ81";"72-96 hours";2
+;;;"144-168 hours";1
+;"DS721, DS722";"BLHM7, KNFJ51";"144-168 hours";2
+;;;"168+ hours";2
+;;"BLHM7, KNFJ52";"96-120 hours";1
+;;;"168+ hours";1
+;;"KNFJ61";"96-120 hours";1
+;"DS721, DS724";"BLHM7, KNFJ51";"48-72 hours";1
+;"DS721, DS729";"BLHM7, KNFJ51";"168+ hours";1
+;;"KNFJ61";"168+ hours";1
+;"DS721A, DS722";"BLHM7, KNFJ51";"168+ hours";1
+;"DS722";"BLHM7, KNFJ12, KNFJ52";"168+ hours";1
+;;"BLHM7, KNFJ52";"120-144 hours";1
+;;;"168+ hours";2
+;;"BLHM7, KNFJ81";"144-168 hours";1
+;;"BLHM7, KNFJ82";"168+ hours";1
+;;"KNFC32, KNFU12";"168+ hours";1
+;;"KNFJ52";"24-48 hours";1
+;"DS722, DS723";"KNFB30, KNFU02";"168+ hours";1
+;"DS722, DS724";"KNFJ64";"168+ hours";1
+;;"KNFJ65";"168+ hours";1
+;"DS723";"KNFC22, KNFC23";"144-168 hours";1
+;;"KNFJ14, KNFJ84, KNFU49";"168+ hours";1
+;;"KNFJ40, KNFJ60";"168+ hours";1
+;;"KNFJ42, KNFJ62, KNFJ82";"168+ hours";1
+;;"KNFJ52";"168+ hours";1
+;;"KNFJ53";"168+ hours";1
+;;"KNFJ54";"144-168 hours";1
+;;;"168+ hours";1
+;;"KNFJ84";"144-168 hours";1
+;"DS723, DS729";"KNFJ64";"168+ hours";1
+;;"KNFJ64, KNFT51, KNFU49";"168+ hours";1
+;"DS724";"KNFJ65";"72-96 hours";1
+;;;"168+ hours";1
+;"DS724, DS724C";"KNFJ65";"168+ hours";1
+;"DS724A";"KNFJ65";"168+ hours";1
+"90+ years";"DS720";"BLHM7";"120-144 hours";1
+;;"BLHM7, KNFB02";"72-96 hours";1
+;;;"120-144 hours";3
+;;;"144-168 hours";3
+;;;"168+ hours";6
+;;"BLHM7, KNFB02, KNFH20";"168+ hours";1
+;;"BLHM7, KNFJ02";"168+ hours";1
+;;"BLHM7, KNFJ30";"72-96 hours";1
+;;"BLHM7, KNFJ60";"120-144 hours";1
+;;"BLHM7, KNFJ70";"72-96 hours";1
+;;;"96-120 hours";2
+;;;"120-144 hours";2
+;;;"144-168 hours";1
+;;;"168+ hours";2
+;;"BLHM7, KNFJ80";"96-120 hours";1
+;;"KNFB01";"72-96 hours";1
+;;"KNFB02";"24-48 hours";1
+;;;"72-96 hours";1
+;;;"120-144 hours";1
+;;;"168+ hours";3
+;;"KNFB02, KNFH20";"168+ hours";1
+;;"KNFC30";"168+ hours";1
+;;"KNFG29";"120-144 hours";1
+;;"KNFJ70";"48-72 hours";1
+;;;"144-168 hours";1
+;;;"168+ hours";2
+;;"KNFJ84";"120-144 hours";1
+;"DS720, DS721";"BLHM7, KNFB02";"168+ hours";1
+;;"BLHM7, KNFJ01, KNFJ61";"96-120 hours";1
+;;"BLHM7, KNFJ51";"168+ hours";1
+;;"BLHM7, KNFJ61";"96-120 hours";1
+;;;"168+ hours";1
+;;"BLHM7, KNFJ80";"72-96 hours";1
+;;"BLHM7, KNFJ81";"120-144 hours";1
+;;"KNFB09";"120-144 hours";1
+;;"KNFJ61";"48-72 hours";1
+;;"KNFJ81";"72-96 hours";1
+;;;"168+ hours";1
+;"DS720, DS721, DS722";"BLHM7, KNFJ51";"72-96 hours";1
+;"DS720, DS721B";"BLHM7, KNFJ61";"96-120 hours";1
+;"DS720, DS722";"BLHM7, KNFJ52";"144-168 hours";1
+;;;"168+ hours";1
+;"DS720, DS722, DS728A";"BLHM7, KNFB02";"168+ hours";1
+;"DS720, DS723";"KNFJ64";"168+ hours";1
+;"DS720, DS724";"KNFC99";"168+ hours";1
+;"DS720, DS729";"KNFB02";"168+ hours";1
+;"DS721";"BLHM7, KNFJ41, KNFJ51";"168+ hours";1
+;;"BLHM7, KNFJ51";"48-72 hours";1
+;;;"96-120 hours";3
+;;;"120-144 hours";1
+;;;"144-168 hours";2
+;;;"168+ hours";6
+;;"BLHM7, KNFJ52, KNFJ65, KNFU49";"168+ hours";1
+;;"BLHM7, KNFJ53";"168+ hours";1
+;;"BLHM7, KNFJ61";"24-48 hours";1
+;;;"120-144 hours";1
+;;;"144-168 hours";1
+;;;"168+ hours";1
+;;"BLHM7, KNFJ81";"72-96 hours";2
+;;;"96-120 hours";1
+;;"KNFJ11, KNFJ51";"24-48 hours";1
+;;"KNFJ51";"72-96 hours";1
+;;;"168+ hours";1
+;;"KNFJ61";"168+ hours";1
+;;"KNFJ81";"72-96 hours";1
+;;"KNFT51, KNFU49";"168+ hours";1
+;"DS721, DS722";"BLHM7, KNFJ52";"48-72 hours";1
+;;;"168+ hours";1
+;;"BLHM7, KNFJ61";"120-144 hours";1
+;"DS721, DS723";"BLHM7, KNFJ51";"144-168 hours";1
+;;"KNFJ65";"168+ hours";1
+;"DS722";"BLHM7";"96-120 hours";1
+;;"BLHM7, KNFJ52";"168+ hours";3
+;;"KNFH20";"168+ hours";1
+;;"KNFJ52";"144-168 hours";1
+;"DS722, DS723";"BLHM7, KNFJ42, KNFJ52";"168+ hours";1
+;;"KNFJ42, KNFJ52";"48-72 hours";1
+;"DS723";"KNFJ64";"96-120 hours";1
+;;"KNFJ65";"96-120 hours";1
+;;"KNFJ84";"168+ hours";1
+;"DS723, DS724";"KNFJ64";"168+ hours";1
+;"DS724";"KNFJ65";"96-120 hours";1
+"";"";"";"total";629
+
