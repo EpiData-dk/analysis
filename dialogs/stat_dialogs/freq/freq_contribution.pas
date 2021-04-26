@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, executor,
-  freq_variable_view, freq_variable_model, freq_mainoptions_view, freq_mainoptions_model;
+  freq_variable_model, freq_mainoptions_model, common_select_model;
 
 type
 
@@ -16,21 +16,22 @@ type
   private
     FVariableModel: TFreqVariableModel;
     FMainOptionsModel: IStatDialogModel;
+    FSelectModel: TCommonSelectModel;
     function CreateMainOptionsView(Owner: TComponent): IStatDialogView;
     function CreateVariablesView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
+    function CreateSelectView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
   public
     function GenerateScript(): UTF8String;
     function GetCaption(): UTF8String;
     function GetHelpText(): UTF8String;
-    function GetViews(Owner: TComponent; Executor: TExecutor
-      ): TStatDialogContributionViewList;
+    function GetViews(Owner: TComponent; Executor: TExecutor): TStatDialogContributionViewList;
 
   end;
 
 implementation
 
-
-
+uses
+  freq_variable_view, freq_mainoptions_view, common_select_view;
 
 { TFreqStatDialogContribution }
 
@@ -62,9 +63,24 @@ begin
   Result := View;
 end;
 
+function TFreqStatDialogContribution.CreateSelectView(Owner: TComponent;
+  Executor: TExecutor): IStatDialogView;
+var
+  View: TCommonSelectView;
+begin
+  View := TCommonSelectView.Create(Owner);
+  FSelectModel := TCommonSelectModel.Create(Executor);
+
+  View.SetModel(FSelectModel);
+
+  Result := View;
+end;
+
 function TFreqStatDialogContribution.GenerateScript(): UTF8String;
 begin
-  result := 'freq ' +
+  result :=
+    FSelectModel.GenerateScript() + ' ' +
+    'freq ' +
     FVariableModel.GenerateScript() + ' ' +
     FMainOptionsModel.GenerateScript() +
     ';';
@@ -86,6 +102,7 @@ begin
   Result := TStatDialogContributionViewList.Create;
   Result.Add(CreateVariablesView(Owner, Executor));
   Result.Add(CreateMainOptionsView(Owner));
+  result.Add(CreateSelectView(Owner, Executor));
 end;
 
 initialization

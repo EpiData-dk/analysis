@@ -128,13 +128,13 @@ var
         result += Fieldname + ' ' + Compare + ' "' + FExpression + '"';
     end;
   end;
-  result += ' do ';
+  result += ' do';
 end;
 
 function TCommonSelectModel.IsDefined(): boolean;
 begin
   result := true;
-  if (FSelectVariable <> nil) then exit;
+  if (FSelectVariable = nil) then exit;
   if FMatchCriteria in MatchCriteriaNoTextSearch then exit;
   result := (FExpression <> '');
 end;

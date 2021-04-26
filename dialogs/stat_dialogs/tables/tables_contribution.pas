@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
   tables_model, tables_primaryoption_model,
-  tables_statisticoptions_model;
+  tables_statisticoptions_model, common_select_model;
 
 type
   
@@ -18,9 +18,11 @@ type
     FPrimaryOptionsModel: TTableStatDialogPrimaryOptionModel;
     FStatisticsOptionsModel: TTableStatDialogStatisticOptionsModel;
     FVariablesModel: TTableStatDialogVariableModel;
+    FSelectModel: TCommonSelectModel;
     function CreateMainView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
     function CreatePrimaryOptionView(Owner: TComponent): IStatDialogView;
     function CreateStatisticOptionView(Owner: TComponent): IStatDialogView;
+    function CreateSelectView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
   public
     function GenerateScript(): UTF8String;
     function GetCaption(): UTF8String;
@@ -32,7 +34,7 @@ implementation
 
 uses
   tables_variables_view, tables_primaryoption_view,
-  tables_statisticoptions_view;
+  tables_statisticoptions_view, common_select_view;
 
 { TTableStatDialogContribution }
 
@@ -75,9 +77,24 @@ begin
   Result := View;
 end;
 
+function TTableStatDialogContribution.CreateSelectView(Owner: TComponent;
+  Executor: TExecutor): IStatDialogView;
+var
+  View: TCommonSelectView;
+begin
+  View := TCommonSelectView.Create(Owner);
+  FSelectModel := TCommonSelectModel.Create(Executor);
+
+  View.SetModel(FSelectModel);
+
+  Result := View;
+end;
+
 function TTableStatDialogContribution.GenerateScript(): UTF8String;
 begin
-  result := 'tables ' +
+  result :=
+    FSelectModel.GenerateScript() + ' ' +
+    'tables ' +
     FVariablesModel.GenerateScript() + ' ' +
     FPrimaryOptionsModel.GenerateScript() +
     FStatisticsOptionsModel.GenerateScript() +
@@ -104,6 +121,7 @@ begin
   result.add(CreateMainView(Owner, Executor));
   result.Add(CreatePrimaryOptionView(Owner));
   result.Add(CreateStatisticOptionView(Owner));
+  result.Add(CreateSelectView(Owner, Executor));
 end;
 
 initialization

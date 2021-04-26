@@ -123,7 +123,6 @@ begin
   result.Add(CreatePrimaryOptionView(Owner));
   result.Add(CreateStatisticOptionView(Owner));
   result.Add(CreateSelectView(Owner, Executor));
-
 end;
 
 initialization

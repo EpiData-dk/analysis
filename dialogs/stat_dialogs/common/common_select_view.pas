@@ -23,7 +23,7 @@ type
     FOnModified: IStatDiaglogViewModified;
     procedure FieldSelect(Sender: TObject);
     procedure CriteriaSelect(Sender: TObject);
-    procedure GetExpression(Sender: TObject); //Sender: TObject; var UTF8Key: TUTF8Char);
+    procedure GetExpression(Sender: TObject);
     procedure UpdateField();
     procedure UpdateCriteria();
   public
@@ -52,6 +52,7 @@ begin
 
   UpdateCriteria();
   DoModified();
+  FSelectButton.Hide;
 end;
 
 procedure TCommonSelectView.CriteriaSelect(Sender: TObject);
@@ -60,21 +61,23 @@ var
   ListBox: TListBox;
 begin
   ListBox := TListBox(Sender);
-  Criteria := TMatchCriteria(PtrInt(ListBox.Items.Objects[ListBox.ItemIndex]));// ComboBox.Items.Objects[ComboBox.ItemIndex].;
+  Criteria := TMatchCriteria(PtrInt(ListBox.Items.Objects[ListBox.ItemIndex]));
 
   FDataModel.MatchCriteria := Criteria;
 
   if Criteria in MatchCriteriaNoTextSearch then begin
-    FExpressionBox.Visible := false;
+    FExpressionBox.Text := 'Value';
+    FExpressionBox.Hide;
     FDataModel.Expression := '';
   end
-  else
-    FExpressionBox.Visible := true;
-
+  else begin
+    FExpressionBox.Show;
+  end;
+  FSelectButton.Show;
   DoModified();
 end;
 
-procedure TCommonSelectView.GetExpression(Sender: TObject); //Sender: TObject; var UTF8Key: TUTF8Char);
+procedure TCommonSelectView.GetExpression(Sender: TObject);
 var
   theText: UTF8String;
 begin
@@ -85,11 +88,10 @@ begin
     end;
   FDataModel.Expression := theText;
   FExpressionBox.Text := theText;
+  DoModified();
 end;
 
 procedure TCommonSelectView.UpdateField();
-var
-  Field: TEpiField;
 begin
   UpdateCriteria();
   DoModified();
@@ -98,11 +100,13 @@ end;
 procedure TCommonSelectView.UpdateCriteria();
 var
   Field: TEpiField;
-  Criteria: TMatchCriteria;
 begin
   if (FDataModel.SelectVariable = nil) then exit;
   Field := FDataModel.SelectVariable;
   FDataModel.GetComboCriteria(FCriteriaList, Field.FieldType);
+  FExpressionBox.Text := 'Value';
+  FExpressionBox.Hide;
+  FDataModel.Expression := '';
   DoModified();
 end;
 
@@ -112,38 +116,52 @@ begin
   inherited Create(TheOwner);
 
   FFieldCombo := TEpiFieldsComboBox.Create(TheOwner);
-  FFieldCombo.Parent := self;
-  FFieldCombo.AnchorParallel(akTop, 10, Self);
-  FFieldCombo.AnchorParallel(akLeft, 10, Self);
-  FFieldCombo.AnchorParallel(akBottom, 10, Self);
-  FFieldCombo.OnSelect := @FieldSelect;
-  FFieldCombo.NoItemText := 'Variable';
-  FFieldCombo.Caption := 'Variable';
+  with FFieldCombo do
+  begin
+    Parent := self;
+    Anchors := [];
+    AnchorParallel(akTop, 10, Self);
+    AnchorParallel(akLeft, 10, Self);
+    AnchorParallel(akBottom, 10, Self);
+    OnSelect := @FieldSelect;
+    NoItemText := 'Variable';
+    Caption := 'Variable';
+  end;
 
   FCriteriaList := TListBox.Create(TheOwner);
-  FCriteriaList.Parent := self;
-  FCriteriaList.AnchorParallel(akTop, 10, Self);
-  FCriteriaList.AnchorToNeighbour(akLeft, 10, FFieldCombo);
-  FCriteriaList.AnchorParallel(akBottom, 10, Self);
-  FCriteriaList.OnClick := @CriteriaSelect;
-  FCriteriaList.Caption := 'Comparison operator';
+  with FCriteriaList do
+  begin
+    Parent := self;
+    Anchors := [];
+    AnchorParallel(akTop, 10, Self);
+    AnchorToNeighbour(akLeft, 10, FFieldCombo);
+    // hack to set reasonable height, since default shows only 5 options
+    ClientHeight := (ClientHeight * 8) div 5;
+    OnClick := @CriteriaSelect;
+    Caption := 'Comparison';
+  end;
 
   FExpressionBox := TEdit.Create(TheOwner);
-  FExpressionBox.Parent := self;
-  FExpressionBox.Height := 20;
-  FExpressionBox.AnchorParallel(akTop, 10, Self);
-  FExpressionBox.AnchorToNeighbour(akLeft, 10, FCriteriaList);
-  FExpressionBox.AnchorParallel(akBottom, 10, Self);
-  FExpressionBox.Caption := 'Compare to number or text';
-  FExpressionBox.Visible := false;
+  with FExpressionBox do
+  begin
+    Parent := self;
+    Anchors := [];
+    AnchorParallel(akTop, 10, Self);
+    AnchorToNeighbour(akLeft, 10, FCriteriaList);
+    Caption := 'Value';
+    Visible := false;
+  end;
 
   FSelectButton := TBitBtn.Create(TheOwner);
-  FSelectButton.AnchorParallel(akTop, 10, Self);
-  FSelectButton.AnchorToNeighbour(akLeft,10,FExpressionBox);
-  FSelectButton.Parent := self;
-  FSelectButton.OnClick := @GetExpression;
-  FSelectButton.Caption := 'Select';
-
+  with FSelectButton do
+  begin
+    AnchorParallel(akTop, 10, Self);
+    AnchorToNeighbour(akLeft,10,FExpressionBox);
+    Parent := self;
+    OnClick := @GetExpression;
+    Caption := 'Select';
+    Visible := false;
+  end;
 end;
 
 procedure TCommonSelectView.EnterView();
@@ -161,11 +179,8 @@ begin
 end;
 
 procedure TCommonSelectView.ResetView();
-var
-  Combobox: TCustomComboBox;
 begin
   FFieldCombo.ItemIndex := 0;
-//  FCriteriaList.ItemIndex := 0;
   FDataModel.SelectVariable := nil;
   FDataModel.MatchCriteria := mcEq;
   FDataModel.Expression := '';

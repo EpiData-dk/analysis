@@ -103,7 +103,7 @@ end;
 
 function TCtableStatDialogContribution.GetCaption(): UTF8String;
 begin
-  result := 'CTable';
+  result := 'Compact Tables';
 end;
 
 function TCtableStatDialogContribution.GetHelpText(): UTF8String;
