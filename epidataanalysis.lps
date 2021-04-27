@@ -10,7 +10,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="24"/>
         <CursorPos X="60" Y="51"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit0>
       <Unit1>
         <Filename Value="main.pas"/>
@@ -19,7 +19,7 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit1>
       <Unit2>
         <Filename Value="executor.pas"/>
@@ -28,21 +28,21 @@
         <WindowIndex Value="1"/>
         <TopLine Value="1928"/>
         <CursorPos X="3" Y="1958"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit2>
       <Unit3>
         <Filename Value="expr.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit3>
       <Unit4>
         <Filename Value="ast.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit4>
       <Unit5>
         <Filename Value="ast_types.pas"/>
@@ -51,12 +51,12 @@
         <WindowIndex Value="1"/>
         <TopLine Value="139"/>
         <CursorPos Y="159"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit5>
       <Unit6>
         <Filename Value="ast_builder.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit6>
       <Unit7>
         <Filename Value="datamodule.pas"/>
@@ -64,27 +64,27 @@
         <ComponentName Value="aDM"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit7>
       <Unit8>
         <Filename Value="select_stack.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit8>
       <Unit9>
         <Filename Value="result_variables.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit9>
       <Unit10>
         <Filename Value="runtest.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit10>
       <Unit11>
         <Filename Value="parser.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit11>
       <Unit12>
         <Filename Value="statistics/means.pas"/>
@@ -92,47 +92,47 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="52"/>
         <CursorPos X="73" Y="104"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit12>
       <Unit13>
         <Filename Value="utils/generalutils.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit13>
       <Unit14>
         <Filename Value="auxunits/statfunctions.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit14>
       <Unit15>
         <Filename Value="statistics/interval_types.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit15>
       <Unit16>
         <Filename Value="output/outputcreator.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit16>
       <Unit17>
         <Filename Value="output/outputgenerator_base.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit17>
       <Unit18>
         <Filename Value="output/outputgenerator_txt.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit18>
       <Unit19>
         <Filename Value="output/outputgenerator_html.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit19>
       <Unit20>
         <Filename Value="executor/options_hashmap.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit20>
       <Unit21>
         <Filename Value="about.pas"/>
@@ -140,97 +140,97 @@
         <ComponentName Value="AboutForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit21>
       <Unit22>
         <Filename Value="statements/list.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit22>
       <Unit23>
         <Filename Value="statements/edit.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit23>
       <Unit24>
         <Filename Value="statements/drop.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit24>
       <Unit25>
         <Filename Value="auxunits/history.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit25>
       <Unit26>
         <Filename Value="cmdedit.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit26>
       <Unit27>
         <Filename Value="statusbar/analysis_statusbar.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit27>
       <Unit28>
         <Filename Value="statusbar/selected_count_statusbar_item.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit28>
       <Unit29>
         <Filename Value="statusbar/workingdir_statusbar_item.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit29>
       <Unit30>
         <Filename Value="statements/systemcmd.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit30>
       <Unit31>
         <Filename Value="parser_types.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit31>
       <Unit32>
         <Filename Value="utils/ana_documentfile.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit32>
       <Unit33>
         <Filename Value="functions/epi_script_function_mathfunctions.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit33>
       <Unit34>
         <Filename Value="functions/epi_script_function_createdate.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit34>
       <Unit35>
         <Filename Value="functions/epi_script_function_createtime.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit35>
       <Unit36>
         <Filename Value="functions/epi_script_function_datefunctions.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit36>
       <Unit37>
         <Filename Value="functions/epi_script_function_resourcestrings.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit37>
       <Unit38>
         <Filename Value="functions/epi_script_function_stringfunctions.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit38>
       <Unit39>
         <Filename Value="functions/epi_script_function_timefunctions.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit39>
       <Unit40>
         <Filename Value="editor/editor_form.pas"/>
@@ -238,132 +238,132 @@
         <ComponentName Value="EditorForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit40>
       <Unit41>
         <Filename Value="statistics/freq.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit41>
       <Unit42>
         <Filename Value="statusbar/executing_statusbar_item.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit42>
       <Unit43>
         <Filename Value="functions/epi_script_function_systemfunctions.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit43>
       <Unit44>
         <Filename Value="parser/token.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Token"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit44>
       <Unit45>
         <Filename Value="parser/goldparser.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="GOLDParser"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit45>
       <Unit46>
         <Filename Value="parser/symbol.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Symbol"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit46>
       <Unit47>
         <Filename Value="parser/fastate.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="FAState"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit47>
       <Unit48>
         <Filename Value="parser/grammarreader.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="GrammarReader"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit48>
       <Unit49>
         <Filename Value="parser/lraction.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="LRAction"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit49>
       <Unit50>
         <Filename Value="parser/memleakfinder.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="MemLeakFinder"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit50>
       <Unit51>
         <Filename Value="parser/rule.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Rule"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit51>
       <Unit52>
         <Filename Value="parser/sourcefeeder.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="SourceFeeder"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit52>
       <Unit53>
         <Filename Value="parser/variables.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Variables"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit53>
       <Unit54>
         <Filename Value="utils/ana_procs.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit54>
       <Unit55>
         <Filename Value="statements/merge.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit55>
       <Unit56>
         <Filename Value="statements/integrity_tests.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit56>
       <Unit57>
         <Filename Value="output/htmlviewer.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit57>
       <Unit58>
         <Filename Value="output/textviewer.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit58>
       <Unit59>
         <Filename Value="output/outputviewer_types.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit59>
       <Unit60>
         <Filename Value="output/oldhtmlviewer.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit60>
       <Unit61>
         <Filename Value="output/htmlviewer_osr.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit61>
       <Unit62>
         <Filename Value="utils/options_utils.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit62>
       <Unit63>
         <Filename Value="utils/ana_globals.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit63>
       <Unit64>
         <Filename Value="statements/browse4.pas"/>
@@ -371,42 +371,42 @@
         <ComponentName Value="BrowseForm4"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit64>
       <Unit65>
         <Filename Value="statements/report.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit65>
       <Unit66>
         <Filename Value="executor/options_fontoptions.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit66>
       <Unit67>
         <Filename Value="statements/save_output.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit67>
       <Unit68>
         <Filename Value="functions/epi_script_function_observations.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit68>
       <Unit69>
         <Filename Value="executor/options_filesoptions.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit69>
       <Unit70>
         <Filename Value="statements/aggregate.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit70>
       <Unit71>
         <Filename Value="statements/aggregate_types.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit71>
       <Unit72>
         <Filename Value="statistics/tables.pas"/>
@@ -414,34 +414,34 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="34"/>
         <CursorPos X="11" Y="60"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit72>
       <Unit73>
         <Filename Value="statistics/tables_types.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="3" Y="30"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit73>
       <Unit74>
         <Filename Value="executor/options_table.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit74>
       <Unit75>
         <Filename Value="statistics/tables_stat_chi2.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit75>
       <Unit76>
         <Filename Value="statistics/tables_stat_fexp.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit76>
       <Unit77>
         <Filename Value="statistics/tables_stat_or.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit77>
       <Unit78>
         <Filename Value="statistics/tables_stat_rr.pas"/>
@@ -449,7 +449,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="359"/>
         <CursorPos X="36" Y="382"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit78>
       <Unit79>
         <Filename Value="statistics/ctable.pas"/>
@@ -457,7 +457,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="375"/>
         <CursorPos X="22" Y="401"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit79>
       <Unit80>
         <Filename Value="statistics/describe.pas"/>
@@ -465,22 +465,22 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="404"/>
         <CursorPos X="128" Y="438"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit80>
       <Unit81>
         <Filename Value="commandtree/commandtree.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit81>
       <Unit82>
         <Filename Value="statements/recode.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit82>
       <Unit83>
         <Filename Value="executor/select_datafile.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit83>
       <Unit84>
         <Filename Value="sidewindows/history_form.pas"/>
@@ -488,7 +488,7 @@
         <ComponentName Value="HistoryForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit84>
       <Unit85>
         <Filename Value="sidewindows/varnames_form.pas"/>
@@ -496,7 +496,7 @@
         <ComponentName Value="VariablesForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit85>
       <Unit86>
         <Filename Value="sidewindows/projecttree_form.pas"/>
@@ -504,7 +504,7 @@
         <ComponentName Value="ProjectTreeForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit86>
       <Unit87>
         <Filename Value="sidewindows/commandtree_form.pas"/>
@@ -512,7 +512,7 @@
         <ComponentName Value="CommandTreeForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit87>
       <Unit88>
         <Filename Value="sidewindows/auto_position_form.pas"/>
@@ -520,37 +520,37 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="38"/>
         <CursorPos X="3" Y="66"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit88>
       <Unit89>
         <Filename Value="editor/editor_page.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit89>
       <Unit90>
         <Filename Value="editor/editor_form2.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit90>
       <Unit91>
         <Filename Value="editor/editor_pgm_highlighter.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit91>
       <Unit92>
         <Filename Value="functions/scandate_from_fpc.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit92>
       <Unit93>
         <Filename Value="executor/options_string_array.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit93>
       <Unit94>
         <Filename Value="executor/options_cssfileoption.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit94>
       <Unit95>
         <Filename Value="dialogs/stat_dialog_contribution.pas"/>
@@ -558,15 +558,15 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="18"/>
         <CursorPos X="3" Y="44"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit95>
       <Unit96>
         <Filename Value="dialogs/stat_dialog.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="138"/>
-        <CursorPos Y="164"/>
-        <UsageCount Value="104"/>
+        <TopLine Value="49"/>
+        <CursorPos Y="76"/>
+        <UsageCount Value="105"/>
       </Unit96>
       <Unit97>
         <Filename Value="dialogs/stat_dialog_action.pas"/>
@@ -574,105 +574,109 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="95"/>
         <CursorPos Y="135"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit97>
       <Unit98>
         <Filename Value="controls/fields_combobox.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="17" Y="25"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit98>
       <Unit99>
         <Filename Value="dialogs/stat_dialog_footer.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit99>
       <Unit100>
         <Filename Value="script_runner.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit100>
       <Unit101>
         <Filename Value="dialogs/stat_dialogs/freq/freq_contribution.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="46" Y="34"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit101>
       <Unit102>
         <Filename Value="dialogs/stat_dialogs/freq/freq_variable_view.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="240"/>
-        <CursorPos Y="292"/>
-        <UsageCount Value="104"/>
+        <TopLine Value="31"/>
+        <CursorPos X="3" Y="54"/>
+        <UsageCount Value="105"/>
       </Unit102>
       <Unit103>
         <Filename Value="dialogs/stat_dialogs/freq/freq_variable_model.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <WindowIndex Value="1"/>
-        <TopLine Value="73"/>
+        <TopLine Value="7"/>
         <CursorPos Y="106"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit103>
       <Unit104>
         <Filename Value="dialogs/stat_dialogs/tables/tables_contribution.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="51" Y="37"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit104>
       <Unit105>
         <Filename Value="dialogs/stat_dialogs/tables/tables_model.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit105>
       <Unit106>
         <Filename Value="dialogs/stat_dialogs/tables/tables_primaryoption_model.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit106>
       <Unit107>
         <Filename Value="dialogs/stat_dialogs/tables/tables_primaryoption_view.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="10" Y="9"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit107>
       <Unit108>
         <Filename Value="dialogs/stat_dialogs/tables/tables_variables_view.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="20" Y="9"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit108>
       <Unit109>
         <Filename Value="dialogs/stat_dialogs/tables/tables_statisticoptions_view.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit109>
       <Unit110>
         <Filename Value="dialogs/stat_dialogs/tables/tables_statisticoptions_model.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit110>
       <Unit111>
         <Filename Value="dialogs/stat_dialogs/freq/freq_mainoptions_model.pas"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="104"/>
+        <EditorIndex Value="2"/>
+        <CursorPos X="14" Y="29"/>
+        <UsageCount Value="105"/>
+        <Loaded Value="True"/>
       </Unit111>
       <Unit112>
         <Filename Value="dialogs/stat_dialogs/freq/freq_mainoptions_view.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="19"/>
-        <UsageCount Value="104"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="88"/>
+        <CursorPos X="16" Y="128"/>
+        <UsageCount Value="105"/>
+        <Loaded Value="True"/>
       </Unit112>
       <Unit113>
         <Filename Value="dialogs/stat_dialog_custom_view.pas"/>
@@ -680,7 +684,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="19"/>
         <CursorPos Y="42"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit113>
       <Unit114>
         <Filename Value="dialogs/stat_dialogs/ctable/ctable_contribution.pas"/>
@@ -688,21 +692,21 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="73"/>
         <CursorPos X="28" Y="106"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit114>
       <Unit115>
         <Filename Value="dialogs/stat_dialogs/ctable/ctable_model.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="51" Y="105"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit115>
       <Unit116>
         <Filename Value="dialogs/stat_dialogs/ctable/ctable_primaryoption_model.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="24"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit116>
       <Unit117>
         <Filename Value="dialogs/stat_dialogs/ctable/ctable_primaryoption_view.pas"/>
@@ -710,43 +714,43 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="206"/>
         <CursorPos Y="249"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit117>
       <Unit118>
         <Filename Value="dialogs/stat_dialogs/ctable/ctable_statisticoptions_model.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="132"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit118>
       <Unit119>
         <Filename Value="dialogs/stat_dialogs/ctable/ctable_statisticoptions_view.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="20" Y="9"/>
-        <UsageCount Value="104"/>
+        <UsageCount Value="105"/>
       </Unit119>
       <Unit120>
         <Filename Value="dialogs/stat_dialogs/ctable/ctable_variables_view.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="1"/>
-        <CursorPos X="20" Y="9"/>
-        <UsageCount Value="104"/>
-        <Loaded Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="164"/>
+        <CursorPos X="3" Y="189"/>
+        <UsageCount Value="105"/>
       </Unit120>
       <Unit121>
         <Filename Value="dialogs/stat_dialogs/means/means_contribution.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="50" Y="37"/>
-        <UsageCount Value="103"/>
+        <UsageCount Value="104"/>
       </Unit121>
       <Unit122>
         <Filename Value="dialogs/stat_dialogs/means/means_model.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="25" Y="104"/>
-        <UsageCount Value="103"/>
+        <UsageCount Value="104"/>
       </Unit122>
       <Unit123>
         <Filename Value="dialogs/stat_dialogs/means/means_variables_view.pas"/>
@@ -754,7 +758,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="61"/>
         <CursorPos X="3" Y="151"/>
-        <UsageCount Value="103"/>
+        <UsageCount Value="104"/>
       </Unit123>
       <Unit124>
         <Filename Value="dialogs/stat_dialogs/means/means_primaryoption_model.pas"/>
@@ -762,7 +766,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="32"/>
         <CursorPos Y="68"/>
-        <UsageCount Value="101"/>
+        <UsageCount Value="102"/>
       </Unit124>
       <Unit125>
         <Filename Value="dialogs/stat_dialogs/means/means_primaryoption_view.pas"/>
@@ -770,7 +774,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="109"/>
         <CursorPos Y="154"/>
-        <UsageCount Value="101"/>
+        <UsageCount Value="102"/>
       </Unit125>
       <Unit126>
         <Filename Value="dialogs/stat_dialogs/means/means_statisticoptions_model.pas"/>
@@ -778,21 +782,21 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="19"/>
         <CursorPos Y="63"/>
-        <UsageCount Value="101"/>
+        <UsageCount Value="102"/>
       </Unit126>
       <Unit127>
         <Filename Value="dialogs/stat_dialogs/means/means_statisticoptions_view.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="19" Y="9"/>
-        <UsageCount Value="101"/>
+        <UsageCount Value="102"/>
       </Unit127>
       <Unit128>
         <Filename Value="dialogs/stat_dialogs/describe/describe_contribution.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="53" Y="37"/>
-        <UsageCount Value="99"/>
+        <UsageCount Value="100"/>
       </Unit128>
       <Unit129>
         <Filename Value="dialogs/stat_dialogs/describe/describe_variable_model.pas"/>
@@ -800,13 +804,13 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="47"/>
         <CursorPos X="23" Y="87"/>
-        <UsageCount Value="99"/>
+        <UsageCount Value="100"/>
       </Unit129>
       <Unit130>
         <Filename Value="dialogs/stat_dialogs/describe/describe_primaryoption_model.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="99"/>
+        <UsageCount Value="100"/>
       </Unit130>
       <Unit131>
         <Filename Value="dialogs/stat_dialogs/describe/describe_primaryoption_view.pas"/>
@@ -814,7 +818,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="84"/>
         <CursorPos X="89" Y="31"/>
-        <UsageCount Value="99"/>
+        <UsageCount Value="100"/>
       </Unit131>
       <Unit132>
         <Filename Value="dialogs/stat_dialogs/describe/describe_statisticoptions_model.pas"/>
@@ -822,7 +826,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="10"/>
         <CursorPos X="3" Y="42"/>
-        <UsageCount Value="99"/>
+        <UsageCount Value="100"/>
       </Unit132>
       <Unit133>
         <Filename Value="dialogs/stat_dialogs/describe/describe_statisticoptions_view.pas"/>
@@ -830,7 +834,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="47"/>
         <CursorPos Y="68"/>
-        <UsageCount Value="97"/>
+        <UsageCount Value="98"/>
       </Unit133>
       <Unit134>
         <Filename Value="dialogs/stat_dialogs/describe/describe_variable_view.pas"/>
@@ -838,23 +842,24 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="76"/>
         <CursorPos Y="76"/>
-        <UsageCount Value="97"/>
+        <UsageCount Value="98"/>
       </Unit134>
       <Unit135>
         <Filename Value="dialogs/stat_dialogs/common/common_select_view.pas"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <CursorPos Y="70"/>
-        <UsageCount Value="76"/>
+        <TopLine Value="152"/>
+        <CursorPos X="22" Y="189"/>
+        <UsageCount Value="77"/>
         <Loaded Value="True"/>
       </Unit135>
       <Unit136>
         <Filename Value="dialogs/stat_dialogs/common/common_select_model.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="2"/>
-        <TopLine Value="19"/>
-        <CursorPos X="24" Y="137"/>
-        <UsageCount Value="76"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="16"/>
+        <CursorPos X="5" Y="15"/>
+        <UsageCount Value="77"/>
         <Loaded Value="True"/>
       </Unit136>
       <Unit137>
@@ -862,7 +867,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="10" Y="85"/>
-        <UsageCount Value="74"/>
+        <UsageCount Value="75"/>
       </Unit137>
       <Unit138>
         <Filename Value="dialogs/stat_dialogs/describe/describe_variable_list_model.pas"/>
@@ -943,24 +948,23 @@
         <Filename Value="/Applications/Lazarus/lcl/stdctrls.pp"/>
         <UnitName Value="StdCtrls"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="552"/>
-        <CursorPos X="18" Y="580"/>
-        <UsageCount Value="9"/>
+        <TopLine Value="303"/>
+        <CursorPos X="27" Y="347"/>
+        <UsageCount Value="10"/>
       </Unit149>
       <Unit150>
         <Filename Value="/Applications/Lazarus/lcl/include/customform.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="128"/>
-        <CursorPos Y="165"/>
-        <UsageCount Value="6"/>
+        <CursorPos Y="153"/>
+        <UsageCount Value="10"/>
       </Unit150>
       <Unit151>
         <Filename Value="/Applications/Lazarus/lcl/include/customcombobox.inc"/>
         <EditorIndex Value="-1"/>
-        <WindowIndex Value="1"/>
-        <TopLine Value="900"/>
-        <CursorPos X="3" Y="907"/>
-        <UsageCount Value="7"/>
+        <TopLine Value="972"/>
+        <CursorPos X="3" Y="981"/>
+        <UsageCount Value="10"/>
       </Unit151>
       <Unit152>
         <Filename Value="/usr/local/share/fpcsrc/rtl/objpas/classes/stringl.inc"/>
@@ -994,32 +998,56 @@
       <Unit156>
         <Filename Value="/Applications/Lazarus/lcl/include/customlistbox.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="563"/>
-        <CursorPos Y="590"/>
+        <TopLine Value="177"/>
+        <CursorPos Y="203"/>
         <UsageCount Value="13"/>
       </Unit156>
     </Units>
-    <JumpHistory Count="5" HistoryIndex="4">
+    <JumpHistory Count="11" HistoryIndex="10">
       <Position1>
         <Filename Value="dialogs/stat_dialogs/common/common_select_view.pas"/>
-        <Caret Line="109" Column="29" TopLine="71"/>
+        <Caret Line="183" TopLine="153"/>
       </Position1>
       <Position2>
         <Filename Value="dialogs/stat_dialogs/common/common_select_view.pas"/>
-        <Caret Line="97" Column="17" TopLine="71"/>
+        <Caret Line="184" TopLine="153"/>
       </Position2>
       <Position3>
         <Filename Value="dialogs/stat_dialogs/common/common_select_view.pas"/>
-        <Caret Line="28" Column="29" TopLine="2"/>
+        <Caret Line="185" TopLine="153"/>
       </Position3>
       <Position4>
         <Filename Value="dialogs/stat_dialogs/common/common_select_view.pas"/>
-        <Caret Line="53" Column="17" TopLine="8"/>
+        <Caret Line="186" TopLine="153"/>
       </Position4>
       <Position5>
         <Filename Value="dialogs/stat_dialogs/common/common_select_view.pas"/>
-        <Caret Line="91" TopLine="64"/>
+        <Caret Line="187" TopLine="153"/>
       </Position5>
+      <Position6>
+        <Filename Value="dialogs/stat_dialogs/common/common_select_view.pas"/>
+        <Caret Line="188" TopLine="153"/>
+      </Position6>
+      <Position7>
+        <Filename Value="dialogs/stat_dialogs/common/common_select_view.pas"/>
+        <Caret Line="190" TopLine="153"/>
+      </Position7>
+      <Position8>
+        <Filename Value="dialogs/stat_dialogs/common/common_select_view.pas"/>
+        <Caret Line="191" TopLine="153"/>
+      </Position8>
+      <Position9>
+        <Filename Value="dialogs/stat_dialogs/common/common_select_view.pas"/>
+        <Caret Line="183" TopLine="153"/>
+      </Position9>
+      <Position10>
+        <Filename Value="dialogs/stat_dialogs/common/common_select_view.pas"/>
+        <Caret Line="184" Column="21" TopLine="147"/>
+      </Position10>
+      <Position11>
+        <Filename Value="dialogs/stat_dialogs/freq/freq_mainoptions_view.pas"/>
+        <Caret Line="128" Column="16" TopLine="88"/>
+      </Position11>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>

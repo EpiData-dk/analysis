@@ -103,6 +103,7 @@ var
 begin
   if (FDataModel.SelectVariable = nil) then exit;
   Field := FDataModel.SelectVariable;
+  FCriteriaList.Show;
   FDataModel.GetComboCriteria(FCriteriaList, Field.FieldType);
   FExpressionBox.Text := 'Value';
   FExpressionBox.Hide;
@@ -139,6 +140,7 @@ begin
     ClientHeight := (ClientHeight * 8) div 5;
     OnClick := @CriteriaSelect;
     Caption := 'Comparison';
+    Visible := false;
   end;
 
   FExpressionBox := TEdit.Create(TheOwner);
@@ -180,9 +182,13 @@ end;
 
 procedure TCommonSelectView.ResetView();
 begin
-  FFieldCombo.ItemIndex := 0;
+  FFieldCombo.ItemIndex := -1;
+  FCriteriaList.Hide;
+  FExpressionBox.Text := 'Value';
+  FExpressionBox.Hide;
+  FSelectButton.Hide;
   FDataModel.SelectVariable := nil;
-  FDataModel.MatchCriteria := mcEq;
+  FDataModel.MatchCriteria := mcEQ;
   FDataModel.Expression := '';
 
   DoModified();
