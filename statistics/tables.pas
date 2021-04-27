@@ -539,7 +539,7 @@ begin
 
   if CheckList.Find(WeightName, DummyIdx) then
     begin
-      FExecutor.Error('Table command requires unique weigth name: ' + WeightName);
+      FExecutor.Error('Table command requires unique weight name: ' + WeightName);
       Exit(false);
     end;
 end;
@@ -795,7 +795,7 @@ begin
     end;
 
   AllTables := DoCalcTables(DF, VarNames, StratifyVarnames, WeightName);
-
+  StratifyVarnames.Free;
   if (not DoSortTables(AllTables, ST.Options)) then
     begin
       ST.ExecResult := csrFailed;
@@ -826,4 +826,3 @@ finalization
   StatisticsMap.Free;
 
 end.
-
