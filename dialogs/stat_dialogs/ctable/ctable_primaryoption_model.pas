@@ -11,21 +11,21 @@ type
 
    TPercentage = (pRow, pCol, pTotal);
    TPercentages = set of TPercentage;
+   TIncludeType     = (pInclude);
+   TIncludeTypes    = set of TIncludeType ;
 
-   TSorting = (sortAsc, sortDesc, sortAscTotal, sortDescTotal);
-   
    { TCtableStatDialogPrimaryOptionModel }
 
    TCtableStatDialogPrimaryOptionModel = class(IStatDialogModel)
    private
      FPercentages: TPercentages;
-     FSorting: TSorting;
      FValueLabelType: TEpiGetValueLabelType;
      FVariableLabelType: TEpiGetVariableLabelType;
+     FIncludeTypes:    TIncludeTypes;
      procedure SetPercentages(AValue: TPercentages);
-     procedure SetSorting(AValue: TSorting);
      procedure SetValueLabelType(AValue: TEpiGetValueLabelType);
      procedure SetVariableLabelType(AValue: TEpiGetVariableLabelType);
+     procedure SetInclude(AValue: TIncludeTypes);
    public
      constructor Create();
      function GenerateScript(): UTF8String;
@@ -34,7 +34,7 @@ type
      property VariableLabelType: TEpiGetVariableLabelType read FVariableLabelType write SetVariableLabelType;
      property ValueLabelType: TEpiGetValueLabelType read FValueLabelType write SetValueLabelType;
      property Percentages: TPercentages read FPercentages write SetPercentages;
-     property Sorting: TSorting read FSorting write SetSorting;
+     property IncludeTypes: TIncludeTypes read FIncludeTypes write SetInclude;
    end;
 
 
@@ -52,12 +52,6 @@ begin
   FPercentages := AValue;
 end;
 
-procedure TCtableStatDialogPrimaryOptionModel.SetSorting(AValue: TSorting);
-begin
-  if FSorting = AValue then Exit;
-  FSorting := AValue;
-end;
-
 procedure TCtableStatDialogPrimaryOptionModel.SetValueLabelType(
   AValue: TEpiGetValueLabelType);
 begin
@@ -70,6 +64,12 @@ procedure TCtableStatDialogPrimaryOptionModel.SetVariableLabelType(
 begin
   if FVariableLabelType = AValue then Exit;
   FVariableLabelType := AValue;
+end;
+
+procedure TCtableStatDialogPrimaryOptionModel.SetInclude(AValue: TIncludeTypes);
+begin
+  if FIncludeTypes = AValue then Exit;
+  FIncludeTypes := AValue;
 end;
 
 constructor TCtableStatDialogPrimaryOptionModel.Create();
@@ -99,18 +99,11 @@ begin
 
   result += ' ';
 
-  case FSorting of
-    sortAsc:       Result += '!sa';
-    sortDesc:      Result += '!sd';
-    sortAscTotal:  Result += '!scta !srta';
-    sortDescTotal: Result += '!sctd !srtd';
-  end;
-
-  result += ' ';
-
   if (pCol   in FPercentages) then Result += '!pc ';
   if (pRow   in FPercentages) then Result += '!pr ';
   if (pTotal in FPercentages) then Result += '!pt ';
+
+  if (pInclude in FIncludeTypes) then Result += '!inc ';
 
   Result := UTF8Trim(Result);
 end;

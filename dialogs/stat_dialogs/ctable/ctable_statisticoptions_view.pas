@@ -21,17 +21,17 @@ type
     FVerticalDivider: TBevel;
     FStatisticsGroup: TCheckGroup;
     FAttackRateGroup: TCheckGroup;
-    FIncludeGroup:    TCheckGroup;
-    FSortResultsGroup: TRadioGroup;
+    FSortingGroup: TRadioGroup;
+    FOutputSortGroup: TRadioGroup;
 
     procedure CreateStatisticsCheckboxes(CheckGroup: TCheckGroup);
     procedure CreateAttackRateCheckboxes(CheckGroup: TCheckGroup);
-    procedure CreateIncludeCheckboxes(CheckGroup: TCheckGroup);
-    procedure CreateSortResultsRadio(RadioGroup: TRadioGroup);
+    procedure CreateSortingRadios(RadioGroup: TRadioGroup);
+    procedure CreateOutputSortRadio(RadioGroup: TRadioGroup);
     procedure StatisticsItemChecked(Sender: TObject; Index: integer);
     procedure AttackRateItemChecked(Sender: TObject; Index: integer);
-    procedure IncludeItemChecked(Sender: TObject; Index: integer);
-    procedure SortResultsSelectionChanged(Sender: TObject);
+    procedure SortingSelectionChanged(Sender: TObject);
+    procedure OutputSortSelectionChanged(Sender: TObject);
   public
     constructor Create(TheOwner: TComponent); override;
     procedure EnterView(); override;
@@ -53,63 +53,81 @@ begin
 //  Caption := 'Statistics Options';
   FStatisticsGroup  := TCheckGroup.Create(self);
   FAttackRateGroup  := TCheckGroup.Create(self);
-  FIncludeGroup     := TCheckGroup.Create(self);
-  FSortResultsGroup := TRadioGroup.Create(self);
+  FSortingGroup := TRadioGroup.Create(self);
+  FOutputSortGroup := TRadioGroup.Create(self);
 
   FVerticalDivider := TBevel.Create(self);
-  FVerticalDivider.Parent := self;
-  FVerticalDivider.Style := bsLowered;
-  FVerticalDivider.Shape := bsSpacer;
-  FVerticalDivider.Width := 5;
-  FVerticalDivider.Anchors := [];
-  FVerticalDivider.AnchorParallel(akTop, 5, Self);
-  FVerticalDivider.AnchorParallel(akBottom, 0, Self);
+  with FVerticalDivider do
+  begin
+    Parent := self;
+    Style := bsLowered;
+    Shape := bsSpacer;
+    Width := 5;
+    Anchors := [];
+    AnchorParallel(akTop, 5, Self);
+    AnchorParallel(akBottom, 0, Self);
+  end;
 
   FHorizontalDivider := TBevel.Create(self);
-  FHorizontalDivider.Parent := self;
-  FHorizontalDivider.Style := bsLowered;
-  FHorizontalDivider.Shape := bsSpacer;
-  FHorizontalDivider.Height := 5;
-  FHorizontalDivider.Anchors := [];
-  FHorizontalDivider.AnchorParallel(akLeft, 0, Self);
-  FHorizontalDivider.AnchorParallel(akRight, 0, Self);
+  with FHorizontalDivider do
+  begin
+    Parent := self;
+    Style := bsLowered;
+    Shape := bsSpacer;
+    Height := 5;
+    Anchors := [];
+    AnchorParallel(akLeft, 0, Self);
+    AnchorParallel(akRight, 0, Self);
+  end;
 
   FStatisticsGroup.Parent := self;
-  FStatisticsGroup.Caption := 'Statistics';
-  FStatisticsGroup.Anchors := [];
-  FStatisticsGroup.AnchorParallel(akTop, 5, Self);
-  FStatisticsGroup.AnchorParallel(akLeft, 5, self);
-  FStatisticsGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
-  FStatisticsGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
+  with FStatisticsGroup do
+  begin
+    Caption := 'Statistics';
+    Anchors := [];
+    AnchorParallel(akTop, 5, Self);
+    AnchorParallel(akLeft, 5, self);
+    AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
+    AnchorToNeighbour(akRight, 0, FVerticalDivider);
+  end;
 
-  FSortResultsGroup.Parent := self;
-  FSortResultsGroup.Caption := 'Sort Results';
-  FSortResultsGroup.Anchors := [];
-  FSortResultsGroup.AnchorParallel(akTop, 5, Self);
-  FSortResultsGroup.AnchorParallel(akRight, 5, self);
-  FSortResultsGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
-  FSortResultsGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
+  FOutputSortGroup.Parent := self;
+  with FOutputSortGroup do
+  begin
+    Caption := 'Sort results';
+    Anchors := [];
+    AnchorParallel(akRight, 5, self);
+    AnchorParallel(akBottom, 5, Self);
+    AnchorToNeighbour(akTop, 0, FHorizontalDivider);
+    AnchorToNeighbour(akLeft, 0, FVerticalDivider);
+  end;
 
   FAttackRateGroup.Parent := self;
-  FAttackRateGroup.Caption := 'Attack Rate Tables';
-  FAttackRateGroup.Anchors := [];
-  FAttackRateGroup.AnchorParallel(akLeft, 5, Self);
-  FAttackRateGroup.AnchorParallel(akBottom, 5, self);
-  FAttackRateGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
-  FAttackRateGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
+  with FAttackRateGroup do
+  begin
+    Caption := 'Attack rate tables';
+    Anchors := [];
+    AnchorParallel(akLeft, 5, Self);
+    AnchorParallel(akBottom, 5, self);
+    AnchorToNeighbour(akTop, 0, FHorizontalDivider);
+    AnchorToNeighbour(akRight, 0, FVerticalDivider);
+  end;
 
-  FIncludeGroup.Parent := self;
-  FIncludeGroup.Caption := 'Include non 2x2 tables';
-  FIncludeGroup.Anchors := [];
-  FIncludeGroup.AnchorParallel(akRight, 5, Self);
-  FIncludeGroup.AnchorParallel(akBottom, 5, self);
-  FIncludeGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
-  FIncludeGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
+  FSortingGroup.Parent := self;
+  with FSortingGroup do
+  begin
+    Caption := 'Sort outcome and exposure data (important for RR)';
+    Anchors := [];
+    AnchorParallel(akTop, 5, Self);
+    AnchorParallel(akRight, 5, self);
+    AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
+    AnchorToNeighbour(akLeft, 0, FVerticalDivider);
+  end;
 
   CreateStatisticsCheckBoxes(FStatisticsGroup);
   CreateAttackRateCheckBoxes(FAttackRateGroup);
-  CreateIncludeCheckBoxes(FIncludeGroup);
-  CreateSortResultsRadio(FSortResultsGroup);
+  CreateSortingRadios(FSortingGroup);
+  CreateOutputSortRadio(FOutputSortGroup);
 end;
 
 procedure TCtableStatDialogStatisticOptionsView.CreateStatisticsCheckboxes(CheckGroup: TCheckGroup);
@@ -128,18 +146,23 @@ begin
   CheckGroup.OnItemClick := @AttackRateItemChecked;
 end;
 
-procedure TCtableStatDialogStatisticOptionsView.CreateIncludeCheckboxes(CheckGroup: TCheckGroup);
+procedure TCtableStatDialogStatisticOptionsView.CreateSortingRadios(
+  RadioGroup: TRadioGroup);
 begin
-  CheckGroup.Items.Add('Include tables that are not 2x2');
-  CheckGroup.OnItemClick := @IncludeItemChecked;
+  RadioGroup.Items.Add('Ascending (example: for RR, 0=no, 1=yes)');
+  RadioGroup.Items.Add('Descending (example: for RR, N=no, Y=yes)');
+//  RadioGroup.Items.Add('Totals Ascending');
+//  RadioGroup.Items.Add('Totals Descending');
+  RadioGroup.ItemIndex := 0;
+  RadioGroup.OnSelectionChanged := @SortingSelectionChanged;
 end;
 
-procedure TCtableStatDialogStatisticOptionsView.CreateSortResultsRadio(RadioGroup: TRadioGroup);
+procedure TCtableStatDialogStatisticOptionsView.CreateOutputSortRadio(RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('by Variable name');
   RadioGroup.Items.Add('by Variable label');
   RadioGroup.Items.Add('by key statistic');
-  RadioGroup.OnSelectionChanged := @SortResultsSelectionChanged;
+  RadioGroup.OnSelectionChanged := @OutputSortSelectionChanged;
 end;
 
 procedure TCtableStatDialogStatisticOptionsView.StatisticsItemChecked(Sender: TObject; Index: integer);
@@ -176,27 +199,23 @@ begin
   DoModified();
 end;
 
-procedure TCtableStatDialogStatisticOptionsView.IncludeItemChecked(Sender: TObject; Index: integer);
-var
-  NewState: TIncludeTypes;
+procedure TCtableStatDialogStatisticOptionsView.SortingSelectionChanged(Sender: TObject);
 begin
-  case Index of
-    0: NewState := [pInclude];
+  case TRadioGroup(Sender).ItemIndex of
+    0: FDataModel.Sorting := sortAsc;
+    1: FDataModel.Sorting := sortDesc;
+ //   2: FDataModel.Sorting := sortAscTotal;
+ //   3: FDataModel.Sorting := sortDescTotal;
   end;
-
-  if (TCheckGroup(Sender).Checked[Index]) then
-    FDataModel.IncludeTypes := FDataModel.IncludeTypes + NewState
-  else
-    FDataModel.IncludeTypes := FDataModel.IncludeTypes - NewState;
   DoModified();
 end;
 
-procedure TCtableStatDialogStatisticOptionsView.SortResultsSelectionChanged(Sender: TObject);
+procedure TCtableStatDialogStatisticOptionsView.OutputSortSelectionChanged(Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
-    0: FDataModel.TableSort := sortName;
-    1: FDataModel.TableSort := sortLabel;
-    2: FDataModel.TableSort := sortStatistic;
+    0: FDataModel.OutputSort := sortName;
+    1: FDataModel.OutputSort := sortLabel;
+    2: FDataModel.OutputSort := sortStatistic;
   end;
   DoModified();
 end;
@@ -226,12 +245,14 @@ procedure TCtableStatDialogStatisticOptionsView.ResetView();
 var i: Integer;
 begin
   FDataModel.StatisticTypes := [];
-  FDataModel.TableSort := sortName;
+  FDataModel.OutputSort := sortName;
+  FDataModel.Sorting := sortAsc;
+  FSortingGroup.ItemIndex := 0;
+  FOutputSortGroup.ItemIndex := 0;
 
   for i := 0 to FStatisticsGroup.Items.Count - 1 do
     FStatisticsGroup.Checked[i] := false;
 
-  FSortResultsGroup.ItemIndex := 0;
 end;
 
 procedure TCtableStatDialogStatisticOptionsView.SetModel(

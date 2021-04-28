@@ -12,18 +12,14 @@ type
    TPercentage = (pRow, pCol, pTotal);
    TPercentages = set of TPercentage;
 
-   TSorting = (sortAsc, sortDesc, sortAscTotal, sortDescTotal);
-   
    { TTableStatDialogPrimaryOptionModel }
 
    TTableStatDialogPrimaryOptionModel = class(IStatDialogModel)
    private
      FPercentages: TPercentages;
-     FSorting: TSorting;
      FValueLabelType: TEpiGetValueLabelType;
      FVariableLabelType: TEpiGetVariableLabelType;
      procedure SetPercentages(AValue: TPercentages);
-     procedure SetSorting(AValue: TSorting);
      procedure SetValueLabelType(AValue: TEpiGetValueLabelType);
      procedure SetVariableLabelType(AValue: TEpiGetVariableLabelType);
    public
@@ -34,7 +30,6 @@ type
      property VariableLabelType: TEpiGetVariableLabelType read FVariableLabelType write SetVariableLabelType;
      property ValueLabelType: TEpiGetValueLabelType read FValueLabelType write SetValueLabelType;
      property Percentages: TPercentages read FPercentages write SetPercentages;
-     property Sorting: TSorting read FSorting write SetSorting;
    end;
 
 
@@ -50,12 +45,6 @@ procedure TTableStatDialogPrimaryOptionModel.SetPercentages(AValue: TPercentages
 begin
   if FPercentages = AValue then Exit;
   FPercentages := AValue;
-end;
-
-procedure TTableStatDialogPrimaryOptionModel.SetSorting(AValue: TSorting);
-begin
-  if FSorting = AValue then Exit;
-  FSorting := AValue;
 end;
 
 procedure TTableStatDialogPrimaryOptionModel.SetValueLabelType(
@@ -95,15 +84,6 @@ begin
     gvtVarLabel:     Result += '!vla';
     gvtVarNameLabel: Result += '!vnl';
     gvtVarLabelName: Result += '!vln';
-  end;
-
-  result += ' ';
-
-  case FSorting of
-    sortAsc:       Result += '!sa';
-    sortDesc:      Result += '!sd';
-    sortAscTotal:  Result += '!scta !srta';
-    sortDescTotal: Result += '!sctd !srtd';
   end;
 
   result += ' ';

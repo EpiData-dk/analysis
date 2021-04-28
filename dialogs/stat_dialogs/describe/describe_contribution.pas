@@ -96,7 +96,7 @@ begin
     FSelectModel.GenerateScript() + ' ' +
     'describe ' +
     FVariablesModel.GenerateScript() + ' ' +
-    FPrimaryOptionsModel.GenerateScript() +
+    FPrimaryOptionsModel.GenerateScript() + ' ' +
     FStatisticsOptionsModel.GenerateScript() +
     ';';
 end;
@@ -109,9 +109,11 @@ end;
 function TDescribeContribution.GetHelpText(): UTF8String;
 begin
   result :=
-    '1: Select Variables' + LineEnding +
-    '2: Click percentage, test, sorting etc.' + LineEnding +
-    '3: Run, Execute or Paste command';
+    '1: Choose variables' + LineEnding +
+    '2: Choose statistics (default is mean, sd, minimum, median, maximum)' + LineEnding +
+    '3: Choose label options (default is labels only for variables and values)' + LineEnding +
+    '4: Select a subset of data (optional)' + LineEnding +
+    '5: Run (close this form), Execute (keep this form open) or Paste command';
 end;
 
 function TDescribeContribution.GetViews(Owner: TComponent;
@@ -120,8 +122,8 @@ function TDescribeContribution.GetViews(Owner: TComponent;
 begin
   result := TStatDialogContributionViewList.Create;
   result.Add(CreateMainView(Owner, Executor));
-  result.Add(CreatePrimaryOptionView(Owner));
   result.Add(CreateStatisticOptionView(Owner));
+  result.Add(CreatePrimaryOptionView(Owner));
   result.Add(CreateSelectView(Owner, Executor));
 end;
 

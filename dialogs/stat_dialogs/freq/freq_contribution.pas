@@ -93,7 +93,10 @@ end;
 
 function TFreqStatDialogContribution.GetHelpText(): UTF8String;
 begin
-  result := 'Help For Freq!';
+  result := '1. Choose variables' + LineEnding +
+            '2. Choose label or percentage options' + LineEnding +
+            '3: Select a subset of data (optional)' + LineEnding +
+            '4. Run (close this form), Execute (keep this form open) or Paste command';
 end;
 
 function TFreqStatDialogContribution.GetViews(Owner: TComponent;

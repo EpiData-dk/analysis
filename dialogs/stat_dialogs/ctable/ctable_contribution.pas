@@ -96,22 +96,24 @@ begin
     FSelectModel.GenerateScript() + ' ' +
     'ctable ' +
     FVariablesModel.GenerateScript() + ' ' +
-    FPrimaryOptionsModel.GenerateScript() +
+    FPrimaryOptionsModel.GenerateScript() + ' ' +
     FStatisticsOptionsModel.GenerateScript() +
     ';';
 end;
 
 function TCtableStatDialogContribution.GetCaption(): UTF8String;
 begin
-  result := 'Compact Tables';
+  result := 'Compact Tables (ctable)';
 end;
 
 function TCtableStatDialogContribution.GetHelpText(): UTF8String;
 begin
   result :=
-    '1: Select Variables' + LineEnding +
-    '2: Click percentage, test, sorting etc.' + LineEnding +
-    '3: Run, Execute or Paste command';
+    '1: Choose variables' + LineEnding +
+    '2: Choose statistics options' + LineEnding +
+    '3: Choose label or percent options' + LineEnding +
+    '4: Select a subset of data (optional)' + LineEnding +
+    '5: Run (close this form), Execute (keep this form open) or Paste command';
 end;
 
 function TCtableStatDialogContribution.GetViews(Owner: TComponent;
@@ -119,8 +121,8 @@ function TCtableStatDialogContribution.GetViews(Owner: TComponent;
 begin
   result := TStatDialogContributionViewList.Create;
   result.add(CreateMainView(Owner, Executor));
-  result.Add(CreatePrimaryOptionView(Owner));
   result.Add(CreateStatisticOptionView(Owner));
+  result.Add(CreatePrimaryOptionView(Owner));
   result.Add(CreateSelectView(Owner, Executor));
 end;
 

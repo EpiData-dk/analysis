@@ -43,7 +43,7 @@ begin
   FStatisticsGroup  := TCheckGroup.Create(self);
 
   FStatisticsGroup.Parent := self;
-  FStatisticsGroup.Caption := 'Statistics';
+  FStatisticsGroup.Caption := 'Test statistics';
   FStatisticsGroup.Anchors := [];
   FStatisticsGroup.AnchorParallel(akTop, 5, Self);
   FStatisticsGroup.AnchorParallel(akLeft, 5, self);

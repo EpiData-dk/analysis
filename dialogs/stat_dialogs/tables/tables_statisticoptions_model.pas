@@ -3,7 +3,7 @@ unit tables_statisticoptions_model;
 {$mode objfpc}{$H+}
 
 interface
-// JH comment - remove this
+
 {
  Valid options
 
@@ -29,17 +29,16 @@ type
 
   TStatisticType = (pChi, pFET, pOR, pRR); //, pAR, pEN);
   TStatisticTypes = set of TStatisticType ;
-
-//  TTableSort = (sortName, sortLabel, sortStatistic);
+  TSorting = (sortAsc, sortDesc, sortAscTotal, sortDescTotal);
 
   { TTableStatDialogStatisticOptionsModel }
 
   TTableStatDialogStatisticOptionsModel = class(IStatDialogModel)
   private
     FStatisticTypes: TStatisticTypes;
- //   FTableSort: TTableSort;
+    FSorting: TSorting;
     procedure SetStatistics(AValue: TStatisticTypes);
-//    procedure SetTableSort(AValue: TTableSort);
+    procedure SetSorting(AValue: TSorting);
 
   public
     constructor Create();
@@ -47,7 +46,7 @@ type
     function IsDefined(): boolean;
   public
     property StatisticTypes: TStatisticTypes read FStatisticTypes write SetStatistics;
-//    property TableSort: TTableSort read FTableSort write SetTableSort;
+    property Sorting: TSorting read FSorting write SetSorting;
   end;
 
 
@@ -69,29 +68,29 @@ begin
   FStatisticTypes := AValue;
 end;
 
-{procedure TTableStatDialogStatisticOptionsModel.SetTableSort(AValue: TTableSort);
+procedure TTableStatDialogStatisticOptionsModel.SetSorting(AValue: TSorting);
 begin
-  if FTableSort = AValue then Exit;
-  FTableSort := AValue;
+  if FSorting = AValue then Exit;
+  FSorting := AValue;
 end;
-}
 
 function TTableStatDialogStatisticOptionsModel.GenerateScript(): UTF8String;
 begin
   Result := '';
 
-{  case FTableSort of
-    sortName:      Result += '!sn ';
-    sortLabel:     Result += '!sl ';
-    sortStatistic: Result += '!ss ';
-  end;
-}
   if (pChi in FStatisticTypes) then Result += '!t ';
   if (pFET in FStatisticTypes) then Result += '!ex ';
   if (pOR  in FStatisticTypes) then Result += '!odds ';
   if (pRR  in FStatisticTypes) then Result += '!rr ';
-//  if (pAR  in FStatisticTypes) then Result += '!ar ';
-//  if (pEN  in FStatisticTypes) then Result += '!en ';
+
+    result += ' ';
+
+    case FSorting of
+      sortAsc:       Result += '!sa ';
+      sortDesc:      Result += '!sd ';
+      sortAscTotal:  Result += '!scta !srta ';
+      sortDescTotal: Result += '!sctd !srtd ';
+    end;
 
   Result := UTF8Trim(Result);
 end;

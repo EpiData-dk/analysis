@@ -192,8 +192,8 @@ begin
   HintWindow.OnClick := @HintWindowClick;
 
   HintRect := HintWindow.CalcHintRect(0, FContribution.GetHelpText(), nil);
-  HintPoint := ClientToScreen(Point(FButtonFooter.Left, FButtonFooter.Top));
-  OffsetRect(HintRect, HintPoint.X, HintPoint.Y - HintRect.Bottom);
+  HintPoint := ClientToScreen(Point(FButtonFooter.Left, FButtonFooter.Top + FButtonFooter.Height));
+  OffsetRect(HintRect, HintPoint.X, HintPoint.Y);
   HintWindow.ActivateHint(HintRect, FContribution.GetHelpText());
 end;
 

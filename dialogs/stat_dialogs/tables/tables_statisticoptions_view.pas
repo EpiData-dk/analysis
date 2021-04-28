@@ -18,11 +18,12 @@ type
     FOnModified: IStatDiaglogViewModified;
     FDataModel: TTableStatDialogStatisticOptionsModel;
     FStatisticsGroup: TCheckGroup;
-    FSortResultsGroup: TRadioGroup;
+    FSortingGroup: TRadioGroup;
+    FVerticalDivider: TBevel;
     procedure CreateStatisticsCheckboxes(CheckGroup: TCheckGroup);
-//    procedure CreateSortResultsRadio(RadioGroup: TRadioGroup);
+    procedure CreateSortingRadios(RadioGroup: TRadioGroup);
     procedure StatisticsItemChecked(Sender: TObject; Index: integer);
-//    procedure SortResultsSelectionChanged(Sender: TObject);
+    procedure SortingSelectionChanged(Sender: TObject);
   public
     constructor Create(TheOwner: TComponent); override;
     procedure EnterView(); override;
@@ -41,26 +42,33 @@ constructor TTableStatDialogStatisticOptionsView.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
-//  Caption := 'Statistics Options';
-  FStatisticsGroup := TCheckGroup.Create(self);
-//  FSortResultsGroup := TRadioGroup.Create(self);
+  FVerticalDivider := TBevel.Create(self);
+  FVerticalDivider.Parent := self;
+  FVerticalDivider.Style := bsLowered;
+  FVerticalDivider.Shape := bsSpacer;
+  FVerticalDivider.Width := 5;
+  FVerticalDivider.Anchors := [];
+  FVerticalDivider.AnchorParallel(akTop, 5, Self);
+  FVerticalDivider.AnchorParallel(akBottom, 0, Self);
 
+  FStatisticsGroup := TCheckGroup.Create(self);
   FStatisticsGroup.Parent := self;
   FStatisticsGroup.Caption := 'Statistics';
   FStatisticsGroup.Anchors := [];
   FStatisticsGroup.AnchorParallel(akTop, 5, Self);
   FStatisticsGroup.AnchorParallel(akLeft, 5, self);
-//  FStatisticsGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
+  FStatisticsGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
 
-{  FSortResultsGroup.Parent := self;
-  FSortResultsGroup.Caption := 'Sort Results';
-  FSortResultsGroup.Anchors := [];
-  FSortResultsGroup.AnchorParallel(akTop, 5, Self);
-  FSortResultsGroup.AnchorParallel(akRight, 5, self);
-  FSortResultsGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
-}
+  FSortingGroup := TRadioGroup.Create(self);
+  FSortingGroup.Parent := self;
+  FSortingGroup.Caption := 'Sorting';
+  FSortingGroup.Anchors := [];
+  FSortingGroup.AnchorParallel(akRight, 5, self);
+  FSortingGroup.AnchorParallel(akTop, 5, Self);
+  FSortingGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
+
   CreateStatisticsCheckBoxes(FStatisticsGroup);
-//  CreateSortResultsRadio(FSortResultsGroup);
+  CreateSortingRadios(FSortingGroup);
 end;
 
 procedure TTableStatDialogStatisticOptionsView.CreateStatisticsCheckboxes(CheckGroup: TCheckGroup);
@@ -69,19 +77,20 @@ begin
   CheckGroup.Items.Add('Fisher Exact Test');
   CheckGroup.Items.Add('Odds Ratio');
   CheckGroup.Items.Add('Risk Ratio');
-//  CheckGroup.Items.Add('Attack rate table plus Risk Ratios');
-//  CheckGroup.Items.Add('Attack rate table without Risk Ratios');
   CheckGroup.OnItemClick := @StatisticsItemChecked;
 end;
 
-{procedure TTableStatDialogStatisticOptionsView.CreateSortResultsRadio(RadioGroup: TRadioGroup);
+procedure TTableStatDialogStatisticOptionsView.CreateSortingRadios(
+  RadioGroup: TRadioGroup);
 begin
-  RadioGroup.Items.Add('by Variable name');
-  RadioGroup.Items.Add('by Variable label');
-  RadioGroup.Items.Add('by key statistic');
-  RadioGroup.OnSelectionChanged := @SortResultsSelectionChanged;
+  RadioGroup.Items.Add('Ascending (example: for RR, 0=no, 1=yes)');
+  RadioGroup.Items.Add('Descending (example: for RR, N=no, Y=yes)');
+  RadioGroup.Items.Add('Totals Ascending');
+  RadioGroup.Items.Add('Totals Descending');
+  RadioGroup.ItemIndex := 0;
+  RadioGroup.OnSelectionChanged := @SortingSelectionChanged;
 end;
-}
+
 procedure TTableStatDialogStatisticOptionsView.StatisticsItemChecked(Sender: TObject; Index: integer);
 var
   NewState: TStatisticTypes;
@@ -91,8 +100,6 @@ begin
     1: NewState := [pFET];
     2: NewState := [pOR];
     3: NewState := [pRR];
-//    4: NewState := [pAR];
-//    5: NewState := [pEN];
   end;
 
   if (TCheckGroup(Sender).Checked[Index]) then
@@ -101,20 +108,21 @@ begin
     FDataModel.StatisticTypes := FDataModel.StatisticTypes - NewState;
   DoModified();
 end;
-{
-procedure TTableStatDialogStatisticOptionsView.SortResultsSelectionChanged(Sender: TObject);
+
+procedure TTableStatDialogStatisticOptionsView.SortingSelectionChanged(Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
-    0: FDataModel.TableSort := sortName;
-    1: FDataModel.TableSort := sortLabel;
-    2: FDataModel.TableSort := sortStatistic;
+    0: FDataModel.Sorting := sortAsc;
+    1: FDataModel.Sorting := sortDesc;
+    2: FDataModel.Sorting := sortAscTotal;
+    3: FDataModel.Sorting := sortDescTotal;
   end;
   DoModified();
 end;
-}
+
 procedure TTableStatDialogStatisticOptionsView.EnterView();
 begin
-
+  FVerticalDivider.Left := ((Self.Width - FVerticalDivider.Width) div 2);
 end;
 
 function TTableStatDialogStatisticOptionsView.ExitView(): boolean;
@@ -136,12 +144,11 @@ procedure TTableStatDialogStatisticOptionsView.ResetView();
 var i: Integer;
 begin
   FDataModel.StatisticTypes := [];
-//  FDataModel.TableSort := sortName;
-
+  FDataModel.Sorting := sortAsc;
   for i := 0 to FStatisticsGroup.Items.Count - 1 do
     FStatisticsGroup.Checked[i] := false;
 
-//  FSortResultsGroup.ItemIndex := 0;
+  FSortingGroup.ItemIndex := 0;
 end;
 
 procedure TTableStatDialogStatisticOptionsView.SetModel(

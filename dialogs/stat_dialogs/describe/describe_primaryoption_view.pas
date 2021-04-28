@@ -134,7 +134,7 @@ end;
 
 function TDescribeStatPrimaryOptionsView.GetViewCaption(): UTF8String;
 begin
-  result := 'Options';
+  result := 'Label options';
 end;
 
 function TDescribeStatPrimaryOptionsView.IsDefined(): boolean;

@@ -33,10 +33,8 @@ type
   TStatisticTypes  = set of TStatisticType ;
   TAttackRateType  = (pAR, pEN);
   TAttackRateTypes = set of TAttackRateType ;
-  TIncludeType     = (pInclude);
-  TIncludeTypes    = set of TIncludeType ;
-
-  TTableSort = (sortName, sortLabel, sortStatistic);
+  TSorting         = (sortAsc, sortDesc, sortAscTotal, sortDescTotal);
+  TOutputSort      = (sortName, sortLabel, sortStatistic);
 
   { TCtableStatDialogStatisticOptionsModel }
 
@@ -44,12 +42,12 @@ type
   private
     FStatisticTypes: TStatisticTypes;
     FAttackRateTypes: TAttackRateTypes;
-    FIncludeTypes:    TIncludeTypes;
-    FTableSort: TTableSort;
+    FSorting: TSorting;
+    FOutputSort: TOutputSort;
     procedure SetStatistics(AValue: TStatisticTypes);
     procedure SetAttackRate(AValue: TAttackRateTypes);
-    procedure SetInclude(AValue: TIncludeTypes);
-    procedure SetTableSort(AValue: TTableSort);
+    procedure SetSorting(AValue: TSorting);
+    procedure SetOutputSort(AValue: TOutputSort);
 
   public
     constructor Create();
@@ -58,8 +56,8 @@ type
   public
     property StatisticTypes: TStatisticTypes read FStatisticTypes write SetStatistics;
     property AttackRateTypes: TAttackRateTypes read FAttackRateTypes write SetAttackRate;
-    property IncludeTypes: TIncludeTypes read FIncludeTypes write SetInclude;
-    property TableSort: TTableSort read FTableSort write SetTableSort;
+    property Sorting: TSorting read FSorting write SetSorting;
+    property OutputSort: TOutputSort read FOutputSort write SetOutputSort;
   end;
 
 
@@ -87,24 +85,32 @@ begin
   FAttackRateTypes := AValue;
 end;
 
-procedure TCtableStatDialogStatisticOptionsModel.SetInclude(AValue: TIncludeTypes);
+procedure TCtableStatDialogStatisticOptionsModel.SetSorting(AValue: TSorting);
 begin
-  if FIncludeTypes = AValue then Exit;
-  FIncludeTypes := AValue;
+  if FSorting = AValue then Exit;
+  FSorting := AValue;
 end;
 
-procedure TCtableStatDialogStatisticOptionsModel.SetTableSort(AValue: TTableSort);
+procedure TCtableStatDialogStatisticOptionsModel.SetOutputSort(AValue: TOutputSort);
 begin
-  if FTableSort = AValue then Exit;
-  FTableSort := AValue;
+  if FOutputSort = AValue then Exit;
+  FOutputSort := AValue;
 end;
-
 
 function TCtableStatDialogStatisticOptionsModel.GenerateScript(): UTF8String;
 begin
   Result := '';
 
-  case FTableSort of
+  case FSorting of
+    sortAsc:       Result += '!sa';
+    sortDesc:      Result += '!sd';
+    sortAscTotal:  Result += '!scta !srta';
+    sortDescTotal: Result += '!sctd !srtd';
+  end;
+
+  result += ' ';
+
+  case FOutputSort of
     sortName:      Result += '!sn ';
     sortLabel:     Result += '!sl ';
     sortStatistic: Result += '!ss ';
@@ -117,8 +123,6 @@ begin
 
   if (pAR  in FAttackRateTypes) then Result += '!ar ';
   if (pEN  in FAttackRateTypes) then Result += '!en ';
-
-  if (pInclude in FIncludeTypes) then Result += '!inc ';
 
   Result := UTF8Trim(Result);
 end;

@@ -18,16 +18,16 @@ type
     FDataModel: TCtableStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FPercentGroup: TCheckGroup;
-    FSortingGroup: TRadioGroup;
+    FIncludeGroup:    TCheckGroup;
     FValueLabelsGroup: TRadioGroup;
     FVariableLabelsGroup: TRadioGroup;
     FVerticalDivider: TBevel;
     procedure CreateValueLabelsRadios(RadioGroup: TRadioGroup);
     procedure CreateVariableLabelsRadios(RadioGroup: TRadioGroup);
     procedure CreatePercentCheckboxes(CheckGroup: TCheckGroup);
-    procedure CreateSortingRadios(RadioGroup: TRadioGroup);
+    procedure CreateIncludeCheckboxes(CheckGroup: TCheckGroup);
     procedure PercentageItemChecked(Sender: TObject; Index: integer);
-    procedure SortingSelectionChanged(Sender: TObject);
+    procedure IncludeItemChecked(Sender: TObject; Index: integer);
     procedure ValueLabelSelectionChanged(Sender: TObject);
     procedure VariableLabelSelectionChanged(Sender: TObject);
   public
@@ -78,15 +78,10 @@ begin
   CheckGroup.OnItemClick := @PercentageItemChecked;
 end;
 
-procedure TCtableStatPrimaryOptionsView.CreateSortingRadios(
-  RadioGroup: TRadioGroup);
+procedure TCtableStatPrimaryOptionsView.CreateIncludeCheckboxes(CheckGroup: TCheckGroup);
 begin
-  RadioGroup.Items.Add('Ascending');
-  RadioGroup.Items.Add('Descending');
-  RadioGroup.Items.Add('Totals Ascending');
-  RadioGroup.Items.Add('Totals Descending');
-  RadioGroup.ItemIndex := 0;
-  RadioGroup.OnSelectionChanged := @SortingSelectionChanged;
+  CheckGroup.Items.Add('Include tables that are not 2x2');
+  CheckGroup.OnItemClick := @IncludeItemChecked;
 end;
 
 procedure TCtableStatPrimaryOptionsView.PercentageItemChecked(Sender: TObject;
@@ -105,17 +100,6 @@ begin
   else
     FDataModel.Percentages := FDataModel.Percentages - NewState;
 
-  DoModified();
-end;
-
-procedure TCtableStatPrimaryOptionsView.SortingSelectionChanged(Sender: TObject);
-begin
-  case TRadioGroup(Sender).ItemIndex of
-    0: FDataModel.Sorting := sortAsc;
-    1: FDataModel.Sorting := sortDesc;
-    2: FDataModel.Sorting := sortAscTotal;
-    3: FDataModel.Sorting := sortDescTotal;
-  end;
   DoModified();
 end;
 
@@ -142,6 +126,21 @@ begin
   DoModified();
 end;
 
+procedure TCtableStatPrimaryOptionsView.IncludeItemChecked(Sender: TObject; Index: integer);
+var
+  NewState: TIncludeTypes;
+begin
+  case Index of
+    0: NewState := [pInclude];
+  end;
+
+  if (TCheckGroup(Sender).Checked[Index]) then
+    FDataModel.IncludeTypes := FDataModel.IncludeTypes + NewState
+  else
+    FDataModel.IncludeTypes := FDataModel.IncludeTypes - NewState;
+  DoModified();
+end;
+
 constructor TCtableStatPrimaryOptionsView.Create(TheOwner: TComponent);
 var
   CheckBox: TCheckBox;
@@ -152,7 +151,7 @@ begin
   FValueLabelsGroup := TRadioGroup.Create(self);
   FVariableLabelsGroup := TRadioGroup.Create(self);
   FPercentGroup := TCheckGroup.Create(self);
-  FSortingGroup := TRadioGroup.Create(self);
+  FIncludeGroup     := TCheckGroup.Create(self);
 
   FHorizontalDivider := TBevel.Create(self);
   FHorizontalDivider.Parent := self;
@@ -196,18 +195,18 @@ begin
   FPercentGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
   FPercentGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
 
-  FSortingGroup.Parent := self;
-  FSortingGroup.Caption := 'Sorting';
-  FSortingGroup.Anchors := [];
-  FSortingGroup.AnchorParallel(akRight, 5, self);
-  FSortingGroup.AnchorParallel(akBottom, 5, Self);
-  FSortingGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
-  FSortingGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
+  FIncludeGroup.Parent := self;
+  FIncludeGroup.Caption := 'Include non 2x2 tables';
+  FIncludeGroup.Anchors := [];
+  FIncludeGroup.AnchorParallel(akRight, 5, Self);
+  FIncludeGroup.AnchorParallel(akBottom, 5, self);
+  FIncludeGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
+  FIncludeGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
 
   CreateValueLabelsRadios(FValueLabelsGroup);
   CreateVariableLabelsRadios(FVariableLabelsGroup);
   CreatePercentCheckboxes(FPercentGroup);
-  CreateSortingRadios(FSortingGroup);
+  CreateIncludeCheckBoxes(FIncludeGroup);
 end;
 
 procedure TCtableStatPrimaryOptionsView.EnterView();
@@ -236,14 +235,13 @@ var
   i: Integer;
 begin
   FDataModel.Percentages := [];
-  FDataModel.Sorting := sortAsc;
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
+  FDataModel.IncludeTypes := [];
 
   for i := 0 to FPercentGroup.Items.Count - 1 do
     FPercentGroup.Checked[i] := false;
 
-  FSortingGroup.ItemIndex := 0;
   FValueLabelsGroup.ItemIndex := 1;
   FVariableLabelsGroup.ItemIndex := 1;
 end;

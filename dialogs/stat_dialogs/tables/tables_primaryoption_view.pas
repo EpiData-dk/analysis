@@ -18,16 +18,13 @@ type
     FDataModel: TTableStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FPercentGroup: TCheckGroup;
-    FSortingGroup: TRadioGroup;
     FValueLabelsGroup: TRadioGroup;
     FVariableLabelsGroup: TRadioGroup;
     FVerticalDivider: TBevel;
     procedure CreateValueLabelsRadios(RadioGroup: TRadioGroup);
     procedure CreateVariableLabelsRadios(RadioGroup: TRadioGroup);
     procedure CreatePercentCheckboxes(CheckGroup: TCheckGroup);
-    procedure CreateSortingRadios(RadioGroup: TRadioGroup);
     procedure PercentageItemChecked(Sender: TObject; Index: integer);
-    procedure SortingSelectionChanged(Sender: TObject);
     procedure ValueLabelSelectionChanged(Sender: TObject);
     procedure VariableLabelSelectionChanged(Sender: TObject);
   public
@@ -78,17 +75,6 @@ begin
   CheckGroup.OnItemClick := @PercentageItemChecked;
 end;
 
-procedure TTableStatPrimaryOptionsView.CreateSortingRadios(
-  RadioGroup: TRadioGroup);
-begin
-  RadioGroup.Items.Add('Ascending');
-  RadioGroup.Items.Add('Descending');
-  RadioGroup.Items.Add('Totals Ascending');
-  RadioGroup.Items.Add('Totals Descending');
-  RadioGroup.ItemIndex := 0;
-  RadioGroup.OnSelectionChanged := @SortingSelectionChanged;
-end;
-
 procedure TTableStatPrimaryOptionsView.PercentageItemChecked(Sender: TObject;
   Index: integer);
 var
@@ -105,17 +91,6 @@ begin
   else
     FDataModel.Percentages := FDataModel.Percentages - NewState;
 
-  DoModified();
-end;
-
-procedure TTableStatPrimaryOptionsView.SortingSelectionChanged(Sender: TObject);
-begin
-  case TRadioGroup(Sender).ItemIndex of
-    0: FDataModel.Sorting := sortAsc;
-    1: FDataModel.Sorting := sortDesc;
-    2: FDataModel.Sorting := sortAscTotal;
-    3: FDataModel.Sorting := sortDescTotal;
-  end;
   DoModified();
 end;
 
@@ -152,7 +127,6 @@ begin
   FValueLabelsGroup := TRadioGroup.Create(self);
   FVariableLabelsGroup := TRadioGroup.Create(self);
   FPercentGroup := TCheckGroup.Create(self);
-  FSortingGroup := TRadioGroup.Create(self);
 
   FHorizontalDivider := TBevel.Create(self);
   FHorizontalDivider.Parent := self;
@@ -196,18 +170,9 @@ begin
   FPercentGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
   FPercentGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
 
-  FSortingGroup.Parent := self;
-  FSortingGroup.Caption := 'Sorting';
-  FSortingGroup.Anchors := [];
-  FSortingGroup.AnchorParallel(akRight, 5, self);
-  FSortingGroup.AnchorParallel(akBottom, 5, Self);
-  FSortingGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
-  FSortingGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
-
   CreateValueLabelsRadios(FValueLabelsGroup);
   CreateVariableLabelsRadios(FVariableLabelsGroup);
   CreatePercentCheckboxes(FPercentGroup);
-  CreateSortingRadios(FSortingGroup);
 end;
 
 procedure TTableStatPrimaryOptionsView.EnterView();
@@ -236,14 +201,12 @@ var
   i: Integer;
 begin
   FDataModel.Percentages := [];
-  FDataModel.Sorting := sortAsc;
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
 
   for i := 0 to FPercentGroup.Items.Count - 1 do
     FPercentGroup.Checked[i] := false;
 
-  FSortingGroup.ItemIndex := 0;
   FValueLabelsGroup.ItemIndex := 1;
   FVariableLabelsGroup.ItemIndex := 1;
 end;
