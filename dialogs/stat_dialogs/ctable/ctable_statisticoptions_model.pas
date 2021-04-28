@@ -3,12 +3,12 @@ unit ctable_statisticoptions_model;
 {$mode objfpc}{$H+}
 
 interface
-// JH comment - remove this
+
 {
  Valid options
 
 Data and output:
-!m   : Include observations with missing data (.) (se variables tab?)
+!m   : Include observations with missing data (do not use)
 !w := <variable> : Use number of observations in the variable as frequency weight (see variables tab)
 
 Estimation and testing:

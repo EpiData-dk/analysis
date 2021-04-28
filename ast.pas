@@ -2262,7 +2262,7 @@ begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('m',   [rtUndefined]);
   Result.Insert('cum', [rtUndefined]);
-  Result.Insert('pr',  [rtUndefined]);
+  Result.Insert('pc',  [rtUndefined]);
   Result.Insert('ci',  [rtUndefined]);
   Result.Insert('q',   [rtUndefined]);
   AddDecimalOptions(Result);

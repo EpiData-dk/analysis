@@ -8,7 +8,7 @@ interface
  Valid options
 
 Data and output:
-!m   : Include observations with missing data (.) (se variables tab?)
+!m   : Include observations with missing data (.)
 !w := <variable> : Use number of observations in the variable as frequency weight (see variables tab)
 
 Estimation and testing:
@@ -16,10 +16,6 @@ Estimation and testing:
 !ex  : Fisher Exact test for 2x2 tables only
 !odds: Odds Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data
 !rr  : Risk Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data
-
-Attack rate table
-!ar  : Show unstratified 2x2 tables, attack rates and risk ratios
-!en  : Show unstratified 2x2 tables
 
 }
 uses

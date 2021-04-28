@@ -18,6 +18,7 @@ type
     FDataModel: TTableStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FPercentGroup: TCheckGroup;
+    FOtherGroup: TCheckGroup;
     FValueLabelsGroup: TRadioGroup;
     FVariableLabelsGroup: TRadioGroup;
     FVerticalDivider: TBevel;
@@ -25,6 +26,7 @@ type
     procedure CreateVariableLabelsRadios(RadioGroup: TRadioGroup);
     procedure CreatePercentCheckboxes(CheckGroup: TCheckGroup);
     procedure PercentageItemChecked(Sender: TObject; Index: integer);
+    procedure OtherGroupItemCheck(Sender: TObject; Index: integer);
     procedure ValueLabelSelectionChanged(Sender: TObject);
     procedure VariableLabelSelectionChanged(Sender: TObject);
   public
@@ -117,6 +119,16 @@ begin
   DoModified();
 end;
 
+procedure TTableStatPrimaryOptionsView.OtherGroupItemCheck(Sender: TObject;
+  Index: integer);
+begin
+  case Index of
+    0: FDataModel.ShowMissing := TCheckGroup(Sender).Checked[Index];
+  end;
+
+  DoModified();
+end;
+
 constructor TTableStatPrimaryOptionsView.Create(TheOwner: TComponent);
 var
   CheckBox: TCheckBox;
@@ -124,9 +136,10 @@ var
 begin
   inherited Create(TheOwner);
 
-  FValueLabelsGroup := TRadioGroup.Create(self);
+  FValueLabelsGroup    := TRadioGroup.Create(self);
   FVariableLabelsGroup := TRadioGroup.Create(self);
-  FPercentGroup := TCheckGroup.Create(self);
+  FPercentGroup        := TCheckGroup.Create(self);
+  FOtherGroup          := TCheckGroup.Create(self);
 
   FHorizontalDivider := TBevel.Create(self);
   FHorizontalDivider.Parent := self;
@@ -170,6 +183,16 @@ begin
   FPercentGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
   FPercentGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
 
+  FOtherGroup.Parent := self;
+  FOtherGroup.Anchors := [];
+  FOtherGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
+  FOtherGroup.AnchorParallel(akBottom, 5, Self);
+  FOtherGroup.AnchorParallel(akLeft, 5, FVerticalDivider);
+  FOtherGroup.AnchorParallel(akRight, 5, Self);
+  FOtherGroup.Caption := 'Other';
+  FOtherGroup.Items.Add('Show Missing');
+  FOtherGroup.OnItemClick := @OtherGroupItemCheck;
+
   CreateValueLabelsRadios(FValueLabelsGroup);
   CreateVariableLabelsRadios(FVariableLabelsGroup);
   CreatePercentCheckboxes(FPercentGroup);
@@ -200,12 +223,16 @@ procedure TTableStatPrimaryOptionsView.ResetView();
 var
   i: Integer;
 begin
-  FDataModel.Percentages := [];
-  FDataModel.ValueLabelType := gvtLabel;
+  FDataModel.Percentages       := [];
+  FDataModel.ValueLabelType    := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
+  FDataModel.ShowMissing       := false;
 
   for i := 0 to FPercentGroup.Items.Count - 1 do
     FPercentGroup.Checked[i] := false;
+
+  for i := 0 to FOtherGroup.Items.Count - 1 do
+    FOtherGroup.Checked[i] := false;
 
   FValueLabelsGroup.ItemIndex := 1;
   FVariableLabelsGroup.ItemIndex := 1;

@@ -78,7 +78,7 @@ begin
   FPercentageGroup.AnchorParallel(akRight, 5, Self);
   FPercentageGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
   FPercentageGroup.Caption := 'Percentages';
-  FPercentageGroup.Items.Add('Row');
+  FPercentageGroup.Items.Add('Column');
   FPercentageGroup.Items.Add('Cumulative');
   FPercentageGroup.OnItemClick := @PercentageGroupClick;
 

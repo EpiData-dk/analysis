@@ -64,7 +64,7 @@ function TFreqMainOptionsModel.GenerateScript(): UTF8String;
 begin
   Result := '';
 
-  if (ShowRowPercentage) then result += '!pr ';
+  if (ShowRowPercentage) then result += '!pc ';
   if (ShowCumulativePercentage) then result += '!cum ';
   if (ShowMissing) then result += '!m ';
   if (ShowConfidenceInterval) then result += '!ci ';

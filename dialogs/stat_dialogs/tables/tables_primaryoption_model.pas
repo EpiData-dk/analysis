@@ -19,9 +19,11 @@ type
      FPercentages: TPercentages;
      FValueLabelType: TEpiGetValueLabelType;
      FVariableLabelType: TEpiGetVariableLabelType;
+     FShowMissing: boolean;
      procedure SetPercentages(AValue: TPercentages);
      procedure SetValueLabelType(AValue: TEpiGetValueLabelType);
      procedure SetVariableLabelType(AValue: TEpiGetVariableLabelType);
+     procedure SetShowMissing(AValue: boolean);
    public
      constructor Create();
      function GenerateScript(): UTF8String;
@@ -30,6 +32,7 @@ type
      property VariableLabelType: TEpiGetVariableLabelType read FVariableLabelType write SetVariableLabelType;
      property ValueLabelType: TEpiGetValueLabelType read FValueLabelType write SetValueLabelType;
      property Percentages: TPercentages read FPercentages write SetPercentages;
+     property ShowMissing: boolean read FShowMissing write SetShowMissing;
    end;
 
 
@@ -61,6 +64,12 @@ begin
   FVariableLabelType := AValue;
 end;
 
+procedure TTableStatDialogPrimaryOptionModel.SetShowMissing(AValue: boolean);
+begin
+  if FShowMissing = AValue then Exit;
+  FShowMissing := AValue;
+end;
+
 constructor TTableStatDialogPrimaryOptionModel.Create();
 begin
   //
@@ -71,28 +80,25 @@ begin
   Result := '';
 
   case FValueLabelType of
-    gvtValue:      Result += '!v';
-    gvtLabel:      Result += '!l';
-    gvtValueLabel: Result += '!vl';
-    gvtLabelValue: Result += '!lv';
+    gvtValue:      Result += '!v ';
+    gvtLabel:      Result += '!l ';
+    gvtValueLabel: Result += '!vl ';
+    gvtLabelValue: Result += '!lv ';
   end;
-
-  result += ' ';
 
   case FVariableLabelType of
-    gvtVarName:      Result += '!vn';
-    gvtVarLabel:     Result += '!vla';
-    gvtVarNameLabel: Result += '!vnl';
-    gvtVarLabelName: Result += '!vln';
+    gvtVarName:      Result += '!vn ';
+    gvtVarLabel:     Result += '!vla ';
+    gvtVarNameLabel: Result += '!vnl ';
+    gvtVarLabelName: Result += '!vln ';
   end;
-
-  result += ' ';
 
   if (pCol   in FPercentages) then Result += '!pc ';
   if (pRow   in FPercentages) then Result += '!pr ';
   if (pTotal in FPercentages) then Result += '!pt ';
 
-  Result := UTF8Trim(Result);
+  if (FShowMissing) then result += '!m ';
+
 end;
 
 function TTableStatDialogPrimaryOptionModel.IsDefined(): boolean;
