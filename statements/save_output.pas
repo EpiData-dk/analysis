@@ -78,6 +78,19 @@ begin
       SD.Options := aDM.SaveDialog1.Options;
       SD.InitialDir := aDM.SaveDialog1.InitialDir;
 
+      case OutputType of
+        'html':
+          begin
+            SD.Filter := 'HTML Output (*.html)|*.html';
+            SD.DefaultExt := '.html';
+          end;
+        'text':
+          begin
+            SD.Filter := 'Text Output (*.txt)|*.txt';
+            SD.DefaultExt := '.txt';
+          end;
+      end;
+
       if (not SD.Execute) then
         begin
           FOutputCreator.DoInfoAll('Save cancelled');
