@@ -17,16 +17,13 @@ type
     FOnModified: IStatDiaglogViewModified;
     FDataModel: TCtableStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
-    FPercentGroup: TCheckGroup;
     FIncludeGroup:    TCheckGroup;
     FValueLabelsGroup: TRadioGroup;
     FVariableLabelsGroup: TRadioGroup;
     FVerticalDivider: TBevel;
     procedure CreateValueLabelsRadios(RadioGroup: TRadioGroup);
     procedure CreateVariableLabelsRadios(RadioGroup: TRadioGroup);
-    procedure CreatePercentCheckboxes(CheckGroup: TCheckGroup);
     procedure CreateIncludeCheckboxes(CheckGroup: TCheckGroup);
-    procedure PercentageItemChecked(Sender: TObject; Index: integer);
     procedure IncludeItemChecked(Sender: TObject; Index: integer);
     procedure ValueLabelSelectionChanged(Sender: TObject);
     procedure VariableLabelSelectionChanged(Sender: TObject);
@@ -69,38 +66,10 @@ begin
   RadioGroup.OnSelectionChanged := @VariableLabelSelectionChanged;
 end;
 
-procedure TCtableStatPrimaryOptionsView.CreatePercentCheckboxes(
-  CheckGroup: TCheckGroup);
-begin
-  CheckGroup.Items.Add('Row');
-  CheckGroup.Items.Add('Column');
-  CheckGroup.Items.Add('Total');
-  CheckGroup.OnItemClick := @PercentageItemChecked;
-end;
-
 procedure TCtableStatPrimaryOptionsView.CreateIncludeCheckboxes(CheckGroup: TCheckGroup);
 begin
   CheckGroup.Items.Add('Include tables that are not 2x2');
   CheckGroup.OnItemClick := @IncludeItemChecked;
-end;
-
-procedure TCtableStatPrimaryOptionsView.PercentageItemChecked(Sender: TObject;
-  Index: integer);
-var
-  NewState: TPercentages;
-begin
-  case Index of
-    0: NewState := [pRow];
-    1: NewState := [pCol];
-    2: NewState := [pTotal];
-  end;
-
-  if (TCheckGroup(Sender).Checked[Index]) then
-    FDataModel.Percentages := FDataModel.Percentages + NewState
-  else
-    FDataModel.Percentages := FDataModel.Percentages - NewState;
-
-  DoModified();
 end;
 
 procedure TCtableStatPrimaryOptionsView.ValueLabelSelectionChanged(Sender: TObject);
@@ -150,7 +119,7 @@ begin
 
   FValueLabelsGroup := TRadioGroup.Create(self);
   FVariableLabelsGroup := TRadioGroup.Create(self);
-  FPercentGroup := TCheckGroup.Create(self);
+//  FPercentGroup := TCheckGroup.Create(self);
   FIncludeGroup     := TCheckGroup.Create(self);
 
   FHorizontalDivider := TBevel.Create(self);
@@ -187,25 +156,16 @@ begin
   FVariableLabelsGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
   FVariableLabelsGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
 
-  FPercentGroup.Parent := self;
-  FPercentGroup.Caption := 'Percents';
-  FPercentGroup.Anchors := [];
-  FPercentGroup.AnchorParallel(akLeft, 5, self);
-  FPercentGroup.AnchorParallel(akBottom, 5, Self);
-  FPercentGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
-  FPercentGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
-
   FIncludeGroup.Parent := self;
   FIncludeGroup.Caption := 'Include non 2x2 tables';
   FIncludeGroup.Anchors := [];
-  FIncludeGroup.AnchorParallel(akRight, 5, Self);
+  FIncludeGroup.AnchorParallel(akLeft, 5, Self);
   FIncludeGroup.AnchorParallel(akBottom, 5, self);
   FIncludeGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
-  FIncludeGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
+  FIncludeGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
 
   CreateValueLabelsRadios(FValueLabelsGroup);
   CreateVariableLabelsRadios(FVariableLabelsGroup);
-  CreatePercentCheckboxes(FPercentGroup);
   CreateIncludeCheckBoxes(FIncludeGroup);
 end;
 
@@ -234,13 +194,9 @@ procedure TCtableStatPrimaryOptionsView.ResetView();
 var
   i: Integer;
 begin
-  FDataModel.Percentages := [];
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
   FDataModel.IncludeTypes := [];
-
-  for i := 0 to FPercentGroup.Items.Count - 1 do
-    FPercentGroup.Checked[i] := false;
 
   FValueLabelsGroup.ItemIndex := 1;
   FVariableLabelsGroup.ItemIndex := 1;

@@ -110,6 +110,7 @@ begin
   CreateFreqCheckBoxes(FFreqGroup);
   CreateRangeCheckBoxes(FRangeGroup);
   CreateOtherCheckboxes(FOtherGroup);
+
 end;
 
 procedure TDescribeStatisticOptionsView.CreateMeansCheckboxes(CheckGroup: TCheckGroup);
@@ -140,6 +141,8 @@ begin
   CheckGroup.Items.Add('missing value count');
   CheckGroup.Items.Add('one row per variable if possible');
   CheckGroup.OnItemClick := @OtherItemChecked;
+  CheckGroup.Checked[1] := true;  // default to pCT on startup
+
 end;
 
 procedure TDescribeStatisticOptionsView.MeansItemChecked(Sender: TObject; Index: integer);
@@ -233,7 +236,7 @@ var i: Integer;
 begin
   FDataModel.MeanTypes := [];
   FDataModel.FreqTypes := [];
-  FDataModel.OtherTypes := [];
+  FDataModel.OtherTypes := [pCT];
   FDataModel.RangeTypes := [];
 
   for i := 0 to FMeansGroup.Items.Count - 1 do
@@ -243,10 +246,10 @@ begin
     FFreqGroup.Checked[i] := false;
 
   for i := 0 to FRangeGroup.Items.Count - 1 do
-    FRangeGroup.Checked[i] := false;
+    FRangeGroup.Checked[0] := false;
 
-  for i := 0 to FOtherGroup.Items.Count - 1 do
-    FOtherGroup.Checked[i] := false;
+  FOtherGroup.Checked[0] := false;
+  FOtherGroup.Checked[1] := true;  // default to pCT on reset
 end;
 
 procedure TDescribeStatisticOptionsView.SetModel(

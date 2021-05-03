@@ -9,8 +9,6 @@ uses
 
 type
 
-   TPercentage = (pRow, pCol, pTotal);
-   TPercentages = set of TPercentage;
    TIncludeType     = (pInclude);
    TIncludeTypes    = set of TIncludeType ;
 
@@ -18,11 +16,9 @@ type
 
    TCtableStatDialogPrimaryOptionModel = class(IStatDialogModel)
    private
-     FPercentages: TPercentages;
      FValueLabelType: TEpiGetValueLabelType;
      FVariableLabelType: TEpiGetVariableLabelType;
      FIncludeTypes:    TIncludeTypes;
-     procedure SetPercentages(AValue: TPercentages);
      procedure SetValueLabelType(AValue: TEpiGetValueLabelType);
      procedure SetVariableLabelType(AValue: TEpiGetVariableLabelType);
      procedure SetInclude(AValue: TIncludeTypes);
@@ -33,7 +29,6 @@ type
    public
      property VariableLabelType: TEpiGetVariableLabelType read FVariableLabelType write SetVariableLabelType;
      property ValueLabelType: TEpiGetValueLabelType read FValueLabelType write SetValueLabelType;
-     property Percentages: TPercentages read FPercentages write SetPercentages;
      property IncludeTypes: TIncludeTypes read FIncludeTypes write SetInclude;
    end;
 
@@ -44,13 +39,6 @@ uses
   LazUTF8;
 
 { TCtableStatDialogPrimaryOptionModel }
-
-procedure TCtableStatDialogPrimaryOptionModel.SetPercentages(AValue: TPercentages
-  );
-begin
-  if FPercentages = AValue then Exit;
-  FPercentages := AValue;
-end;
 
 procedure TCtableStatDialogPrimaryOptionModel.SetValueLabelType(
   AValue: TEpiGetValueLabelType);
@@ -96,12 +84,6 @@ begin
     gvtVarNameLabel: Result += '!vnl';
     gvtVarLabelName: Result += '!vln';
   end;
-
-  result += ' ';
-
-  if (pCol   in FPercentages) then Result += '!pc ';
-  if (pRow   in FPercentages) then Result += '!pr ';
-  if (pTotal in FPercentages) then Result += '!pt ';
 
   if (pInclude in FIncludeTypes) then Result += '!inc ';
 
