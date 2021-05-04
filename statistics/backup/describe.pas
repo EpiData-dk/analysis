@@ -221,14 +221,7 @@ begin
     'rm',
     'iqr',
     'idr':
-      begin
-        if not (ST.HasOption('ct')) then
-        begin
-          FOneTable := false;
-          FRowsPerVar := 2;   // default number of rows for a single table per var
-        end;
-        aStatsOption := true;
-      end;
+         aStatsOption := true;
     'fb',
     'fh',
     'fl' :
@@ -237,6 +230,11 @@ begin
         FFreqTable := true;
         FRowsPerVar := 2;
         aFreqOption := true;
+      end;
+    'st' :
+      begin
+        FOneTable := false;
+        FRowsPerVar := 2;   // default number of rows for a single table per var
       end;
   end;
 
@@ -434,8 +432,8 @@ begin
   if (DoMeans) then with FMeansData do
   begin
     if (Fsum.Show)    then T.Cell[Fsum.Col,   RowIdx + Fsum.Row   ].Text := Format(FStatFmt, [Sum.AsFloat[0]]);
-    if (Fmean.Show)   then T.Cell[Fmean.Col,  RowIdx + Fmean.Row  ].Text := Format(FStatFmt, [Mean.AsFloat[0]]);
-    if (Fsd.Show)     then T.Cell[Fsd.Col,    RowIdx + Fsd.Row    ].Text := StatFloatDisplay(FStatFmt, StdDev.AsFloat[0]);
+    if (Fmean.Show)   then T.Cell[Fmean.Col,  RowIdx + Fmean.Row  ].Text := trim(Format(FStatFmt, [Mean.AsFloat[0]]));
+    if (Fsd.Show)     then T.Cell[Fsd.Col,    RowIdx + Fsd.Row    ].Text := trim(StatFloatDisplay(FStatFmt, StdDev.AsFloat[0]));
     if (Fcfih.Show)   then T.Cell[Fcfih.Col,  RowIdx + Fcfih.Row  ].Text := trim(StatFloatDisplay(FStatFmt, Cfih.AsFloat[0])) + ']';
     if (Fcfil.Show)   then T.Cell[Fcfil.Col,  RowIdx + Fcfil.Row  ].Text := '[' + trim(StatFloatDisplay(FStatFmt, Cfil.AsFloat[0]));
     if (Fmin.Show)    then T.Cell[Fmin.Col,   RowIdx + Fmin.Row   ].Text := Format(FStatFmt, [Min.AsFloat[0]]);

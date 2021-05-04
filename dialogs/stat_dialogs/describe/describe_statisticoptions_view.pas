@@ -139,9 +139,9 @@ end;
 procedure TDescribeStatisticOptionsView.CreateOtherCheckboxes(CheckGroup: TCheckGroup);
 begin
   CheckGroup.Items.Add('missing value count');
-  CheckGroup.Items.Add('one row per variable if possible');
+  CheckGroup.Items.Add('results in separate tables');
   CheckGroup.OnItemClick := @OtherItemChecked;
-  CheckGroup.Checked[1] := true;  // default to pCT on startup
+//  CheckGroup.Checked[1] := true;  // default to pCT on startup
 
 end;
 
@@ -199,8 +199,8 @@ var
   NewState: TOtherTypes;
 begin
   case Index of
-    1: NewState := [pCT];
     0: NewState := [pMissing];
+    1: NewState := [pST];
   end;
 
     if (TCheckGroup(Sender).Checked[Index]) then
@@ -236,7 +236,7 @@ var i: Integer;
 begin
   FDataModel.MeanTypes := [];
   FDataModel.FreqTypes := [];
-  FDataModel.OtherTypes := [pCT];
+  FDataModel.OtherTypes := [];
   FDataModel.RangeTypes := [];
 
   for i := 0 to FMeansGroup.Items.Count - 1 do
@@ -248,8 +248,8 @@ begin
   for i := 0 to FRangeGroup.Items.Count - 1 do
     FRangeGroup.Checked[0] := false;
 
-  FOtherGroup.Checked[0] := false;
-  FOtherGroup.Checked[1] := true;  // default to pCT on reset
+  for i := 0 to FOtherGroup.Items.Count - 1 do
+    FOtherGroup.Checked[0] := false;
 end;
 
 procedure TDescribeStatisticOptionsView.SetModel(

@@ -20,8 +20,7 @@ interface
  !fb:   5 most frequent and 5 least frequent values
 
  !m:    number of missing values
- !ct:   force one row per variable when the above options are specified.
-        This will be ignored if one of !fh !fl !fb is specified.
+ !st:   force separate tables.
 }
 uses
   Classes, SysUtils, stat_dialog_contribution;
@@ -34,7 +33,7 @@ type
   TFreqTypes     = set of TFreqType ;
   TRangeType     = (pRM, pIDR, pIQR);
   TRangeTypes    = set of TRangeType;
-  TOtherType   = (pMissing, pCT);
+  TOtherType   = (pMissing, pST);
   TOtherTypes  = set of TOtherType;
 
   { TDescribeStatisticOptionsModel }
@@ -114,7 +113,7 @@ begin
   if (pIQR  in FRangeTypes) then Result += '!iqr ';
 
   if (pMissing  in FOtherTypes) then Result += '!m ';
-  if (pCT in FOtherTypes) then Result += '!ct ';
+  if (pST in FOtherTypes) then Result += '!st ';
 
   Result := UTF8Trim(Result);
 end;

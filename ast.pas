@@ -2297,7 +2297,7 @@ begin
   Result.Insert('fb',  [rtUndefined]);  // lowest and highest
   Result.Insert('pc',   [rtUndefined]); // show percent rather than counts
   Result.Insert('nf',  [rtUndefined]);  // no footer (not relevant)
-  Result.Insert('ct',  [rtUndefined]);  // force compact table
+  Result.Insert('st',  [rtUndefined]);  // force compact table
   AddDecimalOptions(Result);
   AddVariableLabelOptions(Result);
   AddValueLabelOptions(Result);

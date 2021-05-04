@@ -221,14 +221,7 @@ begin
     'rm',
     'iqr',
     'idr':
-      begin
-        if not (ST.HasOption('ct')) then
-        begin
-          FOneTable := false;
-          FRowsPerVar := 2;   // default number of rows for a single table per var
-        end;
-        aStatsOption := true;
-      end;
+         aStatsOption := true;
     'fb',
     'fh',
     'fl' :
@@ -238,11 +231,16 @@ begin
         FRowsPerVar := 2;
         aFreqOption := true;
       end;
+    'st' :
+      begin
+        FOneTable := false;
+        FRowsPerVar := 2;   // default number of rows for a single table per var
+      end;
   end;
 
   // set up output table
   result := FOutputCreator.AddTable;
-  result.RowCount := 1;
+  result.RowCount := FRowsPerVar; //1;
   result.ColCount := 0;
   Offset          := 0;
 
