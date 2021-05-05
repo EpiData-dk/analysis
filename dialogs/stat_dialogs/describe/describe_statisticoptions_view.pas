@@ -125,6 +125,7 @@ procedure TDescribeStatisticOptionsView.CreateFreqCheckboxes(CheckGroup: TCheckG
 begin
   CheckGroup.Items.Add('5 most frequent values');
   CheckGroup.Items.Add('5 least frequent values');
+  CheckGroup.Items.Add('show percent instead of frequency');
   CheckGroup.OnItemClick := @FreqItemChecked;
 end;
 
@@ -168,6 +169,7 @@ begin
   case Index of
     0: NewState := [pFH];
     1: NewState := [pFL];
+    2: NewState := [pPCT];
   end;
 
   if (TCheckGroup(Sender).Checked[Index]) then

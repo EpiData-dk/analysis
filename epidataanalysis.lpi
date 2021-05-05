@@ -15,9 +15,10 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="3"/>
       <MinorVersionNr Value="1"/>
-      <BuildNr Value="11"/>
+      <RevisionNr Value="1"/>
+      <BuildNr Value="1"/>
       <Attributes pvaSpecialBuild="True"/>
-      <StringTable SpecialBuild="TRUNK"/>
+      <StringTable SpecialBuild="SelectDialogs"/>
     </VersionInfo>
     <BuildModes Count="7">
       <Item1 Name="Default" Default="True"/>
@@ -898,10 +899,18 @@
         <IncludeAssertionCode Value="True"/>
       </SyntaxOptions>
     </Parsing>
+    <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
+      <Optimizations>
+        <OptimizationLevel Value="2"/>
+      </Optimizations>
+      <SmallerCode Value="True"/>
+    </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf2Set"/>
       </Debugging>
+      <LinkSmart Value="True"/>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>

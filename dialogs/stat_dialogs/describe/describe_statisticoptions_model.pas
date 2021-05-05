@@ -29,7 +29,7 @@ type
 
   TMeansType     = (pMSD, pMCI);
   TMeansTypes    = set of TMeansType ;
-  TFreqType      = (pFH, pFL);
+  TFreqType      = (pFH, pFL, pPCT);
   TFreqTypes     = set of TFreqType ;
   TRangeType     = (pRM, pIDR, pIQR);
   TRangeTypes    = set of TRangeType;
@@ -107,6 +107,7 @@ begin
 
   if (pFH  in FFreqTypes) then Result += '!fh ';
   if (pFL  in FFreqTypes) then Result += '!fl ';
+  if (pPCT in FFreqTypes) then Result += '!pc ';
 
   if (pRM   in FRangeTypes) then Result += '!rm ';
   if (pIDR  in FRangeTypes) then Result += '!idr ';

@@ -16,8 +16,6 @@ unit describe;
   The general approach is to call execfreq for each variable, call execmeans for numeric variables
   and then place certain results into a templated output table, or rows of a single output table.
 
-  freq and means are used to create result variables. As a consequence, all result variables
-  from the two commands are available to the user.
 }
 
 interface

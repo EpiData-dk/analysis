@@ -44,11 +44,10 @@
       <Unit4>
         <Filename Value="ast.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="6"/>
-        <TopLine Value="2269"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2268"/>
         <CursorPos X="19" Y="2300"/>
         <UsageCount Value="120"/>
-        <Loaded Value="True"/>
       </Unit4>
       <Unit5>
         <Filename Value="ast_types.pas"/>
@@ -118,11 +117,10 @@
       <Unit16>
         <Filename Value="output/outputcreator.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="8"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="327"/>
         <CursorPos Y="353"/>
         <UsageCount Value="120"/>
-        <Loaded Value="True"/>
       </Unit16>
       <Unit17>
         <Filename Value="output/outputgenerator_base.pas"/>
@@ -346,10 +344,9 @@
       <Unit57>
         <Filename Value="output/htmlviewer.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="9"/>
+        <EditorIndex Value="-1"/>
         <CursorPos X="6"/>
         <UsageCount Value="120"/>
-        <Loaded Value="True"/>
       </Unit57>
       <Unit58>
         <Filename Value="output/textviewer.pas"/>
@@ -490,12 +487,10 @@
       <Unit80>
         <Filename Value="statistics/describe.pas"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="7"/>
-        <TopLine Value="654"/>
-        <CursorPos Y="679"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="218"/>
+        <CursorPos X="26" Y="104"/>
         <UsageCount Value="120"/>
-        <Loaded Value="True"/>
       </Unit80>
       <Unit81>
         <Filename Value="commandtree/commandtree.pas"/>
@@ -866,16 +861,17 @@
         <Filename Value="dialogs/stat_dialogs/describe/describe_statisticoptions_model.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="4"/>
-        <CursorPos X="9" Y="116"/>
+        <CursorPos X="35" Y="32"/>
         <UsageCount Value="115"/>
         <Loaded Value="True"/>
       </Unit132>
       <Unit133>
         <Filename Value="dialogs/stat_dialogs/describe/describe_statisticoptions_view.pas"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="5"/>
-        <TopLine Value="74"/>
-        <CursorPos X="16" Y="252"/>
+        <TopLine Value="160"/>
+        <CursorPos Y="173"/>
         <UsageCount Value="113"/>
         <Loaded Value="True"/>
       </Unit133>
@@ -1088,128 +1084,7 @@
         <UsageCount Value="10"/>
       </Unit162>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
-      <Position1>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="282" TopLine="238"/>
-      </Position1>
-      <Position2>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="279" TopLine="238"/>
-      </Position2>
-      <Position3>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="281" TopLine="238"/>
-      </Position3>
-      <Position4>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="282" TopLine="238"/>
-      </Position4>
-      <Position5>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="279" TopLine="238"/>
-      </Position5>
-      <Position6>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="281" TopLine="238"/>
-      </Position6>
-      <Position7>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="282" TopLine="238"/>
-      </Position7>
-      <Position8>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="279" TopLine="238"/>
-      </Position8>
-      <Position9>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="281" TopLine="238"/>
-      </Position9>
-      <Position10>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="282" TopLine="238"/>
-      </Position10>
-      <Position11>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="279" TopLine="238"/>
-      </Position11>
-      <Position12>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="284" TopLine="240"/>
-      </Position12>
-      <Position13>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="373" TopLine="347"/>
-      </Position13>
-      <Position14>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="683" TopLine="657"/>
-      </Position14>
-      <Position15>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="684" TopLine="657"/>
-      </Position15>
-      <Position16>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="243" Column="37" TopLine="216"/>
-      </Position16>
-      <Position17>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="679" TopLine="361"/>
-      </Position17>
-      <Position18>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="681" TopLine="656"/>
-      </Position18>
-      <Position19>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="683" TopLine="656"/>
-      </Position19>
-      <Position20>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="684" TopLine="656"/>
-      </Position20>
-      <Position21>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="691" TopLine="656"/>
-      </Position21>
-      <Position22>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="692" TopLine="656"/>
-      </Position22>
-      <Position23>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="699" TopLine="656"/>
-      </Position23>
-      <Position24>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="700" TopLine="656"/>
-      </Position24>
-      <Position25>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="701" TopLine="657"/>
-      </Position25>
-      <Position26>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="703" TopLine="659"/>
-      </Position26>
-      <Position27>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="704" TopLine="660"/>
-      </Position27>
-      <Position28>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="646" TopLine="619"/>
-      </Position28>
-      <Position29>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="648" TopLine="619"/>
-      </Position29>
-      <Position30>
-        <Filename Value="statistics/describe.pas"/>
-        <Caret Line="649" TopLine="619"/>
-      </Position30>
-    </JumpHistory>
+    <JumpHistory HistoryIndex="-1"/>
     <RunParams>
       <FormatVersion Value="2"/>
       <Modes Count="0" ActiveMode="default"/>

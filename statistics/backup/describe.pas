@@ -240,7 +240,7 @@ begin
 
   // set up output table
   result := FOutputCreator.AddTable;
-  result.RowCount := 1;
+  result.RowCount := FRowsPerVar; //1;
   result.ColCount := 0;
   Offset          := 0;
 
