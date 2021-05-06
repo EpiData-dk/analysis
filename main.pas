@@ -14,6 +14,9 @@ uses
   epiopenfile, outputviewer_types, commandtree, history_form, varnames_form,
   projecttree_form, commandtree_form, stat_dialog_contribution, stat_dialog_action,
   script_runner, stat_dialog,
+  {$IFDEF DARWIN}
+  CFPreferences, CFString, CocoaAll,
+  {$ENDIF}
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -1976,6 +1979,11 @@ end;
 procedure TMainForm.ASyncRunStartup(Data: PtrInt);
 var
   Lst: TStringListUTF8;
+  {$IFDEF DARWIN}
+  PrefIsValid: Boolean;
+  Pref: Boolean;
+  PrefState: String;
+  {$ENDIF}
 begin
   if FileExistsUTF8(FStartupFile) then
     begin
@@ -1992,6 +2000,21 @@ begin
     InterfaceRunCommand('cls;');
 
   FOutputCreator.DoInfoAll(GetProgramInfo);
+
+  {$IFDEF DARWIN}
+  // get status of function keys from user preferences
+  Pref := CFPreferencesGetAppBooleanValue(
+          CFSTR('com.apple.keyboard.fnState'),
+          kCFPreferencesCurrentUser,PrefIsValid);
+  if PrefIsValid then
+      if Pref then PrefState := 'Function keys are ready for EpiData'
+      else PrefState := 'Use the [fn] key with function keys for EpiData'
+  else
+    PrefState := '[fn] key preference setting is unknown';
+  FOutputCreator.DoWarning('MacOS keyboard: ' + PrefState);
+  RedrawOutput;
+  {$ENDIF}
+
   FOutputCreator.DoNormal('');
 end;
 
