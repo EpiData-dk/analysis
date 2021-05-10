@@ -14,6 +14,9 @@ uses
   epiopenfile, outputviewer_types, commandtree, history_form, varnames_form,
   projecttree_form, commandtree_form, stat_dialog_contribution, stat_dialog_action,
   script_runner, stat_dialog,
+  {$IFDEF DARWIN}
+  CFPreferences, CFString, CocoaAll,
+  {$ENDIF}
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -26,6 +29,12 @@ type
   { TMainForm }
 
   TMainForm = class(TForm, IScriptMediator)
+    {$IFDEF DARWIN}
+      AppMenu     : TMenuItem;
+      AppAboutCmd : TMenuItem;
+      AppSep1Cmd  : TMenuItem;
+      AppPrefCmd  : TMenuItem;
+    {$ENDIF}
     AlwaysAvailableActionList: TActionList;
     CloseAllWindowsAction: TAction;
     ColorDialog1: TColorDialog;
@@ -444,6 +453,31 @@ end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+  {$IFDEF DARWIN}
+    AppMenu := TMenuItem.Create(Self);  {Application menu}
+    AppMenu.Caption := #$EF#$A3#$BF;  {Unicode Apple logo char}
+    MainMenu1.Items.Insert(0, AppMenu);
+
+    AppAboutCmd := TMenuItem.Create(Self);
+    AppAboutCmd.Caption := 'About ' + 'EpiData Analysis'; // BundleName;  //<== BundleName set elsewhere
+    AppAboutCmd.OnClick := @ShowAboutActionExecute;
+    AppMenu.Add(AppAboutCmd);  {Add About as item in application menu}
+
+    AppSep1Cmd := TMenuItem.Create(Self);
+    AppSep1Cmd.Caption := '-';
+    AppMenu.Add(AppSep1Cmd);
+
+    AppPrefCmd := TMenuItem.Create(Self);
+    AppPrefCmd.Caption := 'Preferences...';
+    AppPrefCmd.Shortcut := ShortCut(VK_OEM_COMMA, [ssMeta]);
+    AppPrefCmd.OnClick := @ShowEditorStartupActionExecute;  //<== "Options" on other platforms
+    AppMenu.Add(AppPrefCmd);
+  // remove duplicate menu items?
+    MainMenu1.Items[2].Remove(MenuItem41);   // preferences
+    MainMenu1.Items[6].Remove(MenuItem6);    // about
+    MainMenu1.Items[1].Remove(MenuItem8);    // quit
+
+  {$ENDIF}
   FLastCreatorCount := 0;
   FOutputCreator := TOutputCreator.Create;
   FOutputCreator.OnRedrawRequest := @OutputRedrawRequest;
@@ -1982,6 +2016,11 @@ end;
 procedure TMainForm.ASyncRunStartup(Data: PtrInt);
 var
   Lst: TStringListUTF8;
+  {$IFDEF DARWIN}
+  PrefIsValid: Boolean;
+  Pref: Boolean;
+  PrefState: String;
+  {$ENDIF}
 begin
   if FileExistsUTF8(FStartupFile) then
     begin
@@ -1998,6 +2037,21 @@ begin
     InterfaceRunCommand('cls;');
 
   FOutputCreator.DoInfoAll(GetProgramInfo);
+
+  {$IFDEF DARWIN}
+// get status of function keys from preferences
+  Pref := CFPreferencesGetAppBooleanValue(
+          CFSTR('com.apple.keyboard.fnState'),
+          kCFPreferencesCurrentUser,PrefIsValid);
+  if PrefIsValid then
+      if Pref then PrefState := 'Function keys are ready for EpiData'
+      else PrefState := 'Use the [fn] key with function keys for EpiData'
+  else
+    PrefState := '[fn] key preference setting is unknown';
+  FOutputCreator.DoWarning('MacOS keyboard: ' + PrefState);
+  RedrawOutput;
+  {$ENDIF}
+
   FOutputCreator.DoNormal('');
 end;
 
@@ -2161,11 +2215,7 @@ begin
   else
     S := '';
 
-  {$IFDEF DARWIN}
-  S := 'file://' + ResolveDots(ProgramDirectory + '../../../docs' + DirectorySeparator + 'commands.html' + S);
-  {$ELSE}
   S := 'file://' + Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER] + DirectorySeparator + 'commands.html' + S;
-  {$ENDIF}
   OpenURL(S);
 end;
 
