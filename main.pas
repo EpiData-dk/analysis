@@ -2178,11 +2178,7 @@ begin
   else
     S := '';
 
-  {$IFDEF DARWIN}
-  S := 'file://' + ResolveDots(ProgramDirectory + '../../../docs' + DirectorySeparator + 'commands.html' + S);
-  {$ELSE}
   S := 'file://' + Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER] + DirectorySeparator + 'commands.html' + S;
-  {$ENDIF}
   OpenURL(S);
 end;
 
