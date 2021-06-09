@@ -248,48 +248,51 @@
         </Mode2>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="13">
+    <RequiredPackages Count="14">
       <Item1>
-        <PackageName Value="luicontrols"/>
+        <PackageName Value="TurboPowerIPro"/>
       </Item1>
       <Item2>
-        <PackageName Value="luicomponents"/>
+        <PackageName Value="luicontrols"/>
       </Item2>
       <Item3>
-        <PackageName Value="ChsDet"/>
+        <PackageName Value="luicomponents"/>
       </Item3>
       <Item4>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="ChsDet"/>
       </Item4>
       <Item5>
-        <PackageName Value="lclextensions_package"/>
+        <PackageName Value="lnetbase"/>
       </Item5>
       <Item6>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="lclextensions_package"/>
       </Item6>
       <Item7>
-        <PackageName Value="BGRABitmapPack"/>
+        <PackageName Value="dcpcrypt"/>
       </Item7>
       <Item8>
-        <PackageName Value="FrameViewer09"/>
+        <PackageName Value="BGRABitmapPack"/>
       </Item8>
       <Item9>
-        <PackageName Value="virtualtreeview_package"/>
+        <PackageName Value="FrameViewer09"/>
       </Item9>
       <Item10>
-        <PackageName Value="epidatacore_visuals"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="virtualtreeview_package"/>
       </Item10>
       <Item11>
-        <PackageName Value="epidatacore"/>
+        <PackageName Value="epidatacore_visuals"/>
         <MinVersion Major="2" Valid="True"/>
       </Item11>
       <Item12>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="epidatacore"/>
+        <MinVersion Major="2" Valid="True"/>
       </Item12>
       <Item13>
-        <PackageName Value="LCL"/>
+        <PackageName Value="SynEdit"/>
       </Item13>
+      <Item14>
+        <PackageName Value="LCL"/>
+      </Item14>
     </RequiredPackages>
     <Units Count="135">
       <Unit0>
