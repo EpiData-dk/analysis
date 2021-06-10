@@ -35,7 +35,9 @@ type
 const
   HTML_OUTPUT_CSS =
         '<STYLE type="text/css">' + LineEnding +
+        {$IFNDEF LCLCocoa}
         '<!--' + LineEnding +
+        {$ENDIF}
         '/* EpiData Reporting Minimalistic style sheet - white background' + LineEnding +
         '   v1.0' + LineEnding +
         '   Use the design table.system as a template for a new design. To be safe, define all styles for a design.' + LineEnding +
@@ -67,7 +69,9 @@ const
         '' + LineEnding +
         'table.simple .firstrow {font-weight: bold; text-align: center; padding-right: 0.4em }' + LineEnding +
         'table.simple .firstcol {font-weight: bold; text-align: right; padding-right: 0.4em}' + LineEnding +
-        '-->' + LineEnding +
+        {$IFNDEF LCLCocoa}
+        '<!--' + LineEnding +
+        {$ENDIF}
         '</STYLE>' + LineEnding;
 
 implementation
@@ -219,6 +223,7 @@ procedure TOutputGeneratorHTML.GenerateReport;
 var
   i: Integer;
   CSSStrings: TStringListUTF8;
+  CSSTemp: String;
 begin
   WriteToStream(
     '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">' + LineEnding +
@@ -245,7 +250,10 @@ begin
         WriteToStream('<link rel="stylesheet" href="' + FCSSFileName +'">');
     end
   else
-    WriteToStream(HTML_OUTPUT_CSS);
+    begin
+      CSSTemp := HTML_OUTPUT_CSS;
+      WriteToStream(CSSTemp);
+    end;
   WriteToStream(
     '<TITLE>  </TITLE>' + LineEnding +
     '</HEAD>' + LineEnding +
@@ -255,6 +263,9 @@ begin
   inherited GenerateReport;
 
   WriteToStream(
+  {$IFDEF LCLCocoa}
+    '<A id=CocoaBottom>&nbsp;</a>' +
+  {$ENDIF}
     '</BODY>' + LineEnding +
     '</HTML>'
   );

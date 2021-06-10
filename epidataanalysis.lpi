@@ -900,8 +900,8 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dEPI_CHROMIUM_HTML1
--dEPI_BETA"/>
+      <CustomOptions Value="-dEPI_CHROMIUM_HTMLx
+-dEPI_BETAx"/>
     </Other>
   </CompilerOptions>
   <Debugging>

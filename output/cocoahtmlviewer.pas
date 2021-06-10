@@ -7,6 +7,7 @@ interface
 uses
   Classes, SysUtils, ComCtrls, outputviewer_types, outputgenerator_base,
   IPHtml,
+//  eventlog,
   executor, menus;
 
 type
@@ -16,7 +17,7 @@ type
   TCocoaHtmlSheet = class(TTabSheet, IAnaOutputViewer)
   private
     FHtmlView: TIpHtmlPanel;
-
+//    FEventLog: TEventLog;
     procedure CopyAllClipboardClick(Sender: TObject);
     procedure CopySelectClipBoardClick(Sender: TObject);
 
@@ -62,9 +63,13 @@ end;
 procedure TCocoaHtmlSheet.Initialize;
 begin
   FHtmlView := TIpHtmlPanel.Create(Self);
-  FHtmlView.Align := alClient;
   FHtmlView.Parent := Self;
-
+  FHtmlView.Align := alClient;
+{  FEventLog := TEventLog.Create(Self);
+  FEventLog.LogType := ltFile;
+  FEventLog.FileName:= '/Users/Jamie/downloads/ed.log';
+  FEventLog.Active := true;
+}
   with FHtmlView do
   begin
     TextColor       := clwindowText;
@@ -84,8 +89,9 @@ var
   FHtml: TIpHtml;
 begin
   FHtml := TIpHtml.Create;
-  FHtmlView.SetHtml(FHtml);
   FHtml.LoadFromStream(ST);
+  FHtmlView.SetHtml(FHtml);
+  FHtmlView.MakeAnchorVisible('CocoaBottom');
 end;
 
 procedure TCocoaHtmlSheet.UpdateFontAndSize(AExecutor: TExecutor);
