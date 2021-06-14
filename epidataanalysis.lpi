@@ -248,53 +248,56 @@
         </Mode2>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="14">
+    <RequiredPackages Count="15">
       <Item1>
-        <PackageName Value="TurboPowerIPro"/>
+        <PackageName Value="WebBrowserPackage"/>
       </Item1>
       <Item2>
-        <PackageName Value="luicontrols"/>
+        <PackageName Value="TurboPowerIPro"/>
       </Item2>
       <Item3>
-        <PackageName Value="luicomponents"/>
+        <PackageName Value="luicontrols"/>
       </Item3>
       <Item4>
-        <PackageName Value="ChsDet"/>
+        <PackageName Value="luicomponents"/>
       </Item4>
       <Item5>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="ChsDet"/>
       </Item5>
       <Item6>
-        <PackageName Value="lclextensions_package"/>
+        <PackageName Value="lnetbase"/>
       </Item6>
       <Item7>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="lclextensions_package"/>
       </Item7>
       <Item8>
-        <PackageName Value="BGRABitmapPack"/>
+        <PackageName Value="dcpcrypt"/>
       </Item8>
       <Item9>
-        <PackageName Value="FrameViewer09"/>
+        <PackageName Value="BGRABitmapPack"/>
       </Item9>
       <Item10>
-        <PackageName Value="virtualtreeview_package"/>
+        <PackageName Value="FrameViewer09"/>
       </Item10>
       <Item11>
-        <PackageName Value="epidatacore_visuals"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="virtualtreeview_package"/>
       </Item11>
       <Item12>
-        <PackageName Value="epidatacore"/>
+        <PackageName Value="epidatacore_visuals"/>
         <MinVersion Major="2" Valid="True"/>
       </Item12>
       <Item13>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="epidatacore"/>
+        <MinVersion Major="2" Valid="True"/>
       </Item13>
       <Item14>
-        <PackageName Value="LCL"/>
+        <PackageName Value="SynEdit"/>
       </Item14>
+      <Item15>
+        <PackageName Value="LCL"/>
+      </Item15>
     </RequiredPackages>
-    <Units Count="135">
+    <Units Count="136">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -872,6 +875,10 @@
         <Filename Value="dialogs/stat_dialogs/describe/describe_variables_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit134>
+      <Unit135>
+        <Filename Value="output/macoshtmlviewer.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit135>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

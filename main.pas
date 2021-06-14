@@ -21,7 +21,7 @@ uses
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
   {$IFDEF LCLCocoa}
-  cocoahtmlviewer,
+  macoshtmlviewer, cocoahtmlviewer,
   {$ELSE}
   oldhtmlviewer,
   {$ENDIF}
@@ -1586,7 +1586,7 @@ begin
     'HTML':
     {$ENDIF}
     {$IFDEF LCLCocoa}
-      Sheet := TCocoaHtmlSheet.Create(Self);
+      Sheet := TMacOSWebBrowser.Create(Self); //TCocoaHtmlSheet.Create(Self);
     {$ELSE}
       Sheet := TOldHtmlSheet.Create(Self);
     {$ENDIF}

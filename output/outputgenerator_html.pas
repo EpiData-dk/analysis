@@ -264,7 +264,8 @@ begin
 
   WriteToStream(
   {$IFDEF LCLCocoa}
-    '<A id=CocoaBottom>&nbsp;</a>' +
+    '<div id=CocoaBottom>&nbsp;</div>' +
+//    '<script type="text/javascript">document.getElementById("CocoaBottom").scrollIntoView(false));</script>' +
   {$ENDIF}
     '</BODY>' + LineEnding +
     '</HTML>'

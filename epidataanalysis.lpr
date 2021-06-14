@@ -26,6 +26,9 @@ uses
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
+  {$IFDEF LCLCOCOA}
+  macoshtmlviewer,
+  {$ENDIF}
   textviewer, outputviewer_types, oldhtmlviewer, options_utils, ana_globals,
   browse4, report, options_fontoptions, save_output,
   epi_script_function_observations, options_filesoptions, aggregate,
