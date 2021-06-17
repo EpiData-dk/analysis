@@ -1,8 +1,3 @@
-#include ~/fpc.cfg
-#include ~/lazarus.cfg
-#include ~/utils.cfg
-#include ~/beta.cfg
-
 # options:
 -Scih
 -XX
@@ -13,8 +8,8 @@
 #endif
 
 # Output:
--FE.
--FU./lib/$fpctarget
+-FE%TARGET_PATH/binary/$fpctarget/
+-FU%TARGET_PATH/units/$fpctarget/
 
 # Includes
 -Fi./grammar/
@@ -43,8 +38,3 @@
 -Fu./statistics/
 -Fu./statusbar/
 -Fu./utils/
-
-# Libraries:
--Fu~/EpiData/Core/tags/release_4_6_0_6/lib/$fpctarget
--Fu~/EpiData/Components/trunk/HtmlViewer/package/lib/$fpctarget
--Fu~/FreePascal/lazarus/components/synedit/lib/$fpctarget
