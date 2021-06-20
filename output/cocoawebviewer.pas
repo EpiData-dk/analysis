@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, StdCtrls, ComCtrls, outputviewer_types, outputgenerator_base,
-  LCLIntf, CocoaAll, WebKit, Forms, macoshtmlviewer, DateUtils,
+  LCLIntf, CocoaAll, WebKit, Forms, macoshtmlviewer,
   executor, menus;
 
 type
@@ -18,7 +18,6 @@ type
     FHtmlView: TWebBrowser;
     procedure CopyAllClipboardClick(Sender: TObject);
     procedure CopySelectClipBoardClick(Sender: TObject);
-//    procedure ScrollToBottom(Sender: TObject);
 
   public
     procedure InvalidateView;
@@ -50,12 +49,7 @@ end;
 procedure TCocoaWebSheet.CopyAllClipboardClick(Sender: TObject);
 begin
 end;
-{
-procedure TCocoaWebSheet.ScrollToBottom(Sender: TObject);
-begin
-  FHtmlView.ScrollToEnd(Self);
-end;
-}
+
 procedure TCocoaWebSheet.InvalidateView;
 begin
   //
@@ -70,7 +64,6 @@ begin
   FHtmlView.PopupMenu := TOutputViewerPopup.Create(Self);
   TOutputViewerPopup(FHtmlView.PopupMenu).OnCopySelectedClick := @CopySelectClipBoardClick;
   TOutputViewerPopup(FHtmlView.PopupMenu).OnCopyAllClick      := @CopyAllClipboardClick;
-//  FHtmlView.OnPageLoaded := @ScrollToBottom;
 end;
 
 procedure TCocoaWebSheet.LoadFromStream(ST: TStream);

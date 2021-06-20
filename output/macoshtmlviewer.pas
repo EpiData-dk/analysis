@@ -17,8 +17,7 @@ uses
   Classes, SysUtils, StdCtrls, ComCtrls,
   LCLIntf, LCLType,
   Controls, WSControls, WSLCLClasses, CocoaAll, CocoaPrivate, WebKit,
-  Graphics, LMessages,
-  CocoaWebBrowser;
+  Graphics, LMessages;
 
 type
 
