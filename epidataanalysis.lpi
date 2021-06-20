@@ -297,7 +297,7 @@
         <PackageName Value="LCL"/>
       </Item15>
     </RequiredPackages>
-    <Units Count="136">
+    <Units Count="137">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -879,6 +879,10 @@
         <Filename Value="output/macoshtmlviewer.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit135>
+      <Unit136>
+        <Filename Value="output/cocoawebviewer.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit136>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -896,10 +900,19 @@
         <IncludeAssertionCode Value="True"/>
       </SyntaxOptions>
     </Parsing>
+    <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
+      <RelocatableUnit Value="True"/>
+      <Optimizations>
+        <OptimizationLevel Value="2"/>
+      </Optimizations>
+      <SmallerCode Value="True"/>
+    </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf2Set"/>
       </Debugging>
+      <LinkSmart Value="True"/>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>

@@ -27,7 +27,8 @@ uses
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
   {$IFDEF LCLCOCOA}
-  macoshtmlviewer,
+//  macoshtmlviewer,
+  cocoawebviewer,
   {$ENDIF}
   textviewer, outputviewer_types, oldhtmlviewer, options_utils, ana_globals,
   browse4, report, options_fontoptions, save_output,

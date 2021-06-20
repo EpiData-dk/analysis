@@ -1,99 +1,67 @@
 unit macoshtmlviewer;
 
 {$mode objfpc}{$H+}
+{$modeswitch objectiveC1}
 
+{
+  LCL web browser for Cocoa
+  uses MacOS api calls via TCocoaWSWebBrowser
+  This stripped down version for EpiData Analysis does not load web pages
+
+  June 2021
+}
 interface
 
 uses
-  Classes, SysUtils, StdCtrls, ComCtrls, outputviewer_types, outputgenerator_base,
-  LCLIntf, WebBrowser, Forms, // outputcreator,
-  executor, menus;
+  Interfaces, // this includes the LCL widgetset
+  Classes, SysUtils, StdCtrls, ComCtrls,
+  LCLIntf, LCLType,
+  Controls, WSControls, WSLCLClasses, CocoaAll, CocoaPrivate, WebKit,
+  Graphics, LMessages,
+  CocoaWebBrowser;
 
 type
 
   { TMacOSWebBrowser }
 
-  TMacOSWebBrowser = class(TTabSheet, IAnaOutputViewer)
+  TMacOSWebBrowser = class(TWinControl)
   private
-    FHtmlView: TWebBrowser;
-//    FEventLog: TEventLog;
-//    FBottomLine: TOutputLine;
-    FScrollVertical: TScrollBar;
-    procedure CopyAllClipboardClick(Sender: TObject);
-    procedure CopySelectClipBoardClick(Sender: TObject);
-    procedure ScrollToBottom(Sender: TObject);
-
+  protected
+    class procedure WSRegisterClass; override;
   public
-    procedure InvalidateView;
-    procedure Initialize;
+    constructor Create(AOwner : TComponent); override;
     procedure LoadFromStream(ST: TStream);
-    procedure UpdateFontAndSize(AExecutor: TExecutor);
+    procedure ScrollToEnd(Sender: TObject);
+    function PageLoading(Sender: TObject) : boolean;
+  end;
 
-    function GetLineAtCaret: String;
-    function GetSelectedText: String;
-    function GetCaretPos: TPoint;
-    function IsFocused: Boolean;
-    function GetContextMenu: TOutputViewerPopup;
+  TWebBrowser = class(TMacOSWebBrowser)
+  published
+    property Align;
+    property Anchors;
+    property Constraints;
+  end;
 
-end;
+   TCocoaWSWebBrowser = class(TWSWinControl)
+   published
+     class function CreateHandle(const AWinControl : TWinControl;
+                                 const AParams     : TCreateParams): TLCLIntfHandle; override;
+     class procedure DestroyHandle(const AWinControl : TWinControl); override;
+     class function LoadHtml(const AWinControl : TWinControl;
+                             const Html        : string) : Boolean;
+     class function ScrollToEnd(const AWinControl : TWinControl) : Boolean;
+     class function PageLoading(const AWinControl : TWinControl) : Boolean;
+   end;
+
 
 implementation
 
-uses
-  Controls, Graphics, outputgenerator_html, Clipbrd;
+{ TCustomWebBrowser }
 
-{ TMacOSWebBrowser }
-
-procedure TMacOSWebBrowser.CopySelectClipBoardClick(Sender: TObject);
-var
-  clipText: String;
+constructor TMacOSWebBrowser.Create(AOwner : TComponent);
 begin
-//  Clipboard.AsText := FHtmlView.SelText;
-   ClipText := FHtmlView.GetAccessibleObject.ToString;  //.HaveSelection then
-//   ClipText..CopyToClipboard;
-end;
-
-procedure TMacOSWebBrowser.CopyAllClipboardClick(Sender: TObject);
-begin
-//  FHtmlView.SelectAll;
-//  FHtmlView.CopyToClipboard;
-end;
-
-procedure TMacOSWebBrowser.ScrollToBottom(Sender: TObject);
-begin
-/  FScrollVertical.Position := FScrollVertical.Max;         //does nothing
-  FHtmlView.RePaint;
-end;
-
-procedure TMacOSWebBrowser.InvalidateView;
-begin
-  //
-end;
-
-procedure TMacOSWebBrowser.Initialize;
-begin
-  FHtmlView := TWebBrowser.Create(Self);
-  FHtmlView.Parent := Self;
-  FHtmlView.Align := alClient;
-  FScrollVertical := TScrollBar.Create(Self);
-  FScrollVertical.Kind := sbVertical;
-{  FEventLog := TEventLog.Create(Self);
-  FEventLog.LogType := ltFile;
-  FEventLog.FileName:= '/Users/Jamie/downloads/ed.log';
-  FEventLog.Active := true;
-}
-{  with FHtmlView do
-  begin
-    TextColor       := clwindowText;
-    VLinkColor      := clFuchsia;
-    BgColor         := clWindow;
-    AllowTextSelect := true;
-  end;
-}
-  FHtmlView.PopupMenu := TOutputViewerPopup.Create(Self);
-  TOutputViewerPopup(FHtmlView.PopupMenu).OnCopySelectedClick := @CopySelectClipBoardClick;
-  TOutputViewerPopup(FHtmlView.PopupMenu).OnCopyAllClick      := @CopyAllClipboardClick;
-  FHtmlView.OnPageLoaded := @ScrollToBottom;
+  inherited Create(AOwner);
+  ControlStyle     := ControlStyle + [csClickEvents, csFramed];
 end;
 
 procedure TMacOSWebBrowser.LoadFromStream(ST: TStream);
@@ -101,42 +69,77 @@ var
   FHtml: String;
   FHtmlStream: TStringStream;
 begin
-  FHtmlStream := TStringStream.Create;
-  FHtmlStream.CopyFrom(ST, 0); // copy entire stream
-  FHtml := FHtmlStream.DataString;
-  FHtmlView.LoadPageFromHtml(FHtml);
-
+    FHtmlStream := TStringStream.Create;
+    FHtmlStream.CopyFrom(ST, 0); // copy entire stream to string
+    FHtml := FHtmlStream.DataString;
+    TCocoaWSWebBrowser.LoadHtml(self, FHtml) // string required
 end;
 
-procedure TMacOSWebBrowser.UpdateFontAndSize(AExecutor: TExecutor);
+class procedure TMacOSWebBrowser.WSRegisterClass;
 begin
-  //
+  inherited;
+  RegisterWSComponent(TMacOSWebBrowser, TCocoaWSWebBrowser);
 end;
 
-function TMacOSWebBrowser.GetLineAtCaret: String;
+procedure TMacOSWebBrowser.ScrollToEnd(Sender: TObject);
 begin
-  result := '';
+   TCocoaWSWebBrowser.ScrollToEnd(self);
 end;
 
-function TMacOSWebBrowser.GetSelectedText: String;
+function TMacOSWebBrowser.PageLoading(Sender: TObject) : boolean;
 begin
-  result := '';
+   result := TCocoaWSWebBrowser.PageLoading(self);
 end;
 
-function TMacOSWebBrowser.GetCaretPos: TPoint;
+class function TCocoaWSWebBrowser.CreateHandle(const AWinControl : TWinControl;
+                                               const AParams     : TCreateParams): TLCLIntfHandle;
+var
+  AWebView: WebView;
 begin
-  Result.X := 0;
-  Result.Y := 0;
+  AWebView := WebView(NSView(WebView.alloc).lclInitWithCreateParams(AParams));
+  Result   := TLCLIntfHandle(AWebView);
 end;
 
-function TMacOSWebBrowser.IsFocused: Boolean;
+
+class procedure TCocoaWSWebBrowser.DestroyHandle(const AWinControl : TWinControl);
 begin
-  result := false;
+  if (AWinControl.HandleAllocated) then begin
+    WebView (AWinControl.Handle).frameLoadDelegate.release;
+    NSObject(AWinControl.Handle).release
+  end
 end;
 
-function TMacOSWebBrowser.GetContextMenu: TOutputViewerPopup;
+class function TCocoaWSWebBrowser.LoadHtml(const aWinControl : TWinControl;
+                                           const Html        : String): Boolean;
 begin
-  result := TOutputViewerPopup(FHtmlView.PopupMenu);
+   if not aWinControl.HandleAllocated then
+      aWinControl.HandleNeeded;
+   if aWinControl.HandleAllocated then begin
+      WebView(aWinControl.Handle).mainFrame.loadHTMLString_baseURL(
+          NSSTR(PAnsiChar(Html))
+          ,nil);
+   end;
+   Result := True;
+end;
+
+class function TCocoaWSWebBrowser.ScrollToEnd(const aWinControl : TWinControl): Boolean;
+begin
+   if not aWinControl.HandleAllocated then
+      aWinControl.HandleNeeded;
+   if aWinControl.HandleAllocated then begin
+      WebView(aWinControl.Handle).scrollToEndOfDocument(nil);
+   end;
+   Result := True;
+end;
+
+class function TCocoaWSWebBrowser.PageLoading(const aWinControl : TWinControl): Boolean;
+begin
+   Result := False;
+   if not aWinControl.HandleAllocated then
+      aWinControl.HandleNeeded;
+   if aWinControl.HandleAllocated then begin
+      Result := WebView(aWinControl.Handle).isLoading;
+   end;
 end;
 
 end.
