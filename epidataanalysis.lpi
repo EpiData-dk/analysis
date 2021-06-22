@@ -14,8 +14,7 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="3"/>
-      <MinorVersionNr Value="1"/>
-      <RevisionNr Value="1"/>
+      <MinorVersionNr Value="2"/>
       <Attributes pvaSpecialBuild="True"/>
       <StringTable SpecialBuild="RC1"/>
     </VersionInfo>
@@ -217,11 +216,6 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
-      <environment>
-        <UserOverrides Count="1">
-          <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
-        </UserOverrides>
-      </environment>
       <FormatVersion Value="2"/>
       <Modes Count="3">
         <Mode0 Name="default">
@@ -889,20 +883,24 @@
         <IncludeAssertionCode Value="True"/>
       </SyntaxOptions>
     </Parsing>
+    <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
+      <Optimizations>
+        <OptimizationLevel Value="2"/>
+      </Optimizations>
+    </CodeGeneration>
     <Linking>
       <Debugging>
+        <GenerateDebugInfo Value="False"/>
         <DebugInfoType Value="dsDwarf2Set"/>
       </Debugging>
+      <LinkSmart Value="True"/>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>
         </Win32>
       </Options>
     </Linking>
-    <Other>
-      <CustomOptions Value="-dEPI_CHROMIUM_HTML1
--dEPI_BETA"/>
-    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="15">
