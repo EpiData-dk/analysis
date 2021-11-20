@@ -1,0 +1,37 @@
+name: Compile Analysis
+
+on:
+  pull_request:
+    branches:
+      - master
+
+env:
+  ANALYSIS_VERSION: "3.1"
+
+jobs:
+  setup:
+    name: Checkout Source
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+  build:
+    name: Compile the code
+    runs-on: self-hosted
+    container:
+      image: epidata/fpcbuild:3.2.0-12
+      volumes:
+        - /etc/maven/settings.xml:/etc/maven/settings.xml
+    needs: setup
+
+    steps:
+      - name: Compile Linux
+        run:  mvn compile -Plinux64
+
+      - name: Compile Windows
+        run:  mvn compile -Pwin64
+
+      - name: Compile Mac
+        run:  mvn compile -Pdarwin64
