@@ -1,3 +1,10 @@
 .idea/
 target/
 *.iml
+backup/
+epidataanalysis
+epidataanalysis.exe
+target/
+*.resolved
+*.lps
+commandlog.pgm

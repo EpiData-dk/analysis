@@ -12,29 +12,29 @@
 -FU%TARGET_PATH/units/$fpctarget/
 
 # Includes
--Fi./grammar/
+-Fi./src/grammar/
 
 # Units:
--Fu.
--Fu./auxunits/
--Fu./commandtree/
--Fu./controls/
--Fu./dialogs/
--Fu./dialogs/stat_dialogs/
--Fu./dialogs/stat_dialogs/ctable/
--Fu./dialogs/stat_dialogs/describe/
--Fu./dialogs/stat_dialogs/freq/
--Fu./dialogs/stat_dialogs/means/
--Fu./dialogs/stat_dialogs/tables/
--Fu./editor/
--Fu./executor/
--Fu./functions/
--Fu./grammar/
--Fu./help/
--Fu./output/
--Fu./parser/
--Fu./sidewindows/
--Fu./statements/
--Fu./statistics/
--Fu./statusbar/
--Fu./utils/
+-Fu./src
+-Fu./src/auxunits/
+-Fu./src/commandtree/
+-Fu./src/controls/
+-Fu./src/dialogs/
+-Fu./src/dialogs/stat_dialogs/
+-Fu./src/dialogs/stat_dialogs/ctable/
+-Fu./src/dialogs/stat_dialogs/describe/
+-Fu./src/dialogs/stat_dialogs/freq/
+-Fu./src/dialogs/stat_dialogs/means/
+-Fu./src/dialogs/stat_dialogs/tables/
+-Fu./src/editor/
+-Fu./src/executor/
+-Fu./src/functions/
+-Fu./src/grammar/
+-Fu./src/help/
+-Fu./src/output/
+-Fu./src/parser/
+-Fu./src/sidewindows/
+-Fu./src/statements/
+-Fu./src/statistics/
+-Fu./src/statusbar/
+-Fu./src/utils/
