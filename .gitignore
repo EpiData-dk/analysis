@@ -9,3 +9,4 @@ target/
 *.lps
 commandlog.pgm
 ?/
+.DS_Store

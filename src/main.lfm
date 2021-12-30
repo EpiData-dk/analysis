@@ -151,10 +151,8 @@ object MainForm: TMainForm
       OnKeyDown = HistoryListBoxKeyDown
       ParentFont = False
       PopupMenu = HistoryPopupMenu
-      ScrollWidth = 192
       Style = lbOwnerDrawFixed
       TabOrder = 2
-      TopIndex = -1
       Visible = False
     end
   end

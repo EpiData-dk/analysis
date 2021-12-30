@@ -20,8 +20,12 @@ uses
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
-  textviewer,
-  oldhtmlviewer;
+  {$IFDEF LCLCocoa}
+  cocoawebviewer,
+  {$ELSE}
+  oldhtmlviewer,
+  {$ENDIF}
+  textviewer;
 
 
 type
@@ -29,6 +33,12 @@ type
   { TMainForm }
 
   TMainForm = class(TForm, IScriptMediator)
+    {$IFDEF DARWIN}
+      AppMenu     : TMenuItem;
+      AppAboutCmd : TMenuItem;
+      AppSep1Cmd  : TMenuItem;
+      AppPrefCmd  : TMenuItem;
+    {$ENDIF}
     AlwaysAvailableActionList: TActionList;
     CloseAllWindowsAction: TAction;
     ColorDialog1: TColorDialog;
@@ -449,6 +459,31 @@ end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+  {$IFDEF DARWIN}
+    AppMenu := TMenuItem.Create(Self);  {Application menu}
+    AppMenu.Caption := #$EF#$A3#$BF;  {Unicode Apple logo char}
+    MainMenu1.Items.Insert(0, AppMenu);
+
+    AppAboutCmd := TMenuItem.Create(Self);
+    AppAboutCmd.Caption := 'About ' + 'EpiData Analysis'; // BundleName;  //<== BundleName set elsewhere
+    AppAboutCmd.OnClick := @ShowAboutActionExecute;
+    AppMenu.Add(AppAboutCmd);  {Add About as item in application menu}
+
+    AppSep1Cmd := TMenuItem.Create(Self);
+    AppSep1Cmd.Caption := '-';
+    AppMenu.Add(AppSep1Cmd);
+
+    AppPrefCmd := TMenuItem.Create(Self);
+    AppPrefCmd.Caption := 'Preferences...';
+    AppPrefCmd.Shortcut := ShortCut(VK_OEM_COMMA, [ssMeta]);
+    AppPrefCmd.OnClick := @ShowEditorStartupActionExecute;  //<== "Options" on other platforms
+    AppMenu.Add(AppPrefCmd);
+  // remove duplicate menu items?
+    MainMenu1.Items[2].Remove(MenuItem41);   // preferences
+    MainMenu1.Items[6].Remove(MenuItem6);    // about
+    MainMenu1.Items[1].Remove(MenuItem8);    // quit
+    {$ENDIF}
+
   FLastCreatorCount := 0;
   FOutputCreator := TOutputCreator.Create;
   FOutputCreator.OnRedrawRequest := @OutputRedrawRequest;
@@ -1550,7 +1585,11 @@ begin
     {$ELSE}
     'HTML':
     {$ENDIF}
+    {$IFDEF LCLCocoa}
+      Sheet := TCocoaWebSheet.Create(Self);
+    {$ELSE}
       Sheet := TOldHtmlSheet.Create(Self);
+    {$ENDIF}
   end;
 
   FCmdEdit.Parent := Sheet;
@@ -1563,9 +1602,11 @@ begin
   FOutputViewer.Initialize;
   FOutputViewer.UpdateFontAndSize(Executor);
   FOutputViewer.GetContextMenu.OnSaveOutputClick := @SaveOutputActionExecute;
-  RedrawOutput;
-
+// put cursor back into command line;
+// for some reason, this doesn't happen after automatically this command
+  CmdEditFocusActionExecute(nil);
   EnableAutoSizing;
+  RedrawOutput;
 end;
 
 procedure TMainForm.ProjectGetText(Sender: TObject;
