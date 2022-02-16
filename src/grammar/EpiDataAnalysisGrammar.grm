@@ -57,6 +57,7 @@ opMerge       = 'mer'('ge')?
 opReorder     = 'reo'('rder')?
 opAggregate   = 'agg'('regate')?
 opDescribe    = 'des'('cribe')?
+opSurvival    = 'sur'('vival')?
 opRecode      = 'recode'
 
 ! -- String commands
@@ -142,6 +143,7 @@ opSet         = 'set'
                                            |   opTables
                                            |   opCTable
                                            |   opDescribe
+                                           |   opSurvival
 
 <String Command>                           ::= opRead
                                            |   opRuntest

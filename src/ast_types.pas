@@ -78,19 +78,22 @@ type
     stAssert,
     stSet,
 
-  // Variable Commands
+  // Statistical Commands
     stTables,
     stCTable,
+    stMeans,
+    stAggregate,
+    stFreq,
+    stDescribe,
+    stSurvival,
+
+  // Variable Comands
     stBrowse,
     stList,
     stEdit,
     stDrop,
     stKeep,
-    stMeans,
-    stAggregate,
     stUse,
-    stFreq,
-    stDescribe,
     stSort,
     stAppend,
     stMerge,
@@ -299,4 +302,3 @@ begin
 end;
 
 end.
-

@@ -1169,6 +1169,16 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+  { TSurvivalCommand }
+
+  TSurvivalCommand = class(TCustomVariableCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TCTableCommand }
 
   TCTableCommand = class(TCustomVariableCommand)
@@ -1177,7 +1187,7 @@ type
     function GetAcceptedVariableCount: TBoundArray; override;
   public
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
-  end;
+    end;
 
  { TMeansCommand }
 
@@ -1678,6 +1688,34 @@ begin
 end;
 
 constructor TCTableCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stCTable);
+end;
+
+{TCTableCommand}
+
+function TSurvivalCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  AddDecimalOptions(Result);
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+
+  Result.Insert('by',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('w',    AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+
+  // Output silencing options
+  Result.Insert('q',    [rtUndefined]);
+end;
+
+function TSurvivalCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  result := inherited GetAcceptedVariableCount;
+  result[0] := 2;
+end;
+
+constructor TSurvivalCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
   inherited Create(AVariableList, AOptionList, stCTable);
