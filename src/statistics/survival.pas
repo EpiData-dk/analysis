@@ -282,7 +282,7 @@ function TSurvival.DoCalcSurvival(InputDF: TEpiDataFile;
   FailOutcomeValue: Integer; ST: TOptionList): TSurvivalDatafile;
 
 var
-  StartIdx, Ix, i, EndIdx, N, Obs, Row: Integer;
+  StartIdx, Ix, i, EndIdx, FailIx, N, Obs, Row: Integer;
   NAtRisk, Lost: Integer;
   S, SE, SumF: EpiFloat;
   T: TTables;
@@ -307,7 +307,19 @@ begin
   T := TTables.Create(FExecutor, FOutputCreator);
   FSurvivalTable  := T.CalcTables(InputDF, Variables,
     StratVariable, FWeightName, ST, TablesRefMap, Statistics);
-;
+
+// find index of outcome = fail
+  ASurvivalTable := FSurvivalTable[0];
+  FailIx := -1;
+  for Ix := 0 to ASurvivalTable.ColCount - 1 do
+    if (ASurvivalTable.ColVariable.AsInteger[Ix] = FailOutcomeValue)
+      FailIx := Ix;
+  if (FailIx < 0) do
+    begin
+      FExecutor.Error('No records with Failure outcome value = ' + FailOutcomeValue.AsString);
+      exit;
+    end;
+
   if (StratVariable.Names[0] <> '') then
     begin
       FExecutor.Error('Stratified tables not handled yet');
@@ -315,7 +327,6 @@ begin
     end
   else
     begin
-      ASurvivalTable := FSurvivalTable[0];
       Ix := 0;
       // create first record in Result (TSurvivalDataFile)
       Ix := Result.NewRecords();
@@ -331,11 +342,11 @@ begin
       begin
         for Row := 0 to ASurvivalTable.RowCount - 1 do
           begin
-            S := S * (NAtRisk - ASurvivalTable.Cell[0,Row].N) / Math.Float(NAtRisk);
+            S := S * (NAtRisk - ASurvivalTable.Cell[FailIx,Row].N) / Math.Float(NAtRisk);
             Survival.AsFloat[Row] := S;
             AtRisk.AsInteger[Row] := NAtRisk;
             // add in calcs for Lower & Upper Limits
-            SumF += S / (NAtRisk*(NAtRisk - ASurvivalTable.Cell[0,Row].N));
+            SumF += S / (NAtRisk*(NAtRisk - ASurvivalTable.Cell[FailIx,Row].N));
             SE := FConf * S * SQRT(SumF);
             FLowCI.AsFloat[Row] := S - SE;
             FHighCI.AsFloat[Row]  := S + SE;
@@ -691,7 +702,7 @@ begin
   StratVariable := TStringList.Create;
   HasBy := false;
   ST.ExecResult := csrFailed;
-
+  FailOutcomeValue := 0;
   try
     for Opt in ST.Options do
     begin
@@ -741,6 +752,8 @@ begin
 //    FollowVarName := ST.VariableList[0].Ident;
 //    OutcomeVarName := ST.VariableList[1].Ident;
 
+
+
     ResultDF := DoCalcSurvival(DF, Variables, StratVariable, FailOutcomeValue, ST.Options);
 //    DoResultVariables(ResultDF);
 
@@ -758,7 +771,7 @@ begin
     ResultDF.Free;
     DF.Free;
   finally
-    Variables.Free;
+//    Variables.Free;
 end;
 
 end;
