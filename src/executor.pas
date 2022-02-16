@@ -222,6 +222,7 @@ type
     procedure ExecAggregate(ST: TAggregateCommand); virtual;
     procedure ExecTables(ST: TTablesCommand); virtual;
     procedure ExecCTable(ST: TCTableCommand); virtual;
+    procedure ExecSurvival(ST: TSurvivalCommand); virtual;
 
     // - Graph commands
     procedure ExecGraphCommand(ST: TCustomGraphCommand); virtual;
@@ -339,7 +340,7 @@ uses
   aggregate, recode,
 
   // STATISTICS
-  means, freq, tables, ctable, describe;
+  means, freq, tables, ctable, describe, survival;
 
 type
   EExecutorException = class(Exception);
@@ -3886,6 +3887,41 @@ begin
   GraphExecutor := TGraphCommandExecutor.Create(Self, FOutputCreator);
   GraphExecutor.Execute(ST);
   GraphExecutor.Free;
+end;
+
+procedure TExecutor.ExecSurvival(ST: TSurvivalCommand);
+var
+  Survival: TSurvival;
+  DF: TEpiDataFile;
+  Opt: TOption;
+  S: UTF8String;
+  VarNames: TStrings;
+begin
+  VarNames := ST.VariableList.GetIdentsAsList;
+  // Get the by variable if there is one
+  for Opt in ST.Options do
+    begin
+      S := Opt.Ident;
+      if (S = 'by') then
+      begin
+        S := Opt.Expr.AsIdent;
+        if (VarNames.IndexOf(S) > -1) then
+          begin
+            Error('By variable cannot be ' + S);
+            ST.ExecResult := csrFailed;
+            VarNames.Free;
+          end;
+      end;
+    end;
+
+  if ST.ExecResult = csrFailed then exit;
+
+  Survival := TSurvival.Create(Self, FOutputCreator);
+  Survival.ExecSurvival(VarNames, ST);
+  Survival.Free;
+
+  VarNames.Free;
+
 end;
 
 procedure TExecutor.ExecUse(ST: TUse);

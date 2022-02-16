@@ -61,6 +61,7 @@ opRecode      = 'recode'
 
 ! -- Graph commands
 opScatter     = 'sca'('tter')?
+opSurvival    = 'sur'('vival')?
 
 ! -- String commands
 opRunTest     = 'runtest'
@@ -146,6 +147,7 @@ opSet         = 'set'
                                            |   opCTable
                                            |   opDescribe
                                            |   opScatter
+                                           |   opSurvival
 
 <String Command>                           ::= opRead
                                            |   opRuntest
