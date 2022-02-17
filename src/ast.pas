@@ -1175,6 +1175,7 @@ type
   protected
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
   public
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
@@ -1726,7 +1727,7 @@ begin
   inherited Create(AVariableList, AOptionList, stCTable);
 end;
 
-{TCTableCommand}
+{TSurvivalCommand}
 
 function TSurvivalCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
@@ -1737,7 +1738,11 @@ begin
 
   Result.Insert('by',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('w',    AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('f',    [rtInteger, rtUndefined]);
+  Result.Insert('o',    [rtInteger, rtString, rtUndefined]);  // outcome value
+  Result.Insert('ng',   [rtUndefined]);     // no graphs
+  Result.Insert('nt',   [rtUndefined]);     // no tables
+  Result.Insert('nd',   [rtUndefined]);     // no documentation output
+  Result.Insert('t',    [rtUndefined]);     // log-rank test and hazard ratio (valid with !by)
 
   // Output silencing options
   Result.Insert('q',    [rtUndefined]);
@@ -1746,7 +1751,19 @@ end;
 function TSurvivalCommand.GetAcceptedVariableCount: TBoundArray;
 begin
   result := inherited GetAcceptedVariableCount;
-  result[0] := 2;
+  result[0] := -2;
+end;
+
+function TSurvivalCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  case VariableList.Count of
+    2: Result.ResultTypes := [rtString, rtInteger];
+    3: Result.ResultTypes := [rtString, rtInteger, rtDate];
+    else
+      Result.ResultTypes := [];
+  end;
 end;
 
 constructor TSurvivalCommand.Create(AVariableList: TVariableList;

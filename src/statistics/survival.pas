@@ -2,8 +2,12 @@ unit survival;
 
 {$codepage UTF-8}
 {$mode objfpc}{$H+}
-{TODO: reference to CalcTables should be as used in ctable unit
-       see ExecCTable}
+{TODO:
+1. check success of command before doing output
+   function CalcSurvival: boolean?
+2. stratified analysis
+3. allow dates for fields 2 and 3
+}
 interface
 
 uses
@@ -41,7 +45,7 @@ type
     FConf: Integer;
     FValuelabelOutput: TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
-    FFailOutcomeValue: Integer;
+    FFailOutcomeValue: UTF8String;
   // table of time vs outcome
     FSurvivalTable: TTwoWayTables;
 
@@ -63,7 +67,7 @@ type
     FOutputCreator: TOutputCreator;
 
     procedure DoCalcSurvival(InputDF: TEpiDataFile; Variables: TStrings; StratVariable: TStringList;
-      FailOutcomeValue: Integer; ST: TOptionList);
+      FailOutcomeValue: UTF8String; ST: TCustomVariableCommand);
 //    procedure DoResultVariables(); virtual;
     procedure DoOutputSurvival(); virtual;
 //    procedure DoOutputTest(); virtual;
@@ -99,7 +103,7 @@ end;
 
 procedure TSurvival.DoCalcSurvival(InputDF: TEpiDataFile;
   Variables: TStrings; StratVariable: TStringList;
-  FailOutcomeValue: Integer; ST: TOptionList);
+  FailOutcomeValue: UTF8String; ST: TCustomVariableCommand);
 
 var
   StartIdx, Ix, i, EndIdx, Failures, FailIx, N, Obs, Row, Col: Integer;
@@ -118,11 +122,11 @@ begin
 // Use TABLES to get counts of outcomes by time for each stratum
   T := TTables.Create(FExecutor, FOutputCreator);
   FSurvivalTable  := T.CalcTables(InputDF, Variables,
-    StratVariable, FWeightName, ST, TablesRefMap, Statistics);
+    StratVariable, FWeightName, ST.Options, TablesRefMap, Statistics);
 
   // Set size of survival table arrays based on results from CalcTables
 
-  Intervals := FSurvivalTable.UnstratifiedTable.ColCount;
+  Intervals := FSurvivalTable.UnstratifiedTable.RowCount;
   Strata := FSurvivalTable.Count;
   SetLength(FInterval, Strata + 1, Intervals);
   SetLength(FAtRisk, Strata + 1, Intervals);
@@ -133,15 +137,15 @@ begin
 // find index of outcome = fail
   ASurvivalTable := FSurvivalTable.UnstratifiedTable;
   FailIx := -1;
-  for Row := 0 to ASurvivalTable.RowCount - 1 do
-    if (ASurvivalTable.RowVariable.AsInteger[Row] = FailOutcomeValue) then
+  for Col := 0 to ASurvivalTable.ColCount - 1 do
+    if (ASurvivalTable.ColVariable.AsString[Col] = FailOutcomeValue) then
       begin
-        FailIx := Row;
+        FailIx := Col;
         break;
       end;
   if (FailIx < 0) then
     begin
-      FExecutor.Error('No records with Failure outcome value = ' + IntToStr(FailOutcomeValue));
+      FExecutor.Error('No records with Failure outcome value = ' + FailOutcomeValue);
       exit;
     end;
   FFailOutcomeValue := FailOutcomeValue;
@@ -164,20 +168,20 @@ begin
       FConf := StrToInt(FExecutor.SetOptionValue[ANA_SO_CONFIDENCE_INTERVAL]);
       CIMult := PNORMALINV((Float(100 - FConf) / 200.0));
 
-     for Col := 0 to Intervals - 1 do
+     for Row := 0 to Intervals - 1 do
        begin
-        FInterval [Stratum, Col] := ASurvivalTable.ColVariable.GetValueLabel(col , FValuelabelOutput);//   AsInteger[Col];
-        Failures := ASurvivalTable.Cell[Col,FailIx].N;
+        FInterval [Stratum, Row] := ASurvivalTable.RowVariable.GetValueLabel(Row , FValuelabelOutput);//   AsInteger[Row];
+        Failures := ASurvivalTable.Cell[FailIx,Row].N;
         S        := S * Float((NAtRisk - Failures)) / Float(NAtRisk);
-        FAtRisk  [Stratum, Col] := NAtRisk;
-        FFail    [Stratum, Col] := Failures;
-        FSurvival[Stratum, Col] := S;
+        FAtRisk  [Stratum, Row] := NAtRisk;
+        FFail    [Stratum, Row] := Failures;
+        FSurvival[Stratum, Row] := S;
 
         SumF     += Float(Failures) / Float(NAtRisk*(NAtRisk - Failures));
         SE       := CIMult * S * SQRT(SumF);
-        FLowCI   [Stratum, Col] := max(S - SE , 0);
-        FHighCI  [Stratum, Col] := min(S + SE , 1);
-        Lost     := ASurvivalTable.ColTotal[Col];
+        FLowCI   [Stratum, Row] := max(S - SE , 0);
+        FHighCI  [Stratum, Row] := min(S + SE , 1);
+        Lost     := ASurvivalTable.RowTotal[Row];
         NAtRisk  := NAtRisk - Lost;
       end;
     end;
@@ -342,7 +346,7 @@ begin
 
   T.Cell[0 + Offset, 0].Text := FTimeVarLabel;
   T.Cell[1 + Offset, 0].Text := 'At Risk';
-  T.Cell[2 + Offset, 0].Text := FOutcomeVarLabel + '=' + IntToStr(FFailOutcomeValue);
+  T.Cell[2 + Offset, 0].Text := FOutcomeVarLabel + '=' + FFailOutcomeValue;
   T.Cell[3 + Offset, 0].Text := 'Survival';
   T.Cell[4 + Offset, 0].Text := '( ' + IntToStr(FConf) + '%';
   T.Cell[5 + Offset, 0].Text := ' CI)';
@@ -466,7 +470,7 @@ var
   StratVariable: TStringList;
 //  ResultDF: TSurvivalDatafile;
 //  FollowVarName, OutcomeVarName, StratifyVarName: UTF8String;
-  FailOutcomeValue: Integer;
+  FailOutcomeValue: UTF8String;
   Opt: TOption;
   HasBy: Boolean;
   DF: TEpiDataFile;
@@ -482,14 +486,14 @@ begin
   StratVariable := TStringList.Create;
   HasBy := false;
   ST.ExecResult := csrFailed;
-  FailOutcomeValue := 0;
+  FailOutcomeValue := '0';
   try
     for Opt in ST.Options do
     begin
       // get death outcome value (only integer for now)
-      if (Opt.Ident = 'f') then
+      if (Opt.Ident = 'o') then
         begin
-          FailOutcomeValue := Opt.Expr.AsInteger;
+          FailOutcomeValue := Opt.Expr.AsString;
         end;
       // check for  weight variable
      if (Opt.Ident = 'w') then
@@ -532,14 +536,14 @@ begin
         Exit;
       end;
 
-    DoCalcSurvival(DF, Variables, StratVariable, FailOutcomeValue, ST.Options);
+    DoCalcSurvival(DF, Variables, StratVariable, FailOutcomeValue, ST);
 //    DoResultVariables(ResultDF);
 
     if (not ST.HasOption('q')) then
       begin
         DoOutputSurvival();
 
-        if (ST.HasOption('g')) then
+        if (not ST.HasOption('ng')) then
           DoOutputGraph();
 
         if (ST.HasOption('t')) then
