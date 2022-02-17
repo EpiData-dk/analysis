@@ -222,7 +222,7 @@ type
     procedure ExecAggregate(ST: TAggregateCommand); virtual;
     procedure ExecTables(ST: TTablesCommand); virtual;
     procedure ExecCTable(ST: TCTableCommand); virtual;
-    procedure ExecSurvival(ST: TSurvivalCommand); virtual;
+    procedure ExecSurvival(ST: TCustomVariableCommand); virtual;
 
     // String commands
     procedure ExecRead(ST: TCustomStringCommand); virtual;
@@ -3877,7 +3877,7 @@ begin
 
 end;
 
-procedure TExecutor.ExecSurvival(ST: TSurvivalCommand);
+procedure TExecutor.ExecSurvival(ST: TCustomVariableCommand);
 var
   Survival: TSurvival;
   DF: TEpiDataFile;
@@ -4081,7 +4081,7 @@ begin
           ExecDescribe(TCustomVariableCommand(ST));
 
         stSurvival:
-          ExecSurvival(TSurvivalCommand(ST));
+          ExecSurvival(TCustomVariableCommand(ST));
 
         stUse:
           ExecUse(TUse(ST));

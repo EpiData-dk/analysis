@@ -1704,6 +1704,7 @@ begin
 
   Result.Insert('by',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('w',    AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('f',    [rtInteger, rtUndefined]);
 
   // Output silencing options
   Result.Insert('q',    [rtUndefined]);
@@ -1718,7 +1719,7 @@ end;
 constructor TSurvivalCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
-  inherited Create(AVariableList, AOptionList, stCTable);
+  inherited Create(AVariableList, AOptionList, stSurvival);
 end;
 
 { TAggregateCommand }
@@ -3869,6 +3870,7 @@ begin
                    Result := TTablesCommand.Create(AVariableList, AOptionList);
     stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
     stDescribe:  Result := TDescribeCommand.Create(AVariablelist, AOptionList);
+    stSurvival:  Result := TSurvivalCommand.Create(AVariableList, AOptionList);
   else
     DoError();
   end;
@@ -6968,6 +6970,7 @@ begin
     'tab': Result := stTables;
     'cta': Result := stCTable;
     'des': Result := stDescribe;
+    'sur': Result := stSurvival;
     'use': Result := stUse;
     'ver': Result := stVersion;
   else
