@@ -222,7 +222,7 @@ type
     procedure ExecAggregate(ST: TAggregateCommand); virtual;
     procedure ExecTables(ST: TTablesCommand); virtual;
     procedure ExecCTable(ST: TCTableCommand); virtual;
-    procedure ExecSurvival(ST: TSurvivalCommand); virtual;
+    procedure ExecSurvival(ST: TCustomVariableCommand); virtual;
 
     // - Graph commands
     procedure ExecGraphCommand(ST: TCustomGraphCommand); virtual;
