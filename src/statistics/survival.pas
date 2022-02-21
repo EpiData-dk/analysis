@@ -5,7 +5,7 @@ unit survival;
 {TODO:
 1. DONE check success of command before doing output
    function CalcSurvival: boolean?
-2. stratified analysis
+2. DONE stratified analysis
 3. allow dates for fields 2 and 3
 }
 interface
@@ -78,7 +78,6 @@ type
     procedure DoOutputSurvival(ST:TCustomVariableCommand); virtual;
     procedure DoOutputSummary(ST:TCustomVariableCommand); virtual;
     procedure DoLogRank(); virtual;
-//    procedure DoOutputTest(); virtual;
     procedure DoOutputGraph(Stratum: Integer); virtual;
   public
     constructor Create(AExecutor: TExecutor; OutputCreator: TOutputCreator);
@@ -86,7 +85,7 @@ type
 
     // Method called from Executor, does calculation + result vars + output
     procedure ExecSurvival(Variables: TStrings; ST: TCustomVariableCommand);
-//    procedure ExecSurvival(DataFile: TEpiDataFile; ST: TSurvivalCommand);
+
     // Method to be used from elsewhere. Does only calculations and returns the result as a specialized dataset
 {    function CalcSurvival(DataFile: TEpiDataFile; Variables: TStrings; StratVariable: TStringList;
       FailOutcomeValue: Integer; ST: TOptionList;
@@ -259,10 +258,7 @@ end;
 
 {procedure TSurvival.DoResultVariables(ResultDF: TSurvivalDatafile);
 var
-  CatV, ObsV, SumV, MeanV, SvV, SdV, SerrV, CfilV, CfihV, SkewV, KurtV,
-  MinV, P05V, P10V, P25V, MedV, P75V, P90V, P95V, MaxV: TCustomExecutorDataVariable;
   Sz, i: Integer;
-  Prefix: String;
 begin
   Sz := ResultDF.Size;
   Prefix := '$Survival_';
@@ -272,49 +268,12 @@ begin
       begin
         CatV  := AddResultConst(Prefix + 'category', ftString);
         ObsV  := AddResultConst(Prefix + 'obs',      ftInteger);
-        SumV  := AddResultConst(Prefix + 'sum',      ftFloat);
-        MeanV := AddResultConst(Prefix + 'mean',     ftFloat);
-        MinV  := AddResultConst(Prefix + 'min',      ftFloat);
-        P05V  := AddResultConst(Prefix + 'p05',      ftFloat);
-        P10V  := AddResultConst(Prefix + 'p10',      ftFloat);
-        P25V  := AddResultConst(Prefix + 'p25',      ftFloat);
-        MedV  := AddResultConst(Prefix + 'median',   ftFloat);
-        P75V  := AddResultConst(Prefix + 'p75',      ftFloat);
-        P90V  := AddResultConst(Prefix + 'p90',      ftFloat);
-        P95V  := AddResultConst(Prefix + 'p95',      ftFloat);
-        MaxV  := AddResultConst(Prefix + 'max',      ftFloat);
-        SvV   := AddResultConst(Prefix + 'variance', ftFloat);
-        SdV   := AddResultConst(Prefix + 'sd',       ftFloat);
-        SerrV := AddResultConst(Prefix + 'stderr',   ftFloat);
-        CfilV := AddResultConst(Prefix + 'cfil',     ftFloat);
-        CfihV := AddResultConst(Prefix + 'cfih',     ftFloat);
-        SkewV := AddResultConst(Prefix + 'skew',     ftFloat);
-        KurtV := AddResultConst(Prefix + 'kurt',     ftFloat);
         AddResultConst(Prefix + 'catvar', ftString).AsStringVector[0]  := '';
       end
     else
       begin
         CatV  := AddResultVector(Prefix + 'category', ftString, Sz);
         ObsV  := AddResultVector(Prefix + 'obs',      ftInteger, Sz);
-        SumV  := AddResultVector(Prefix + 'sum',      ftFloat, Sz);
-        MeanV := AddResultVector(Prefix + 'mean',     ftFloat, Sz);
-        MinV  := AddResultVector(Prefix + 'min',      ftFloat, Sz);
-        P05V  := AddResultVector(Prefix + 'p05',      ftFloat, Sz);
-        P10V  := AddResultVector(Prefix + 'p10',      ftFloat, Sz);
-        P25V  := AddResultVector(Prefix + 'p25',      ftFloat, Sz);
-        MedV  := AddResultVector(Prefix + 'median',   ftFloat, Sz);
-        P75V  := AddResultVector(Prefix + 'p75',      ftFloat, Sz);
-        P90V  := AddResultVector(Prefix + 'p90',      ftFloat, Sz);
-        P95V  := AddResultVector(Prefix + 'p95',      ftFloat, Sz);
-        MaxV  := AddResultVector(Prefix + 'max',      ftFloat, Sz);
-        SvV   := AddResultVector(Prefix + 'sv',       ftFloat, Sz);
-        SdV   := AddResultVector(Prefix + 'sd',       ftFloat, Sz);
-        SerrV := AddResultVector(Prefix + 'stderr',   ftFloat, Sz);
-        CfilV := AddResultVector(Prefix + 'cfil',     ftFloat, Sz);
-        CfihV := AddResultVector(Prefix + 'cfih',     ftFloat, Sz);
-        SkewV := AddResultVector(Prefix + 'skew',     ftFloat, Sz);
-        KurtV := AddResultVector(Prefix + 'kurt',     ftFloat, Sz);
-
         AddResultConst(Prefix + 'catvar', ftString).AsStringVector[0]  := ResultDF.FStratifyVarText;
      end;
 
@@ -327,47 +286,10 @@ begin
     begin
       CatV.AsStringVector[i]  := Category.AsString[i];
       ObsV.AsIntegerVector[i] := N.AsInteger[i];
-      SumV.AsFloatVector[i]   := Sum.AsFloat[i];
-      MeanV.AsFloatVector[i]  := Mean.AsFloat[i];
-      MinV.AsFloatVector[i]   := Min.AsFloat[i];
-      P05V.AsFloatVector[i]   := P05.AsFloat[i];
-      P10V.AsFloatVector[i]   := P10.AsFloat[i];
-      P25V.AsFloatVector[i]   := P25.AsFloat[i];
-      MedV.AsFloatVector[i]   := Median.AsFloat[i];
-      P75V.AsFloatVector[i]   := P75.AsFloat[i];
-      P90V.AsFloatVector[i]   := P90.AsFloat[i];
-      P95V.AsFloatVector[i]   := P95.AsFloat[i];
-      MaxV.AsFloatVector[i]   := Max.AsFloat[i];
-
-      SvV.AsFloatVector[i]    := StdVar.AsFloat[i];
-      SdV.AsFloatVector[i]    := StdDev.AsFloat[i];
-      SerrV.AsFloatVector[i]  := StdErr.AsFloat[i];
-      CfilV.AsFloatVector[i]  := CfiL.AsFloat[i];
-      CfihV.AsFloatVector[i]  := CfiH.AsFloat[i];
-      SkewV.AsFloatVector[i]  := Skew.AsFloat[i];
-      KurtV.AsFloatVector[i]  := Kurt.AsFloat[i];
-
     end;
 
-  With ResultDF.AnovaRecord do
-    if ResultDF.Size > 1 then
-      begin
-        FExecutor.AddResultConst(Prefix + 'DFB',   ftInteger).AsIntegerVector[0] := DFB;
-        FExecutor.AddResultConst(Prefix + 'SSB',   ftFloat).AsFloatVector[0]     := SSB;
-        FExecutor.AddResultConst(Prefix + 'MSB',   ftFloat).AsFloatVector[0]     := MSB;
-        FExecutor.AddResultConst(Prefix + 'F',     ftFloat).AsFloatVector[0]     := F;
-        FExecutor.AddResultConst(Prefix + 'PROB',  ftFloat).AsFloatVector[0]     := PROB;
-        FExecutor.AddResultConst(Prefix + 'DFW',   ftInteger).AsIntegerVector[0] := DFW;
-        FExecutor.AddResultConst(Prefix + 'SSW',   ftFloat).AsFloatVector[0]     := SSW;
-        FExecutor.AddResultConst(Prefix + 'MSW',   ftFloat).AsFloatVector[0]     := MSW;
-        FExecutor.AddResultConst(Prefix + 'BART',  ftFloat).AsFloatVector[0]     := BART;
-        FExecutor.AddResultConst(Prefix + 'pBART', ftFloat).AsFloatVector[0]     := PBART;
-      end
-    else
-      begin
-        FExecutor.AddResultConst(Prefix + 'T',     ftFloat).AsFloatVector[0]     := F;
-        FExecutor.AddResultConst(Prefix + 'PROB',  ftfloat).AsFloatVector[0]     := PROB;
-      end;
+// summary statistics
+
 end;
 }
 procedure TSurvival.DoOutputSurvival(ST:TCustomVariableCommand);
@@ -377,7 +299,6 @@ var
   Sz, Offset, i, Stratum, Idx: Integer;
   FirstStratum, LastStratum: Integer;
   ColPerStratum: Integer;
-//  maxVforDisplay: Extended;
 
   function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;
   begin
@@ -586,6 +507,11 @@ begin
   FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   FValueLabelOutput := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
 
+  if (Variables.Count = 3) then
+    begin
+      FExecutor.Error('Time / date variables are not implemented');
+      exit;
+    end;
   HasBy := false;
   ST.ExecResult := csrFailed;
   FailOutcomeValue := '0';
@@ -629,6 +555,15 @@ begin
     FTimeVarLabel := DF.Fields.FieldByName[Variables[1]].GetVariableLabel(FVariableLabelOutput);
     FOutcomeVarLabel := DF.Fields.FieldByName[Variables[0]].GetVariableLabel(FVariableLabelOutput);
 
+{    if (Variables.Count = 3) then
+    begin
+      // create new variable as difference var3 - var2
+      TimeVar := DF.NewField(ftInteger);
+      // calculate difference; there should be no missing data
+
+      // replace Variables [1,2] with TimeVar
+    end;
+}
     if DF.Size = 0 then
       begin
         FExecutor.Error('No data!');
@@ -637,7 +572,8 @@ begin
       end;
 
     DoCalcSurvival(DF, Variables, StratVariable, FailOutcomeValue, ST);
-//    DoResultVariables(ResultDF);
+
+    //    DoResultVariables(ResultDF);
 
     if (ST.ExecResult = csrSuccess) then
       begin
