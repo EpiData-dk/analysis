@@ -3901,7 +3901,9 @@ begin
           end;
       end;
     end;
-
+  // check variable types
+  // 2 vars: first is integer or string; 2nd is integer
+  // 3 vars: first is integer or string; 2nd and 3rd are date
   if ST.ExecResult = csrFailed then exit;
 
   Survival := TSurvival.Create(Self, FOutputCreator);

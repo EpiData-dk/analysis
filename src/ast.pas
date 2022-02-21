@@ -1708,9 +1708,9 @@ begin
   Result.Insert('o',    [rtInteger, rtString, rtUndefined]);  // outcome value
   Result.Insert('ng',   [rtUndefined]);     // no graphs
   Result.Insert('nt',   [rtUndefined]);     // no tables
-  Result.Insert('nu',   [rtUndefined]);     // no unstratified table
-  Result.Insert('ns',   [rtUndefined]);     // no stratified tables
-  Result.Insert('nd',   [rtUndefined]);     // no documentation output
+  Result.Insert('nou',   [rtUndefined]);     // no unstratified table
+  Result.Insert('nos',   [rtUndefined]);     // no stratified tables
+  Result.Insert('nod',   [rtUndefined]);     // no documentation output
   Result.Insert('t',    [rtUndefined]);     // log-rank test and hazard ratio (valid with !by)
 
   // Output silencing options
