@@ -55,7 +55,6 @@ type
     FTime:     Array of Array of EpiFloat;
     FAtRisk:   Array of Array of Integer;
     FFail:     Array of Array of Integer;
-    FLost:     Array of Array of Integer;
     FSurvival: Array of Array of EpiFloat;
     FLowCI:    Array of Array of EpiFloat;
     FHighCI:   Array of Array of EpiFloat;
@@ -123,7 +122,7 @@ var
   ASurvivalTable: TTwowayTable;
   TablesRefMap: TEpiReferenceMap;
   GetMedian: Boolean;
-  SelectRow: array of Boolean;
+//  SelectRow: array of Boolean;
 begin
 
 // Use TABLES to get counts of outcomes by time for each stratum
@@ -148,30 +147,15 @@ begin
       end;
     FFailOutcomeValue := FailOutcomeValue;
 
-    // select rows with non-zero failures
-    SetLength(SelectRow, RowCount);
-    // Set size of survival table arrays based on results from CalcTables
-    FIntervals := 0;
-    for Row := 0 to RowCount -1 do
-      begin
-        if (Cell[FailIx,Row].N > 0) then
-          begin
-            FIntervals += 1;
-            SelectRow[Row] := true;
-          end
-        else
-          SelectRow[Row] := false;
-      end;
   end;
 
-//  FIntervals := FSurvivalTable.UnstratifiedTable.RowCount;
+  FIntervals := FSurvivalTable.UnstratifiedTable.RowCount;
   FStrata := FSurvivalTable.Count;
   SetLength(FInterval, FStrata + 1, FIntervals);
   SetLength(FTime,     FStrata + 1, FIntervals);
   SetLength(FAtRisk,   FStrata + 1, FIntervals);
   SetLength(FFail,     FStrata + 1, FIntervals);
   SetLength(FSurvival, FStrata + 1, FIntervals);
-  SetLength(FLost,     FStrata + 1, FIntervals);
   SetLength(FLowCI,    FStrata + 1, FIntervals);
   SetLength(FHighCI,   FStrata + 1, FIntervals);
   SetLength(FMedian,   Fstrata + 1);
@@ -193,16 +177,13 @@ begin
       GetMedian := true;
       Row := 0;
       for i := 0 to ASurvivalTable.RowCount - 1 do
-        begin
-          if (NAtRisk <= 0) then
-            SelectRow[i] := false; // catch last rows with no data
-          if (SelectRow[i]) then
+      begin
+          if (NAtRisk > 0) then
             begin
               Failures := ASurvivalTable.Cell[FailIx, i].N;
               S        := S * Float((NAtRisk - Failures)) / Float(NAtRisk);
               SumF     += Float(Failures) / Float(NAtRisk*(NAtRisk - Failures));
               SE       := CIMult * S * SQRT(SumF);
-              Lost     += ASurvivalTable.RowTotal[Row];
               FInterval[Stratum, Row] := ASurvivalTable.RowVariable.GetValueLabel(i, FValuelabelOutput);
               FTime    [Stratum, Row] := ASurvivalTable.RowVariable.AsFloat[i];
               FAtRisk  [Stratum, Row] := NAtRisk;
@@ -210,19 +191,18 @@ begin
               FSurvival[Stratum, Row] := S;
               FLowCI   [Stratum, Row] := max(S - SE , 0);
               FHighCI  [Stratum, Row] := min(S + SE , 1);
-              FLost    [Stratum, Row] := Lost;
               if (GetMedian) then
                 if (S <= 0.5) then
                   begin
                     FMedian[Stratum] := FInterval[Stratum, Row];
                     GetMedian        := false;
                   end;
-              NAtRisk  := NAtRisk - Lost;
-              Lost := 0;
               Row += 1;
             end
           else
-            Lost += ASurvivalTable.RowTotal[i];
+          begin
+          end;
+        NAtRisk  := NAtRisk - ASurvivalTable.RowTotal[i];
       end;
     end;
   ST.ExecResult := csrSuccess;
@@ -246,7 +226,7 @@ begin
       SumFail := 0;
       for i := 0 to FIntervals - 1 do
         begin
-          SumExp += float(FFail[Stratum, i]) * float(FAtRisk[Stratum, i])/float(FAtRisk[0, i]);
+          SumExp += float(FFail[0, i]) * float(FAtRisk[Stratum, i])/float(FAtRisk[0, i]);
           SumFail += FFail[Stratum, i];
         end;
 
@@ -310,7 +290,7 @@ var
 
 begin
   T             := FOutputCreator.AddTable;
-  T.Header.Text := 'Kaplan-Meyer Survival Analysis - Life Tables';
+  T.Header.Text := 'Kaplan Meier Survival Analysis - Life Tables';
   SmallNumFmt   := '%8.2F';
   Sz            := Length(FAtRisk[0]);
   T.RowCount    := 0;
@@ -376,7 +356,7 @@ begin
   for Stratum := FirstStratum to LastStratum do
     begin
       for i := 0 to Sz - 1 do
-        if (FLost[Stratum, i] > 0) then
+        if (FFail[Stratum, i] > 0) then
         begin
           T.Cell[Offset    , i + 3].Text := IntToStr(FAtRisk[Stratum, i]);
           T.Cell[Offset + 1, i + 3].Text := IntToStr(FFail[Stratum, i]);
@@ -411,7 +391,7 @@ begin
   StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
 
   T             := FOutputCreator.AddTable;
-  T.Header.Text := 'Kaplan-Meyer Survival Analysis - Summary';
+  T.Header.Text := 'Kaplan-Meier Survival Analysis - Summary';
   T.ColCount    := FStrata + 2;
   T.RowCount    := 3;
   T.Cell[1, 1].Text  := 'All Data';
