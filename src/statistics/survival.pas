@@ -476,6 +476,7 @@ var
   HasBy: Boolean;
   DF: TEpiDataFile;
   i: Integer;
+  TimeVarType: TEpiFieldType;
 begin
 // reset result variables;
   FExecutor.ClearResults('$Survival');
@@ -487,11 +488,6 @@ begin
   FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   FValueLabelOutput := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
 
-  if (Variables.Count = 3) then
-    begin
-      FExecutor.Error('Time / date variables are not implemented');
-      exit;
-    end;
   HasBy := false;
   ST.ExecResult := csrFailed;
   FailOutcomeValue := '0';
@@ -532,18 +528,17 @@ begin
       AllVariables.Add(FWeightVarName);
 
     DF := FExecutor.PrepareDatafile(AllVariables, AllVariables);
+
+    // validate time variable as integer or float
+    TimeVarType := DF.Fields.FieldByName[Variables[1]].FieldType;
+    if (not((TimeVarType <> ftInteger) and (TimeVarType = ftFLoat))) then
+      begin
+        FExecutor.Error('Time field [' + Variables[1] + '] is the wrong type.');
+        exit;
+      end;
     FTimeVarLabel := DF.Fields.FieldByName[Variables[1]].GetVariableLabel(FVariableLabelOutput);
     FOutcomeVarLabel := DF.Fields.FieldByName[Variables[0]].GetVariableLabel(FVariableLabelOutput);
 
-{    if (Variables.Count = 3) then
-    begin
-      // create new variable as difference var3 - var2
-      TimeVar := DF.NewField(ftInteger);
-      // calculate difference; there should be no missing data
-
-      // replace Variables [1,2] with TimeVar
-    end;
-}
     if DF.Size = 0 then
       begin
         FExecutor.Error('No data!');
