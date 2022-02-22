@@ -69,8 +69,8 @@
      <tr>
       <td>
        <ul>
-        <li><a href="#tablegrp">Tables and Frequencies</a></li>
-        <li><a href="#analysisgrp">Means and Count</a></li>
+        <li><a href="#tablegrp">Counts, Tables and Frequencies</a></li>
+        <li><a href="#analysisgrp">Means and Survival Analysis</a></li>
        </ul>
       </td>
       <td>
@@ -1711,6 +1711,37 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
        and all frequeencies are based on the <font class="cmd">freq</font> command,
        so results from <font class="cmd">describe</font> will be exactly the same
        as those from <font class="cmd">means</font> or <font class="cmd">freq</font>.
+      </td>
+     </tr>
+     <tr valign="top">
+      <td>
+       <a name="survival" id="survival"/>survival
+      </td>
+      <td>
+       <font class="cmd">survival <i>outcomeVariable timeVariable</i> [option list]</font><br/>
+       <p>Kaplan-Meier life table analysis<br/>
+       <i>outcomeVariable</i> may be numeric or string<br/>
+       <i>timeVariable</i> must be integer or float<br/>
+       With no options specified, a single table will be provided, showing:<br/>
+       time, number at risk, failures (deaths), survival estimate and confidence limits<br/>
+       Since graphs are not yet implemented, tables of plot points are shown, which may<br/>
+       copied to graphing software.</p>
+       <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+       <p>Options to specify outcomes and groups</p>
+       <ul>
+        <li><font class="option">!o := <i>failure code</i>:</font> the default value is 0, otherwise must be specified </li>
+        <li><font class="option">!by := <i>group variable</i>:</font> to compare group survival </li>
+        <li><font class="option">!t:</font> if !by is given, output the log rank Chi-square statistic </li>
+       </ul>
+       <p>Options to control output</p>
+       <ul>
+        <li><font class="option">!ng:</font> no graph output (plot points) </li>
+        <li><font class="option">!nt:</font> no life tables </li>
+        <li><font class="option">!ns:</font> no summary table (including log rank test)</li>
+        <li><font class="option">!nou:</font> no unstratified life table</li>
+        <li><font class="option">!nos:</font> no stratified life tables</li>
+        <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
+       </ul>
       </td>
      </tr>
      <!--
