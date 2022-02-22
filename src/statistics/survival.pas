@@ -66,6 +66,7 @@ type
     FStratVarName: UTF8String;
     FOutcomeVarLabel: UTF8String;
     FTimeVarLabel: UTF8String;
+    FStratLabels: array of UTF8String;
 
   protected
     FExecutor: TExecutor;
@@ -73,7 +74,8 @@ type
 
     procedure DoCalcSurvival(InputDF: TEpiDataFile; Variables: TStrings; StratVariable: TStringList;
       FailOutcomeValue: UTF8String; ST: TCustomVariableCommand);
-//    procedure DoResultVariables(ST: TCustomVariableCommand); virtual;
+    procedure DoResultVariables(ST: TCustomVariableCommand); virtual;
+    procedure DoOneResult(Stratum: Integer; Name: UTF8String); virtual;
     procedure DoOutputSurvival(ST:TCustomVariableCommand); virtual;
     procedure DoOutputSummary(ST:TCustomVariableCommand); virtual;
     procedure DoLogRank(); virtual;
@@ -210,8 +212,8 @@ begin
   T.Free;
 end;
 
-    procedure TSurvival.DoLogRank();
-    var
+procedure TSurvival.DoLogRank();
+var
   SumExp: EpiFloat;
   SumFail: Integer;
   d: EpiFloat;
@@ -236,42 +238,60 @@ begin
   FLRP := ChiPValue(FLRChi , FStrata - 1);
 end;
 
-{procedure TSurvival.DoResultVariables(ResultDF: TSurvivalDatafile);
+procedure TSurvival.DoOneResult(Stratum: Integer; Name: UTF8String);
 var
-  Sz, i: Integer;
+  i, Sz, rSz: Integer;
+  Vt, Vs: array of EpiFloat;
+  rVt, rVs: TExecVarVector;
 begin
-  Sz := ResultDF.Size;
-  Prefix := '$Survival_';
+  // put data in temp arrays, so we know the size
+  Sz := Length(FSurvival[Stratum]);
+  SetLength(Vt, Sz);
+  SetLength(Vs, Sz);
+  rSz := 0;
+  for i := 0 to Sz - 1 do
+    if FFail[Stratum, i] > 0 then
+    begin
+      Vt[rSz] := FTime[Stratum, i];
+      Vs[rSz] := FSurvival[Stratum, i];
+      rSz += 1;
+    end;
+  // result vectors
   with FExecutor do
   begin
-    if Sz = 1 then
+    rVt := AddResultVector('$survival_time_' + Name, ftFloat, rSz);
+    rVs := AddResultVector('$survival_estimate_' + Name, ftFloat, rSz);
+    for i := 0 to rSz - 1 do
       begin
-        CatV  := AddResultConst(Prefix + 'category', ftString);
-        ObsV  := AddResultConst(Prefix + 'obs',      ftInteger);
-        AddResultConst(Prefix + 'catvar', ftString).AsStringVector[0]  := '';
-      end
-    else
-      begin
-        CatV  := AddResultVector(Prefix + 'category', ftString, Sz);
-        ObsV  := AddResultVector(Prefix + 'obs',      ftInteger, Sz);
-        AddResultConst(Prefix + 'catvar', ftString).AsStringVector[0]  := ResultDF.FStratifyVarText;
-     end;
-
-    AddResultConst(Prefix + 'size',  ftInteger).AsIntegerVector[0] := Sz;
-//    AddResultConst(Prefix + 'var',  ftString).AsStringVector[0]    := ResultDF.CountVarText;
- end;
-
-  for i := 0 to ResultDF.Size - 1 do
-  with ResultDF do
-    begin
-      CatV.AsStringVector[i]  := Category.AsString[i];
-      ObsV.AsIntegerVector[i] := N.AsInteger[i];
-    end;
-
-// summary statistics
-
+        rVt.AsFloatVector[i] := FTime[Stratum, i];
+        rVs.AsFloatVector[i] := FSurvival[Stratum, i];
+      end;
+  end;
 end;
-}
+
+procedure TSurvival.DoResultVariables(ST:TCustomVariableCommand);
+var
+  i, rSz, Stratum: Integer;
+  sNames: TExecVarVector;
+  chi, lrp: TExecVarResultConst;
+begin
+  DoOneResult(0, 'all');
+
+  if FStrata > 0 then
+  begin
+    sNames := FExecutor.AddResultVector('$survival_strata', ftString, FStrata);
+    if (ST.HasOption('t')) then
+    begin
+      FExecutor.AddResultConst('$survival_' + 'chi2', ftFloat).AsFloatVector[0] := FLRP;
+      FExecutor.AddResultConst('$survival_' + 'chip', ftFloat).AsFloatVector[0] := FLRChi;
+    end;
+    for Stratum := 1 to FStrata do
+      begin
+        sNames.AsStringVector[Stratum -1] := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(Stratum - 1);
+        DoOneResult(Stratum, IntToStr(Stratum));
+      end;
+  end;
+end;
 procedure TSurvival.DoOutputSurvival(ST:TCustomVariableCommand);
 var
   T: TOutputTable;
@@ -292,7 +312,12 @@ begin
   T             := FOutputCreator.AddTable;
   T.Header.Text := 'Kaplan Meier Survival Analysis - Life Tables';
   SmallNumFmt   := '%8.2F';
-  Sz            := Length(FAtRisk[0]);
+  // show only rows with failures
+  Sz := 0;
+  for i := 0 to Length(FFail[0]) - 1 do
+    if (FFail[0,1] > 0) then
+      Sz += 1;
+//  Sz            := Length(FAtRisk[0]);
   T.RowCount    := 0;
   ColPerStratum := 4;
 
@@ -301,14 +326,15 @@ begin
   if (ST.HasOption('nou')) then
     begin
       if (ST.HasOption('nos')) then exit;
+      T.RowCount   := 3;
       T.ColCount   := 1;
       FirstStratum := 1;
       Offset       := 1;
     end
   else
     begin
-      T.ColCount       := 1 + ColPerStratum;
       T.RowCount       := 3;
+      T.ColCount       := 1 + ColPerStratum;
       T.Cell[1,0].Text := 'All data';
       FirstStratum     := 0;
       Offset           := 1 + ColPerStratum;
@@ -318,7 +344,6 @@ begin
     LastStratum := 0
   else
     begin
-      T.RowCount := 3;
       T.ColCount := T.ColCount + ColPerStratum * FStrata;
       for i := 0 to FStrata -1 do
         begin
@@ -330,7 +355,6 @@ begin
 
   T.Cell[0, 1].Text := 'Follow';
   T.Cell[0, 2].Text := FTimeVarLabel;
-  T.RowCount        := Sz + 3;
   Offset            := 1;
 
   // Column headers
@@ -349,24 +373,28 @@ begin
   T.SetRowAlignment(1, taRightJustify);
   StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
 
-  // intervals
-  for i := 0 to Sz - 1 do
-    T.Cell[0, i + 3].Text := FInterval[0, i];
-  Offset := 1;
-  for Stratum := FirstStratum to LastStratum do
+  // show rows with failures only
+  // show stratum results with failures only
+  Sz := 3;
+  for i := 0 to Length(FFail[0]) - 1 do
+    if (FFail[0, i] > 0) then
     begin
-      for i := 0 to Sz - 1 do
-        if (FFail[Stratum, i] > 0) then
+      T.RowCount := Sz + 1;
+      T.Cell[0, Sz].Text := FInterval[0, i];
+      Offset := 1;
+      for Stratum := FirstStratum to LastStratum do
         begin
-          T.Cell[Offset    , i + 3].Text := IntToStr(FAtRisk[Stratum, i]);
-          T.Cell[Offset + 1, i + 3].Text := IntToStr(FFail[Stratum, i]);
-          T.Cell[Offset + 2, i + 3].Text := Format(StatFmt, [FSurvival[Stratum, i]]);
-          T.Cell[Offset + 3, i + 3].Text := FormatCI(FLowCI[Stratum, i], FHighCI[Stratum, i], 0, ST.Options);
-          T.SetRowAlignment(i + 3, taRightJustify);
-// Need to set this after the entire row has been set to right justify
-//          if Offset > 0 then T.Cell[0, i + 1].Alignment := taLeftJustify;
+          if (FFail[Stratum, i] > 0) then
+            begin
+              T.Cell[Offset    , Sz].Text := IntToStr(FAtRisk[Stratum, i]);
+              T.Cell[Offset + 1, Sz].Text := IntToStr(FFail[Stratum, i]);
+              T.Cell[Offset + 2, Sz].Text := Format(StatFmt, [FSurvival[Stratum, i]]);
+              T.Cell[Offset + 3, Sz].Text := FormatCI(FLowCI[Stratum, i], FHighCI[Stratum, i], 0, ST.Options);
+              T.SetRowAlignment(Sz, taRightJustify);
+            end;
+          Offset += ColPerStratum;
         end;
-      Offset += ColPerStratum;
+      Sz +=1;
     end;
 
   Offset := 0;
@@ -529,13 +557,6 @@ begin
 
     DF := FExecutor.PrepareDatafile(AllVariables, AllVariables);
 
-    // validate time variable as integer or float
-    TimeVarType := DF.Fields.FieldByName[Variables[1]].FieldType;
-    if (not((TimeVarType <> ftInteger) and (TimeVarType = ftFLoat))) then
-      begin
-        FExecutor.Error('Time field [' + Variables[1] + '] is the wrong type.');
-        exit;
-      end;
     FTimeVarLabel := DF.Fields.FieldByName[Variables[1]].GetVariableLabel(FVariableLabelOutput);
     FOutcomeVarLabel := DF.Fields.FieldByName[Variables[0]].GetVariableLabel(FVariableLabelOutput);
 
@@ -548,8 +569,6 @@ begin
 
     DoCalcSurvival(DF, Variables, StratVariable, FailOutcomeValue, ST);
 
-    //    DoResultVariables(ResultDF);
-
     if (ST.ExecResult = csrSuccess) then
       begin
 
@@ -561,7 +580,7 @@ begin
           if (ST.HasOption('t')) then
             DoLogRank();
 
-          if (not ST.HasOption('nos')) then
+          if (not ST.HasOption('ns')) then
             DoOutputSummary(ST);
 
           if (not ST.HasOption('ng')) then
@@ -573,14 +592,12 @@ begin
                 DoOutputGraph(i);
             end;
 
-
         end;
+      DoResultVariables(ST);
 
       end;
-//    ResultDF.Free;
     DF.Free;
   finally
-//    Variables.Free;
 end;
 
 end;
