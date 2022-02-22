@@ -1720,19 +1720,14 @@ end;
 function TSurvivalCommand.GetAcceptedVariableCount: TBoundArray;
 begin
   result := inherited GetAcceptedVariableCount;
-  result[0] := -2;
+  result[0] := 2;
 end;
 
 function TSurvivalCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
   ): TTypesAndFlagsRec;
 begin
   Result := inherited GetAcceptedVariableTypesAndFlags(Index);
-  case VariableList.Count of
-    2: Result.ResultTypes := [rtString, rtInteger];
-    3: Result.ResultTypes := [rtString, rtInteger, rtDate];
-    else
-      Result.ResultTypes := [];
-  end;
+  Result.ResultTypes := [rtString, rtInteger]; // should be only rtInteger for 2nd var
 end;
 
 constructor TSurvivalCommand.Create(AVariableList: TVariableList;
