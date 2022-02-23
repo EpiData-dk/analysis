@@ -2,18 +2,13 @@ unit survival;
 
 {$codepage UTF-8}
 {$mode objfpc}{$H+}
-{TODO:
-1. DONE check success of command before doing output
-   function CalcSurvival: boolean?
-2. DONE stratified analysis
-3. allow dates for fields 2 and 3
-}
+
 interface
 
 uses
-  Classes, SysUtils, StrUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
+  Classes, SysUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
   tables_types, tables,
-  executor, result_variables, interval_types, epifields_helper, ana_globals,
+  executor, result_variables, epifields_helper, ana_globals,
   outputcreator;
 
 type
@@ -41,39 +36,38 @@ type
 
   TSurvival = class
   private
-    FDecimals: Integer;
-    FConf: Integer;
-    FValuelabelOutput: TEpiGetValueLabelType;
+    FDecimals,
+    FConf:                Integer;
+    FValuelabelOutput:    TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
-    FFailOutcomeValue: UTF8String;
+    FFailOutcomeValue:    UTF8String;
   // table of outcome by time
-    FSurvivalTable: TTwoWayTables;
-    FStrata: Integer;
-    FIntervals: Integer;
+    FSurvivalTable:       TTwoWayTables;
+    FStrata,
+    FIntervals:           Integer;
   // survival table results
-    FInterval: Array of Array of UTF8String;
-    FTime:     Array of Array of EpiFloat;
-    FAtRisk:   Array of Array of Integer;
-    FFail:     Array of Array of Integer;
-    FSurvival: Array of Array of EpiFloat;
-    FLowCI:    Array of Array of EpiFloat;
-    FHighCI:   Array of Array of EpiFloat;
+    FInterval:            Array of Array of UTF8String;
+    FAtRisk,
+    FFail:                Array of Array of Integer;
+    FTime,
+    FSurvival,
+    FLowCI,
+    FHighCI:              Array of Array of EpiFloat;
   // summary results
-    FMedian:   Array of UTF8String;
-    FLRChi:    EpiFloat;
-    FLRP:   EpiFloat;
-    FWeightVarName: UTF8String;
-    FStratVarName: UTF8String;
-    FOutcomeVarLabel: UTF8String;
-    FTimeVarLabel: UTF8String;
-    FStratLabels: array of UTF8String;
+    FMedian:              Array of UTF8String;
+    FLRChi, FLRP:         EpiFloat;
+    FWeightVarName,
+    FStratVarName,
+    FOutcomeVarLabel,
+    FTimeVarLabel:        UTF8String;
+    FStratLabels:         array of UTF8String;
 
   protected
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
 
     procedure DoCalcSurvival(InputDF: TEpiDataFile; Variables: TStrings; StratVariable: TStringList;
-      FailOutcomeValue: UTF8String; ST: TCustomVariableCommand);
+                             FailOutcomeValue: UTF8String; ST: TCustomVariableCommand);
     procedure DoResultVariables(ST: TCustomVariableCommand); virtual;
     procedure DoOneResult(Stratum: Integer; Name: UTF8String); virtual;
     procedure DoOutputSurvival(ST:TCustomVariableCommand); virtual;
@@ -114,12 +108,9 @@ procedure TSurvival.DoCalcSurvival(InputDF: TEpiDataFile;
   FailOutcomeValue: UTF8String; ST: TCustomVariableCommand);
 
 var
-  StartIdx, Ix, i, EndIdx, Failures, FailIx, N, Obs, Row, Col: Integer;
-  Interval, Stratum: Integer;
-  NAtRisk, Lost: Integer;
+  i, Failures, FailIx, Row, Col, Stratum, NAtRisk: Integer;
   S, SE, SumF, CIMult: EpiFloat;
   T: TTables;
-  O:   TEpiReferenceMap;
   Statistics: TTableStatistics;
   ASurvivalTable: TTwowayTable;
   TablesRefMap: TEpiReferenceMap;
@@ -152,7 +143,8 @@ begin
   end;
 
   FIntervals := FSurvivalTable.UnstratifiedTable.RowCount;
-  FStrata := FSurvivalTable.Count;
+  FStrata :=    FSurvivalTable.Count;
+  SetLength(FStratlabels, FStrata);
   SetLength(FInterval, FStrata + 1, FIntervals);
   SetLength(FTime,     FStrata + 1, FIntervals);
   SetLength(FAtRisk,   FStrata + 1, FIntervals);
@@ -169,12 +161,16 @@ begin
 
   // unstratified table first
   ASurvivalTable := FSurvivalTable.UnstratifiedTable;
+
   for Stratum := 0 to FStrata do
     begin
-      if (Stratum > 0) then ASurvivalTable := FSurvivalTable.Tables[Stratum - 1];
+      if (Stratum > 0) then
+      begin
+        ASurvivalTable := FSurvivalTable.Tables[Stratum - 1];
+        FStratLabels[Stratum - 1] := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(Stratum - 1);
+      end;
       NAtRisk   := ASurvivalTable.Total;
       S         := 1.0;
-      Lost      := 0;
       SumF      := 0.0;
       GetMedian := true;
       Row := 0;
@@ -271,9 +267,8 @@ end;
 
 procedure TSurvival.DoResultVariables(ST:TCustomVariableCommand);
 var
-  i, rSz, Stratum: Integer;
+  Stratum: Integer;
   sNames: TExecVarVector;
-  chi, lrp: TExecVarResultConst;
 begin
   DoOneResult(0, 'all');
 
@@ -287,18 +282,17 @@ begin
     end;
     for Stratum := 1 to FStrata do
       begin
-        sNames.AsStringVector[Stratum -1] := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(Stratum - 1);
-        DoOneResult(Stratum, IntToStr(Stratum));
+        sNames.AsStringVector[Stratum-1] := FStratLabels[Stratum-1];
+        DoOneResult(Stratum, FStratLabels[Stratum-1]);
       end;
   end;
 end;
 procedure TSurvival.DoOutputSurvival(ST:TCustomVariableCommand);
 var
   T: TOutputTable;
-  SmallNumFmt, StatFmt: String;
-  Sz, Offset, i, Stratum, Idx: Integer;
-  FirstStratum, LastStratum: Integer;
-  ColPerStratum: Integer;
+  StatFmt: String;
+  Sz, Offset, i: Integer;
+  Stratum, FirstStratum, LastStratum, ColPerStratum: Integer;
 
   function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;
   begin
@@ -311,7 +305,6 @@ var
 begin
   T             := FOutputCreator.AddTable;
   T.Header.Text := 'Kaplan Meier Survival Analysis - Life Tables';
-  SmallNumFmt   := '%8.2F';
   // show only rows with failures
   Sz := 0;
   for i := 0 to Length(FFail[0]) - 1 do
@@ -348,7 +341,7 @@ begin
       for i := 0 to FStrata -1 do
         begin
           T.Cell[Offset + ColPerStratum * i,     0].Text := FStratVarName + ' = ';
-          T.Cell[Offset + ColPerStratum * i + 1, 0].Text := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(i);
+          T.Cell[Offset + ColPerStratum * i + 1, 0].Text := FStratLabels[i];
         end;
       LastStratum := FStrata;
     end;
@@ -411,36 +404,31 @@ end;
 procedure TSurvival.DoOutputSummary(ST:TCustomVariableCommand);
 var
   T: TOutputTable;
-  SmallNumFmt, StatFmt: String;
-  Sz, Offset, i, Stratum, Idx: Integer;
-  FirstStratum, LastStratum: Integer;
-  ColPerStratum: Integer;
+  StatFmt: String;
+  i:  Integer;
 begin
   StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
 
-  T             := FOutputCreator.AddTable;
-  T.Header.Text := 'Kaplan-Meier Survival Analysis - Summary';
-  T.ColCount    := FStrata + 2;
-  T.RowCount    := 3;
-  T.Cell[1, 1].Text  := 'All Data';
-  T.Cell[0, 2].Text  := 'Median Survival';
-
-  for i := 0 to FStrata -1 do
-  begin
-    T.Cell[i + 2, 0].Text := FStratVarName + ' = ';
-    T.Cell[i + 2, 1].Text := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(i);
-  end;
+  T                 := FOutputCreator.AddTable;
+  T.Header.Text     := 'Kaplan-Meier Survival Analysis - Summary';
+  T.ColCount        := FStrata + 2;
+  T.RowCount        := 3;
+  T.Cell[1, 1].Text := 'All Data';
+  T.Cell[0, 2].Text := 'Median Survival';
+  T.Cell[2, 0].Text := FStratVarName;
 
   for i := 0 to FStrata do
     begin
       if (i > 0) then
-        T.Cell[i + 1, 1].Text := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(i-1);
+        T.Cell[i + 1, 1].Text := FStratLabels[i-1];
       T.Cell[i + 1, 2].Text := FMedian[i];
     end;
     T.SetRowBorders(1, [cbBottom]);
 
   if ((FStrata > 0) and (ST.HasOption('t'))) then
     T.Footer.Text := 'Log-Rank Chi-square = ' + Format(StatFmt, [FLRChi]) + ' ' + FormatP(FLRP, true);
+  T.SetRowBorders(1, [cbTop]);
+  T.SetRowBorders(2, [cbBottom]);
 end;
 constructor TSurvival.Create(AExecutor: TExecutor;
   OutputCreator: TOutputCreator);
@@ -456,65 +444,66 @@ end;
 
 procedure TSurvival.DoOutputGraph(Stratum: Integer);
 var
-  T: TOutputTable;
+  Tab: TOutputTable;
 //  SPlot: array of array of EpiFloat;  // holds plot points for this graph
-  Row, i, Points: Integer;
+  Row, i:  Integer;
   LastS: EpiFloat;
-  s: UTF8String;
+  s, d, t: UTF8String;
 begin
-  T := FOutputCreator.AddTable;
+  Tab := FOutputCreator.AddTable;
   s := 'Survival Graph - plot points for ';
   if (Stratum = 0) then
     s += 'all data'
   else
-    s += FStratVarName + ' = ' + FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(Stratum - 1);
-  T.Header.Text    := s;
-  Points           := 2 * length(FAtRisk[Stratum]);
-  T.ColCount       := 2;
-  T.RowCount       := 2;
-  T.Cell[0,0].Text := 'time';
-  T.Cell[1,0].Text := 'survival';
-  T.Cell[0,1].Text := '0';
-  T.Cell[1,1].Text := '1.00';
-  LastS            := 1;
-  Row              := 0;
-  // only include rows where there were no failures
-  for i := 0 to length(FAtRisk[Stratum]) - 1 do
-    if (FFail[Stratum, i] > 0) then
-    begin
-      Row += 2;
-      T.RowCount := Row + 2;
-      T.Cell[0, Row].Text     := Format('%6.2f', [FTime[Stratum, i]]);
-      T.Cell[1, Row].Text     := Format('%6.2f', [LastS]);
-      T.Cell[0, Row + 1].Text := Format('%6.2f', [FTime[Stratum, i]]);
-      LastS                   := FSurvival[Stratum, i];
-      T.Cell[1, Row + 1].Text := Format('%6.2f', [LastS]);
-    end;
+    s += FStratVarName + ' = ' + FStratLabels[Stratum - 1];
+
+  with Tab do
+  begin
+    Header.Text    := s;
+
+//  Delimited output
+    d              := ',';
+    ColCount       := 1;
+    RowCount       := 2;
+    Cell[0,0].Text := 'time' + d + 'survival';
+    Cell[0,1].Text := '0.00' + d + '1.00';
+    LastS          := 1;
+    Row            := 2;
+    // only include rows where there were no failures
+    for i := 0 to length(FAtRisk[Stratum]) - 1 do
+      if (FFail[Stratum, i] > 0) then
+      begin
+        RowCount              := Row + 2;
+        t                     := trim(Format('%8.2f', [FTime[Stratum, i]]));
+        Cell[0, Row].Text     := t + d + trim(Format('%6.2f', [LastS]));
+        LastS                 := FSurvival[Stratum, i];
+        Cell[0, Row + 1].Text := t + d + trim(Format('%6.2f', [LastS]));
+        Row                   += 2;
+      end;
+    SetColAlignment(0, taLeftJustify);
+    Footer.Text := 'To copy to graphing software, select the plot points, right-click, copy selected text'
+  end;
 end;
 
 procedure TSurvival.ExecSurvival(Variables: TStrings; ST: TCustomVariableCommand);
 var
-//  Variables: TStrings;
-  AllVariables: TStrings;
-  StratVariable: TStringList;
-//  ResultDF: TSurvivalDatafile;
-//  FollowVarName, OutcomeVarName, StratifyVarName: UTF8String;
+  AllVariables:     TStrings;
+  StratVariable:    TStringList;
   FailOutcomeValue: UTF8String;
-  Opt: TOption;
-  HasBy: Boolean;
-  DF: TEpiDataFile;
-  i: Integer;
-  TimeVarType: TEpiFieldType;
+  Opt:              TOption;
+  HasBy:            Boolean;
+  DF:               TEpiDataFile;
+  i:                Integer;
 begin
 // reset result variables;
   FExecutor.ClearResults('$Survival');
 
-  AllVariables := TStringList.Create;
-  AllVariables.AddStrings(Variables);
-  StratVariable := TStringList.Create;
-  FDecimals := DecimalFromOption(ST.Options, 3);
+  StratVariable        := TStringList.Create;
+  FDecimals            := DecimalFromOption(ST.Options, 3);
   FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-  FValueLabelOutput := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+  FValueLabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+  AllVariables         := TStringList.Create;
+  AllVariables.AddStrings(Variables);
 
   HasBy := false;
   ST.ExecResult := csrFailed;
@@ -528,27 +517,27 @@ begin
           FailOutcomeValue := Opt.Expr.AsString;
         end;
       // check for  weight variable
-     if (Opt.Ident = 'w') then
-       FWeightVarName := Opt.Expr.AsIdent;
+      if (Opt.Ident = 'w') then
+        FWeightVarName := Opt.Expr.AsIdent;
 
       // check for more than one !by
-     if (Opt.Ident = 'by') then
-       if (HasBy) then
+      if (Opt.Ident = 'by') then
+        if (HasBy) then
+          begin
+            FExecutor.Error('Can only stratify by one variable; !by:=' + Opt.Expr.AsIdent + ' is invalid');
+            exit;
+          end
+       else
          begin
-           FExecutor.Error('Can only stratify by one variable; !by:=' + Opt.Expr.AsIdent + ' is invalid');
-           exit;
-         end
-      else
-        begin
-          HasBy := true;
-          if ( (Variables[0] = Opt.Expr.AsIdent) or (Variables[1] = Opt.Expr.AsIdent) ) then
-            begin
-              FExecutor.Error('Cannot stratify by this variable: ' + Opt.expr.AsIdent);
-              Exit;
-            end;
-          FStratVarName := Opt.Expr.AsIdent;
-          StratVariable.Add(FStratVarName);
-          AllVariables.AddStrings(FStratVarName);
+           HasBy := true;
+           if ( (Variables[0] = Opt.Expr.AsIdent) or (Variables[1] = Opt.Expr.AsIdent) ) then
+             begin
+               FExecutor.Error('Cannot stratify by this variable: ' + Opt.expr.AsIdent);
+               Exit;
+             end;
+           FStratVarName := Opt.Expr.AsIdent;
+           StratVariable.Add(FStratVarName);
+           AllVariables.AddStrings(FStratVarName);
          end;
       end;
 
@@ -556,8 +545,14 @@ begin
       AllVariables.Add(FWeightVarName);
 
     DF := FExecutor.PrepareDatafile(AllVariables, AllVariables);
-
-    FTimeVarLabel := DF.Fields.FieldByName[Variables[1]].GetVariableLabel(FVariableLabelOutput);
+    // validate time is not a string
+    if (DF.Fields.FieldByName[Variables[1]].FieldType <> ftInteger) then
+      begin
+        FExecutor.Error('Time variable '  + Variables[1] + ' must be integer. ');
+        exit;
+      end;
+    // save labels for other procedures
+    FTimeVarLabel    := DF.Fields.FieldByName[Variables[1]].GetVariableLabel(FVariableLabelOutput);
     FOutcomeVarLabel := DF.Fields.FieldByName[Variables[0]].GetVariableLabel(FVariableLabelOutput);
 
     if DF.Size = 0 then
@@ -587,14 +582,11 @@ begin
             if (FStrata = 0) then
               DoOutputGraph(0)
             else
-            begin
               for i:= 1 to FStrata do
                 DoOutputGraph(i);
-            end;
 
         end;
       DoResultVariables(ST);
-
       end;
     DF.Free;
   finally
