@@ -38,3 +38,5 @@
 -Fu./src/statistics/
 -Fu./src/statusbar/
 -Fu./src/utils/
+-Fu./src/graph/
+-Fu./src/graph/commands/

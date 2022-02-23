@@ -9,15 +9,16 @@ uses
     clocale,
   {$ENDIF}
   Interfaces,// this includes the LCL widgetset
-  sysutils, Forms, FrameViewer09, lclextensions_package, lnetbase, main,
-  executor, expr, ast, ast_types, ast_builder, datamodule, select_stack,
-  result_variables, runtest, parser, about, epidatacore, statfunctions, means,
-  generalutils, interval_types, outputcreator, outputgenerator_base,
-  outputgenerator_txt, outputgenerator_html, options_hashmap, list, edit, drop,
-  history, cmdedit, analysis_statusbar, selected_count_statusbar_item,
-  workingdir_statusbar_item, systemcmd, parser_types, Variables, Token, Symbol,
-  SourceFeeder, Rule, MemLeakFinder, LRAction, GrammarReader, GOLDParser,
-  FAState, epi_script_function_mathfunctions, epi_script_function_createdate,
+  sysutils, Forms, FrameViewer09, lclextensions_package, tachartlazaruspkg,
+  lnetbase, main, executor, expr, ast, ast_types, ast_builder, datamodule,
+  select_stack, result_variables, runtest, parser, about, epidatacore,
+  statfunctions, means, generalutils, interval_types, outputcreator,
+  outputgenerator_base, outputgenerator_txt, outputgenerator_html,
+  options_hashmap, list, edit, drop, history, cmdedit, analysis_statusbar,
+  selected_count_statusbar_item, workingdir_statusbar_item, systemcmd,
+  parser_types, Variables, Token, Symbol, SourceFeeder, Rule, MemLeakFinder,
+  LRAction, GrammarReader, GOLDParser, FAState,
+  epi_script_function_mathfunctions, epi_script_function_createdate,
   epi_script_function_timefunctions, epi_script_function_stringfunctions,
   epi_script_function_resourcestrings, epi_script_function_datefunctions,
   epi_script_function_createtime, ana_documentfile, editor_form, freq,
@@ -47,7 +48,8 @@ uses
   means_statisticoptions_model, means_statisticoptions_view,
   describe_contribution, describe_model, describe_primaryoption_model,
   describe_primaryoption_view, describe_statisticoptions_model,
-  describe_statisticoptions_view, describe_variables_view;
+  describe_statisticoptions_view, describe_variables_view, scatter,
+  graphcommand, graphform, graphformfactory;
 
 {$R *.res}
 

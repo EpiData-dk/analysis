@@ -99,6 +99,9 @@ type
     stReorder,
     stRecode,
 
+  // Graph commands (also Variable commands)
+    stScatter,
+
   // String Commands
     stRead,
     stRun,

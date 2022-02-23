@@ -1280,6 +1280,20 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+  { TCustomGraphCommand }
+
+  TCustomGraphCommand = class(TCustomVariableCommand);
+
+  { TScatterCommand }
+
+  TScatterCommand = class(TCustomGraphCommand)
+  protected
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TCustomMergeCommand }
 
   TCustomMergeCommand = class(TCustomVariableCommand)
@@ -2393,6 +2407,27 @@ constructor TSortCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
   inherited Create(AVariableList, AOptionList, stSort);
+end;
+
+{ TScatterCommand }
+
+function TScatterCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  Result[0] := 2;
+end;
+
+function TScatterCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  Result.ResultTypes := [rtDate, rtInteger, rtFloat, rtTime];
+end;
+
+constructor TScatterCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stScatter);
 end;
 
 { TAppendCommand }
@@ -3831,6 +3866,7 @@ begin
                    Result := TTablesCommand.Create(AVariableList, AOptionList);
     stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
     stDescribe:  Result := TDescribeCommand.Create(AVariablelist, AOptionList);
+    stScatter:   Result := TScatterCommand.Create(AVariableList, AOptionList);
   else
     DoError();
   end;
@@ -6932,6 +6968,7 @@ begin
     'des': Result := stDescribe;
     'use': Result := stUse;
     'ver': Result := stVersion;
+    'sca': Result := stScatter;
   else
     DoError();
   end;

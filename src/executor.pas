@@ -223,6 +223,9 @@ type
     procedure ExecTables(ST: TTablesCommand); virtual;
     procedure ExecCTable(ST: TCTableCommand); virtual;
 
+    // - Graph commands
+    procedure ExecGraphCommand(ST: TCustomGraphCommand); virtual;
+
     // String commands
     procedure ExecRead(ST: TCustomStringCommand); virtual;
     procedure ExecSave(ST: TCustomStringCommand); virtual;
@@ -325,7 +328,7 @@ uses
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
   RegExpr, ana_globals, browse4, strutils, ana_documentfile, FileUtil,
-  about,
+  about, graphcommand, graphformfactory,
 
   // Set options
   options_fontoptions, options_filesoptions, options_table, options_string_array,
@@ -336,7 +339,10 @@ uses
   aggregate, recode,
 
   // STATISTICS
-  means, freq, tables, ctable, describe;
+  means, freq, tables, ctable, describe,
+
+  // Graph
+  scatter;
 
 type
   EExecutorException = class(Exception);
@@ -3876,6 +3882,27 @@ begin
 
 end;
 
+procedure TExecutor.ExecGraphCommand(ST: TCustomGraphCommand);
+var
+  GraphForm: IGraphForm;
+  graphcommand: IGraphCommand;
+  factory: TGraphFormFactory;
+  Form: TCustomForm;
+begin
+  GraphForm := TheGraphFormFactory.NewGraphForm();
+  graphcommand := nil;
+
+  case ST.StatementType of
+    stScatter: graphcommand := TScatter.Create();
+  end;
+
+  graphcommand.Init(GraphForm.GetChartFactory, self, FOutputCreator);
+  graphcommand.Execute(ST);
+  Form := GraphForm.GetForm;
+  Form.ShowModal;
+  TheGraphFormFactory.CloseAllOpenForms();
+end;
+
 procedure TExecutor.ExecUse(ST: TUse);
 var
   Idx: LongInt;
@@ -4079,6 +4106,11 @@ begin
 
         stRecode:
           ExecRecode(TRecodeCommand(ST));
+
+      // - Graphs
+
+        stScatter:
+          ExecGraphCommand(TCustomGraphCommand(ST));
 
       // String Commands
         stRead:

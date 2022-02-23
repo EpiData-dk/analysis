@@ -32,7 +32,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe/"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -65,7 +65,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe/"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -101,7 +101,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe/"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -129,7 +129,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe/"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -157,7 +157,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe/"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -185,7 +185,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe/"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -214,6 +214,9 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
+      <local>
+        <LaunchingApplication PathPlusParams=""/>
+      </local>
       <environment>
         <UserOverrides Count="1">
           <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
@@ -222,6 +225,9 @@
       <FormatVersion Value="2"/>
       <Modes Count="3">
         <Mode0 Name="default">
+          <local>
+            <LaunchingApplication PathPlusParams=""/>
+          </local>
           <environment>
             <UserOverrides Count="1">
               <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
@@ -229,6 +235,9 @@
           </environment>
         </Mode0>
         <Mode1 Name="Lang = Dansk (da_DK)">
+          <local>
+            <LaunchingApplication PathPlusParams=""/>
+          </local>
           <environment>
             <UserOverrides Count="2">
               <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
@@ -248,50 +257,53 @@
         </Mode2>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="13">
+    <RequiredPackages Count="14">
       <Item1>
-        <PackageName Value="luicontrols"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item1>
       <Item2>
-        <PackageName Value="luicomponents"/>
+        <PackageName Value="luicontrols"/>
       </Item2>
       <Item3>
-        <PackageName Value="ChsDet"/>
+        <PackageName Value="luicomponents"/>
       </Item3>
       <Item4>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="ChsDet"/>
       </Item4>
       <Item5>
-        <PackageName Value="lclextensions_package"/>
+        <PackageName Value="lnetbase"/>
       </Item5>
       <Item6>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="lclextensions_package"/>
       </Item6>
       <Item7>
-        <PackageName Value="BGRABitmapPack"/>
+        <PackageName Value="dcpcrypt"/>
       </Item7>
       <Item8>
-        <PackageName Value="FrameViewer09"/>
+        <PackageName Value="BGRABitmapPack"/>
       </Item8>
       <Item9>
-        <PackageName Value="virtualtreeview_package"/>
+        <PackageName Value="FrameViewer09"/>
       </Item9>
       <Item10>
-        <PackageName Value="epidatacore_visuals"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="virtualtreeview_package"/>
       </Item10>
       <Item11>
-        <PackageName Value="epidatacore"/>
+        <PackageName Value="epidatacore_visuals"/>
         <MinVersion Major="2" Valid="True"/>
       </Item11>
       <Item12>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="epidatacore"/>
+        <MinVersion Major="2" Valid="True"/>
       </Item12>
       <Item13>
-        <PackageName Value="LCL"/>
+        <PackageName Value="SynEdit"/>
       </Item13>
+      <Item14>
+        <PackageName Value="LCL"/>
+      </Item14>
     </RequiredPackages>
-    <Units Count="135">
+    <Units Count="139">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -869,6 +881,25 @@
         <Filename Value="src/dialogs/stat_dialogs/describe/describe_variables_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit134>
+      <Unit135>
+        <Filename Value="src/graph/commands/scatter.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit135>
+      <Unit136>
+        <Filename Value="src/graph/graphcommand.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit136>
+      <Unit137>
+        <Filename Value="src/graph/graphform.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="GraphForm1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit137>
+      <Unit138>
+        <Filename Value="src/graph/graphformfactory.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit138>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -878,7 +909,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe/"/>
+      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph"/>
       <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

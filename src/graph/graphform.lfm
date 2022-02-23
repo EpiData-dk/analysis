@@ -1,0 +1,8 @@
+object GraphForm1: TGraphForm1
+  Left = 2852
+  Height = 240
+  Top = 382
+  Width = 320
+  Caption = 'GraphForm1'
+  LCLVersion = '2.0.12.0'
+end
