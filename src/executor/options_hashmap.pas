@@ -55,11 +55,11 @@ type
     procedure RemoveOnChangeHandler(Event: TNotifyEvent);
   end;
 
-  { TOptionCompare }
-
+  { TOptionCompare }                                   
   TOptionCompare = class
     class function c(KeyA, KeyB: UTF8String): boolean;
   end;
+
 
   TCustomSetOptionsMap = specialize TMap<UTF8String, TSetOption, TOptionCompare>;
 

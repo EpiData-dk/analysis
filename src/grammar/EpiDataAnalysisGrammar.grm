@@ -59,6 +59,9 @@ opAggregate   = 'agg'('regate')?
 opDescribe    = 'des'('cribe')?
 opRecode      = 'recode'
 
+! -- Graph commands
+opScatter     = 'sca'('tter')?
+
 ! -- String commands
 opRunTest     = 'runtest'
 opRun         = 'run'
@@ -142,6 +145,7 @@ opSet         = 'set'
                                            |   opTables
                                            |   opCTable
                                            |   opDescribe
+                                           |   opScatter
 
 <String Command>                           ::= opRead
                                            |   opRuntest
