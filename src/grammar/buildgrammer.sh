@@ -1,7 +1,7 @@
 #/bin/bash
 
 # Programs
-WINE_PREFIX="/home/torsten/.winegui/prefixes/Gold Parser/"
+WINE_PREFIX="/home/torsten/.local/share/bottles/bottles/GoldParser/"
 GOLD="${WINE_PREFIX}/drive_c/GOLD-Builder-5.2.0-Cmd/GOLDbuild.exe"
 BINOBJ=$(which bin2obj)
 
