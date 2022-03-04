@@ -17,6 +17,8 @@ type
      FExecutor: TExecutor;
      FValueLabelType: TEpiGetValueLabelType;
      FVariableLabelType: TEpiGetVariableLabelType;
+     FValueLabelsDefault: Integer;
+     FVariableLabelsDefault: Integer;
      FDecimals: UTF8String;
      procedure SetValueLabelType(AValue: TEpiGetValueLabelType);
      procedure SetVariableLabelType(AValue: TEpiGetVariableLabelType);
@@ -29,6 +31,8 @@ type
      property VariableLabelType: TEpiGetVariableLabelType read FVariableLabelType write SetVariableLabelType;
      property ValueLabelType: TEpiGetValueLabelType read FValueLabelType write SetValueLabelType;
      property Decimals: UTF8String read FDecimals write SetDecimals;
+     property ValueLabelsDefault: Integer read FValueLabelsDefault write FValueLabelsDefault;
+     property VariableLabelsDefault: Integer read FVariableLabelsDefault;
    end;
 
 
@@ -61,8 +65,17 @@ begin
 end;
 
 constructor TSurvivalStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
+var
+    defaults: TStringList;
 begin
   FExecutor := Executor;
+  defaults := TStringList.Create;
+  defaults.AddStrings(['v', 'l', 'vl', 'lv']);
+  FValueLabelsDefault := defaults.indexOf(LowerCase(FExecutor.GetSetOptionValue('STATISTICS VALUE LABEL')));
+  defaults.Clear;
+  defaults.AddStrings(['vn', 'vla', 'vnl', 'vlv']);
+  FVariableLabelsDefault := defaults.indexOf(LowerCase(FExecutor.GetSetOptionValue('STATISTICS VARIABLE LABEL')));
+  defaults.Free;
 end;
 
 function TSurvivalStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
@@ -78,7 +91,7 @@ begin
     gvtLabelValue: compareOption := 'lv';
   end;
   if (LowerCase(FExecutor.GetSetOptionValue('STATISTICS VALUE LABEL')) <> compareOption) then
-    Result := '!' + compareOption + ' ';
+    Result := ' !' + compareOption;
 
   case FVariableLabelType of
     gvtVarName:      compareOption := 'vn';
@@ -92,7 +105,7 @@ begin
   if (FDecimals <> '3') then
     Result += ' !d' + FDecimals;
 
-  Result := UTF8Trim(Result);
+//  Result := UTF8Trim(Result);
 end;
 
 function TSurvivalStatDialogPrimaryOptionModel.IsDefined(): boolean;

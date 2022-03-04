@@ -52,7 +52,7 @@ begin
 
   if (pChi in FStatisticTypes) then Result += ' !t';
 
-  Result := UTF8Trim(Result);
+//  Result := UTF8Trim(Result);
 end;
 
 function TSurvivalStatDialogStatisticOptionsModel.IsDefined(): boolean;

@@ -54,7 +54,6 @@ procedure TSurvivalStatDialogVariableModel.SetXVariable(AValue: TEpiField);
 begin
   if FXVariable = AValue then Exit;
   FXVariable := AValue;
-//  FOutcomeValues.Clear;
   SetOutcomeValues(FXVariable);
 end;
 
@@ -88,14 +87,17 @@ var
   i: Integer;
   l: TEpiValueLabelSet;
 begin
-  l := Field.ValueLabelSet;
   FOutcomeValues.Clear;
-  if (l = nil) then
-    for i := 0 to 5 do
-      FOutcomeValues.Add(IntToStr(i))
-  else
-  for i := 0 to l.Count - 1 do
-    FOutcomeValues.Add(l.ValueLabels[i].ValueAsString);
+  if (Field <> nil) then
+    begin
+      l := Field.ValueLabelSet;
+      if (l = nil) then
+        for i := 0 to 5 do
+          FOutcomeValues.Add(IntToStr(i))
+      else
+        for i := 0 to l.Count - 1 do
+          FOutcomeValues.Add(l.ValueLabels[i].ValueAsString);
+    end;
 end;
 
 function TSurvivalStatDialogVariableModel.IsUsed(Field: TEpiField;

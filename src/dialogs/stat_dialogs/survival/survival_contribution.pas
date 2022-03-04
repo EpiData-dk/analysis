@@ -93,7 +93,7 @@ function TSurvivalStatDialogContribution.GetHelpText(): UTF8String;
 begin
   result :=
     '1: Select Variables' + LineEnding +
-    '2: Click percentage, test, sorting etc.' + LineEnding +
+    '2: Choose options' + LineEnding +
     '3: Run, Execute or Paste command';
 end;
 
