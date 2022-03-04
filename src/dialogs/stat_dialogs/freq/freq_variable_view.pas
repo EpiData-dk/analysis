@@ -18,7 +18,7 @@ type
     FDataModel: TFreqVariableModel;
     FFields: TEpiFields;
     FVarnamesList: TVirtualStringTree;
-    FOnModified: IStatDiaglogViewModified;
+    FOnModified: IStatDialogViewModified;
     procedure VarnamesHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
     procedure VarnameListChecked(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure VarnamesListGetImageIndex(Sender: TBaseVirtualTree;

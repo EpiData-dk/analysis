@@ -15,7 +15,7 @@ type
   TFreqMainOptionsView = class(TCustomStatDialogView)
   private
     FHorizontalDivider: TBevel;
-    FOnModified: IStatDiaglogViewModified;
+    FOnModified: IStatDialogViewModified;
     FDataModel: TFreqMainOptionsModel;
     FOtherGroup: TCheckGroup;
     FPercentageGroup: TCheckGroup;

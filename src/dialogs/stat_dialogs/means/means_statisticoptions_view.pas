@@ -15,7 +15,7 @@ type
 
   TMeansStatDialogStatisticOptionsView = class(TCustomStatDialogView)
   private
-    FOnModified: IStatDiaglogViewModified;
+    FOnModified: IStatDialogViewModified;
     FDataModel: TMeansStatDialogStatisticOptionsModel;
     FStatisticsGroup: TCheckGroup;
 

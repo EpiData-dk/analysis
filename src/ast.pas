@@ -1188,7 +1188,7 @@ type
     function GetAcceptedVariableCount: TBoundArray; override;
   public
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
-    end;
+  end;
 
  { TMeansCommand }
 
@@ -1760,7 +1760,10 @@ function TSurvivalCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
   ): TTypesAndFlagsRec;
 begin
   Result := inherited GetAcceptedVariableTypesAndFlags(Index);
-  Result.ResultTypes := [rtString, rtInteger]; // should be only rtInteger for 2nd var
+  case Index of
+    0: Result.ResultTypes := [rtString, rtInteger];
+    1: Result.ResultTypes := [rtInteger];
+  end;
 end;
 
 constructor TSurvivalCommand.Create(AVariableList: TVariableList;

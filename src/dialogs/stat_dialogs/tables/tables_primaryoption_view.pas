@@ -14,7 +14,7 @@ type
 
   TTableStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
-    FOnModified: IStatDiaglogViewModified;
+    FOnModified: IStatDialogViewModified;
     FDataModel: TTableStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FPercentGroup: TCheckGroup;

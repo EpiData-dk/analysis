@@ -19,9 +19,9 @@ type
     function GenerateScript(): UTF8String;
   end;
 
-  { IStatDiaglogViewModified }
+  { IStatDialogViewModified }
 
-  IStatDiaglogViewModified = interface['{7FCE1351-BFDB-449A-8BD7-0EB6F9527033}']
+  IStatDialogViewModified = interface['{7FCE1351-BFDB-449A-8BD7-0EB6F9527033}']
     procedure OnViewModified(View: IStatDialogView);
   end;
 
@@ -34,8 +34,8 @@ type
     procedure EnterView();
     function ExitView(): boolean;
     procedure ResetView();
-    procedure AddOnModified(OnModified: IStatDiaglogViewModified);
-    procedure RemoveOnModified(OnModified: IStatDiaglogViewModified);
+    procedure AddOnModified(OnModified: IStatDialogViewModified);
+    procedure RemoveOnModified(OnModified: IStatDialogViewModified);
   end;
   TStatDialogContributionViewList = specialize TFPGList<IStatDialogView>;
 

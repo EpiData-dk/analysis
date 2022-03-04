@@ -1,4 +1,4 @@
-unit describe_primaryoption_view;
+unit survival_primaryoption_view;
 
 {$mode objfpc}{$H+}
 
@@ -6,23 +6,27 @@ interface
 
 uses
   Classes, SysUtils, ExtCtrls, Controls, stat_dialog_contribution,
-  describe_primaryoption_model, stat_dialog_custom_view;
+  survival_primaryoption_model, stat_dialog_custom_view;
 
 type
 
-  { TDescribeStatPrimaryOptionsView }
+  { TSurvivalStatPrimaryOptionsView }
 
-  TDescribeStatPrimaryOptionsView = class(TCustomStatDialogView)
+  TSurvivalStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
     FOnModified: IStatDialogViewModified;
-    FDataModel: TDescribePrimaryOptionModel;
+    FDataModel: TSurvivalStatDialogPrimaryOptionModel;
+    FHorizontalDivider: TBevel;
+    FDecimalGroup: TRadioGroup;
     FValueLabelsGroup: TRadioGroup;
     FVariableLabelsGroup: TRadioGroup;
     FVerticalDivider: TBevel;
     procedure CreateValueLabelsRadios(RadioGroup: TRadioGroup);
     procedure CreateVariableLabelsRadios(RadioGroup: TRadioGroup);
+    procedure CreateDecimalRadios(RadioGroup: TRadioGroup);
     procedure ValueLabelSelectionChanged(Sender: TObject);
     procedure VariableLabelSelectionChanged(Sender: TObject);
+    procedure DecimalSelectionChanged(Sender: TObject);
   public
     constructor Create(TheOwner: TComponent); override;
     procedure EnterView(); override;
@@ -30,7 +34,7 @@ type
     function GetViewCaption(): UTF8String; override;
     function IsDefined(): boolean; override;
     procedure ResetView(); override;
-    procedure SetModel(DataModel: TDescribePrimaryOptionModel);
+    procedure SetModel(DataModel: TSurvivalStatDialogPrimaryOptionModel);
   end;
 
 implementation
@@ -38,42 +42,42 @@ implementation
 uses
   StdCtrls, epifields_helper;
 
-{ TDescribeStatPrimaryOptionsView }
+{ TSurvivalStatPrimaryOptionsView }
 
-procedure TDescribeStatPrimaryOptionsView.CreateValueLabelsRadios(
+procedure TSurvivalStatPrimaryOptionsView.CreateValueLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Value');
   RadioGroup.Items.Add('Label');
   RadioGroup.Items.Add('Value + Label');
   RadioGroup.Items.Add('Label + Value');
-  RadioGroup.ItemIndex := 1;
+
   RadioGroup.OnSelectionChanged := @ValueLabelSelectionChanged;
 end;
 
-procedure TDescribeStatPrimaryOptionsView.CreateVariableLabelsRadios(
+procedure TSurvivalStatPrimaryOptionsView.CreateVariableLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Variable Name');
   RadioGroup.Items.Add('Label');
   RadioGroup.Items.Add('Variable Name + Label');
   RadioGroup.Items.Add('Label + Variable Name');
-  RadioGroup.ItemIndex := 1;
+
   RadioGroup.OnSelectionChanged := @VariableLabelSelectionChanged;
 end;
 
-procedure TDescribeStatPrimaryOptionsView.ValueLabelSelectionChanged(Sender: TObject);
+procedure TSurvivalStatPrimaryOptionsView.CreateDecimalRadios(
+  RadioGroup: TRadioGroup);
+var
+  i: integer;
 begin
-  case TRadioGroup(Sender).ItemIndex of
-    0: FDataModel.ValueLabelType := gvtValue;
-    1: FDataModel.ValueLabelType := gvtLabel;
-    2: FDataModel.ValueLabelType := gvtValueLabel;
-    3: FDataModel.ValueLabelType := gvtLabelValue;
-  end;
-  DoModified();
+  for i := 0 to 5 do
+    RadioGroup.Items.Add(IntToStr(i));
+
+  RadioGroup.OnSelectionChanged := @DecimalSelectionChanged;
 end;
 
-procedure TDescribeStatPrimaryOptionsView.VariableLabelSelectionChanged(
+procedure TSurvivalStatPrimaryOptionsView.VariableLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -85,7 +89,26 @@ begin
   DoModified();
 end;
 
-constructor TDescribeStatPrimaryOptionsView.Create(TheOwner: TComponent);
+procedure TSurvivalStatPrimaryOptionsView.ValueLabelSelectionChanged(
+  Sender: TObject);
+begin
+  case TRadioGroup(Sender).ItemIndex of
+    0: FDataModel.ValueLabelType := gvtValue;
+    1: FDataModel.ValueLabelType := gvtLabel;
+    2: FDataModel.ValueLabelType := gvtValueLabel;
+    3: FDataModel.ValueLabelType := gvtLabelValue;
+  end;
+  DoModified();
+end;
+
+procedure TSurvivalStatPrimaryOptionsView.DecimalSelectionChanged(
+  Sender: TObject);
+begin
+  FDataModel.Decimals := IntToStr(TRadioGroup(Sender).ItemIndex);
+  DoModified();
+end;
+
+constructor TSurvivalStatPrimaryOptionsView.Create(TheOwner: TComponent);
 var
   CheckBox: TCheckBox;
   PrevControl: TControl;
@@ -94,6 +117,16 @@ begin
 
   FValueLabelsGroup := TRadioGroup.Create(self);
   FVariableLabelsGroup := TRadioGroup.Create(self);
+  FDecimalGroup := TRadioGroup.Create(self);
+
+  FHorizontalDivider := TBevel.Create(self);
+  FHorizontalDivider.Parent := self;
+  FHorizontalDivider.Style := bsLowered;
+  FHorizontalDivider.Shape := bsSpacer;
+  FHorizontalDivider.Height := 5;
+  FHorizontalDivider.Anchors := [];
+  FHorizontalDivider.AnchorParallel(akLeft, 0, Self);
+  FHorizontalDivider.AnchorParallel(akRight, 0, Self);
 
   FVerticalDivider := TBevel.Create(self);
   FVerticalDivider.Parent := self;
@@ -109,6 +142,7 @@ begin
   FValueLabelsGroup.Anchors := [];
   FValueLabelsGroup.AnchorParallel(akTop, 5, Self);
   FValueLabelsGroup.AnchorParallel(akLeft, 5, self);
+  FValueLabelsGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
   FValueLabelsGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
 
   FVariableLabelsGroup.Parent := self;
@@ -116,45 +150,58 @@ begin
   FVariableLabelsGroup.Anchors := [];
   FVariableLabelsGroup.AnchorParallel(akTop, 5, Self);
   FVariableLabelsGroup.AnchorParallel(akRight, 5, self);
+  FVariableLabelsGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
   FVariableLabelsGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
+
+  FDecimalGroup.Parent := self;
+  FDecimalGroup.Caption := 'Percents';
+  FDecimalGroup.Anchors := [];
+  FDecimalGroup.AnchorParallel(akLeft, 5, self);
+  FDecimalGroup.AnchorParallel(akBottom, 5, Self);
+  FDecimalGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
+  FDecimalGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
 
   CreateValueLabelsRadios(FValueLabelsGroup);
   CreateVariableLabelsRadios(FVariableLabelsGroup);
+  CreateDecimalRadios(FDecimalGroup);
 end;
 
-procedure TDescribeStatPrimaryOptionsView.EnterView();
+procedure TSurvivalStatPrimaryOptionsView.EnterView();
 begin
+  FHorizontalDivider.Top := ((Self.Height - FHorizontalDivider.Height) div 2);
   FVerticalDivider.Left := ((Self.Width - FVerticalDivider.Width) div 2);
 end;
 
-function TDescribeStatPrimaryOptionsView.ExitView(): boolean;
+function TSurvivalStatPrimaryOptionsView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function TDescribeStatPrimaryOptionsView.GetViewCaption(): UTF8String;
+function TSurvivalStatPrimaryOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Options';
 end;
 
-function TDescribeStatPrimaryOptionsView.IsDefined(): boolean;
+function TSurvivalStatPrimaryOptionsView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure TDescribeStatPrimaryOptionsView.ResetView();
+procedure TSurvivalStatPrimaryOptionsView.ResetView();
 var
   i: Integer;
 begin
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
+  FDataModel.Decimals := '2';
 
-  FValueLabelsGroup.ItemIndex := 1;
-  FVariableLabelsGroup.ItemIndex := 1;
+  FValueLabelsGroup.ItemIndex := 0;
+  FVariableLabelsGroup.ItemIndex := 0;
+  FDecimalGroup.ItemIndex := 2;
 end;
 
-procedure TDescribeStatPrimaryOptionsView.SetModel(
-  DataModel: TDescribePrimaryOptionModel);
+procedure TSurvivalStatPrimaryOptionsView.SetModel(
+  DataModel: TSurvivalStatDialogPrimaryOptionModel);
 begin
   FDataModel := DataModel;
 end;
