@@ -180,16 +180,10 @@ end;
 
 procedure TSurvivalStatDialogVariablesView.CreateFailureRadios(
   RadioGroup: TRadioGroup);
-var
-  i: integer;
 begin
-  if (RadioGroup.Items.Count > 0)
-    then RadioGroup.Items := nil;
-  // get valid values for the outcome variable
-
   RadioGroup.Items := FDatamodel.OutcomeValues;
-//  for i := 0 to 5 do
-//    RadioGroup.Items.Add(IntToStr(i));
+
+  RadioGroup.Visible := true;
 
   RadioGroup.OnSelectionChanged := @FailureSelectionChanged;
 end;
@@ -231,7 +225,8 @@ begin
 
   UpdateCombos();
 
-  FDataModel.Failure  := '0';
+  if (FFailureGroup.Items.Count > 0) then
+    FFailureGroup.Visible := false;       // easier than emptying the group
 
 DoModified();
 end;

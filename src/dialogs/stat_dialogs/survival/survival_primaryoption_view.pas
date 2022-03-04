@@ -154,7 +154,7 @@ begin
   FVariableLabelsGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
 
   FDecimalGroup.Parent := self;
-  FDecimalGroup.Caption := 'Percents';
+  FDecimalGroup.Caption := 'Decimals to output';
   FDecimalGroup.Anchors := [];
   FDecimalGroup.AnchorParallel(akLeft, 5, self);
   FDecimalGroup.AnchorParallel(akBottom, 5, Self);
@@ -195,8 +195,8 @@ begin
   FDataModel.VariableLabelType := gvtVarLabel;
   FDataModel.Decimals := '2';
 
-  FValueLabelsGroup.ItemIndex := 0;
-  FVariableLabelsGroup.ItemIndex := 0;
+  FValueLabelsGroup.ItemIndex := FDataModel.ValueLabelsDefault;
+  FVariableLabelsGroup.ItemIndex := FDataModel.VariableLabelsDefault;
   FDecimalGroup.ItemIndex := 2;
 end;
 

@@ -38,9 +38,10 @@ type
   private
     FDecimals,
     FConf:                Integer;
-    FValuelabelOutput:    TEpiGetValueLabelType;
+    FValueLabelOutput:    TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
     FFailOutcomeValue:    UTF8String;
+    FFailOutcomeText:     UTF8String;
   // table of outcome by time
     FSurvivalTable:       TTwoWayTables;
     FStrata,
@@ -139,7 +140,7 @@ begin
         exit;
       end;
     FFailOutcomeValue := FailOutcomeValue;
-
+    FFailOutcomeText  := ColVariable.GetValueLabelFormatted(FailIx,FValueLabelOutput)
   end;
 
   FIntervals := FSurvivalTable.UnstratifiedTable.RowCount;
@@ -358,7 +359,7 @@ begin
       T.Cell[2 + Offset, 1].Text := ' ';
       T.Cell[3 + Offset, 1].Text := ' ';
       T.Cell[    Offset, 2].Text := 'Risk';
-      T.Cell[1 + Offset, 2].Text := FFailOutcomeValue;
+      T.Cell[1 + Offset, 2].Text := FFailOutcomeText;
       T.Cell[2 + Offset, 2].Text := 'Survival';
       T.Cell[3 + Offset, 2].Text := '(' + IntToStr(FConf) + '% CI)';
       Offset += ColPerStratum;
@@ -573,12 +574,6 @@ begin
       end;
 
     DF := FExecutor.PrepareDatafile(AllVariables, AllVariables);
-    // validate time is not a string
-    if (DF.Fields.FieldByName[Variables[1]].FieldType <> ftInteger) then
-      begin
-        FExecutor.Error('Time variable '  + Variables[1] + ' must be integer. ');
-        exit;
-      end;
     // save labels for other procedures
     FTimeVarLabel    := DF.Fields.FieldByName[Variables[1]].GetVariableLabel(FVariableLabelOutput);
     FOutcomeVarLabel := DF.Fields.FieldByName[Variables[0]].GetVariableLabel(FVariableLabelOutput);
@@ -614,6 +609,8 @@ begin
       end;
     DF.Free;
   finally
+    StratVariable.Free;
+    AllVariables.Free;
 end;
 
 end;
