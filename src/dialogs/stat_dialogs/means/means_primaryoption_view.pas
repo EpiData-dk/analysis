@@ -14,7 +14,7 @@ type
 
   TMeansStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
-    FOnModified: IStatDiaglogViewModified;
+    FOnModified: IStatDialogViewModified;
     FDataModel: TMeansStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FVariableLabelsGroup: TRadioGroup;

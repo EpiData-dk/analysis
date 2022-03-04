@@ -12,9 +12,9 @@ uses
 type
   { TStatDialog }
 
-  TStatDialog = class(TCustomAutoPositionForm, IStatDiaglogViewModified, IClickAction)
+  TStatDialog = class(TCustomAutoPositionForm, IStatDialogViewModified, IClickAction)
   private
-    FButtonFooter: TStatDiaglogFooterPanel;
+    FButtonFooter: TStatDialogFooterPanel;
     FExecutor: TExecutor;
     FPageControl: TPageControl;
     procedure FormCreate(Sender: TObject);
@@ -217,7 +217,7 @@ begin
   FContribution := Contribution;
   FExecutor := Executor;
 
-  FButtonFooter := TStatDiaglogFooterPanel.Create(self);
+  FButtonFooter := TStatDialogFooterPanel.Create(self);
   FButtonFooter.Parent := self;
   FButtonFooter.OnCancelClick := self;
   FButtonFooter.OnExecuteClick := self;

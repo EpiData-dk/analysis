@@ -24,9 +24,9 @@ type
   TStatDialogButton = (sdbRun, sdbExecute, sdbCancel, sdbHelp, sdbReset, sdbPaste);
   TStatDialogButtons = set of TStatDialogButton;
 
-  { TStatDiaglogFooterPanel }
+  { TStatDialogFooterPanel }
 
-  TStatDiaglogFooterPanel = class(TCustomPanel)
+  TStatDialogFooterPanel = class(TCustomPanel)
   private
     FOnCancelClick: IClickAction;
     FOnExecuteClick: IClickAction;
@@ -56,9 +56,9 @@ implementation
 uses
   Controls;
 
-{ TStatDiaglogFooterPanel }
+{ TStatDialogFooterPanel }
 
-procedure TStatDiaglogFooterPanel.ButtonClick(Sender: TObject);
+procedure TStatDialogFooterPanel.ButtonClick(Sender: TObject);
 var
   Button: TButton;
   ClickAction: IClickAction;
@@ -77,7 +77,7 @@ begin
     ClickAction.ActionPerformed(Button);
 end;
 
-procedure TStatDiaglogFooterPanel.SetEnabledButtons(AValue: TStatDialogButtons);
+procedure TStatDialogFooterPanel.SetEnabledButtons(AValue: TStatDialogButtons);
 var
   Item: TStatDialogButton;
 begin
@@ -95,7 +95,7 @@ begin
   EnableAutoSizing;
 end;
 
-procedure TStatDiaglogFooterPanel.InitButtons();
+procedure TStatDialogFooterPanel.InitButtons();
 var
   Button: TButton;
 
@@ -143,7 +143,7 @@ begin
   Button.AnchorToNeighbour(akRight, 5, FButtons[sdbCancel]);
 end;
 
-constructor TStatDiaglogFooterPanel.Create(TheOwner: TComponent);
+constructor TStatDialogFooterPanel.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 

@@ -9,7 +9,7 @@ uses
 
 type
 
-  TCtableStatDiaglogVariable = (tvX, tvY, tvZ, tvW, tvBy1, tvBy2);
+  TCtableStatDialogVariable = (tvX, tvY, tvZ, tvW, tvBy1, tvBy2);
 
   { TCtableStatDialogVariableModel }
 
@@ -28,13 +28,13 @@ type
     procedure SetWVariable(AValue: TEpiField);
     procedure SetByVariable1(AValue: TEpiField);
     procedure SetByVariable2(AValue: TEpiField);
-    function IsUsed(Field: TEpiField; TableVariable: TCtableStatDiaglogVariable): boolean;
+    function IsUsed(Field: TEpiField; TableVariable: TCtableStatDialogVariable): boolean;
   public
     function GenerateScript(): UTF8String;
     function IsDefined(): boolean;
   public
     constructor Create(Executor: TExecutor);
-    function GetComboFields(TableVariable: TCtableStatDiaglogVariable): TEpiFields;
+    function GetComboFields(TableVariable: TCtableStatDialogVariable): TEpiFields;
     property XVariable: TEpiField read FXVariable write SetXVariable;
     property YVariable: TEpiField read FYVariable write SetYVariable;
     property ZVariable: TEpiField read FYVariable write SetZVariable;
@@ -84,7 +84,7 @@ begin
 end;
 
 function TCtableStatDialogVariableModel.IsUsed(Field: TEpiField;
-  TableVariable: TCtableStatDiaglogVariable): boolean;
+  TableVariable: TCtableStatDialogVariable): boolean;
 begin
   result := (not (TableVariable = tvX)) and (Field = FXVariable);
   result := result or ((not (TableVariable = tvY)) and (Field = FYVariable));
@@ -127,7 +127,7 @@ begin
 end;
 
 function TCtableStatDialogVariableModel.GetComboFields(
-  TableVariable: TCtableStatDiaglogVariable): TEpiFields;
+  TableVariable: TCtableStatDialogVariable): TEpiFields;
 var
   Field: TEpiField;
 begin

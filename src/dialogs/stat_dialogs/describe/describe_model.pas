@@ -9,7 +9,7 @@ uses
 
 type
 
-  TDescribeStatDiaglogVariable = (tvX, tvY);
+  TDescribeStatDialogVariable = (tvX, tvY);
 
   { TDescribeVariableModel }
 
@@ -20,13 +20,13 @@ type
     FYVariable: TEpiField;
     procedure SetXVariable(AValue: TEpiField);
     procedure SetYVariable(AValue: TEpiField);
-    function IsUsed(Field: TEpiField; DialogVariable: TDescribeStatDiaglogVariable): boolean;
+    function IsUsed(Field: TEpiField; DialogVariable: TDescribeStatDialogVariable): boolean;
   public
     function GenerateScript(): UTF8String;
     function IsDefined(): boolean;
   public
     constructor Create(Executor: TExecutor);
-    function GetComboFields(DialogVariable: TDescribeStatDiaglogVariable): TEpiFields;
+    function GetComboFields(DialogVariable: TDescribeStatDialogVariable): TEpiFields;
     property XVariable: TEpiField read FXVariable write SetXVariable;
     property YVariable: TEpiField read FYVariable write SetYVariable;
   end;
@@ -48,7 +48,7 @@ begin
 end;
 
 function TDescribeVariableModel.IsUsed(Field: TEpiField;
-  DialogVariable: TDescribeStatDiaglogVariable): boolean;
+  DialogVariable: TDescribeStatDialogVariable): boolean;
 begin
   result := (not (DialogVariable = tvX)) and (Field = FXVariable);
   result := result or ((not (DialogVariable = tvY)) and (Field = FYVariable));
@@ -76,7 +76,7 @@ begin
 end;
 
 function TDescribeVariableModel.GetComboFields(
-  DialogVariable: TDescribeStatDiaglogVariable): TEpiFields;
+  DialogVariable: TDescribeStatDialogVariable): TEpiFields;
 var
   Field: TEpiField;
 begin

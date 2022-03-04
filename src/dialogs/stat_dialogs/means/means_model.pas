@@ -9,7 +9,7 @@ uses
 
 type
 
-  TMeansStatDiaglogVariable = (tvX, tvBy); //, tvW);
+  TMeansStatDialogVariable = (tvX, tvBy); //, tvW);
 
   { TMeansStatDialogVariableModel }
 
@@ -22,13 +22,13 @@ type
     procedure SetXVariable(AValue: TEpiField);
 //    procedure SetWVariable(AValue: TEpiField);
     procedure SetByVariable(AValue: TEpiField);
-    function IsUsed(Field: TEpiField; MeansVariable: TMeansStatDiaglogVariable): boolean;
+    function IsUsed(Field: TEpiField; MeansVariable: TMeansStatDialogVariable): boolean;
   public
     function GenerateScript(): UTF8String;
     function IsDefined(): boolean;
   public
     constructor Create(Executor: TExecutor);
-    function GetComboFields(MeansVariable: TMeansStatDiaglogVariable): TEpiFields;
+    function GetComboFields(MeansVariable: TMeansStatDialogVariable): TEpiFields;
     property XVariable: TEpiField read FXVariable write SetXVariable;
 //    property WVariable: TEpiField read FWVariable write SetWVariable;
     property ByVariable: TEpiField read FByVariable write SetByVariable;
@@ -59,7 +59,7 @@ begin
 end;
 
 function TMeansStatDialogVariableModel.IsUsed(Field: TEpiField;
-  MeansVariable: TMeansStatDiaglogVariable): boolean;
+  MeansVariable: TMeansStatDialogVariable): boolean;
 begin
   result := (not (MeansVariable = tvX)) and (Field = FXVariable);
 //  result := result or ((not (MeansVariable = tvW)) and (Field = FWVariable));
@@ -91,7 +91,7 @@ begin
 end;
 
 function TMeansStatDialogVariableModel.GetComboFields(
-  MeansVariable: TMeansStatDiaglogVariable): TEpiFields;
+  MeansVariable: TMeansStatDialogVariable): TEpiFields;
 var
   Field: TEpiField;
 

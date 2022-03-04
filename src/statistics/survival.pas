@@ -73,7 +73,7 @@ type
     procedure DoOutputSurvival(ST:TCustomVariableCommand); virtual;
     procedure DoOutputSummary(ST:TCustomVariableCommand); virtual;
     procedure DoLogRank(); virtual;
-    procedure DoOutputGraph(Stratum: Integer); virtual;
+    procedure DoOutputGraph(); virtual;
   public
     constructor Create(AExecutor: TExecutor; OutputCreator: TOutputCreator);
     destructor Destroy; override;
@@ -442,43 +442,62 @@ begin
   inherited Destroy;
 end;
 
-procedure TSurvival.DoOutputGraph(Stratum: Integer);
+procedure TSurvival.DoOutputGraph();
 var
   Tab: TOutputTable;
 //  SPlot: array of array of EpiFloat;  // holds plot points for this graph
-  Row, i:  Integer;
-  LastS: EpiFloat;
-  s, d, t: UTF8String;
+  Stratum, Row, i:       Integer;
+  LastS, LastLL, LastUL: EpiFloat;
+  s, d, d0, t:           UTF8String;
 begin
   Tab := FOutputCreator.AddTable;
-  s := 'Survival Graph - plot points for ';
-  if (Stratum = 0) then
-    s += 'all data'
-  else
-    s += FStratVarName + ' = ' + FStratLabels[Stratum - 1];
+  s := 'Survival Graph - plot points';
 
   with Tab do
+  // loop from here for all strata; only call once
   begin
     Header.Text    := s;
 
 //  Delimited output
-    d              := ',';
+    d0             := '';
+    d              := FExecutor.SetOptions.GetValue(ANA_SO_CLIPBOARD_DELIMITER).Value;
     ColCount       := 1;
-    RowCount       := 2;
-    Cell[0,0].Text := 'time' + d + 'survival';
-    Cell[0,1].Text := '0.00' + d + '1.00';
-    LastS          := 1;
-    Row            := 2;
-    // only include rows where there were no failures
-    for i := 0 to length(FAtRisk[Stratum]) - 1 do
-      if (FFail[Stratum, i] > 0) then
+    RowCount       := 3;
+    for Stratum := 0 to FStrata do
       begin
-        RowCount              := Row + 2;
-        t                     := trim(Format('%8.2f', [FTime[Stratum, i]]));
-        Cell[0, Row].Text     := t + d + trim(Format('%6.2f', [LastS]));
-        LastS                 := FSurvival[Stratum, i];
-        Cell[0, Row + 1].Text := t + d + trim(Format('%6.2f', [LastS]));
-        Row                   += 2;
+        if (Stratum = 0) then
+          s := 'all data'
+        else
+          s := FStratVarName + ' = ' + FStratLabels[Stratum - 1];
+
+        Cell[0,0].Text := Cell[0,0].Text + d0 + s + d + d + d;
+        Cell[0,1].Text := Cell[0,1].Text + d0 + 'Time' + d + 'Survival' + d + 'CIlow' + d + 'CIHigh';
+        Cell[0,2].Text := Cell[0,2].Text + d0 + '0.00' + d + '1.00' + d + '1.00' + d + '1.00';
+        LastS          := 1;
+        LastUL         := 1;
+        LastLL         := 1;
+        Row            := 3;
+        // only include rows where there were no failures
+        for i := 0 to length(FAtRisk[Stratum]) - 1 do
+          if (FFail[Stratum, i] > 0) then
+          begin
+            if (Stratum = 0) then
+              RowCount            := Row + 2;
+            t                     := d0 + trim(Format('%6.0f', [FTime[Stratum, i]]));
+            Cell[0, Row].Text     := Cell[0, Row].Text + t +
+                                     d + trim(Format('%6.3f', [LastS])) +
+                                     d + trim(Format('%6.3f', [LastLL])) +
+                                     d + trim(Format('%6.3f', [LastUL]));
+            LastS                 := FSurvival[Stratum, i];
+            LastLL                := FLowCI[Stratum, i];
+            LastUL                := FHighCI[Stratum, i];
+            Cell[0, Row + 1].Text := Cell[0, Row + 1].Text + t +
+                                     d + trim(Format('%6.3f', [LastS])) +
+                                     d + trim(Format('%6.3f', [LastLL])) +
+                                     d + trim(Format('%6.3f', [LastUL]));
+            Row                   += 2;
+          end;
+          d0                      := d;
       end;
     SetColAlignment(0, taLeftJustify);
     Footer.Text := 'To copy to graphing software, select the plot points, right-click, copy selected text'
@@ -491,7 +510,7 @@ var
   StratVariable:    TStringList;
   FailOutcomeValue: UTF8String;
   Opt:              TOption;
-  HasBy:            Boolean;
+  HasBy, HasO:      Boolean;
   DF:               TEpiDataFile;
   i:                Integer;
 begin
@@ -506,6 +525,7 @@ begin
   AllVariables.AddStrings(Variables);
 
   HasBy := false;
+  HasO  := false;
   ST.ExecResult := csrFailed;
   FailOutcomeValue := '0';
   try
@@ -514,35 +534,43 @@ begin
       // get death outcome value
       if (Opt.Ident = 'o') then
         begin
+          // check for more than one !o
+          if (HasO) then
+            begin
+              FExecutor.Error('Cannot specify more than one outcome. !o:=' + Opt.Expr.AsIdent + ' is invalid');
+              exit;
+            end;
           FailOutcomeValue := Opt.Expr.AsString;
+          HasO := true;
         end;
-      // check for  weight variable
-      if (Opt.Ident = 'w') then
-        FWeightVarName := Opt.Expr.AsIdent;
 
-      // check for more than one !by
       if (Opt.Ident = 'by') then
+        // check for more than one !by
         if (HasBy) then
           begin
             FExecutor.Error('Can only stratify by one variable; !by:=' + Opt.Expr.AsIdent + ' is invalid');
             exit;
           end
-       else
-         begin
-           HasBy := true;
-           if ( (Variables[0] = Opt.Expr.AsIdent) or (Variables[1] = Opt.Expr.AsIdent) ) then
-             begin
-               FExecutor.Error('Cannot stratify by this variable: ' + Opt.expr.AsIdent);
-               Exit;
-             end;
-           FStratVarName := Opt.Expr.AsIdent;
-           StratVariable.Add(FStratVarName);
-           AllVariables.AddStrings(FStratVarName);
-         end;
+        else
+          begin
+            HasBy := true;
+            if ( (Variables[0] = Opt.Expr.AsIdent) or (Variables[1] = Opt.Expr.AsIdent) ) then
+              begin
+                FExecutor.Error('Cannot stratify by ' + Opt.expr.AsIdent);
+                Exit;
+              end;
+            FStratVarName := Opt.Expr.AsIdent;
+            StratVariable.Add(FStratVarName);
+            AllVariables.AddStrings(FStratVarName);
+          end;
       end;
 
-    if ST.HasOption('w') then
-      AllVariables.Add(FWeightVarName);
+    // check for  weight variable
+    if (Opt.Ident = 'w') then
+      begin
+        FWeightVarName := Opt.Expr.AsIdent;
+        AllVariables.Add(FWeightVarName);
+      end;
 
     DF := FExecutor.PrepareDatafile(AllVariables, AllVariables);
     // validate time is not a string
@@ -579,11 +607,7 @@ begin
             DoOutputSummary(ST);
 
           if (not ST.HasOption('ng')) then
-            if (FStrata = 0) then
-              DoOutputGraph(0)
-            else
-              for i:= 1 to FStrata do
-                DoOutputGraph(i);
+            DoOutputGraph();
 
         end;
       DoResultVariables(ST);

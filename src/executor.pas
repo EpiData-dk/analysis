@@ -3886,30 +3886,9 @@ var
   VarNames: TStrings;
 begin
   VarNames := ST.VariableList.GetIdentsAsList;
-  // Get the by variable if there is one
-  for Opt in ST.Options do
-    begin
-      S := Opt.Ident;
-      if (S = 'by') then
-      begin
-        S := Opt.Expr.AsIdent;
-        if (VarNames.IndexOf(S) > -1) then
-          begin
-            Error('By variable cannot be ' + S);
-            ST.ExecResult := csrFailed;
-            VarNames.Free;
-          end;
-      end;
-    end;
-  // check variable types
-  // 2 vars: first is integer or string; 2nd is integer
-  // 3 vars: first is integer or string; 2nd and 3rd are date
-  if ST.ExecResult = csrFailed then exit;
-
   Survival := TSurvival.Create(Self, FOutputCreator);
   Survival.ExecSurvival(VarNames, ST);
   Survival.Free;
-
   VarNames.Free;
 
 end;

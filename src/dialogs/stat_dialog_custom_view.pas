@@ -25,8 +25,8 @@ type
     function GetViewCaption(): UTF8String; virtual; abstract;
     function IsDefined(): boolean; virtual; abstract;
     procedure ResetView(); virtual; abstract;
-    procedure AddOnModified(OnModified: IStatDiaglogViewModified); virtual;
-    procedure RemoveOnModified(OnModified: IStatDiaglogViewModified); virtual;
+    procedure AddOnModified(OnModified: IStatDialogViewModified); virtual;
+    procedure RemoveOnModified(OnModified: IStatDialogViewModified); virtual;
   end;
 
 implementation
@@ -38,7 +38,7 @@ var
   Item: Pointer;
 begin
   for Item in FOnModifiedListeners do
-    IStatDiaglogViewModified(Item).OnViewModified(Self);
+    IStatDialogViewModified(Item).OnViewModified(Self);
 end;
 
 constructor TCustomStatDialogView.Create(TheOwner: TComponent);
@@ -60,13 +60,13 @@ begin
 end;
 
 procedure TCustomStatDialogView.AddOnModified(
-  OnModified: IStatDiaglogViewModified);
+  OnModified: IStatDialogViewModified);
 begin
   FOnModifiedListeners.Add(OnModified);
 end;
 
 procedure TCustomStatDialogView.RemoveOnModified(
-  OnModified: IStatDiaglogViewModified);
+  OnModified: IStatDialogViewModified);
 begin
   FOnModifiedListeners.Remove(OnModified);
 end;

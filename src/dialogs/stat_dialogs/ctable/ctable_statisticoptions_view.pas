@@ -15,7 +15,7 @@ type
 
   TCtableStatDialogStatisticOptionsView = class(TCustomStatDialogView)
   private
-    FOnModified: IStatDiaglogViewModified;
+    FOnModified: IStatDialogViewModified;
     FDataModel: TCtableStatDialogStatisticOptionsModel;
     FHorizontalDivider: TBevel;
     FVerticalDivider: TBevel;

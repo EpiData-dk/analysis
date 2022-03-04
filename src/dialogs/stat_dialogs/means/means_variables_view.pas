@@ -16,7 +16,7 @@ type
   private
     FDataModel: TMeansStatDialogVariableModel;
     FComboBoxes: Array of TEpiFieldsComboBox;
-    FOnModified: IStatDiaglogViewModified;
+    FOnModified: IStatDialogViewModified;
     procedure VariableSelect(Sender: TObject);
     procedure UpdateCombos();
   public
@@ -78,7 +78,7 @@ begin
       Field := ComboBox.SelectedField;
       ComboBox.Fields.Free;
       ComboBox.Fields := nil;
-      ComboBox.Fields := FDataModel.GetComboFields(TMeansStatDiaglogVariable(i));
+      ComboBox.Fields := FDataModel.GetComboFields(TMeansStatDialogVariable(i));
       ComboBox.ItemIndex := ComboBox.Items.IndexOfObject(Field);
     end;
 end;
@@ -90,7 +90,7 @@ var
 begin
   inherited Create(TheOwner);
 
-  SetLength(FComboBoxes, Ord(High(TMeansStatDiaglogVariable)) + 1);
+  SetLength(FComboBoxes, Ord(High(TMeansStatDialogVariable)) + 1);
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
   ComboBox.Parent := self;

@@ -15,7 +15,7 @@ type
 
   TDescribeStatisticOptionsView = class(TCustomStatDialogView)
   private
-    FOnModified: IStatDiaglogViewModified;
+    FOnModified: IStatDialogViewModified;
     FDataModel: TDescribeStatisticOptionsModel;
     FHorizontalDivider: TBevel;
     FVerticalDivider: TBevel;
