@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, executor, epidatafiles, stat_dialog_contribution,
-  epidatafilestypes,epivaluelabels;
+  epidatafilestypes,epivaluelabels, outputcreator, freq, epicustombase;
 
 type
 
@@ -17,6 +17,7 @@ type
   TSurvivalStatDialogVariableModel = class(IStatDialogModel)
   private
     FExecutor: TExecutor;
+    FOutputCreator: TOutputCreator;
     FXVariable: TEpiField;    // Outcome
     FYVariable: TEpiField;    // Time
     FWVariable: TEpiField;
@@ -86,18 +87,36 @@ procedure TSurvivalStatDialogVariableModel.SetOutcomeValues(Field: TEpiField);
 var
   i: Integer;
   l: TEpiValueLabelSet;
+  DF: TEpiDataFile;
+  F:   TFreqCommand;
+  O:   TEpiReferenceMap;
+  CategV: TEpiField;
+  OutcomeFreq: TFreqDatafile;
+  AVar: TStringList;
 begin
   FOutcomeValues.Clear;
-  if (Field <> nil) then
+  if (Field = nil) then
+    exit;
+// check for value labels
+  l := Field.ValueLabelSet;
+  if (l <> nil) then
     begin
-      l := Field.ValueLabelSet;
-      if (l = nil) then
-        for i := 0 to 5 do
-          FOutcomeValues.Add(IntToStr(i))
-      else
-        for i := 0 to l.Count - 1 do
-          FOutcomeValues.Add(l.ValueLabels[i].ValueAsString);
+      for i := 0 to l.Count - 1 do
+        FOutcomeValues.Add(l.ValueLabels[i].ValueAsString);
+      exit;
     end;
+// get frequencies to identify possible values
+  F := TFreqCommand.Create(FExecutor, FOutputCreator);
+  AVar := TStringList.Create;
+  AVar.Add(Field.Name);
+  DF := FExecutor.PrepareDatafile(AVar, AVar);
+  OutcomeFreq := F.CalcFreq(DF, Field.Name, O);
+  CategV := OutcomeFreq.Categ;
+  for i:=  0 to OutcomeFreq.Size - 1 do
+    FOutcomeValues.Add(CategV.AsString[i]);
+  F.Free;
+  OutcomeFreq.Free;
+  AVar.Free;
 end;
 
 function TSurvivalStatDialogVariableModel.IsUsed(Field: TEpiField;
