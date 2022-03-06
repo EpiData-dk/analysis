@@ -48,9 +48,9 @@ type
     FIntervals:           Integer;
   // survival table results
     FInterval:            Array of Array of UTF8String;
+    FTime,
     FAtRisk,
     FFail:                Array of Array of Integer;
-    FTime,
     FSurvival,
     FLowCI,
     FHighCI:              Array of Array of EpiFloat;
@@ -184,7 +184,7 @@ begin
               SumF     += Float(Failures) / Float(NAtRisk*(NAtRisk - Failures));
               SE       := CIMult * S * SQRT(SumF);
               FInterval[Stratum, Row] := ASurvivalTable.RowVariable.GetValueLabel(i, FValuelabelOutput);
-              FTime    [Stratum, Row] := ASurvivalTable.RowVariable.AsFloat[i];
+              FTime    [Stratum, Row] := ASurvivalTable.RowVariable.AsInteger[i];
               FAtRisk  [Stratum, Row] := NAtRisk;
               FFail    [Stratum, Row] := Failures;
               FSurvival[Stratum, Row] := S;
@@ -416,7 +416,8 @@ begin
   T.RowCount        := 3;
   T.Cell[1, 1].Text := 'All Data';
   T.Cell[0, 2].Text := 'Median Survival';
-  T.Cell[2, 0].Text := FStratVarName;
+  if (FStrata > 0) then
+    T.Cell[2, 0].Text := FStratVarName;
 
   for i := 0 to FStrata do
     begin
@@ -484,7 +485,7 @@ begin
           begin
             if (Stratum = 0) then
               RowCount            := Row + 2;
-            t                     := d0 + trim(Format('%6.0f', [FTime[Stratum, i]]));
+            t                     := d0 + IntToStr(FTime[Stratum, i]);
             Cell[0, Row].Text     := Cell[0, Row].Text + t +
                                      d + trim(Format('%6.3f', [LastS])) +
                                      d + trim(Format('%6.3f', [LastLL])) +
@@ -516,14 +517,14 @@ var
   i:                Integer;
 begin
 // reset result variables;
-  FExecutor.ClearResults('$Survival');
+  FExecutor.ClearResults('$survival');
 
   StratVariable        := TStringList.Create;
   FDecimals            := DecimalFromOption(ST.Options, 3);
   FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
-  AllVariables         := TStringList.Create;
-  AllVariables.AddStrings(Variables);
+  AllVariables         := ST.VariableList.GetIdentsAsList;
+//  AllVariables.AddStrings(Variables);
 
   HasBy := false;
   HasO  := false;
@@ -564,19 +565,21 @@ begin
             StratVariable.Add(FStratVarName);
             AllVariables.AddStrings(FStratVarName);
           end;
-      end;
 
     // check for  weight variable
     if (Opt.Ident = 'w') then
       begin
+        if ( (Variables[0] = Opt.Expr.AsIdent) or (Variables[1] = Opt.Expr.AsIdent) ) then
+          begin
+            FExecutor.Error(Opt.expr.AsIdent + ' cannot be used as a weight');
+            Exit;
+          end;
         FWeightVarName := Opt.Expr.AsIdent;
         AllVariables.Add(FWeightVarName);
       end;
+    end;
 
     DF := FExecutor.PrepareDatafile(AllVariables, AllVariables);
-    // save labels for other procedures
-    FTimeVarLabel    := DF.Fields.FieldByName[Variables[1]].GetVariableLabel(FVariableLabelOutput);
-    FOutcomeVarLabel := DF.Fields.FieldByName[Variables[0]].GetVariableLabel(FVariableLabelOutput);
 
     if DF.Size = 0 then
       begin
@@ -585,33 +588,38 @@ begin
         Exit;
       end;
 
+    // save labels for other procedures
+    FTimeVarLabel    := DF.Fields.FieldByName[Variables[1]].GetVariableLabel(FVariableLabelOutput);
+    FOutcomeVarLabel := DF.Fields.FieldByName[Variables[0]].GetVariableLabel(FVariableLabelOutput);
+
     DoCalcSurvival(DF, Variables, StratVariable, FailOutcomeValue, ST);
 
     if (ST.ExecResult = csrSuccess) then
       begin
 
-      if (not ST.HasOption('q')) then
-        begin
-          if (not ST.HasOption('nt')) then
-            DoOutputSurvival(ST);
+        if (not ST.HasOption('q')) then
+          begin
+            if (not ST.HasOption('nt')) then
+              DoOutputSurvival(ST);
 
-          if (ST.HasOption('t')) then
-            DoLogRank();
+            if (ST.HasOption('t') and (FStrata > 0)) then
+              DoLogRank();
 
-          if (not ST.HasOption('ns')) then
-            DoOutputSummary(ST);
+            if (not ST.HasOption('ns')) then
+              DoOutputSummary(ST);
 
-          if (not ST.HasOption('ng')) then
-            DoOutputGraph();
+            if (not ST.HasOption('ng')) then
+              DoOutputGraph();
 
-        end;
+          end;
+
       DoResultVariables(ST);
       end;
     DF.Free;
   finally
     StratVariable.Free;
     AllVariables.Free;
-end;
+  end;
 
 end;
 

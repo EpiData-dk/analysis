@@ -49,10 +49,7 @@ end;
 function TSurvivalStatDialogStatisticOptionsModel.GenerateScript(): UTF8String;
 begin
   Result := '';
-
   if (pChi in FStatisticTypes) then Result += ' !t';
-
-//  Result := UTF8Trim(Result);
 end;
 
 function TSurvivalStatDialogStatisticOptionsModel.IsDefined(): boolean;

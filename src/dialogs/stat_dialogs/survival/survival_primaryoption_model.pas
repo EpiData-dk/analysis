@@ -75,6 +75,7 @@ begin
   defaults.Clear;
   defaults.AddStrings(['vn', 'vla', 'vnl', 'vlv']);
   FVariableLabelsDefault := defaults.indexOf(LowerCase(FExecutor.GetSetOptionValue('STATISTICS VARIABLE LABEL')));
+  defaults.Clear;
   defaults.Free;
 end;
 
