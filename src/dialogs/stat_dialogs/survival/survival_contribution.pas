@@ -6,8 +6,7 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
-  survival_model, survival_primaryoption_model,
-  survival_statisticoptions_model;
+  survival_model, survival_primaryoption_model,survival_statisticoptions_model;
 
 type
 
@@ -31,7 +30,8 @@ type
 implementation
 
 uses
-  survival_variables_view, survival_primaryoption_view,
+  survival_variables_view,
+  survival_primaryoption_view,
   survival_statisticoptions_view;
 
 { TSurvivalStatDialogContribution }
@@ -78,7 +78,7 @@ end;
 function TSurvivalStatDialogContribution.GenerateScript(): UTF8String;
 begin
   result := 'survival ' +
-    FVariablesModel.GenerateScript() + ' ' +
+    FVariablesModel.GenerateScript() +
     FPrimaryOptionsModel.GenerateScript() +
     FStatisticsOptionsModel.GenerateScript() +
     ';';

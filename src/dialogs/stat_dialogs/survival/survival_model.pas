@@ -10,25 +10,24 @@ uses
 
 type
 
-  TSurvivalStatDialogVariable = (tvX, tvY, tvW, tvBy1);
+  TSurvivalStatDialogVariable = (tvX, tvY, tvW, tvBy);
 
   { TSurvivalStatDialogVariableModel }
 
   TSurvivalStatDialogVariableModel = class(IStatDialogModel)
   private
     FExecutor: TExecutor;
-    FOutputCreator: TOutputCreator;
     FXVariable: TEpiField;    // Outcome
     FYVariable: TEpiField;    // Time
     FWVariable: TEpiField;
-    FByVariable1: TEpiField;
+    FByVariable: TEpiField;
     FFailure: UTF8String;
     FFailureType: TEpiFieldType;
     FOutcomeValues: TStringList;
     procedure SetXVariable(AValue: TEpiField);
     procedure SetYVariable(AValue: TEpiField);
     procedure SetWVariable(AValue: TEpiField);
-    procedure SetByVariable1(AValue: TEpiField);
+    procedure SetByVariable(AValue: TEpiField);
     procedure SetFailure(AValue: UTF8String);
     procedure SetOutcomeValues(Field: TEpiField);
     function IsUsed(Field: TEpiField; SurvivalVariable: TSurvivalStatDialogVariable): boolean;
@@ -41,7 +40,7 @@ type
     property XVariable: TEpiField read FXVariable write SetXVariable;
     property YVariable: TEpiField read FYVariable write SetYVariable;
     property WVariable: TEpiField read FWVariable write SetWVariable;
-    property ByVariable1: TEpiField read FByVariable1 write SetByVariable1;
+    property ByVariable: TEpiField read FByVariable write SetByVariable;
     property Failure: UTF8String read FFailure write SetFailure;
     property FailureType: TEpiFieldType read FFailureType write FFailureType;
     property OutcomeValues: TStringList read FOutcomeValues;
@@ -70,10 +69,10 @@ begin
   FWVariable := AValue;
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetByVariable1(AValue: TEpiField);
+procedure TSurvivalStatDialogVariableModel.SetByVariable(AValue: TEpiField);
 begin
-  if FByVariable1 = AValue then Exit;
-  FByVariable1 := AValue;
+  if FByVariable = AValue then Exit;
+  FByVariable := AValue;
 end;
 
 procedure TSurvivalStatDialogVariableModel.SetFailure(
@@ -85,14 +84,15 @@ end;
 
 procedure TSurvivalStatDialogVariableModel.SetOutcomeValues(Field: TEpiField);
 var
-  i: Integer;
-  l: TEpiValueLabelSet;
-  DF: TEpiDataFile;
-  F:   TFreqCommand;
-  O:   TEpiReferenceMap;
-  CategV: TEpiField;
-  OutcomeFreq: TFreqDatafile;
-  AVar: TStringList;
+  i:             Integer;
+  l:             TEpiValueLabelSet;
+  DF:            TEpiDataFile;
+  F:             TFreqCommand;
+  O:             TEpiReferenceMap;
+  CategV:        TEpiField;
+  OutcomeFreq:   TFreqDatafile;
+  AVar:          TStringList;
+  OutputCreator: TOutputCreator;
 begin
   FOutcomeValues.Clear;
   if (Field = nil) then
@@ -106,14 +106,15 @@ begin
       exit;
     end;
 // get frequencies to identify possible values
-  F := TFreqCommand.Create(FExecutor, FOutputCreator);
-  AVar := TStringList.Create;
+  F :=           TFreqCommand.Create(FExecutor, OutputCreator);
+  AVar :=        TStringList.Create;
   AVar.Add(Field.Name);
-  DF := FExecutor.PrepareDatafile(AVar, AVar);
+  DF :=          FExecutor.PrepareDatafile(AVar, AVar);
   OutcomeFreq := F.CalcFreq(DF, Field.Name, O);
-  CategV := OutcomeFreq.Categ;
-  for i:=  0 to OutcomeFreq.Size - 1 do
+  CategV :=      OutcomeFreq.Categ;
+  for i:= 0 to OutcomeFreq.Size - 1 do
     FOutcomeValues.Add(CategV.AsString[i]);
+  DF.Free;
   F.Free;
   OutcomeFreq.Free;
   AVar.Free;
@@ -125,7 +126,7 @@ begin
   result := (not (SurvivalVariable = tvX)) and (Field = FXVariable);
   result := result or ((not (SurvivalVariable = tvY)) and (Field = FYVariable));
   result := result or ((not (SurvivalVariable = tvW)) and (Field = FWVariable));
-  result := result or ((not (SurvivalVariable = tvBy1)) and (Field = FByVariable1));
+  result := result or ((not (SurvivalVariable = tvBy)) and (Field = FByVariable));
 end;
 
 function TSurvivalStatDialogVariableModel.GenerateScript(): UTF8String;
@@ -140,8 +141,8 @@ begin
   if Assigned(FWVariable) then
       result += ' !w := ' + FWVariable.Name;
 
-  if Assigned(FByVariable1) then
-    result += ' !by:=' + FByVariable1.Name;
+  if Assigned(FByVariable) then
+    result += ' !by:=' + FByVariable.Name;
 
   if (FFailure <> '0') then
     if (FFailureType = ftInteger) then

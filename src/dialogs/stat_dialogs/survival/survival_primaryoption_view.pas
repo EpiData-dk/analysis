@@ -51,7 +51,7 @@ begin
   RadioGroup.Items.Add('Label');
   RadioGroup.Items.Add('Value + Label');
   RadioGroup.Items.Add('Label + Value');
-
+//  RadioGroup.ItemIndex := FDataModel.ValueLabelsDefault;
   RadioGroup.OnSelectionChanged := @ValueLabelSelectionChanged;
 end;
 
@@ -62,7 +62,7 @@ begin
   RadioGroup.Items.Add('Label');
   RadioGroup.Items.Add('Variable Name + Label');
   RadioGroup.Items.Add('Label + Variable Name');
-
+//  RadioGroup.ItemIndex := FDataModel.VariableLabelsDefault;
   RadioGroup.OnSelectionChanged := @VariableLabelSelectionChanged;
 end;
 
@@ -73,7 +73,7 @@ var
 begin
   for i := 0 to 5 do
     RadioGroup.Items.Add(IntToStr(i));
-
+  RadioGroup.ItemIndex := 3;
   RadioGroup.OnSelectionChanged := @DecimalSelectionChanged;
 end;
 
@@ -193,11 +193,11 @@ var
 begin
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
-  FDataModel.Decimals := '2';
+  FDataModel.Decimals := '3';
 
   FValueLabelsGroup.ItemIndex := FDataModel.ValueLabelsDefault;
   FVariableLabelsGroup.ItemIndex := FDataModel.VariableLabelsDefault;
-  FDecimalGroup.ItemIndex := 2;
+  FDecimalGroup.ItemIndex := 3;
 end;
 
 procedure TSurvivalStatPrimaryOptionsView.SetModel(

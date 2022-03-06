@@ -5,8 +5,8 @@ unit survival_variables_view;
 interface
 
 uses
-  Classes, SysUtils, Controls, ExtCtrls,
-  StdCtrls, stat_dialog_contribution, survival_model, fields_combobox, stat_dialog_custom_view;
+  Classes, SysUtils, Controls, ExtCtrls, StdCtrls,
+  stat_dialog_contribution, survival_model, fields_combobox, stat_dialog_custom_view;
 
 type
 
@@ -43,7 +43,7 @@ const
   XVARIABLE_TAG   = Ord(tvX);
   YVARIABLE_TAG   = Ord(tvY);
   WVARIABLE_TAG   = Ord(tvW);
-  BYVARIABLE1_TAG = Ord(tvBy1);
+  ByVariable_TAG = Ord(tvBy);
 
 { TSurvivalStatDialogVariablesView }
 
@@ -69,8 +69,8 @@ begin
     WVARIABLE_TAG:
       FDataModel.WVariable := Field;
 
-    BYVARIABLE1_TAG:
-      FDataModel.ByVariable1 := Field;
+    ByVariable_TAG:
+      FDataModel.ByVariable := Field;
 
   end;
 
@@ -151,9 +151,9 @@ begin
   ComboBox.AnchorToNeighbour(akLeft, 10, FVerticalDivider);
   ComboBox.AnchorParallel(akRight, 10, Self);
   ComboBox.OnSelect := @VariableSelect;
-  ComboBox.Tag := BYVARIABLE1_TAG;
+  ComboBox.Tag := ByVariable_TAG;
   ComboBox.NoItemText := 'By Variable (optional)';
-  FComboBoxes[BYVARIABLE1_TAG] := ComboBox;
+  FComboBoxes[ByVariable_TAG] := ComboBox;
   PrevCombo := ComboBox;
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
@@ -169,11 +169,11 @@ begin
   FFailureGroup := TRadioGroup.Create(TheOwner);
   FFailureGroup.Parent := self;
   FFailureGroup.Caption := 'Outcome value indicating death / failure';
-  FFailureGroup.Anchors := [];
+//  FFailureGroup.Anchors := [];
   FFailureGroup.AnchorParallel(akLeft, 10, Self);
   FFailureGroup.AnchorToNeighbour(akTop, 10, FHorizontalDivider);
   FFailureGroup.AnchorToNeighbour(akRight, 10, FVerticalDivider);
-  FFailureGroup.AnchorParallel(akBottom, 10, Self);
+//  FFailureGroup.AnchorParallel(akBottom, 10, Self);
 
   EnterView(); // Must do this to get combo boxes aligned and visible
 end;
@@ -221,7 +221,7 @@ begin
   FDataModel.XVariable := nil;
   FDataModel.YVariable := nil;
   FDataModel.WVariable := nil;
-  FDataModel.ByVariable1 := nil;
+  FDataModel.ByVariable := nil;
 
   UpdateCombos();
 
