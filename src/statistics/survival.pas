@@ -212,6 +212,7 @@ end;
 procedure TSurvival.DoLogRank();
 var
   SumExp: EpiFloat;
+  Exp: EpiFloat;
   SumFail: Integer;
   d: EpiFloat;
   i, Stratum: Integer;
@@ -224,10 +225,12 @@ begin
       SumExp := 0;
       SumFail := 0;
       for i := 0 to FIntervals - 1 do
-        begin
-          SumExp += float(FFail[0, i]) * float(FAtRisk[Stratum, i])/float(FAtRisk[0, i]);
-          SumFail += FFail[Stratum, i];
-        end;
+        if (FFail[0,i] > 0) then
+          begin
+            Exp     := float(FFail[0, i] * FAtRisk[Stratum, i])/float(FAtRisk[0, i]);
+            SumExp  +=  Exp;
+            SumFail += FFail[Stratum, i];
+          end;
 
       d := float(SumFail) - SumExp;
       FLRChi += (d * d) / SumExp;
@@ -461,45 +464,61 @@ begin
     Header.Text    := s;
 
 //  Delimited output
-    d0             := '';
     d              := FExecutor.SetOptions.GetValue(ANA_SO_CLIPBOARD_DELIMITER).Value;
+    d0             := d + d + d;
     ColCount       := 1;
     RowCount       := 3;
     for Stratum := 0 to FStrata do
       begin
         if (Stratum = 0) then
-          s := 'all data'
+          begin
+            Cell[0,0].Text := d + 'all data' + d0;
+            Cell[0,1].Text := 'Time';
+            Cell[0,2].Text := '0';
+          end
         else
-          s := FStratVarName + ' = ' + FStratLabels[Stratum - 1];
+        begin
+          Cell[0,0].Text := Cell[0,0].Text + FStratVarName + ' = ' + FStratLabels[Stratum - 1] + d0;
+        end;
+        Cell[0,1].Text := Cell[0,1].Text + d + 'Survival' + d + 'CIlow' + d + 'CIHigh';
+        Cell[0,2].Text := Cell[0,2].Text + d + '1.00' + d + '1.00' + d + '1.00';
 
-        Cell[0,0].Text := Cell[0,0].Text + d0 + s + d + d + d;
-        Cell[0,1].Text := Cell[0,1].Text + d0 + 'Time' + d + 'Survival' + d + 'CIlow' + d + 'CIHigh';
-        Cell[0,2].Text := Cell[0,2].Text + d0 + '0.00' + d + '1.00' + d + '1.00' + d + '1.00';
         LastS          := 1;
         LastUL         := 1;
         LastLL         := 1;
         Row            := 3;
-        // only include rows where there were no failures
         for i := 0 to length(FAtRisk[Stratum]) - 1 do
-          if (FFail[Stratum, i] > 0) then
+          // only include rows where there were failures
+          if (FFail[0, i] > 0) then
           begin
             if (Stratum = 0) then
+            begin
               RowCount            := Row + 2;
-            t                     := d0 + IntToStr(FTime[Stratum, i]);
-            Cell[0, Row].Text     := Cell[0, Row].Text + t +
-                                     d + trim(Format('%6.3f', [LastS])) +
-                                     d + trim(Format('%6.3f', [LastLL])) +
-                                     d + trim(Format('%6.3f', [LastUL]));
-            LastS                 := FSurvival[Stratum, i];
-            LastLL                := FLowCI[Stratum, i];
-            LastUL                := FHighCI[Stratum, i];
-            Cell[0, Row + 1].Text := Cell[0, Row + 1].Text + t +
-                                     d + trim(Format('%6.3f', [LastS])) +
-                                     d + trim(Format('%6.3f', [LastLL])) +
-                                     d + trim(Format('%6.3f', [LastUL]));
-            Row                   += 2;
+              Cell[0, Row    ].Text   := IntToStr(FTime[Stratum, i]);
+              Cell[0, Row + 1].Text   := IntToStr(FTime[Stratum, i]);
+            end;
+            if (FAtRisk[Stratum, i] > 0) then
+            begin
+              Cell[0, Row].Text     := Cell[0, Row].Text +
+                                       d + trim(Format('%6.3f', [LastS])) +
+                                       d + trim(Format('%6.3f', [LastLL])) +
+                                       d + trim(Format('%6.3f', [LastUL]));
+              LastS                 := FSurvival[Stratum, i];
+              LastLL                := FLowCI[Stratum, i];
+              LastUL                := FHighCI[Stratum, i];
+              Cell[0, Row + 1].Text := Cell[0, Row + 1].Text +
+                                       d + trim(Format('%6.3f', [LastS])) +
+                                       d + trim(Format('%6.3f', [LastLL])) +
+                                       d + trim(Format('%6.3f', [LastUL]));
+            end
+            else
+            begin
+              Cell[0, Row    ].Text := Cell[0, Row    ].Text + d0;
+              Cell[0, Row + 1].Text := Cell[0, Row + 1].Text + d0;
+            end;
+            Row  += 2;
           end;
-          d0                      := d;
+//        d0 := d;
       end;
     SetColAlignment(0, taLeftJustify);
     Footer.Text := 'To copy to graphing software, select the plot points, right-click, copy selected text'
