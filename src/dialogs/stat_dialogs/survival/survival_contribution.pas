@@ -1,4 +1,4 @@
-unit km_contribution;
+unit survival_contribution;
 // some problem with the unit name on github?
 {$mode objfpc}{$H+}
 
