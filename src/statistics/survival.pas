@@ -177,30 +177,28 @@ begin
       Row := 0;
       for i := 0 to ASurvivalTable.RowCount - 1 do
       begin
-          if (NAtRisk > 0) then
-            begin
-              Failures := ASurvivalTable.Cell[FailIx, i].N;
-              S        := S * Float((NAtRisk - Failures)) / Float(NAtRisk);
-              SumF     += Float(Failures) / Float(NAtRisk*(NAtRisk - Failures));
-              SE       := CIMult * S * SQRT(SumF);
-              FInterval[Stratum, Row] := ASurvivalTable.RowVariable.GetValueLabel(i, FValuelabelOutput);
-              FTime    [Stratum, Row] := ASurvivalTable.RowVariable.AsInteger[i];
-              FAtRisk  [Stratum, Row] := NAtRisk;
-              FFail    [Stratum, Row] := Failures;
-              FSurvival[Stratum, Row] := S;
-              FLowCI   [Stratum, Row] := max(S - SE , 0);
-              FHighCI  [Stratum, Row] := min(S + SE , 1);
-              if (GetMedian) then
-                if (S <= 0.5) then
-                  begin
-                    FMedian[Stratum] := FInterval[Stratum, Row];
-                    GetMedian        := false;
-                  end;
-              Row += 1;
-            end
-          else
+        if (NAtRisk > 0) then
           begin
+            Failures := ASurvivalTable.Cell[FailIx, i].N;
+            S        := S * Float((NAtRisk - Failures)) / Float(NAtRisk);
+            SumF     += Float(Failures) / Float(NAtRisk*(NAtRisk - Failures));
+            SE       := CIMult * S * SQRT(SumF);
+            FInterval[Stratum, Row] := ASurvivalTable.RowVariable.GetValueLabel(i, FValuelabelOutput);
+            FTime    [Stratum, Row] := ASurvivalTable.RowVariable.AsInteger[i];
+            FAtRisk  [Stratum, Row] := NAtRisk;
+            FFail    [Stratum, Row] := Failures;
+            FSurvival[Stratum, Row] := S;
+            FLowCI   [Stratum, Row] := max(S - SE , 0);
+            FHighCI  [Stratum, Row] := min(S + SE , 1);
+            if (GetMedian) then
+              if (S <= 0.5) then
+                begin
+                  FMedian[Stratum] := FInterval[Stratum, Row];
+                  GetMedian        := false;
+                end;
+            Row += 1;
           end;
+
         NAtRisk  := NAtRisk - ASurvivalTable.RowTotal[i];
       end;
     end;
@@ -279,7 +277,7 @@ begin
   if FStrata > 0 then
   begin
     sNames := FExecutor.AddResultVector('$survival_strata', ftString, FStrata);
-    if (ST.HasOption('t')) then
+    if (ST.HasOption('t') and (FStrata > 0)) then
     begin
       FExecutor.AddResultConst('$survival_' + 'chi2', ftFloat).AsFloatVector[0] := FLRP;
       FExecutor.AddResultConst('$survival_' + 'chip', ftFloat).AsFloatVector[0] := FLRChi;
@@ -451,7 +449,7 @@ procedure TSurvival.DoOutputGraph();
 var
   Tab: TOutputTable;
 //  SPlot: array of array of EpiFloat;  // holds plot points for this graph
-  Stratum, Row, i:       Integer;
+  Stratum, Row, i, s1:   Integer;
   LastS, LastLL, LastUL: EpiFloat;
   s, d, d0, t:           UTF8String;
 begin
@@ -468,18 +466,19 @@ begin
     d0             := d + d + d;
     ColCount       := 1;
     RowCount       := 3;
-    for Stratum := 0 to FStrata do
+    Cell[0,0].Text := d;
+    Cell[0,1].Text := 'Time';
+    Cell[0,2].Text := '0';
+    if (FStrata > 0) then              // only provide plot points for strata if !by was used
+      s1 := 1
+    else
+      s1 := 0;
+    for Stratum := s1 to FStrata do
       begin
         if (Stratum = 0) then
-          begin
-            Cell[0,0].Text := d + 'all data' + d0;
-            Cell[0,1].Text := 'Time';
-            Cell[0,2].Text := '0';
-          end
+          Cell[0,0].Text := Cell[0,0].Text + 'all data' + d0
         else
-        begin
           Cell[0,0].Text := Cell[0,0].Text + FStratVarName + ' = ' + FStratLabels[Stratum - 1] + d0;
-        end;
         Cell[0,1].Text := Cell[0,1].Text + d + 'Survival' + d + 'CIlow' + d + 'CIHigh';
         Cell[0,2].Text := Cell[0,2].Text + d + '1.00' + d + '1.00' + d + '1.00';
 
@@ -491,7 +490,7 @@ begin
           // only include rows where there were failures
           if (FFail[0, i] > 0) then
           begin
-            if (Stratum = 0) then
+            if (Stratum = s1) then
             begin
               RowCount            := Row + 2;
               Cell[0, Row    ].Text   := IntToStr(FTime[Stratum, i]);
