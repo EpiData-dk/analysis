@@ -122,7 +122,13 @@ type
     stQuit,
     stVersion
   );
+  TASTStatementTypes = set of TASTStatementType;
 
+const
+  ASTGraphCommands: TASTStatementTypes = [stScatter];
+
+
+type
   TParserOperationType = (
     // Literals
     otTrue,

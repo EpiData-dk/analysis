@@ -1,8 +1,26 @@
 object GraphForm1: TGraphForm1
-  Left = 2852
-  Height = 240
-  Top = 382
-  Width = 320
+  Left = 2869
+  Height = 429
+  Top = 367
+  Width = 599
   Caption = 'GraphForm1'
+  ClientHeight = 429
+  ClientWidth = 599
   LCLVersion = '2.0.12.0'
+  object PageControl1: TPageControl
+    Left = 0
+    Height = 389
+    Top = 40
+    Width = 599
+    Align = alClient
+    TabOrder = 0
+  end
+  object Panel1: TPanel
+    Left = 0
+    Height = 40
+    Top = 0
+    Width = 599
+    Align = alTop
+    TabOrder = 1
+  end
 end

@@ -29,6 +29,7 @@ type
   IGraphCommand = interface['{B7C62325-DFF7-4E0B-A8B7-6D090DDFEA1A}']
     procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator);
     function Execute(Command: TCustomGraphCommand): IGraphCommandResult;
+    function GetObject(): TObject;
   end;
 
 implementation

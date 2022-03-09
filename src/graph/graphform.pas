@@ -5,15 +5,16 @@ unit graphform;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, graphcommand, TAGraph;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, ComCtrls,
+  graphcommand, TAGraph, TASources;
 
 type
 
   { TGraphForm1 }
 
   TGraphForm1 = class(TForm, IGraphForm, IChartFactory)
-  private
-
+    PageControl1: TPageControl;
+    Panel1: TPanel;
   public
     function GetChartFactory: IChartFactory;
     function GetForm: TCustomForm;
@@ -40,8 +41,15 @@ begin
 end;
 
 function TGraphForm1.NewChart: TChart;
+var
+  Sheet: TTabSheet;
 begin
+  Sheet := PageControl1.AddTabSheet;
+  Sheet.Caption := 'Graph: ' + IntToStr(PageControl1.PageCount);
+
   result := TChart.Create(self);
+  result.Parent := sheet;
+  result.Align := alClient;
 end;
 
 end.
