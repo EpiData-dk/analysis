@@ -44,11 +44,11 @@ jobs:
               }
             ]'
             
-      - name: Compile Linux
-        run:  mvn compile -Plinux64 -e
-
       - name: Compile Windows
         run:  mvn compile -Pwin64
 
       - name: Compile Mac
         run:  mvn compile -Pdarwin64
+        
+      - name: Compile Linux
+        run:  mvn compile -Plinux64 -e -X
