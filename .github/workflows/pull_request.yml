@@ -45,7 +45,7 @@ jobs:
             ]'
             
       - name: Compile Linux
-        run:  mvn compile -Plinux64
+        run:  mvn compile -Plinux64 -e -X
 
       - name: Compile Windows
         run:  mvn compile -Pwin64
