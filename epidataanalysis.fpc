@@ -26,6 +26,7 @@
 -Fu./src/dialogs/stat_dialogs/freq/
 -Fu./src/dialogs/stat_dialogs/means/
 -Fu./src/dialogs/stat_dialogs/tables/
+-Fu./src/dialogs/stat_dialogs/survival/
 -Fu./src/editor/
 -Fu./src/executor/
 -Fu./src/functions/
