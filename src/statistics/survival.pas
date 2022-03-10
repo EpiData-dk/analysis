@@ -279,8 +279,8 @@ begin
     sNames := FExecutor.AddResultVector('$survival_strata', ftString, FStrata);
     if (ST.HasOption('t') and (FStrata > 0)) then
     begin
-      FExecutor.AddResultConst('$survival_' + 'chi2', ftFloat).AsFloatVector[0] := FLRP;
-      FExecutor.AddResultConst('$survival_' + 'chip', ftFloat).AsFloatVector[0] := FLRChi;
+      FExecutor.AddResultConst('$survival_' + 'chi2', ftFloat).AsFloatVector[0] := FLRChi;
+      FExecutor.AddResultConst('$survival_' + 'chip', ftFloat).AsFloatVector[0] := FLRP;
     end;
     for Stratum := 1 to FStrata do
       begin
