@@ -140,7 +140,13 @@ begin
         exit;
       end;
     FFailOutcomeValue := FailOutcomeValue;
-    FFailOutcomeText  := ColVariable.GetValueLabelFormatted(FailIx,FValueLabelOutput)
+    FFailOutcomeText  := ColVariable.GetValueLabelFormatted(FailIx,FValueLabelOutput);
+    // validate that time value has only positive integers
+    if (RowVariable.AsInteger[0] < 0) then
+      begin
+        FExecutor.Error('The time variable, ' + Variables[1] + ', has negative values');
+        exit;
+      end;
   end;
 
   FIntervals := FSurvivalTable.UnstratifiedTable.RowCount;

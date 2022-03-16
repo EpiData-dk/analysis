@@ -1724,7 +1724,7 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
        <i>timeVariable</i> must be integer<br/>
        With no options specified, a single table will be provided, showing:<br/>
        time, number at risk, failures (deaths), survival estimate and confidence limits<br/>
-       Since graphs are not yet implemented, a tables of plot points is shown, which may<br/>
+       Since graphs are not yet implemented, a tables of plot points is shown, which may be<br/>
        copied to graphing software.</p>
        <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
        <p>Options to specify outcomes and groups</p>
@@ -1736,11 +1736,17 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;</font>
        <p>Options to control output</p>
        <ul>
         <li><font class="option">!ng:</font> no graph output (plot points) </li>
-        <li><font class="option">!nt:</font> no life tables </li>
         <li><font class="option">!ns:</font> no summary table (including log rank test)</li>
+        <li><font class="option">!nt:</font> no life tables </li>
         <li><font class="option">!nou:</font> no unstratified life table</li>
         <li><font class="option">!nos:</font> no stratified life tables</li>
         <li>See <a href="#labeling">labeling</a> for options on changing between labels/values</li>
+        <p>In classic EpiData, there was an option to provide two date variables or a single integer<br/>
+        time variable. In Analysis, you can easily create a new time variable (futime below) representing<br/>
+        the time of follow up as follows.
+        <font class="cmd">
+new v futime i := time2 - time1;
+</font>
        </ul>
       </td>
      </tr>
