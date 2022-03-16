@@ -49,7 +49,8 @@ uses
   describe_contribution, describe_model, describe_primaryoption_model,
   describe_primaryoption_view, describe_statisticoptions_model,
   describe_statisticoptions_view, describe_variables_view, scatter,
-  graphcommand, graphform, graphformfactory;
+  chartfactory, graphform, graphformfactory, chartfactory.impl,
+  graphcommandresult.impl, charttitles.impl;
 
 {$R *.res}
 

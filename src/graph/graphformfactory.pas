@@ -5,7 +5,7 @@ unit graphformfactory;
 interface
 
 uses
-  Classes, SysUtils, graphcommand, fgl;
+  Classes, SysUtils, chartfactory, fgl;
 
 type
 

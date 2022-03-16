@@ -303,7 +303,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="139">
+    <Units Count="142">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -886,7 +886,7 @@
         <IsPartOfProject Value="True"/>
       </Unit135>
       <Unit136>
-        <Filename Value="src/graph/graphcommand.pas"/>
+        <Filename Value="src/graph/chartfactory.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit136>
       <Unit137>
@@ -900,6 +900,18 @@
         <Filename Value="src/graph/graphformfactory.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit138>
+      <Unit139>
+        <Filename Value="src/graph/chartfactory.impl.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit139>
+      <Unit140>
+        <Filename Value="src/graph/graphcommandresult.impl.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit140>
+      <Unit141>
+        <Filename Value="src/graph/charttitles.impl.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit141>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

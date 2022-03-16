@@ -5,7 +5,7 @@ unit scatter;
 interface
 
 uses
-  Classes, SysUtils, graphcommand, TAGraph, executor, outputcreator,
+  Classes, SysUtils, chartfactory, TAGraph, executor, outputcreator,
   ast, epidatafiles, TASources, TACustomSource;
 
 type
@@ -14,7 +14,7 @@ type
 
   TScatter = class(IGraphCommand)
   private
-    FChart: TChart;
+    FChartFactory: IChartFactory;
     FDataFile: TEpiDataFile;
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
@@ -52,50 +52,58 @@ end;
 procedure TScatter.Init(ChartFactory: IChartFactory; Executor: TExecutor;
   OutputCreator: TOutputCreator);
 begin
-  FChart := ChartFactory.NewChart();
-  FChart.AllowZoom := false;
-
+  FChartFactory := ChartFactory;
   FExecutor := Executor;
   FOutputCreator := OutputCreator;
 end;
 
 function TScatter.Execute(Command: TCustomGraphCommand): IGraphCommandResult;
 var
-  line: TLineSeries;
+  LineSeries: TLineSeries;
   ScatterSource: TUserDefinedChartSource;
   VarNames: TStrings;
+  Chart: TChart;
+  Titles: IChartTitleConfiguration;
 begin
+  // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
+
+  // Get the data and fields. Datafile is retained so we can free memory later
   FDataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
-
-  line := TLineSeries.Create(FChart);
-  line.ShowPoints := true;
-  line.LineType := ltNone;
-  line.Pointer.Brush.Style := bsClear;
-  line.Pointer.Pen.Color := clBlack;
-  line.Pointer.Style := psCircle;
-
   FXVar := FDataFile.Field[0];
   FYVar := FDataFile.Field[1];
 
-  ScatterSource := TUserDefinedChartSource.Create(FChart);
+  // Create the charts
+  Chart := FChartFactory.NewChart();
+
+  // Create our own datasource
+  ScatterSource := TUserDefinedChartSource.Create(Chart);
   ScatterSource.OnGetChartDataItem := @GetScatterDataItem;
   ScatterSource.PointsNumber := FXVar.Size;
-  line.Source := ScatterSource;
 
-  FChart.AddSeries(line);
+  // Create the line/point series
+  LineSeries := TLineSeries.Create(Chart);
+  LineSeries.ShowPoints := true;
+  LineSeries.LineType := ltNone;
+  LineSeries.Pointer.Brush.Style := bsClear;
+  LineSeries.Pointer.Pen.Color := clBlack;
+  LineSeries.Pointer.Style := psCircle;
+  LineSeries.Source := ScatterSource;
 
-  // TODO : All axis text etc. should be moved out into a common system
-  FChart.Title.Visible := true;
-  FChart.Title.Text.Clear;
-  FChart.Title.Text.Add(FXVar.Question.Text + ' vs. ' + FYVar.Question.Text);
+  // Add series to the chart
+  Chart.AddSeries(LineSeries);
 
-  FChart.BottomAxis.Title.Visible := true;
-  FChart.BottomAxis.Title.Caption := FXVar.Question.Text;
-  FChart.LeftAxis.Title.Visible := true;
-  FChart.LeftAxis.Title.Caption := FYVar.Question.Text;
+  // Create the titles
+  Titles := FChartFactory.NewChartTitleConfiguration()
+    .SetTitle(FXVar.Question.Text + ' vs. ' + FYVar.Question.Text)
+    .SetFootnote('')
+    .SetXAxisTitle(FXVar.Question.Text)
+    .SetYAxisTitle(FYVar.Question.Text);
 
-  Result := nil;
+  // Create the command result
+  Result := FChartFactory.NewGraphCommandResult();
+  Result.AddChart(Chart);
+  Result.SetChartTitles(Chart, Titles);
 end;
 
 function TScatter.GetObject(): TObject;
