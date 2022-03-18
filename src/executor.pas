@@ -328,7 +328,8 @@ uses
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
   RegExpr, ana_globals, browse4, strutils, ana_documentfile, FileUtil,
-  about, chartfactory, graphformfactory,
+  about, chartfactory, graphformfactory, graphform, graphcommandresult,
+  graphcommand,
 
   // Set options
   options_fontoptions, options_filesoptions, options_table, options_string_array,
@@ -339,10 +340,7 @@ uses
   aggregate, recode,
 
   // STATISTICS
-  means, freq, tables, ctable, describe,
-
-  // Graph
-  scatter;
+  means, freq, tables, ctable, describe;
 
 type
   EExecutorException = class(Exception);
@@ -3886,17 +3884,12 @@ procedure TExecutor.ExecGraphCommand(ST: TCustomGraphCommand);
 var
   GraphForm: IGraphForm;
   GraphCommand: IGraphCommand;
-  factory: TGraphFormFactory;
   Form: TCustomForm;
   CommandResult: IGraphCommandResult;
 begin
   GraphForm := TheGraphFormFactory.NewGraphForm();
-  GraphCommand := nil;
 
-  case ST.StatementType of
-    stScatter: GraphCommand := TScatter.Create();
-  end;
-
+  GraphCommand := GetAbstractGraphCommandClass(ST.StatementType).Create;
   GraphCommand.Init(TheChartFactory, Self, FOutputCreator);
   CommandResult := GraphCommand.Execute(ST);
   GraphForm.SetCommandResult(CommandResult);

@@ -303,7 +303,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="142">
+    <Units Count="147">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -890,28 +890,45 @@
         <IsPartOfProject Value="True"/>
       </Unit136>
       <Unit137>
-        <Filename Value="src/graph/graphform.pas"/>
+        <Filename Value="src/graph/graphformfactory.impl.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="GraphForm1"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
       </Unit137>
       <Unit138>
-        <Filename Value="src/graph/graphformfactory.pas"/>
+        <Filename Value="src/graph/chartfactory.impl.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit138>
       <Unit139>
-        <Filename Value="src/graph/chartfactory.impl.pas"/>
+        <Filename Value="src/graph/graphcommandresult.impl.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit139>
       <Unit140>
-        <Filename Value="src/graph/graphcommandresult.impl.pas"/>
+        <Filename Value="src/graph/charttitles.impl.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit140>
       <Unit141>
-        <Filename Value="src/graph/charttitles.impl.pas"/>
+        <Filename Value="src/graph/charttitles.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit141>
+      <Unit142>
+        <Filename Value="src/graph/graphform.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit142>
+      <Unit143>
+        <Filename Value="src/graph/graphform.impl.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit143>
+      <Unit144>
+        <Filename Value="src/graph/graphformfactory.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit144>
+      <Unit145>
+        <Filename Value="src/graph/graphcommandresult.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit145>
+      <Unit146>
+        <Filename Value="src/graph/graphcommand.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit146>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

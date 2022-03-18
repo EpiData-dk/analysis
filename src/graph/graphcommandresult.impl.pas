@@ -5,17 +5,17 @@ unit graphcommandresult.impl;
 interface
 
 uses
-  Classes, SysUtils, chartfactory, TAGraph, gmap;
+  Classes, SysUtils, graphcommandresult, TAGraph, gmap, charttitles;
 
 type
 
   { TChartTitlesCompare }
 
-  TChartTitlesCompare = class
+  TChartCompare = class
     class function C(A, B: TChart): boolean;
   end;
 
-  TChartTitlesMap = specialize TMap<TChart, IChartTitles, TChartTitlesCompare>;
+  TChartTitlesMap = specialize TMap<TChart, IChartTitles, TChartCompare>;
 
   { TGraphCommandResult }
 
@@ -36,7 +36,7 @@ implementation
 
 { TChartTitlesCompare }
 
-class function TChartTitlesCompare.C(A, B: TChart): boolean;
+class function TChartCompare.C(A, B: TChart): boolean;
 begin
   Result := Pointer(A) < Pointer(B);
 end;

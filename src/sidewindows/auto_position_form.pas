@@ -11,7 +11,7 @@ type
 
   { TCustomAutoPositionForm }
 
-  TCustomAutoPositionForm = class(TForm)
+  TCustomAutoPositionForm = class(TCustomForm)
   private
     FFirstShow: boolean;
   protected

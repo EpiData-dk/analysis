@@ -1,23 +1,15 @@
 unit graphformfactory;
 
 {$mode objfpc}{$H+}
+{$INTERFACES CORBA}
 
 interface
 
 uses
-  Classes, SysUtils, chartfactory, fgl;
+  Classes, SysUtils, graphform;
 
 type
-
-  TGraphFormList = specialize TFPGList<IGraphForm>;
-
-  { TGraphFormFactory }
-
-  TGraphFormFactory = class(IGraphFormFactory)
-  private
-    FList: TGraphFormList;
-  public
-    constructor Create();
+  IGraphFormFactory = interface['{60911789-540E-46EF-8D5E-E047A066BD27}']
     function NewGraphForm(): IGraphForm;
     procedure CloseAllOpenForms();
   end;
@@ -28,29 +20,7 @@ var
 implementation
 
 uses
-  graphform;
-
-{ TGraphFormFactory }
-
-constructor TGraphFormFactory.Create();
-begin
-  FList := TGraphFormList.Create;
-end;
-
-function TGraphFormFactory.NewGraphForm(): IGraphForm;
-begin
-  result := TGraphForm1.Create(nil);
-  FList.Add(Result);
-end;
-
-procedure TGraphFormFactory.CloseAllOpenForms();
-var
-  i: Integer;
-begin
-  for i := 0 to FList.Count - 1 do
-    FList[i].GetForm.Free;
-  FList.Clear;
-end;
+  graphformfactory.impl;
 
 initialization
   TheGraphFormFactory := TGraphFormFactory.Create;

@@ -5,7 +5,7 @@ unit charttitles.impl;
 interface
 
 uses
-  Classes, SysUtils, chartfactory;
+  Classes, SysUtils, charttitles;
 
 type
 

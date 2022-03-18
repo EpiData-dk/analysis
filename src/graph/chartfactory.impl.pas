@@ -5,7 +5,7 @@ unit chartfactory.impl;
 interface
 
 uses
-  Classes, SysUtils, chartfactory, TAGraph;
+  Classes, SysUtils, chartfactory, TAGraph, charttitles, graphcommandresult;
 
 type
 
@@ -70,9 +70,6 @@ function TChartFactory.NewChartTitleConfiguration(): IChartTitleConfiguration;
 begin
   result := TChartTitlesConfiguration.Create;
 end;
-
-initialization
-  TheChartFactory := TChartFactory.Create;
 
 end.
 
