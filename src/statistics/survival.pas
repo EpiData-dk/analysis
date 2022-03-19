@@ -92,7 +92,7 @@ type
 implementation
 
 uses
-  generalutils, Math, statfunctions, options_utils;
+  generalutils, Math, statfunctions, options_utils, Clipbrd;
 
 { TSurvivalDatafile }
 
@@ -406,7 +406,8 @@ begin
     ; }
   T.SetRowBorders(1, [cbTop]);
   T.SetRowBorders(2, [cbBottom]);
-
+  if (not ST.HasOption('ng')) then
+    T.Footer.Text := 'Plot points for KM plots were saved to the clipboard';
 end;
 
 procedure TSurvival.DoOutputSummary(ST:TCustomVariableCommand);
@@ -453,28 +454,21 @@ end;
 
 procedure TSurvival.DoOutputGraph();
 var
-  Tab: TOutputTable;
-//  SPlot: array of array of EpiFloat;  // holds plot points for this graph
+  PlotT, PlotS, PlotLL, PlotUL: array of array of EpiFloat;  // holds plot points for this graph
   Stratum, Row, i, s1:   Integer;
   LastS, LastLL, LastUL: EpiFloat;
-  s, d, d0, t:           UTF8String;
+  s, d, d0   :           UTF8String;
+  plot:                  array of UTF8String;
 begin
-  Tab := FOutputCreator.AddTable;
-  s := 'Survival Graph - plot points';
 
-  with Tab do
-  // loop from here for all strata; only call once
-  begin
-    Header.Text    := s;
+//  Delimiters
+    d       := FExecutor.SetOptions.GetValue(ANA_SO_CLIPBOARD_DELIMITER).Value;
+    d0      := d + d + d;
 
-//  Delimited output
-    d              := FExecutor.SetOptions.GetValue(ANA_SO_CLIPBOARD_DELIMITER).Value;
-    d0             := d + d + d;
-    ColCount       := 1;
-    RowCount       := 3;
-    Cell[0,0].Text := d;
-    Cell[0,1].Text := 'Time';
-    Cell[0,2].Text := '0';
+// for now, put plot points into the system clipboard
+// in future, this will be an option (!cb)
+    plot := ['KM Plot for ' + FOutcomeVarLabel + ' at time ' + FTimeVarLabel, d , 'Time', '0'];
+
     if (FStrata > 0) then              // only provide plot points for strata if !by was used
       s1 := 1
     else
@@ -482,52 +476,52 @@ begin
     for Stratum := s1 to FStrata do
       begin
         if (Stratum = 0) then
-          Cell[0,0].Text := Cell[0,0].Text + 'all data' + d0
+          plot[1] += 'all data' + d0
         else
-          Cell[0,0].Text := Cell[0,0].Text + FStratVarName + ' = ' + FStratLabels[Stratum - 1] + d0;
-        Cell[0,1].Text := Cell[0,1].Text + d + 'Survival' + d + 'CIlow' + d + 'CIHigh';
-        Cell[0,2].Text := Cell[0,2].Text + d + '1.00' + d + '1.00' + d + '1.00';
+          plot[1] += FStratVarName + ' = ' + FStratLabels[Stratum - 1] + d0;
+        plot[2]   += d + 'Survival' + d + 'CIlow' + d + 'CIHigh';
+        plot[3]   += d + '1.00' + d + '1.00' + d + '1.00';
 
-        LastS          := 1;
-        LastUL         := 1;
-        LastLL         := 1;
-        Row            := 3;
+        LastS     := 1;
+        LastUL    := 1;
+        LastLL    := 1;
+        Row       := 4;
         for i := 0 to length(FAtRisk[Stratum]) - 1 do
           // only include rows where there were failures
           if (FFail[0, i] > 0) then
           begin
             if (Stratum = s1) then
             begin
-              RowCount            := Row + 2;
-              Cell[0, Row    ].Text   := IntToStr(FTime[Stratum, i]);
-              Cell[0, Row + 1].Text   := IntToStr(FTime[Stratum, i]);
+              SetLength(plot, Row + 2);
+              plot[ Row    ] += IntToStr(FTime[Stratum, i]);
+              plot[ Row + 1] += IntToStr(FTime[Stratum, i]);
             end;
             if (FAtRisk[Stratum, i] > 0) then
             begin
-              Cell[0, Row].Text     := Cell[0, Row].Text +
-                                       d + trim(Format('%6.3f', [LastS])) +
-                                       d + trim(Format('%6.3f', [LastLL])) +
-                                       d + trim(Format('%6.3f', [LastUL]));
+              plot[ Row] += d + trim(Format('%6.3f', [LastS])) +
+                            d + trim(Format('%6.3f', [LastLL])) +
+                            d + trim(Format('%6.3f', [LastUL]));
               LastS                 := FSurvival[Stratum, i];
               LastLL                := FLowCI[Stratum, i];
               LastUL                := FHighCI[Stratum, i];
-              Cell[0, Row + 1].Text := Cell[0, Row + 1].Text +
-                                       d + trim(Format('%6.3f', [LastS])) +
-                                       d + trim(Format('%6.3f', [LastLL])) +
-                                       d + trim(Format('%6.3f', [LastUL]));
+              plot[ Row + 1] += d + trim(Format('%6.3f', [LastS])) +
+                                d + trim(Format('%6.3f', [LastLL])) +
+                                d + trim(Format('%6.3f', [LastUL]));
             end
             else
             begin
-              Cell[0, Row    ].Text := Cell[0, Row    ].Text + d0;
-              Cell[0, Row + 1].Text := Cell[0, Row + 1].Text + d0;
+              plot[ Row    ] += d0;
+              plot[ Row + 1] += d0;
             end;
             Row  += 2;
           end;
-//        d0 := d;
+        d0 := d;
       end;
-    SetColAlignment(0, taLeftJustify);
-    Footer.Text := 'To copy to graphing software, select the plot points, right-click, copy selected text'
-  end;
+    // copy plot points to clipboard
+    s := plot[0];
+    for i := 1 to Row - 1 do
+        s += lineending + plot[i];
+    Clipboard.AsText:=s;
 end;
 
 procedure TSurvival.ExecSurvival(Variables: TStrings; ST: TCustomVariableCommand);
@@ -538,7 +532,6 @@ var
   Opt:              TOption;
   HasBy, HasO:      Boolean;
   DF:               TEpiDataFile;
-  i:                Integer;
 begin
 // reset result variables;
   FExecutor.ClearResults('$survival');
