@@ -40,8 +40,6 @@ type
     FConf:                Integer;
     FValueLabelOutput:    TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
-    FFailOutcomeValue:    UTF8String;
-    FFailOutcomeText:     UTF8String;
   // table of outcome by time
     FSurvivalTable:       TTwoWayTables;
     FStrata,
@@ -57,11 +55,20 @@ type
   // summary results
     FMedian:              Array of UTF8String;
     FLRChi, FLRP:         EpiFloat;
+  // labels
+    FFailOutcomeValue,
+    FFailOutcomeText,
     FWeightVarName,
     FStratVarName,
     FOutcomeVarLabel,
     FTimeVarLabel:        UTF8String;
     FStratLabels:         array of UTF8String;
+  // plot points for one KM graph series
+    FPlotT,
+    FPlotS,
+    FPlotLL,
+    FPlotUL:              array of EpiFloat;
+    FCBPlot:              UTF8String;
 
   protected
     FExecutor: TExecutor;
@@ -74,6 +81,12 @@ type
     procedure DoOutputSurvival(ST:TCustomVariableCommand); virtual;
     procedure DoOutputSummary(ST:TCustomVariableCommand); virtual;
     procedure DoLogRank(); virtual;
+    procedure DoCalcPlotPoints(Stratum: Integer); virtual;
+    procedure DoAddPlotPoints(t, s, ll, ul: EpiFloat);
+    procedure DoAddCBPlotPoints(Stratum: Integer); virtual;
+    procedure DoOutputCBPlotPoints(); virtual;
+    procedure DoInitializeGraph(); virtual;
+    procedure DoAddGraphSeries(Stratum: Integer);
     procedure DoOutputGraph(); virtual;
   public
     constructor Create(AExecutor: TExecutor; OutputCreator: TOutputCreator);
@@ -116,7 +129,6 @@ var
   ASurvivalTable: TTwowayTable;
   TablesRefMap: TEpiReferenceMap;
   GetMedian: Boolean;
-//  SelectRow: array of Boolean;
 begin
 
 // Use TABLES to get counts of outcomes by time for each stratum
@@ -130,10 +142,7 @@ begin
     FailIx := -1;
     for Col := 0 to ColCount - 1 do
       if (ColVariable.AsString[Col] = FailOutcomeValue) then
-        begin
           FailIx := Col;
-          break;
-        end;
     if (FailIx < 0) then
       begin
         FExecutor.Error('No records with ' + Variables[0] + ' = ' + FailOutcomeValue);
@@ -167,46 +176,47 @@ begin
   CIMult := PNORMALINV((Float(100 - FConf) / 200.0));
 
   // unstratified table first
-  ASurvivalTable := FSurvivalTable.UnstratifiedTable;
 
   for Stratum := 0 to FStrata do
     begin
-      if (Stratum > 0) then
-      begin
-        ASurvivalTable := FSurvivalTable.Tables[Stratum - 1];
-        FStratLabels[Stratum - 1] := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(Stratum - 1);
-      end;
+      if (Stratum = 0) then
+        ASurvivalTable := FSurvivalTable.UnstratifiedTable
+      else
+        begin
+          ASurvivalTable := FSurvivalTable.Tables[Stratum - 1];
+          FStratLabels[Stratum - 1] := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(Stratum - 1);
+        end;
       NAtRisk   := ASurvivalTable.Total;
       S         := 1.0;
       SumF      := 0.0;
       GetMedian := true;
       Row := 0;
       for i := 0 to ASurvivalTable.RowCount - 1 do
-      begin
-        if (NAtRisk > 0) then
-          begin
-            Failures := ASurvivalTable.Cell[FailIx, i].N;
-            S        := S * Float((NAtRisk - Failures)) / Float(NAtRisk);
-            SumF     += Float(Failures) / Float(NAtRisk*(NAtRisk - Failures));
-            SE       := CIMult * S * SQRT(SumF);
-            FInterval[Stratum, Row] := ASurvivalTable.RowVariable.GetValueLabel(i, FValuelabelOutput);
-            FTime    [Stratum, Row] := ASurvivalTable.RowVariable.AsInteger[i];
-            FAtRisk  [Stratum, Row] := NAtRisk;
-            FFail    [Stratum, Row] := Failures;
-            FSurvival[Stratum, Row] := S;
-            FLowCI   [Stratum, Row] := max(S - SE , 0);
-            FHighCI  [Stratum, Row] := min(S + SE , 1);
-            if (GetMedian) then
-              if (S <= 0.5) then
-                begin
-                  FMedian[Stratum] := FInterval[Stratum, Row];
-                  GetMedian        := false;
-                end;
-            Row += 1;
-          end;
+        begin
+          if (NAtRisk > 0) then
+            begin
+              Failures := ASurvivalTable.Cell[FailIx, i].N;
+              S        := S * Float((NAtRisk - Failures)) / Float(NAtRisk);
+              SumF     += Float(Failures) / Float(NAtRisk*(NAtRisk - Failures));
+              SE       := CIMult * S * SQRT(SumF);
+              FInterval[Stratum, Row] := ASurvivalTable.RowVariable.GetValueLabel(i, FValuelabelOutput);
+              FTime    [Stratum, Row] := ASurvivalTable.RowVariable.AsInteger[i];
+              FAtRisk  [Stratum, Row] := NAtRisk;
+              FFail    [Stratum, Row] := Failures;
+              FSurvival[Stratum, Row] := S;
+              FLowCI   [Stratum, Row] := max(S - SE , 0);
+              FHighCI  [Stratum, Row] := min(S + SE , 1);
+              if (GetMedian) then
+                if (S <= 0.5) then
+                  begin
+                    FMedian[Stratum] := FInterval[Stratum, Row];
+                    GetMedian        := false;
+                  end;
+              Row += 1;
+            end;
 
-        NAtRisk  := NAtRisk - ASurvivalTable.RowTotal[i];
-      end;
+          NAtRisk  := NAtRisk - ASurvivalTable.RowTotal[i];
+        end;
     end;
   ST.ExecResult := csrSuccess;
 
@@ -216,7 +226,6 @@ end;
 procedure TSurvival.DoLogRank();
 var
   SumExp: EpiFloat;
-  Exp: EpiFloat;
   SumFail: Integer;
   d: EpiFloat;
   i, Stratum: Integer;
@@ -231,8 +240,7 @@ begin
       for i := 0 to FIntervals - 1 do
         if (FFail[0,i] > 0) then
           begin
-            Exp     := float(FFail[0, i] * FAtRisk[Stratum, i])/float(FAtRisk[0, i]);
-            SumExp  +=  Exp;
+            SumExp  += float(FFail[0, i] * FAtRisk[Stratum, i])/float(FAtRisk[0, i]);
             SumFail += FFail[Stratum, i];
           end;
 
@@ -244,32 +252,28 @@ end;
 
 procedure TSurvival.DoOneResult(Stratum: Integer; Name: UTF8String);
 var
-  i, Sz, rSz: Integer;
-  Vt, Vs: array of EpiFloat;
+  i, rSz: Integer;
   rVt, rVs: TExecVarVector;
 begin
-  // put data in temp arrays, so we know the size
-  Sz := Length(FSurvival[Stratum]);
-  SetLength(Vt, Sz);
-  SetLength(Vs, Sz);
-  rSz := 0;
-  for i := 0 to Sz - 1 do
+  // get size of result vectors
+  // since we cannot change the vector size after creating it
+  rSz := length(FTime[Stratum]);
+  for i := 0 to high(FFail[Stratum]) do
     if FFail[Stratum, i] > 0 then
-    begin
-      Vt[rSz] := FTime[Stratum, i];
-      Vs[rSz] := FSurvival[Stratum, i];
       rSz += 1;
-    end;
-  // result vectors
+  // fill result vectors
   with FExecutor do
   begin
     rVt := AddResultVector('$survival_time_' + Name, ftFloat, rSz);
     rVs := AddResultVector('$survival_estimate_' + Name, ftFloat, rSz);
-    for i := 0 to rSz - 1 do
-      begin
-        rVt.AsFloatVector[i] := FTime[Stratum, i];
-        rVs.AsFloatVector[i] := FSurvival[Stratum, i];
-      end;
+    rSz := 0;
+    for i := 0 to high(FSurvival[Stratum]) do
+      if FFail[Stratum, i] > 0 then
+        begin
+          rVt.AsFloatVector[rSz] := FTime[Stratum, i];
+          rVs.AsFloatVector[rSz] := FSurvival[Stratum, i];
+          rSz += 1;
+        end;
   end;
 end;
 
@@ -318,7 +322,6 @@ begin
   for i := 0 to Length(FFail[0]) - 1 do
     if (FFail[0,1] > 0) then
       Sz += 1;
-//  Sz            := Length(FAtRisk[0]);
   T.RowCount    := 0;
   ColPerStratum := 4;
 
@@ -374,7 +377,6 @@ begin
   T.SetRowAlignment(1, taRightJustify);
   StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
 
-  // show rows with failures only
   // show stratum results with failures only
   Sz := 3;
   for i := 0 to Length(FFail[0]) - 1 do
@@ -452,76 +454,81 @@ begin
   inherited Destroy;
 end;
 
-procedure TSurvival.DoOutputGraph();
+procedure TSurvival.DoCalcPlotPoints(Stratum: Integer);
 var
-  PlotT, PlotS, PlotLL, PlotUL: array of array of EpiFloat;  // holds plot points for this graph
-  Stratum, Row, i, s1:   Integer;
-  LastS, LastLL, LastUL: EpiFloat;
-  s, d, d0   :           UTF8String;
-  plot:                  array of UTF8String;
+  i: Integer;
+
+begin
+  FPlotT  := [0.0];
+  FPlotS  := [1.0];
+  FPlotLL := [1.0];
+  FPlotUL := [1.0];
+
+  for i := low(FAtRisk[Stratum]) to high(FAtRisk[Stratum]) do
+    if (FFail[Stratum,i] > 0) then
+      DoAddPlotPoints(float(FTime[Stratum, i]), FSurvival[Stratum, i], FLowCI[Stratum, i], FHighCI[Stratum, i]);
+// should we add final plot point based on maximum time for this stratum?
+end;
+
+procedure TSurvival.DoAddPlotPoints(t, s, ll, ul: EpiFloat);
+var
+  l: Integer;
+begin
+  // add two line plot points
+  //     - horizontal from survival at previous time
+  //     - vertical to survival at current time
+  l := High(FPlotS);
+  FPlotT  := concat(FPlotT,  [t         , t ]);
+  FPlotS  := concat(FPlotS,  [FPlotS [l], s ]);
+  FPlotLL := concat(FPlotLL, [FPlotLL[l], ll]);
+  FPlotUL := concat(FPlotUL, [FPlotUL[l], ul]);
+end;
+
+procedure TSurvival.DoInitializeGraph();
+
+begin
+
+end;
+
+procedure TSurvival.DoAddGraphSeries(Stratum: Integer);
+
+begin
+
+end;
+
+procedure TSurvival.DoOutputGraph();
+
+begin
+
+end;
+
+procedure TSurvival.DoAddCBPlotPoints(Stratum: Integer);
+var
+  i:          Integer;
+  d:            UTF8String;
 begin
 
 //  Delimiters
-    d       := FExecutor.SetOptions.GetValue(ANA_SO_CLIPBOARD_DELIMITER).Value;
-    d0      := d + d + d;
+  d       := FExecutor.SetOptions.GetValue(ANA_SO_CLIPBOARD_DELIMITER).Value;
 
-// for now, put plot points into the system clipboard
-// in future, this will be an option (!cb)
-    plot := ['KM Plot for ' + FOutcomeVarLabel + ' at time ' + FTimeVarLabel, d , 'Time', '0'];
+  FCBplot += 'KM Plot for ' + FOutcomeVarLabel + ' at time ' + FTimeVarLabel + lineending;
+  if (Stratum = 0) then
+    FCBPlot += 'all data' + lineending
+  else
+    FCBPlot += FStratVarName + ' = ' + FStratLabels[Stratum - 1] + lineending;
+  FCBPlot +=  'Time' + d + 'Survival' + d + 'CIlow' + d + 'CIHigh' + lineending;
 
-    if (FStrata > 0) then              // only provide plot points for strata if !by was used
-      s1 := 1
-    else
-      s1 := 0;
-    for Stratum := s1 to FStrata do
-      begin
-        if (Stratum = 0) then
-          plot[1] += 'all data' + d0
-        else
-          plot[1] += FStratVarName + ' = ' + FStratLabels[Stratum - 1] + d0;
-        plot[2]   += d + 'Survival' + d + 'CIlow' + d + 'CIHigh';
-        plot[3]   += d + '1.00' + d + '1.00' + d + '1.00';
+  for i := 0 to high(FPlotT) do
+    FCBPlot += trim(Format('%6.0f', [FPlotT[i]])) + d +
+               trim(Format('%6.3f', [FPlotS[i]])) + d +
+               trim(Format('%6.3f', [FPlotLL[i]])) + d  +
+               trim(Format('%6.3f', [FPlotUL[i]])) + lineending;
 
-        LastS     := 1;
-        LastUL    := 1;
-        LastLL    := 1;
-        Row       := 4;
-        for i := 0 to length(FAtRisk[Stratum]) - 1 do
-          // only include rows where there were failures
-          if (FFail[0, i] > 0) then
-          begin
-            if (Stratum = s1) then
-            begin
-              SetLength(plot, Row + 2);
-              plot[ Row    ] += IntToStr(FTime[Stratum, i]);
-              plot[ Row + 1] += IntToStr(FTime[Stratum, i]);
-            end;
-            if (FAtRisk[Stratum, i] > 0) then
-            begin
-              plot[ Row] += d + trim(Format('%6.3f', [LastS])) +
-                            d + trim(Format('%6.3f', [LastLL])) +
-                            d + trim(Format('%6.3f', [LastUL]));
-              LastS                 := FSurvival[Stratum, i];
-              LastLL                := FLowCI[Stratum, i];
-              LastUL                := FHighCI[Stratum, i];
-              plot[ Row + 1] += d + trim(Format('%6.3f', [LastS])) +
-                                d + trim(Format('%6.3f', [LastLL])) +
-                                d + trim(Format('%6.3f', [LastUL]));
-            end
-            else
-            begin
-              plot[ Row    ] += d0;
-              plot[ Row + 1] += d0;
-            end;
-            Row  += 2;
-          end;
-        d0 := d;
-      end;
-    // copy plot points to clipboard
-    s := plot[0];
-    for i := 1 to Row - 1 do
-        s += lineending + plot[i];
-    Clipboard.AsText:=s;
+end;
+
+procedure TSurvival.DoOutputCBPlotPoints();
+begin
+    Clipboard.AsText:=FCBPlot;
 end;
 
 procedure TSurvival.ExecSurvival(Variables: TStrings; ST: TCustomVariableCommand);
@@ -532,6 +539,7 @@ var
   Opt:              TOption;
   HasBy, HasO:      Boolean;
   DF:               TEpiDataFile;
+  Stratum, Stratum1:Integer;
 begin
 // reset result variables;
   FExecutor.ClearResults('$survival');
@@ -625,14 +633,33 @@ begin
             if (not ST.HasOption('ns')) then
               DoOutputSummary(ST);
 
-            if (not ST.HasOption('ng')) then
-              DoOutputGraph();
-
+            SetLength(FCBPlot,0);
+            if ((not ST.HasOption('ng')) or (ST.HasOption('cb'))) then
+                begin
+                  FCBPlot := '';
+                  if (not ST.HasOption('ng')) then
+                    DoInitializeGraph;
+                  Stratum1 := 0;
+                  if (FStrata > 0) then
+                    Stratum1 := 1;;
+                  for Stratum := Stratum1 to FStrata do
+                  begin
+                    DoCalcPlotPoints(Stratum);
+                    if (not ST.HasOption('ng')) then
+                      DoAddGraphSeries(Stratum);
+                    if (ST.HasOption('cb')) then
+                      DoAddCBPlotPoints(Stratum);
+                  end;
+                  if (not ST.HasOption('ng')) then
+                    DoOutputGraph();
+                    if (ST.HasOption('cb')) then
+                    DoOutputCBPlotPoints();
+                end;
           end;
-
-      DoResultVariables(ST);
+          DoResultVariables(ST);
       end;
     DF.Free;
+
   finally
     StratVariable.Free;
     AllVariables.Free;
@@ -652,4 +679,3 @@ begin
 end;
 }
 end.
-
