@@ -11,8 +11,8 @@ uses
   Interfaces,// this includes the LCL widgetset
   sysutils, Forms, ana_procs, wizard_form, datamodule, main,
 
-  // ONLY ADD GRAPH COMMANDS HERE
-  scatter;
+  // ONLY ADD GRAPH COMMANDS HERE (delete all other automatically added units).
+  scatter, scattersource, graphpopupmenu;
 
 {$R *.res}
 

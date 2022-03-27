@@ -10,18 +10,13 @@ uses
 
 type
 
-  { TScatter }
+  { TScatterChart }
 
-  TScatter = class(TAbstractGraphCommand)
+  TScatterChart = class(TAbstractGraphCommand)
   private
     FChartFactory: IChartFactory;
-    FDataFile: TEpiDataFile;
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
-    FXVar: TEpiField;
-    FYVar: TEpiField;
-    procedure GetScatterDataItem(ASource: TUserDefinedChartSource;
-      AIndex: Integer; var AItem: TChartDataItem);
   public
     destructor destroy; override;
     procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator); override;
@@ -32,24 +27,16 @@ type
 implementation
 
 uses
-  TASeries, TATypes, Graphics, charttitles, ast_types;
+  TASeries, TATypes, Graphics, charttitles, ast_types, scattersource;
 
-{ TScatter }
+{ TScatterChart }
 
-procedure TScatter.GetScatterDataItem(ASource: TUserDefinedChartSource;
-  AIndex: Integer; var AItem: TChartDataItem);
+destructor TScatterChart.destroy;
 begin
-  AItem.X := FXVar.AsFloat[AIndex];
-  AItem.Y := FYVar.AsFloat[AIndex];
-end;
-
-destructor TScatter.destroy;
-begin
-  FDataFile.Free;
   inherited destroy;
 end;
 
-procedure TScatter.Init(ChartFactory: IChartFactory; Executor: TExecutor;
+procedure TScatterChart.Init(ChartFactory: IChartFactory; Executor: TExecutor;
   OutputCreator: TOutputCreator);
 begin
   FChartFactory := ChartFactory;
@@ -57,29 +44,32 @@ begin
   FOutputCreator := OutputCreator;
 end;
 
-function TScatter.Execute(Command: TCustomGraphCommand): IGraphCommandResult;
+function TScatterChart.Execute(Command: TCustomGraphCommand): IGraphCommandResult;
 var
   LineSeries: TLineSeries;
-  ScatterSource: TUserDefinedChartSource;
+  ScatterSource: TScatterSource;
   VarNames: TStrings;
   Chart: TChart;
   Titles: IChartTitleConfiguration;
+  DataFile: TEpiDataFile;
+  XVar, YVar: TEpiField;
 begin
   // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
 
-  // Get the data and fields. Datafile is retained so we can free memory later
-  FDataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
-  FXVar := FDataFile.Field[0];
-  FYVar := FDataFile.Field[1];
+  // Get the data and fields.
+  DataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
+  XVar := Datafile.Fields[0];
+  YVar := Datafile.Fields[1];
+  Varnames.Free;
 
   // Create the charts
   Chart := FChartFactory.NewChart();
 
   // Create our own datasource
-  ScatterSource := TUserDefinedChartSource.Create(Chart);
-  ScatterSource.OnGetChartDataItem := @GetScatterDataItem;
-  ScatterSource.PointsNumber := FXVar.Size;
+  // - datasource is destroyed by the chart, so we let it handle the datafile destruction
+  ScatterSource := TScatterSource.Create(Chart);
+  ScatterSource.Datafile := DataFile;
 
   // Create the line/point series
   LineSeries := TLineSeries.Create(Chart);
@@ -95,10 +85,11 @@ begin
 
   // Create the titles
   Titles := FChartFactory.NewChartTitleConfiguration()
-    .SetTitle(FXVar.Question.Text + ' vs. ' + FYVar.Question.Text)
+    .SetTitle(XVar.Question.Text + ' vs. ' + YVar.Question.Text)
     .SetFootnote('')
-    .SetXAxisTitle(FXVar.Question.Text)
-    .SetYAxisTitle(FYVar.Question.Text);
+    .SetXAxisTitle(XVar.Question.Text)
+    .SetYAxisTitle(YVar.Question.Text)
+    .OverrideFromOptions(Command.Options);
 
   // Create the command result
   Result := FChartFactory.NewGraphCommandResult();
@@ -106,13 +97,13 @@ begin
   Result.SetChartTitles(Chart, Titles);
 end;
 
-function TScatter.GetObject(): TObject;
+function TScatterChart.GetObject(): TObject;
 begin
   Result := Self;
 end;
 
 initialization
-  RegisterAbstractGraphCommandClass(stScatter, TScatter);
+  RegisterAbstractGraphCommandClass(stScatter, TScatterChart);
 
 end.
 

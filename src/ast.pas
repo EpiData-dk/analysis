@@ -1282,7 +1282,10 @@ type
 
   { TCustomGraphCommand }
 
-  TCustomGraphCommand = class(TCustomVariableCommand);
+  TCustomGraphCommand = class(TCustomVariableCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+  end;
 
   { TScatterCommand }
 
@@ -1545,6 +1548,18 @@ uses
   epi_script_function_systemfunctions,
   epi_script_function_observations,
   math, variants, LazUTF8, LazFileUtils;
+
+{ TCustomGraphCommand }
+
+function TCustomGraphCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+
+  result.Insert('title',  ['t'],  [rtString]);
+  result.Insert('footer', ['f'],  [rtString]);
+  result.Insert('xtitle', ['xt'], [rtString]);
+  result.Insert('ytitle', ['yt'], [rtString]);
+end;
 
 { TRecodeInterval }
 

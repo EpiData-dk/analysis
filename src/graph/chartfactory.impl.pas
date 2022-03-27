@@ -26,7 +26,7 @@ type
 implementation
 
 uses
-  graphcommandresult.impl, charttitles.impl;
+  graphcommandresult.impl, charttitles.impl, Graphics;
 
 { TChartFactory }
 
@@ -57,6 +57,8 @@ end;
 function TChartFactory.NewChart(): TChart;
 begin
   Result := TChart.Create(nil);
+  Result.BackColor := clWhite;
+
   Result.AddHandlerOnBeforeDestruction(@BeforeChartDestruction);
   FChartList.Add(Result);
 end;

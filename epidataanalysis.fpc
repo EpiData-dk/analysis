@@ -40,3 +40,5 @@
 -Fu./src/utils/
 -Fu./src/graph/
 -Fu./src/graph/commands/
+-Fu./src/graph/commands/graphform
+-Fu./src/graph/commands/scatter

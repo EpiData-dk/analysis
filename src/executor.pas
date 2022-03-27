@@ -3887,16 +3887,15 @@ var
   Form: TCustomForm;
   CommandResult: IGraphCommandResult;
 begin
-  GraphForm := TheGraphFormFactory.NewGraphForm();
-
   GraphCommand := GetAbstractGraphCommandClass(ST.StatementType).Create;
   GraphCommand.Init(TheChartFactory, Self, FOutputCreator);
   CommandResult := GraphCommand.Execute(ST);
+
+  GraphForm := TheGraphFormFactory.NewGraphForm();
   GraphForm.SetCommandResult(CommandResult);
 
   Form := GraphForm.GetForm;
-  Form.ShowModal;
-  TheGraphFormFactory.CloseAllOpenForms();
+  Form.Show;
   GraphCommand.GetObject().Free;
 end;
 

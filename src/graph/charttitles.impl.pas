@@ -5,7 +5,7 @@ unit charttitles.impl;
 interface
 
 uses
-  Classes, SysUtils, charttitles;
+  Classes, SysUtils, charttitles, ast;
 
 type
 
@@ -26,6 +26,7 @@ type
     function SetFootnote(Text: UTF8String): IChartTitleConfiguration;
     function SetXAxisTitle(Text: UTF8String): IChartTitleConfiguration;
     function SetYAxisTitle(Text: UTF8String): IChartTitleConfiguration;
+    function OverrideFromOptions(Options: TOptionList): IChartTitleConfiguration;
   end;
 
 implementation
@@ -56,25 +57,45 @@ end;
 function TChartTitlesConfiguration.SetTitle(Text: UTF8String): IChartTitleConfiguration;
 begin
   FTitle := Text;
-  Result := self;
+  Result := Self;
 end;
 
 function TChartTitlesConfiguration.SetFootnote(Text: UTF8String): IChartTitleConfiguration;
 begin
   FFootnote := Text;
-  Result := self;
+  Result := Self;
 end;
 
 function TChartTitlesConfiguration.SetXAxisTitle(Text: UTF8String): IChartTitleConfiguration;
 begin
   FXAxisTitle := Text;
-  Result := self;
+  Result := Self;
 end;
 
 function TChartTitlesConfiguration.SetYAxisTitle(Text: UTF8String): IChartTitleConfiguration;
 begin
   FYAxisTitle := Text;
-  Result := self;
+  Result := Self;
+end;
+
+function TChartTitlesConfiguration.OverrideFromOptions(Options: TOptionList
+  ): IChartTitleConfiguration;
+var
+  Opt: TOption;
+begin
+  if (Options.HasOption('title', Opt) or Options.HasOption('t', Opt)) then
+    FTitle := Opt.Expr.AsString;
+
+  if (Options.HasOption('footer', Opt) or Options.HasOption('f', Opt)) then
+    FFootnote := Opt.Expr.AsString;
+
+  if (Options.HasOption('xtitle', Opt) or Options.HasOption('xt', Opt)) then
+    FXAxisTitle := Opt.Expr.AsString;
+
+  if (Options.HasOption('ytitle', Opt) or Options.HasOption('yt', Opt)) then
+    FYAxisTitle := Opt.Expr.AsString;
+
+  Result := Self;
 end;
 
 end.

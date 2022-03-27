@@ -6,7 +6,7 @@ unit charttitles;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, ast;
 
 type
   IChartTitles = interface['{4978DB6A-4587-4537-8987-CB26C98ECFFA}']
@@ -21,6 +21,7 @@ type
     function SetFootnote(Text: UTF8String): IChartTitleConfiguration;
     function SetXAxisTitle(Text: UTF8String): IChartTitleConfiguration;
     function SetYAxisTitle(Text: UTF8String): IChartTitleConfiguration;
+    function OverrideFromOptions(Options: TOptionList): IChartTitleConfiguration;
   end;
 
 implementation

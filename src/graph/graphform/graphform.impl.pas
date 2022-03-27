@@ -25,17 +25,24 @@ type
 implementation
 
 uses
-  Controls, TAGraph, charttitles;
+  Controls, TAGraph, charttitles, Menus, graphpopupmenu;
 
 { TGraphForm }
 
 constructor TGraphForm.Create(AOwner: TComponent);
+var
+  APopupMenu: TPopupMenu;
+  Item: TMenuItem;
 begin
   inherited Create(AOwner);
 
   FPageControl := TPageControl.Create(Self);
   FPageControl.Parent := Self;
   FPageControl.Align := alClient;
+  // Remove this to support multiple charts on the form
+  FPageControl.ShowTabs := false;
+
+  PopupMenu := TGraphPopupMenu.Create(self);
 end;
 
 procedure TGraphForm.SetCommandResult(ACommandResult: IGraphCommandResult);
@@ -50,9 +57,10 @@ begin
   for Chart in Charts do
     begin
       Sheet := FPageControl.AddTabSheet;
-      Sheet.Caption := 'Graph: ' + IntToStr(FPageControl.PageCount);
+      Sheet.Caption := 'Chart: ' + IntToStr(FPageControl.PageCount);
       Chart.Parent := Sheet;
       Chart.Align := alClient;
+      Sheet.InsertComponent(Chart);
 
       Titles := ACommandResult.GetChartTitles(Chart);
 
@@ -70,6 +78,8 @@ begin
       Chart.LeftAxis.Title.Visible := Titles.GetYAxisTitle() <> '';
       Chart.LeftAxis.Title.Caption := Titles.GetYAxisTitle();
     end;
+
+  TGraphPopupMenu(PopupMenu).Chart := Charts.First;
 end;
 
 function TGraphForm.GetForm: TCustomForm;
