@@ -59,8 +59,8 @@ begin
 
   // Get the data and fields.
   DataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
-  XVar := Datafile.Fields[0];
-  YVar := Datafile.Fields[1];
+  XVar := Datafile.Fields.FieldByName[VarNames[0]];
+  YVar := Datafile.Fields.FieldByName[Varnames[1]];
   Varnames.Free;
 
   // Create the charts
@@ -70,6 +70,8 @@ begin
   // - datasource is destroyed by the chart, so we let it handle the datafile destruction
   ScatterSource := TScatterSource.Create(Chart);
   ScatterSource.Datafile := DataFile;
+  ScatterSource.XVariableName := XVar.Name;
+  ScatterSource.YVariableName := YVar.Name;
 
   // Create the line/point series
   LineSeries := TLineSeries.Create(Chart);
