@@ -5,7 +5,8 @@ unit graphpopupmenu;
 interface
 
 uses
-  Classes, SysUtils, Forms, Menus, TAGraph;
+  Classes, SysUtils, Forms, Menus, TAGraph, Dialogs, savegraphaction,
+  ActnList;
 
 type
 
@@ -18,25 +19,23 @@ type
     FCloseItem: TMenuItem;
     FDivider: TMenuItem;
     FForm: TCustomForm;
-    FSaveAsPNG: TMenuItem;
-    FSaveAsSVG: TMenuItem;
-    FSaveAsJPG: TMenuItem;
+    FSaveAs: TMenuItem;
     procedure CloseAllWindow(Sender: TObject);
     procedure CloseWindow(Sender: TObject);
-    procedure SaveJPG(Sender: TObject);
-    procedure SavePNG(Sender: TObject);
-    procedure SaveSVG(Sender: TObject);
+    function GetSaveAsAction: TBasicAction;
     procedure SetChart(AValue: TChart);
+    procedure SetSaveAsAction(AValue: TBasicAction);
     procedure UpdateItems;
   public
     constructor Create(AOwner: TCustomForm);
     property Chart: TChart read FChart write SetChart;
+    property SaveAsAction: TBasicAction read GetSaveAsAction write SetSaveAsAction;
   end;
 
 implementation
 
 uses
-  graphformfactory, TADrawerSVG, Dialogs, LazFileUtils, Graphics;
+  graphformfactory, TADrawerSVG, Graphics;
 
 { TGraphPopupMenu }
 
@@ -50,43 +49,9 @@ begin
   FForm.Close;
 end;
 
-procedure TGraphPopupMenu.SaveJPG(Sender: TObject);
-var
-  SaveDialog: TSaveDialog;
+function TGraphPopupMenu.GetSaveAsAction: TBasicAction;
 begin
-  SaveDialog := TSaveDialog.Create(Self);
-  SaveDialog.DefaultExt := '.jpg';
-  SaveDialog.Options := [ofOverwritePrompt, ofPathMustExist, ofEnableSizing];
-  SaveDialog.InitialDir := GetCurrentDirUTF8;
-
-  if (SaveDialog.Execute) then
-    FChart.SaveToFile(TJPEGImage, SaveDialog.FileName);
-end;
-
-procedure TGraphPopupMenu.SavePNG(Sender: TObject);
-var
-  SaveDialog: TSaveDialog;
-begin
-  SaveDialog := TSaveDialog.Create(Self);
-  SaveDialog.DefaultExt := '.png';
-  SaveDialog.Options := [ofOverwritePrompt, ofPathMustExist, ofEnableSizing];
-  SaveDialog.InitialDir := GetCurrentDirUTF8;
-
-  if (SaveDialog.Execute) then
-    FChart.SaveToFile(TPortableNetworkGraphic, SaveDialog.FileName);
-end;
-
-procedure TGraphPopupMenu.SaveSVG(Sender: TObject);
-var
-  SaveDialog: TSaveDialog;
-begin
-  SaveDialog := TSaveDialog.Create(Self);
-  SaveDialog.DefaultExt := '.svg';
-  SaveDialog.Options := [ofOverwritePrompt, ofPathMustExist, ofEnableSizing];
-  SaveDialog.InitialDir := GetCurrentDirUTF8;
-
-  if (SaveDialog.Execute) then
-    FChart.SaveToSVGFile(SaveDialog.FileName);
+  Result := FSaveAs.Action;
 end;
 
 procedure TGraphPopupMenu.SetChart(AValue: TChart);
@@ -97,16 +62,15 @@ begin
   UpdateItems;
 end;
 
+procedure TGraphPopupMenu.SetSaveAsAction(AValue: TBasicAction);
+begin
+  FSaveAs.Action := AValue;
+end;
+
 procedure TGraphPopupMenu.UpdateItems;
 begin
-  FSaveAsSVG.Enabled := Assigned(FChart);
-  FSaveAsSVG.Visible := Assigned(FChart);
-
-  FSaveAsPNG.Enabled := Assigned(FChart);
-  FSaveAsPNG.Visible := Assigned(FChart);
-
-  FSaveAsJPG.Enabled := Assigned(FChart);
-  FSaveAsJPG.Visible := Assigned(FChart);
+  FSaveAs.Enabled := Assigned(FChart);
+  FSaveAs.Visible := Assigned(FChart);
 
   FDivider.Enabled := Assigned(FChart);
   FDivider.Visible := Assigned(FChart);
@@ -117,20 +81,8 @@ begin
   inherited Create(AOwner);
   FForm := AOwner;
 
-  FSaveAsSVG := TMenuItem.Create(Self);
-  FSaveAsSVG.Caption := 'Save as SVG';
-  FSaveAsSVG.OnClick := @SaveSVG;
-  Items.Add(FSaveAsSVG);
-
-  FSaveAsPNG := TMenuItem.Create(Self);
-  FSaveAsPNG.Caption := 'Save as PNG';
-  FSaveAsPNG.OnClick := @SavePNG;
-  Items.Add(FSaveAsPNG);
-
-  FSaveAsJPG := TMenuItem.Create(Self);
-  FSaveAsJPG.Caption := 'Save as JPG';
-  FSaveAsJPG.OnClick := @SaveJPG;
-  Items.Add(FSaveAsJPG);
+  FSaveAs := TMenuItem.Create(Self);
+  Items.Add(FSaveAs);
 
   FDivider := TMenuItem.Create(Self);
   FDivider.Caption := '-';

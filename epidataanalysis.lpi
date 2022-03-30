@@ -303,7 +303,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="149">
+    <Units Count="150">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -937,6 +937,10 @@
         <Filename Value="src/graph/commands/scatter/scatter.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit148>
+      <Unit149>
+        <Filename Value="src/graph/graphform/savegraphaction.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit149>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

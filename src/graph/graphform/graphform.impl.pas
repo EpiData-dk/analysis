@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, graphform, chartfactory, graphcommandresult,
-  ComCtrls, auto_position_form;
+  ComCtrls, auto_position_form, Dialogs, graphpopupmenu, savegraphaction;
 
 type
 
@@ -15,7 +15,9 @@ type
   TGraphForm = class(TCustomAutoPositionForm, IGraphForm)
   private
     FCommandResult: IGraphCommandResult;
+    FGraphPopupMenu: TGraphPopupMenu;
     FPageControl: TPageControl;
+    FSaveGraphAction: TSaveGraphAction;
   public
     constructor Create(AOwner: TComponent); override;
     procedure SetCommandResult(ACommandResult: IGraphCommandResult);
@@ -25,14 +27,11 @@ type
 implementation
 
 uses
-  Controls, TAGraph, charttitles, Menus, graphpopupmenu;
+  Controls, TAGraph, charttitles;
 
 { TGraphForm }
 
 constructor TGraphForm.Create(AOwner: TComponent);
-var
-  APopupMenu: TPopupMenu;
-  Item: TMenuItem;
 begin
   inherited Create(AOwner);
 
@@ -42,7 +41,12 @@ begin
   // Remove this to support multiple charts on the form
   FPageControl.ShowTabs := false;
 
-  PopupMenu := TGraphPopupMenu.Create(self);
+  FSaveGraphAction := TSaveGraphAction.Create(Self);
+
+  FGraphPopupMenu := TGraphPopupMenu.Create(self);
+  FGraphPopupMenu.SaveAsAction := FSaveGraphAction;
+
+  PopupMenu := FGraphPopupMenu;
 end;
 
 procedure TGraphForm.SetCommandResult(ACommandResult: IGraphCommandResult);
@@ -79,7 +83,8 @@ begin
       Chart.LeftAxis.Title.Caption := Titles.GetYAxisTitle();
     end;
 
-  TGraphPopupMenu(PopupMenu).Chart := Charts.First;
+  FGraphPopupMenu.Chart := Charts.First;
+  FSaveGraphAction.Chart := Charts.First;
 end;
 
 function TGraphForm.GetForm: TCustomForm;

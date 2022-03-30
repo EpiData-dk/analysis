@@ -12,7 +12,7 @@ uses
   sysutils, Forms, ana_procs, wizard_form, datamodule, main,
 
   // ONLY ADD GRAPH COMMANDS HERE (delete all other automatically added units).
-  scatter, scattersource, graphpopupmenu;
+  scatter, scattersource, graphpopupmenu, savegraphaction;
 
 {$R *.res}
 
