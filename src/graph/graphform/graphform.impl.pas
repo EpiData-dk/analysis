@@ -5,8 +5,8 @@ unit graphform.impl;
 interface
 
 uses
-  Classes, SysUtils, Forms, graphform, chartfactory, graphcommandresult,
-  ComCtrls, auto_position_form, Dialogs, graphpopupmenu, savegraphaction;
+  Classes, SysUtils, Forms, graphform, chartfactory, chartcommandresult,
+  ComCtrls, auto_position_form, Dialogs, graphpopupmenu, savegraphdialogaction;
 
 type
 
@@ -14,13 +14,13 @@ type
 
   TGraphForm = class(TCustomAutoPositionForm, IGraphForm)
   private
-    FCommandResult: IGraphCommandResult;
+    FCommandResult: IChartCommandResult;
     FGraphPopupMenu: TGraphPopupMenu;
     FPageControl: TPageControl;
-    FSaveGraphAction: TSaveGraphAction;
+    FSaveGraphAction: TSaveGraphDialogAction;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure SetCommandResult(ACommandResult: IGraphCommandResult);
+    procedure SetCommandResult(ACommandResult: IChartCommandResult);
     function GetForm: TCustomForm;
   end;
 
@@ -41,7 +41,7 @@ begin
   // Remove this to support multiple charts on the form
   FPageControl.ShowTabs := false;
 
-  FSaveGraphAction := TSaveGraphAction.Create(Self);
+  FSaveGraphAction := TSaveGraphDialogAction.Create(Self);
 
   FGraphPopupMenu := TGraphPopupMenu.Create(self);
   FGraphPopupMenu.SaveAsAction := FSaveGraphAction;
@@ -49,7 +49,7 @@ begin
   PopupMenu := FGraphPopupMenu;
 end;
 
-procedure TGraphForm.SetCommandResult(ACommandResult: IGraphCommandResult);
+procedure TGraphForm.SetCommandResult(ACommandResult: IChartCommandResult);
 var
   Charts: TChartList;
   Chart: TChart;
@@ -83,7 +83,6 @@ begin
       Chart.LeftAxis.Title.Caption := Titles.GetYAxisTitle();
     end;
 
-  FGraphPopupMenu.Chart := Charts.First;
   FSaveGraphAction.Chart := Charts.First;
 end;
 

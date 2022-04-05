@@ -6,12 +6,12 @@ unit chartfactory;
 interface
 
 uses
-  Classes, SysUtils, TAGraph, charttitles, graphcommandresult;
+  Classes, SysUtils, TAGraph, charttitles, chartcommandresult;
 
 type
   IChartFactory = interface['{1701243D-0E60-427B-9142-35D22A4467E0}']
     function NewChart(): TChart;
-    function NewGraphCommandResult(): IGraphCommandResult;
+    function NewGraphCommandResult(): IChartCommandResult;
     function NewChartTitleConfiguration(): IChartTitleConfiguration;
   end;
 

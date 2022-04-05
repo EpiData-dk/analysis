@@ -1,11 +1,11 @@
-unit graphcommandresult.impl;
+unit chartcommandresult.impl;
 
 {$mode objfpc}{$H+}
 
 interface
 
 uses
-  Classes, SysUtils, graphcommandresult, TAGraph, gmap, charttitles;
+  Classes, SysUtils, chartcommandresult, TAGraph, gmap, charttitles;
 
 type
 
@@ -17,9 +17,9 @@ type
 
   TChartTitlesMap = specialize TMap<TChart, IChartTitles, TChartCompare>;
 
-  { TGraphCommandResult }
+  { TChartCommandResult }
 
-  TGraphCommandResult = class(TObject, IGraphCommandResult)
+  TChartCommandResult = class(TObject, IChartCommandResult)
   private
     FChartList: TChartList;
     FChartTitleMap: TChartTitlesMap;
@@ -41,32 +41,32 @@ begin
   Result := Pointer(A) < Pointer(B);
 end;
 
-{ TGraphCommandResult }
+{ TChartCommandResult }
 
-constructor TGraphCommandResult.Create;
+constructor TChartCommandResult.Create;
 begin
   FChartList := TChartList.Create;
   FChartTitleMap := TChartTitlesMap.Create;
 end;
 
-destructor TGraphCommandResult.Destroy;
+destructor TChartCommandResult.Destroy;
 begin
   FChartList.Free;
   FChartTitleMap.Free;
   inherited Destroy;
 end;
 
-procedure TGraphCommandResult.AddChart(AChart: TChart);
+procedure TChartCommandResult.AddChart(AChart: TChart);
 begin
   FChartList.Add(AChart);
 end;
 
-function TGraphCommandResult.GetCharts(): TChartList;
+function TChartCommandResult.GetCharts(): TChartList;
 begin
   result := FChartList;
 end;
 
-procedure TGraphCommandResult.SetChartTitles(AChart: TChart;
+procedure TChartCommandResult.SetChartTitles(AChart: TChart;
   Titles: IChartTitles);
 begin
   if (FChartList.IndexOf(AChart) < 0) then
@@ -75,7 +75,7 @@ begin
   FChartTitleMap.Insert(AChart, Titles);
 end;
 
-function TGraphCommandResult.GetChartTitles(AChart: TChart): IChartTitles;
+function TChartCommandResult.GetChartTitles(AChart: TChart): IChartTitles;
 begin
   Result := FChartTitleMap.GetValue(AChart);
 end;

@@ -1,4 +1,4 @@
-unit graphcommandresult;
+unit chartcommandresult;
 
 {$mode objfpc}{$H+}
 {$INTERFACES CORBA}
@@ -11,7 +11,7 @@ uses
 type
   TChartList = specialize TFPGObjectList<TChart>;
 
-  IGraphCommandResult = interface['{7FC61DE9-532D-45BC-A182-321B190EEB8A}']
+  IChartCommandResult = interface['{7FC61DE9-532D-45BC-A182-321B190EEB8A}']
     procedure AddChart(AChart: TChart);
     function GetCharts(): TChartList;
     procedure SetChartTitles(AChart: TChart; Titles: IChartTitles);

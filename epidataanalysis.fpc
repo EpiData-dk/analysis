@@ -39,6 +39,8 @@
 -Fu./src/statusbar/
 -Fu./src/utils/
 -Fu./src/graph/
+-Fu./src/graph/charttitles
+-Fu./src/graph/chartcommand
+-Fu./src/graph/graphform
 -Fu./src/graph/commands/
--Fu./src/graph/commands/graphform
 -Fu./src/graph/commands/scatter

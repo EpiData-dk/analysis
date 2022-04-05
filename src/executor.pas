@@ -328,8 +328,7 @@ uses
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
   RegExpr, ana_globals, browse4, strutils, ana_documentfile, FileUtil,
-  about, chartfactory, graphformfactory, graphform, graphcommandresult,
-  graphcommand,
+  about, graphcommandexecutor,
 
   // Set options
   options_fontoptions, options_filesoptions, options_table, options_string_array,
@@ -3882,21 +3881,11 @@ end;
 
 procedure TExecutor.ExecGraphCommand(ST: TCustomGraphCommand);
 var
-  GraphForm: IGraphForm;
-  GraphCommand: IGraphCommand;
-  Form: TCustomForm;
-  CommandResult: IGraphCommandResult;
+  GraphExecutor: TGraphCommandExecutor;
 begin
-  GraphCommand := GetAbstractGraphCommandClass(ST.StatementType).Create;
-  GraphCommand.Init(TheChartFactory, Self, FOutputCreator);
-  CommandResult := GraphCommand.Execute(ST);
-
-  GraphForm := TheGraphFormFactory.NewGraphForm();
-  GraphForm.SetCommandResult(CommandResult);
-
-  Form := GraphForm.GetForm;
-  Form.Show;
-  GraphCommand.GetObject().Free;
+  GraphExecutor := TGraphCommandExecutor.Create(Self, FOutputCreator);
+  GraphExecutor.Execute(ST);
+  GraphExecutor.Free;
 end;
 
 procedure TExecutor.ExecUse(ST: TUse);

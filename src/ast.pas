@@ -1559,6 +1559,7 @@ begin
   result.Insert('footer', ['f'],  [rtString]);
   result.Insert('xtitle', ['xt'], [rtString]);
   result.Insert('ytitle', ['yt'], [rtString]);
+  result.Insert('export', ['s', 'e'], [rtString]);
 end;
 
 { TRecodeInterval }

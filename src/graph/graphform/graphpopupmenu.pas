@@ -14,7 +14,6 @@ type
 
   TGraphPopupMenu = class(TPopupMenu)
   private
-    FChart: TChart;
     FCloseAllItem: TMenuItem;
     FCloseItem: TMenuItem;
     FDivider: TMenuItem;
@@ -23,12 +22,9 @@ type
     procedure CloseAllWindow(Sender: TObject);
     procedure CloseWindow(Sender: TObject);
     function GetSaveAsAction: TBasicAction;
-    procedure SetChart(AValue: TChart);
     procedure SetSaveAsAction(AValue: TBasicAction);
-    procedure UpdateItems;
   public
     constructor Create(AOwner: TCustomForm);
-    property Chart: TChart read FChart write SetChart;
     property SaveAsAction: TBasicAction read GetSaveAsAction write SetSaveAsAction;
   end;
 
@@ -54,26 +50,9 @@ begin
   Result := FSaveAs.Action;
 end;
 
-procedure TGraphPopupMenu.SetChart(AValue: TChart);
-begin
-  if FChart = AValue then Exit;
-  FChart := AValue;
-
-  UpdateItems;
-end;
-
 procedure TGraphPopupMenu.SetSaveAsAction(AValue: TBasicAction);
 begin
   FSaveAs.Action := AValue;
-end;
-
-procedure TGraphPopupMenu.UpdateItems;
-begin
-  FSaveAs.Enabled := Assigned(FChart);
-  FSaveAs.Visible := Assigned(FChart);
-
-  FDivider.Enabled := Assigned(FChart);
-  FDivider.Visible := Assigned(FChart);
 end;
 
 constructor TGraphPopupMenu.Create(AOwner: TCustomForm);
@@ -97,8 +76,6 @@ begin
   FCloseAllItem.Caption := 'Close All Graphs';
   FCloseAllItem.OnClick := @CloseAllWindow;
   Items.Add(FCloseAllItem);
-
-  UpdateItems;
 end;
 
 end.

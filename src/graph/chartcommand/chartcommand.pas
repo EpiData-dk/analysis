@@ -1,4 +1,4 @@
-unit graphcommand;
+unit chartcommand;
 
 {$mode objfpc}{$H+}
 {$INTERFACES CORBA}
@@ -6,17 +6,17 @@ unit graphcommand;
 interface
 
 uses
-  Classes, SysUtils, chartfactory, graphcommandresult, executor, outputcreator,
+  Classes, SysUtils, chartfactory, chartcommandresult, executor, outputcreator,
   ast, ast_types;
 
 type
   // Implement this interface when adding new graph command
-  IGraphCommand = interface['{B7C62325-DFF7-4E0B-A8B7-6D090DDFEA1A}']
+  IChartCommand = interface['{B7C62325-DFF7-4E0B-A8B7-6D090DDFEA1A}']
     // Initialize the command object
     procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator);
 
     // Called for doing the actual graph calculation. See eg. TScatter on how to use.
-    function Execute(Command: TCustomGraphCommand): IGraphCommandResult;
+    function Execute(Command: TCustomGraphCommand): IChartCommandResult;
 
     // Should always return the object itself. Used for freeing memory!
     function GetObject(): TObject;
@@ -24,17 +24,17 @@ type
 
   { TCustomGraphCommand }
 
-  TAbstractGraphCommand = class(TObject, IGraphCommand)
+  TAbstractChartCommand = class(TObject, IChartCommand)
   public
     procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator); virtual; abstract;
-    function Execute(Command: TCustomGraphCommand): IGraphCommandResult; virtual; abstract;
+    function Execute(Command: TCustomGraphCommand): IChartCommandResult; virtual; abstract;
     function GetObject(): TObject; virtual; abstract;
   end;
-  TAbstractGraphCommandClass = class of TAbstractGraphCommand;
+  TAbstractChartCommandClass = class of TAbstractChartCommand;
 
 // Register the
-procedure RegisterAbstractGraphCommandClass(AStatementType: TASTStatementType; AGraphCommandClass: TAbstractGraphCommandClass);
-function GetAbstractGraphCommandClass(AStatementType: TASTStatementType): TAbstractGraphCommandClass;
+procedure RegisterAbstractChartCommandClass(AStatementType: TASTStatementType; AGraphCommandClass: TAbstractChartCommandClass);
+function GetAbstractChartCommandClass(AStatementType: TASTStatementType): TAbstractChartCommandClass;
 
 implementation
 
@@ -49,7 +49,7 @@ type
     class function c(Left, Right: TASTStatementType): boolean;
   end;
 
-  TGraphCommandClassMap = specialize TMap<TASTStatementType, TAbstractGraphCommandClass, TASTStatementTypeCompare>;
+  TGraphCommandClassMap = specialize TMap<TASTStatementType, TAbstractChartCommandClass, TASTStatementTypeCompare>;
 
 var
   GraphCommandClassMap: TGraphCommandClassMap;
@@ -61,8 +61,8 @@ begin
   result := Left < Right;
 end;
 
-procedure RegisterAbstractGraphCommandClass(AStatementType: TASTStatementType;
-  AGraphCommandClass: TAbstractGraphCommandClass);
+procedure RegisterAbstractChartCommandClass(AStatementType: TASTStatementType;
+  AGraphCommandClass: TAbstractChartCommandClass);
 begin
   if (not Assigned(GraphCommandClassMap)) then
     GraphCommandClassMap := TGraphCommandClassMap.Create;
@@ -70,8 +70,8 @@ begin
   GraphCommandClassMap.Insert(AStatementType, AGraphCommandClass);
 end;
 
-function GetAbstractGraphCommandClass(AStatementType: TASTStatementType
-  ): TAbstractGraphCommandClass;
+function GetAbstractChartCommandClass(AStatementType: TASTStatementType
+  ): TAbstractChartCommandClass;
 begin
   Result := nil;
 

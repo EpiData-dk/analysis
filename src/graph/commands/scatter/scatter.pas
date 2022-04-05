@@ -5,14 +5,14 @@ unit scatter;
 interface
 
 uses
-  Classes, SysUtils, graphcommandresult, TAGraph, executor, outputcreator,
-  ast, epidatafiles, TASources, TACustomSource, graphcommand, chartfactory;
+  Classes, SysUtils, chartcommandresult, TAGraph, executor, outputcreator,
+  ast, epidatafiles, TASources, TACustomSource, chartcommand, chartfactory;
 
 type
 
   { TScatterChart }
 
-  TScatterChart = class(TAbstractGraphCommand)
+  TScatterChart = class(TAbstractChartCommand)
   private
     FChartFactory: IChartFactory;
     FExecutor: TExecutor;
@@ -20,7 +20,7 @@ type
   public
     destructor destroy; override;
     procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator); override;
-    function Execute(Command: TCustomGraphCommand): IGraphCommandResult; override;
+    function Execute(Command: TCustomGraphCommand): IChartCommandResult; override;
     function GetObject(): TObject; override;
   end;
 
@@ -44,7 +44,7 @@ begin
   FOutputCreator := OutputCreator;
 end;
 
-function TScatterChart.Execute(Command: TCustomGraphCommand): IGraphCommandResult;
+function TScatterChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 var
   LineSeries: TLineSeries;
   ScatterSource: TScatterSource;
@@ -105,7 +105,7 @@ begin
 end;
 
 initialization
-  RegisterAbstractGraphCommandClass(stScatter, TScatterChart);
+  RegisterAbstractChartCommandClass(stScatter, TScatterChart);
 
 end.
 
