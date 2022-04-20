@@ -12,7 +12,7 @@ uses
   sysutils, Forms, ana_procs, wizard_form, datamodule, main,
 
   // ONLY ADD GRAPH COMMANDS HERE (delete all other automatically added units).
-  scatter, savegraphdialogaction;
+  scatter;
 
 {$R *.res}
 
@@ -28,7 +28,7 @@ end;
 
 
 begin
-  Application.Title:='Analysis';
+  Application.Title := 'Analysis';
   OnGetApplicationName := @EpiDataApplicationName;
   OnGetVendorName := @EpiDataVendorName;
 

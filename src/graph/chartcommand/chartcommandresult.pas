@@ -1,7 +1,6 @@
 unit chartcommandresult;
 
 {$mode objfpc}{$H+}
-{$INTERFACES CORBA}
 
 interface
 

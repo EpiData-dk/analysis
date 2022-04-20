@@ -65,22 +65,6 @@ begin
       Chart.Parent := Sheet;
       Chart.Align := alClient;
       Sheet.InsertComponent(Chart);
-
-      Titles := ACommandResult.GetChartTitles(Chart);
-
-      Chart.Title.Visible := Titles.GetTitle() <> '';
-      Chart.Title.Text.Clear;
-      Chart.Title.Text.Add(Titles.GetTitle());
-
-      Chart.Foot.Visible := Titles.GetFootnote() <> '';
-      Chart.Foot.Text.Clear;
-      Chart.Foot.Text.Add(Titles.GetFootnote());
-
-      Chart.BottomAxis.Title.Visible := Titles.GetXAxisTitle() <> '';
-      Chart.BottomAxis.Title.Caption := Titles.GetXAxisTitle();
-
-      Chart.LeftAxis.Title.Visible := Titles.GetYAxisTitle() <> '';
-      Chart.LeftAxis.Title.Caption := Titles.GetYAxisTitle();
     end;
 
   FSaveGraphAction.Chart := Charts.First;

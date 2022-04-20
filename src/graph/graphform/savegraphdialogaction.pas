@@ -28,13 +28,6 @@ implementation
 uses
   LazFileUtils;
 
-const
-  ExportExt: array[TGraphExportType] of string = (
-    '.svg',
-    '.png',
-    '.jpg'
-  );
-
 { TSaveGraphDialogAction }
 
 procedure TSaveGraphDialogAction.FilterChange(Sender: TObject);

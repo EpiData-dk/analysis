@@ -6,22 +6,20 @@ interface
 
 uses
   Classes, SysUtils, chartcommandresult, TAGraph, executor, outputcreator,
-  ast, epidatafiles, TASources, TACustomSource, chartcommand, chartfactory;
+  ast, epidatafiles, chartcommand, chartfactory;
 
 type
 
   { TScatterChart }
 
-  TScatterChart = class(TAbstractChartCommand)
+  TScatterChart = class(TInterfacedObject, IChartCommand)
   private
     FChartFactory: IChartFactory;
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
   public
-    destructor destroy; override;
-    procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator); override;
-    function Execute(Command: TCustomGraphCommand): IChartCommandResult; override;
-    function GetObject(): TObject; override;
+    procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator);
+    function Execute(Command: TCustomGraphCommand): IChartCommandResult;
   end;
 
 implementation
@@ -30,11 +28,6 @@ uses
   TASeries, TATypes, Graphics, charttitles, ast_types, scattersource;
 
 { TScatterChart }
-
-destructor TScatterChart.destroy;
-begin
-  inherited destroy;
-end;
 
 procedure TScatterChart.Init(ChartFactory: IChartFactory; Executor: TExecutor;
   OutputCreator: TOutputCreator);
@@ -68,6 +61,7 @@ begin
 
   // Create our own datasource
   // - datasource is destroyed by the chart, so we let it handle the datafile destruction
+  //   otherwise we would leak memory.
   ScatterSource := TScatterSource.Create(Chart);
   ScatterSource.Datafile := DataFile;
   ScatterSource.XVariableName := XVar.Name;
@@ -90,8 +84,7 @@ begin
     .SetTitle(XVar.Question.Text + ' vs. ' + YVar.Question.Text)
     .SetFootnote('')
     .SetXAxisTitle(XVar.Question.Text)
-    .SetYAxisTitle(YVar.Question.Text)
-    .OverrideFromOptions(Command.Options);
+    .SetYAxisTitle(YVar.Question.Text);
 
   // Create the command result
   Result := FChartFactory.NewGraphCommandResult();
@@ -99,13 +92,8 @@ begin
   Result.SetChartTitles(Chart, Titles);
 end;
 
-function TScatterChart.GetObject(): TObject;
-begin
-  Result := Self;
-end;
-
 initialization
-  RegisterAbstractChartCommandClass(stScatter, TScatterChart);
+  RegisterChartCommand(stScatter, TScatterChart);
 
 end.
 

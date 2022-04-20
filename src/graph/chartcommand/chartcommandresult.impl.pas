@@ -19,7 +19,7 @@ type
 
   { TChartCommandResult }
 
-  TChartCommandResult = class(TObject, IChartCommandResult)
+  TChartCommandResult = class(TInterfacedObject, IChartCommandResult)
   private
     FChartList: TChartList;
     FChartTitleMap: TChartTitlesMap;
@@ -45,7 +45,7 @@ end;
 
 constructor TChartCommandResult.Create;
 begin
-  FChartList := TChartList.Create;
+  FChartList := TChartList.Create(false);
   FChartTitleMap := TChartTitlesMap.Create;
 end;
 

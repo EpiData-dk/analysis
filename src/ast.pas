@@ -1555,11 +1555,13 @@ function TCustomGraphCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  result.Insert('title',  ['t'],  [rtString]);
-  result.Insert('footer', ['f'],  [rtString]);
-  result.Insert('xtitle', ['xt'], [rtString]);
-  result.Insert('ytitle', ['yt'], [rtString]);
+  result.Insert('title',  ['t'],      [rtString]);
+  result.Insert('footer', ['f'],      [rtString]);
+  result.Insert('xtitle', ['xt'],     [rtString]);
+  result.Insert('ytitle', ['yt'],     [rtString]);
   result.Insert('export', ['s', 'e'], [rtString]);
+  result.Insert('sizex',  ['sx'],     [rtInteger]);
+  result.Insert('sizey',  ['sy'],     [rtInteger]);
 end;
 
 { TRecodeInterval }

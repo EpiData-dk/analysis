@@ -1,7 +1,6 @@
 unit chartcommand;
 
 {$mode objfpc}{$H+}
-{$INTERFACES CORBA}
 
 interface
 
@@ -17,24 +16,13 @@ type
 
     // Called for doing the actual graph calculation. See eg. TScatter on how to use.
     function Execute(Command: TCustomGraphCommand): IChartCommandResult;
-
-    // Should always return the object itself. Used for freeing memory!
-    function GetObject(): TObject;
   end;
 
-  { TCustomGraphCommand }
-
-  TAbstractChartCommand = class(TObject, IChartCommand)
-  public
-    procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator); virtual; abstract;
-    function Execute(Command: TCustomGraphCommand): IChartCommandResult; virtual; abstract;
-    function GetObject(): TObject; virtual; abstract;
-  end;
-  TAbstractChartCommandClass = class of TAbstractChartCommand;
+  ERegisterChartException = class(Exception);
 
 // Register the
-procedure RegisterAbstractChartCommandClass(AStatementType: TASTStatementType; AGraphCommandClass: TAbstractChartCommandClass);
-function GetAbstractChartCommandClass(AStatementType: TASTStatementType): TAbstractChartCommandClass;
+procedure RegisterChartCommand(AStatementType: TASTStatementType; AGraphCommandClass: TInterfacedClass);
+function GetChartCommand(AStatementType: TASTStatementType): IChartCommand;
 
 implementation
 
@@ -49,7 +37,7 @@ type
     class function c(Left, Right: TASTStatementType): boolean;
   end;
 
-  TGraphCommandClassMap = specialize TMap<TASTStatementType, TAbstractChartCommandClass, TASTStatementTypeCompare>;
+  TGraphCommandClassMap = specialize TMap<TASTStatementType, TInterfacedClass, TASTStatementTypeCompare>;
 
 var
   GraphCommandClassMap: TGraphCommandClassMap;
@@ -61,22 +49,33 @@ begin
   result := Left < Right;
 end;
 
-procedure RegisterAbstractChartCommandClass(AStatementType: TASTStatementType;
-  AGraphCommandClass: TAbstractChartCommandClass);
+procedure RegisterChartCommand(AStatementType: TASTStatementType;
+  AGraphCommandClass: TInterfacedClass);
+var
+  S: String;
 begin
+  if (not (AStatementType in ASTGraphCommands)) then
+    begin
+      WriteStr(S, AStatementType);
+      Raise ERegisterChartException.Create('AStatementType: "' + S + '" is not a graph enum!');
+    end;
+
+  if (not Supports(AGraphCommandClass, IChartCommand)) then
+    Raise ERegisterChartException.Create('AGraphCommandClass: "' + AGraphCommandClass.ClassName + '" does not implement the IChartCommand interface!');
+
   if (not Assigned(GraphCommandClassMap)) then
     GraphCommandClassMap := TGraphCommandClassMap.Create;
 
   GraphCommandClassMap.Insert(AStatementType, AGraphCommandClass);
 end;
 
-function GetAbstractChartCommandClass(AStatementType: TASTStatementType
-  ): TAbstractChartCommandClass;
+function GetChartCommand(AStatementType: TASTStatementType
+  ): IChartCommand;
 begin
   Result := nil;
 
   if (Assigned(GraphCommandClassMap)) then
-    Result := GraphCommandClassMap.GetValue(AStatementType);
+    Result := GraphCommandClassMap.GetValue(AStatementType).Create as IChartCommand;
 end;
 
 end.

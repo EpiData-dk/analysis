@@ -1,7 +1,6 @@
 unit charttitles;
 
 {$mode objfpc}{$H+}
-{$INTERFACES CORBA}
 
 interface
 
@@ -21,7 +20,6 @@ type
     function SetFootnote(Text: UTF8String): IChartTitleConfiguration;
     function SetXAxisTitle(Text: UTF8String): IChartTitleConfiguration;
     function SetYAxisTitle(Text: UTF8String): IChartTitleConfiguration;
-    function OverrideFromOptions(Options: TOptionList): IChartTitleConfiguration;
   end;
 
 implementation
