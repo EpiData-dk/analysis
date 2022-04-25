@@ -150,6 +150,8 @@ begin
   Command.Init(TheChartFactory, FExecutor, FOutputCreator);
   CommandResult := Command.Execute(ST);
 
+  if (CommandResult.GetCharts().Count = 0) then exit;
+
   UpdateChartTitles(ST, CommandResult);
 
   if (ST.HasOption(['export', 'S', 'E'], Opt)) then
@@ -159,4 +161,3 @@ begin
 end;
 
 end.
-
