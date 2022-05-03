@@ -5,7 +5,8 @@ unit chartfactory.impl;
 interface
 
 uses
-  Classes, SysUtils, chartfactory, TAGraph, charttitles, chartcommandresult;
+  Classes, SysUtils, chartfactory, TAGraph, charttitles, chartcommandresult,
+  chartconfiguration;
 
 type
 
@@ -20,13 +21,14 @@ type
     destructor Destroy; override;
     function NewChart(): TChart;
     function NewGraphCommandResult(): IChartCommandResult;
+    function NewChartConfiguration(): IChartConfiguration;
     function NewChartTitleConfiguration(): IChartTitleConfiguration;
   end;
 
 implementation
 
 uses
-  chartcommandresult.impl, charttitles.impl, Graphics;
+  chartcommandresult.impl, chartconfiguration.impl, charttitles.impl, Graphics;
 
 { TChartFactory }
 
@@ -66,6 +68,11 @@ end;
 function TChartFactory.NewGraphCommandResult(): IChartCommandResult;
 begin
   result := TChartCommandResult.Create();
+end;
+
+function TChartFactory.NewChartConfiguration(): IChartConfiguration;
+begin
+  Result := TChartConfiguration.Create;
 end;
 
 function TChartFactory.NewChartTitleConfiguration(): IChartTitleConfiguration;

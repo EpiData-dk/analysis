@@ -32,7 +32,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -65,7 +65,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -101,7 +101,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -129,7 +129,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -157,7 +157,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -185,7 +185,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -303,7 +303,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="152">
+    <Units Count="156">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -949,6 +949,22 @@
         <Filename Value="src/graph/graphform/savegraphdialogaction.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit151>
+      <Unit152>
+        <Filename Value="src/graph/chartconfiguration/chartconfiguration.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit152>
+      <Unit153>
+        <Filename Value="src/graph/chartconfiguration/chartconfiguration.impl.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit153>
+      <Unit154>
+        <Filename Value="src/graph/chartaxesconfiguration/chartaxesconfiguration.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit154>
+      <Unit155>
+        <Filename Value="src/graph/chartaxesconfiguration/chartaxesconfiguration.impl.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit155>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -958,7 +974,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles"/>
+      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration"/>
       <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
