@@ -18,11 +18,10 @@ type
     // the graph execution unit.
     function NewGraphCommandResult(): IChartCommandResult;
 
-    function NewChartConfiguration(): IChartConfiguration;
-
-    // Create a new Title Configuration to store char title information.
+    // Create a new Chart Configuration. Look at the configuration itself for
+    // more information on how/what to configure
     // - Add the new configuration to the commandresult, together with the chart itself
-    function NewChartTitleConfiguration(): IChartTitleConfiguration;
+    function NewChartConfiguration(): IChartConfiguration;
   end;
 
 var

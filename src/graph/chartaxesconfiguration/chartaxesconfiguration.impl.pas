@@ -12,9 +12,13 @@ type
   { TChartAxisConfiguration }
 
   TChartAxisConfiguration = class(TInterfacedObject, IChartAxisConfiguration)
+  private
+    FShowAxisMarksAsDates: boolean;
   public
     constructor Create;
     destructor Destroy; override;
+    function GetShowAxisMarksAsDates: boolean;
+    function SetShowAxisMarksAsDates(Value: boolean): IChartAxisConfiguration;
   end;
 
   { TChartAxesConfiguration }
@@ -36,12 +40,24 @@ implementation
 
 constructor TChartAxisConfiguration.Create;
 begin
-  //
+  FShowAxisMarksAsDates := false;
 end;
 
 destructor TChartAxisConfiguration.Destroy;
 begin
   inherited Destroy;
+end;
+
+function TChartAxisConfiguration.GetShowAxisMarksAsDates: boolean;
+begin
+  Result := FShowAxisMarksAsDates;
+end;
+
+function TChartAxisConfiguration.SetShowAxisMarksAsDates(Value: boolean
+  ): IChartAxisConfiguration;
+begin
+  FShowAxisMarksAsDates := Value;
+  Result := Self;
 end;
 
 { TChartAxesConfiguration }
