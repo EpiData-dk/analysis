@@ -36,6 +36,7 @@ type
     MenuItem43: TMenuItem;
     MenuItem44: TMenuItem;
     MenuItem45: TMenuItem;
+    GraphMainMenuItem: TMenuItem;
     StatisticsMainMenuItem: TMenuItem;
     OutputBGColourMenuItem: TMenuItem;
     OutputFontColourMenuItem: TMenuItem;
@@ -324,6 +325,7 @@ type
   private
     FStatDialogFactory: TStatDialogFactory;
     procedure BuildStatDialogMenu;
+    procedure BuildGraphsDialogMenu;
 
   { Other }
   private
@@ -542,7 +544,10 @@ begin
   aDM.OnDialogFilename := @DialogFilenameHack;
 
   BuildRecentFilesActions;
+
+  FStatDialogFactory := TStatDialogFactory.Create(Self, Executor);
   BuildStatDialogMenu;
+  BuildGraphsDialogMenu;
 
   Screen.AddHandlerActiveFormChanged(@FormChanged);
   Application.AddOnKeyDownBeforeHandler(@PrimaryKeyHandler);
@@ -2041,8 +2046,7 @@ var
   Contribution: IStatDialogContribution;
   MenuItem: TMenuItem;
 begin
-  FStatDialogFactory := TStatDialogFactory.Create(Self, Executor);
-  ContributionList := GetStatDialogContributionList;
+  ContributionList := GetStatDialogContributionList(cdStatistics);
 
   for Contribution in ContributionList do
   begin
@@ -2051,6 +2055,24 @@ begin
     MenuItem.Action  := FStatDialogFactory.CreateDialogAction(Contribution);
 
     StatisticsMainMenuItem.Add(MenuItem);
+  end;
+end;
+
+procedure TMainForm.BuildGraphsDialogMenu;
+var
+  ContributionList: TStatDialogContributionList;
+  Contribution: IStatDialogContribution;
+  MenuItem: TMenuItem;
+begin
+  ContributionList := GetStatDialogContributionList(cdGraphs);
+
+  for Contribution in ContributionList do
+  begin
+    MenuItem := TMenuItem.Create(MainMenu1);
+    MenuItem.Caption := Contribution.GetCaption();
+    MenuItem.Action  := FStatDialogFactory.CreateDialogAction(Contribution);
+
+    GraphMainMenuItem.Add(MenuItem);
   end;
 end;
 

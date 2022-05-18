@@ -2439,7 +2439,7 @@ function TScatterCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
   ): TTypesAndFlagsRec;
 begin
   Result := inherited GetAcceptedVariableTypesAndFlags(Index);
-  Result.ResultTypes := [rtDate, rtInteger, rtFloat, rtTime];
+  Result.ResultTypes := [rtDate, rtInteger, rtFloat];
 end;
 
 constructor TScatterCommand.Create(AVariableList: TVariableList;
