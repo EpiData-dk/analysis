@@ -5,7 +5,7 @@ unit chartcommandresult.impl;
 interface
 
 uses
-  Classes, SysUtils, chartcommandresult, TAGraph, gmap, chartconfiguration;
+  Classes, SysUtils, chartcommandresult, TAGraph, gmap, chartconfiguration, chartpair;
 
 type
 

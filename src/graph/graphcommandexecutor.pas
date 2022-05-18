@@ -19,11 +19,11 @@ type
     FOutputCreator: TOutputCreator;
     procedure SaveGraph(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
     procedure ShowDialog(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
-    procedure ShowMarksAsDates(var AText: String; AMark: Double);
     procedure UpdateChartTitles(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
     procedure ApplyChartTitle(ChartTitle: TChartTitle; MainCaption: UTF8String; Option: TOption);
     procedure ApplyAxisTitle(AxisTitle: TChartAxisTitle; MainCaption: UTF8String; Option: TOption);
     procedure UpdateChartAxes(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
+    procedure ShowMarksAsDates(var AText: String; AMark: Double);
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
     procedure Execute(ST: TCustomGraphCommand);
@@ -32,7 +32,7 @@ type
 implementation
 
 uses
-  chartcommand, chartfactory, graphformfactory, savegraphaction, TAGraph;
+  chartcommand, chartfactory, graphformfactory, savegraphaction, TAGraph, chartpair;
 
 { TGraphCommandExecutor }
 
@@ -161,7 +161,11 @@ begin
       Configuration := Pair.Configuration.GetAxesConfiguration();
 
       if (Configuration.GetXAxisConfiguration().GetShowAxisMarksAsDates) then
-        Chart.BottomAxis.OnMarkToText := @ShowMarksAsDates;
+        begin
+          Chart.BottomAxis.OnMarkToText := @ShowMarksAsDates;
+          Chart.BottomAxis.Marks.OverlapPolicy := opHideNeighbour;
+          Chart.BottomAxis.Marks.SetAdditionalAngle(Pi / 2);
+        end;
 
       if (Configuration.GetYAxisConfiguration().GetShowAxisMarksAsDates) then
         Chart.LeftAxis.OnMarkToText := @ShowMarksAsDates;

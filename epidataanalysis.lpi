@@ -303,7 +303,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="156">
+    <Units Count="157">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -965,6 +965,10 @@
         <Filename Value="src/graph/chartaxesconfiguration/chartaxesconfiguration.impl.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit155>
+      <Unit156>
+        <Filename Value="src/graph/chartcommand/chartpair.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit156>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

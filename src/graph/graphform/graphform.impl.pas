@@ -27,7 +27,7 @@ type
 implementation
 
 uses
-  Controls, TAGraph, charttitles;
+  Controls, TAGraph, charttitles, chartpair;
 
 { TGraphForm }
 
