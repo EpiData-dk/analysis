@@ -5,16 +5,16 @@ unit chartcommandresult;
 interface
 
 uses
-  Classes, SysUtils, charttitles, fgl, TAGraph;
+  Classes, SysUtils, TAGraph, chartconfiguration, chartpair;
 
 type
-  TChartList = specialize TFPGObjectList<TChart>;
+
+  { IChartCommandResult }
 
   IChartCommandResult = interface['{7FC61DE9-532D-45BC-A182-321B190EEB8A}']
-    procedure AddChart(AChart: TChart);
-    function GetCharts(): TChartList;
-    procedure SetChartTitles(AChart: TChart; Titles: IChartTitles);
-    function GetChartTitles(AChart: TChart): IChartTitles;
+    procedure AddChart(Pair: TChartPair);
+    procedure AddChart(AChart: TChart; Configuration: IChartConfiguration = nil);
+    function GetChartPairs(): TChartPairList;
   end;
 
 implementation

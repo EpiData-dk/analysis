@@ -27,7 +27,7 @@ type
 implementation
 
 uses
-  Controls, TAGraph, charttitles;
+  Controls, TAGraph, charttitles, chartpair;
 
 { TGraphForm }
 
@@ -51,15 +51,18 @@ end;
 
 procedure TGraphForm.SetCommandResult(ACommandResult: IChartCommandResult);
 var
-  Charts: TChartList;
-  Chart: TChart;
+  ChartPairs: TChartPairList;
+  Pair: TChartPair;
   Sheet: TTabSheet;
   Titles: IChartTitles;
+  Chart: TChart;
 begin
-  Charts := ACommandResult.GetCharts();
+  ChartPairs := ACommandResult.GetChartPairs();
 
-  for Chart in Charts do
+  for Pair in ChartPairs do
     begin
+      Chart := Pair.Chart;
+
       Sheet := FPageControl.AddTabSheet;
       Sheet.Caption := 'Chart: ' + IntToStr(FPageControl.PageCount);
       Chart.Parent := Sheet;
@@ -67,7 +70,7 @@ begin
       Sheet.InsertComponent(Chart);
     end;
 
-  FSaveGraphAction.Chart := Charts.First;
+  FSaveGraphAction.Chart := ChartPairs.First.Chart;
 end;
 
 function TGraphForm.GetForm: TCustomForm;

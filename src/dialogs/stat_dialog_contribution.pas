@@ -49,30 +49,32 @@ type
   end;
   TStatDialogContributionList = specialize TFPGList<IStatDialogContribution>;
 
-  procedure RegisterStatDialogContribution(Contribution: IStatDialogContribution);
-  function GetStatDialogContributionList: TStatDialogContributionList;
+  TDialogContributionDomain = (cdStatistics, cdGraphs);
+  procedure RegisterStatDialogContribution(Contribution: IStatDialogContribution; ContributionDomain: TDialogContributionDomain = cdStatistics);
+  function GetStatDialogContributionList(ContributionDomain: TDialogContributionDomain): TStatDialogContributionList;
 
 implementation
 
 var
-  ContributionList: TStatDialogContributionList;
+  ContributionLists: array[TDialogContributionDomain] of TStatDialogContributionList;
 
-function GetContributionList: TStatDialogContributionList;
+function GetContributionList(ContributionDomain: TDialogContributionDomain): TStatDialogContributionList;
 begin
-  if (not Assigned(ContributionList)) then
-    ContributionList := TStatDialogContributionList.Create;
+  if (not Assigned(ContributionLists[ContributionDomain])) then
+    ContributionLists[ContributionDomain] := TStatDialogContributionList.Create;
 
-  result := ContributionList;
+  result := ContributionLists[ContributionDomain];
 end;
 
-procedure RegisterStatDialogContribution(Contribution: IStatDialogContribution);
+procedure RegisterStatDialogContribution(Contribution: IStatDialogContribution;
+  ContributionDomain: TDialogContributionDomain);
 begin
-  GetContributionList.Add(Contribution);
+  GetContributionList(ContributionDomain).Add(Contribution);
 end;
 
-function GetStatDialogContributionList: TStatDialogContributionList;
+function GetStatDialogContributionList(ContributionDomain: TDialogContributionDomain): TStatDialogContributionList;
 begin
-  result := GetContributionList;
+  result := GetContributionList(ContributionDomain);
 end;
 
 end.

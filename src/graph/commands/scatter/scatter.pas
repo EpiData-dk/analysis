@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, chartcommandresult, TAGraph, executor, outputcreator,
-  ast, epidatafiles, chartcommand, chartfactory;
+  ast, epidatafiles, chartcommand, chartfactory, chartconfiguration;
 
 type
 
@@ -25,7 +25,7 @@ type
 implementation
 
 uses
-  TASeries, TATypes, Graphics, charttitles, ast_types, scattersource;
+  TASeries, TATypes, Graphics, charttitles, ast_types, scattersource, epidatafilestypes;
 
 { TScatterChart }
 
@@ -46,6 +46,7 @@ var
   Titles: IChartTitleConfiguration;
   DataFile: TEpiDataFile;
   XVar, YVar: TEpiField;
+  ChartConfiguration: IChartConfiguration;
 begin
   // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
@@ -80,16 +81,24 @@ begin
   Chart.AddSeries(LineSeries);
 
   // Create the titles
-  Titles := FChartFactory.NewChartTitleConfiguration()
+  ChartConfiguration := FChartFactory.NewChartConfiguration();
+  Titles := ChartConfiguration.GetTitleConfiguration()
     .SetTitle(XVar.Question.Text + ' vs. ' + YVar.Question.Text)
     .SetFootnote('')
     .SetXAxisTitle(XVar.Question.Text)
     .SetYAxisTitle(YVar.Question.Text);
 
+  ChartConfiguration.GetAxesConfiguration()
+    .GetXAxisConfiguration()
+    .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
+
+  ChartConfiguration.GetAxesConfiguration()
+    .GetYAxisConfiguration()
+    .SetShowAxisMarksAsDates(YVar.FieldType in DateFieldTypes);
+
   // Create the command result
   Result := FChartFactory.NewGraphCommandResult();
-  Result.AddChart(Chart);
-  Result.SetChartTitles(Chart, Titles);
+  Result.AddChart(Chart, ChartConfiguration);
 end;
 
 initialization

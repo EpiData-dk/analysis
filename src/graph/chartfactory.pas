@@ -6,7 +6,7 @@ unit chartfactory;
 interface
 
 uses
-  Classes, SysUtils, TAGraph, charttitles, chartcommandresult;
+  Classes, SysUtils, TAGraph, charttitles, chartcommandresult, chartconfiguration;
 
 type
   IChartFactory = interface['{1701243D-0E60-427B-9142-35D22A4467E0}']
@@ -18,9 +18,10 @@ type
     // the graph execution unit.
     function NewGraphCommandResult(): IChartCommandResult;
 
-    // Create a new Title Configuration to store char title information.
+    // Create a new Chart Configuration. Look at the configuration itself for
+    // more information on how/what to configure
     // - Add the new configuration to the commandresult, together with the chart itself
-    function NewChartTitleConfiguration(): IChartTitleConfiguration;
+    function NewChartConfiguration(): IChartConfiguration;
   end;
 
 var

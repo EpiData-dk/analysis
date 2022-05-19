@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, fgl, Forms, ast, executor, chartcommandresult, graphform,
-  charttitles, outputcreator, TATextElements, TAChartAxisUtils;
+  charttitles, chartaxesconfiguration, outputcreator, TATextElements,
+  TAChartAxisUtils, TAChartAxis;
 
 type
 
@@ -21,6 +22,8 @@ type
     procedure UpdateChartTitles(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
     procedure ApplyChartTitle(ChartTitle: TChartTitle; MainCaption: UTF8String; Option: TOption);
     procedure ApplyAxisTitle(AxisTitle: TChartAxisTitle; MainCaption: UTF8String; Option: TOption);
+    procedure UpdateChartAxes(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
+    procedure ShowMarksAsDates(var AText: String; AMark: Double);
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
     procedure Execute(ST: TCustomGraphCommand);
@@ -29,7 +32,7 @@ type
 implementation
 
 uses
-  chartcommand, chartfactory, graphformfactory, savegraphaction, TAGraph;
+  chartcommand, chartfactory, graphformfactory, savegraphaction, TAGraph, chartpair;
 
 { TGraphCommandExecutor }
 
@@ -43,7 +46,7 @@ begin
   SaveAction := TSaveGraphAction.Create(nil);
 
   try
-    Chart := CommandResult.GetCharts().First;
+    Chart := CommandResult.GetChartPairs().First.Chart;
     SaveAction.Chart := Chart;
 
     // This forces the SaveAction to free the chart, chartsource and objects
@@ -85,19 +88,27 @@ begin
   Form.Show;
 end;
 
+procedure TGraphCommandExecutor.ShowMarksAsDates(var AText: String;
+  AMark: Double);
+begin
+  AText := DateToStr(AMark);
+end;
+
 procedure TGraphCommandExecutor.UpdateChartTitles(ST: TCustomGraphCommand;
   CommandResult: IChartCommandResult);
 var
-  Charts: TChartList;
+  ChartPairs: TChartPairList;
+  Pair: TChartPair;
   Chart: TChart;
   Titles: IChartTitles;
   Opt: TOption;
 begin
-  Charts := CommandResult.GetCharts();
+  ChartPairs := CommandResult.GetChartPairs();
 
-  for Chart in Charts do
+  for Pair in ChartPairs do
   begin
-    Titles := CommandResult.GetChartTitles(Chart);
+    Chart := Pair.Chart;
+    Titles := Pair.Configuration.GetTitleConfiguration();
 
     ST.HasOption(['title', 't'], Opt);
     ApplyChartTitle(Chart.Title, Titles.GetTitle(), Opt);
@@ -134,6 +145,33 @@ begin
   AxisTitle.Caption := MainCaption;
 end;
 
+procedure TGraphCommandExecutor.UpdateChartAxes(ST: TCustomGraphCommand;
+  CommandResult: IChartCommandResult);
+var
+  ChartPairs: TChartPairList;
+  Pair: TChartPair;
+  Chart: TChart;
+  Configuration: IChartAxesConfiguration;
+begin
+  ChartPairs := CommandResult.GetChartPairs();
+
+  for Pair in ChartPairs do
+    begin
+      Chart := Pair.Chart;
+      Configuration := Pair.Configuration.GetAxesConfiguration();
+
+      if (Configuration.GetXAxisConfiguration().GetShowAxisMarksAsDates) then
+        begin
+          Chart.BottomAxis.OnMarkToText := @ShowMarksAsDates;
+          Chart.BottomAxis.Marks.OverlapPolicy := opHideNeighbour;
+          Chart.BottomAxis.Marks.SetAdditionalAngle(Pi / 2);
+        end;
+
+      if (Configuration.GetYAxisConfiguration().GetShowAxisMarksAsDates) then
+        Chart.LeftAxis.OnMarkToText := @ShowMarksAsDates;
+    end;
+end;
+
 constructor TGraphCommandExecutor.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
 begin
   FExecutor := AExecutor;
@@ -153,6 +191,7 @@ begin
   if (CommandResult.GetCharts().Count = 0) then exit;
 
   UpdateChartTitles(ST, CommandResult);
+  UpdateChartAxes(ST, CommandResult);
 
   if (ST.HasOption(['export', 'S', 'E'], Opt)) then
     SaveGraph(ST, CommandResult)

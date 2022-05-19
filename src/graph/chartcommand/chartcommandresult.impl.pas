@@ -5,79 +5,52 @@ unit chartcommandresult.impl;
 interface
 
 uses
-  Classes, SysUtils, chartcommandresult, TAGraph, gmap, charttitles;
+  Classes, SysUtils, chartcommandresult, TAGraph, gmap, chartconfiguration, chartpair;
 
 type
-
-  { TChartTitlesCompare }
-
-  TChartCompare = class
-    class function C(A, B: TChart): boolean;
-  end;
-
-  TChartTitlesMap = specialize TMap<TChart, IChartTitles, TChartCompare>;
 
   { TChartCommandResult }
 
   TChartCommandResult = class(TInterfacedObject, IChartCommandResult)
   private
-    FChartList: TChartList;
-    FChartTitleMap: TChartTitlesMap;
+    FChartList: TChartPairList;
   public
     constructor Create;
     destructor Destroy; override;
-    procedure AddChart(AChart: TChart);
-    function GetCharts(): TChartList;
-    procedure SetChartTitles(AChart: TChart; Titles: IChartTitles);
-    function GetChartTitles(AChart: TChart): IChartTitles;
+    procedure AddChart(Pair: TChartPair);
+    procedure AddChart(AChart: TChart; Configuration: IChartConfiguration = nil);
+    function GetChartPairs(): TChartPairList;
   end;
 
 implementation
-
-{ TChartTitlesCompare }
-
-class function TChartCompare.C(A, B: TChart): boolean;
-begin
-  Result := Pointer(A) < Pointer(B);
-end;
 
 { TChartCommandResult }
 
 constructor TChartCommandResult.Create;
 begin
-  FChartList := TChartList.Create(false);
-  FChartTitleMap := TChartTitlesMap.Create;
+  FChartList := TChartPairList.Create(true);
 end;
 
 destructor TChartCommandResult.Destroy;
 begin
   FChartList.Free;
-  FChartTitleMap.Free;
   inherited Destroy;
 end;
 
-procedure TChartCommandResult.AddChart(AChart: TChart);
+procedure TChartCommandResult.AddChart(Pair: TChartPair);
 begin
-  FChartList.Add(AChart);
+  FChartList.Add(Pair);
 end;
 
-function TChartCommandResult.GetCharts(): TChartList;
+procedure TChartCommandResult.AddChart(AChart: TChart;
+  Configuration: IChartConfiguration);
+begin
+  FChartList.Add(TChartPair.Create(AChart, Configuration));
+end;
+
+function TChartCommandResult.GetChartPairs(): TChartPairList;
 begin
   result := FChartList;
-end;
-
-procedure TChartCommandResult.SetChartTitles(AChart: TChart;
-  Titles: IChartTitles);
-begin
-  if (FChartList.IndexOf(AChart) < 0) then
-    raise Exception.Create('Chart not found! Has it been added first?');
-
-  FChartTitleMap.Insert(AChart, Titles);
-end;
-
-function TChartCommandResult.GetChartTitles(AChart: TChart): IChartTitles;
-begin
-  Result := FChartTitleMap.GetValue(AChart);
 end;
 
 end.
