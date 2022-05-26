@@ -31,7 +31,7 @@ type
 implementation
 
 uses
-  graphformfactory, TADrawerSVG, Graphics;
+  graphformfactory, TADrawerSVG, Graphics, LCLType, Controls;
 
 { TGraphPopupMenu }
 
@@ -69,11 +69,13 @@ begin
 
   FCloseItem := TMenuItem.Create(self);
   FCloseItem.Caption := 'Close';
+  FCloseItem.ShortCut := ShortCut(VK_W, [ssModifier]);
   FCloseItem.OnClick := @CloseWindow;
   Items.Add(FCloseItem);
 
   FCloseAllItem := TMenuItem.Create(self);
   FCloseAllItem.Caption := 'Close All Graphs';
+  FCloseAllItem.ShortCut := ShortCut(VK_Q, [ssModifier]);
   FCloseAllItem.OnClick := @CloseAllWindow;
   Items.Add(FCloseAllItem);
 end;

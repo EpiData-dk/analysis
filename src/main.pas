@@ -350,7 +350,7 @@ uses
   epiv_custom_statusbar, datamodule, editor_form, LCLIntf, Symbol,
   ana_procs, ana_documentfile, LazFileUtils, LazUTF8Classes, epistringutils, ana_globals,
   browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform,
-  wizard_form, editor_form2, outputgenerator_txt;
+  wizard_form, editor_form2, outputgenerator_txt, graphformfactory;
 
 { TMainForm }
 
@@ -1013,6 +1013,7 @@ begin
 
   if (CloseAll) then
     begin
+      TheGraphFormFactory.CloseAllOpenForms();
       CloseBrowsers;
       if (Assigned(EditorForm2)) then
         EditorForm2.Close;
