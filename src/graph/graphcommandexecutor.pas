@@ -32,7 +32,8 @@ type
 implementation
 
 uses
-  chartcommand, chartfactory, graphformfactory, savegraphaction, TAGraph, chartpair;
+  chartcommand, chartfactory, graphformfactory, savegraphaction, TAGraph, chartpair,
+  LazFileUtils;
 
 { TGraphCommandExecutor }
 
@@ -55,6 +56,13 @@ begin
 
     ST.HasOption(['export', 'S', 'E'], Opt);
     SaveAction.Filename := Opt.Expr.AsString;
+    if (FileExistsUTF8(SaveAction.Filename)) and
+       (not ST.HasOption('replace'))
+    then
+      begin
+        FOutputCreator.DoError('File exists.' + LineEnding + 'Add !REPLACE or erase file:' + LineEnding + SaveAction.Filename);
+        ST.ExecResult := csrFailed;
+      end;
 
     if (ST.HasOption(['sizex', 'sx'], Opt)) then
       SaveAction.GraphSize.Width := Opt.Expr.AsInteger;
