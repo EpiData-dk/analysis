@@ -25,7 +25,8 @@ type
 implementation
 
 uses
-  TASeries, TATypes, Graphics, charttitles, ast_types, scattersource, epidatafilestypes;
+  TASeries, TATypes, Graphics, charttitles, ast_types, scattersource, epidatafilestypes,
+  epifields_helper, options_utils;
 
 { TScatterChart }
 
@@ -47,6 +48,7 @@ var
   DataFile: TEpiDataFile;
   XVar, YVar: TEpiField;
   ChartConfiguration: IChartConfiguration;
+  VariableLabelType: TEpiGetVariableLabelType;
 begin
   // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
@@ -82,8 +84,9 @@ begin
 
   // Create the titles
   ChartConfiguration := FChartFactory.NewChartConfiguration();
+  VariableLabelType := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions, sovStatistics);
   Titles := ChartConfiguration.GetTitleConfiguration()
-    .SetTitle(XVar.Question.Text + ' vs. ' + YVar.Question.Text)
+    .SetTitle(XVar.GetVariableLabel(VariableLabelType) + ' vs. ' + YVar.GetVariableLabel(VariableLabelType))
     .SetFootnote('')
     .SetXAxisTitle(XVar.Question.Text)
     .SetYAxisTitle(YVar.Question.Text);

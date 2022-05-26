@@ -215,9 +215,6 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
-      <local>
-        <LaunchingApplication PathPlusParams=""/>
-      </local>
       <environment>
         <UserOverrides Count="1">
           <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
@@ -226,9 +223,6 @@
       <FormatVersion Value="2"/>
       <Modes Count="3">
         <Mode0 Name="default">
-          <local>
-            <LaunchingApplication PathPlusParams=""/>
-          </local>
           <environment>
             <UserOverrides Count="1">
               <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
@@ -236,9 +230,6 @@
           </environment>
         </Mode0>
         <Mode1 Name="Lang = Dansk (da_DK)">
-          <local>
-            <LaunchingApplication PathPlusParams=""/>
-          </local>
           <environment>
             <UserOverrides Count="2">
               <Variable0 Name="LD_LIBRARY_PATH" Value="/home/torsten/EpiData/Analysis/trunk/CEF/"/>
