@@ -1535,8 +1535,7 @@ type
 implementation
 
 uses
-  LazUTF8Classes, epiconvertutils, typinfo, datamodule,
-  options_utils, parser,
+  LazUTF8Classes, epiconvertutils, typinfo, options_utils, parser,
 
   // SCRIPT FUNCTIONS (placed ind ./functions/epi_script_function_<name>.pas
   epi_script_function_mathfunctions,
@@ -1562,6 +1561,8 @@ begin
   result.Insert('export', ['s', 'e'], [rtString]);
   result.Insert('sizex',  ['sx'],     [rtInteger]);
   result.Insert('sizey',  ['sy'],     [rtInteger]);
+
+  result.Insert('replace', [rtUndefined]);
 end;
 
 { TRecodeInterval }

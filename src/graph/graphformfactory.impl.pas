@@ -21,6 +21,7 @@ type
     constructor Create();
     function NewGraphForm(): IGraphForm;
     procedure CloseAllOpenForms();
+    procedure CascadeWindows(LeadForm: TCustomForm);
   end;
 
 implementation
@@ -65,6 +66,25 @@ begin
       Form.Close;
     end;
   FList.Clear;
+end;
+
+procedure TGraphFormFactory.CascadeWindows(LeadForm: TCustomForm);
+var
+  Runner, i: Integer;
+  CurrentForm: TCustomForm;
+begin
+  Runner := 1;
+  for i := 0 to FList.Count -1 do
+    begin
+      CurrentForm := FList[i].GetForm;
+      if (CurrentForm = LeadForm) then continue;
+
+      CurrentForm.top := LeadForm.Top + (30 * Runner);
+      CurrentForm.Left := LeadForm.Left + (30 * Runner);
+
+      CurrentForm.BringToFront;
+      Inc(Runner);
+    end;
 end;
 
 end.

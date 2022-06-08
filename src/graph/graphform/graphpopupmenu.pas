@@ -14,11 +14,13 @@ type
 
   TGraphPopupMenu = class(TPopupMenu)
   private
+    FCascadeWindows: TMenuItem;
     FCloseAllItem: TMenuItem;
     FCloseItem: TMenuItem;
     FDivider: TMenuItem;
     FForm: TCustomForm;
     FSaveAs: TMenuItem;
+    procedure CascadeWindows(Sender: TObject);
     procedure CloseAllWindow(Sender: TObject);
     procedure CloseWindow(Sender: TObject);
     function GetSaveAsAction: TBasicAction;
@@ -38,6 +40,13 @@ uses
 procedure TGraphPopupMenu.CloseAllWindow(Sender: TObject);
 begin
   TheGraphFormFactory.CloseAllOpenForms();
+end;
+
+procedure TGraphPopupMenu.CascadeWindows(Sender: TObject);
+var
+  Component: TComponent;
+begin
+  TheGraphFormFactory.CascadeWindows(FForm);
 end;
 
 procedure TGraphPopupMenu.CloseWindow(Sender: TObject);
@@ -62,6 +71,15 @@ begin
 
   FSaveAs := TMenuItem.Create(Self);
   Items.Add(FSaveAs);
+
+  FDivider := TMenuItem.Create(Self);
+  FDivider.Caption := '-';
+  Items.Add(FDivider);
+
+  FCascadeWindows := TMenuItem.Create(Self);
+  FCascadeWindows.Caption := 'Cascade Graphs';
+  FCascadeWindows.OnClick := @CascadeWindows;
+  Items.Add(FCascadeWindows);
 
   FDivider := TMenuItem.Create(Self);
   FDivider.Caption := '-';
