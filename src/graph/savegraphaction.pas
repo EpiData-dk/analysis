@@ -20,7 +20,7 @@ type
 
 const
   ExportExt: array[TGraphExportType] of string = (
-    '',
+    '*',
     '.svg',
     '.png',
     '.jpg'

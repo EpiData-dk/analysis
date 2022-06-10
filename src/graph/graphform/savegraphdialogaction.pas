@@ -60,11 +60,12 @@ begin
   inherited Create(AOwner);
 
   FSaveDialog := TSaveDialog.Create(Self);
-  FSaveDialog.Filter := 'SVG File|*.svg|PNG File|*.png|JPEG File|*.jpg;*.jpeg';
+  FSaveDialog.Filter := '-|None|SVG File|*.svg|PNG File|*.png|JPEG File|*.jpg;*.jpeg';
   FSaveDialog.FilterIndex := 0;
   FSaveDialog.OnTypeChange := @FilterChange;
   FSaveDialog.InitialDir := GetCurrentDirUTF8;
   FSaveDialog.Options := [ofOverwritePrompt, ofPathMustExist, ofEnableSizing];
+  FSaveDialog.Title := 'Add file extension or choose from formats below';
 end;
 
 end.
