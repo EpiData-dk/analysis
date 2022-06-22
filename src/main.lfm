@@ -1,11 +1,11 @@
 object MainForm: TMainForm
-  Left = 2372
+  Left = 717
   Height = 663
-  Top = 331
+  Top = 107
   Width = 1010
   AllowDropFiles = True
   Caption = 'AMainForm'
-  ClientHeight = 638
+  ClientHeight = 636
   ClientWidth = 1010
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
@@ -14,10 +14,10 @@ object MainForm: TMainForm
   OnDropFiles = FormDropFiles
   OnShow = FormShow
   Position = poDefault
-  LCLVersion = '2.0.10.0'
+  LCLVersion = '2.0.12.0'
   object PageControl1: TPageControl
     Left = 245
-    Height = 588
+    Height = 586
     Top = 50
     Width = 564
     Align = alClient
@@ -59,18 +59,18 @@ object MainForm: TMainForm
     end
     object Label1: TLabel
       Left = 307
-      Height = 15
+      Height = 19
       Top = 18
-      Width = 90
+      Width = 83
       Caption = 'Redraw Time:'
       ParentColor = False
       ParentFont = False
     end
     object Label2: TLabel
       Left = 400
-      Height = 15
+      Height = 19
       Top = 18
-      Width = 43
+      Width = 41
       Caption = 'Label2'
       ParentColor = False
       ParentFont = False
@@ -78,11 +78,11 @@ object MainForm: TMainForm
   end
   object RightSidePanel: TPanel
     Left = 814
-    Height = 588
+    Height = 586
     Top = 50
     Width = 196
     Align = alRight
-    ClientHeight = 588
+    ClientHeight = 586
     ClientWidth = 196
     ParentFont = False
     TabOrder = 1
@@ -91,7 +91,7 @@ object MainForm: TMainForm
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 385
+      Top = 383
       Width = 194
       Align = alBottom
       AutoSnap = False
@@ -102,11 +102,12 @@ object MainForm: TMainForm
     object VarnamesList: TVirtualStringTree
       Cursor = 63
       Left = 1
-      Height = 384
+      Height = 382
       Top = 1
       Width = 194
       Align = alClient
       Colors.UnfocusedColor = clMedGray
+      DefaultNodeHeight = 19
       DefaultText = 'Node'
       Header.AutoSizeIndex = 2
       Header.Columns = <      
@@ -114,13 +115,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 303
+          Width = 307
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 263
+          Width = 267
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -140,7 +141,7 @@ object MainForm: TMainForm
       Tag = 1
       Left = 1
       Height = 197
-      Top = 390
+      Top = 388
       Width = 194
       Align = alBottom
       ItemHeight = 0
@@ -159,7 +160,7 @@ object MainForm: TMainForm
   end
   object RightSideSplitter: TSplitter
     Left = 809
-    Height = 588
+    Height = 586
     Top = 50
     Width = 5
     Align = alRight
@@ -172,12 +173,12 @@ object MainForm: TMainForm
   object LeftSidePanel: TPanel
     AnchorSideRight.Control = LeftSideSplitter
     Left = 0
-    Height = 588
+    Height = 586
     Top = 50
     Width = 240
     Align = alLeft
     Anchors = []
-    ClientHeight = 588
+    ClientHeight = 586
     ClientWidth = 240
     ParentFont = False
     TabOrder = 2
@@ -186,7 +187,7 @@ object MainForm: TMainForm
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 582
+      Top = 580
       Width = 238
       Align = alBottom
       AutoSnap = False
@@ -196,16 +197,16 @@ object MainForm: TMainForm
   end
   object LeftSideSplitter: TSplitter
     Left = 240
-    Height = 588
+    Height = 586
     Top = 50
     Width = 5
     Beveled = True
   end
   object Label3: TLabel
     Left = 10
-    Height = 15
+    Height = 19
     Top = 10
-    Width = 43
+    Width = 41
     Caption = 'Label3'
     ParentColor = False
     ParentFont = False
@@ -298,6 +299,9 @@ object MainForm: TMainForm
     end
     object StatisticsMainMenuItem: TMenuItem
       Caption = '&Analysis'
+    end
+    object GraphMainMenuItem: TMenuItem
+      Caption = 'Graphs'
     end
     object MenuItem9: TMenuItem
       Caption = '&Window'

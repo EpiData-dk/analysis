@@ -15,6 +15,11 @@ jobs:
     container:
       image: epidata/fpcbuild:3.2.0-13
 
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [linux64, win64, darwin64]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -44,11 +49,5 @@ jobs:
               }
             ]'
             
-      - name: Compile Linux
-        run:  mvn compile -Plinux64
-
-      - name: Compile Windows
-        run:  mvn compile -Pwin64
-
-      - name: Compile Mac
-        run:  mvn compile -Pdarwin64
+      - name: Compile ${{ matrix.profile }}
+        run:  mvn compile -P${{ matrix.profile }}

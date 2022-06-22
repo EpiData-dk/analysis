@@ -36,6 +36,7 @@ type
     MenuItem43: TMenuItem;
     MenuItem44: TMenuItem;
     MenuItem45: TMenuItem;
+    GraphMainMenuItem: TMenuItem;
     StatisticsMainMenuItem: TMenuItem;
     OutputBGColourMenuItem: TMenuItem;
     OutputFontColourMenuItem: TMenuItem;
@@ -324,6 +325,7 @@ type
   private
     FStatDialogFactory: TStatDialogFactory;
     procedure BuildStatDialogMenu;
+    procedure BuildGraphsDialogMenu;
 
   { Other }
   private
@@ -348,7 +350,7 @@ uses
   epiv_custom_statusbar, datamodule, editor_form, LCLIntf, Symbol,
   ana_procs, ana_documentfile, LazFileUtils, LazUTF8Classes, epistringutils, ana_globals,
   browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform,
-  wizard_form, editor_form2, outputgenerator_txt;
+  wizard_form, editor_form2, outputgenerator_txt, graphformfactory;
 
 { TMainForm }
 
@@ -542,7 +544,10 @@ begin
   aDM.OnDialogFilename := @DialogFilenameHack;
 
   BuildRecentFilesActions;
+
+  FStatDialogFactory := TStatDialogFactory.Create(Self, Executor);
   BuildStatDialogMenu;
+  BuildGraphsDialogMenu;
 
   Screen.AddHandlerActiveFormChanged(@FormChanged);
   Application.AddOnKeyDownBeforeHandler(@PrimaryKeyHandler);
@@ -1008,6 +1013,7 @@ begin
 
   if (CloseAll) then
     begin
+      TheGraphFormFactory.CloseAllOpenForms();
       CloseBrowsers;
       if (Assigned(EditorForm2)) then
         EditorForm2.Close;
@@ -2041,8 +2047,7 @@ var
   Contribution: IStatDialogContribution;
   MenuItem: TMenuItem;
 begin
-  FStatDialogFactory := TStatDialogFactory.Create(Self, Executor);
-  ContributionList := GetStatDialogContributionList;
+  ContributionList := GetStatDialogContributionList(cdStatistics);
 
   for Contribution in ContributionList do
   begin
@@ -2051,6 +2056,24 @@ begin
     MenuItem.Action  := FStatDialogFactory.CreateDialogAction(Contribution);
 
     StatisticsMainMenuItem.Add(MenuItem);
+  end;
+end;
+
+procedure TMainForm.BuildGraphsDialogMenu;
+var
+  ContributionList: TStatDialogContributionList;
+  Contribution: IStatDialogContribution;
+  MenuItem: TMenuItem;
+begin
+  ContributionList := GetStatDialogContributionList(cdGraphs);
+
+  for Contribution in ContributionList do
+  begin
+    MenuItem := TMenuItem.Create(MainMenu1);
+    MenuItem.Caption := Contribution.GetCaption();
+    MenuItem.Action  := FStatDialogFactory.CreateDialogAction(Contribution);
+
+    GraphMainMenuItem.Add(MenuItem);
   end;
 end;
 

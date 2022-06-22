@@ -99,6 +99,9 @@ type
     stReorder,
     stRecode,
 
+  // Graph commands (also Variable commands)
+    stScatter,
+
   // String Commands
     stRead,
     stRun,
@@ -119,7 +122,13 @@ type
     stQuit,
     stVersion
   );
+  TASTStatementTypes = set of TASTStatementType;
 
+const
+  ASTGraphCommands: TASTStatementTypes = [stScatter];
+
+
+type
   TParserOperationType = (
     // Literals
     otTrue,

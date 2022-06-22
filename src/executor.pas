@@ -223,6 +223,9 @@ type
     procedure ExecTables(ST: TTablesCommand); virtual;
     procedure ExecCTable(ST: TCTableCommand); virtual;
 
+    // - Graph commands
+    procedure ExecGraphCommand(ST: TCustomGraphCommand); virtual;
+
     // String commands
     procedure ExecRead(ST: TCustomStringCommand); virtual;
     procedure ExecSave(ST: TCustomStringCommand); virtual;
@@ -325,7 +328,7 @@ uses
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
   RegExpr, ana_globals, browse4, strutils, ana_documentfile, FileUtil,
-  about,
+  about, graphcommandexecutor,
 
   // Set options
   options_fontoptions, options_filesoptions, options_table, options_string_array,
@@ -3876,6 +3879,15 @@ begin
 
 end;
 
+procedure TExecutor.ExecGraphCommand(ST: TCustomGraphCommand);
+var
+  GraphExecutor: TGraphCommandExecutor;
+begin
+  GraphExecutor := TGraphCommandExecutor.Create(Self, FOutputCreator);
+  GraphExecutor.Execute(ST);
+  GraphExecutor.Free;
+end;
+
 procedure TExecutor.ExecUse(ST: TUse);
 var
   Idx: LongInt;
@@ -3990,139 +4002,145 @@ begin
           Exit;
         end;
 
-      case ST.StatementType of
-      // Atypical statements
-        stStatementList:
-          DoStatementList(TStatementList(ST));
-
-        stAssignment:
-          ExecAssignment(TAssignment(ST));
-
-        stIfThen:
-          ExecIfThen(TIfThen(ST));
-
-        stFor:
-          ExecFor(TFor(ST));
-
-        stNew:
-          ExecNew(TCustomNew(ST));
-
-        stSelect:
-          ExecSelect(TSelect(ST));
-
-        stEval:
-          ExecEval(TEvalExpression(ST));
-
-        stAssert:
-          ExecAssert(TAssertCommand(ST));
-
-        stSet:
-          ExecSet(TSetCommand(ST));
-
-      // Crud Commands
-
-        stList:
-          ExecList(TCustomCrudCommand(ST));
-
-        stEdit:
-          ExecEdit(TCustomCrudCommand(ST));
-
-        stDrop:
-          ExecDrop(TDropCommand(ST));
-
-        stKeep:
-          ExecKeep(TKeepCommand(ST));
-
-      // Variable Commands;
-
-        stBrowse:
-          ExecBrowse(TCustomVariableCommand(ST));
-
-        stMeans:
-          ExecMean(TCustomVariableCommand(ST));
-
-        stDescribe:
-          ExecDescribe(TCustomVariableCommand(ST));
-
-        stUse:
-          ExecUse(TUse(ST));
-
-        stFreq:
-          ExecFreq(TCustomVariableCommand(ST));
-
-        stSort:
-          ExecSort(TCustomVariableCommand(ST));
-
-        stAppend:
-          ExecAppend(TAppendCommand(ST));
-
-        stTables:
-          ExecTables(TTablesCommand(ST));
-
-        stCTable:
-          ExecCTable(TCTableCommand(ST));
-
-        stMerge:
-          ExecMerge(TMergeCommand(ST));
-
-        stCheck:
-          ExecCheck(TCustomCheckCommand(ST));
-
-        stReport:
-          ExecReport(TCustomReportCommand(ST));
-
-        stReorder:
-          ExecReorder(TReorderCommand(ST));
-
-        stAggregate:
-          ExecAggregate(TAggregateCommand(ST));
-
-        stRecode:
-          ExecRecode(TRecodeCommand(ST));
-
-      // String Commands
-        stRead:
-          ExecRead(TCustomStringCommand(ST));
-
-        stRun:
-          ExecRun(TCustomStringCommand(ST));
-
-        stRuntest:
-          ExecRuntest(TCustomStringCommand(ST));
-
-        stSave:
-          ExecSave(TCustomStringCommand(ST));
-
-        stCD, stLS, stTerm, stErase:
-          ExecSystemCmd(TCustomStringCommand(ST));
-
-      // Empty
-        stReset:
-          ExecReset(TCustomEmptyCommand(ST));
-
-        stCls:
-          ExecCls(TCustomEmptyCommand(ST));
-
-        stClh:
-          ExecClh(TCustomEmptyCommand(ST));
-
-        stClose:
-          ExecClose(TCustomEmptyCommand(ST));
-
-        stCount:
-          ExecCount(TCustomEmptyCommand(ST));
-
-        stQuit:
-          ExecQuit(TCustomEmptyCommand(ST));
-
-        stVersion:
-          ExecVersion(TCustomEmptyCommand(ST));
-
-        stNone:
-          ST.ExecResult := csrSuccess;
+      // - Graphs
+      if (ST.StatementType in ASTGraphCommands) then
+        begin
+          ExecGraphCommand(TCustomGraphCommand(ST));
+        end
       else
-        DoError('EXECUTOR: Statement not implemented: ' + ST.ClassName);
-      end;
+        case ST.StatementType of
+        // Atypical statements
+          stStatementList:
+            DoStatementList(TStatementList(ST));
+
+          stAssignment:
+            ExecAssignment(TAssignment(ST));
+
+          stIfThen:
+            ExecIfThen(TIfThen(ST));
+
+          stFor:
+            ExecFor(TFor(ST));
+
+          stNew:
+            ExecNew(TCustomNew(ST));
+
+          stSelect:
+            ExecSelect(TSelect(ST));
+
+          stEval:
+            ExecEval(TEvalExpression(ST));
+
+          stAssert:
+            ExecAssert(TAssertCommand(ST));
+
+          stSet:
+            ExecSet(TSetCommand(ST));
+
+        // Crud Commands
+
+          stList:
+            ExecList(TCustomCrudCommand(ST));
+
+          stEdit:
+            ExecEdit(TCustomCrudCommand(ST));
+
+          stDrop:
+            ExecDrop(TDropCommand(ST));
+
+          stKeep:
+            ExecKeep(TKeepCommand(ST));
+
+        // Variable Commands;
+
+          stBrowse:
+            ExecBrowse(TCustomVariableCommand(ST));
+
+          stMeans:
+            ExecMean(TCustomVariableCommand(ST));
+
+          stDescribe:
+            ExecDescribe(TCustomVariableCommand(ST));
+
+          stUse:
+            ExecUse(TUse(ST));
+
+          stFreq:
+            ExecFreq(TCustomVariableCommand(ST));
+
+          stSort:
+            ExecSort(TCustomVariableCommand(ST));
+
+          stAppend:
+            ExecAppend(TAppendCommand(ST));
+
+          stTables:
+            ExecTables(TTablesCommand(ST));
+
+          stCTable:
+            ExecCTable(TCTableCommand(ST));
+
+          stMerge:
+            ExecMerge(TMergeCommand(ST));
+
+          stCheck:
+            ExecCheck(TCustomCheckCommand(ST));
+
+          stReport:
+            ExecReport(TCustomReportCommand(ST));
+
+          stReorder:
+            ExecReorder(TReorderCommand(ST));
+
+          stAggregate:
+            ExecAggregate(TAggregateCommand(ST));
+
+          stRecode:
+            ExecRecode(TRecodeCommand(ST));
+
+        // String Commands
+          stRead:
+            ExecRead(TCustomStringCommand(ST));
+
+          stRun:
+            ExecRun(TCustomStringCommand(ST));
+
+          stRuntest:
+            ExecRuntest(TCustomStringCommand(ST));
+
+          stSave:
+            ExecSave(TCustomStringCommand(ST));
+
+          stCD, stLS, stTerm, stErase:
+            ExecSystemCmd(TCustomStringCommand(ST));
+
+        // Empty
+          stReset:
+            ExecReset(TCustomEmptyCommand(ST));
+
+          stCls:
+            ExecCls(TCustomEmptyCommand(ST));
+
+          stClh:
+            ExecClh(TCustomEmptyCommand(ST));
+
+          stClose:
+            ExecClose(TCustomEmptyCommand(ST));
+
+          stCount:
+            ExecCount(TCustomEmptyCommand(ST));
+
+          stQuit:
+            ExecQuit(TCustomEmptyCommand(ST));
+
+          stVersion:
+            ExecVersion(TCustomEmptyCommand(ST));
+
+          stNone:
+            ST.ExecResult := csrSuccess;
+        else
+          DoError('EXECUTOR: Statement not implemented: ' + ST.ClassName);
+        end;
 
     except
       ST.ExecResult := csrFailed;

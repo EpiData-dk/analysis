@@ -1280,6 +1280,23 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+  { TCustomGraphCommand }
+
+  TCustomGraphCommand = class(TCustomVariableCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+  end;
+
+  { TScatterCommand }
+
+  TScatterCommand = class(TCustomGraphCommand)
+  protected
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TCustomMergeCommand }
 
   TCustomMergeCommand = class(TCustomVariableCommand)
@@ -1518,8 +1535,7 @@ type
 implementation
 
 uses
-  LazUTF8Classes, epiconvertutils, typinfo, datamodule,
-  options_utils, parser,
+  LazUTF8Classes, epiconvertutils, typinfo, options_utils, parser,
 
   // SCRIPT FUNCTIONS (placed ind ./functions/epi_script_function_<name>.pas
   epi_script_function_mathfunctions,
@@ -1531,6 +1547,23 @@ uses
   epi_script_function_systemfunctions,
   epi_script_function_observations,
   math, variants, LazUTF8, LazFileUtils;
+
+{ TCustomGraphCommand }
+
+function TCustomGraphCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+
+  result.Insert('title',  ['ti'],      [rtString]);
+  result.Insert('footer', ['fn'],      [rtString]);
+  result.Insert('xtitle', ['xt'],     [rtString]);
+  result.Insert('ytitle', ['yt'],     [rtString]);
+  result.Insert('export', ['s', 'e'], [rtString]);
+  result.Insert('sizex',  ['sx'],     [rtInteger]);
+  result.Insert('sizey',  ['sy'],     [rtInteger]);
+
+  result.Insert('replace', [rtUndefined]);
+end;
 
 { TRecodeInterval }
 
@@ -2393,6 +2426,27 @@ constructor TSortCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
   inherited Create(AVariableList, AOptionList, stSort);
+end;
+
+{ TScatterCommand }
+
+function TScatterCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  Result[0] := 2;
+end;
+
+function TScatterCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  Result.ResultTypes := [rtDate, rtInteger, rtFloat];
+end;
+
+constructor TScatterCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stScatter);
 end;
 
 { TAppendCommand }
@@ -3831,6 +3885,7 @@ begin
                    Result := TTablesCommand.Create(AVariableList, AOptionList);
     stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
     stDescribe:  Result := TDescribeCommand.Create(AVariablelist, AOptionList);
+    stScatter:   Result := TScatterCommand.Create(AVariableList, AOptionList);
   else
     DoError();
   end;
@@ -6932,6 +6987,7 @@ begin
     'des': Result := stDescribe;
     'use': Result := stUse;
     'ver': Result := stVersion;
+    'sca': Result := stScatter;
   else
     DoError();
   end;
