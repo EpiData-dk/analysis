@@ -60,7 +60,8 @@ opDescribe    = 'des'('cribe')?
 opRecode      = 'recode'
 
 ! -- Graph commands
-opScatter     = 'sca'('tter')?
+opScatter     = 'scatter'?
+opSurvival    = 'sur'('vival')?
 
 ! -- String commands
 opRunTest     = 'runtest'
@@ -146,6 +147,7 @@ opSet         = 'set'
                                            |   opCTable
                                            |   opDescribe
                                            |   opScatter
+                                           |   opSurvival
 
 <String Command>                           ::= opRead
                                            |   opRuntest
