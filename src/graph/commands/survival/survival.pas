@@ -376,28 +376,28 @@ begin
   // show stratum results with failures only
   Sz := 3;
   for i := 0 to Length(FFail[0]) - 1 do
-    if (FFail[0, i] > 0) then
+    if (FAtRisk[0,1] > 0) then //(FFail[0, i] > 0) then
     begin
       T.RowCount := Sz + 1;
       T.Cell[0, Sz].Text := FInterval[0, i];
       Offset := 1;
       for Stratum := FirstStratum to LastStratum do
         begin
-          if (FFail[Stratum, i] > 0) then
+          if (FAtRisk[Stratum, i] > 0) then //(FFail[Stratum, i] > 0) then
             begin
               T.Cell[Offset    , Sz].Text := IntToStr(FAtRisk[Stratum, i]);
               T.Cell[Offset + 1, Sz].Text := IntToStr(FFail[Stratum, i]);
               T.Cell[Offset + 2, Sz].Text := Format(StatFmt, [FSurvival[Stratum, i]]);
               T.Cell[Offset + 3, Sz].Text := FormatCI(FLowCI[Stratum, i], FHighCI[Stratum, i], 0, ST.Options);
-              T.SetRowAlignment(Sz, taRightJustify);
             end;
+          T.SetRowAlignment(Sz, taRightJustify);
           Offset += ColPerStratum;
         end;
       Sz +=1;
     end;
 
-  Offset := 0;
-{  for Stratum := FirstStratum to LastStratum do   // causes double-spaced output!
+{  Offset := 0;
+  for Stratum := FirstStratum to LastStratum do   // causes double-spaced output!
     begin
       T.SetColBorders(Offset, [cbRight]);
       Offset += ColPerStratum;
@@ -449,7 +449,7 @@ begin
 //  FPlotLost := [];
 
   for i := low(FAtRisk[Stratum]) to high(FAtRisk[Stratum]) do
-    if (FFail[Stratum,i] > 0) then
+    if (FAtRisk[Stratum,i] > 0) then
       DoAddPlotPoints(float(FTime[Stratum, i]), FSurvival[Stratum, i], FLowCI[Stratum, i], FHighCI[Stratum, i]);
 // should we add final plot point based on maximum time for this stratum?
 end;
