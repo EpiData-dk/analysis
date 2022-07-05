@@ -62,6 +62,7 @@ opRecode      = 'recode'
 ! -- Graph commands
 opScatter     = 'scatter'?
 opSurvival    = 'sur'('vival')?
+opEpicurve    = 'epi'('curve')?
 
 ! -- String commands
 opRunTest     = 'runtest'
