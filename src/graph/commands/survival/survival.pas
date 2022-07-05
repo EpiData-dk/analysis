@@ -95,7 +95,7 @@ type
 implementation
 
 uses
-  generalutils, Math, statfunctions, options_utils, Clipbrd,
+  generalutils, Math, statfunctions, options_utils, Clipbrd, TACustomSource,
   ast_types, forms, graphformfactory;
 
 { TSurvival }
@@ -451,7 +451,6 @@ begin
   for i := low(FAtRisk[Stratum]) to high(FAtRisk[Stratum]) do
     if (FAtRisk[Stratum,i] > 0) then
       DoAddPlotPoints(float(FTime[Stratum, i]), FSurvival[Stratum, i], FLowCI[Stratum, i], FHighCI[Stratum, i]);
-// should we add final plot point based on maximum time for this stratum?
 end;
 
 procedure TSurvival.DoAddPlotPoints(t, s, ll, ul: EpiFloat);
@@ -491,11 +490,15 @@ begin
     LeftAxis.Range.Max    := 1;
     LeftAxis.Range.UseMin := true;
     LeftAxis.Range.UseMax := true;
-    LeftAxis.Grid.Style   := psClear;
+    LeftAxis.Grid.Style   := psDot;
+    LeftAxis.Grid.Color   := clSilver;
+    LeftAxis.Intervals.NiceSteps:='0.25';
+    LeftAxis.Intervals.Options  := [aipUseNiceSteps];
     BottomAxis.Grid.Style := psClear;
     Legend.Visible        := true;
     Legend.UseSidebar     := true;
     Legend.Frame.Visible  := false;
+    Frame.Visible         := false;
   end;
 end;
 
@@ -507,29 +510,33 @@ var
   sColor:     array of TColor = (clBlack, clBlue, clGreen, clRed, clMaroon);
   aPattern:   TFPBrushStyle;
   sPattern:   array of TFPBrushStyle = (bsDiagCross, bsFDiagonal, bsBDiagonal, bsCross, bsDiagCross);
+  aSurTitle,
+  aCITitle:   UTF8String;
 begin
   if (Stratum > 0) then
-    aText  := FStratVarname + '=' + FStratLabels[Stratum - 1]
+    aText   := FStratVarname + '=' + FStratLabels[Stratum - 1]
   else
-    aText  := '';
-  aColor   := sColor[min(Stratum,4)];
-  aPattern := sPattern[min(Stratum,4)];
+    aText   := '';
+  aSurTitle := 'survival ' + aText;
+  aCITitle  := IntToStr(FConf) + '% CI ' + aText;
+  aColor    := sColor[min(Stratum,4)];
+  aPattern  := sPattern[min(Stratum,4)];
   case FCIType of
     1 :    // line
       begin
         // the order of adding series matters because of a bug in TAChart
         // that does not always respect psDot, depending on the series index
-        FChart.AddSeries(SurvivalGraphData(FPlotUL, 'CI UL ' + aText, psDot, 2, aColor, false));
-        FChart.AddSeries(SurvivalGraphData(FPlotS,  'survival ' + aText, psSolid, 2, aColor));
-        FChart.AddSeries(SurvivalGraphData(FPlotLL, IntToStr(FConf) + '% CI ' + aText, psDot, 2, aColor));
+        FChart.AddSeries(SurvivalGraphData(FPlotUL, '', psDot, 2, aColor, false));
+        FChart.AddSeries(SurvivalGraphData(FPlotS, aSurTitle , psSolid, 2, aColor));
+        FChart.AddSeries(SurvivalGraphData(FPlotLL, aCITitle, psDot, 2, aColor));
       end;
     2 :    // band
       begin
-        FChart.AddSeries(SurvivalGraphData(FPlotS,  'survival ' + aText, psSolid, 2, aColor));
-        FChart.AddSeries(SurvivalBand(IntToStr(FConf) + '% CI ' + aText, aPattern, aColor));
+        FChart.AddSeries(SurvivalGraphData(FPlotS, aSurTitle, psSolid, 2, aColor));
+        FChart.AddSeries(SurvivalBand(aCITitle, aPattern, aColor));
       end;
     else   // none
-      FChart.AddSeries(SurvivalGraphData(FPlotS,  'survival ' + aText, psSolid, 2, aColor));
+      FChart.AddSeries(SurvivalGraphData(FPlotS, aSurTitle, psSolid, 2, aColor));
   end;
 end;
 
