@@ -1297,6 +1297,16 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+  { TSurvivalCommand }
+  TSurvivalCommand = class(TCustomGraphCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TCustomMergeCommand }
 
   TCustomMergeCommand = class(TCustomVariableCommand)
@@ -2447,6 +2457,49 @@ constructor TScatterCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
   inherited Create(AVariableList, AOptionList, stScatter);
+end;
+
+{TSurvivalCommand}
+function TSurvivalCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  AddDecimalOptions(Result);
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+  Result.Insert('by',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('o',   [rtInteger, rtString]);  // outcome value
+  Result.Insert('nt', ['notab'],  [rtUndefined]);     // no tables
+  Result.Insert('nou', [rtUndefined]);     // no unstratified table
+  Result.Insert('nos', [rtUndefined]);     // no stratified tables
+  Result.Insert('ns',  [rtUndefined]);     // no summary output
+  Result.Insert('t',  ['test'], [rtUndefined]);     // log-rank test and hazard ratio (valid with !by)
+  Result.Insert('cb',  [rtUndefined]);     // put KM plot points into clipboard
+  Result.Insert('cin',['cinone'], [rtUndefined]);     // no confidence intervals on plots
+  Result.Insert('cib',['ciband'], [rtUndefined]);     // show CI as bands
+  Result.Insert('q',   [rtUndefined]);
+end;
+
+function TSurvivalCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  result := inherited GetAcceptedVariableCount;
+  result[0] := 2;
+end;
+
+function TSurvivalCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  case Index of
+    0: Result.ResultTypes := [rtString, rtInteger];
+    1: Result.ResultTypes := [rtInteger];
+  end;
+end;
+
+constructor TSurvivalCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stSurvival);
 end;
 
 { TAppendCommand }
@@ -3886,6 +3939,7 @@ begin
     stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
     stDescribe:  Result := TDescribeCommand.Create(AVariablelist, AOptionList);
     stScatter:   Result := TScatterCommand.Create(AVariableList, AOptionList);
+    stSurvival:  Result := TSurvivalCommand.Create(AVariableList, AOptionList);
   else
     DoError();
   end;
@@ -6988,6 +7042,7 @@ begin
     'use': Result := stUse;
     'ver': Result := stVersion;
     'sca': Result := stScatter;
+    'sur': Result := stSurvival;
   else
     DoError();
   end;

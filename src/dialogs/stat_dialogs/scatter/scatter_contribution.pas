@@ -71,4 +71,3 @@ initialization
   RegisterStatDialogContribution(TScatterStatDialogContribution.Create, cdGraphs);
 
 end.
-

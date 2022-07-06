@@ -21,12 +21,14 @@
 -Fu./src/commandtree
 -Fu./src/controls
 -Fu./src/dialogs
+-Fu./src/dialogs/graph
 -Fu./src/dialogs/stat_dialogs
 -Fu./src/dialogs/stat_dialogs/ctable
 -Fu./src/dialogs/stat_dialogs/describe
 -Fu./src/dialogs/stat_dialogs/freq
 -Fu./src/dialogs/stat_dialogs/means
 -Fu./src/dialogs/stat_dialogs/scatter
+-Fu./src/dialogs/stat_dialogs/survival
 -Fu./src/dialogs/stat_dialogs/tables
 -Fu./src/editor
 -Fu./src/executor
@@ -39,6 +41,7 @@
 -Fu./src/graph/charttitles
 -Fu./src/graph/commands
 -Fu./src/graph/commands/scatter
+-Fu./src/graph/commands/survival
 -Fu./src/graph/graphform
 -Fu./src/output
 -Fu./src/parser
@@ -47,4 +50,3 @@
 -Fu./src/statistics
 -Fu./src/statusbar
 -Fu./src/utils
-
