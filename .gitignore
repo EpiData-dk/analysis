@@ -7,3 +7,5 @@ target/
 *.resolved
 *.lps
 commandlog.pgm
+src/grammar/*.cgt
+src/grammar/*.log
