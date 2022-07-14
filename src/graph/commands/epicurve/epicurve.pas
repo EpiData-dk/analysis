@@ -6,11 +6,12 @@ interface
 
 uses
   Classes, SysUtils, chartcommandresult, executor, outputcreator,
-  ast, epidatafiles, epicustombase, chartcommand, chartfactory, chartconfiguration,
-  TAGraph;
+  ast, epidatafiles, epidatafilestypes, epicustombase, chartcommand, chartfactory, chartconfiguration,
+  TAGraph, tables_types, tables;
 
 type
 
+  floatArray = array of Double;
   { TEpicurveChart }
 
   TEpicurveChart = class(TInterfacedObject, IChartCommand)
@@ -18,6 +19,7 @@ type
     FChartFactory: IChartFactory;
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
+    function doBoxes(n: Integer): floatArray;
   public
     procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator);
     function Execute(Command: TCustomGraphCommand): IChartCommandResult;
@@ -26,8 +28,7 @@ type
 implementation
 
 uses
-  TASeries, TATypes, TASources, Graphics, charttitles, ast_types, epidatafilestypes,
-  tables_types, tables,
+  TASeries, TATypes, TASources, Graphics, charttitles, ast_types,
   epifields_helper, options_utils;
 
 { TEpicurveChart }
@@ -38,6 +39,15 @@ begin
   FChartFactory := ChartFactory;
   FExecutor := Executor;
   FOutputCreator := OutputCreator;
+end;
+
+function TEpicurveChart.doBoxes(n: Integer): floatArray;
+var
+  i: Integer;
+begin
+  setLength(result, n);
+  for i := 0 to n - 1 do
+    result[i] := 1.0;
 end;
 
 function TEpicurveChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
@@ -52,46 +62,57 @@ var
   ChartConfiguration: IChartConfiguration;
   VariableLabelType: TEpiGetVariableLabelType;
   T: TTables;
-  F: TTwoWayTable;
+  Freqs: TTwoWayTable;
   Statistics: TTableStatistics;
   TablesRefMap: TEpiReferenceMap;
-  EpicurveTable: TTwowayTable;
-  StratVariable,
+  EpicurveTable: TTwowayTables;
+  StratVariable: TStringList;
   WeightVarName: UTF8String;
-  EpicurveCounts: array of array of Byte;
+  AllVariables: TStrings;
+  Opt: TOption;
   Boxes: array of EpiFloat;
   ix, iy: Integer;
+  ixLow, ixHigh: Integer;
 begin
   // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
+  AllVariables := VarNames;
+  StratVariable := TStringList.Create;
 
+  // check for stratifying variable
+  if (Command.HasOption(['by'],Opt)) then
+    begin
+      StratVariable.Add(Opt.Expr.AsIdent);
+      AllVariables.Add(Opt.Expr.AsIdent);
+    end;
   // Get the data and fields.
-  DataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
+  DataFile := FExecutor.PrepareDatafile(AllVariables, AllVariables);
   XVar := Datafile.Fields.FieldByName[VarNames[0]];
-  Varnames.Free;
-  StratVariable := '';
   WeightVarName := '';
   // Get frequencies by time variable
   T := TTables.Create(FExecutor, FOutputCreator);
   EpicurveTable  := T.CalcTables(Datafile, VarNames,
     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics);
-  F := EpicurveTable.UnstratifiedTable;
+  Freqs := EpicurveTable.UnstratifiedTable;
 
-  // populate EpicurveCounts
-  EpicurveCounts := DoCounts(EpicurveTable);
-
-  // Create the charts
+  // Create the chart
   Chart := FChartFactory.NewChart();
-
 
   // Create the line/point series
   TimeSeries := TBarSeries.Create(Chart);
-  for ix := 0 to F.Size -1 do
+  EpicurveSource := TListChartSource.Create(Chart);
+  iy := 0;
+  ixLow := Freqs.RowVariable.AsInteger[0];
+  ixHigh := Freqs.RowVariable.AsInteger[Freqs.RowCount - 1];
+  for ix := ixLow to ixHigh do
     begin
-      Boxes := [];
-      for iy := 1 to F.RowVariable[0].Count do
-        Boxes := Concat(Boxes,1);
-      EpicurveSource.AddXYList(F.ColVariable.AsFloat, Boxes);
+      if (ix < Freqs.RowVariable.AsInteger[iy]) then
+        EpicurveSource.Add(ix.ToDouble, 0.0)
+      else
+        begin
+          EpicurveSource.AddXYList(ix.ToDouble, doBoxes(Freqs.RowTotal[iy] - 1));
+          iy += 1;
+        end;
     end;
 
   TimeSeries.Stacked := true;
@@ -104,7 +125,7 @@ begin
   ChartConfiguration := FChartFactory.NewChartConfiguration();
   VariableLabelType := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions, sovStatistics);
   Titles := ChartConfiguration.GetTitleConfiguration()
-    .SetTitle('Epidemic Curve for ' + XVar.GetVariableLabel(VariableLabelType)
+    .SetTitle('Epidemic Curve for ' + XVar.GetVariableLabel(VariableLabelType))
     .SetFootnote('')
     .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelType));
 
@@ -118,6 +139,7 @@ begin
   // Create the command result
   Result := FChartFactory.NewGraphCommandResult();
   Result.AddChart(Chart, ChartConfiguration);
+  AllVariables.Free;
 end;
 
 initialization
