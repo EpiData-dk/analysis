@@ -5,8 +5,9 @@ unit epicurve;
 interface
 
 uses
-  Classes, SysUtils, chartcommandresult, TAGraph, executor, outputcreator,
-  ast, epidatafiles, chartcommand, chartfactory, chartconfiguration;
+  Classes, SysUtils, chartcommandresult, executor, outputcreator,
+  ast, epidatafiles, epicustombase, chartcommand, chartfactory, chartconfiguration,
+  TAGraph;
 
 type
 
@@ -25,7 +26,7 @@ type
 implementation
 
 uses
-  TASeries, TATypes, Graphics, charttitles, ast_types, epidatafilestypes,
+  TASeries, TATypes, TASources, Graphics, charttitles, ast_types, epidatafilestypes,
   tables_types, tables,
   epifields_helper, options_utils;
 
@@ -51,14 +52,14 @@ var
   ChartConfiguration: IChartConfiguration;
   VariableLabelType: TEpiGetVariableLabelType;
   T: TTables;
-  F: TTable;
+  F: TTwoWayTable;
   Statistics: TTableStatistics;
   TablesRefMap: TEpiReferenceMap;
   EpicurveTable: TTwowayTable;
   StratVariable,
   WeightVarName: UTF8String;
   EpicurveCounts: array of array of Byte;
-  Boxes: array of Float;
+  Boxes: array of EpiFloat;
   ix, iy: Integer;
 begin
   // Get Variable names
@@ -72,9 +73,9 @@ begin
   WeightVarName := '';
   // Get frequencies by time variable
   T := TTables.Create(FExecutor, FOutputCreator);
-  F := TTables.UnstratifiedTable;
   EpicurveTable  := T.CalcTables(Datafile, VarNames,
-    StratVariable, WeightVarName, ST.Options, TablesRefMap, Statistics);
+    StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics);
+  F := EpicurveTable.UnstratifiedTable;
 
   // populate EpicurveCounts
   EpicurveCounts := DoCounts(EpicurveTable);
