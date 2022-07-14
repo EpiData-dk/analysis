@@ -14,11 +14,8 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="3"/>
-      <MinorVersionNr Value="1"/>
-      <RevisionNr Value="1"/>
-      <BuildNr Value="2"/>
-      <Attributes pvaSpecialBuild="True"/>
-      <StringTable SpecialBuild="TRUNK"/>
+      <MinorVersionNr Value="3"/>
+      <Attributes pvaPreRelease="True"/>
     </VersionInfo>
     <BuildModes Count="7">
       <Item1 Name="Default" Default="True"/>
@@ -1035,14 +1032,18 @@
       </SyntaxOptions>
     </Parsing>
     <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
+      <RelocatableUnit Value="True"/>
       <Optimizations>
-        <OptimizationLevel Value="0"/>
+        <OptimizationLevel Value="2"/>
       </Optimizations>
+      <SmallerCode Value="True"/>
     </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf2Set"/>
       </Debugging>
+      <LinkSmart Value="True"/>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>
@@ -1055,7 +1056,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="15">
+    <Exceptions Count="16">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -1108,6 +1109,9 @@
       <Item15>
         <Name Value="Unknown"/>
       </Item15>
+      <Item16>
+        <Name Value="00000015EKeyNotFoundException"/>
+      </Item16>
     </Exceptions>
   </Debugging>
 </CONFIG>
