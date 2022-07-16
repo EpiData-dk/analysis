@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, chartcommandresult, executor, outputcreator,
   ast, epidatafiles, epidatafilestypes, epicustombase, chartcommand, chartfactory, chartconfiguration,
-  TAGraph, TASources, tables_types, tables, freq;
+  TAGraph, TASources, TACustomSource, tables_types, tables, freq;
 
 type
 
@@ -21,6 +21,7 @@ type
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
     FEpicurveSource: TListChartSource;
+    FmaxCount: Integer;
     function doBoxes(n: Integer): floatArray;
     procedure doAddTableSeries(F: TTwoWayTable; index: Integer);
     procedure doAddFreqSeries(F: TFreqDataFile);
@@ -49,14 +50,26 @@ procedure TEpicurveChart.doAddTableSeries(F: TTwoWayTable; index: Integer);
 var
   TimeSeries: TBarSeries;
   i: Integer;
+  xLow: Double;
 begin
   TimeSeries := TBarSeries.Create(FChart);
   FEpicurveSource := TListChartSource.Create(FChart);
   FEpicurveSource.YCount := F.RowCount;
+  FmaxCount := 0;
+  xLow := F.RowVariable.AsFloat[0];    // this isn't right - where does index figure??
   for i := 0 to F.RowCount - 1 do
-    FEpicurveSource.AddXYList(F.RowVariable.AsFloat[index], doBoxes(F.RowTotal[i]));
+    begin
+      while xLow < F.RowVariable.AsFloat[index] do
+        begin
+          FEpicurveSource.Add(xLow, 0);
+          xLow := xLow + 1;
+        end;
+      FEpicurveSource.AddXYList(F.RowVariable.AsFloat[index], doBoxes(F.RowTotal[i]));
+      xLow := xLow + 1;
+    end;
   TimeSeries.Source := FEpicurveSource;
   TimeSeries.Stacked := true;
+  TimeSeries.BarWidthPercent := 100;
 
   // Add series to the chart
   FChart.AddSeries(TimeSeries);
@@ -189,15 +202,19 @@ begin
   ChartConfiguration.GetAxesConfiguration()
     .GetXAxisConfiguration()
     .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
-  FChart.BottomAxis.Marks.AtDataOnly := true;
-  FChart.BottomAxis.Range.Min := xLow;
-  FChart.BottomAxis.Range.Max := xHigh;
-  FChart.BottomAxis.Grid.Style := psClear;
   ChartConfiguration.GetAxesConfiguration()
     .GetYAxisConfiguration();
-  FChart.LeftAxis.Grid.Style := psClear;
-  FChart.LeftAxis.Marks.AtDataOnly:=true;
-  FChart.Frame.Visible := false;
+  with FChart do
+    begin
+      BottomAxis.Marks.AtDataOnly := true;
+      BottomAxis.Range.Min := xLow;
+      BottomAxis.Range.Max := xHigh;
+      BottomAxis.Grid.Style := psClear;
+// use additional ListChartSources to define BottomAxis.Marks.Source ditto for left axis
+      LeftAxis.Grid.Style := psClear;
+      LeftAxis.Marks.AtDataOnly:=true;
+      Frame.Visible := false;
+    end;
   // Create the command result
   Result := FChartFactory.NewGraphCommandResult();
   Result.AddChart(FChart, ChartConfiguration);
