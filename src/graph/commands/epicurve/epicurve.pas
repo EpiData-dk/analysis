@@ -229,13 +229,13 @@ begin
     .GetYAxisConfiguration();
   with FChart do
     begin
-      BottomAxis.Range.Min := FxLow;
-      BottomAxis.Range.Max := FxHigh;
+//      BottomAxis.Range.Min := FxLow;
+//      BottomAxis.Range.Max := FxHigh;
       BottomAxis.Marks.Source := FxAxisSource;
       BottomAxis.Grid.Style := psClear;
       LeftAxis.Grid.Style := psClear;
-      LeftAxis.Range.Min := 0;
-      LeftAxis.Range.Max := FmaxCount;
+//      LeftAxis.Range.Min := 0;
+//      LeftAxis.Range.Max := FmaxCount;
       LeftAxis.Marks.Source := FyAxisSource;
       Frame.Visible := false;
     end;
