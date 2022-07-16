@@ -21,10 +21,13 @@ type
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
     FEpicurveSource: TListChartSource;
+    FxLow, FxHigh: Integer;
     FmaxCount: Integer;
+    FxAxisSource, FyAxisSource: TListChartSource;
     function doBoxes(n: Integer): floatArray;
-    procedure doAddTableSeries(F: TTwoWayTable; index: Integer);
+    procedure doAddTableSeries(F: TTwoWayTable);
     procedure doAddFreqSeries(F: TFreqDataFile);
+    procedure doAddAxisScales();
   public
     procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator);
     function Execute(Command: TCustomGraphCommand): IChartCommandResult;
@@ -34,7 +37,7 @@ implementation
 
 uses
   TASeries, TATypes, Graphics, charttitles, ast_types,
-  epifields_helper, options_utils;
+  epifields_helper, options_utils, math;
 
 { TEpicurveChart }
 
@@ -46,7 +49,7 @@ begin
   FOutputCreator := OutputCreator;
 end;
 
-procedure TEpicurveChart.doAddTableSeries(F: TTwoWayTable; index: Integer);
+procedure TEpicurveChart.doAddTableSeries(F: TTwoWayTable);
 var
   TimeSeries: TBarSeries;
   i: Integer;
@@ -55,16 +58,16 @@ begin
   TimeSeries := TBarSeries.Create(FChart);
   FEpicurveSource := TListChartSource.Create(FChart);
   FEpicurveSource.YCount := F.RowCount;
-  FmaxCount := 0;
-  xLow := F.RowVariable.AsFloat[0];    // this isn't right - where does index figure??
+  xLow := F.RowVariable.AsFloat[0];
   for i := 0 to F.RowCount - 1 do
     begin
-      while xLow < F.RowVariable.AsFloat[index] do
+      while xLow < F.RowVariable.AsFloat[i] do
         begin
           FEpicurveSource.Add(xLow, 0);
           xLow := xLow + 1;
         end;
-      FEpicurveSource.AddXYList(F.RowVariable.AsFloat[index], doBoxes(F.RowTotal[i]));
+      FEpicurveSource.AddXYList(F.RowVariable.AsFloat[i], doBoxes(F.RowTotal[i]));
+      FmaxCount := Math.Max(FmaxCount, F.RowVariable.AsInteger[i]);
       xLow := xLow + 1;
     end;
   TimeSeries.Source := FEpicurveSource;
@@ -93,6 +96,7 @@ begin
         xLow := xLow + 1;
       end;
       FEpicurveSource.AddXYList(F.Categ.AsFloat[i], doBoxes(F.Count.AsInteger[i]));
+      FmaxCount := Math.Max(FmaxCount, F.Count.AsInteger[i]);
       xLow := xLow + 1;
     end;
   TimeSeries.Source := FEpicurveSource;
@@ -110,6 +114,21 @@ begin
   setLength(result, n);
   for i := 0 to n - 1 do
     result[i] := 1.0;
+end;
+
+procedure TEpicurveChart.doAddAxisScales();
+var
+  tick: Integer;
+begin
+  FxAxisSource := TListChartSource.Create(FChart);
+  FyAxisSource := TListChartSource.Create(FChart);
+
+  for tick := FxLow to FxHigh do
+    FxAxisSource.Add(tick, tick);
+  for tick := 0 to (FmaxCount div 5) do
+    FyAxisSource.Add(tick.ToDouble * 5, tick.ToDouble * 5);
+
+
 end;
 
 function TEpicurveChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
@@ -134,8 +153,8 @@ var
   Opt: TOption;
   Boxes: array of EpiFloat;
   i, ix, iy: Integer;
-  xLow, xHigh: Integer;
 begin
+  FmaxCount := 0;
   // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
   AllVariables := VarNames;
@@ -173,22 +192,26 @@ begin
       T := TTables.Create(FExecutor, FOutputCreator);
       EpicurveTable  := T.CalcTables(Datafile, VarNames,
                     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics);
-       Freqs := EpicurveTable.UnstratifiedTable;
-       xLow := Freqs.RowVariable.AsInteger[0];
-       xHigh := Freqs.RowVariable.AsInteger[Freqs.RowCount - 1];
+      FxLow := 10000000;
+      FxHigh := 0;
        for i:= 0 to Freqs.RowCount - 1 do
          begin
-           doAddTableSeries(Freqs, i);
+           Freqs := EpicurveTable.Tables[i];
+           FxLow := Math.Min(Freqs.RowVariable.AsInteger[0], FxLow);
+           FxHigh := Math.Max(Freqs.RowVariable.AsInteger[Freqs.RowCount - 1], FxHigh);
+           doAddTableSeries(Freqs);
          end;
      end
   else
     begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
       EpicurveFreq := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
-      xLow := EpicurveFreq.Categ.AsInteger[0];
-      xHigh := EpicurveFreq.Categ.AsInteger[EpicurveFreq.Size - 1];
+      FxLow := EpicurveFreq.Categ.AsInteger[0];
+      FxHigh := EpicurveFreq.Categ.AsInteger[EpicurveFreq.Size - 1];
       doAddFreqSeries(EpicurveFreq);
     end;
+
+  doAddAxisScales();
 
   // Create the titles
   ChartConfiguration := FChartFactory.NewChartConfiguration();
@@ -206,13 +229,14 @@ begin
     .GetYAxisConfiguration();
   with FChart do
     begin
-      BottomAxis.Marks.AtDataOnly := true;
-      BottomAxis.Range.Min := xLow;
-      BottomAxis.Range.Max := xHigh;
+      BottomAxis.Range.Min := FxLow;
+      BottomAxis.Range.Max := FxHigh;
+      BottomAxis.Marks.Source := FxAxisSource;
       BottomAxis.Grid.Style := psClear;
-// use additional ListChartSources to define BottomAxis.Marks.Source ditto for left axis
       LeftAxis.Grid.Style := psClear;
-      LeftAxis.Marks.AtDataOnly:=true;
+      LeftAxis.Range.Min := 0;
+      LeftAxis.Range.Max := FmaxCount;
+      LeftAxis.Marks.Source := FyAxisSource;
       Frame.Visible := false;
     end;
   // Create the command result
