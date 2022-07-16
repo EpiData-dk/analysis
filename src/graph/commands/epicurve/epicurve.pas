@@ -118,17 +118,22 @@ end;
 
 procedure TEpicurveChart.doAddAxisScales();
 var
-  tick: Integer;
+  i: Integer;
+  tick: Double;
 begin
   FxAxisSource := TListChartSource.Create(FChart);
   FyAxisSource := TListChartSource.Create(FChart);
-
-  for tick := FxLow to FxHigh do
-    FxAxisSource.Add(tick, tick);
-  for tick := 0 to (FmaxCount div 5) do
-    FyAxisSource.Add(tick.ToDouble * 5, tick.ToDouble * 5);
-
-
+  for i := FxLow to FxHigh do
+    begin
+      tick := i.ToDouble;
+      FxAxisSource.Add(tick, tick);
+    end;
+  tick := 0;
+  for i := 0 to (FmaxCount div 5) do
+    begin
+      FyAxisSource.Add(tick, tick);
+      tick += 5;
+    end;
 end;
 
 function TEpicurveChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
