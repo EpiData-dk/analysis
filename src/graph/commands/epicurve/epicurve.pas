@@ -57,7 +57,7 @@ var
 begin
   TimeSeries := TBarSeries.Create(FChart);
   FEpicurveSource := TListChartSource.Create(FChart);
-  FEpicurveSource.YCount := F.RowCount;
+  FEpicurveSource.YCount := F.Total; // ensure that blocks will stack high enough to include all
   xLow := F.RowVariable.AsFloat[0];
   for i := 0 to F.RowCount - 1 do
     begin
@@ -86,7 +86,7 @@ var
 begin
   TimeSeries := TBarSeries.Create(FChart);
   FEpicurveSource := TListChartSource.Create(FChart);
-  FEpicurveSource.YCount := F.Size;
+  FEpicurveSource.YCount := F.Sum; // ensure that blocks will stack high enough to include all
   xLow := F.Categ.AsFloat[0];
   for i := 0 to F.Size - 1 do
     begin
