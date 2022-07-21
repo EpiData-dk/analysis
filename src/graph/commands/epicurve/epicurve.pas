@@ -12,6 +12,7 @@ uses
 type
 
   floatArray = array of Double;
+  freqArray  = array of array of Double;
   { TEpicurveChart }
 
   TEpicurveChart = class(TInterfacedObject, IChartCommand)
@@ -22,11 +23,14 @@ type
     FOutputCreator: TOutputCreator;
     FEpicurveSource: TListChartSource;
     FxLow, FxHigh: Integer;
+    FLabel: array of Integer;
+    FCateg: array of UTF8String;
     FmaxCount: Integer;
     FxAxisSource, FyAxisSource: TListChartSource;
-    function doBoxes(n: Integer): floatArray;
-    procedure doAddTableSeries(F: TTwoWayTable);
-    procedure doAddFreqSeries(F: TFreqDataFile);
+    function doBoxes(n: Double): floatArray;
+    function Table2Array(T: TTwoWayTable): freqArray;
+    function Freq2Array(F: TFreqDataFile): freqArray;
+    procedure doAddSeries(Freqs: freqArray);
     procedure doAddAxisScales();
   public
     procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator);
@@ -49,25 +53,29 @@ begin
   FOutputCreator := OutputCreator;
 end;
 
-procedure TEpicurveChart.doAddTableSeries(F: TTwoWayTable);
+procedure TEpicurveChart.doAddSeries(Freqs: freqArray);
 var
   TimeSeries: TBarSeries;
-  i: Integer;
+  i,j: Integer;
+  boxesOK: boolean;
   xLow: Double;
 begin
   TimeSeries := TBarSeries.Create(FChart);
   FEpicurveSource := TListChartSource.Create(FChart);
-  FEpicurveSource.YCount := F.Total; // ensure that blocks will stack high enough to include all
-  xLow := F.RowVariable.AsFloat[0];
-  for i := 0 to F.RowCount - 1 do
+  FEpicurveSource.YCount := FmaxCount;
+  boxesOK := length(Freqs[0]) = 1;
+  xLow := FLabel[0];
+  for i := 0 to length(Freqs) - 1 do
     begin
-      while xLow < F.RowVariable.AsFloat[i] do
+      while xLow < FLabel[i] do
         begin
           FEpicurveSource.Add(xLow, 0);
           xLow := xLow + 1;
         end;
-      FEpicurveSource.AddXYList(F.RowVariable.AsFloat[i], doBoxes(F.RowTotal[i]));
-      FmaxCount := Math.Max(FmaxCount, F.RowVariable.AsInteger[i]);
+      if (boxesOK) then
+        FEpicurveSource.AddXYList(xLow, doBoxes(Freqs[i, 0]))
+      else
+        FEpicurveSource.AddXYList(xLow, Freqs[i]);
       xLow := xLow + 1;
     end;
   TimeSeries.Source := FEpicurveSource;
@@ -78,41 +86,49 @@ begin
   FChart.AddSeries(TimeSeries);
 end;
 
-procedure TEpicurveChart.doAddFreqSeries(F: TFreqDataFile);
-var
-  TimeSeries: TBarSeries;
-  i, n: Integer;
-  xLow: Double;
-begin
-  TimeSeries := TBarSeries.Create(FChart);
-  FEpicurveSource := TListChartSource.Create(FChart);
-  FEpicurveSource.YCount := F.Sum; // ensure that blocks will stack high enough to include all
-  xLow := F.Categ.AsFloat[0];
-  for i := 0 to F.Size - 1 do
-    begin
-      while xLow < F.Categ.AsFloat[i] do
-      begin
-        FEpiCurveSource.Add(xLow, 0.0);
-        xLow := xLow + 1;
-      end;
-      FEpicurveSource.AddXYList(F.Categ.AsFloat[i], doBoxes(F.Count.AsInteger[i]));
-      FmaxCount := Math.Max(FmaxCount, F.Count.AsInteger[i]);
-      xLow := xLow + 1;
-    end;
-  TimeSeries.Source := FEpicurveSource;
-  TimeSeries.Stacked := true;
-  TimeSeries.BarWidthPercent := 100;
-
-  // Add series to the chart
-  FChart.AddSeries(TimeSeries);
-end;
-
-function TEpicurveChart.doBoxes(n: Integer): floatArray;
+function TEpicurveChart.Freq2Array(F: TFreqDataFile): freqArray;
 var
   i: Integer;
 begin
-  setLength(result, n);
-  for i := 0 to n - 1 do
+  setLength(result, F.Size, 1);
+  setLength(FLabel, F.Size);
+  FMaxCount := 0;
+  for i := 0 to F.Size - 1 do
+    begin
+      result[i, 0] := F.Count.AsFloat[i];
+      FLabel[i]    := F.Categ.AsInteger[i];
+      FmaxCount    := Math.Max(FmaxCount, F.Count.AsInteger[i]);
+    end;
+end;
+
+function TEpicurveChart.Table2Array(T: TTwoWayTable): freqArray;
+var
+  i, j: Integer;
+begin
+  setLength(result, T.ColCount, T.RowCount);
+  setLength(FLabel, T.RowCount);
+  setLength(FCateg, T.ColCount);
+  FMaxCount := 0;
+  for i := 0 to T.ColCount - 1 do
+    begin
+      FCateg[i] := T.ColVariable.AsString[i];
+      for j := 0 to T.RowCount - 1 do
+        begin
+          result[i, j] := Float(T.Cell[i, j].N.ToDouble);
+          FMaxCount := Math.Max(FMaxCount, T.Cell[i, j].N);
+        end;
+      end;
+  for j := 0 to T.RowCount - 1 do
+    FLabel[j] := T.RowVariable.AsInteger[j];
+end;
+
+function TEpicurveChart.doBoxes(n: double): floatArray;
+var
+  i, j: Integer;
+begin
+  j := Trunc(n);
+  setLength(result, j);
+  for i := 0 to j - 1 do
     result[i] := 1.0;
 end;
 
@@ -123,7 +139,7 @@ var
 begin
   FxAxisSource := TListChartSource.Create(FChart);
   FyAxisSource := TListChartSource.Create(FChart);
-  for i := FxLow to FxHigh do
+  for i := FLabel[0] to FLabel[Length(FLabel)-1] do
     begin
       tick := i.ToDouble;
       FxAxisSource.Add(tick, tick);
@@ -147,7 +163,7 @@ var
   VariableLabelType: TEpiGetVariableLabelType;
   T: TTables;
   F: TFreqCommand;
-  Freqs: TTwoWayTable;
+  Freqs: array of array of double;
   Statistics: TTableStatistics;
   TablesRefMap: TEpiReferenceMap;
   EpicurveTable: TTwowayTables;
@@ -176,7 +192,6 @@ begin
   // check for stratifying variable
   if (Command.HasOption(['by'],Opt)) then
     begin
-//      StratVariable.Add(Opt.Expr.AsIdent);
       VarNames.Add(Opt.Expr.AsIdent);
       AllVariables.Add(Opt.Expr.AsIdent);
     end;
@@ -191,31 +206,28 @@ begin
   // add series for the time variable
   // method depends on stratification or not
 
+  // *** Stratification won't work with boxes ***
+  // so revert to histogram
+
   if (Command.HasOption('by')) then
     begin
   // with stratification
+  // Note: this does NOT call CalcTables with stratification
       T := TTables.Create(FExecutor, FOutputCreator);
       EpicurveTable  := T.CalcTables(Datafile, VarNames,
                     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics);
-      FxLow := 10000000;
-      FxHigh := 0;
-       for i:= 0 to Freqs.RowCount - 1 do
-         begin
-           Freqs := EpicurveTable.Tables[i];
-           FxLow := Math.Min(Freqs.RowVariable.AsInteger[0], FxLow);
-           FxHigh := Math.Max(Freqs.RowVariable.AsInteger[Freqs.RowCount - 1], FxHigh);
-           doAddTableSeries(Freqs);
-         end;
-     end
+        Freqs := Table2Array(EpicurveTable.UnstratifiedTable);
+      T.Free;
+    end
   else
     begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
       EpicurveFreq := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
-      FxLow := EpicurveFreq.Categ.AsInteger[0];
-      FxHigh := EpicurveFreq.Categ.AsInteger[EpicurveFreq.Size - 1];
-      doAddFreqSeries(EpicurveFreq);
+      Freqs := Freq2Array(EpicurveFreq);
+      F.Free;
     end;
 
+  doAddSeries(Freqs);
   doAddAxisScales();
 
   // Create the titles
@@ -234,13 +246,9 @@ begin
     .GetYAxisConfiguration();
   with FChart do
     begin
-//      BottomAxis.Range.Min := FxLow;
-//      BottomAxis.Range.Max := FxHigh;
       BottomAxis.Marks.Source := FxAxisSource;
       BottomAxis.Grid.Style := psClear;
       LeftAxis.Grid.Style := psClear;
-//      LeftAxis.Range.Min := 0;
-//      LeftAxis.Range.Max := FmaxCount;
       LeftAxis.Marks.Source := FyAxisSource;
       Frame.Visible := false;
     end;
