@@ -50,7 +50,7 @@ opCTable      = 'cta'('ble')?
 opMeans       = 'mea'('ns')?
 opUse         = 'use'
 opBrowse      = 'bro'('wse')?
-opFreq        = 'freq'('uence')?
+opFreq        = 'fre'('q')?
 opSort        = 'sor'('t')?
 opAppend      = 'app'('end')?
 opMerge       = 'mer'('ge')?
@@ -60,9 +60,12 @@ opDescribe    = 'des'('cribe')?
 opRecode      = 'recode'
 
 ! -- Graph commands
-opScatter     = 'scatter'?
+opScatter     = 'scatter'
 opSurvival    = 'sur'('vival')?
-opEpicurve    = 'epi'('curve')?
+opEpicurve    = 'epicurve'
+opHistogram   = 'histogram'
+opBarChart    = 'barchart'
+opLine        = 'line'
 
 ! -- String commands
 opRunTest     = 'runtest'
