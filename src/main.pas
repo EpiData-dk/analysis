@@ -480,7 +480,7 @@ begin
     AppMenu.Add(AppPrefCmd);
   // remove duplicate menu items?
     MainMenu1.Items[2].Remove(MenuItem41);   // preferences
-    MainMenu1.Items[6].Remove(MenuItem6);    // about
+    MainMenu1.Items[7].Remove(MenuItem6);    // about
     MainMenu1.Items[1].Remove(MenuItem8);    // quit
     {$ENDIF}
 
