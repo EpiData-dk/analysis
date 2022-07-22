@@ -1287,15 +1287,26 @@ type
     function GetAcceptedOptions: TStatementOptionsMap; override;
   end;
 
-  { TScatterCommand }
+    { TScatterCommand }
 
-  TScatterCommand = class(TCustomGraphCommand)
-  protected
-    function GetAcceptedVariableCount: TBoundArray; override;
-    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
-  public
-    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
-  end;
+    TScatterCommand = class(TCustomGraphCommand)
+    protected
+      function GetAcceptedVariableCount: TBoundArray; override;
+      function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+    public
+      constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+    end;
+
+    { TEpicurveCommand }
+
+    TEpicurveCommand = class(TCustomGraphCommand)
+    protected
+      function GetAcceptedOptions: TStatementOptionsMap; override;
+      function GetAcceptedVariableCount: TBoundArray; override;
+      function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+    public
+      constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+    end;
 
   { TSurvivalCommand }
   TSurvivalCommand = class(TCustomGraphCommand)
@@ -2457,6 +2468,40 @@ constructor TScatterCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
   inherited Create(AVariableList, AOptionList, stScatter);
+end;
+
+{ TEpicurveCommand }
+function TEpicurveCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+//  Result.Insert('by',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+end;
+
+function TEpicurveCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  SetLength(Result, 2);
+  Result[0] := 1;
+  Result[1] := 2;
+end;
+
+function TEpicurveCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  case Index of
+    0: Result.ResultTypes := [rtDate, rtInteger, rtFloat];
+    1: Result.ResultTypes := AllResultDataTypes;
+  end;
+end;
+
+constructor TEpicurveCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stEpicurve);
 end;
 
 {TSurvivalCommand}
@@ -3939,6 +3984,7 @@ begin
     stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
     stDescribe:  Result := TDescribeCommand.Create(AVariablelist, AOptionList);
     stScatter:   Result := TScatterCommand.Create(AVariableList, AOptionList);
+    stEpicurve:  Result := TEpicurveCommand.Create(AVariableList, AOptionList);
     stSurvival:  Result := TSurvivalCommand.Create(AVariableList, AOptionList);
   else
     DoError();
@@ -7042,6 +7088,7 @@ begin
     'use': Result := stUse;
     'ver': Result := stVersion;
     'sca': Result := stScatter;
+    'epi': Result := stEpicurve;
     'sur': Result := stSurvival;
   else
     DoError();
