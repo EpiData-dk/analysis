@@ -5,9 +5,9 @@ unit epicurve;
 interface
 
 uses
-  Classes, SysUtils, chartcommandresult, executor, outputcreator,
+  Classes, SysUtils, chartcommandresult, executor, outputcreator, epifields_helper,
   ast, epidatafiles, epidatafilestypes, epicustombase, chartcommand, chartfactory, chartconfiguration,
-  TAGraph, TASources, TACustomSource, tables_types, tables, freq;
+  TAGraph, TASources, TACustomSource, TALegend, tables_types, tables, freq;
 
 type
 
@@ -21,11 +21,14 @@ type
     FChart: TChart;
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
+    FValueLabelOutput:    TEpiGetValueLabelType;
+    FVariableLabelOutput: TEpiGetVariableLabelType;
     FEpicurveSource: TListChartSource;
     FxLow, FxHigh: Integer;
     FLabel: array of Integer;
     FCateg: array of UTF8String;
     FmaxCount: Integer;
+    FByVarName: UTF8String;
     FxAxisSource, FyAxisSource: TListChartSource;
     function doBoxes(n: Double): floatArray;
     function Table2Array(T: TTwoWayTable): freqArray;
@@ -40,8 +43,8 @@ type
 implementation
 
 uses
-  TASeries, TATypes, Graphics, charttitles, ast_types,
-  epifields_helper, options_utils, math;
+  TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types,
+  options_utils, math;
 
 { TEpicurveChart }
 
@@ -56,14 +59,21 @@ end;
 procedure TEpicurveChart.doAddSeries(Freqs: freqArray);
 var
   TimeSeries: TBarSeries;
+  SeriesStyles: TChartStyles;
+  aStyle:TChartStyle;
+  aLegend: TChartLegendItems;
+  aColor:     TColor;
+  sColor:     array of TColor = (clRed, clBlue, clGreen, clYellow, clGray);
   i,j: Integer;
-  boxesOK: boolean;
+  Boxes: boolean;
   xLow: Double;
 begin
   TimeSeries := TBarSeries.Create(FChart);
+  SeriesStyles := TChartStyles.Create(FChart);
   FEpicurveSource := TListChartSource.Create(FChart);
+  aLegend := TChartLegendItems.Create;
   FEpicurveSource.YCount := FmaxCount;
-  boxesOK := length(Freqs[0]) = 1;
+  Boxes := length(Freqs[0]) = 1;
   xLow := FLabel[0];
   for i := 0 to length(Freqs) - 1 do
     begin
@@ -72,7 +82,7 @@ begin
           FEpicurveSource.Add(xLow, 0);
           xLow := xLow + 1;
         end;
-      if (boxesOK) then
+      if (Boxes) then
         FEpicurveSource.AddXYList(xLow, doBoxes(Freqs[i, 0]))
       else
         FEpicurveSource.AddXYList(xLow, Freqs[i]);
@@ -81,9 +91,27 @@ begin
   TimeSeries.Source := FEpicurveSource;
   TimeSeries.Stacked := true;
   TimeSeries.BarWidthPercent := 100;
-
   // Add series to the chart
   FChart.AddSeries(TimeSeries);
+  if (not Boxes) then
+    begin
+      for i := 0 to length(Freqs[0]) - 1 do
+        begin
+          aStyle := SeriesStyles.Add;
+          aStyle.Text := FByVarName + ' = ' + FCateg[i];
+          aStyle.Brush.Color:=sColor[i];;
+        end;
+      TimeSeries.Styles := SeriesStyles;
+      TimeSeries.Legend.Multiplicity:=lmStyle;
+      TimeSeries.Legend.GroupIndex  := 1;
+      aLegend.Add(TimeSeries.Legend);
+
+      FChart.Legend.Visible        := true;
+      FChart.Legend.UseSidebar     := true;
+      FChart.Legend.Frame.Visible  := false;
+      FChart.Legend.AddGroups(aLegend);
+      FChart.Legend.GroupTitles.Add(FByVarName);
+    end;
 end;
 
 function TEpicurveChart.Freq2Array(F: TFreqDataFile): freqArray;
@@ -103,23 +131,26 @@ end;
 
 function TEpicurveChart.Table2Array(T: TTwoWayTable): freqArray;
 var
-  i, j: Integer;
+  i, j, k: Integer;
 begin
   setLength(result, T.ColCount, T.RowCount);
-  setLength(FLabel, T.RowCount);
-  setLength(FCateg, T.ColCount);
+  setLength(FLabel, T.ColCount);
+  setLength(FCateg, T.RowCount);
   FMaxCount := 0;
   for i := 0 to T.ColCount - 1 do
     begin
-      FCateg[i] := T.ColVariable.AsString[i];
+      FMaxCount := Math.Max(FMaxCount, T.ColTotal[i]);
+      FLabel[i] := T.ColVariable.AsInteger[i];
+      k := FLabel[i];
       for j := 0 to T.RowCount - 1 do
         begin
-          result[i, j] := Float(T.Cell[i, j].N.ToDouble);
-          FMaxCount := Math.Max(FMaxCount, T.Cell[i, j].N);
+          result[i, j] := T.Cell[i, j].N.ToDouble;
         end;
       end;
   for j := 0 to T.RowCount - 1 do
-    FLabel[j] := T.RowVariable.AsInteger[j];
+    begin
+      FCateg[j] := T.RowVariable.AsString[j];
+    end;
 end;
 
 function TEpicurveChart.doBoxes(n: double): floatArray;
@@ -154,11 +185,10 @@ end;
 
 function TEpicurveChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 var
-  TimeSeries: TBarSeries;
   VarNames: TStrings;
   Titles: IChartTitleConfiguration;
   DataFile: TEpiDataFile;
-  XVar, ByVar: TEpiField;
+  XVar: TEpiField;
   ChartConfiguration: IChartConfiguration;
   VariableLabelType: TEpiGetVariableLabelType;
   T: TTables;
@@ -172,14 +202,14 @@ var
   WeightVarName: UTF8String;
   AllVariables: TStrings;
   Opt: TOption;
-  Boxes: array of EpiFloat;
-  i, ix, iy: Integer;
 begin
   FmaxCount := 0;
   // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
   AllVariables := VarNames;
   StratVariable := TStringList.Create;
+  FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
 
   // check for weight variable
   WeightVarName := '';
@@ -189,13 +219,13 @@ begin
       AllVariables.Add(WeightVarName);
     end;
 
-  // check for stratifying variable
+  {// check for stratifying variable
   if (Command.HasOption(['by'],Opt)) then
     begin
       VarNames.Add(Opt.Expr.AsIdent);
       AllVariables.Add(Opt.Expr.AsIdent);
     end;
-
+  }
   // Get the data and fields.
   DataFile := FExecutor.PrepareDatafile(AllVariables, AllVariables);
   XVar := Datafile.Fields.FieldByName[VarNames[0]];
@@ -209,7 +239,7 @@ begin
   // *** Stratification won't work with boxes ***
   // so revert to histogram
 
-  if (Command.HasOption('by')) then
+  if (Varnames.Count > 1) then
     begin
   // with stratification
   // Note: this does NOT call CalcTables with stratification
@@ -218,6 +248,7 @@ begin
                     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics);
         Freqs := Table2Array(EpicurveTable.UnstratifiedTable);
       T.Free;
+      FByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(FVariableLabelOutput);
     end
   else
     begin
@@ -234,7 +265,7 @@ begin
   ChartConfiguration := FChartFactory.NewChartConfiguration();
   VariableLabelType := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions, sovStatistics);
   Titles := ChartConfiguration.GetTitleConfiguration()
-    .SetTitle('Epidemic Curve for ' + XVar.GetVariableLabel(VariableLabelType))
+    .SetTitle('Count by ' + XVar.GetVariableLabel(VariableLabelType))
     .SetFootnote('')
     .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelType))
     .SetYAxisTitle('Count');
