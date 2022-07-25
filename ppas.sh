@@ -3,10 +3,6 @@ DoExitAsm ()
 { echo "An error occurred while assembling $1"; exit 1; }
 DoExitLink ()
 { echo "An error occurred while linking $1"; exit 1; }
-echo Assembling epicurve
-/Library/Developer/CommandLineTools/usr/bin/clang -c -o /Users/jamie/ed/analysis/target/units/x86_64-darwin/epicurve.o  -arch x86_64 -mmacosx-version-min=10.8 -x assembler /Users/jamie/ed/analysis/target/units/x86_64-darwin/epicurve.s
-if [ $? != 0 ]; then DoExitAsm epicurve; fi
-rm /Users/jamie/ed/analysis/target/units/x86_64-darwin/epicurve.s
 echo Assembling epidataanalysis
 /Library/Developer/CommandLineTools/usr/bin/clang -c -o /Users/jamie/ed/analysis/target/units/x86_64-darwin/epidataanalysis.o  -arch x86_64 -mmacosx-version-min=10.8 -x assembler /Users/jamie/ed/analysis/target/units/x86_64-darwin/epidataanalysis.s
 if [ $? != 0 ]; then DoExitAsm epidataanalysis; fi

@@ -24,7 +24,6 @@ type
     FValueLabelOutput:    TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
     FEpicurveSource: TListChartSource;
-    FxLow, FxHigh: Integer;
     FLabel: array of Integer;
     FCateg: array of UTF8String;
     FmaxCount: Integer;
@@ -62,9 +61,8 @@ var
   SeriesStyles: TChartStyles;
   aStyle:TChartStyle;
   aLegend: TChartLegendItems;
-  aColor:     TColor;
   sColor:     array of TColor = (clRed, clBlue, clGreen, clYellow, clGray);
-  i,j: Integer;
+  i: Integer;
   Boxes: boolean;
   xLow: Double;
 begin
@@ -131,7 +129,7 @@ end;
 
 function TEpicurveChart.Table2Array(T: TTwoWayTable): freqArray;
 var
-  i, j, k: Integer;
+  i, j: Integer;
 begin
   setLength(result, T.ColCount, T.RowCount);
   setLength(FLabel, T.ColCount);
@@ -141,7 +139,6 @@ begin
     begin
       FMaxCount := Math.Max(FMaxCount, T.ColTotal[i]);
       FLabel[i] := T.ColVariable.AsInteger[i];
-      k := FLabel[i];
       for j := 0 to T.RowCount - 1 do
         begin
           result[i, j] := T.Cell[i, j].N.ToDouble;
@@ -185,23 +182,23 @@ end;
 
 function TEpicurveChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 var
-  VarNames: TStrings;
-  Titles: IChartTitleConfiguration;
-  DataFile: TEpiDataFile;
-  XVar: TEpiField;
   ChartConfiguration: IChartConfiguration;
-  VariableLabelType: TEpiGetVariableLabelType;
-  T: TTables;
-  F: TFreqCommand;
-  Freqs: array of array of double;
-  Statistics: TTableStatistics;
-  TablesRefMap: TEpiReferenceMap;
-  EpicurveTable: TTwowayTables;
-  EpicurveFreq: TFreqDatafile;
-  StratVariable: TStringList;
-  WeightVarName: UTF8String;
-  AllVariables: TStrings;
-  Opt: TOption;
+  Titles:             IChartTitleConfiguration;
+  DataFile:           TEpiDataFile;
+  T:                  TTables;
+  Statistics:         TTableStatistics;
+  TablesRefMap:       TEpiReferenceMap;
+  EpicurveTable:      TTwowayTables;
+  F:                  TFreqCommand;
+  Freqs:              freqArray;
+  EpicurveFreq:       TFreqDatafile;
+  VarNames:           TStrings;
+  XVar:               TEpiField;
+  StratVariable:      TStringList;
+  WeightVarName:      UTF8String;
+  AllVariables:       TStrings;
+  Opt:                TOption;
+  VariableLabelType:  TEpiGetVariableLabelType;
 begin
   FmaxCount := 0;
   // Get Variable names
@@ -278,15 +275,18 @@ begin
   with FChart do
     begin
       BottomAxis.Marks.Source := FxAxisSource;
-      BottomAxis.Grid.Style := psClear;
-      LeftAxis.Grid.Style := psClear;
-      LeftAxis.Marks.Source := FyAxisSource;
-      Frame.Visible := false;
+      BottomAxis.Grid.Style   := psClear;
+      LeftAxis.Grid.Style     := psClear;
+      LeftAxis.Marks.Source   := FyAxisSource;
+      Frame.Visible           := false;
     end;
   // Create the command result
   Result := FChartFactory.NewGraphCommandResult();
   Result.AddChart(FChart, ChartConfiguration);
+  XVar := nil;
   AllVariables.Free;
+  Varnames.Free;
+  Datafile.Free;
 end;
 
 initialization
