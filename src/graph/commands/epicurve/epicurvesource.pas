@@ -5,78 +5,133 @@ unit epicurvesource;
 interface
 
 uses
-  Classes, SysUtils, TASources, TACustomSource, epidatafiles;
+  Classes, SysUtils, TASources, TACustomSource, epidatafiles, freq, tables, tables_types, outputcreator;
 
 type
-
+  floatArray = array of Double;
+  freqArray = array of array of Double;
   { TEpicurveSource }
 
   TEpicurveSource = class(TUserDefinedChartSource)
   private
-    FDatafile: TEpiDataFile;
-    FXVar: TEpiField;
-    FXVariableName: UTF8String;
-    FByVar: TEpiField;
-    FByVariableName: UTF8String;
+    FMsg: TOutputCreator;
+    FFreqs: freqArray;
+    FX0, FXn: Integer;
+    FMaxCount: Integer;
+    FBoxes: boolean;
     procedure GetDataItem(ASource: TUserDefinedChartSource; AIndex: Integer;
       var AItem: TChartDataItem);
-    procedure SetDatafile(AValue: TEpiDataFile);
-    procedure SetXVariableName(AValue: UTF8String);
-    procedure SetByVariableName(AValue: UTF8String);
+    function doBoxes(f: Double): floatArray;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    property Datafile: TEpiDataFile read FDatafile write SetDatafile;
-    property XVariableName: UTF8String read FXVariableName write SetXVariableName;
-    property ByVariableName: UTF8String read FByVariableName write SetByVariableName;
+    property test: freqArray read FFreqs;
+    property Msg: TOutputCreator write FMsg;
+    property X0: Integer read FX0;
+    property Xn: Integer read FXn;
+    property maxCount: Integer read FMaxCount;
+    property boxes: Boolean read FBoxes write FBoxes;
+    procedure FromFreq(F: TFreqDataFile);
+    procedure FromTable(T: TTwoWayTable);
   end;
 
 implementation
 
+uses
+  Math;
 { TEpicurveSource }
 
 procedure TEpicurveSource.GetDataItem(ASource: TUserDefinedChartSource;
   AIndex: Integer; var AItem: TChartDataItem);
 begin
-  AItem.X := FXVar.AsFloat[AIndex];
-  AItem.Y := FByVar.AsFloat[AIndex];
+  FMsg.DoInfoShort('Get ' + AIndex.ToString);
+  AItem.X := (FX0 + AIndex).ToDouble;
+  if (FBoxes) then
+    AItem.YList := doBoxes(FFreqs[AIndex, 0])
+  else
+    AItem.YList := FFreqs[AIndex];
 end;
 
-procedure TEpicurveSource.SetDatafile(AValue: TEpiDataFile);
+procedure TEpicurveSource.FromFreq(F: TFreqDataFile);
+var
+  i, index, k, l: Integer;
 begin
-  if FDatafile = AValue then Exit;
-  FDatafile := AValue;
-
-  PointsNumber := FDatafile.Size;
+  FmaxCount := 0;
+  FX0      := F.Categ.AsInteger[0];
+  FXn      := F.Categ.AsInteger[F.Size - 1];
+  setLength(FFreqs, FXn - FX0 + 1, 1);
+  index := 0;
+  for i := FX0 to FXn do
+    begin
+      k := F.Categ.AsInteger[index];
+      l := F.Count.AsInteger[index];
+      if (i < F.Categ.AsInteger[index]) then
+        begin
+          FFreqs[i - FX0, 0] := 0;
+        end
+      else
+        begin
+          FFreqs[i - FX0, 0] := F.Count.AsFloat[index];
+          FmaxCount := Math.Max(FmaxCount, F.Count.AsInteger[index]);
+          index += 1;
+        end;
+    end;
+  k := FXn - FX0 + 1;
+  PointsNumber := k;
+  YCount := FmaxCount;
+  FMsg.DoInfoShort('Points: ' +  k.ToString + ' YCount: ' + FmaxCount.ToString);
 end;
 
-procedure TEpicurveSource.SetXVariableName(AValue: UTF8String);
+procedure TEpicurveSource.FromTable(T: TTwoWayTable);
+var
+  i, j, k, l, index: Integer;
 begin
-  if FXVariableName=AValue then Exit;
-  FXVariableName:=AValue;
-
-  FXVar := FDatafile.Fields.FieldByName[FXVariableName];
+  FmaxCount := T.ColTotal[0];
+  FX0 := T.ColVariable.AsInteger[0];
+  FXn := T.ColVariable.AsInteger[T.ColCount - 1];
+  setLength(FFreqs, FXn - FX0 + 1, T.RowCount);
+  index := 0;
+  for i := FX0 to FXn do
+    begin
+      k := T.ColVariable.AsInteger[index];
+      l := T.ColTotal[index];
+      if (i < T.ColVariable.AsInteger[index]) then
+        for j := 0 to T.RowCount - 1 do
+          FFreqs[i - FX0, j] := 0
+      else
+        begin
+          FmaxCount := Math.Max(FmaxCount, T.ColTotal[index]);
+          for j := 0 to T.RowCount - 1 do
+            FFreqs[i - FX0, j] := T.Cell[index, j].N.ToDouble;
+          index += 1;
+        end;
+      end;
+  k := FXn - FX0 + 1;
+  PointsNumber := k;
+  YCount := FmaxCount;
+  FMsg.DoInfoShort('Points: ' +  k.ToString + ' YCount: ' + FmaxCount.ToString);
 end;
 
-procedure TEpicurveSource.SetByVariableName(AValue: UTF8String);
+function TEpicurveSource.doBoxes(f: Double): floatArray;
+var
+  i: Integer;
+  n: Integer;
 begin
-  if FByVariableName=AValue then Exit;
-  FByVariableName:=AValue;
-
-  FByVar := FDatafile.Fields.FieldByName[FByVariableName];
+  n := trunc(f);
+  setLength(result, n);
+  for i := 0 to n - 1 do
+    result[i] := 1.0;
 end;
 
 constructor TEpicurveSource.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   OnGetChartDataItem := @GetDataItem;
+  FBoxes := false;
 end;
 
 destructor TEpicurveSource.Destroy;
 begin
-  FXVar := nil;
-  FByVar := nil;
-  FreeAndNil(FDatafile);
   inherited Destroy;
 end;
 
