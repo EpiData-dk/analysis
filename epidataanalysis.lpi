@@ -293,7 +293,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="171">
+    <Units Count="172">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1015,6 +1015,10 @@
         <Filename Value="src/graph/commands/epicurve/epicurve.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit170>
+      <Unit171>
+        <Filename Value="src/graph/commands/epicurve/epicurvesource.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit171>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
