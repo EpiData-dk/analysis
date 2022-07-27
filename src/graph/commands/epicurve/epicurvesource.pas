@@ -8,25 +8,23 @@ uses
   Classes, SysUtils, TASources, TACustomSource, epidatafiles, freq, tables, tables_types, outputcreator;
 
 type
-  floatArray = array of Double;
   freqArray = array of array of Double;
   { TEpicurveSource }
 
   TEpicurveSource = class(TUserDefinedChartSource)
   private
-    FMsg: TOutputCreator;
+    FMsg: TOutputCreator; // for debug
     FFreqs: freqArray;
     FX0, FXn: Integer;
     FMaxCount: Integer;
     FBoxes: boolean;
     procedure GetDataItem(ASource: TUserDefinedChartSource; AIndex: Integer;
       var AItem: TChartDataItem);
-    function doBoxes(f: Double): floatArray;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     property test: freqArray read FFreqs;
-    property Msg: TOutputCreator write FMsg;
+    property Msg: TOutputCreator write FMsg; // for debug
     property X0: Integer read FX0;
     property Xn: Integer read FXn;
     property maxCount: Integer read FMaxCount;
@@ -43,18 +41,29 @@ uses
 
 procedure TEpicurveSource.GetDataItem(ASource: TUserDefinedChartSource;
   AIndex: Integer; var AItem: TChartDataItem);
+var
+  i: Integer;
 begin
-  FMsg.DoInfoShort('Get ' + AIndex.ToString);
   AItem.X := (FX0 + AIndex).ToDouble;
+  // NB: for barchart, must set individual Y values; do not use AItem.YList property!!
   if (FBoxes) then
-    AItem.YList := doBoxes(FFreqs[AIndex, 0])
+      for i := 0 to (trunc(FFreqs[AIndex, 0]) - 1) do
+        AItem.SetY(i, 1)
   else
-    AItem.YList := FFreqs[AIndex];
+    begin
+      if (YCount = 1) then
+        AItem.Y := FFreqs[AIndex,0]
+      else
+        begin
+          for i := 0 to length(FFreqs[AIndex]) - 1 do
+            AItem.SetY(i, FFreqs[AIndex, i]);
+        end;
+    end;
 end;
 
 procedure TEpicurveSource.FromFreq(F: TFreqDataFile);
 var
-  i, index, k, l: Integer;
+  i, index: Integer;
 begin
   FmaxCount := 0;
   FX0      := F.Categ.AsInteger[0];
@@ -63,8 +72,6 @@ begin
   index := 0;
   for i := FX0 to FXn do
     begin
-      k := F.Categ.AsInteger[index];
-      l := F.Count.AsInteger[index];
       if (i < F.Categ.AsInteger[index]) then
         begin
           FFreqs[i - FX0, 0] := 0;
@@ -76,15 +83,16 @@ begin
           index += 1;
         end;
     end;
-  k := FXn - FX0 + 1;
-  PointsNumber := k;
-  YCount := FmaxCount;
-  FMsg.DoInfoShort('Points: ' +  k.ToString + ' YCount: ' + FmaxCount.ToString);
+  PointsNumber := length(FFreqs);
+  if (FBoxes) then
+    YCount := FmaxCount
+  else
+    YCount := 1;
 end;
 
 procedure TEpicurveSource.FromTable(T: TTwoWayTable);
 var
-  i, j, k, l, index: Integer;
+  i, j, index: Integer;
 begin
   FmaxCount := T.ColTotal[0];
   FX0 := T.ColVariable.AsInteger[0];
@@ -93,8 +101,6 @@ begin
   index := 0;
   for i := FX0 to FXn do
     begin
-      k := T.ColVariable.AsInteger[index];
-      l := T.ColTotal[index];
       if (i < T.ColVariable.AsInteger[index]) then
         for j := 0 to T.RowCount - 1 do
           FFreqs[i - FX0, j] := 0
@@ -106,21 +112,8 @@ begin
           index += 1;
         end;
       end;
-  k := FXn - FX0 + 1;
-  PointsNumber := k;
-  YCount := FmaxCount;
-  FMsg.DoInfoShort('Points: ' +  k.ToString + ' YCount: ' + FmaxCount.ToString);
-end;
-
-function TEpicurveSource.doBoxes(f: Double): floatArray;
-var
-  i: Integer;
-  n: Integer;
-begin
-  n := trunc(f);
-  setLength(result, n);
-  for i := 0 to n - 1 do
-    result[i] := 1.0;
+  PointsNumber := length(FFreqs);
+  YCount := T.RowCount;
 end;
 
 constructor TEpicurveSource.Create(AOwner: TComponent);
