@@ -20,7 +20,7 @@ uses
   survival_contribution,
 
   // ONLY ADD GRAPH COMMANDS HERE (delete all other automatically added units).
-   scatter, survival, epicurve;
+   scatter, survival, epicurve, histogram;
 
 {$R *.res}
 
