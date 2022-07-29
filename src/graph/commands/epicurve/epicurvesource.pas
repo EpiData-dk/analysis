@@ -13,7 +13,6 @@ type
 
   TEpicurveSource = class(TUserDefinedChartSource)
   private
-    FMsg: TOutputCreator; // for debug
     FFreqs: freqArray;
     FX0, FXn: Integer;
     FMaxCount: Integer;
@@ -24,7 +23,6 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     property test: freqArray read FFreqs;
-    property Msg: TOutputCreator write FMsg; // for debug
     property X0: Integer read FX0;
     property Xn: Integer read FXn;
     property maxCount: Integer read FMaxCount;
@@ -47,8 +45,8 @@ begin
   AItem.X := (FX0 + AIndex).ToDouble;
   // NB: for barchart, must set individual Y values; do not use AItem.YList property!!
   if (FBoxes) then
-      for i := 0 to (trunc(FFreqs[AIndex, 0]) - 1) do
-        AItem.SetY(i, 1)
+    for i := 0 to (trunc(FFreqs[AIndex, 0]) - 1) do
+      AItem.SetY(i, 1)
   else
     begin
       if (YCount = 1) then
@@ -90,6 +88,11 @@ begin
     YCount := 1;
 end;
 
+// TODO: Jamie-use boxes option to make individual boxes
+//       requires vector of maxcount for strata
+//       then must fill in zeros for lower strata and colour them appropriately
+//       Must also create a dummy series for the legend; one point (FX0,0) for each stratum
+//       Colours for the dummy series need to match
 procedure TEpicurveSource.FromTable(T: TTwoWayTable);
 var
   i, j, index: Integer;
@@ -102,8 +105,8 @@ begin
   for i := FX0 to FXn do
     begin
       if (i < T.ColVariable.AsInteger[index]) then
-        for j := 0 to T.RowCount - 1 do
-          FFreqs[i - FX0, j] := 0
+//      // it is sufficient to set the first to zero
+        FFreqs[i - FX0, 0] := 0
       else
         begin
           FmaxCount := Math.Max(FmaxCount, T.ColTotal[index]);
