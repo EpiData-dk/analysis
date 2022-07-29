@@ -1,4 +1,4 @@
-unit epicurve;
+unit histogram;
 
 {$mode objfpc}{$H+}
 
@@ -13,9 +13,9 @@ type
 
   floatArray = array of Double;
   freqArray  = array of array of Double;
-  { TEpicurveChart }
+  { THistogramChart }
 
-  TEpicurveChart = class(TInterfacedObject, IChartCommand)
+  THistogramChart = class(TInterfacedObject, IChartCommand)
   private
     FChartFactory: IChartFactory;
     FChart: TChart;
@@ -38,9 +38,9 @@ uses
   TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types,
   options_utils, math;
 
-{ TEpicurveChart }
+{ THistogramChart }
 
-procedure TEpicurveChart.Init(ChartFactory: IChartFactory; Executor: TExecutor;
+procedure THistogramChart.Init(ChartFactory: IChartFactory; Executor: TExecutor;
   OutputCreator: TOutputCreator);
 begin
   FChartFactory := ChartFactory;
@@ -48,7 +48,7 @@ begin
   FOutputCreator := OutputCreator;
 end;
 
-procedure TEpicurveChart.doAddAxisScales(X0, Xn, Ymax: Integer);
+procedure THistogramChart.doAddAxisScales(X0, Xn, Ymax: Integer);
 var
   i: Integer;
   tick: Double;
@@ -68,7 +68,7 @@ begin
     end;
 end;
 
-function TEpicurveChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
+function THistogramChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 var
   {Charts}
   ChartConfiguration: IChartConfiguration;
@@ -83,9 +83,9 @@ var
   Statistics:         TTableStatistics;
   StratVariable:      TStringList;
   TablesRefMap:       TEpiReferenceMap;
-  TableData:      TTwowayTable;
+  TableData:          TTwowayTable;
   F:                  TFreqCommand;
-  FreqData:       TFreqDatafile;
+  FreqData:           TFreqDatafile;
   {command}
   VarNames:           TStrings;
   XVar:               TEpiField;
@@ -106,6 +106,11 @@ begin
 
   // check for weight variable
   WeightVarName := '';
+  if (Command.HasOption(['w'],Opt)) then
+    begin
+      WeightVarName := Opt.Expr.AsIdent;
+      AllVariables.Add(WeightVarName);
+    end;
   {// check for stratifying variable  For now, 2nd variable is for strata
   if (Command.HasOption(['by'],Opt)) then
     begin
@@ -141,7 +146,6 @@ begin
     begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
       FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
-      FHistogramSource.boxes := true;
       FHistogramSource.FromFreq(FreqData);
       F.Free;
     end;
@@ -203,6 +207,6 @@ begin
 end;
 
 initialization
-  RegisterChartCommand(stEpicurve, TEpicurveChart);
+  RegisterChartCommand(stHistogram, THistogramChart);
 
 end.
