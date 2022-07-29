@@ -24,9 +24,6 @@ type
     FValueLabelOutput:    TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
     FEpicurveSource: TEpicurveSource;
-    FLabel: array of Integer;
-    FCateg: array of UTF8String;
-    FmaxCount: Integer;
     FByVarName: UTF8String;
     FxAxisSource, FyAxisSource: TListChartSource;
     procedure doAddAxisScales(X0, Xn, Ymax: Integer);
@@ -73,6 +70,7 @@ end;
 
 function TEpicurveChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 var
+  {Charts}
   ChartConfiguration: IChartConfiguration;
   Titles:             IChartTitleConfiguration;
   DataFile:           TEpiDataFile;
@@ -80,29 +78,31 @@ var
   SeriesStyles:       TChartStyles;
   aStyle:             TChartStyle;
   sColor:             array of TColor = (clRed, clBlue, clGreen, clYellow, clGray);
+  {Frequencies}
   T:                  TTables;
   Statistics:         TTableStatistics;
+  StratVariable:      TStringList;
   TablesRefMap:       TEpiReferenceMap;
   EpicurveTable:      TTwowayTable;
   F:                  TFreqCommand;
-//  Freqs:              freqArray;
   EpicurveFreq:       TFreqDatafile;
+  {command}
   VarNames:           TStrings;
   XVar:               TEpiField;
-  StratVariable:      TStringList;
   WeightVarName:      UTF8String;
   AllVariables:       TStrings;
   Opt:                TOption;
-  VariableLabelType:  TEpiGetVariableLabelType;
-  i:                  Integer;
+
+  i,k:                  Integer;
+  s:string;
 begin
-  FmaxCount := 0;
-  // Get Variable names
-  VarNames := Command.VariableList.GetIdentsAsList;
-  AllVariables := VarNames;
-  StratVariable := TStringList.Create;
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+
+  // Get Variable names
+  VarNames := Command.VariableList.GetIdentsAsList;
+  AllVariables := Command.VariableList.GetIdentsAsList;
+  StratVariable := TStringList.Create;
 
   // check for weight variable
   WeightVarName := '';
@@ -111,7 +111,8 @@ begin
       WeightVarName := Opt.Expr.AsIdent;
       AllVariables.Add(WeightVarName);
     end;
-
+  k := AllVariables.Count;
+  s := AllVariables.Names[k-1];
   {// check for stratifying variable  For now, 2nd variable is for strata
   if (Command.HasOption(['by'],Opt)) then
     begin
@@ -123,12 +124,13 @@ begin
   DataFile := FExecutor.PrepareDatafile(AllVariables, AllVariables);
   XVar := Datafile.Fields.FieldByName[VarNames[0]];
 
+  for i := 0 to k-1 do
+    s:=Datafile.Fields.Field[i].Name;
   // Create the chart
   FChart := FChartFactory.NewChart();
   BarSeries := TBarSeries.Create(FChart);
   FEpicurveSource := TEpicurveSource.Create(FChart);
   FEpicurveSource.Reset;
-  FEpicurveSource.Msg := FOutputCreator;
 
 // add series for the time variable
 // method depends on stratification or not
@@ -162,7 +164,7 @@ begin
       for i := 0 to EpicurveTable.RowCount - 1 do
         begin
           aStyle := SeriesStyles.Add;
-          aStyle.Text := EpicurveTable.RowVariable.AsString[i];
+          aStyle.Text := EpicurveTable.RowVariable.GetValueLabelFormatted(i, FValueLabelOutput);
           aStyle.Brush.Color:=sColor[i];
         end;
       BarSeries.Styles := SeriesStyles;
@@ -175,15 +177,12 @@ begin
       FChart.Legend.GroupTitles.Add(FByVarName);
     end;
 
-  doAddAxisScales(FEpicurveSource.X0, FEpicurveSource.Xn, FEpicurveSource.maxCount);
-
   // Create the titles
   ChartConfiguration := FChartFactory.NewChartConfiguration();
-  VariableLabelType := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions, sovStatistics);
   Titles := ChartConfiguration.GetTitleConfiguration()
-    .SetTitle('Count by ' + XVar.GetVariableLabel(VariableLabelType))
+    .SetTitle('Count by ' + XVar.GetVariableLabel(FVariableLabelOutput))
     .SetFootnote('')
-    .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelType))
+    .SetXAxisTitle(XVar.GetVariableLabel(FVariableLabelOutput))
     .SetYAxisTitle('Count');
 
   ChartConfiguration.GetAxesConfiguration()
@@ -191,12 +190,16 @@ begin
     .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
   ChartConfiguration.GetAxesConfiguration()
     .GetYAxisConfiguration();
+  doAddAxisScales(FEpicurveSource.X0, FEpicurveSource.Xn, FEpicurveSource.maxCount);
+
   with FChart do
     begin
       BottomAxis.Marks.Source := FxAxisSource;
       BottomAxis.Grid.Style   := psClear;
+      BottomAxis.Margin       := 0;
       LeftAxis.Grid.Style     := psClear;
       LeftAxis.Marks.Source   := FyAxisSource;
+      LeftAxis.Margin         := 0;
       Frame.Visible           := false;
     end;
   // Create the command result
@@ -204,7 +207,6 @@ begin
   Result.AddChart(FChart, ChartConfiguration);
   XVar := nil;
   AllVariables.Free;
-//  Varnames.Free;
   Datafile.Free;
 end;
 
