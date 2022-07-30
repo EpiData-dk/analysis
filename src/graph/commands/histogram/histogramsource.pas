@@ -5,7 +5,7 @@ unit histogramsource;
 interface
 
 uses
-  Classes, SysUtils, TASources, TACustomSource, epidatafiles, freq, tables, tables_types, outputcreator;
+  Classes, SysUtils, TAGraph, TASources, TACustomSource, epidatafiles, freq, tables, tables_types, outputcreator;
 
 type
   freqArray = array of array of Double;
@@ -29,6 +29,7 @@ type
     property boxes: Boolean read FBoxes write FBoxes;
     procedure FromFreq(F: TFreqDataFile);
     procedure FromTable(T: TTwoWayTable);
+    function AddAxisScales(Chart: TChart): TListChartSource;
   end;
 
 implementation
@@ -117,6 +118,19 @@ begin
       end;
   PointsNumber := length(FFreqs);
   YCount := T.RowCount;
+end;
+
+function THistogramSource.AddAxisScales(Chart: TChart): TListChartSource;
+var
+  i: Integer;
+  tick: Double;
+begin
+  result := TListChartSource.Create(Chart);
+  for i := X0 to Xn do
+    begin
+      tick := i.ToDouble;
+      result.Add(tick, tick);
+    end;
 end;
 
 constructor THistogramSource.Create(AOwner: TComponent);
