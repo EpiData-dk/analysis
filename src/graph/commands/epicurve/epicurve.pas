@@ -25,8 +25,6 @@ type
     FVariableLabelOutput: TEpiGetVariableLabelType;
     FHistogramSource: THistogramSource;
     FByVarName: UTF8String;
-    FxAxisSource, FyAxisSource: TListChartSource;
-    procedure doAddAxisScales(X0, Xn, Ymax: Integer);
   public
     procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator);
     function Execute(Command: TCustomGraphCommand): IChartCommandResult;
@@ -46,26 +44,6 @@ begin
   FChartFactory := ChartFactory;
   FExecutor := Executor;
   FOutputCreator := OutputCreator;
-end;
-
-procedure TEpicurveChart.doAddAxisScales(X0, Xn, Ymax: Integer);
-var
-  i: Integer;
-  tick: Double;
-begin
-  FxAxisSource := TListChartSource.Create(FChart);
-  FyAxisSource := TListChartSource.Create(FChart);
-  for i := X0 to Xn do
-    begin
-      tick := i.ToDouble;
-      FxAxisSource.Add(tick, tick);
-    end;
-  tick := 0;
-  for i := 0 to (yMax div 5) do
-    begin
-      FyAxisSource.Add(tick, tick);
-      tick += 5;
-    end;
 end;
 
 function TEpicurveChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
@@ -182,15 +160,14 @@ begin
     .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
   ChartConfiguration.GetAxesConfiguration()
     .GetYAxisConfiguration();
-  doAddAxisScales(FHistogramSource.X0, FHistogramSource.Xn, FHistogramSource.maxCount);
+
 
   with FChart do
     begin
-      BottomAxis.Marks.Source := FxAxisSource;
+      BottomAxis.Marks.Source := FHistogramSource.AddAxisScales(FChart);
       BottomAxis.Grid.Style   := psClear;
       BottomAxis.Margin       := 0;
       LeftAxis.Grid.Style     := psClear;
-      LeftAxis.Marks.Source   := FyAxisSource;
       LeftAxis.Margin         := 0;
       Frame.Visible           := false;
     end;
