@@ -61,9 +61,9 @@ var
   Statistics:         TTableStatistics;
   StratVariable:      TStringList;
   TablesRefMap:       TEpiReferenceMap;
-  TableData:      TTwowayTable;
+  TableData:          TTwowayTable;
   F:                  TFreqCommand;
-  FreqData:       TFreqDatafile;
+  FreqData:           TFreqDatafile;
   {command}
   VarNames:           TStrings;
   XVar:               TEpiField;
@@ -71,8 +71,8 @@ var
   AllVariables:       TStrings;
   Opt:                TOption;
 
-  i,k:                  Integer;
-  s:string;
+  i,k:                Integer;
+  sTitle:             UTF8String;
 begin
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
@@ -82,20 +82,13 @@ begin
   AllVariables := Command.VariableList.GetIdentsAsList;
   StratVariable := TStringList.Create;
 
-  // check for weight variable
+  // weight variable not allowed for epicurve
   WeightVarName := '';
-  {// check for stratifying variable  For now, 2nd variable is for strata
-  if (Command.HasOption(['by'],Opt)) then
-    begin
-      VarNames.Add(Opt.Expr.AsIdent);
-      AllVariables.Add(Opt.Expr.AsIdent);
-    end;
-  }
+
   // Get the data and fields.
   DataFile := FExecutor.PrepareDatafile(AllVariables, AllVariables);
   XVar := Datafile.Fields.FieldByName[VarNames[0]];
 
-  for i := 0 to AllVariables.Count - 1 do
   // Create the chart
   FChart := FChartFactory.NewChart();
   BarSeries := TBarSeries.Create(FChart);
@@ -131,12 +124,16 @@ begin
   FChart.AddSeries(BarSeries);
   if (Varnames.Count > 1) then
     begin
+      k := 0;
       for i := 0 to TableData.RowCount - 1 do
         begin
           aStyle := SeriesStyles.Add;
           aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, FValueLabelOutput);
-          aStyle.Brush.Color:=sColor[i];
+          if (k = length(sColor)) then k := 0;     // if more strata than colours, recycle the colours
+          aStyle.Brush.Color:=sColor[k];
+          k += 1;
         end;
+
       BarSeries.Styles := SeriesStyles;
       BarSeries.Legend.Multiplicity:=lmStyle;
       BarSeries.Legend.GroupIndex  := 0;
@@ -148,9 +145,12 @@ begin
     end;
 
   // Create the titles
+  sTitle := 'Count by ' + XVar.GetVariableLabel(FVariableLabelOutput);
+  if (Varnames.Count > 1) then
+    sTitle += ' by ' + FByVarName;
   ChartConfiguration := FChartFactory.NewChartConfiguration();
   Titles := ChartConfiguration.GetTitleConfiguration()
-    .SetTitle('Count by ' + XVar.GetVariableLabel(FVariableLabelOutput))
+    .SetTitle(sTitle)
     .SetFootnote('')
     .SetXAxisTitle(XVar.GetVariableLabel(FVariableLabelOutput))
     .SetYAxisTitle('Count');
