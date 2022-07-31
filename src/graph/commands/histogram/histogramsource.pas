@@ -54,7 +54,7 @@ begin
         AItem.Y := FFreqs[AIndex,0]
       else
         begin
-          for i := 0 to length(FFreqs[AIndex]) - 1 do
+          for i := 0 to high(FFreqs[AIndex]) do
             AItem.SetY(i, FFreqs[AIndex, i]);
         end;
     end;
@@ -103,16 +103,16 @@ begin
   FXn := T.ColVariable.AsInteger[T.ColCount - 1];
   setLength(FFreqs, FXn - FX0 + 1, T.RowCount);
   index := 0;
-  for i := FX0 to FXn do
+  for i := 0 to high(FFreqs) do
     begin
-      if (i < T.ColVariable.AsInteger[index]) then
+      if (i < (T.ColVariable.AsInteger[index] - FX0)) then
 //      // it is sufficient to set the first to zero
-        FFreqs[i - FX0, 0] := 0
+        FFreqs[i, 0] := 0
       else
         begin
           FmaxCount := Math.Max(FmaxCount, T.ColTotal[index]);
           for j := 0 to T.RowCount - 1 do
-            FFreqs[i - FX0, j] := T.Cell[index, j].N.ToDouble;
+            FFreqs[i, j] := T.Cell[index, j].N.ToDouble;
           index += 1;
         end;
       end;
