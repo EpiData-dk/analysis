@@ -132,8 +132,6 @@ begin
 end;
 
 function TSurvivalStatDialogVariableModel.GenerateScript(): UTF8String;
-var
-  Field: TEpiField;
 begin
   result := FXVariable.Name;
 
