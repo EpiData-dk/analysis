@@ -5,7 +5,7 @@ unit histogramsource;
 interface
 
 uses
-  Classes, SysUtils, TAGraph, TASources, TACustomSource, epidatafiles, freq, tables, tables_types, outputcreator;
+  Classes, SysUtils, TAGraph, TASources, TACustomSource, epidatafiles, freq, tables, tables_types;
 
 type
   freqArray = array of array of Double;
@@ -143,6 +143,7 @@ end;
 destructor THistogramSource.Destroy;
 begin
   inherited Destroy;
+  FFreqs := nil;
 end;
 
 end.

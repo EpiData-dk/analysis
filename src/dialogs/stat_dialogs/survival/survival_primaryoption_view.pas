@@ -122,9 +122,6 @@ begin
 end;
 
 constructor TSurvivalStatPrimaryOptionsView.Create(TheOwner: TComponent);
-var
-  CheckBox: TCheckBox;
-  PrevControl: TControl;
 begin
   inherited Create(TheOwner);
 
@@ -215,8 +212,6 @@ begin
 end;
 
 procedure TSurvivalStatPrimaryOptionsView.ResetView();
-var
-  i: Integer;
 begin
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;

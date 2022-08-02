@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, chartcommandresult, executor, outputcreator, epifields_helper,
   ast, epidatafiles, epidatafilestypes, epicustombase, chartcommand, chartfactory, chartconfiguration,
-  TAGraph, TASources, TACustomSource, TALegend, tables_types, tables, freq, histogramsource;
+  TAGraph, TASources, TALegend, tables_types, tables, freq, histogramsource;
 
 type
 
@@ -34,7 +34,7 @@ implementation
 
 uses
   TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types,
-  options_utils, math;
+  options_utils;
 
 { THistogramChart }
 
@@ -55,7 +55,9 @@ var
   BarSeries:          TBarSeries;
   SeriesStyles:       TChartStyles;
   aStyle:             TChartStyle;
-  sColor:             array of TColor = (clRed, clBlue, clGreen, clYellow, clGray);
+  // for now, use default colours from classic analysis
+  // TODO: put in graph options
+  sColor:             array of TColor = (clBlue, clRed, clBlack, clGreen, clYellow, clWhite, clSkyBlue, clFuchsia, clGray, clAqua);
   {Frequencies}
   T:                  TTables;
   Statistics:         TTableStatistics;
