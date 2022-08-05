@@ -53,14 +53,14 @@ begin
     end
   else
     begin
-      if (YCount = 1) then
-        AItem.Y := FFreqs[AIndex,0]
-      else
-        begin
+//      if (YCount = 1) then
+//        AItem.Y := FFreqs[AIndex,0]
+//      else
+//        begin
           for i := 0 to high(FFreqs[AIndex]) do
             AItem.SetY(i, FFreqs[AIndex, i]);
         end;
-    end;
+//    end;
 end;
 
 procedure THistogramSource.FromFreq(F: TFreqDataFile);
@@ -71,16 +71,14 @@ begin
   FX0      := F.Categ.AsInteger[0];
   FXn      := F.Categ.AsInteger[F.Categ.Size - 1];
   setLength(FFreqs, FXn - FX0 + 1, 1);
-  // set zeros in all possible categories to ensure they are all represented
-  //for i := 0 to FXn - FX0 do
-  //  FFreqs[i] := [0];
-  // copy counts
+  // FFreqs[i] has [0] initially
+  // copy counts into elements
   for i := 0 to F.Categ.Size - 1 do
     begin
       FFreqs[F.Categ.AsInteger[i] - FX0, 0] := F.Count.AsFloat[i];
       FmaxCount := Math.Max(FmaxCount, F.Count.AsInteger[i]);
     end;
-  PointsNumber := FXn - FX0 + 1;
+  PointsNumber := length(FFreqs);
   if (FBoxes) then
     YCount := FmaxCount
   else
