@@ -53,6 +53,9 @@ var
   Titles:             IChartTitleConfiguration;
   DataFile:           TEpiDataFile;
   BarSeries:          TBarSeries;
+  DummySeries:        TBarSeries;
+  DummyStyles:        TChartStyles;
+  DummySource:        TListChartSource;
   SeriesStyles:       TChartStyles;
   aStyle:             TChartStyle;
   // for now, use default colours from classic analysis
@@ -72,7 +75,7 @@ var
   WeightVarName:      UTF8String;
   AllVariables:       TStrings;
 
-  i,k:                Integer;
+  i,j,k,l:            Integer;
   sTitle:             UTF8String;
 begin
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
@@ -105,6 +108,7 @@ begin
       T := TTables.Create(FExecutor, FOutputCreator);
       TableData  := T.CalcTables(Datafile, VarNames,
                     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics).UnstratifiedTable;
+      FHistogramSource.boxes := true;
       FHistogramSource.FromTable(TableData);
       T.Free;
       FByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(FVariableLabelOutput);
@@ -121,23 +125,49 @@ begin
   BarSeries.Source := FHistogramSource;
   BarSeries.Stacked := true;
   BarSeries.BarWidthPercent := 100;
+  BarSeries.ShowInLegend := false;
   SeriesStyles := TChartStyles.Create(FChart);
   FChart.AddSeries(BarSeries);
   if (Varnames.Count > 1) then
     begin
+      k := FHistogramSource.RowHeight[0];
+      l := FHistogramSource.RowHeight[1];
       k := 0;
+      l := 0;
       for i := 0 to TableData.RowCount - 1 do
         begin
-          aStyle := SeriesStyles.Add;
-          aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, FValueLabelOutput);
+          for j := l to l + FHistogramSource.RowHeight[i] - 1 do
+            begin
+              aStyle := SeriesStyles.Add;
+//              aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, FValueLabelOutput);
+              aStyle.Brush.Color:=sColor[k];
+            end;
           if (k = length(sColor)) then k := 0;     // if more strata than colours, recycle the colours
-          aStyle.Brush.Color:=sColor[k];
           k += 1;
+          l += FHistogramSource.RowHeight[i];
         end;
 
       BarSeries.Styles := SeriesStyles;
-      BarSeries.Legend.Multiplicity:=lmStyle;
-      BarSeries.Legend.GroupIndex  := 0;
+  // now set up dummy series for the legend only
+      DummySeries := TBarSeries.Create(FChart);
+      DummySource := TListChartSource.Create(FChart);
+      DummySeries.Source := DummySource;
+      DummySeries.Stacked := true;
+      DummyStyles := TChartStyles.Create(FChart);
+      k := 0;
+      for i := 0 to TableData.RowCount - 1 do
+        begin
+          DummySource.Add(FHistogramSource.X0.ToDouble + i, 0);
+          aStyle := DummyStyles.Add;
+          aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, FValueLabelOutput);
+          aStyle.Brush.Color:=sColor[k];
+          if (k = length(sColor)) then k := 0;
+          k += 1;
+        end;
+      FChart.AddSeries(DummySeries);
+      DummySeries.Styles := DummyStyles;
+      DummySeries.Legend.Multiplicity:=lmStyle;
+      DummySeries.Legend.GroupIndex  := 0;
 
       FChart.Legend.Visible        := true;
       FChart.Legend.UseSidebar     := true;
