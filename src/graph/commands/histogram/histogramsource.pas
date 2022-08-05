@@ -16,6 +16,7 @@ type
     FFreqs: freqArray;
     FX0, FXn: Integer;
     FMaxCount: Integer;
+    FRowMax: array of Integer;
     FBoxes: boolean;
     procedure GetDataItem(ASource: TUserDefinedChartSource; AIndex: Integer;
       var AItem: TChartDataItem);
@@ -46,8 +47,10 @@ begin
   AItem.X := (FX0 + AIndex).ToDouble;
   // NB: for barchart, must set individual Y values; do not use AItem.YList property!!
   if (FBoxes) then
-    for i := 0 to (trunc(FFreqs[AIndex, 0]) - 1) do
-      AItem.SetY(i, 1)
+    begin
+      for i := 0 to (trunc(FFreqs[AIndex, 0]) - 1) do
+        AItem.SetY(i, 1);
+    end
   else
     begin
       if (YCount = 1) then
@@ -66,23 +69,18 @@ var
 begin
   FmaxCount := 0;
   FX0      := F.Categ.AsInteger[0];
-  FXn      := F.Categ.AsInteger[F.Size - 1];
+  FXn      := F.Categ.AsInteger[F.Categ.Size - 1];
   setLength(FFreqs, FXn - FX0 + 1, 1);
-  index := 0;
-  for i := FX0 to FXn do
+  // set zeros in all possible categories to ensure they are all represented
+  //for i := 0 to FXn - FX0 do
+  //  FFreqs[i] := [0];
+  // copy counts
+  for i := 0 to F.Categ.Size - 1 do
     begin
-      if (i < F.Categ.AsInteger[index]) then
-        begin
-          FFreqs[i - FX0, 0] := 0;
-        end
-      else
-        begin
-          FFreqs[i - FX0, 0] := F.Count.AsFloat[index];
-          FmaxCount := Math.Max(FmaxCount, F.Count.AsInteger[index]);
-          index += 1;
-        end;
+      FFreqs[F.Categ.AsInteger[i] - FX0, 0] := F.Count.AsFloat[i];
+      FmaxCount := Math.Max(FmaxCount, F.Count.AsInteger[i]);
     end;
-  PointsNumber := length(FFreqs);
+  PointsNumber := FXn - FX0 + 1;
   if (FBoxes) then
     YCount := FmaxCount
   else
@@ -94,10 +92,23 @@ end;
 //       then must fill in zeros for lower strata and colour them appropriately
 //       Must also create a dummy series for the legend; one point (FX0,0) for each stratum
 //       Colours for the dummy series need to match
+// plan: get max count for each stratum (loop across T.Rows)
+//       set length of FFreqs to sum of maximum counts
+//       loop across freqs, filling in zeros for empty counts;
+//       for non-zero counts, loop across rows to fill with N ones and max-N zeros
 procedure THistogramSource.FromTable(T: TTwoWayTable);
 var
-  i, j, index: Integer;
+  i, j, col, index, row, strata: Integer;
 begin
+{  // get max counts (by row if boxes)
+  strata := T.RowCount;
+  setLength(FRowMax,strata);
+  for row := 0 to strata - 1 do
+    begin
+      FRowMax[row] := T.Cell[0, row];
+      for col := 1 to T.ColCount - 1 do
+         FRowMax := Math.Max(FRowMax, T.Cell[col, row];
+    end; }
   FmaxCount := T.ColTotal[0];
   FX0 := T.ColVariable.AsInteger[0];
   FXn := T.ColVariable.AsInteger[T.ColCount - 1];
