@@ -2,6 +2,8 @@ unit epicurve;
 
 {$mode objfpc}{$H+}
 
+// TODO: see histogram
+// TODO: allow option !nobox (equivalent to histogram, so just invoke it instead)
 interface
 
 uses
@@ -18,13 +20,8 @@ type
   TEpicurveChart = class(TInterfacedObject, IChartCommand)
   private
     FChartFactory: IChartFactory;
-    FChart: TChart;
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
-    FValueLabelOutput:    TEpiGetValueLabelType;
-    FVariableLabelOutput: TEpiGetVariableLabelType;
-    FHistogramSource: THistogramSource;
-    FByVarName: UTF8String;
   public
     procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator);
     function Execute(Command: TCustomGraphCommand): IChartCommandResult;
@@ -41,45 +38,51 @@ uses
 procedure TEpicurveChart.Init(ChartFactory: IChartFactory; Executor: TExecutor;
   OutputCreator: TOutputCreator);
 begin
-  FChartFactory := ChartFactory;
-  FExecutor := Executor;
+  FChartFactory  := ChartFactory;
+  FExecutor      := Executor;
   FOutputCreator := OutputCreator;
 end;
 
 function TEpicurveChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 var
-  {Charts}
-  ChartConfiguration: IChartConfiguration;
-  Titles:             IChartTitleConfiguration;
-  DataFile:           TEpiDataFile;
-  BarSeries:          TBarSeries;
-  DummySeries:        TBarSeries;
-  DummyStyles:        TChartStyles;
-  DummySource:        TListChartSource;
-  SeriesStyles:       TChartStyles;
-  aStyle:             TChartStyle;
+  {Chart}
+  FChart:              TChart;
+  ChartConfiguration:  IChartConfiguration;
+  Titles:              IChartTitleConfiguration;
+  DataFile:            TEpiDataFile;
+  BarSeries:           TBarSeries;
+  SeriesStyles:        TChartStyles;
+  HistogramSource:     THistogramSource;
+  LegendSeries:        TBarSeries;
+  LegendStyles:        TChartStyles;
+  LegendSource:        TListChartSource;
+  aStyle:              TChartStyle;
   // for now, use default colours from classic analysis
   // TODO: put in graph options
-  sColor:             array of TColor = (clBlue, clRed, clBlack, clGreen, clYellow, clWhite, clSkyBlue, clFuchsia, clGray, clAqua);
+  sColor:              array of TColor = (clBlue, clRed, clBlack, clGreen, clYellow, clWhite, clSkyBlue, clFuchsia, clGray, clAqua);
   {Frequencies}
-  T:                  TTables;
-  Statistics:         TTableStatistics;
-  StratVariable:      TStringList;
-  TablesRefMap:       TEpiReferenceMap;
-  TableData:          TTwowayTable;
-  F:                  TFreqCommand;
-  FreqData:           TFreqDatafile;
+  T:                   TTables;
+  Statistics:          TTableStatistics;
+  StratVariable:       TStringList;
+  TablesRefMap:        TEpiReferenceMap;
+  TableData:           TTwowayTable;
+  F:                   TFreqCommand;
+  FreqData:            TFreqDatafile;
   {command}
-  VarNames:           TStrings;
-  XVar:               TEpiField;
-  WeightVarName:      UTF8String;
-  AllVariables:       TStrings;
-
-  i,j,k,l:            Integer;
-  sTitle:             UTF8String;
+  VarNames:            TStrings;
+  XVar:                TEpiField;
+  WeightVarName:       UTF8String;
+  AllVariables:        TStrings;
+  {formatting}
+  ValueLabelOutput:    TEpiGetValueLabelType;
+  VariableLabelOutput: TEpiGetVariableLabelType;
+  ByVarName:           UTF8String;
+  box1, box, colour:   Integer;
+  i:                   Integer;
+  sTitle:              UTF8String;
 begin
-  FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
 
   // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
@@ -96,8 +99,8 @@ begin
   // Create the chart
   FChart := FChartFactory.NewChart();
   BarSeries := TBarSeries.Create(FChart);
-  FHistogramSource := THistogramSource.Create(FChart);
-  FHistogramSource.Reset;
+  HistogramSource := THistogramSource.Create(FChart);
+  HistogramSource.Reset;
 
 // add series for the time variable
 // method depends on stratification or not
@@ -108,82 +111,84 @@ begin
       T := TTables.Create(FExecutor, FOutputCreator);
       TableData  := T.CalcTables(Datafile, VarNames,
                     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics).UnstratifiedTable;
-      FHistogramSource.boxes := true;
-      FHistogramSource.FromTable(TableData);
+      HistogramSource.boxes := true;
+      HistogramSource.FromTable(TableData);
       T.Free;
-      FByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(FVariableLabelOutput);
+      ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
     end
   else
     begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
       FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
-      FHistogramSource.boxes := true;
-      FHistogramSource.FromFreq(FreqData);
+      HistogramSource.boxes := true;
+      HistogramSource.FromFreq(FreqData);
       F.Free;
     end;
 
-  BarSeries.Source := FHistogramSource;
+  SeriesStyles := TChartStyles.Create(FChart);
+  BarSeries.Source := HistogramSource;
   BarSeries.Stacked := true;
   BarSeries.BarWidthPercent := 100;
   BarSeries.ShowInLegend := false;
-  SeriesStyles := TChartStyles.Create(FChart);
+  BarSeries.Styles := SeriesStyles;
   FChart.AddSeries(BarSeries);
+
+  // for stratified graph, set colours and legend
   if (Varnames.Count > 1) then
     begin
-      k := FHistogramSource.RowHeight[0];
-      l := FHistogramSource.RowHeight[1];
-      k := 0;
-      l := 0;
+      // set up Legend series
+      LegendSource := TListChartSource.Create(FChart);
+      LegendSeries := TBarSeries.Create(FChart);
+      LegendSeries.Source := LegendSource;
+      LegendStyles := TChartStyles.Create(FChart);
+      FChart.AddSeries(LegendSeries);
+
+      colour := 0;
+      box1 := 0;
       for i := 0 to TableData.RowCount - 1 do
         begin
-          for j := l to l + FHistogramSource.RowHeight[i] - 1 do
+          // individual box styles
+          for box := box1 to box1 + HistogramSource.RowHeight[i] - 1 do
             begin
               aStyle := SeriesStyles.Add;
-//              aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, FValueLabelOutput);
-              aStyle.Brush.Color:=sColor[k];
+              aStyle.Brush.Color:=sColor[colour];
+              aStyle.Pen.Color := clSilver;     // will work with any box colours
             end;
-          if (k = length(sColor)) then k := 0;     // if more strata than colours, recycle the colours
-          k += 1;
-          l += FHistogramSource.RowHeight[i];
+          LegendSource.Add(HistogramSource.X0.ToDouble + i, 0);
+          aStyle := LegendStyles.Add;
+          aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
+          aStyle.Brush.Color:=sColor[colour];
+          if (colour = length(sColor)) then colour := 0;     // if more strata than colours, recycle the colours
+          colour += 1;
+          box1 += HistogramSource.RowHeight[i];
         end;
 
-      BarSeries.Styles := SeriesStyles;
-  // now set up dummy series for the legend only
-      DummySeries := TBarSeries.Create(FChart);
-      DummySource := TListChartSource.Create(FChart);
-      DummySeries.Source := DummySource;
-      DummySeries.Stacked := true;
-      DummyStyles := TChartStyles.Create(FChart);
-      k := 0;
-      for i := 0 to TableData.RowCount - 1 do
-        begin
-          DummySource.Add(FHistogramSource.X0.ToDouble + i, 0);
-          aStyle := DummyStyles.Add;
-          aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, FValueLabelOutput);
-          aStyle.Brush.Color:=sColor[k];
-          if (k = length(sColor)) then k := 0;
-          k += 1;
-        end;
-      FChart.AddSeries(DummySeries);
-      DummySeries.Styles := DummyStyles;
-      DummySeries.Legend.Multiplicity:=lmStyle;
-      DummySeries.Legend.GroupIndex  := 0;
+      LegendSeries.Stacked := true;
+      LegendSeries.Styles := LegendStyles;
+      LegendSeries.Legend.Multiplicity:=lmStyle;
+      LegendSeries.Legend.GroupIndex  := 0;
 
       FChart.Legend.Visible        := true;
       FChart.Legend.UseSidebar     := true;
       FChart.Legend.Frame.Visible  := false;
-      FChart.Legend.GroupTitles.Add(FByVarName);
+      FChart.Legend.GroupTitles.Add(ByVarName);
+    end  // stratified
+  else
+    begin
+      aStyle := SeriesStyles.Add;
+      aStyle.Brush.Color := sColor[0];
+      aStyle.Pen.Color := clSilver;
     end;
 
   // Create the titles
-  sTitle := 'Count by ' + XVar.GetVariableLabel(FVariableLabelOutput);
+  sTitle := 'Count by ' + XVar.GetVariableLabel(VariableLabelOutput);
   if (Varnames.Count > 1) then
-    sTitle += ' by ' + FByVarName;
+    sTitle += ' by ' + ByVarName;
   ChartConfiguration := FChartFactory.NewChartConfiguration();
   Titles := ChartConfiguration.GetTitleConfiguration()
     .SetTitle(sTitle)
     .SetFootnote('')
-    .SetXAxisTitle(XVar.GetVariableLabel(FVariableLabelOutput))
+    .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
     .SetYAxisTitle('Count');
 
   ChartConfiguration.GetAxesConfiguration()
@@ -195,7 +200,7 @@ begin
 
   with FChart do
     begin
-      BottomAxis.Marks.Source := FHistogramSource.AddAxisScales(FChart);
+      BottomAxis.Marks.Source := HistogramSource.AddAxisScales(FChart);
       BottomAxis.Grid.Style   := psClear;
       BottomAxis.Margin       := 0;
       LeftAxis.Grid.Style     := psClear;
