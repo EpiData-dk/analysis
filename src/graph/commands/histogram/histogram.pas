@@ -73,8 +73,9 @@ var
 
   ValueLabelOutput:    TEpiGetValueLabelType;
   VariableLabelOutput: TEpiGetVariableLabelType;
+  ReverseStrata:       Boolean;
   ByVarName:           UTF8String;
-  i, colour:                 Integer;
+  i, colour:           Integer;
   sTitle:              UTF8String;
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
@@ -84,6 +85,13 @@ begin
   VarNames := Command.VariableList.GetIdentsAsList;
   AllVariables := Command.VariableList.GetIdentsAsList;
   StratVariable := TStringList.Create;
+  ReverseStrata := Command.HasOption('sd', Opt);
+  if (ReverseStrata) then
+    begin
+      Command.Options.Remove(Opt); // don't pass this to TABLES!
+      if (Varnames.Count = 1) then
+        FOutputCreator.DoInfoShort('!sd ignored with a single variable');
+    end;
 
   // check for weight variable
   WeightVarName := '';
@@ -112,6 +120,8 @@ begin
       T := TTables.Create(FExecutor, FOutputCreator);
       TableData  := T.CalcTables(Datafile, VarNames,
                     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics).UnstratifiedTable;
+      if (ReverseStrata) then
+        TableData.SortByRowLabel(true);
       HistogramSource.FromTable(TableData);
       T.Free;
       ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
@@ -149,6 +159,12 @@ begin
       Chart.Legend.UseSidebar     := true;
       Chart.Legend.Frame.Visible  := false;
       Chart.Legend.GroupTitles.Add(ByVarName);
+    end  // stratified
+  else
+    begin
+      aStyle := SeriesStyles.Add;
+      aStyle.Brush.Color := sColor[0];
+      aStyle.Pen.Color := clSilver;
     end;
 
   // Create the titles
