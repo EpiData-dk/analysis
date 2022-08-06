@@ -133,10 +133,10 @@ begin
     end
   else
     begin
-      for i := 0 to Fstrata - 1 do
+      for row := 0 to Fstrata - 1 do
         begin
-        FRowStart[i] := i;
-        FRowEnd[i] := i
+          FRowStart[row] := i;
+          FRowEnd[row] := i
         end;
       FmaxCount := T.RowCount;
     end;

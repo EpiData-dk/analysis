@@ -2488,7 +2488,7 @@ begin
   Result := inherited GetAcceptedOptions;
   AddVariableLabelOptions(Result);
   AddValueLabelOptions(Result);
-//  Result.Insert('by',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
 end;
 
 function TEpicurveCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2521,7 +2521,7 @@ begin
   Result := inherited GetAcceptedOptions;
   AddVariableLabelOptions(Result);
   AddValueLabelOptions(Result);
-//  Result.Insert('by',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
 end;
 
