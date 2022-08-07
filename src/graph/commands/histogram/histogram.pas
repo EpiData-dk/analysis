@@ -80,7 +80,6 @@ var
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-
   // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
   AllVariables := Command.VariableList.GetIdentsAsList;
@@ -110,6 +109,8 @@ begin
   BarSeries := TBarSeries.Create(Chart);
   HistogramSource := THistogramSource.Create(Chart);
   HistogramSource.Reset;
+  // was histogram invoked by epicurve command?
+  HistogramSource.boxes := Command.StatementType = stEpicurve;
 
 // add series for the time variable
 // method depends on stratification or not
