@@ -2,8 +2,6 @@ unit epicurve;
 
 {$mode objfpc}{$H+}
 
-// TODO: see histogram
-// TODO: allow option !nobox (equivalent to histogram, so just invoke it instead)
 interface
 
 uses
@@ -107,8 +105,8 @@ begin
   // Create the chart
   FChart := FChartFactory.NewChart();
   BarSeries := TBarSeries.Create(FChart);
-  HistogramSource := THistogramSource.Create(FChart);
-  HistogramSource.Reset;
+//***  HistogramSource := THistogramSource.Create(FChart);
+//***  HistogramSource.Reset;
 
 // add series for the time variable
 // method depends on stratification or not
@@ -121,8 +119,8 @@ begin
                     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics).UnstratifiedTable;
       if (ReverseStrata) then
         TableData.SortByRowLabel(true);
-      HistogramSource.boxes := true;
-      HistogramSource.FromTable(TableData);
+//***      HistogramSource.boxes := true;
+//***      HistogramSource.FromTable(TableData);
       T.Free;
       ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
     end
@@ -130,8 +128,8 @@ begin
     begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
       FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
-      HistogramSource.boxes := true;
-      HistogramSource.FromFreq(FreqData);
+//***      HistogramSource.boxes := true;
+//***      HistogramSource.FromFreq(FreqData);
       F.Free;
     end;
 
@@ -142,7 +140,7 @@ begin
   BarSeries.ShowInLegend := false;
   BarSeries.Styles := SeriesStyles;
   FChart.AddSeries(BarSeries);
-
+  {
   // for stratified graph, set colours and legend
   if (Varnames.Count > 1) then
     begin
@@ -189,7 +187,7 @@ begin
       aStyle.Brush.Color := sColor[0];
       aStyle.Pen.Color := clSilver;
     end;
-
+  }
   // Create the titles
   sTitle := 'Count by ' + XVar.GetVariableLabel(VariableLabelOutput);
   if (Varnames.Count > 1) then

@@ -292,7 +292,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="174">
+    <Units Count="175">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1026,6 +1026,10 @@
         <Filename Value="src/graph/commands/histogram/histogramsource.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit173>
+      <Unit174>
+        <Filename Value="src/graph/commands/histogram/histogramdata.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit174>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
