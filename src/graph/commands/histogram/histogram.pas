@@ -8,7 +8,7 @@ interface
 uses
   Classes, SysUtils, chartcommandresult, executor, outputcreator, epifields_helper,
   ast, epidatafiles, epidatafilestypes, epicustombase, chartcommand, chartfactory, chartconfiguration,
-  TAGraph, TASources, TALegend, tables_types, tables, freq, histogramsource;
+  TAGraph, TASources, TALegend, tables_types, tables, freq, histogramsource, histogramdata;
 
 type
 
@@ -29,7 +29,7 @@ type
 implementation
 
 uses
-  TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types,
+  TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types, math,
   options_utils;
 
 { THistogramChart }
@@ -50,6 +50,7 @@ var
   Titles:              IChartTitleConfiguration;
   DataFile:            TEpiDataFile;
   HistogramSource:     THistogramSource;
+  HistogramData:       THistogram;
   BarSeries:           TBarSeries;
   SeriesStyles:        TChartStyles;
   aStyle:              TChartStyle;
@@ -108,8 +109,7 @@ begin
   // Create the chart
   Chart := FChartFactory.NewChart();
   BarSeries := TBarSeries.Create(Chart);
-  HistogramSource := THistogramSource.Create(Chart);
-  HistogramSource.Reset;
+  HistogramData := THistogram.Create(FExecutor, Command);  //***
 
 // add series for the time variable
 // method depends on stratification or not
@@ -122,7 +122,7 @@ begin
                     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics).UnstratifiedTable;
       if (ReverseStrata) then
         TableData.SortByRowLabel(true);
-      HistogramSource.FromTable(TableData);
+      HistogramData.Fill(TableData);  //***
       T.Free;
       ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
     end
@@ -130,10 +130,11 @@ begin
     begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
       FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
-      HistogramSource.FromFreq(FreqData);
+
+      HistogramData.Fill(FreqData);   //***
       F.Free;
     end;
-
+  HistogramSource := THistogramSource.Create(Chart, HistogramData, FOutputCreator);   // ***
   BarSeries.Source := HistogramSource;
   BarSeries.Stacked := true;
   BarSeries.BarWidthPercent := 100;
@@ -186,7 +187,7 @@ begin
 
   with Chart do
     begin
-      BottomAxis.Marks.Source := HistogramSource.AddAxisScales(Chart);;
+      BottomAxis.Marks.Source := HistogramSource.AddAxisScales(Chart);
       BottomAxis.Grid.Style   := psClear;
       BottomAxis.Margin       := 0;
       LeftAxis.Grid.Style     := psClear;
