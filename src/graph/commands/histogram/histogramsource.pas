@@ -14,12 +14,13 @@ type
   THistogramSource = class(TUserDefinedChartSource)
   private
     FHistogram: THistogram;
-    FOutputCreator: TOutputCreator;
+    procedure setHistogram(AValue: THistogram);
   public
-    constructor Create(AOwner: TComponent; AHistogram: THistogram; OutputCreator: TOutputCreator); //override;
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    property Histogram: THistogram read FHistogram write setHistogram;
     procedure GetDataItem(ASource: TUserDefinedChartSource;
-  AIndex: Integer; var AItem: TChartDataItem);
+              AIndex: Integer; var AItem: TChartDataItem);
     function AddAxisScales(Chart: TChart): TListChartSource;
   end;
 
@@ -31,13 +32,12 @@ procedure THistogramSource.GetDataItem(ASource: TUserDefinedChartSource;
   AIndex: Integer; var AItem: TChartDataItem);
 var
   i: Integer;
-  s: array of Double;
+  s: array of Integer;
 begin
-  AItem.X := FHistogram.SlotValue[AIndex];
-  s := FHistogram.Slot[Aindex];
+  AItem.X := FHistogram.XValue[AIndex].ToDouble;
+  s := FHistogram.SlotCounts[Aindex];
   for i := 0 to high(s) do
-    AItem.SetY(i, s[i]);
-  FOutputCreator.DoInfoShort('Index: ' + AIndex.ToString + ' X: ' + FHistogram.SlotValue[AIndex].ToString + ' s: ' + s[0].ToString + ', ' + s[1].ToString);
+    AItem.SetY(i, s[i].ToDouble);
 end;
 
 function THistogramSource.AddAxisScales(Chart: TChart): TListChartSource;
@@ -46,21 +46,25 @@ var
   tick: Double;
 begin
   result := TListChartSource.Create(Chart);
-  for i := FHistogram.Base to FHistogram.Base + FHistogram.Count - 1 do
+  for i := 0 to FHistogram.Count - 1 do
     begin
-      tick := i.ToDouble;
+      tick := FHistogram.XValue[i];
       result.Add(tick, tick);
     end;
 end;
 
-constructor THistogramSource.Create(AOwner: TComponent; AHistogram: THistogram; OutputCreator: TOutputCreator);
+constructor THistogramSource.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   OnGetChartDataItem := @GetDataItem;
-  FOutputCreator := OutputCreator;
-  if (AHistogram = FHistogram) then
-    exit;
-  FHistogram := AHistogram;
+end;
+
+procedure THistogramSource.setHistogram(AValue: THistogram);
+begin
+  if (AValue = FHistogram) then exit;
+  FHistogram := AValue;
+  PointsNumber := FHistogram.Count;
+  YCount := FHistogram.Strata;
 end;
 
 destructor THistogramSource.Destroy;

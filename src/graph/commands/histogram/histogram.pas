@@ -2,18 +2,15 @@ unit histogram;
 
 {$mode objfpc}{$H+}
 
-// TODO: allow !scd command to reverse order of strata; would prefer to shorten to !sd
 interface
 
 uses
   Classes, SysUtils, chartcommandresult, executor, outputcreator, epifields_helper,
   ast, epidatafiles, epidatafilestypes, epicustombase, chartcommand, chartfactory, chartconfiguration,
-  TAGraph, TASources, TALegend, tables_types, tables, freq, histogramsource, histogramdata;
+  TAGraph, TALegend, tables_types, tables, freq, histogramsource, histogramdata;
 
 type
 
-  floatArray = array of Double;
-  freqArray  = array of array of Double;
   { THistogramChart }
 
   THistogramChart = class(TInterfacedObject, IChartCommand)
@@ -29,7 +26,7 @@ type
 implementation
 
 uses
-  TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types, math,
+  TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types,
   options_utils;
 
 { THistogramChart }
@@ -78,6 +75,7 @@ var
   ByVarName:           UTF8String;
   i, colour:           Integer;
   sTitle:              UTF8String;
+
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
@@ -108,8 +106,7 @@ begin
 
   // Create the chart
   Chart := FChartFactory.NewChart();
-  BarSeries := TBarSeries.Create(Chart);
-  HistogramData := THistogram.Create(FExecutor, Command);  //***
+  HistogramData := THistogram.Create(FExecutor, Command);
 
 // add series for the time variable
 // method depends on stratification or not
@@ -122,7 +119,7 @@ begin
                     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics).UnstratifiedTable;
       if (ReverseStrata) then
         TableData.SortByRowLabel(true);
-      HistogramData.Fill(TableData);  //***
+      HistogramData.Fill(TableData);
       T.Free;
       ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
     end
@@ -131,15 +128,17 @@ begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
       FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
 
-      HistogramData.Fill(FreqData);   //***
+      HistogramData.Fill(FreqData);
       F.Free;
     end;
-  HistogramSource := THistogramSource.Create(Chart, HistogramData, FOutputCreator);   // ***
+
+  HistogramSource := THistogramSource.Create(Chart);
+  HistogramSource.Histogram := HistogramData;
+  BarSeries := TBarSeries.Create(Chart);
   BarSeries.Source := HistogramSource;
   BarSeries.Stacked := true;
   BarSeries.BarWidthPercent := 100;
   SeriesStyles := TChartStyles.Create(Chart);
-  Chart.AddSeries(BarSeries);
   if (Varnames.Count > 1) then
     begin
       colour := 0;
@@ -167,6 +166,8 @@ begin
       aStyle.Brush.Color := sColor[0];
       aStyle.Pen.Color := clSilver;
     end;
+
+  Chart.AddSeries(BarSeries);
 
   // Create the titles
   sTitle := 'Count by ' + XVar.GetVariableLabel(VariableLabelOutput);

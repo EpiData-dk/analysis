@@ -11,14 +11,7 @@ uses
 
 type
 
-  countArray = array of Double;
-  bin        = record
-    name:      UTF8String;
-    count:     integer;
-    max:       integer;
-    n:         countArray;
-  end;
-  bins       = array of bin;
+  countArray = array of Integer;
 
   { THistogram }
 
@@ -27,30 +20,37 @@ type
       FExecutor: TExecutor;
       FOutputCreator: TOutputCreator;
       FValueLabelOutput: TEpiGetValueLabelType;
-      FBins:    bins;
+      FBins:    array of countArray;
       FBase:    integer;   // lowest x value
-      FCount:   Integer;   // highest x - lowest x + 1
+      FXMax:    integer;   // highest x value
+      FCount:   Integer;   // (highest x - lowest x)/interval + 1
       FStrata:  Integer;
-      FSlotValue: countArray;
-      FSlotMap: array of Integer;
-      function getIndex(i: Integer): Integer;
-      function getSlot(i: Integer):  countArray;
-      function getSlotValue(i: Integer): Double;
-      function getName(i: Integer): UTF8String;
-      function getMax(i: Integer):   Integer;
-      procedure initSlotMap;
+      FStrataName: array of UTF8String;
+      FXValue: countArray;
+      FMaxCounts: array of Integer;
+      FInterval: Integer;
+      function getSlotCounts(index: Integer):  countArray;
+      function getMaxCount(stratum: Integer): Integer;
+      function getXValue(index: Integer): Integer;
+      function getName(index: Integer): UTF8String;
+      function getInterval(): Integer;
+      procedure setInterval(i : Integer);
+      procedure initBins;
+      procedure initXValues;
     public
       constructor Create(Executor: TExecutor; Command: TCustomGraphCommand);
       destructor Destroy; override;
-      property Base:              Integer read FBase;
-      property Strata:            Integer read FStrata;
-      property Count:             Integer read FCount;
-      property Slot[i: Integer]:  countArray read getSlot;
-      property SlotValue[i: Integer]: Double read getSlotValue;
-      property Name[i: Integer]: UTF8String read getName;
-      property Max[i: Integer]:   Integer read getMax;
+      property Base:     Integer read FBase write FBase;
+      property Interval: Integer read getInterval write setInterval;
+      property Strata:   Integer read FStrata;
+      property Count:    Integer read FCount;
+      property SlotCounts[index: Integer]: countArray read getSlotCounts;
+      property XValue[index: Integer]:     Integer read getXValue;
+      property Name[index: Integer]:       UTF8String read getName;
+      property MaxCount[stratum: Integer]: Integer read getMaxCount;
       procedure Fill(F: TFreqDataFile);
       procedure Fill(T: TTwoWayTable);
+      procedure HistogramToEpicurve;
   end;
 
 implementation
@@ -69,131 +69,171 @@ begin
   FValueLabelOutput := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FBase := 0;
   FCount := 0;
+  FInterval := 1;
 end;
 
-function THistogram.getIndex(i: Integer): Integer;
+procedure THistogram.initBins;
+var
+  i, j: Integer;
 begin
-  if (i < 0) or (i >= FCount) then
-    result := -1
-  else
-    result := FSlotMap[i];
+  for i := low(FBins) to high(FBins) do
+    for j := low(FBins[0]) to high(FBins[0]) do
+      FBins[i,j] := 0;
 end;
 
-procedure THistogram.initSlotMap;
+procedure THistogram.initXValues;
 var
   i: Integer;
 begin
-  for i := low(FSlotMap) to high(FSlotMap) do
-    FSlotMap[i] := -1;
+  for i := 0 to high(FXvalue) do
+    FXValue[i] :=  (FBase + i) div FInterval;
 end;
 
-function THistogram.getSlot(i: Integer): countArray;
-var
-  stratum, index: Integer;
-  aSlot: array of double;
+function THistogram.getSlotCounts(index: Integer): countArray;
 begin
-  index := getIndex(i);
   if (index < 0) then
     result := [0]
   else
     begin
       setLength(result, FStrata);
-      for stratum := 0 to FStrata - 1 do
-        result[stratum] := FBins[stratum].N[index];
+      result := FBins[index];
     end;
 end;
 
-function THistogram.getSlotValue(i: Integer): Double;
-var
-  index: Integer;
+function THistogram.getXValue(index: Integer): Integer;
 begin
-  index := getIndex(i);
   if (index < 0) then
     result := 0
   else
-    result := FSlotValue[index];
+    result := FXValue[index];
 end;
 
-function THistogram.getName(i: Integer): UTF8String;
-var
-  index: Integer;
+function THistogram.getName(index: Integer): UTF8String;
 begin
-  index := getIndex(i);
   if (index < 0) then
     result := ''
   else
-    result := FBins[index].name;
+    result := FStrataName[index];
 end;
 
-function THistogram.getMax(i: Integer): Integer;
-var
-  index: Integer;
+function THistogram.getMaxCount(stratum: Integer): Integer;
 begin
-  index := getIndex(i);
-  if (index < 0) then
-    result := 0
-  else
-    result := FBins[index].max;
+  result := FMaxCounts[stratum];
+end;
+
+function THistogram.getInterval(): Integer;
+begin
+  result := FInterval;
+end;
+
+procedure THistogram.SetInterval(i: Integer);
+begin
+  if (i < 0) or (i > (FXMax - FBase)) then
+    exit; // error - interval is too wide
+  if (FCount > 0) then
+    exit; // error - must set interval before filling slots
+  FInterval := i;
 end;
 
 procedure THistogram.Fill(F: TFreqDataFile);
 var
   i, n: Integer;
+  xMin, xMax: Double;
+  slot: Integer;
 begin
   Fstrata   := 1;
   FBase     := F.Categ.AsInteger[0];
-  FCount    := F.Categ.AsInteger[F.Categ.Size - 1] - FBase + 1;
-  setLength(FBins, 1);
-  setLength(FSlotMap, FCount);
-  initSlotMap;
+  FXMax     := F.Categ.AsInteger[F.Categ.Size - 1];
+  xMin      := FBase.ToDouble;
+  xMax      := FXMax.ToDouble;
+  FCount    := round((xMax - xMin) / FInterval) + 1;
+  setLength(FStrataName, 1);
+  setLength(FBins, FCount, 1);
+  initBins;
+  setLength(FXValue, FCount);
+  initXValues;
+  setLength(FMaxCounts, 1);
 
-  // set up Bin[0] information and slotMap
-  FBins[0].name := '';
-  n := 0;
-  setLength(FBins[0].N, F.Categ.Size);
-  setLength(FSlotValue, F.Categ.Size);
+  // set up Bins[*,0] information and slotMap
+  setLength(FStrataName, 1);
+  FStrataName[0] := '';
+//  n := 0;
   for i := 0 to F.Categ.Size - 1 do
     begin
-      n := Math.Max(n, F.Count.AsInteger[i]);
-      FBins[0].N[i] := F.Count.AsFloat[i];
-      FSlotValue[i] := F.Categ.AsFloat[i];
-      FSlotMap[F.Categ.AsInteger[i] - FBase] := i;
+      slot := round((F.Categ.AsInteger[i] - FBase).ToDouble / FInterval);
+      FBins[slot, 0] += F.Count[i];
     end;
-  FBins[0].Max := n;
+// get max height of slots
+  n := 0;
+  for i := 0 to high (FBins) do
+    n := Math.Max(n, FBins[i,0]);
+  FMaxCounts[0] := n;
 end;
 
 procedure THistogram.Fill(T: TTwoWayTable);
 var
-  i, col, row, n: Integer;
+  i, col, stratum, n, slot: Integer;
+  xmin, xmax: Double;
 begin
-  Fstrata := T.RowCount;
-  setLength(FBins, Fstrata);
   FBase := T.ColVariable.AsInteger[0];
-  FCount := T.ColVariable.AsInteger[T.ColCount - 1] - FBase + 1;
-  setLength(FBins, T.RowCount);
-  setLength(FSlotMap, FCount);
-  setLength(FSlotValue, FCount);
-  initSlotMap;
+  xMin := FBase.ToDouble;
+  xMax := T.ColVariable.AsFloat[T.ColCount - 1];
+  FCount := round((xMax - xMin) / FInterval) + 1;
+  FStrata := T.RowCount;
+  setLength(FBins, FCount, Fstrata);
+  setLength(FXValue, FCount);
+  setLength(FMaxCounts, FStrata);
+  setLength(FStrataName, FStrata);
+  initXValues;
 
-  // set up SlotMap
-  for col := 0 to T.ColCount - 1 do
+// get strata information and fill frequencies
+  for stratum := 0 to Fstrata - 1 do
     begin
-      FSlotMap[T.ColVariable.AsInteger[col] - FBase] := col;
-      FSlotValue[col] := T.ColVariable.AsFloat[col];
-    end;
-
-  // get strata information and fill frequencies
-  for row := 0 to Fstrata - 1 do
-    begin
-      setLength(FBins[row].N, FCount);
-      FBins[row].name := T.RowVariable.GetValueLabelFormatted(row, FValueLabelOutput);
-      n := 0;
+      FStrataName[stratum] := T.RowVariable.GetValueLabelFormatted(stratum, FValueLabelOutput);
       for col := 0 to T.ColCount - 1 do
         begin
-          FBins[row].N[col] := T.Cell[col, row].N.ToDouble;
-          n := Math.Max(n, T.Cell[col, row].N);
+          slot :=round((T.ColVariable.AsFloat[col] - xMin) / FInterval);
+          FBins[slot, stratum] := T.Cell[col, stratum].N;
         end;
-      FBins[row].Max := n;
+      n := 0;
+      for col := 0 to FCount - 1 do
+        n := Math.Max(n, FBins[col, stratum]);
+      FMaxCounts[stratum] := n;
+    end;
+end;
+
+procedure THistogram.HistogramToEpicurve;
+var
+  i, j, k, ioffset, stratum, maxboxes ,oldstrata: Integer;
+  offset: array of Integer;
+begin
+  // change counts within a stratum to series of ones
+  // filling in with zeros to make the number of Y points the same within strata
+  // first, get maximum number of boxes for all strata
+  maxboxes := 0;
+  oldstrata := FStrata - 1;
+  setLength(offset, FStrata);
+  for stratum := 0 to FStrata - 1 do
+    begin
+      offset[stratum] := maxboxes;
+      maxboxes += FMaxCounts[stratum];
+    end;
+  // resize FBins
+  setLength(FBins, FCount, maxboxes);
+  FStrata := maxboxes;
+  // shift counts into series of ones
+  for stratum := oldstrata downto 0 do
+    begin
+      ioffset :=  offset[stratum];
+      for i := 0 to FCount - 1 do
+        begin
+          k := FBins[i, stratum];
+          for j := ioffset to ioffset + k -1 do
+            FBins[i, j] := 1;
+          for j := ioffset + k to maxBoxes - 1 do
+            FBins[i, j] := 0;
+        end;
+      maxBoxes := maxBoxes - FMaxCounts[stratum];
     end;
 end;
 
