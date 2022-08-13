@@ -5,7 +5,7 @@ unit histogramsource;
 interface
 
 uses
-  Classes, SysUtils, TAGraph, TASources, TACustomSource, histogramdata, outputcreator;
+  Classes, SysUtils, TAGraph, TASources, TACustomSource, histogramdata;
 
 type
 
