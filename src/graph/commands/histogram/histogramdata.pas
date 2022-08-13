@@ -92,7 +92,7 @@ var
 begin
   n := 0;
   for slot := 0 to high (FBins) do
-    n := Math.Max(n, FBins[slot,stratum]);
+    n := math.Max(n, FBins[slot,stratum]);
   FMaxCounts[stratum] := n;
 end;
 
@@ -141,9 +141,11 @@ end;
 procedure THistogram.SetInterval(i: Integer);
 begin
   if (i < 0) then
-    exit; // error - don't change default
+    raise Exception.Create('Negative Interval specified.');
+    exit;
   if (FCount > 0) then
-    exit; // error - must set interval before filling slots
+    raise Exception.Create('Histogram--SetInterval called before Fill.');
+    exit;
   FInterval := i;
 end;
 
@@ -213,8 +215,8 @@ end;
 
 destructor THistogram.Destroy;
 begin
-  inherited Destroy;
   FBins := nil;
+  inherited Destroy;
 end;
 
 end.
