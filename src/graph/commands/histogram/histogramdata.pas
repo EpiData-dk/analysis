@@ -142,10 +142,8 @@ procedure THistogram.SetInterval(i: Integer);
 begin
   if (i < 0) then
     raise Exception.Create('Negative Interval specified.');
-    exit;
   if (FCount > 0) then
     raise Exception.Create('Histogram--SetInterval called before Fill.');
-    exit;
   FInterval := i;
 end;
 
