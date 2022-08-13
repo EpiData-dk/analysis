@@ -61,7 +61,6 @@ end;
 
 procedure THistogramSource.setHistogram(AValue: THistogram);
 begin
-  if (AValue = FHistogram) then exit;
   FHistogram := AValue;
   PointsNumber := FHistogram.Count;
   YCount := FHistogram.Strata;
@@ -69,8 +68,8 @@ end;
 
 destructor THistogramSource.Destroy;
 begin
-  inherited Destroy;
   FHistogram.Destroy;
+  inherited Destroy;
 end;
 
 end.

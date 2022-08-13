@@ -128,7 +128,6 @@ begin
     begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
       FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
-
       HistogramData.Fill(FreqData);
       F.Free;
     end;
