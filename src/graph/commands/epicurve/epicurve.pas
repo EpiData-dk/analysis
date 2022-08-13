@@ -69,7 +69,6 @@ var
   VarNames:            TStrings;
   XVar:                TEpiField;
   WeightVarName:       UTF8String;
-  AllVariables:        TStrings;
   Opt:                 TOption;
 
   ValueLabelOutput:    TEpiGetValueLabelType;
@@ -84,9 +83,7 @@ begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
 
-  // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
-  AllVariables := Command.VariableList.GetIdentsAsList;
   StratVariable := TStringList.Create;
   ReverseStrata := Command.HasOption('sd', Opt);
   if (ReverseStrata) then
@@ -99,20 +96,14 @@ begin
   // weight variable not allowed for epicurve
   WeightVarName := '';
 
-  // Get the data and fields.
-  DataFile := FExecutor.PrepareDatafile(AllVariables, AllVariables);
+  DataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
   XVar := Datafile.Fields.FieldByName[VarNames[0]];
-
-  // Create the chart
   Chart := FChartFactory.NewChart();
   HistogramData := THistogram.Create(FExecutor, Command);
   if (Command.HasOption('interval', Opt)) then
     HistogramData.Interval := Opt.Expr.AsInteger;
-// add series for the time variable
-// method depends on stratification or not
   if (Varnames.Count > 1) then
     begin
-  // with stratification
   // Note: this does NOT call CalcTables with stratification
       T := TTables.Create(FExecutor, FOutputCreator);
       TableData  := T.CalcTables(Datafile, VarNames,
@@ -146,7 +137,6 @@ begin
 
   if (Varnames.Count > 1) then
     begin
-      // set up Legend series
       LegendSource := TListChartSource.Create(Chart);
       LegendSeries := TBarSeries.Create(Chart);
       LegendSeries.Source := LegendSource;
@@ -191,8 +181,7 @@ begin
 
   Chart.AddSeries(BarSeries);
 
-  // Create the titles
-  sTitle := 'Count by ' + XVar.GetVariableLabel(VariableLabelOutput);
+   sTitle := 'Count by ' + XVar.GetVariableLabel(VariableLabelOutput);
   if (Varnames.Count > 1) then
     sTitle += ' by ' + ByVarName;
   ChartConfiguration := FChartFactory.NewChartConfiguration();
@@ -217,11 +206,11 @@ begin
       LeftAxis.Margin         := 0;
       Frame.Visible           := false;
     end;
-  // Create the command result
+
   Result := FChartFactory.NewGraphCommandResult();
   Result.AddChart(Chart, ChartConfiguration);
   XVar := nil;
-  AllVariables.Free;
+  VarNames.Free;
   Datafile.Free;
 end;
 
