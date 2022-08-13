@@ -2489,6 +2489,7 @@ begin
   AddVariableLabelOptions(Result);
   AddValueLabelOptions(Result);
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
+  Result.Insert('interval', [rtInteger]);
 end;
 
 function TEpicurveCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2504,7 +2505,7 @@ function TEpicurveCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
 begin
   Result := inherited GetAcceptedVariableTypesAndFlags(Index);
   case Index of
-    0: Result.ResultTypes := [rtDate, rtInteger, rtFloat];
+    0: Result.ResultTypes := [rtDate, rtInteger];
     1: Result.ResultTypes := AllResultDataTypes;
   end;
 end;
@@ -2523,6 +2524,7 @@ begin
   AddValueLabelOptions(Result);
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('interval', [rtInteger, rtFloat]);
 end;
 
 function THistogramCommand.GetAcceptedVariableCount: TBoundArray;
