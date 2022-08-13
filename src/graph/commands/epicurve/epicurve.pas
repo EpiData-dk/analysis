@@ -11,8 +11,6 @@ uses
 
 type
 
-  floatArray = array of Double;
-  freqArray  = array of array of Double;
   { TEpicurveChart }
 
   TEpicurveChart = class(TInterfacedObject, IChartCommand)
