@@ -22,7 +22,6 @@ type
       FValueLabelOutput: TEpiGetValueLabelType;
       FBins:    array of countArray;
       FBase:    integer;   // lowest x value
-      FXMax:    integer;   // highest x value
       FCount:   Integer;   // (highest x - lowest x)/interval + 1
       FStrata:  Integer;
       FStrataName: array of UTF8String;
@@ -86,7 +85,7 @@ var
   i: Integer;
 begin
   for i := 0 to high(FXvalue) do
-    FXValue[i] :=  (FBase + i) div FInterval;
+    FXValue[i] :=  FBase + i * FInterval;
 end;
 
 function THistogram.getSlotCounts(index: Integer): countArray;
@@ -128,7 +127,7 @@ end;
 
 procedure THistogram.SetInterval(i: Integer);
 begin
-  if (i < 0) or (i > (FXMax - FBase)) then
+  if (i < 0) then
     exit; // error - interval is too wide
   if (FCount > 0) then
     exit; // error - must set interval before filling slots
@@ -138,15 +137,11 @@ end;
 procedure THistogram.Fill(F: TFreqDataFile);
 var
   i, n: Integer;
-  xMin, xMax: Double;
   slot: Integer;
 begin
   Fstrata   := 1;
   FBase     := F.Categ.AsInteger[0];
-  FXMax     := F.Categ.AsInteger[F.Categ.Size - 1];
-  xMin      := FBase.ToDouble;
-  xMax      := FXMax.ToDouble;
-  FCount    := round((xMax - xMin) / FInterval) + 1;
+  FCount := 1 + ((F.Categ.AsInteger[F.Categ.Size - 1] - FBase) div Interval);
   setLength(FStrataName, 1);
   setLength(FBins, FCount, 1);
   initBins;
@@ -160,7 +155,7 @@ begin
 //  n := 0;
   for i := 0 to F.Categ.Size - 1 do
     begin
-      slot := round((F.Categ.AsInteger[i] - FBase).ToDouble / FInterval);
+      slot := (F.Categ.AsInteger[i] - FBase) div FInterval;
       FBins[slot, 0] += F.Count[i];
     end;
 // get max height of slots
@@ -173,12 +168,9 @@ end;
 procedure THistogram.Fill(T: TTwoWayTable);
 var
   i, col, stratum, n, slot: Integer;
-  xmin, xmax: Double;
 begin
   FBase := T.ColVariable.AsInteger[0];
-  xMin := FBase.ToDouble;
-  xMax := T.ColVariable.AsFloat[T.ColCount - 1];
-  FCount := round((xMax - xMin) / FInterval) + 1;
+  FCount := 1 + ((T.ColVariable.AsInteger[T.ColCount - 1] - FBase) div Interval);
   FStrata := T.RowCount;
   setLength(FBins, FCount, Fstrata);
   setLength(FXValue, FCount);
@@ -192,8 +184,8 @@ begin
       FStrataName[stratum] := T.RowVariable.GetValueLabelFormatted(stratum, FValueLabelOutput);
       for col := 0 to T.ColCount - 1 do
         begin
-          slot :=round((T.ColVariable.AsFloat[col] - xMin) / FInterval);
-          FBins[slot, stratum] := T.Cell[col, stratum].N;
+          slot :=(T.ColVariable.AsInteger[col] - FBase) div FInterval;
+          FBins[slot, stratum] += T.Cell[col, stratum].N;
         end;
       n := 0;
       for col := 0 to FCount - 1 do

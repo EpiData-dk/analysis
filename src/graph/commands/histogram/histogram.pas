@@ -107,7 +107,8 @@ begin
   // Create the chart
   Chart := FChartFactory.NewChart();
   HistogramData := THistogram.Create(FExecutor, Command);
-
+  if (Command.HasOption('interval', Opt)) then
+    HistogramData.Interval := Opt.Expr.AsInteger;
 // add series for the time variable
 // method depends on stratification or not
   if (Varnames.Count > 1) then
