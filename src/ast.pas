@@ -2525,6 +2525,7 @@ begin
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('interval', [rtInteger, rtFloat]);
+  Result.Insert('stack', [rtUndefined]);
 end;
 
 function THistogramCommand.GetAcceptedVariableCount: TBoundArray;

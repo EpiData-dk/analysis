@@ -125,7 +125,7 @@ begin
   HistogramSource.Histogram := HistogramData;
   BarSeries := TBarSeries.Create(Chart);
   BarSeries.Source := HistogramSource;
-  BarSeries.Stacked := true;
+  BarSeries.Stacked := Command.HasOption('stack');
   BarSeries.BarWidthPercent := 100;
   SeriesStyles := TChartStyles.Create(Chart);
   if (Varnames.Count > 1) then
