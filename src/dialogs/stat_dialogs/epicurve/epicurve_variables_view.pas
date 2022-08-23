@@ -1,4 +1,4 @@
-unit histogram_variables_view;
+unit epicurve_variables_view;
 
 {$mode objfpc}{$H+}
 
@@ -6,15 +6,15 @@ interface
 
 uses
   Classes, SysUtils, Controls, ExtCtrls, StdCtrls,
-  stat_dialog_contribution, histogram_model, fields_combobox, stat_dialog_custom_view;
+  stat_dialog_contribution, epicurve_model, fields_combobox, stat_dialog_custom_view;
 
 type
 
-  { THistogramStatDialogVariablesView }
+  { TEpicurveStatDialogVariablesView }
 
-  THistogramStatDialogVariablesView = class(TCustomStatDialogView)
+  TEpicurveStatDialogVariablesView = class(TCustomStatDialogView)
   private
-    FDataModel: THistogramStatDialogVariableModel;
+    FDataModel: TEpicurveStatDialogVariableModel;
     FComboBoxes: Array of TEpiFieldsComboBox;
     FOnModified: IStatDiaglogViewModified;
     procedure VariableSelect(Sender: TObject);
@@ -26,7 +26,7 @@ type
     function GetViewCaption(): UTF8String; override;
     procedure ResetView(); override;
     function IsDefined(): boolean; override;
-    procedure SetModel(DataModel: THistogramStatDialogVariableModel);
+    procedure SetModel(DataModel: TEpicurveStatDialogVariableModel);
   end;
 
 implementation
@@ -37,11 +37,10 @@ uses
 const
   XVARIABLE_TAG   = Ord(tvX);
   YVARIABLE_TAG   = Ord(tvY);
-  WVARIABLE_TAG   = Ord(tvW);
 
-{ THistogramStatDialogVariablesView }
+{ TEpicurveStatDialogVariablesView }
 
-procedure THistogramStatDialogVariablesView.VariableSelect(Sender: TObject);
+procedure TEpicurveStatDialogVariablesView.VariableSelect(Sender: TObject);
 var
   Field: TEpiField;
   ComboBox: TCustomComboBox;
@@ -56,16 +55,13 @@ begin
     YVARIABLE_TAG:
       FDataModel.YVariable := Field;
 
-    WVARIABLE_TAG:
-      FDataModel.WVariable := Field;
-
   end;
 
   UpdateCombos();
   DoModified();
 end;
 
-procedure THistogramStatDialogVariablesView.UpdateCombos();
+procedure TEpicurveStatDialogVariablesView.UpdateCombos();
 var
   Field: TEpiField;
   ComboBox: TEpiFieldsComboBox;
@@ -78,19 +74,19 @@ begin
       Field := ComboBox.SelectedField;
       ComboBox.Fields.Free;
       ComboBox.Fields := nil;
-      ComboBox.Fields := FDataModel.GetComboFields(THistogramStatDialogVariable(i));
+      ComboBox.Fields := FDataModel.GetComboFields(TEpicurveStatDialogVariable(i));
       ComboBox.ItemIndex := ComboBox.Items.IndexOfObject(Field);
     end;
 end;
 
-constructor THistogramStatDialogVariablesView.Create(TheOwner: TComponent);
+constructor TEpicurveStatDialogVariablesView.Create(TheOwner: TComponent);
 var
   ComboBox: TEpiFieldsComboBox;
   PrevCombo: TEpiFieldsComboBox;
 begin
   inherited Create(TheOwner);
 
-  SetLength(FComboBoxes, Ord(High(THistogramStatDialogVariable)) + 1);
+  SetLength(FComboBoxes, Ord(High(TEpicurveStatDialogVariable)) + 1);
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
   ComboBox.Parent := self;
@@ -114,35 +110,25 @@ begin
   FComboBoxes[YVARIABLE_TAG] := ComboBox;
   PrevCombo := ComboBox;
 
-  ComboBox := TEpiFieldsComboBox.Create(TheOwner);
-  ComboBox.Parent := self;
-  ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
-  ComboBox.AnchorParallel(akLeft, 10, Self);
-  ComboBox.AnchorParallel(akRight, 10, Self);
-  ComboBox.OnSelect := @VariableSelect;
-  ComboBox.Tag := WVARIABLE_TAG;
-  ComboBox.NoItemText := 'Weight Variable (optional)';
-  FComboBoxes[WVARIABLE_TAG] := ComboBox;
-
   EnterView(); // Must do this to get combo boxes aligned and visible
 end;
 
-procedure THistogramStatDialogVariablesView.EnterView();
+procedure TEpicurveStatDialogVariablesView.EnterView();
 begin
 
 end;
 
-function THistogramStatDialogVariablesView.ExitView(): boolean;
+function TEpicurveStatDialogVariablesView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function THistogramStatDialogVariablesView.GetViewCaption(): UTF8String;
+function TEpicurveStatDialogVariablesView.GetViewCaption(): UTF8String;
 begin
   result := 'Variables';
 end;
 
-procedure THistogramStatDialogVariablesView.ResetView();
+procedure TEpicurveStatDialogVariablesView.ResetView();
 var
   Combobox: TCustomComboBox;
 begin
@@ -151,19 +137,18 @@ begin
 
   FDataModel.XVariable := nil;
   FDataModel.YVariable := nil;
-  FDataModel.WVariable := nil;
 
   UpdateCombos();
   DoModified();
 end;
 
-function THistogramStatDialogVariablesView.IsDefined(): boolean;
+function TEpicurveStatDialogVariablesView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure THistogramStatDialogVariablesView.SetModel(
-  DataModel: THistogramStatDialogVariableModel);
+procedure TEpicurveStatDialogVariablesView.SetModel(
+  DataModel: TEpicurveStatDialogVariableModel);
 begin
   FDataModel := DataModel;
 

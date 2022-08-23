@@ -57,24 +57,15 @@ end;
 
 function THistogramStatDialogContribution.GenerateScript(): UTF8String;
 begin
-  if FVariablesModel.Epicurve then
-    begin
-      result := 'epicurve ';
-      FPrimaryOptionsModel.Epicurve := true;
-    end
-  else
-    begin
-      result := 'histogram ';
-      FPrimaryOptionsModel.Epicurve := false;
-    end;
-  result += FVariablesModel.GenerateScript() +
+  result := 'histogram ' +
+    FVariablesModel.GenerateScript() +
     FPrimaryOptionsModel.GenerateScript() +
     ';';
 end;
 
 function THistogramStatDialogContribution.GetCaption(): UTF8String;
 begin
-  result := 'Histogram / Epicurve';
+  result := 'Histogram';
 end;
 
 function THistogramStatDialogContribution.GetHelpText(): UTF8String;

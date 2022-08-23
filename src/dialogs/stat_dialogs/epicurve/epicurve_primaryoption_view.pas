@@ -1,4 +1,4 @@
-unit histogram_primaryoption_view;
+unit epicurve_primaryoption_view;
 
 {$mode objfpc}{$H+}
 
@@ -6,26 +6,24 @@ interface
 
 uses
   Classes, SysUtils, ExtCtrls, Controls, stat_dialog_contribution,
-  histogram_primaryoption_model, stat_dialog_custom_view;
+  Epicurve_primaryoption_model, stat_dialog_custom_view;
 
 type
 
-  { ThistogramStatPrimaryOptionsView }
+  { TEpicurveStatPrimaryOptionsView }
 
-  ThistogramStatPrimaryOptionsView = class(TCustomStatDialogView)
+  TEpicurveStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
     FOnModified: IStatDiaglogViewModified;
-    FDataModel: ThistogramStatDialogPrimaryOptionModel;
+    FDataModel: TEpicurveStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
+    FVerticalDivider: TBevel;
     FValueLabelsGroup: TRadioGroup;
     FVariableLabelsGroup: TRadioGroup;
-    FOptionGroup: TCheckGroup;
-    FVerticalDivider: TBevel;
     procedure CreateValueLabelsRadios(RadioGroup: TRadioGroup);
     procedure CreateVariableLabelsRadios(RadioGroup: TRadioGroup);
     procedure ValueLabelSelectionChanged(Sender: TObject);
     procedure VariableLabelSelectionChanged(Sender: TObject);
-    procedure OptionGroupCheck(Sender: TObject; Index: integer);
   public
     constructor Create(TheOwner: TComponent); override;
     procedure EnterView(); override;
@@ -33,7 +31,7 @@ type
     function GetViewCaption(): UTF8String; override;
     function IsDefined(): boolean; override;
     procedure ResetView(); override;
-    procedure SetModel(DataModel: ThistogramStatDialogPrimaryOptionModel);
+    procedure SetModel(DataModel: TEpicurveStatDialogPrimaryOptionModel);
   end;
 
 implementation
@@ -41,9 +39,9 @@ implementation
 uses
   StdCtrls, epifields_helper;
 
-{ ThistogramStatPrimaryOptionsView }
+{ TEpicurveStatPrimaryOptionsView }
 
-procedure ThistogramStatPrimaryOptionsView.CreateValueLabelsRadios(
+procedure TEpicurveStatPrimaryOptionsView.CreateValueLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Value');
@@ -53,7 +51,7 @@ begin
   RadioGroup.OnSelectionChanged := @ValueLabelSelectionChanged;
 end;
 
-procedure ThistogramStatPrimaryOptionsView.CreateVariableLabelsRadios(
+procedure TEpicurveStatPrimaryOptionsView.CreateVariableLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Variable Name');
@@ -63,7 +61,7 @@ begin
   RadioGroup.OnSelectionChanged := @VariableLabelSelectionChanged;
 end;
 
-procedure ThistogramStatPrimaryOptionsView.VariableLabelSelectionChanged(
+procedure TEpicurveStatPrimaryOptionsView.VariableLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -75,7 +73,7 @@ begin
   DoModified();
 end;
 
-procedure ThistogramStatPrimaryOptionsView.ValueLabelSelectionChanged(
+procedure TEpicurveStatPrimaryOptionsView.ValueLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -87,23 +85,12 @@ begin
   DoModified();
 end;
 
-procedure ThistogramStatPrimaryOptionsView.OptionGroupCheck(Sender: TObject; Index: integer);
-var
-  Value: Boolean;
-begin
-  Value := TCheckGroup(Sender).Checked[Index];
-  case Index of
-    0:  FDataModel.Stack := Value;
-  end;
-end;
-
-constructor ThistogramStatPrimaryOptionsView.Create(TheOwner: TComponent);
+constructor TEpicurveStatPrimaryOptionsView.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
   FValueLabelsGroup := TRadioGroup.Create(self);
   FVariableLabelsGroup := TRadioGroup.Create(self);
-  FOptionGroup := TCheckGroup.Create(self);
 
   FHorizontalDivider := TBevel.Create(self);
   FHorizontalDivider.Parent := self;
@@ -139,42 +126,32 @@ begin
   FVariableLabelsGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
   FVariableLabelsGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
 
-  FOptionGroup.Parent := self;
-  FOptionGroup.Caption := 'Output options';
-  FOptionGroup.Anchors := [];
-  FOptionGroup.AnchorParallel(akLeft, 5, self);
-  FOptionGroup.AnchorParallel(akBottom, 5, Self);
-  FOptionGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
-  FOptionGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
-  FOptionGroup.Items.Add('Stack bars');
-  FOptionGroup.OnItemClick:= @OptionGroupCheck;
-
   CreateValueLabelsRadios(FValueLabelsGroup);
   CreateVariableLabelsRadios(FVariableLabelsGroup);
 end;
 
-procedure ThistogramStatPrimaryOptionsView.EnterView();
+procedure TEpicurveStatPrimaryOptionsView.EnterView();
 begin
   FHorizontalDivider.Top := ((Self.Height - FHorizontalDivider.Height) div 2);
   FVerticalDivider.Left := ((Self.Width - FVerticalDivider.Width) div 2);
 end;
 
-function ThistogramStatPrimaryOptionsView.ExitView(): boolean;
+function TEpicurveStatPrimaryOptionsView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function ThistogramStatPrimaryOptionsView.GetViewCaption(): UTF8String;
+function TEpicurveStatPrimaryOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Output';
 end;
 
-function ThistogramStatPrimaryOptionsView.IsDefined(): boolean;
+function TEpicurveStatPrimaryOptionsView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure ThistogramStatPrimaryOptionsView.ResetView();
+procedure TEpicurveStatPrimaryOptionsView.ResetView();
 begin
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
@@ -182,12 +159,10 @@ begin
   FValueLabelsGroup.ItemIndex := FDataModel.ValueLabelsDefault;
   FVariableLabelsGroup.ItemIndex := FDataModel.VariableLabelsDefault;
 
-  FDataModel.Stack := false;
-
 end;
 
-procedure ThistogramStatPrimaryOptionsView.SetModel(
-  DataModel: ThistogramStatDialogPrimaryOptionModel);
+procedure TEpicurveStatPrimaryOptionsView.SetModel(
+  DataModel: TEpicurveStatDialogPrimaryOptionModel);
 begin
   FDataModel := DataModel;
   FValueLabelsGroup.ItemIndex := FDataModel.ValueLabelsDefault;
