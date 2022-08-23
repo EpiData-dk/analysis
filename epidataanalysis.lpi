@@ -293,7 +293,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="175">
+    <Units Count="180">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1031,6 +1031,26 @@
         <Filename Value="src/graph/commands/histogram/histogramdata.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit174>
+      <Unit175>
+        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_contribution.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit175>
+      <Unit176>
+        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit176>
+      <Unit177>
+        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_primaryoption_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit177>
+      <Unit178>
+        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_primaryoption_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit178>
+      <Unit179>
+        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_variables_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit179>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -1040,7 +1060,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/dialogs/graph;src/graph/commands/epicurve;src/graph/commands/histogram"/>
+      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/dialogs/graph;src/graph/commands/epicurve;src/graph/commands/histogram;src/dialogs/stat_dialogs/histogram"/>
       <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
