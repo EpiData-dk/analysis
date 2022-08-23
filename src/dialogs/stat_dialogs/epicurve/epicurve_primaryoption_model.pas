@@ -1,4 +1,4 @@
-unit histogram_primaryoption_model;
+unit epicurve_primaryoption_model;
 
 {$mode objfpc}{$H+}
 
@@ -10,17 +10,15 @@ uses
 type
 
 
-   { ThistogramStatDialogPrimaryOptionModel }
+   { TEpicurveStatDialogPrimaryOptionModel }
 
-   THistogramStatDialogPrimaryOptionModel = class(IStatDialogModel)
+   TEpicurveStatDialogPrimaryOptionModel = class(IStatDialogModel)
    private
      FExecutor: TExecutor;
      FValueLabelType: TEpiGetValueLabelType;
      FVariableLabelType: TEpiGetVariableLabelType;
      FValueLabelsDefault: Integer;
      FVariableLabelsDefault: Integer;
-     FDecimals: UTF8String;
-     FStack: Boolean;
      procedure SetValueLabelType(AValue: TEpiGetValueLabelType);
      procedure SetVariableLabelType(AValue: TEpiGetVariableLabelType);
    public
@@ -32,7 +30,6 @@ type
      property ValueLabelType: TEpiGetValueLabelType read FValueLabelType write SetValueLabelType;
      property ValueLabelsDefault: Integer read FValueLabelsDefault write FValueLabelsDefault;
      property VariableLabelsDefault: Integer read FVariableLabelsDefault write FVariableLabelsDefault;
-     property Stack: boolean read FStack write FStack;
    end;
 
 
@@ -41,23 +38,23 @@ implementation
 uses
   LazUTF8;
 
-{ THistogramStatDialogPrimaryOptionModel }
+{ TEpicurveStatDialogPrimaryOptionModel }
 
-procedure THistogramStatDialogPrimaryOptionModel.SetValueLabelType(
+procedure TEpicurveStatDialogPrimaryOptionModel.SetValueLabelType(
   AValue: TEpiGetValueLabelType);
 begin
   if FValueLabelType = AValue then Exit;
   FValueLabelType := AValue;
 end;
 
-procedure THistogramStatDialogPrimaryOptionModel.SetVariableLabelType(
+procedure TEpicurveStatDialogPrimaryOptionModel.SetVariableLabelType(
   AValue: TEpiGetVariableLabelType);
 begin
   if FVariableLabelType = AValue then Exit;
   FVariableLabelType := AValue;
 end;
 
-constructor THistogramStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
+constructor TEpicurveStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
 var
     defaults: TStringList;
 begin
@@ -72,7 +69,7 @@ begin
   defaults.Free;
 end;
 
-function THistogramStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
+function TEpicurveStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
 var
   compareOption: UTF8String;
 begin
@@ -96,15 +93,9 @@ begin
   if (LowerCase(FExecutor.GetSetOptionValue('STATISTICS VARIABLE LABEL')) <> compareOption) then
     Result += ' !' + compareOption;
 
-  if (FStack) then
-    Result += ' !stack';
-//  if (FInterval) then
-//    Result += ' !interval:=' + FInterval;
-
-//  Result := UTF8Trim(Result);
 end;
 
-function THistogramStatDialogPrimaryOptionModel.IsDefined(): boolean;
+function TEpicurveStatDialogPrimaryOptionModel.IsDefined(): boolean;
 begin
   result := true;
 end;

@@ -20,7 +20,6 @@ type
     FXVariable: TEpiField;    // Time
     FYVariable: TEpiField;    // Strata
     FWVariable: TEpiField;
-    FEpicurve: Boolean;
     procedure SetXVariable(AValue: TEpiField);
     procedure SetYVariable(AValue: TEpiField);
     procedure SetWVariable(AValue: TEpiField);
@@ -34,7 +33,6 @@ type
     property XVariable: TEpiField read FXVariable write SetXVariable;
     property YVariable: TEpiField read FYVariable write SetYVariable;
     property WVariable: TEpiField read FWVariable write SetWVariable;
-    property Epicurve: boolean read FEpicurve write FEpicurve;
   end;
 
 implementation
@@ -74,7 +72,7 @@ begin
   if Assigned(FYVariable) then
     result += ' ' + FYVariable.Name;
 
-  if (Assigned(FWVariable) and (not FEpicurve)) then
+  if Assigned(FWVariable) then
       result += ' !w := ' + FWVariable.Name;
 
 end;
@@ -88,7 +86,6 @@ end;
 constructor THistogramStatDialogVariableModel.Create(Executor: TExecutor);
 begin
   FExecutor := Executor;
-  FEpicurve := false;
 end;
 
 function THistogramStatDialogVariableModel.GetComboFields(
