@@ -3,6 +3,10 @@ DoExitAsm ()
 { echo "An error occurred while assembling $1"; exit 1; }
 DoExitLink ()
 { echo "An error occurred while linking $1"; exit 1; }
+echo Assembling scatter_contribution
+/Library/Developer/CommandLineTools/usr/bin/clang -c -o /Users/jamie/ed/analysis/target/units/x86_64-darwin/scatter_contribution.o  -arch x86_64 -mmacosx-version-min=10.8 -x assembler /Users/jamie/ed/analysis/target/units/x86_64-darwin/scatter_contribution.s
+if [ $? != 0 ]; then DoExitAsm scatter_contribution; fi
+rm /Users/jamie/ed/analysis/target/units/x86_64-darwin/scatter_contribution.s
 echo Assembling epidataanalysis
 /Library/Developer/CommandLineTools/usr/bin/clang -c -o /Users/jamie/ed/analysis/target/units/x86_64-darwin/epidataanalysis.o  -arch x86_64 -mmacosx-version-min=10.8 -x assembler /Users/jamie/ed/analysis/target/units/x86_64-darwin/epidataanalysis.s
 if [ $? != 0 ]; then DoExitAsm epidataanalysis; fi
