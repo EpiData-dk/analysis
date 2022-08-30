@@ -46,13 +46,13 @@ type
       property Strata:   Integer read FStrata;
       property Count:    Integer read FCount;
       property Total:    Integer read FTotal;
-      property PctCalc:  Boolean read FPct;
+      property PctCalc:  Boolean read FPct write FPct;
       property SlotCounts[index: Integer]: countArray read getSlotCounts;
       property XValue[index: Integer]:     Integer read getXValue;
       property Name[index: Integer]:       UTF8String read getName;
       property MaxCount[stratum: Integer]: Integer read getMaxCount;
-      procedure Fill(F: TFreqDataFile; P: Boolean);
-      procedure Fill(T: TTwoWayTable; P: Boolean);
+      procedure Fill(F: TFreqDataFile);
+      procedure Fill(T: TTwoWayTable);
       procedure HistogramToEpicurve;
   end;
 
@@ -73,6 +73,7 @@ begin
   FBase := 0;
   FCount := 0;
   FInterval := 1;
+  FPct  := false;
 end;
 
 procedure THistogram.initBins(s, lo, hi: Integer);
@@ -151,7 +152,7 @@ begin
   FInterval := i;
 end;
 
-procedure THistogram.Fill(F: TFreqDataFile; P: Boolean);
+procedure THistogram.Fill(F: TFreqDataFile);
 var
   i: Integer;
 begin
@@ -163,10 +164,9 @@ begin
     end;
   setMaxCount(0);
   FTotal := F.Sum;
-  FPct := p;
 end;
 
-procedure THistogram.Fill(T: TTwoWayTable; P: Boolean);
+procedure THistogram.Fill(T: TTwoWayTable);
 var
   col, stratum: Integer;
 begin
@@ -181,7 +181,6 @@ begin
       setMaxCount(stratum);
     end;
   FTotal := T.Total;
-  FPct := p;
 end;
 
 procedure THistogram.HistogramToEpicurve;

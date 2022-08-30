@@ -105,6 +105,7 @@ begin
   HistogramData := THistogram.Create(FExecutor, Command);
   if (Command.HasOption('interval', Opt)) then
     HistogramData.Interval := Opt.Expr.AsInteger;
+  HistogramData.PctCalc := yPct;
   if (Varnames.Count > 1) then
     begin
    // Note: this does NOT call CalcTables with stratification
@@ -113,7 +114,7 @@ begin
                     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics).UnstratifiedTable;
       if (ReverseStrata) then
         TableData.SortByRowLabel(true);
-      HistogramData.Fill(TableData, yPct);
+      HistogramData.Fill(TableData);
       T.Free;
       ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
     end
@@ -121,7 +122,7 @@ begin
     begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
       FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
-      HistogramData.Fill(FreqData, yPct);
+      HistogramData.Fill(FreqData);
       F.Free;
     end;
 
