@@ -25,7 +25,7 @@ type
 implementation
 
 uses
-  TASeries, TATypes, Graphics, charttitles, ast_types, barsource, epidatafilestypes,
+  TASeries, TASources, TATypes, TAChartUtils, Graphics, charttitles, ast_types, barsource, epidatafilestypes,
   epifields_helper, options_utils;
 
 { TBarChart }
@@ -42,6 +42,7 @@ function TBarChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 var
   BarSeries: TBarSeries;
   BarSource: TBarSource;
+  LabelSeries: TListChartSource;
   VarNames: TStrings;
   Chart: TChart;
   Titles: IChartTitleConfiguration;
@@ -49,14 +50,15 @@ var
   XVar, YVar: TEpiField;
   ChartConfiguration: IChartConfiguration;
   VariableLabelType: TEpiGetVariableLabelType;
+  i: Integer;
 begin
   // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
 
   // Get the data and fields.
   DataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
-  XVar := Datafile.Fields.FieldByName[VarNames[0]];
-  YVar := Datafile.Fields.FieldByName[Varnames[1]];
+  XVar := Datafile.Fields.FieldByName[VarNames[1]];
+  YVar := Datafile.Fields.FieldByName[Varnames[0]];
   Varnames.Free;
 
   // Create the charts
@@ -70,10 +72,15 @@ begin
   BarSource.XVariableName := XVar.Name;
   BarSource.YVariableName := YVar.Name;
 
-  // Create the line/point series
+  // Create the bar series
   BarSeries := TBarSeries.Create(Chart);
   BarSeries.Source := BarSource;
-  BarSeries.BarWidthPercent:=5;
+  BarSeries.BarWidthPercent:=75;
+
+  // Create the bar labels
+  LabelSeries := TListChartSource.Create(Chart);
+  for i := 0 to DataFile.Size - 1 do
+    LabelSeries.Add(XVar.AsFloat[i], YVar.AsFloat[i], XVar.AsString[i]);   // TODO: use value label for 3rd parameter!
 
   // Add series to the chart
   Chart.AddSeries(BarSeries);
@@ -94,6 +101,9 @@ begin
   ChartConfiguration.GetAxesConfiguration()
     .GetYAxisConfiguration()
     .SetShowAxisMarksAsDates(YVar.FieldType in DateFieldTypes);
+
+  Chart.BottomAxis.Marks.Source := LabelSeries;
+  Chart.BottomAxis.Marks.Style := smsLabel;
 
   // Create the command result
   Result := FChartFactory.NewGraphCommandResult();

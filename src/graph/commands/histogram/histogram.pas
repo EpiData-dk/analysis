@@ -201,6 +201,6 @@ begin
 end;
 
 initialization
-  RegisterChartCommand(stHistogram, THistogramChart);
+  RegisterChartCommand(stHistogram, TBarChart); //THistogramChart);
 
 end.
