@@ -2526,6 +2526,7 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('interval', [rtInteger, rtFloat]);
   Result.Insert('stack', [rtUndefined]);
+  Result.Insert('pct', [rtUndefined]);
 end;
 
 function THistogramCommand.GetAcceptedVariableCount: TBoundArray;
