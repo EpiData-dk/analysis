@@ -14,6 +14,7 @@ type
   THistogramSource = class(TUserDefinedChartSource)
   private
     FHistogram: THistogram;
+    FBarMultiplier: Double;
     procedure setHistogram(AValue: THistogram);
   public
     constructor Create(AOwner: TComponent); override;
@@ -37,7 +38,7 @@ begin
   AItem.X := FHistogram.XValue[AIndex].ToDouble;
   s := FHistogram.SlotCounts[Aindex];
   for i := 0 to high(s) do
-    AItem.SetY(i, s[i].ToDouble);
+    AItem.SetY(i, s[i].ToDouble * FBarMultiplier);
 end;
 
 function THistogramSource.AddAxisScales(Chart: TChart): TListChartSource;
@@ -57,6 +58,7 @@ constructor THistogramSource.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   OnGetChartDataItem := @GetDataItem;
+  FBarMultiplier := 1;
 end;
 
 procedure THistogramSource.setHistogram(AValue: THistogram);
@@ -64,6 +66,8 @@ begin
   FHistogram := AValue;
   PointsNumber := FHistogram.Count;
   YCount := FHistogram.Strata;
+  if (FHistogram.PctCalc) then
+    FBarMultiplier := 100 / FHistogram.Total;
 end;
 
 destructor THistogramSource.Destroy;

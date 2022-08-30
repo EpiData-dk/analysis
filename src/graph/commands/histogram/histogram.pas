@@ -74,6 +74,8 @@ var
   ByVarName:           UTF8String;
   i, colour:           Integer;
   sTitle:              UTF8String;
+  yPct:                Boolean;
+  yType:               UTF8String;
 
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
@@ -95,12 +97,15 @@ begin
       VarNames.Add(WeightVarName);
     end;
 
+  yPct := Command.HasOption('pct');
+
   DataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
   XVar := Datafile.Fields.FieldByName[VarNames[0]];
   Chart := FChartFactory.NewChart();
   HistogramData := THistogram.Create(FExecutor, Command);
   if (Command.HasOption('interval', Opt)) then
     HistogramData.Interval := Opt.Expr.AsInteger;
+  HistogramData.PctCalc := yPct;
   if (Varnames.Count > 1) then
     begin
    // Note: this does NOT call CalcTables with stratification
@@ -158,7 +163,11 @@ begin
 
   Chart.AddSeries(BarSeries);
 
-  sTitle := 'Count by ' + XVar.GetVariableLabel(VariableLabelOutput);
+  if (yPct) then
+    yType := 'Percent of Total'
+  else
+    yType := 'Count';
+  sTitle := yType + ' by ' + XVar.GetVariableLabel(VariableLabelOutput);
   if (Varnames.Count > 1) then
     sTitle += ' by ' + ByVarName;
   ChartConfiguration := FChartFactory.NewChartConfiguration();
@@ -166,7 +175,7 @@ begin
     .SetTitle(sTitle)
     .SetFootnote('')
     .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
-    .SetYAxisTitle('Count');
+    .SetYAxisTitle(yType);
 
   ChartConfiguration.GetAxesConfiguration()
     .GetXAxisConfiguration()
