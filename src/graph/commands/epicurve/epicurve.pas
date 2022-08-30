@@ -110,7 +110,7 @@ begin
                     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics).UnstratifiedTable;
       if (ReverseStrata) then
         TableData.SortByRowLabel(true);
-      HistogramData.Fill(TableData);
+      HistogramData.Fill(TableData, false);
       HistogramData.HistogramToEpicurve;
       T.Free;
       ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
@@ -120,7 +120,7 @@ begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
       FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
 
-      HistogramData.Fill(FreqData);
+      HistogramData.Fill(FreqData, false);
       HistogramData.HistogramToEpicurve;
       F.Free;
     end;

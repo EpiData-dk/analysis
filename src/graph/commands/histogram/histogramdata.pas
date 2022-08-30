@@ -22,6 +22,8 @@ type
       FBins:    array of countArray;
       FBase:    integer;   // lowest x value
       FCount:   Integer;   // (highest x - lowest x)/interval + 1
+      FTotal:   Integer;   // sum of counts
+      FPct:     Boolean;   // flag for percentages
       FStrata:  Integer;
       FStrataName: array of UTF8String;
       FXValue: countArray;
@@ -43,12 +45,14 @@ type
       property Interval: Integer read getInterval write setInterval;
       property Strata:   Integer read FStrata;
       property Count:    Integer read FCount;
+      property Total:    Integer read FTotal;
+      property PctCalc:  Boolean read FPct;
       property SlotCounts[index: Integer]: countArray read getSlotCounts;
       property XValue[index: Integer]:     Integer read getXValue;
       property Name[index: Integer]:       UTF8String read getName;
       property MaxCount[stratum: Integer]: Integer read getMaxCount;
-      procedure Fill(F: TFreqDataFile);
-      procedure Fill(T: TTwoWayTable);
+      procedure Fill(F: TFreqDataFile; P: Boolean);
+      procedure Fill(T: TTwoWayTable; P: Boolean);
       procedure HistogramToEpicurve;
   end;
 
@@ -147,7 +151,7 @@ begin
   FInterval := i;
 end;
 
-procedure THistogram.Fill(F: TFreqDataFile);
+procedure THistogram.Fill(F: TFreqDataFile; P: Boolean);
 var
   i: Integer;
 begin
@@ -158,9 +162,11 @@ begin
       FBins[getSlot(F.Categ.AsInteger[i]), 0] += F.Count[i];
     end;
   setMaxCount(0);
+  FTotal := F.Sum;
+  FPct := p;
 end;
 
-procedure THistogram.Fill(T: TTwoWayTable);
+procedure THistogram.Fill(T: TTwoWayTable; P: Boolean);
 var
   col, stratum: Integer;
 begin
@@ -174,6 +180,8 @@ begin
         end;
       setMaxCount(stratum);
     end;
+  FTotal := T.Total;
+  FPct := p;
 end;
 
 procedure THistogram.HistogramToEpicurve;

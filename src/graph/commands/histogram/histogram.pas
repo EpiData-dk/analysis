@@ -74,6 +74,8 @@ var
   ByVarName:           UTF8String;
   i, colour:           Integer;
   sTitle:              UTF8String;
+  yPct:                Boolean;
+  yType:               UTF8String;
 
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
@@ -95,6 +97,8 @@ begin
       VarNames.Add(WeightVarName);
     end;
 
+  yPct := Command.HasOption('pct');
+
   DataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
   XVar := Datafile.Fields.FieldByName[VarNames[0]];
   Chart := FChartFactory.NewChart();
@@ -109,7 +113,7 @@ begin
                     StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics).UnstratifiedTable;
       if (ReverseStrata) then
         TableData.SortByRowLabel(true);
-      HistogramData.Fill(TableData);
+      HistogramData.Fill(TableData, yPct);
       T.Free;
       ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
     end
@@ -117,7 +121,7 @@ begin
     begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
       FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
-      HistogramData.Fill(FreqData);
+      HistogramData.Fill(FreqData, yPct);
       F.Free;
     end;
 
@@ -158,7 +162,11 @@ begin
 
   Chart.AddSeries(BarSeries);
 
-  sTitle := 'Count by ' + XVar.GetVariableLabel(VariableLabelOutput);
+  if (yPct) then
+    yType := 'Percent of Total'
+  else
+    yType := 'Count';
+  sTitle := yType + ' by ' + XVar.GetVariableLabel(VariableLabelOutput);
   if (Varnames.Count > 1) then
     sTitle += ' by ' + ByVarName;
   ChartConfiguration := FChartFactory.NewChartConfiguration();
@@ -166,7 +174,7 @@ begin
     .SetTitle(sTitle)
     .SetFootnote('')
     .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
-    .SetYAxisTitle('Count');
+    .SetYAxisTitle(yType);
 
   ChartConfiguration.GetAxesConfiguration()
     .GetXAxisConfiguration()
