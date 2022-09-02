@@ -110,19 +110,19 @@ object MainForm: TMainForm
       DefaultNodeHeight = 19
       DefaultText = 'Node'
       Header.AutoSizeIndex = 2
-      Header.Columns = <      
+      Header.Columns = <
         item
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
           Width = 308
-        end      
+        end
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
           Width = 268
-        end      
+        end
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 2
