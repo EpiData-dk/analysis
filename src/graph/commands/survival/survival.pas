@@ -607,7 +607,9 @@ begin
     ShowPoints    := false;
     Source        := plotSource;
     Title         := lineTitle;
-    YErrorBars.Visible := true;
+    YErrorBars.Visible   := true;
+    YErrorBars.Width     := 0;
+    YErrorBars.Pen.Color := lineColor;
   end;
 end;
 
