@@ -2477,6 +2477,7 @@ begin
   Result.Insert('cb',  [rtUndefined]);     // put KM plot points into clipboard
   Result.Insert('cin',['cinone'], [rtUndefined]);     // no confidence intervals on plots
   Result.Insert('cib',['ciband'], [rtUndefined]);     // show CI as bands
+  Result.Insert('cil',['ciline'], [rtUndefined]);     // show CI uppper and lower lines
   Result.Insert('q',   [rtUndefined]);
 end;
 
