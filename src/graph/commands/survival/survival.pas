@@ -40,6 +40,7 @@ type
     FSurvival,
     FLowCI,
     FHighCI:              Array of Array of EpiFloat;
+    FMaxRow:              Array of Integer;
   // summary results
     FMedian:              Array of UTF8String;
     FLRChi, FLRP:         EpiFloat;
@@ -79,6 +80,11 @@ type
                 lineTitle: UTF8String; lineStyle: TFPPenStyle;
                 lineWidth: Integer; lineColor: TColor;
                 inLegend: Boolean = true): TLineSeries;
+    function  SurvivalGraphData(data: array of EpiFloat;
+                ll: array of EpiFloat; ul: array of EpiFloat;
+                lineTitle: UTF8String; lineStyle: TFPPenStyle;
+                lineWidth: Integer; lineColor: TColor;
+                inLegend: Boolean = true): TLineSeries;
     function  SurvivalBand(bandTitle: UTF8String;
                 bandPattern: TFPBrushStyle; bandColor: TColor;
                 inLegend: Boolean = true): TAreaSeries;
@@ -96,7 +102,7 @@ implementation
 
 uses
   generalutils, Math, statfunctions, options_utils, Clipbrd,
-  ast_types, forms, graphformfactory;
+  ast_types, forms, graphformfactory, TACustomSource;
 
 { TSurvival }
 
@@ -113,7 +119,7 @@ procedure TSurvival.DoCalcSurvival(InputDF: TEpiDataFile;
   ST: TCustomVariableCommand);
 
 var
-  i, Failures, FailIx, Row, Col, Stratum, NAtRisk: Integer;
+  i, Failures, FailIx, Row, Col, Stratum, NAtRisk, NEffective: Integer;
   S, SE, SumF, CIMult: EpiFloat;
   T: TTables;
   Statistics: TTableStatistics;
@@ -161,6 +167,7 @@ begin
   SetLength(FLowCI,       FStrata + 1, FIntervals);
   SetLength(FHighCI,      FStrata + 1, FIntervals);
   SetLength(FMedian,      Fstrata + 1);
+  SetLength(FMaxRow,      FStrata + 1);
 
 
   // set up confidence interval
@@ -179,6 +186,7 @@ begin
           FStratLabels[Stratum - 1] := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(Stratum - 1);
         end;
       NAtRisk   := ASurvivalTable.Total;
+      NEffective:= NAtRisk;
       S         := 1.0;
       SumF      := 0.0;
       GetMedian := true;
@@ -187,18 +195,23 @@ begin
         begin
           if (NAtRisk > 0) then
             begin
+              if (ASurvivalTable.RowTotal[i] > 0) then
+                FMaxRow[Stratum] := Row;                   // track last row with data
               Failures := ASurvivalTable.Cell[FailIx, i].N;
               S        := S * Float((NAtRisk - Failures)) / Float(NAtRisk);
-              SumF     += Float(Failures) / Float(NAtRisk*(NAtRisk - Failures));
-              SE       := CIMult * S * SQRT(SumF);
+// Greennwood's method
+//              SumF     += Float(Failures) / Float(NAtRisk*(NAtRisk - Failures));
+//              SE       := S * SQRT(SumF);
+// Altman's method
+              SE       := sqrt(S*(1-S)/Float(NEffective));
               FInterval[Stratum, Row] := ASurvivalTable.RowVariable.GetValueLabel(i, FValuelabelOutput);
               FTime    [Stratum, Row] := ASurvivalTable.RowVariable.AsInteger[i];
               FAtRisk  [Stratum, Row] := NAtRisk;
               FFail    [Stratum, Row] := Failures;
               FLost    [Stratum, Row] := ASurvivalTable.RowTotal[i] - Failures;
               FSurvival[Stratum, Row] := S;
-              FLowCI   [Stratum, Row] := max(S - SE , 0);
-              FHighCI  [Stratum, Row] := min(S + SE , 1);
+              FLowCI   [Stratum, Row] := max(S - SE * CIMult , 0);
+              FHighCI  [Stratum, Row] := min(S + SE * CIMult , 1);
               if (GetMedian) then
                 if (S <= 0.5) then
                   begin
@@ -209,7 +222,9 @@ begin
             end;
 
           NAtRisk  := NAtRisk - ASurvivalTable.RowTotal[i];
+          NEffective := NEffective - FLost[Stratum, Row];
         end;
+
       // was median found? It won't be if final survival > 0.5
       if (GetMedian) then
         FMedian[Stratum] := '> ' + FInterval[Stratum, ASurvivalTable.RowCount - 1];
@@ -451,7 +466,9 @@ begin
   for i := low(FAtRisk[Stratum]) to high(FAtRisk[Stratum]) do
     if (FFail[Stratum,i] > 0) then
       DoAddPlotPoints(float(FTime[Stratum, i]), FSurvival[Stratum, i], FLowCI[Stratum, i], FHighCI[Stratum, i]);
-// should we add final plot point based on maximum time for this stratum?
+// add final plot point based on maximum time for this stratum
+  i := FMaxRow[Stratum];
+  DoAddPlotPoints(float(FTime[Stratum, i]), FSurvival[Stratum, i], FLowCI[Stratum, i], FHighCI[Stratum, i]);
 end;
 
 procedure TSurvival.DoAddPlotPoints(t, s, ll, ul: EpiFloat);
@@ -515,6 +532,10 @@ begin
   aColor   := sColor[min(Stratum,4)];
   aPattern := sPattern[min(Stratum,4)];
   case FCIType of
+    0:     // default - verticle bars
+      begin
+        FChart.AddSeries(SurvivalGraphData(FPlotS, FPlotLL, FPlotUL, 'survival ' + aText, psSolid, 2, aColor));
+      end;
     1 :    // line
       begin
         // the order of adding series matters because of a bug in TAChart
@@ -555,6 +576,38 @@ begin
     ShowPoints    := false;
     Source        := plotSource;
     Title         := lineTitle;
+  end;
+end;
+
+function  TSurvival.SurvivalGraphData(data: array of EpiFloat;
+            ll: array of EpiFloat; ul: array of EpiFloat;
+            lineTitle: UTF8String; lineStyle: TFPPenStyle;
+            lineWidth: Integer; lineColor: TColor;
+            inLegend: Boolean = true): TLineSeries;
+var
+  plotSource: TListChartSource;
+  i:          Integer;
+begin
+  plotSource := TListChartSource.Create(FChart);
+  plotSource.YCount := 3;
+  for i := 0 to high(FPlotT) do
+    plotSource.AddXYList(FPlotT[i], [data[i], data[i] - ll[i], ul[i] - data[i]] );
+  plotsource.YErrorBarData.Kind := ebkChartSource;
+  plotsource.YErrorBarData.IndexMinus := 1;
+  plotsource.YErrorBarData.IndexPlus  := 2;
+  result := TLineSeries.Create(FChart);
+  with result do
+  begin
+    LinePen.Color := lineColor;
+    LinePen.Style := lineStyle;
+    LinePen.Width := lineWidth;
+    LineType      := ltStepXY;
+    Pointer.Style := psNone;
+    ShowInLegend  := inLegend;
+    ShowPoints    := false;
+    Source        := plotSource;
+    Title         := lineTitle;
+    YErrorBars.Visible := true;
   end;
 end;
 
@@ -633,7 +686,7 @@ begin
 
   Result := FChartFactory.NewGraphCommandResult(); // always create chart object
   Command.ExecResult := csrFailed; // for statistical command
-  FCIType            := 1; // default - line
+  FCIType            := 0; // default - error bars
   try
     for Opt in Command.Options do
     case Opt.Ident of
@@ -715,11 +768,13 @@ begin
               DoOutputSummary(Command);
 
             if (Command.HasOption(['cin','cinone'],Opt)) then
-              FCIType := 0
+              FCIType := -1
             else if (Command.HasOption(['cib','ciband'],Opt)) then
               FCIType := 2
+            else if (Command.HasOption(['cil','ciline'], Opt)) then
+              FCIType := 1
             else
-              FCIType := 1;
+              FCIType := 0;
             if (Command.HasOption('cb')) then
               FCBPlot := '';
             DoInitializeKMPlot;
