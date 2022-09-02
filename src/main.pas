@@ -479,9 +479,9 @@ begin
     AppPrefCmd.OnClick := @ShowEditorStartupActionExecute;  //<== "Options" on other platforms
     AppMenu.Add(AppPrefCmd);
   // remove duplicate menu items?
-    MainMenu1.Items[2].Remove(MenuItem41);   // preferences
-    MainMenu1.Items[6].Remove(MenuItem6);    // about
-    MainMenu1.Items[1].Remove(MenuItem8);    // quit
+    MenuItem36.Remove(MenuItem41); // Edit/Preferences
+    MenuItem5.Remove(MenuItem6);   // Help/About
+    MenuItem1.Remove(MenuItem8);   // File/Quit
     {$ENDIF}
 
   FLastCreatorCount := 0;
