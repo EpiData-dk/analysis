@@ -478,7 +478,7 @@ begin
     AppPrefCmd.Shortcut := ShortCut(VK_OEM_COMMA, [ssMeta]);
     AppPrefCmd.OnClick := @ShowEditorStartupActionExecute;  //<== "Options" on other platforms
     AppMenu.Add(AppPrefCmd);
-  // remove duplicate menu items
+  // remove duplicate menu items?
     MenuItem36.Remove(MenuItem41); // Edit/Preferences
     MenuItem5.Remove(MenuItem6);   // Help/About
     MenuItem1.Remove(MenuItem8);   // File/Quit
