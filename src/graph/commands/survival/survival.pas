@@ -42,6 +42,11 @@ type
     FHighCI:              Array of Array of EpiFloat;
     FMaxRow:              Array of Integer;
   // summary results
+    FTotal,
+    FTotalFailures,
+    FMinTime,
+    FMaxTime,
+    FSumTime:             Array of Integer;
     FMedian:              Array of UTF8String;
     FLRChi, FLRP:         EpiFloat;
   // labels
@@ -127,7 +132,6 @@ var
   TablesRefMap: TEpiReferenceMap;
   GetMedian: Boolean;
 begin
-
 // Use TABLES to get counts of outcomes by time for each stratum
   T := TTables.Create(FExecutor, FOutputCreator);
   FSurvivalTable  := T.CalcTables(InputDF, Variables,
@@ -168,7 +172,11 @@ begin
   SetLength(FHighCI,      FStrata + 1, FIntervals);
   SetLength(FMedian,      Fstrata + 1);
   SetLength(FMaxRow,      FStrata + 1);
-
+  SetLength(FTotal,       FStrata + 1);
+  SetLength(FTotalFailures, FStrata + 1);
+  SetLength(FMinTime,     FStrata + 1);
+  SetLength(FMaxTime,     FStrata + 1);
+  SetLength(FSumTime,     FStrata + 1);
 
   // set up confidence interval
   FConf  := StrToInt(FExecutor.SetOptionValue[ANA_SO_CONFIDENCE_INTERVAL]);
@@ -185,6 +193,15 @@ begin
           ASurvivalTable := FSurvivalTable.Tables[Stratum - 1];
           FStratLabels[Stratum - 1] := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(Stratum - 1);
         end;
+  // Summary variables
+      with ASurvivalTable do
+        begin
+          FTotal[Stratum]   := Total;
+          FTotalFailures[Stratum] := ColTotal[FailIx];
+          FMinTime[Stratum] := RowVariable.AsInteger[0];
+          FMaxTime[Stratum] := RowVariable.AsInteger[RowCount - 1];
+        end;
+      FSumTime[Stratum]  := 0;
       NAtRisk   := ASurvivalTable.Total;
       NEffective:= NAtRisk;
       S         := 1.0;
@@ -195,6 +212,7 @@ begin
         begin
           if (NAtRisk > 0) then
             begin
+              FSumTime[Stratum] += ASurvivalTable.RowTotal[i] * ASurvivalTable.RowVariable.AsInteger[i];
               if (ASurvivalTable.RowTotal[i] > 0) then
                 FMaxRow[Stratum] := Row;                   // track last row with data
               Failures := ASurvivalTable.Cell[FailIx, i].N;
@@ -428,7 +446,7 @@ var
   i:  Integer;
 begin
   StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
-
+  //TODO:  add in summary variables
   T                 := FOutputCreator.AddTable;
   T.Header.Text     := 'Kaplan-Meier Survival Analysis - Summary';
   T.ColCount        := FStrata + 2;

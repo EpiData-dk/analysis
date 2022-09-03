@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 166
+  Left = 225
   Height = 663
-  Top = 660
+  Top = 133
   Width = 1010
   AllowDropFiles = True
   Caption = 'AMainForm'
