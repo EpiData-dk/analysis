@@ -1,4 +1,4 @@
-unit bar;
+unit barchart;
 
 {$mode objfpc}{$H+}
 
@@ -25,8 +25,8 @@ type
 implementation
 
 uses
-  TASeries, TASources, TATypes, TAChartUtils, Graphics, charttitles, ast_types, barsource, epidatafilestypes,
-  epifields_helper, options_utils;
+  TASeries, TASources, TATypes, TAChartUtils, Graphics, charttitles, ast_types, epidatafilestypes,
+  epifields_helper, options_utils, barchartsource;
 
 { TBarChart }
 
@@ -111,6 +111,6 @@ begin
 end;
 
 initialization
-  RegisterChartCommand(stBar, TBarChart);
+  RegisterChartCommand(stBarchart, TBarChart);
 
 end.
