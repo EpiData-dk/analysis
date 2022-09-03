@@ -20,7 +20,7 @@ uses
   epicurve_contribution, histogram_contribution, scatter_contribution, survival_contribution,
 
   // ONLY ADD GRAPH COMMANDS HERE (delete all other automatically added units).
-   scatter, survival, epicurve, histogram;
+   scatter, barchart, survival, epicurve, histogram;
 
 {$R *.res}
 

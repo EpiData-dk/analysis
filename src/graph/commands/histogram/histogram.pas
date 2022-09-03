@@ -27,7 +27,7 @@ implementation
 
 uses
   TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types,
-  options_utils, bar;
+  options_utils, barchart;
 
 { THistogramChart }
 
