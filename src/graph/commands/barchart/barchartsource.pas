@@ -1,4 +1,4 @@
-unit barsource;
+unit barchartsource;
 
 {$mode objfpc}{$H+}
 

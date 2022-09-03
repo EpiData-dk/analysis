@@ -1297,6 +1297,16 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+  { TBarchartCommand }
+
+  TBarchartCommand = class(TCustomGraphCommand)
+  protected
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TEpicurveCommand }
 
   TEpicurveCommand = class(TCustomGraphCommand)
@@ -2480,6 +2490,27 @@ constructor TScatterCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
   inherited Create(AVariableList, AOptionList, stScatter);
+end;
+
+{ TBarchartCommand }
+
+function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  Result[0] := 2;
+end;
+
+function TBarchartCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  Result.ResultTypes := [rtDate, rtInteger, rtFloat];
+end;
+
+constructor TBarchartCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stBarchart);
 end;
 
 { TEpicurveCommand }
@@ -4033,6 +4064,7 @@ begin
     stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
     stDescribe:  Result := TDescribeCommand.Create(AVariablelist, AOptionList);
     stScatter:   Result := TScatterCommand.Create(AVariableList, AOptionList);
+    stBarchart:  Result := TBarchartCommand.Create(AVariableList, AOptionList);
     stEpicurve:  Result := TEpicurveCommand.Create(AVariableList, AOptionList);
     stHistogram: Result := THistogramCommand.Create(AVariableList, AOptionList);
     stSurvival:  Result := TSurvivalCommand.Create(AVariableList, AOptionList);
@@ -7138,6 +7170,7 @@ begin
     'use': Result := stUse;
     'ver': Result := stVersion;
     'sca': Result := stScatter;
+    'bar': Result := stBarchart;
     'epi': Result := stEpicurve;
     'his': Result := stHistogram;
     'sur': Result := stSurvival;
