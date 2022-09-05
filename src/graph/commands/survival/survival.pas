@@ -198,8 +198,18 @@ begin
         begin
           FTotal[Stratum]   := Total;
           FTotalFailures[Stratum] := ColTotal[FailIx];
-          FMinTime[Stratum] := RowVariable.AsInteger[0];
-          FMaxTime[Stratum] := RowVariable.AsInteger[RowCount - 1];
+          for i := 0 to RowCount - 1 do
+            if (RowTotal[i] > 0) then
+              begin
+                FMinTime[Stratum] := RowVariable.AsInteger[i];
+                break;
+              end;
+          for i := RowCount - 1 downto 0 do
+            if (RowTotal[i] > 0) then
+              begin
+                FMaxTime[Stratum] := RowVariable.AsInteger[i];
+                break;
+              end;
         end;
       FSumTime[Stratum]  := 0;
       NAtRisk   := ASurvivalTable.Total;
@@ -444,30 +454,54 @@ var
   T: TOutputTable;
   StatFmt: String;
   i:  Integer;
+
+  procedure outputStratumResults(s, r: Integer);
+  begin
+    if (s > 0) then
+      T.Cell[0, r].Text := FStratLabels[s-1]
+    else
+        T.Cell[0, r].Text := 'All Data';  ;
+    T.Cell[1, r].Text := FTotal[s].ToString;
+    T.Cell[2, r].Text := FTotalFailures[s].ToString;
+    T.Cell[3, r].Text := FMinTime[s].ToString;
+    T.Cell[4, r].Text := FMaxTime[s].ToString;
+    T.Cell[5, r].Text := FSumTime[s].ToString;
+    T.Cell[6, r].Text := FMedian[s];
+  end;
+
 begin
-  StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
+    StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
   //TODO:  add in summary variables
   T                 := FOutputCreator.AddTable;
   T.Header.Text     := 'Kaplan-Meier Survival Analysis - Summary';
-  T.ColCount        := FStrata + 2;
-  T.RowCount        := 3;
-  T.Cell[1, 1].Text := 'All Data';
-  T.Cell[0, 2].Text := 'Median Survival';
+  T.ColCount        := 7;
+  T.RowCount        := FStrata + 3;
+  T.Cell[1, 0].Text := 'Total';
+  T.Cell[1, 1].Text := 'At Risk';
+  T.Cell[2, 0].Text := 'Total';
+  T.Cell[2, 1].Text := 'Failures';
+  T.Cell[3, 0].Text := 'Minimum';
+  T.Cell[3, 1].Text := 'Time';
+  T.Cell[4, 0].Text := 'Maximum';
+  T.Cell[4, 1].Text := 'Time';
+  T.Cell[5, 0].Text := 'Total';
+  T.Cell[5, 1].Text := 'Time';
+  T.Cell[6, 0].Text := 'Median';
+  T.Cell[6, 1].Text := 'Survival';
   if (FStrata > 0) then
-    T.Cell[2, 0].Text := FStratVarName;
-
-  for i := 0 to FStrata do
     begin
-      if (i > 0) then
-        T.Cell[i + 1, 1].Text := FStratLabels[i-1];
-      T.Cell[i + 1, 2].Text := FMedian[i];
+      T.Cell[0, 0].Text := 'by';
+      T.Cell[0, 1].Text := FStratVarName;
     end;
-    T.SetRowBorders(1, [cbBottom]);
+
+  for i := 1 to FStrata do
+    outputStratumResults(i, i + 1);
+  outputStratumResults(0, FStrata + 2);
 
   if ((FStrata > 0) and (ST.HasOption('t'))) then
     T.Footer.Text := 'Log-Rank Chi-square = ' + Format(StatFmt, [FLRChi]) + ' ' + FormatP(FLRP, true);
-  T.SetRowBorders(1, [cbTop]);
-  T.SetRowBorders(2, [cbBottom]);
+  T.SetRowBorders(0, [cbTop]);
+  T.SetRowBorders(1, [cbBottom]);
 end;
 
 procedure TSurvival.DoCalcPlotPoints(Stratum: Integer);
