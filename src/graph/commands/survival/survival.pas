@@ -48,7 +48,9 @@ type
     FMaxTime,
     FSumTime:             Array of Integer;
     FMedian:              Array of UTF8String;
-    FLRChi, FLRP:         EpiFloat;
+    FLRChi,
+    FLRP,
+    FHazRatio:            EpiFloat;
   // labels
     FFailOutcomeValue,
     FFailOutcomeText,
@@ -264,13 +266,21 @@ end;
 
 procedure TSurvival.DoLogRank();
 var
-  SumExp: EpiFloat;
+  SumExp:  EpiFloat;
   SumFail: Integer;
-  d: EpiFloat;
-  i, Stratum: Integer;
+  r,
+  d,
+  v,
+  e1,
+  e2,
+  x:       EpiFloat;
+  o1,
+  o2,
+  i,
+  Stratum: Integer;
 begin
   if (FStrata = 0) then exit;  // Error - should not happen
-
+// log rank test
   FLRChi := 0;
   for Stratum := 1 to FStrata do
     begin
@@ -287,6 +297,30 @@ begin
       FLRChi += (d * d) / SumExp;
     end;
   FLRP := ChiPValue(FLRChi , FStrata - 1);
+// hazard ratio for two strata only
+  if (FStrata <> 2) then exit;
+
+  r := 0;
+  d := 0;
+  v    := 0;
+  e1   := 0;
+  e2   := 0;
+  o1   := 0;
+  o2   := 0;
+  for i := 0 to FIntervals - 1 do
+    if (FFail[0, i] > 0) then
+      begin
+        o1 += FFail[1, i];
+        o2 += FFail[2, i];
+        d  := FFail[0, i];
+        r  := FAtRisk[0, i];
+        x  := float(d) / float(r);
+        e1 += float(FAtRisk[1, i]) * x;
+        e2 += float(FAtRisk[2, i]) * x;
+        v  += float(FAtRisk[1, i] * FAtRisk[2, i] * d * (r - d)) /
+              float(r * r * (r - 1));
+      end;
+  FHazRatio := exp((float(o1) - e1)/v);
 end;
 
 procedure TSurvival.DoOneResult(Stratum: Integer; Name: UTF8String);
@@ -454,6 +488,8 @@ var
   T: TOutputTable;
   StatFmt: String;
   i:  Integer;
+  line1: array of UTF8String = ('','Total','Total','Minimum','Maximum','Total','Median');
+  line2: array of UTF8String = ('','At Risk','Failures','Time','Time','Time','Survival');
 
   procedure outputStratumResults(s, r: Integer);
   begin
@@ -470,24 +506,17 @@ var
   end;
 
 begin
-    StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
-  //TODO:  add in summary variables
+  StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
+
   T                 := FOutputCreator.AddTable;
   T.Header.Text     := 'Kaplan-Meier Survival Analysis - Summary';
   T.ColCount        := 7;
   T.RowCount        := FStrata + 3;
-  T.Cell[1, 0].Text := 'Total';
-  T.Cell[1, 1].Text := 'At Risk';
-  T.Cell[2, 0].Text := 'Total';
-  T.Cell[2, 1].Text := 'Failures';
-  T.Cell[3, 0].Text := 'Minimum';
-  T.Cell[3, 1].Text := 'Time';
-  T.Cell[4, 0].Text := 'Maximum';
-  T.Cell[4, 1].Text := 'Time';
-  T.Cell[5, 0].Text := 'Total';
-  T.Cell[5, 1].Text := 'Time';
-  T.Cell[6, 0].Text := 'Median';
-  T.Cell[6, 1].Text := 'Survival';
+  for i := 0 to high(line1) do
+    begin
+      T.Cell[i, 0].Text := line1[i];
+      T.Cell[i, 1].Text := line2[i];
+    end;
   if (FStrata > 0) then
     begin
       T.Cell[0, 0].Text := 'by';
@@ -499,7 +528,8 @@ begin
   outputStratumResults(0, FStrata + 2);
 
   if ((FStrata > 0) and (ST.HasOption('t'))) then
-    T.Footer.Text := 'Log-Rank Chi-square = ' + Format(StatFmt, [FLRChi]) + ' ' + FormatP(FLRP, true);
+    T.Footer.Text := 'Log-Rank Chi-square = ' + Format(StatFmt, [FLRChi]) + ' ' + FormatP(FLRP, true) +
+                     sLineBreak + 'Hazard Ratio = ' + Format(StatFmt, [FHazRatio]);
   T.SetRowBorders(0, [cbTop]);
   T.SetRowBorders(1, [cbBottom]);
 end;
@@ -565,6 +595,9 @@ begin
     Legend.Visible        := true;
     Legend.UseSidebar     := true;
     Legend.Frame.Visible  := false;
+    Frame.Visible         := true;
+    Margins.Left          := 0;
+    Margins.Bottom        := 0;
   end;
 end;
 
@@ -616,6 +649,7 @@ begin
   plotSource := TListChartSource.Create(FChart);
   for i := 0 to high(FPlotT) do
     plotSource.Add(FPlotT[i], data[i]);
+    plotSource.Sorted := true;
   result := TLineSeries.Create(FChart);
   with result do
   begin
@@ -647,6 +681,7 @@ begin
   plotsource.YErrorBarData.Kind := ebkChartSource;
   plotsource.YErrorBarData.IndexMinus := 1;
   plotsource.YErrorBarData.IndexPlus  := 2;
+  plotSource.Sorted := true;
   result := TLineSeries.Create(FChart);
   with result do
   begin
@@ -660,7 +695,7 @@ begin
     Source        := plotSource;
     Title         := lineTitle;
     YErrorBars.Visible   := true;
-    YErrorBars.Width     := 0;
+    YErrorBars.Width     := 2;
     YErrorBars.Pen.Color := lineColor;
   end;
 end;
