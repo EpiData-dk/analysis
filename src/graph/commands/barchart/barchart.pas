@@ -26,7 +26,7 @@ implementation
 
 uses
   TASeries, TASources, TATypes, TAChartUtils, Graphics, charttitles, ast_types, epidatafilestypes,
-  epifields_helper, options_utils, barchartsource;
+  epifields_helper, options_utils, scattersource; //barchartsource;
 
 { TBarChart }
 
@@ -41,7 +41,7 @@ end;
 function TBarChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 var
   BarSeries: TBarSeries;
-  BarSource: TBarSource;
+  BarSource: TScatterSource; //TBarSource;
   LabelSeries: TListChartSource;
   VarNames: TStrings;
   Chart: TChart;
@@ -67,7 +67,7 @@ begin
   // Create our own datasource
   // - datasource is destroyed by the chart, so we let it handle the datafile destruction
   //   otherwise we would leak memory.
-  BarSource := TBarSource.Create(Chart);
+  BarSource := TScatterSource.Create(Chart);     //TBarSource
   BarSource.Datafile := DataFile;
   BarSource.XVariableName := XVar.Name;
   BarSource.YVariableName := YVar.Name;
