@@ -27,7 +27,7 @@ implementation
 
 uses
   TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types,
-  options_utils, barchart;
+  options_utils;
 
 { THistogramChart }
 
@@ -201,6 +201,6 @@ begin
 end;
 
 initialization
-  RegisterChartCommand(stHistogram, TBarChart); //THistogramChart);
+  RegisterChartCommand(stHistogram, THistogramChart);
 
 end.
