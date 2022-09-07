@@ -2650,7 +2650,12 @@ begin
   if (VariableList.Count = 2) then
   case Index of
     0: Result.ResultTypes := [rtString, rtInteger];
-    1: Result.ResultTypes := [rtInteger, rtDate];
+    1: Result.ResultTypes := [rtInteger];
+  end;
+  if (VariableList.Count = 3) then
+  case Index of
+    0: Result.ResultTypes := [rtString, rtInteger];
+    1: Result.ResultTypes := [rtDate];
     2: Result.ResultTypes := [rtDate];
   end;
   if (VariableList.Count = 3) then
