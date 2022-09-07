@@ -320,7 +320,7 @@ begin
         v  += float(FAtRisk[1, i] * FAtRisk[2, i] * d * (r - d)) /
               float(r * r * (r - 1));
       end;
-  FHazRatio := exp((float(o1) - e1)/v);
+  FHazRatio := exp((float(o2) - e2)/v);
 end;
 
 procedure TSurvival.DoOneResult(Stratum: Integer; Name: UTF8String);
@@ -626,23 +626,23 @@ begin
   case FCIType of
     0:     // default - verticle bars
       begin
-        FChart.AddSeries(SurvivalGraphData(FPlotS, FPlotLL, FPlotUL, 'survival ' + aText, psSolid, 2, aColor));
+        FChart.AddSeries(SurvivalGraphData(FPlotS, FPlotLL, FPlotUL, aText, psSolid, 2, aColor));
       end;
     1 :    // line
       begin
         // the order of adding series matters because of a bug in TAChart
         // that does not always respect psDot, depending on the series index
         FChart.AddSeries(SurvivalGraphData(FPlotUL, 'CI UL ' + aText, psDot, 2, aColor, false));
-        FChart.AddSeries(SurvivalGraphData(FPlotS,  'survival ' + aText, psSolid, 2, aColor));
-        FChart.AddSeries(SurvivalGraphData(FPlotLL, IntToStr(FConf) + '% CI ' + aText, psDot, 2, aColor));
+        FChart.AddSeries(SurvivalGraphData(FPlotS,  aText, psSolid, 2, aColor));
+        FChart.AddSeries(SurvivalGraphData(FPlotLL, IntToStr(FConf) + '% CI ', psDot, 2, aColor));
       end;
     2 :    // band
       begin
-        FChart.AddSeries(SurvivalGraphData(FPlotS,  'survival ' + aText, psSolid, 2, aColor));
-        FChart.AddSeries(SurvivalBand(IntToStr(FConf) + '% CI ' + aText, aPattern, aColor));
+        FChart.AddSeries(SurvivalGraphData(FPlotS, aText, psSolid, 2, aColor));
+        FChart.AddSeries(SurvivalBand(IntToStr(FConf) + '% CI', aPattern, aColor));
       end;
     else   // none
-      FChart.AddSeries(SurvivalGraphData(FPlotS,  'survival ' + aText, psSolid, 2, aColor));
+      FChart.AddSeries(SurvivalGraphData(FPlotS, aText, psSolid, 2, aColor));
   end;
 end;
 
