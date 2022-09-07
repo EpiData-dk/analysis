@@ -339,11 +339,11 @@ begin
   begin
     rVt := AddResultVector('$survival_time_' + Name, ftFloat, rSz);
     rVs := AddResultVector('$survival_estimate_' + Name, ftFloat, rSz);
-    AddResultConst('survival_' + Name + '_subjects', ftInteger).AsIntegerVector[0] := FTotal[Stratum];
-    AddResultConst('survival_' + Name + '_failures', ftInteger).AsIntegerVector[0] := FTotalFailures[Stratum];
-    AddResultConst('survival_' + Name + '_minTime', ftInteger).AsIntegerVector[0] := FMinTime[Stratum];
-    AddResultConst('survival_' + Name + '_maxTime', ftInteger).AsIntegerVector[0] := FMaxTimel[Stratum];
-    AddResultConst('survival_' + Name + '_sumTime', ftInteger).AsIntegerVector[0] := FSumTime[Stratum];
+    AddResultConst('survival_subjects_' + Name , ftInteger).AsIntegerVector[0] := FTotal[Stratum];
+    AddResultConst('survival_failures_' + Name, ftInteger).AsIntegerVector[0] := FTotalFailures[Stratum];
+    AddResultConst('survival_minTime_' + Name, ftInteger).AsIntegerVector[0] := FMinTime[Stratum];
+    AddResultConst('survival_maxTime_' + Name, ftInteger).AsIntegerVector[0] := FMaxTime[Stratum];
+    AddResultConst('survival_sumTime_' + Name, ftInteger).AsIntegerVector[0] := FSumTime[Stratum];
     rSz := 0;
     for i := 0 to high(FSurvival[Stratum]) do
       if FFail[Stratum, i] > 0 then
@@ -360,6 +360,7 @@ var
   Stratum: Integer;
   sNames: TExecVarVector;
 begin
+  FExecutor.ClearResults('survival');
   DoOneResult(0, 'all');
 
   if FStrata > 0 then
