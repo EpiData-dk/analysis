@@ -2483,8 +2483,10 @@ end;
 
 function TSurvivalCommand.GetAcceptedVariableCount: TBoundArray;
 begin
-  result := inherited GetAcceptedVariableCount;
+  //result := inherited GetAcceptedVariableCount;
+  SetLength(result, 2);
   result[0] := 2;
+  result[1] := 3;
 end;
 
 function TSurvivalCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
@@ -2493,7 +2495,8 @@ begin
   Result := inherited GetAcceptedVariableTypesAndFlags(Index);
   case Index of
     0: Result.ResultTypes := [rtString, rtInteger];
-    1: Result.ResultTypes := [rtInteger];
+    1: Result.ResultTypes := [rtInteger, rtDate];
+    2: Result.ResultTypes := [rtDate];
   end;
 end;
 
