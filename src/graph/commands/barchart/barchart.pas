@@ -10,6 +10,11 @@ uses
 
 type
 
+  {TODO: Completely revamp!!
+    should always show frequencies by the x-variable (numeric or string usually)
+    Will create an instance of histogramdata that does not fill in the x-axis with consecutive values
+    So can also use histogramsource to display. Maybe change this to barchartsource in future.
+  }
   { TBarChart }
 
   TBarChart = class(TInterfacedObject, IChartCommand)
