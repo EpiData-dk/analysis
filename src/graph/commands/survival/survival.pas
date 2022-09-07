@@ -339,6 +339,11 @@ begin
   begin
     rVt := AddResultVector('$survival_time_' + Name, ftFloat, rSz);
     rVs := AddResultVector('$survival_estimate_' + Name, ftFloat, rSz);
+    AddResultConst('survival_' + Name + '_subjects', ftInteger).AsIntegerVector[0] := FTotal[Stratum];
+    AddResultConst('survival_' + Name + '_failures', ftInteger).AsIntegerVector[0] := FTotalFailures[Stratum];
+    AddResultConst('survival_' + Name + '_minTime', ftInteger).AsIntegerVector[0] := FMinTime[Stratum];
+    AddResultConst('survival_' + Name + '_maxTime', ftInteger).AsIntegerVector[0] := FMaxTimel[Stratum];
+    AddResultConst('survival_' + Name + '_sumTime', ftInteger).AsIntegerVector[0] := FSumTime[Stratum];
     rSz := 0;
     for i := 0 to high(FSurvival[Stratum]) do
       if FFail[Stratum, i] > 0 then
@@ -364,6 +369,7 @@ begin
     begin
       FExecutor.AddResultConst('$survival_' + 'chi2', ftFloat).AsFloatVector[0] := FLRChi;
       FExecutor.AddResultConst('$survival_' + 'chip', ftFloat).AsFloatVector[0] := FLRP;
+      FExecutor.AddResultConst('$survival_' + 'hazardRatio', ftFloat).AsFloatVector[0] := FHazRatio;
     end;
     for Stratum := 1 to FStrata do
       begin
