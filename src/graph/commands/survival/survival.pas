@@ -74,6 +74,7 @@ type
     FCBPlot:              UTF8String;
 
   protected
+    function CalcTime(ST: TCustomGraphCommand; VarList: TStrings): TStringList;
     procedure DoCalcSurvival(InputDF: TEpiDataFile; Variables: TStrings;
                 StratVariable: TStringList; ST: TCustomVariableCommand);
     procedure DoResultVariables(ST: TCustomVariableCommand); virtual;
@@ -119,6 +120,59 @@ begin
   FChartFactory  := ChartFactory;
   FExecutor      := Executor;
   FOutputCreator := OutputCreator;
+end;
+
+function TSurvival.CalcTime(ST: TCustomGraphCommand; VarList: TStrings): TStringList;
+var
+  days: TEpiField;
+  t1, t2: TEpiField;
+  missingDate: Integer;
+  opt: TOption;
+  addMissingTime: Boolean;
+  DF: TEpiDataFile;
+  i: Integer;
+begin
+  result := TStringList.Create;
+  days := FExecutor.DataFile.NewField(ftInteger);
+  days.Name := '_survivaldays';
+  days.Question.Text := 'Calculated Days from ' + FExecutor.DataFile.Fields.FieldByName[VarList[1]].GetVariableLabel(FVariableLabelOutput);
+  DF := FExecutor.PrepareDatafile(VarList, nil);
+  t1 := DF.Fields.FieldByName[VarList.Strings[1]];
+  t2 := DF.Fields.FieldByName[VarList.Strings[2]];
+  addMissingTime := false;
+  if (ST.HasOption('exit',opt)) then
+    begin
+      missingDate := opt.Expr.AsInteger;
+      addMissingTime := true;
+    end
+  else if (ST.HasOption('mt')) then
+    begin
+      missingDate := 0;
+      addMissingTime := true;
+      for i := 0 to DF.Size - 1 do
+      begin
+        if (missingDate < t2.AsInteger[i]) then
+          missingDate := t2.AsInteger[i];
+      end;
+    end;
+  for i := 0 to DF.Size - 1 do
+    begin
+      if (t1.IsMissing[i]) then
+        days.IsMissing[i] := true
+      else
+        if (t2.IsMissing[i]) then
+          if (addMissingTime) then
+            days.AsInteger[i] := missingDate - t1.AsInteger[i]
+          else
+            days.IsMissing[i] := true
+        else
+          days.AsInteger[i] := t2.AsInteger[i] - t1.AsInteger[i];
+    end;
+  result.Add(Varlist.Strings[0]);
+  result.Add('_survivaldays');
+  VarList.Delete(2);
+  VarList.Delete(1);
+  VarList.Add('_survivaldays');
 end;
 
 procedure TSurvival.DoCalcSurvival(InputDF: TEpiDataFile;
@@ -778,7 +832,13 @@ begin
   FDecimals            := DecimalFromOption(Command.Options, 3);
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  AllVariables         := Command.VariableList.GetIdentsAsList;
+  // time variables specified?
+
+  if (VarNames.Count = 3) then
+    AllVariables := CalcTime(Command, VarNames) // will replace time variables with days between them
+  else
+    AllVariables := Command.VariableList.GetIdentsAsList;
+
 
   Result := FChartFactory.NewGraphCommandResult(); // always create chart object
   Command.ExecResult := csrFailed; // for statistical command
@@ -891,7 +951,8 @@ begin
         DoResultVariables(Command);
       end;
     DF.Free;
-
+    // if calculated date, then delete the field
+    // FExecutor.Datafile. etc
   finally
     StratVariable.Free;
     AllVariables.Free;
