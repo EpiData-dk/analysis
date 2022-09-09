@@ -834,7 +834,7 @@ begin
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   // time variables specified?
-  vCount := VarNames.Count
+  vCount := VarNames.Count;
   if (vCount = 3) then
     AllVariables := CalcTime(Command, VarNames) // will replace time variables with days between them
   else
