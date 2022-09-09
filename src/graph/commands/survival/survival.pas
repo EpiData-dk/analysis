@@ -150,10 +150,9 @@ begin
       missingDate := 0;
       addMissingTime := true;
       for i := 0 to DF.Size - 1 do
-      begin
-        if (missingDate < t2.AsInteger[i]) then
+        if ((missingDate < t2.AsInteger[i]) and
+            (not t2.IsMissing[i]) then
           missingDate := t2.AsInteger[i];
-      end;
     end;
   for i := 0 to DF.Size - 1 do
     begin
