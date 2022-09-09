@@ -135,7 +135,7 @@ begin
   result := TStringList.Create;
   days := FExecutor.DataFile.NewField(ftInteger);
   days.Name := '_survivaldays';
-  days.Question.Text := 'Calculated Days from ' + FExecutor.DataFile.Fields.FieldByName[VarList[1]].GetVariableLabel(FVariableLabelOutput);
+  days.Question.Text := 'Days from ' + FExecutor.DataFile.Fields.FieldByName[VarList[1]].GetVariableLabel(FVariableLabelOutput);
   DF := FExecutor.PrepareDatafile(VarList, nil);
   t1 := DF.Fields.FieldByName[VarList.Strings[1]];
   t2 := DF.Fields.FieldByName[VarList.Strings[2]];
@@ -151,7 +151,7 @@ begin
       addMissingTime := true;
       for i := 0 to DF.Size - 1 do
         if ((missingDate < t2.AsInteger[i]) and
-            (not t2.IsMissing[i]) then
+            (not t2.IsMissing[i])) then
           missingDate := t2.AsInteger[i];
     end;
   for i := 0 to DF.Size - 1 do
@@ -821,7 +821,9 @@ var
   StratVariable:    TStringList;
   Opt:              TOption;
   DF:               TEpiDataFile;
-  Stratum, Stratum1:Integer;
+  Stratum,
+  Stratum1,
+  vCount:           Integer;
 
 begin
   FExecutor.ClearResults('$survival');
@@ -832,8 +834,8 @@ begin
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   // time variables specified?
-
-  if (VarNames.Count = 3) then
+  vCount := VarNames.Count
+  if (vCount = 3) then
     AllVariables := CalcTime(Command, VarNames) // will replace time variables with days between them
   else
     AllVariables := Command.VariableList.GetIdentsAsList;
@@ -951,7 +953,8 @@ begin
       end;
     DF.Free;
     // if calculated date, then delete the field
-    // FExecutor.Datafile. etc
+    if (vCount = 3) then
+      FExecutor.Datafile.Fields.FieldByName['_survivaldays'].Free;
   finally
     StratVariable.Free;
     AllVariables.Free;
