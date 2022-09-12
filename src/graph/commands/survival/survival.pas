@@ -31,6 +31,8 @@ type
     FSurvivalTable:       TTwoWayTables;
     FStrata,
     FIntervals:           Integer;
+    FRefStratum:          Integer;
+    FRefValue:            EpiString;
   // survival table results
     FInterval:            Array of Array of UTF8String;
     FTime,
@@ -215,6 +217,10 @@ begin
   end;
 
   FStrata    := FSurvivalTable.Count;
+
+  // to implement intervals options
+  // FIntervals will be defined by the option
+  // need to recode actual time to the interval number
   FIntervals := FSurvivalTable.UnstratifiedTable.RowCount;
   SetLength(FStratlabels, FStrata);
   SetLength(FInterval,    FStrata + 1, FIntervals);
@@ -247,6 +253,11 @@ begin
         begin
           ASurvivalTable := FSurvivalTable.Tables[Stratum - 1];
           FStratLabels[Stratum - 1] := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(Stratum - 1);
+          if (FRefStratum < 0) then
+              if (FSurvivalTable.StratifyVariables.Field[Stratum - 1].AsString[0] = FRefValue) then
+                begin
+                  FRefStratum := Stratum - 1;
+                end;
         end;
   // Summary variables
       with ASurvivalTable do
@@ -254,6 +265,9 @@ begin
           FTotal[Stratum]   := Total;
           FTotalFailures[Stratum] := ColTotal[FailIx];
           for i := 0 to RowCount - 1 do
+            // for intervals, this is an example of where the recode happens
+            // e.g. recode 'row' to 'interval'; if no intervals, then interval := row
+            // the same thing happens in the main loop below
             if (RowTotal[i] > 0) then
               begin
                 FMinTime[Stratum] := RowVariable.AsInteger[i];
@@ -352,7 +366,11 @@ begin
   FLRP := ChiPValue(FLRChi , FStrata - 1);
 // hazard ratio for two strata only
   if (FStrata <> 2) then exit;
+  // find refStratum if necessary
+  if (FRefValue <> '') then
+    begin
 
+    end;
   r := 0;
   d := 0;
   v    := 0;
@@ -819,7 +837,8 @@ var
   VarNames:         TStrings;
   AllVariables:     TStrings;
   StratVariable:    TStringList;
-  Opt:              TOption;
+  Opt,
+  refOpt:           TOption;
   DF:               TEpiDataFile;
   Stratum,
   Stratum1,
@@ -869,6 +888,12 @@ begin
             begin
               FExecutor.Error('Cannot stratify by ' + Opt.expr.AsIdent);
               Exit;
+            end;
+          FRefStratum := 0;
+          if (Command.HasOption('ref',refOpt)) then
+            begin
+              FRefValue := refOpt.Expr.AsString;
+              FRefStratum := -1; // signals need to look for stratum with FRefValue
             end;
           FStratVarName := Opt.Expr.AsIdent;
           StratVariable.Add(FStratVarName);
