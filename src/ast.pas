@@ -2481,9 +2481,9 @@ begin
   Result.Insert('q',   [rtUndefined]);
   Result.Insert('mt',  [rtUndefined]);                // missing values of time2 become max(time2)
   Result.Insert('exit',[rtDate]);                     // date to assign when time2 is missing
-  Result.Insert('int', [rtUndefined]);                // use set intervals
-  Result.Insert('agg', [rtString]);                   // aggregate time for specified values
   Result.Insert('ref', [rtInteger, rtString]);        // reference value of by variable
+  Result.Insert('agg', [rtString]);                   // aggregate time for specified values
+  Result.Insert('int', [rtUndefined]);                // use set intervals
   Result.Insert('adj', [rtUndefined]);                // censored obs assigned mid-point of interval
 end;
 
