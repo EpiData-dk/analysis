@@ -33,11 +33,13 @@ type
     FIntervals:           Integer;
     FRefStratum:          Integer;
     FRefValue:            EpiString;
+    FintFlag:             Boolean;
+    FintervalString:      String;
+    FIntervalCount:       Integer;
   // survival table results
     FInterval:            Array of Array of UTF8String;
     FTime,
     FAtRisk,
-    FLost,
     FFail:                Array of Array of Integer;
     FSurvival,
     FLowCI,
@@ -111,7 +113,7 @@ type
 implementation
 
 uses
-  generalutils, Math, statfunctions, options_utils, Clipbrd,
+  generalutils, Math, statfunctions, options_utils, strutils, Clipbrd,
   ast_types, forms, graphformfactory, TACustomSource;
 
 { TSurvival }
@@ -181,13 +183,40 @@ procedure TSurvival.DoCalcSurvival(InputDF: TEpiDataFile;
   ST: TCustomVariableCommand);
 
 var
-  i, Failures, FailIx, Row, Col, Stratum, NAtRisk, NEffective: Integer;
+  i, time, FailIx, Row, Col, Stratum, NAtRisk, NEffective: Integer;
+  iLost, iFail, iTotal: Integer;
+  iLo, iHi, iTime: array of Integer;
+  iLabel: array of UTF8String;
+  sIntervals: array of String;
   S, SE, SumF, CIMult: EpiFloat;
   T: TTables;
   Statistics: TTableStatistics;
   ASurvivalTable: TTwowayTable;
   TablesRefMap: TEpiReferenceMap;
   GetMedian: Boolean;
+
+  function accumTotals(i1, i2: Integer): Integer;
+  var
+    ix: Integer;
+  begin
+    if (i1 < 0) then exit(0);
+    if (not FintFlag) then exit(ASurvivalTable.RowTotal[i1]);
+    result := 0;
+    for ix := i1 to i2 do
+      result += ASurvivalTable.RowTotal[ix];
+  end;
+
+  function accumFailures(i1, i2: Integer): Integer;
+  var
+    ix: Integer;
+  begin
+    if (i1 < 0) then exit(0);
+    if (not FintFlag) then exit(ASurvivalTable.Counts[Failix, i1]);
+    result := 0;
+    for ix := i1 to i2 do
+      result += ASurvivalTable.Counts[Failix, ix];
+  end;
+
 begin
 // Use TABLES to get counts of outcomes by time for each stratum
   T := TTables.Create(FExecutor, FOutputCreator);
@@ -200,7 +229,10 @@ begin
     FailIx := -1;
     for Col := 0 to ColCount - 1 do
       if (ColVariable.AsString[Col] = FFailOutcomeValue) then
+        begin
           FailIx := Col;
+          Continue;
+        end;
     if (FailIx < 0) then
       begin
         FExecutor.Error('No records with ' + Variables[0] + ' = ' + FFailOutcomeValue);
@@ -218,16 +250,71 @@ begin
 
   FStrata    := FSurvivalTable.Count;
 
-  // to implement intervals options
-  // FIntervals will be defined by the option
-  // need to recode actual time to the interval number
-  FIntervals := FSurvivalTable.UnstratifiedTable.RowCount;
+  if (FintFlag) then
+    begin
+      sIntervals := SplitString(FIntervalString, ',');  // no check on contents at this point
+      FIntervals := Length(sIntervals) + 1;       // one more interval than numbers specified
+    end
+  else
+    FIntervals := FSurvivalTable.UnstratifiedTable.RowCount;
+
+  SetLength(iLo,    FIntervals);
+  SetLength(iHi,    FIntervals);
+  SetLength(iTime,  FIntervals);
+  SetLength(iLabel, FIntervals);
+
+  if (FintFlag) then
+    begin
+      iTime[FIntervals - 1] := strToInt(SIntervals[FIntervals - 2]);
+      iLabel[FIntervals - 1] := '[' + SIntervals[FIntervals - 2] + '-';
+      for i := FIntervals - 2 downto 1 do
+        begin
+          iTime[i] := strToInt(SIntervals[i-1]);
+          iLabel[i] := '[' + SIntervals[i-1] + '-' + SIntervals[i] + ')';
+        end;
+      iTime[0] := 0;
+      iLabel[0] := '[0-' + SIntervals[0] + '}';
+      // now get iLo and iHi to map intervals to rows
+      i := -1;
+      iLo[0] := 0;
+      for Row := 0 to FSurvivalTable.UnstratifiedTable.RowCount - 1 do
+        begin
+          time := FSurvivalTable.UnstratifiedTable.RowVariable.AsInteger[Row];
+          if (i < FIntervals) then
+            begin
+              if (time < iTime[i+1]) then
+                begin
+                  if (i >= 0) then iHi[i] := row;
+                end
+              else
+                begin
+                  i += 1;
+                  iLo[i] := row;
+                  iHi[i] := row;
+                end;
+            end
+          else
+            begin
+              iHi[FIntervals - 1] := Row;
+            end;
+        end;
+    end
+  else  // no intervals
+    begin
+      for i := 0 to FIntervals - 1 do
+        begin
+          iTime[i] := FSurvivalTable.UnstratifiedTable.RowVariable.AsInteger[i];
+          iLabel[i] := FSurvivalTable.UnstratifiedTable.RowVariable.GetValueLabel(i, FValuelabelOutput);
+          iLo[i] := i;
+          iHi[i] := i;
+        end;
+    end;
+
   SetLength(FStratlabels, FStrata);
   SetLength(FInterval,    FStrata + 1, FIntervals);
   SetLength(FTime,        FStrata + 1, FIntervals);
   SetLength(FAtRisk,      FStrata + 1, FIntervals);
   SetLength(FFail,        FStrata + 1, FIntervals);
-  SetLength(FLost,        FStrata + 1, FIntervals);
   SetLength(FSurvival,    FStrata + 1, FIntervals);
   SetLength(FLowCI,       FStrata + 1, FIntervals);
   SetLength(FHighCI,      FStrata + 1, FIntervals);
@@ -248,35 +335,34 @@ begin
   for Stratum := 0 to FStrata do
     begin
       if (Stratum = 0) then
-        ASurvivalTable := FSurvivalTable.UnstratifiedTable
+        begin
+          ASurvivalTable := FSurvivalTable.UnstratifiedTable;
+        end
       else
         begin
           ASurvivalTable := FSurvivalTable.Tables[Stratum - 1];
           FStratLabels[Stratum - 1] := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(Stratum - 1);
           if (FRefStratum < 0) then
               if (FSurvivalTable.StratifyVariables.Field[Stratum - 1].AsString[0] = FRefValue) then
-                begin
-                  FRefStratum := Stratum - 1;
-                end;
+                FRefStratum := Stratum - 1;
         end;
+  // with intervals, need to aggregate atrisk, fail,  lost and then calculate survival, etc
+
   // Summary variables
       with ASurvivalTable do
         begin
           FTotal[Stratum]   := Total;
           FTotalFailures[Stratum] := ColTotal[FailIx];
-          for i := 0 to RowCount - 1 do
-            // for intervals, this is an example of where the recode happens
-            // e.g. recode 'row' to 'interval'; if no intervals, then interval := row
-            // the same thing happens in the main loop below
-            if (RowTotal[i] > 0) then
+          for Row := 0 to RowCount - 1 do
+            if (RowTotal[Row] > 0) then
               begin
-                FMinTime[Stratum] := RowVariable.AsInteger[i];
+                FMinTime[Stratum] := RowVariable.AsInteger[Row];
                 break;
               end;
-          for i := RowCount - 1 downto 0 do
-            if (RowTotal[i] > 0) then
+          for Row := RowCount - 1 downto 0 do
+            if (RowTotal[Row] > 0) then
               begin
-                FMaxTime[Stratum] := RowVariable.AsInteger[i];
+                FMaxTime[Stratum] := RowVariable.AsInteger[Row];
                 break;
               end;
         end;
@@ -287,25 +373,28 @@ begin
       SumF      := 0.0;
       GetMedian := true;
       Row       := 0;   // index for saved values (# table rows with NAtRisk>0)
-      for i := 0 to ASurvivalTable.RowCount - 1 do
+
+      for i := 0 to FIntervals - 1 do                                                                         // OK
         begin
           if (NAtRisk > 0) then
             begin
-              FSumTime[Stratum] += ASurvivalTable.RowTotal[i] * ASurvivalTable.RowVariable.AsInteger[i];
-              if (ASurvivalTable.RowTotal[i] > 0) then
+              iTotal := accumTotals(iLo[i], iHi[i]);
+              FSumTime[Stratum] += iTotal * iTime[i]; // iTime is 'time of record' for this interval
+//              FSumTime[Stratum] += ASurvivalTable.RowTotal[i] * ASurvivalTable.RowVariable.AsInteger[i];      //**
+              if (iTotal > 0) then //(ASurvivalTable.RowTotal[i] > 0) then                                                        //**
                 FMaxRow[Stratum] := Row;                   // track last row with data
-              Failures := ASurvivalTable.Cell[FailIx, i].N;
-              S        := S * Float((NAtRisk - Failures)) / Float(NAtRisk);
+              iFail := accumFailures(iLo[i], iHi[i]); //ASurvivalTable.Counts[FailIx, i];                                                   //**
+              S        := S * Float((NAtRisk - iFail)) / Float(NAtRisk);
 // Greennwood's method
 //              SumF     += Float(Failures) / Float(NAtRisk*(NAtRisk - Failures));
 //              SE       := S * SQRT(SumF);
 // Altman's method
               SE       := sqrt(S*(1-S)/Float(NEffective));
-              FInterval[Stratum, Row] := ASurvivalTable.RowVariable.GetValueLabel(i, FValuelabelOutput);
-              FTime    [Stratum, Row] := ASurvivalTable.RowVariable.AsInteger[i];
+              FInterval[Stratum, Row] := iLabel[i]; //ASurvivalTable.RowVariable.GetValueLabel(i, FValuelabelOutput);      //**
+              FTime    [Stratum, Row] := iTime[i];  //ASurvivalTable.RowVariable.AsInteger[i];                             //**
               FAtRisk  [Stratum, Row] := NAtRisk;
-              FFail    [Stratum, Row] := Failures;
-              FLost    [Stratum, Row] := ASurvivalTable.RowTotal[i] - Failures;
+              FFail    [Stratum, Row] := iFail;
+              iLost                   := iTotal - iFail; //ASurvivalTable.RowTotal[i] - Failures;                               //**
               FSurvival[Stratum, Row] := S;
               FLowCI   [Stratum, Row] := max(S - SE * CIMult , 0);
               FHighCI  [Stratum, Row] := min(S + SE * CIMult , 1);
@@ -318,13 +407,13 @@ begin
               Row += 1;
             end;
 
-          NAtRisk  := NAtRisk - ASurvivalTable.RowTotal[i];
-          NEffective := NEffective - FLost[Stratum, Row];
+          NAtRisk  := NAtRisk - iTotal; //ASurvivalTable.RowTotal[i];
+          NEffective := NEffective - iLost;                                                                         //**
         end;
 
       // was median found? It won't be if final survival > 0.5
       if (GetMedian) then
-        FMedian[Stratum] := '> ' + FInterval[Stratum, ASurvivalTable.RowCount - 1];
+        FMedian[Stratum] := '>' + FInterval[Stratum, FMaxRow[Stratum]]; //ASurvivalTable.RowCount - 1];
     end;
   ST.ExecResult := csrSuccess;
 
@@ -691,7 +780,7 @@ begin
   if (Stratum > 0) then
     aText  := FStratVarname + '=' + FStratLabels[Stratum - 1]
   else
-    aText  := '';
+    aText  := 'survival';
   aColor   := sColor[min(Stratum,4)];
   aPattern := sPattern[min(Stratum,4)];
   case FCIType of
@@ -852,6 +941,7 @@ begin
   FDecimals            := DecimalFromOption(Command.Options, 3);
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  FintFlag              := false;
   // time variables specified?
   vCount := VarNames.Count;
   if (vCount = 3) then
@@ -914,6 +1004,17 @@ begin
             end;
           FWeightVarName := Opt.Expr.AsIdent;
           AllVariables.Add(FWeightVarName);
+        end;
+
+      'i':  // intervals
+        begin
+          if (FintFlag) then
+            begin
+              FExecutor.Error('Can only specify one interval option');
+              exit;
+            end;
+          FintFlag := true;
+          FintervalString := Opt.Expr.AsIdent;
         end;
     end;
 

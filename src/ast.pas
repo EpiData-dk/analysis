@@ -2468,23 +2468,23 @@ begin
   AddValueLabelOptions(Result);
   Result.Insert('by',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('o',   [rtInteger, rtString]);        // outcome value
-  Result.Insert('nt',  ['notab'],  [rtUndefined]);    // no tables
-  Result.Insert('nou', [rtUndefined]);                // no unstratified table
-  Result.Insert('nos', [rtUndefined]);                // no stratified tables
-  Result.Insert('ns',  [rtUndefined]);                // no summary output
-  Result.Insert('t',   ['test'], [rtUndefined]);      // log-rank test and hazard ratio (valid with !by)
-  Result.Insert('cb',  [rtUndefined]);                // put KM plot points into clipboard
-  Result.Insert('cin', ['cinone'], [rtUndefined]);    // no confidence intervals on plots
-  Result.Insert('cib', ['ciband'], [rtUndefined]);    // show CI as bands
-  Result.Insert('cil', ['ciline'], [rtUndefined]);    // show CI uppper and lower lines
+  Result.Insert('o',   [rtInteger, rtString]);          // outcome value
+  Result.Insert('nt',  ['notab'],  [rtUndefined]);      // no tables
+  Result.Insert('nou', [rtUndefined]);                  // no unstratified table
+  Result.Insert('nos', [rtUndefined]);                  // no stratified tables
+  Result.Insert('ns',  [rtUndefined]);                  // no summary output
+  Result.Insert('t',   ['test'], [rtUndefined]);        // log-rank test and hazard ratio (valid with !by)
+  Result.Insert('cb',  [rtUndefined]);                  // put KM plot points into clipboard
+  Result.Insert('cin', ['cinone'], [rtUndefined]);      // no confidence intervals on plots
+  Result.Insert('cib', ['ciband'], [rtUndefined]);      // show CI as bands
+  Result.Insert('cil', ['ciline'], [rtUndefined]);      // show CI uppper and lower lines
   Result.Insert('q',   [rtUndefined]);
-  Result.Insert('mt',  [rtUndefined]);                // missing values of time2 become max(time2)
-  Result.Insert('exit',[rtDate]);                     // date to assign when time2 is missing
-  Result.Insert('ref', [rtInteger, rtString]);        // reference value of by variable
-  Result.Insert('agg', [rtString]);                   // aggregate time for specified values
-  Result.Insert('int', [rtUndefined]);                // use set intervals
-  Result.Insert('adj', [rtUndefined]);                // censored obs assigned mid-point of interval
+  Result.Insert('mt',  [rtUndefined]);                  // missing values of time2 become max(time2)
+  Result.Insert('exit',[rtDate]);                       // date to assign when time2 is missing
+  Result.Insert('ref', [rtInteger, rtString]);          // reference value of by variable
+  Result.Insert('agg', [rtString]);                     // aggregate time for specified values
+  Result.Insert('i', ['int'], [rtUndefined, rtString]); // use set intervals
+  Result.Insert('adj', [rtUndefined]);                  // censored obs assigned mid-point of interval
 end;
 
 function TSurvivalCommand.GetAcceptedVariableCount: TBoundArray;
