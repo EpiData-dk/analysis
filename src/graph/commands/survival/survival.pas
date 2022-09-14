@@ -13,6 +13,49 @@ uses
   TAGraph, TASeries, TATypes, TASources, Graphics, FPCanvas,
   chartcommandresult, chartcommand, chartfactory, chartconfiguration, charttitles;
 
+resourcestring
+  sTotal = 'Total';
+  sMin = 'Minumum';
+  sMax = 'Maximum';
+  sTime = 'Time';
+  sMedian = 'Median';
+  sBy = 'by';
+  sAt = 'at';
+  sAllData = 'All data';
+  sNoData = 'No data';
+  sVariable = 'Variable';
+  sWeighted = 'Weighted';
+  sConfIntervalAbbr = 'CI';
+  sUpperLimitAbbr = 'UL';
+  sLowerLimitAbbr = 'LL';
+  sNoMoreThanOne =  'Cannot specify more than one';
+  sOutcome = 'Outcome';
+  sWeight = 'Weight';
+  sStratify = 'Stratify';
+  //sCannotStratifyBy = 'Cannot stratify by';
+  //sCannotWeightBy = 'Cannot weight by';
+  sOptionInvalid = 'Option invalid';
+  //sIsInvalid = 'is invalid';
+  sSurCommand = 'Survival';
+  sSurTempVar = '_survivaldays';
+  sSurTempVarPrefix = 'Days from ';
+  sSurNoRec =  'No records with ';
+  sSurTimeVarNegPrefix = 'The time variable,';
+  sSurTimeVarNegSuffix = ', has negative values';
+  sSurHeader1 = 'Kaplan Meier Survival Analysis - Life Tables';
+  sSurHeader2 = 'Kaplan Meier Survival Analysis - Summary';
+  sSurGraphHead = 'KM Plot for outcome';
+  sSurPlotHead = 'KM Plot for';
+  sSurPlotInfo = 'Plot points for KM plots were saved to the clipboard';
+  sSurAtRisk = 'At risk';
+  sSurAtRisk1 = 'at';
+  sSurAtRisk2 = 'risk';
+  sSurFailure = 'Failure';
+  sSurFailures = 'Failures';
+  sSurAllData = 'All Data';
+  sSurFollowup = 'Followup';
+  sSurLogRankChi = 'Log-Rank Chi-square';
+  sSurHazardRatio = 'Hazard Ratio';
 type
 
   { TSurvival }
@@ -138,8 +181,8 @@ var
 begin
   result := TStringList.Create;
   days := FExecutor.DataFile.NewField(ftInteger);
-  days.Name := '_survivaldays';
-  days.Question.Text := 'Days from ' + FExecutor.DataFile.Fields.FieldByName[VarList[1]].GetVariableLabel(FVariableLabelOutput);
+  days.Name := sSurTempVar;
+  days.Question.Text := sSurTempVarPrefix + FExecutor.DataFile.Fields.FieldByName[VarList[1]].GetVariableLabel(FVariableLabelOutput);
   DF := FExecutor.PrepareDatafile(VarList, nil);
   t1 := DF.Fields.FieldByName[VarList.Strings[1]];
   t2 := DF.Fields.FieldByName[VarList.Strings[2]];
@@ -172,10 +215,10 @@ begin
           days.AsInteger[i] := t2.AsInteger[i] - t1.AsInteger[i];
     end;
   result.Add(Varlist.Strings[0]);
-  result.Add('_survivaldays');
+  result.Add(sSurTempVar);
   VarList.Delete(2);
   VarList.Delete(1);
-  VarList.Add('_survivaldays');
+  VarList.Add(sSurTempVar);
 end;
 
 procedure TSurvival.DoCalcSurvival(InputDF: TEpiDataFile;
@@ -235,7 +278,7 @@ begin
         end;
     if (FailIx < 0) then
       begin
-        FExecutor.Error('No records with ' + Variables[0] + ' = ' + FFailOutcomeValue);
+        FExecutor.Error(sSurNoRec + Variables[0] + ' = ' + FFailOutcomeValue);
         exit;
       end;
     FFailOutcomeText  := ColVariable.GetValueLabelFormatted(FailIx,FValueLabelOutput);
@@ -243,7 +286,7 @@ begin
     // validate that time value has only positive integers
     if (RowVariable.AsInteger[0] < 0) then
       begin
-        FExecutor.Error('The time variable, ' + Variables[1] + ', has negative values');
+        FExecutor.Error(sSurTimeVarNegPrefix + ' ' + Variables[1] + sSurTimeVarNegSuffix);
         exit;
       end;
   end;
@@ -266,14 +309,14 @@ begin
   if (FintFlag) then
     begin
       iTime[FIntervals - 1] := strToInt(SIntervals[FIntervals - 2]);
-      iLabel[FIntervals - 1] := '[' + SIntervals[FIntervals - 2] + '-';
+      iLabel[FIntervals - 1] := SIntervals[FIntervals - 2] + '+';
       for i := FIntervals - 2 downto 1 do
         begin
           iTime[i] := strToInt(SIntervals[i-1]);
-          iLabel[i] := '[' + SIntervals[i-1] + '-' + SIntervals[i] + ')';
+          iLabel[i] := SIntervals[i-1] + '-' + (iTime[i] - 1).ToString;
         end;
       iTime[0] := 0;
-      iLabel[0] := '[0-' + SIntervals[0] + '}';
+      iLabel[0] := '0-' + (iTime[1] - 1).ToString;
       // now get iLo and iHi to map intervals to rows
       i := -1;
       iLo[0] := 0;
@@ -530,7 +573,7 @@ begin
     begin
       FExecutor.AddResultConst('$survival_' + 'chi2', ftFloat).AsFloatVector[0] := FLRChi;
       FExecutor.AddResultConst('$survival_' + 'chip', ftFloat).AsFloatVector[0] := FLRP;
-      FExecutor.AddResultConst('$survival_' + 'hazardRatio', ftFloat).AsFloatVector[0] := FHazRatio;
+      FExecutor.AddResultConst('$survival_' + 'HR', ftFloat).AsFloatVector[0] := FHazRatio;
     end;
     for Stratum := 1 to FStrata do
       begin
@@ -556,7 +599,7 @@ var
 
 begin
   T             := FOutputCreator.AddTable;
-  T.Header.Text := 'Kaplan Meier Survival Analysis - Life Tables';
+  T.Header.Text := sSurHeader1;
   // show only rows with failures
   Sz := 0;
   for i := 0 to Length(FFail[0]) - 1 do
@@ -579,7 +622,7 @@ begin
     begin
       T.RowCount       := 3;
       T.ColCount       := 1 + ColPerStratum;
-      T.Cell[1,0].Text := 'All data';
+      T.Cell[1,0].Text := sSurAllData;
       FirstStratum     := 0;
       Offset           := 1 + ColPerStratum;
     end;
@@ -597,21 +640,21 @@ begin
       LastStratum := FStrata;
     end;
 
-  T.Cell[0, 1].Text := 'Followup';
+  T.Cell[0, 1].Text := sSurFollowup;
   T.Cell[0, 2].Text := FTimeVarLabel;
   Offset            := 1;
 
   // Column headers
   for Stratum := FirstStratum to LastStratum do
     begin
-      T.Cell[    Offset, 1].Text := '# At';
+      T.Cell[    Offset, 1].Text := '#' + sSurAtRisk1;
+      T.Cell[    Offset, 2].Text := sSurAtRisk2;
       T.Cell[1 + Offset, 1].Text := FOutcomeVarLabel;
-      T.Cell[2 + Offset, 1].Text := ' ';
-      T.Cell[3 + Offset, 1].Text := ' ';
-      T.Cell[    Offset, 2].Text := 'Risk';
       T.Cell[1 + Offset, 2].Text := FFailOutcomeText;
-      T.Cell[2 + Offset, 2].Text := 'Survival';
-      T.Cell[3 + Offset, 2].Text := '(' + IntToStr(FConf) + '% CI)';
+      T.Cell[2 + Offset, 1].Text := ' ';
+      T.Cell[2 + Offset, 2].Text := sSurCommand;
+      T.Cell[3 + Offset, 1].Text := ' ';
+      T.Cell[3 + Offset, 2].Text := '(' + IntToStr(FConf) + '% ' + sConfIntervalAbbr + ')';
       Offset += ColPerStratum;
     end;
   T.SetRowAlignment(1, taRightJustify);
@@ -655,15 +698,15 @@ var
   T: TOutputTable;
   StatFmt: String;
   i:  Integer;
-  line1: array of UTF8String = ('','Total','Total','Minimum','Maximum','Total','Median');
-  line2: array of UTF8String = ('','At Risk','Failures','Time','Time','Time','Survival');
+  line1: array of UTF8String = ('',sTotal,sTotal,sMin,sMax,sTotal,sMedian);
+  line2: array of UTF8String = ('',sSurAtRisk,sSurFailures,sTime,sTime,sTime,sSurCommand);
 
   procedure outputStratumResults(s, r: Integer);
   begin
     if (s > 0) then
       T.Cell[0, r].Text := FStratLabels[s-1]
     else
-        T.Cell[0, r].Text := 'All Data';  ;
+        T.Cell[0, r].Text := sSurAllData;
     T.Cell[1, r].Text := FTotal[s].ToString;
     T.Cell[2, r].Text := FTotalFailures[s].ToString;
     T.Cell[3, r].Text := FMinTime[s].ToString;
@@ -676,7 +719,7 @@ begin
   StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
 
   T                 := FOutputCreator.AddTable;
-  T.Header.Text     := 'Kaplan-Meier Survival Analysis - Summary';
+  T.Header.Text     := sSurHeader2;
   T.ColCount        := 7;
   T.RowCount        := FStrata + 3;
   for i := 0 to high(line1) do
@@ -686,7 +729,7 @@ begin
     end;
   if (FStrata > 0) then
     begin
-      T.Cell[0, 0].Text := 'by';
+      T.Cell[0, 0].Text := sBy;
       T.Cell[0, 1].Text := FStratVarName;
     end;
 
@@ -695,8 +738,8 @@ begin
   outputStratumResults(0, FStrata + 2);
 
   if ((FStrata > 0) and (ST.HasOption('t'))) then
-    T.Footer.Text := 'Log-Rank Chi-square = ' + Format(StatFmt, [FLRChi]) + ' ' + FormatP(FLRP, true) +
-                     sLineBreak + 'Hazard Ratio = ' + Format(StatFmt, [FHazRatio]);
+    T.Footer.Text := sSurLogRankChi + ' = ' + Format(StatFmt, [FLRChi]) + ' ' + FormatP(FLRP, true) +
+                     sLineBreak + sSurHazardRatio + ' = ' + Format(StatFmt, [FHazRatio]);
   T.SetRowBorders(0, [cbTop]);
   T.SetRowBorders(1, [cbBottom]);
 end;
@@ -738,19 +781,19 @@ var
   aTitle, aFoot: UTF8String;
 begin
 // create graph and set titles, etc
-  aTitle := 'KM Plot for outcome ' + FOutcomeVarLabel;
+  aTitle := sSurGraphHead + ' ' + FOutcomeVarLabel;
   if (FStrata > 0) then
-    aTitle += ' by ' + FStratVarName;
-  aFoot := 'Failure: ' + FOutcomeVarLabel + ' = ' + FFailOutcomeText;
+    aTitle += sBy + ' ' + FStratVarName;
+  aFoot := sSurFailure + ': ' + FOutcomeVarLabel + ' = ' + FFailOutcomeText;
   if (FWeightVarName <> '') then
-    aFoot += ' (weighted by ' + FWeightVarName + ')';
+    aFoot += ' (' + sWeighted + ' ' + sBy + ' ' + FWeightVarName + ')';
   FChart := FChartFactory.NewChart();
   FChartConfiguration := FChartFactory.NewChartConfiguration();
   FTitles := FChartConfiguration.GetTitleConfiguration()
     .SetTitle(aTitle)
     .SetFootnote(aFoot)
-    .SetXAxisTitle('Time: ' + FTimeVarLabel)
-    .SetYAxisTitle('Survival');
+    .SetXAxisTitle(sTime + ': ' + FTimeVarLabel)
+    .SetYAxisTitle(sSurCommand);
   with FChart do
   begin
     LeftAxis.Range.Min    := 0;
@@ -780,7 +823,7 @@ begin
   if (Stratum > 0) then
     aText  := FStratVarname + '=' + FStratLabels[Stratum - 1]
   else
-    aText  := 'survival';
+    aText  := sSurCommand;
   aColor   := sColor[min(Stratum,4)];
   aPattern := sPattern[min(Stratum,4)];
   case FCIType of
@@ -792,14 +835,14 @@ begin
       begin
         // the order of adding series matters because of a bug in TAChart
         // that does not always respect psDot, depending on the series index
-        FChart.AddSeries(SurvivalGraphData(FPlotUL, 'CI UL ' + aText, psDot, 2, aColor, false));
+        FChart.AddSeries(SurvivalGraphData(FPlotUL, '', psDot, 2, aColor, false));
         FChart.AddSeries(SurvivalGraphData(FPlotS,  aText, psSolid, 2, aColor));
-        FChart.AddSeries(SurvivalGraphData(FPlotLL, IntToStr(FConf) + '% CI ', psDot, 2, aColor));
+        FChart.AddSeries(SurvivalGraphData(FPlotLL, IntToStr(FConf) + '% ' + sConfIntervalAbbr, psDot, 2, aColor));
       end;
     2 :    // band
       begin
         FChart.AddSeries(SurvivalGraphData(FPlotS, aText, psSolid, 2, aColor));
-        FChart.AddSeries(SurvivalBand(IntToStr(FConf) + '% CI', aPattern, aColor));
+        FChart.AddSeries(SurvivalBand(IntToStr(FConf) + '% ' + sConfIntervalAbbr, aPattern, aColor));
       end;
     else   // none
       FChart.AddSeries(SurvivalGraphData(FPlotS, aText, psSolid, 2, aColor));
@@ -902,12 +945,12 @@ var
   d: UTF8String;
 begin
   d := FExecutor.SetOptions.GetValue(ANA_SO_CLIPBOARD_DELIMITER).Value;
-  FCBplot += 'KM Plot for ' + FOutcomeVarLabel + ' at time ' + FTimeVarLabel + lineending;
+  FCBplot += sSurPlotHead + FOutcomeVarLabel + ' ' + sAt + ' ' + sBy + ' ' + FTimeVarLabel + lineending;
   if (Stratum = 0) then
-    FCBPlot += 'all data' + lineending
+    FCBPlot += sAllData + lineending
   else
     FCBPlot += FStratVarName + ' = ' + FStratLabels[Stratum - 1] + lineending;
-  FCBPlot +=  'Time' + d + 'Survival' + d + 'CIlow' + d + 'CIHigh' + lineending;
+  FCBPlot +=  sTime + d + sSurCommand + d + sConfIntervalAbbr + sLowerLimitAbbr + d + sConfIntervalAbbr + sUpperLimitAbbr + lineending;
   for i := 0 to high(FPlotT) do
     FCBPlot += trim(Format('%6.0f', [FPlotT[i]]))  + d +
                trim(Format('%6.3f', [FPlotS[i]]))  + d +
@@ -918,7 +961,7 @@ end;
 procedure TSurvival.DoOutputCBPlotPoints();
 begin
     Clipboard.AsText:=FCBPlot;
-    FOutputCreator.DoInfoShort('Plot points for KM plots were saved to the clipboard');
+    FOutputCreator.DoInfoShort(sSurPlotInfo);
 end;
 
 function TSurvival.Execute(Command: TCustomGraphCommand) : IChartCommandResult;
@@ -961,7 +1004,7 @@ begin
         begin
           if (FFailOutcomeValue <> '') then
             begin
-              FExecutor.Error('Cannot specify more than one outcome. !o:=' + Opt.Expr.AsIdent + ' is invalid');
+              FExecutor.Error(sOptionInvalid + ': ' + Opt.Ident + ':=' + Opt.Expr.AsIdent);
               exit;
             end;
           FFailOutcomeValue := Opt.Expr.AsString;
@@ -971,12 +1014,12 @@ begin
         begin
           if (FStratVarName <> '') then
             begin
-              FExecutor.Error('Can only stratify by one variable; !by:=' + Opt.Expr.AsIdent + ' is invalid');
+              FExecutor.Error(sOptionInvalid + ': ' + Opt.Ident + ':=' + Opt.Expr.AsIdent);
               exit;
             end;
           if ( (VarNames[0] = Opt.Expr.AsIdent) or (VarNames[1] = Opt.Expr.AsIdent) ) then
             begin
-              FExecutor.Error('Cannot stratify by ' + Opt.expr.AsIdent);
+              FExecutor.Error(sOptionInvalid + ': ' + Opt.Ident + ':=' + Opt.Expr.AsIdent);
               Exit;
             end;
           FRefStratum := 0;
@@ -994,12 +1037,12 @@ begin
         begin
           if (FWeightVarName <> '') then
             begin
-              FExecutor.Error('Can only use one weight variable; !w:=' + Opt.Expr.AsIdent + ' is invalid');
+              FExecutor.Error(sOptionInvalid + ': ' + Opt.Ident + ':=' + Opt.Expr.AsIdent);;
               exit;
             end;
           if ( (VarNames[0] = Opt.Expr.AsIdent) or (VarNames[1] = Opt.Expr.AsIdent) ) then
             begin
-              FExecutor.Error(Opt.expr.AsIdent + ' cannot be used as a weight');
+              FExecutor.Error(sOptionInvalid + ': ' + Opt.Ident + ':=' + Opt.Expr.AsIdent);
               Exit;
             end;
           FWeightVarName := Opt.Expr.AsIdent;
@@ -1010,7 +1053,7 @@ begin
         begin
           if (FintFlag) then
             begin
-              FExecutor.Error('Can only specify one interval option');
+              FExecutor.Error(sOptionInvalid + ': ' + Opt.Ident + ':=' + Opt.Expr.AsIdent);
               exit;
             end;
           FintFlag := true;
@@ -1025,7 +1068,7 @@ begin
 
     if DF.Size = 0 then
       begin
-        FExecutor.Error('No data!');
+        FExecutor.Error(sNoData);
         DF.Free;
         Exit;
       end;
@@ -1080,7 +1123,7 @@ begin
     DF.Free;
     // if calculated date, then delete the field
     if (vCount = 3) then
-      FExecutor.Datafile.Fields.FieldByName['_survivaldays'].Free;
+      FExecutor.Datafile.Fields.FieldByName[sSurTempVar].Free;
   finally
     StratVariable.Free;
     AllVariables.Free;
