@@ -77,6 +77,8 @@ const
   ANA_SO_TUTORIAL_FOLDER               = 'TUTORIAL FOLDER';
   ANA_SO_WEB_URL                       = 'WEB URL';
 
+  ANA_SO_LIFETABLE_INTERVAL            = 'LIFETABLE INTERVAL';
+
   //  Executor Field Names
   ANA_EXEC_PREPAREDS_OBSNO_FIELD       = '@obsno';
 
