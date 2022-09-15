@@ -2470,6 +2470,7 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('o',   [rtInteger, rtString]);          // outcome value
   Result.Insert('nt',  ['notab'],  [rtUndefined]);      // no tables
+  Result.Insert('ng',  ['nokmplot'],  [rtUndefined]);   // no km plot
   Result.Insert('nou', [rtUndefined]);                  // no unstratified table
   Result.Insert('nos', [rtUndefined]);                  // no stratified tables
   Result.Insert('ns',  [rtUndefined]);                  // no summary output
