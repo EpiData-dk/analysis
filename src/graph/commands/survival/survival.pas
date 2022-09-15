@@ -227,7 +227,7 @@ procedure TSurvival.DoCalcSurvival(InputDF: TEpiDataFile;
   ST: TCustomVariableCommand);
 
 var
-  i, time, FailIx, Row, Col, Stratum, NAtRisk, NEffective: Integer;
+  i, int0, time, FailIx, Row, Col, Stratum, NAtRisk, NEffective: Integer;
   iLost, iFail, iTotal: Integer;
   iLo, iHi, iTime: array of Integer;
   iLabel: array of UTF8String;
@@ -306,6 +306,7 @@ begin
         for i := 0 to Length(sIntervals) - 1 do
           begin
             nIntervals[i] := strToInt(sIntervals[i]);
+            // specified intervals must be monotonic increasing
             if (nIntervals[i] <= time) then
               begin
                 FExecutor.Error(sSurIntNotSort);
@@ -321,6 +322,16 @@ begin
             exit;
           end;
       end;
+      // if first interval value is zero, remove it
+      if (nIntervals[0] = 0) then
+        begin
+          FIntervals := FIntervals - 1;
+          for i := 1 to FIntervals do
+            begin
+              nIntervals[i-1] := nIntervals[i];
+              sIntervals[i-1] := sIntervals[i];
+            end;
+        end;
     end
   else
     FIntervals := FSurvivalTable.UnstratifiedTable.RowCount;
@@ -1086,8 +1097,11 @@ begin
               FExecutor.Error(sOptionInvalid + ': ' + Opt.Ident + ':=' + Opt.Expr.AsIdent);
               exit;
             end;
-          FintFlag := true;
-          FintervalString := Opt.Expr.AsIdent;
+          if (Opt.Expr = nil) then
+            FintervalString := FExecutor.SetOptions.GetValue(ANA_SO_LIFETABLE_INTERVAL).Value
+          else
+            FintervalString := Opt.Expr.AsIdent;
+          FintFlag := FintervalString <> '';
         end;
 
     end;

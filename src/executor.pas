@@ -1936,6 +1936,8 @@ begin
   SOpt.LegalValues.Add('99');
   FOptions.Insert(ANA_SO_CONFIDENCE_INTERVAL, SOpt);
 
+  FOptions.Insert(ANA_SO_LIFETABLE_INTERVAL, TSetOption.Create('', rtString));
+
   // TABLES:
   FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_COL,   TTablePercentFormatOption.Create('{}', rtString));
   FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_ROW,   TTablePercentFormatOption.Create('()', rtString));
