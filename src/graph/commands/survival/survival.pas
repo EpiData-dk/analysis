@@ -14,48 +14,45 @@ uses
   chartcommandresult, chartcommand, chartfactory, chartconfiguration, charttitles;
 
 resourcestring
-  sTotal = 'Total';
-  sMin = 'Minumum';
-  sMax = 'Maximum';
-  sTime = 'Time';
-  sMedian = 'Median';
-  sBy = 'by';
-  sAt = 'at';
   sAllData = 'All data';
-  sNoData = 'No data';
-  sVariable = 'Variable';
-  sWeighted = 'Weighted';
+  sAt = 'at';
+  sBy = 'by';
   sConfIntervalAbbr = 'CI';
-  sUpperLimitAbbr = 'UL';
   sLowerLimitAbbr = 'LL';
-  sNoMoreThanOne =  'Cannot specify more than one';
-  sOutcome = 'Outcome';
-  sWeight = 'Weight';
-  sStratify = 'Stratify';
-  //sCannotStratifyBy = 'Cannot stratify by';
-  //sCannotWeightBy = 'Cannot weight by';
+  sMax = 'Maximum';
+  sMedian = 'Median';
+  sMin = 'Minumum';
+  sNoData = 'No data';
   sOptionInvalid = 'Option invalid';
-  //sIsInvalid = 'is invalid';
-  sSurCommand = 'Survival';
-  sSurTempVar = '_survivaldays';
-  sSurTempVarPrefix = 'Days from ';
-  sSurNoRec =  'No records with ';
-  sSurTimeVarNegPrefix = 'The time variable,';
-  sSurTimeVarNegSuffix = ', has negative values';
-  sSurHeader1 = 'Kaplan Meier Survival Analysis - Life Tables';
-  sSurHeader2 = 'Kaplan Meier Survival Analysis - Summary';
-  sSurGraphHead = 'KM Plot for outcome';
-  sSurPlotHead = 'KM Plot for';
-  sSurPlotInfo = 'Plot points for KM plots were saved to the clipboard';
+  sOutcome = 'Outcome';
+  sStratify = 'Stratify';
   sSurAtRisk = 'At risk';
   sSurAtRisk1 = 'at';
   sSurAtRisk2 = 'risk';
+  sSurCommand = 'Survival';
   sSurFailure = 'Failure';
   sSurFailures = 'Failures';
-  sSurAllData = 'All Data';
   sSurFollowup = 'Followup';
-  sSurLogRankChi = 'Log-Rank Chi-square';
+  sSurGraphHead = 'KM Plot for outcome';
   sSurHazardRatio = 'Hazard Ratio';
+  sSurHeader1 = 'Kaplan Meier Survival Analysis - Life Tables';
+  sSurHeader2 = 'Kaplan Meier Survival Analysis - Summary';
+  sSurIntErr = 'Invalid interval';
+  sSurIntNotSort = 'Intervals must be in ascending order';
+  sSurLogRankChi = 'Log-Rank Chi-square';
+  sSurNoRec =  'No records with ';
+  sSurPlotHead = 'KM Plot for';
+  sSurPlotInfo = 'Plot points for KM plots were saved to the clipboard';
+  sSurTempVar = '_survivaldays';
+  sSurTempVarPrefix = 'Days from ';
+  sSurTimeVarNegPrefix = 'The time variable,';
+  sSurTimeVarNegSuffix = ', has negative values';
+  sTime = 'Time';
+  sTotal = 'Total';
+  sUpperLimitAbbr = 'UL';
+  sVariable = 'Variable';
+  sWeight = 'Weight';
+  sWeighted = 'Weighted';
 type
 
   { TSurvival }
@@ -78,7 +75,6 @@ type
     FRefValue:            EpiString;
     FintFlag:             Boolean;
     FintervalString:      String;
-    FIntervalCount:       Integer;
   // survival table results
     FInterval:            Array of Array of UTF8String;
     FTime,
@@ -173,34 +169,38 @@ function TSurvival.CalcTime(ST: TCustomGraphCommand; VarList: TStrings): TString
 var
   days: TEpiField;
   t1, t2: TEpiField;
-  missingDate: Integer;
+  replaceDate: Integer;
   opt: TOption;
   addMissingTime: Boolean;
   DF: TEpiDataFile;
   i: Integer;
 begin
-  result := TStringList.Create;
-  days := FExecutor.DataFile.NewField(ftInteger);
-  days.Name := sSurTempVar;
+  result             := TStringList.Create;
+  days               := FExecutor.DataFile.NewField(ftInteger);
+  days.Name          := sSurTempVar;
   days.Question.Text := sSurTempVarPrefix + FExecutor.DataFile.Fields.FieldByName[VarList[1]].GetVariableLabel(FVariableLabelOutput);
-  DF := FExecutor.PrepareDatafile(VarList, nil);
-  t1 := DF.Fields.FieldByName[VarList.Strings[1]];
-  t2 := DF.Fields.FieldByName[VarList.Strings[2]];
-  addMissingTime := false;
+  DF                 := FExecutor.PrepareDatafile(VarList, nil);
+  t1                 := DF.Fields.FieldByName[VarList.Strings[1]];
+  t2                 := DF.Fields.FieldByName[VarList.Strings[2]];
+  addMissingTime     := false;
+
   if (ST.HasOption('exit',opt)) then
     begin
-      missingDate := opt.Expr.AsInteger;
+      // date specified to replace missing
       addMissingTime := true;
+      replaceDate    := opt.Expr.AsInteger;
     end
   else if (ST.HasOption('mt')) then
     begin
-      missingDate := 0;
+      // replacement date is largest dates
       addMissingTime := true;
+      replaceDate    := 0;
       for i := 0 to DF.Size - 1 do
-        if ((missingDate < t2.AsInteger[i]) and
-            (not t2.IsMissing[i])) then
-          missingDate := t2.AsInteger[i];
+        if (not t2.IsMissing[i]) then
+          if (replaceDate < t2.AsInteger[i]) then
+            replaceDate := t2.AsInteger[i];
     end;
+  // replace missing date2
   for i := 0 to DF.Size - 1 do
     begin
       if (t1.IsMissing[i]) then
@@ -208,7 +208,7 @@ begin
       else
         if (t2.IsMissing[i]) then
           if (addMissingTime) then
-            days.AsInteger[i] := missingDate - t1.AsInteger[i]
+            days.AsInteger[i] := replaceDate - t1.AsInteger[i]
           else
             days.IsMissing[i] := true
         else
@@ -216,6 +216,7 @@ begin
     end;
   result.Add(Varlist.Strings[0]);
   result.Add(sSurTempVar);
+  // modify VarList as well
   VarList.Delete(2);
   VarList.Delete(1);
   VarList.Add(sSurTempVar);
@@ -231,6 +232,7 @@ var
   iLo, iHi, iTime: array of Integer;
   iLabel: array of UTF8String;
   sIntervals: array of String;
+  nIntervals: array of Integer;
   S, SE, SumF, CIMult: EpiFloat;
   T: TTables;
   Statistics: TTableStatistics;
@@ -297,6 +299,28 @@ begin
     begin
       sIntervals := SplitString(FIntervalString, ',');  // no check on contents at this point
       FIntervals := Length(sIntervals) + 1;       // one more interval than numbers specified
+      // validate intervals
+      try
+        SetLength(nIntervals, Length(sIntervals));
+        time := -1;
+        for i := 0 to Length(sIntervals) - 1 do
+          begin
+            nIntervals[i] := strToInt(sIntervals[i]);
+            if (nIntervals[i] <= time) then
+              begin
+                FExecutor.Error(sSurIntNotSort);
+                exit;
+              end
+            else
+              time := nIntervals[i];
+          end;
+      except
+        On E : EConvertError do
+          begin
+            FExecutor.Error(sSurIntErr + ': ' + sIntervals[i]);
+            exit;
+          end;
+      end;
     end
   else
     FIntervals := FSurvivalTable.UnstratifiedTable.RowCount;
@@ -308,16 +332,17 @@ begin
 
   if (FintFlag) then
     begin
-      iTime[FIntervals - 1] := strToInt(SIntervals[FIntervals - 2]);
-      iLabel[FIntervals - 1] := SIntervals[FIntervals - 2] + '+';
+      // create times and labels for intervals
+      iTime[FIntervals - 1] := nIntervals[FIntervals - 2];
+      iLabel[FIntervals - 1] := sIntervals[FIntervals - 2] + '+';
       for i := FIntervals - 2 downto 1 do
         begin
-          iTime[i] := strToInt(SIntervals[i-1]);
-          iLabel[i] := SIntervals[i-1] + '-' + (iTime[i] - 1).ToString;
+          iTime[i] := nIntervals[i-1];
+          iLabel[i] := sIntervals[i-1] + '-' + (iTime[i+1] - 1).ToString;
         end;
       iTime[0] := 0;
       iLabel[0] := '0-' + (iTime[1] - 1).ToString;
-      // now get iLo and iHi to map intervals to rows
+      // iLo and iHi map table rows to intervals
       i := -1;
       iLo[0] := 0;
       for Row := 0 to FSurvivalTable.UnstratifiedTable.RowCount - 1 do
@@ -385,15 +410,15 @@ begin
         begin
           ASurvivalTable := FSurvivalTable.Tables[Stratum - 1];
           FStratLabels[Stratum - 1] := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(Stratum - 1);
+          // identify the reference stratum by value
           if (FRefStratum < 0) then
-              if (FSurvivalTable.StratifyVariables.Field[Stratum - 1].AsString[0] = FRefValue) then
+              if (FSurvivalTable.StratifyVariables.Field[0].AsString[Stratum-1] = FRefValue) then
                 FRefStratum := Stratum - 1;
         end;
-  // with intervals, need to aggregate atrisk, fail,  lost and then calculate survival, etc
 
-  // Summary variables
-      with ASurvivalTable do
+       with ASurvivalTable do
         begin
+          // get summary data for this stratum
           FTotal[Stratum]   := Total;
           FTotalFailures[Stratum] := ColTotal[FailIx];
           for Row := 0 to RowCount - 1 do
@@ -409,35 +434,36 @@ begin
                 break;
               end;
         end;
+
       FSumTime[Stratum]  := 0;
       NAtRisk   := ASurvivalTable.Total;
       NEffective:= NAtRisk;
       S         := 1.0;
       SumF      := 0.0;
       GetMedian := true;
-      Row       := 0;   // index for saved values (# table rows with NAtRisk>0)
+      // here, Row is the index for saved values (output table rows with NAtRisk>0)
+      Row       := 0;
 
-      for i := 0 to FIntervals - 1 do                                                                         // OK
+      for i := 0 to FIntervals - 1 do
         begin
           if (NAtRisk > 0) then
             begin
               iTotal := accumTotals(iLo[i], iHi[i]);
-              FSumTime[Stratum] += iTotal * iTime[i]; // iTime is 'time of record' for this interval
-//              FSumTime[Stratum] += ASurvivalTable.RowTotal[i] * ASurvivalTable.RowVariable.AsInteger[i];      //**
-              if (iTotal > 0) then //(ASurvivalTable.RowTotal[i] > 0) then                                                        //**
-                FMaxRow[Stratum] := Row;                   // track last row with data
-              iFail := accumFailures(iLo[i], iHi[i]); //ASurvivalTable.Counts[FailIx, i];                                                   //**
-              S        := S * Float((NAtRisk - iFail)) / Float(NAtRisk);
+              FSumTime[Stratum] += iTotal * iTime[i];
+              if (iTotal > 0) then
+                FMaxRow[Stratum] := Row;
+              iFail := accumFailures(iLo[i], iHi[i]);
+              S     := S * Float((NAtRisk - iFail)) / Float(NAtRisk);
 // Greennwood's method
-//              SumF     += Float(Failures) / Float(NAtRisk*(NAtRisk - Failures));
+//              SumF     += Float(iFail) / Float(NAtRisk*(NAtRisk - iFail));
 //              SE       := S * SQRT(SumF);
 // Altman's method
               SE       := sqrt(S*(1-S)/Float(NEffective));
-              FInterval[Stratum, Row] := iLabel[i]; //ASurvivalTable.RowVariable.GetValueLabel(i, FValuelabelOutput);      //**
-              FTime    [Stratum, Row] := iTime[i];  //ASurvivalTable.RowVariable.AsInteger[i];                             //**
+              FInterval[Stratum, Row] := iLabel[i];
+              FTime    [Stratum, Row] := iTime[i];
               FAtRisk  [Stratum, Row] := NAtRisk;
               FFail    [Stratum, Row] := iFail;
-              iLost                   := iTotal - iFail; //ASurvivalTable.RowTotal[i] - Failures;                               //**
+              iLost                   := iTotal - iFail;
               FSurvival[Stratum, Row] := S;
               FLowCI   [Stratum, Row] := max(S - SE * CIMult , 0);
               FHighCI  [Stratum, Row] := min(S + SE * CIMult , 1);
@@ -450,13 +476,13 @@ begin
               Row += 1;
             end;
 
-          NAtRisk  := NAtRisk - iTotal; //ASurvivalTable.RowTotal[i];
-          NEffective := NEffective - iLost;                                                                         //**
+          NAtRisk  := NAtRisk - iTotal;
+          NEffective := NEffective - iLost
         end;
 
       // was median found? It won't be if final survival > 0.5
       if (GetMedian) then
-        FMedian[Stratum] := '>' + FInterval[Stratum, FMaxRow[Stratum]]; //ASurvivalTable.RowCount - 1];
+        FMedian[Stratum] := '>' + FInterval[Stratum, FMaxRow[Stratum]];
     end;
   ST.ExecResult := csrSuccess;
 
@@ -496,34 +522,37 @@ begin
       FLRChi += (d * d) / SumExp;
     end;
   FLRP := ChiPValue(FLRChi , FStrata - 1);
-// hazard ratio for two strata only
-  if (FStrata <> 2) then exit;
-  // find refStratum if necessary
-  if (FRefValue <> '') then
-    begin
 
-    end;
-  r := 0;
-  d := 0;
-  v    := 0;
-  e1   := 0;
-  e2   := 0;
-  o1   := 0;
-  o2   := 0;
-  for i := 0 to FIntervals - 1 do
-    if (FFail[0, i] > 0) then
+  // was refStratum set?
+  if (FRefStratum < 0) then
+    FRefStratum := 1;
+
+  for Stratum := 1 to FStrata do
+    if (Stratum <> FRefStratum) then
       begin
-        o1 += FFail[1, i];
-        o2 += FFail[2, i];
-        d  := FFail[0, i];
-        r  := FAtRisk[0, i];
-        x  := float(d) / float(r);
-        e1 += float(FAtRisk[1, i]) * x;
-        e2 += float(FAtRisk[2, i]) * x;
-        v  += float(FAtRisk[1, i] * FAtRisk[2, i] * d * (r - d)) /
-              float(r * r * (r - 1));
+        r := 0;
+        d := 0;
+        v    := 0;
+        e1   := 0;
+        e2   := 0;
+        o1   := 0;
+        o2   := 0;
+        for i := 0 to FIntervals - 1 do
+          if (FFail[0, i] > 0) then
+            begin
+              o1 += FFail[FRefStratum, i];
+              o2 += FFail[Stratum, i];
+              d  := FFail[0, i];
+              r  := FAtRisk[0, i];
+              x  := float(d) / float(r);
+              e1 += float(FAtRisk[FRefStratum, i]) * x;
+              e2 += float(FAtRisk[Stratum, i]) * x;
+              v  += float(FAtRisk[FRefStratum, i] * FAtRisk[Stratum, i] * d * (r - d)) /
+                    float(r * r * (r - 1));
+            end;
+        FHazRatio := exp((float(o2) - e2)/v);
+
       end;
-  FHazRatio := exp((float(o2) - e2)/v);
 end;
 
 procedure TSurvival.DoOneResult(Stratum: Integer; Name: UTF8String);
@@ -622,7 +651,7 @@ begin
     begin
       T.RowCount       := 3;
       T.ColCount       := 1 + ColPerStratum;
-      T.Cell[1,0].Text := sSurAllData;
+      T.Cell[1,0].Text := sAllData;
       FirstStratum     := 0;
       Offset           := 1 + ColPerStratum;
     end;
@@ -706,7 +735,7 @@ var
     if (s > 0) then
       T.Cell[0, r].Text := FStratLabels[s-1]
     else
-        T.Cell[0, r].Text := sSurAllData;
+        T.Cell[0, r].Text := sAllData;
     T.Cell[1, r].Text := FTotal[s].ToString;
     T.Cell[2, r].Text := FTotalFailures[s].ToString;
     T.Cell[3, r].Text := FMinTime[s].ToString;
@@ -975,6 +1004,7 @@ var
   Stratum,
   Stratum1,
   vCount:           Integer;
+  showKMPlot:       Boolean;
 
 begin
   FExecutor.ClearResults('$survival');
@@ -984,14 +1014,14 @@ begin
   FDecimals            := DecimalFromOption(Command.Options, 3);
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  FintFlag              := false;
+  FintFlag             := false;
+  showKMPlot           := true;
   // time variables specified?
   vCount := VarNames.Count;
   if (vCount = 3) then
     AllVariables := CalcTime(Command, VarNames) // will replace time variables with days between them
   else
     AllVariables := Command.VariableList.GetIdentsAsList;
-
 
   Result := FChartFactory.NewGraphCommandResult(); // always create chart object
   Command.ExecResult := csrFailed; // for statistical command
@@ -1059,7 +1089,9 @@ begin
           FintFlag := true;
           FintervalString := Opt.Expr.AsIdent;
         end;
+
     end;
+    showKMPlot := not Command.HasOption(['ng','noKMPlot'],Opt);
 
     if (FFailOutcomeValue = '') then
         FFailOutcomeValue := '0';
@@ -1103,18 +1135,21 @@ begin
               FCIType := 0;
             if (Command.HasOption('cb')) then
               FCBPlot := '';
-            DoInitializeKMPlot;
+            if (showKMPlot) then
+              DoInitializeKMPlot;
             Stratum1 := 0;
             if (FStrata > 0) then
-              Stratum1 := 1;;
+              Stratum1 := 1;
             for Stratum := Stratum1 to FStrata do
             begin
               DoCalcPlotPoints(Stratum);
-              DoAddGraphSeries(Stratum);
+              if (showKMPlot) then
+                DoAddGraphSeries(Stratum);
               if (Command.HasOption('cb')) then
                 DoAddCBPlotPoints(Stratum);
             end;
-            Result.AddChart(FChart, FChartConfiguration);
+            if (showKMPlot) then
+              Result.AddChart(FChart, FChartConfiguration);
             if (Command.HasOption('cb')) then
               DoOutputCBPlotPoints();
         end;
