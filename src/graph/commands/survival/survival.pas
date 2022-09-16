@@ -25,6 +25,8 @@ resourcestring
   sNoData = 'No data';
   sOptionInvalid = 'Option invalid';
   sOutcome = 'Outcome';
+  sRatio = 'Ratio';
+  sReferenceAbbr = 'Ref.';
   sStratify = 'Stratify';
   sSurAtRisk = 'At risk';
   sSurAtRisk1 = 'at';
@@ -34,6 +36,7 @@ resourcestring
   sSurFailures = 'Failures';
   sSurFollowup = 'Followup';
   sSurGraphHead = 'KM Plot for outcome';
+  sSurHazard = 'Hazard';
   sSurHazardRatio = 'Hazard Ratio';
   sSurHeader1 = 'Kaplan Meier Survival Analysis - Life Tables';
   sSurHeader2 = 'Kaplan Meier Survival Analysis - Summary';
@@ -65,6 +68,7 @@ type
 
     FDecimals,
     FConf:                Integer;
+    FConfz:               EpiFloat;
     FValueLabelOutput:    TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
   // table of outcome by time
@@ -92,8 +96,10 @@ type
     FSumTime:             Array of Integer;
     FMedian:              Array of UTF8String;
     FLRChi,
-    FLRP,
-    FHazRatio:            EpiFloat;
+    FLRP:                 EpiFloat;
+    FHazRatio,
+    FHRCILo,
+    FHRCIHi:              array of EpiFloat;
   // labels
     FFailOutcomeValue,
     FFailOutcomeText,
@@ -233,7 +239,7 @@ var
   iLabel: array of UTF8String;
   sIntervals: array of String;
   nIntervals: array of Integer;
-  S, SE, SumF, CIMult: EpiFloat;
+  S, SE, SumF: EpiFloat;
   T: TTables;
   Statistics: TTableStatistics;
   ASurvivalTable: TTwowayTable;
@@ -404,10 +410,13 @@ begin
   SetLength(FMinTime,     FStrata + 1);
   SetLength(FMaxTime,     FStrata + 1);
   SetLength(FSumTime,     FStrata + 1);
+  SetLength(FHazRatio,    FStrata + 1);
+  SetLength(FHRCILo,      FStrata + 1);
+  SetLength(FHRCIHi,      FStrata + 1);
 
   // set up confidence interval
   FConf  := StrToInt(FExecutor.SetOptionValue[ANA_SO_CONFIDENCE_INTERVAL]);
-  CIMult := PNORMALINV((Float(100 - FConf) / 200.0));
+  FConfz := PNORMALINV((Float(100 - FConf) / 200.0));
 
   // unstratified table (0) first
 
@@ -424,7 +433,7 @@ begin
           // identify the reference stratum by value
           if (FRefStratum < 0) then
               if (FSurvivalTable.StratifyVariables.Field[0].AsString[Stratum-1] = FRefValue) then
-                FRefStratum := Stratum - 1;
+                FRefStratum := Stratum;
         end;
 
        with ASurvivalTable do
@@ -476,8 +485,8 @@ begin
               FFail    [Stratum, Row] := iFail;
               iLost                   := iTotal - iFail;
               FSurvival[Stratum, Row] := S;
-              FLowCI   [Stratum, Row] := max(S - SE * CIMult , 0);
-              FHighCI  [Stratum, Row] := min(S + SE * CIMult , 1);
+              FLowCI   [Stratum, Row] := max(S - SE * FConfz , 0);
+              FHighCI  [Stratum, Row] := min(S + SE * FConfz , 1);
               if (GetMedian) then
                 if (S <= 0.5) then
                   begin
@@ -509,7 +518,8 @@ var
   v,
   e1,
   e2,
-  x:       EpiFloat;
+  x,
+  y:       EpiFloat;
   o1,
   o2,
   i,
@@ -561,8 +571,18 @@ begin
               v  += float(FAtRisk[FRefStratum, i] * FAtRisk[Stratum, i] * d * (r - d)) /
                     float(r * r * (r - 1));
             end;
-        FHazRatio := exp((float(o2) - e2)/v);
-
+        FHazRatio[Stratum] := exp((float(o2) - e2)/v);
+        x := (o2-e2)/v;
+        y := FConfz/sqrt(v);
+        FHRCILo[Stratum] := exp(x - y);
+        FHRCIHi[Stratum] := exp(x + y);
+      end
+    else
+      begin
+        // provide legal / printable values for reference stratum
+        FHazRatio[Stratum] := 1;
+        FHRCILo[Stratum]   := 0;
+        FHRCIHi[Stratum]   := 0;
       end;
 end;
 
@@ -601,24 +621,33 @@ end;
 procedure TSurvival.DoResultVariables(ST:TCustomVariableCommand);
 var
   Stratum: Integer;
-  sNames: TExecVarVector;
+  sNames,
+  sHazR, sHRCILo, sHRCIHi: TExecVarVector;
 begin
   FExecutor.ClearResults('survival');
   DoOneResult(0, 'all');
 
   if FStrata > 0 then
   begin
-    sNames := FExecutor.AddResultVector('$survival_strata', ftString, FStrata);
-    if (ST.HasOption('t') and (FStrata > 0)) then
+    sNames  := FExecutor.AddResultVector('$survival_strata', ftString, FStrata);
+    sHazR   := FExecutor.AddResultVector('$survival_HR', ftFloat, FStrata);
+    sHRCILo := FExecutor.AddResultVector('$survival_HRCILo', ftFloat, FStrata);
+    sHRCIHi := FExecutor.AddResultVector('$survival_HRCIHi', ftFloat, FStrata);
+    if (ST.HasOption('t')) then
     begin
-      FExecutor.AddResultConst('$survival_' + 'chi2', ftFloat).AsFloatVector[0] := FLRChi;
-      FExecutor.AddResultConst('$survival_' + 'chip', ftFloat).AsFloatVector[0] := FLRP;
-      FExecutor.AddResultConst('$survival_' + 'HR', ftFloat).AsFloatVector[0] := FHazRatio;
+      FExecutor.AddResultConst('$survival_chi2',   ftFloat).AsFloatVector[0] := FLRChi;
+      FExecutor.AddResultConst('$survival_chip',   ftFloat).AsFloatVector[0] := FLRP;
+      for Stratum := 1 to FStrata do
+        begin
+          sHazR.AsFloatVector[Stratum-1] := FHazRatio[Stratum];
+          sHRCILo.AsFloatVector[Stratum-1] := FHRCILo[Stratum];
+          sHRCIHi.AsFloatVector[Stratum-1] := FHRCIHi[Stratum];
+        end;
     end;
     for Stratum := 1 to FStrata do
       begin
         sNames.AsStringVector[Stratum-1] := FStratLabels[Stratum-1];
-        DoOneResult(Stratum, FStratLabels[Stratum-1]);
+        DoOneResult(Stratum, (Stratum).ToString);
       end;
   end;
 end;
@@ -738,8 +767,8 @@ var
   T: TOutputTable;
   StatFmt: String;
   i:  Integer;
-  line1: array of UTF8String = ('',sTotal,sTotal,sMin,sMax,sTotal,sMedian);
-  line2: array of UTF8String = ('',sSurAtRisk,sSurFailures,sTime,sTime,sTime,sSurCommand);
+  line1: array of UTF8String = ('',sTotal,sTotal,sMin,sMax,sTotal,sMedian,sSurHazard,'');
+  line2: array of UTF8String = ('',sSurAtRisk,sSurFailures,sTime,sTime,sTime,sSurCommand,sRatio,'');
 
   procedure outputStratumResults(s, r: Integer);
   begin
@@ -753,6 +782,12 @@ var
     T.Cell[4, r].Text := FMaxTime[s].ToString;
     T.Cell[5, r].Text := FSumTime[s].ToString;
     T.Cell[6, r].Text := FMedian[s];
+    if (s = 0) then exit;
+    if (s = FRefStratum) then
+      T.Cell[7, r].Text := sReferenceAbbr
+    else
+      T.Cell[7, r].Text := Format(StatFmt, [FHazRatio[s]]);
+    T.Cell[8, r].Text := '(' + Format(StatFmt, [FHRCILo[s]]) + ',' + Format(StatFmt, [FHRCIHi[s]]) + ')';
   end;
 
 begin
@@ -760,17 +795,19 @@ begin
 
   T                 := FOutputCreator.AddTable;
   T.Header.Text     := sSurHeader2;
-  T.ColCount        := 7;
+  T.ColCount        := 9;
   T.RowCount        := FStrata + 3;
   for i := 0 to high(line1) do
-    begin
-      T.Cell[i, 0].Text := line1[i];
-      T.Cell[i, 1].Text := line2[i];
-    end;
+      if (i < 7) or (FStrata > 0) then
+        begin
+          T.Cell[i, 0].Text := line1[i];
+          T.Cell[i, 1].Text := line2[i];
+        end;
   if (FStrata > 0) then
     begin
       T.Cell[0, 0].Text := sBy;
       T.Cell[0, 1].Text := FStratVarName;
+      T.Cell[high(line1), 1].Text := '(' + IntToStr(FConf) + '% ' + sConfIntervalAbbr + ')';
     end;
 
   for i := 1 to FStrata do
@@ -778,8 +815,7 @@ begin
   outputStratumResults(0, FStrata + 2);
 
   if ((FStrata > 0) and (ST.HasOption('t'))) then
-    T.Footer.Text := sSurLogRankChi + ' = ' + Format(StatFmt, [FLRChi]) + ' ' + FormatP(FLRP, true) +
-                     sLineBreak + sSurHazardRatio + ' = ' + Format(StatFmt, [FHazRatio]);
+    T.Footer.Text := sSurLogRankChi + ' =' + Format(StatFmt, [FLRChi]) + ' ' + FormatP(FLRP, true);
   T.SetRowBorders(0, [cbTop]);
   T.SetRowBorders(1, [cbBottom]);
 end;
@@ -1063,7 +1099,7 @@ begin
               FExecutor.Error(sOptionInvalid + ': ' + Opt.Ident + ':=' + Opt.Expr.AsIdent);
               Exit;
             end;
-          FRefStratum := 0;
+          FRefStratum := 1;
           if (Command.HasOption('ref',refOpt)) then
             begin
               FRefValue := refOpt.Expr.AsString;
@@ -1105,8 +1141,6 @@ begin
         end;
 
     end;
-    showKMPlot := not Command.HasOption(['ng','noKMPlot'],Opt);
-
     if (FFailOutcomeValue = '') then
         FFailOutcomeValue := '0';
 
@@ -1127,6 +1161,8 @@ begin
 
     if (Command.ExecResult = csrSuccess) then
       begin
+
+        showKMPlot := not Command.HasOption(['ng','noKMPlot'],Opt);
 
         if (not Command.HasOption('q')) then
           begin
