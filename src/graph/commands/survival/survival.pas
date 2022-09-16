@@ -667,99 +667,68 @@ var
   end;
 
 begin
-  T             := FOutputCreator.AddTable;
-  T.Header.Text := sSurHeader1;
-  // show only rows with failures
+  {// show only rows with failures
   Sz := 0;
   for i := 0 to Length(FFail[0]) - 1 do
     if (FFail[0,1] > 0) then
       Sz += 1;
   T.RowCount    := 0;
   ColPerStratum := 4;
-
+  }
   // set up output table size based on strata and options
-
+  FirstStratum := 0;
+  LastStratum  := FStrata;
   if (ST.HasOption('nou')) then
     begin
       if (ST.HasOption('nos')) then exit;
-      T.RowCount   := 3;
-      T.ColCount   := 1;
       FirstStratum := 1;
-      Offset       := 1;
-    end
-  else
-    begin
-      T.RowCount       := 3;
-      T.ColCount       := 1 + ColPerStratum;
-      T.Cell[1,0].Text := sAllData;
-      FirstStratum     := 0;
-      Offset           := 1 + ColPerStratum;
     end;
-
   if (ST.HasOption('nos')) then
-    LastStratum := 0
-  else
-    begin
-      T.ColCount := T.ColCount + ColPerStratum * FStrata;
-      for i := 0 to FStrata -1 do
-        begin
-          T.Cell[Offset + ColPerStratum * i,     0].Text := FStratVarName + ' = ';
-          T.Cell[Offset + ColPerStratum * i + 1, 0].Text := FStratLabels[i];
-        end;
-      LastStratum := FStrata;
-    end;
+    LastStratum := 0;
 
-  T.Cell[0, 1].Text := sSurFollowup;
-  T.Cell[0, 2].Text := FTimeVarLabel;
-  Offset            := 1;
-
+  StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
   // Column headers
   for Stratum := FirstStratum to LastStratum do
     begin
-      T.Cell[    Offset, 1].Text := '#' + sSurAtRisk1;
-      T.Cell[    Offset, 2].Text := sSurAtRisk2;
-      T.Cell[1 + Offset, 1].Text := FOutcomeVarLabel;
-      T.Cell[1 + Offset, 2].Text := FFailOutcomeText;
-      T.Cell[2 + Offset, 1].Text := ' ';
-      T.Cell[2 + Offset, 2].Text := sSurCommand;
-      T.Cell[3 + Offset, 1].Text := ' ';
-      T.Cell[3 + Offset, 2].Text := '(' + IntToStr(FConf) + '% ' + sConfIntervalAbbr + ')';
-      Offset += ColPerStratum;
-    end;
-  T.SetRowAlignment(1, taRightJustify);
-  StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
+      T             := FOutputCreator.AddTable;
+      T.ColCount    := 5;
+      T.RowCount    := 2;
+      if (Stratum = 0) then
+        T.Header.Text := sSurHeader1 + LineEnding + sAllData
+      else
+        T.Header.Text := sSurHeader1 + LineEnding + FStratVarName + ' = ' + FStratLabels[Stratum-1];
+      T.Cell[0, 0].Text := sSurFollowup;
+      T.Cell[0, 1].Text := FTimeVarLabel;
+      T.Cell[1, 0].Text := '#' + sSurAtRisk1;
+      T.Cell[1, 1].Text := sSurAtRisk2;
+      T.Cell[2, 0].Text := FOutcomeVarLabel;
+      T.Cell[2, 1].Text := FFailOutcomeText;
+      T.Cell[3, 0].Text := ' ';
+      T.Cell[3, 1].Text := sSurCommand;
+      T.Cell[4, 0].Text := ' ';
+      T.Cell[4, 1].Text := '(' + IntToStr(FConf) + '% ' + sConfIntervalAbbr + ')';
 
+  T.SetRowAlignment(1, taRightJustify);
+  Sz := 2;
   // show stratum results with failures only
-  Sz := 3;
   for i := 0 to Length(FFail[0]) - 1 do
     if (FFail[0, i] > 0) then
     begin
-      T.RowCount := Sz + 1;
-      T.Cell[0, Sz].Text := FInterval[0, i];
-      Offset := 1;
-      for Stratum := FirstStratum to LastStratum do
+      if (FFail[Stratum, i] > 0) then
         begin
-          if (FFail[Stratum, i] > 0) then
-            begin
-              T.Cell[Offset    , Sz].Text := IntToStr(FAtRisk[Stratum, i]);
-              T.Cell[Offset + 1, Sz].Text := IntToStr(FFail[Stratum, i]);
-              T.Cell[Offset + 2, Sz].Text := Format(StatFmt, [FSurvival[Stratum, i]]);
-              T.Cell[Offset + 3, Sz].Text := FormatCI(FLowCI[Stratum, i], FHighCI[Stratum, i], 0, ST.Options);
-              T.SetRowAlignment(Sz, taRightJustify);
-            end;
-          Offset += ColPerStratum;
+          T.RowCount := Sz + 1;
+          T.Cell[0, Sz].Text := FInterval[0, i];
+          T.Cell[1, Sz].Text := IntToStr(FAtRisk[Stratum, i]);
+          T.Cell[2, Sz].Text := IntToStr(FFail[Stratum, i]);
+          T.Cell[3, Sz].Text := Format(StatFmt, [FSurvival[Stratum, i]]);
+          T.Cell[4, Sz].Text := FormatCI(FLowCI[Stratum, i], FHighCI[Stratum, i], 0, ST.Options);
+          T.SetRowAlignment(Sz, taRightJustify);
+          Sz +=1;
         end;
-      Sz +=1;
     end;
-
-  Offset := 0;
-{  for Stratum := FirstStratum to LastStratum do   // causes double-spaced output!
-    begin
-      T.SetColBorders(Offset, [cbRight]);
-      Offset += ColPerStratum;
-    ; }
   T.SetRowBorders(1, [cbTop]);
   T.SetRowBorders(2, [cbBottom]);
+  end;
 end;
 
 procedure TSurvival.DoOutputSummary(ST:TCustomVariableCommand);
