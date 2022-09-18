@@ -38,8 +38,9 @@ resourcestring
   sSurGraphHead = 'KM Plot for outcome';
   sSurHazard = 'Hazard';
   sSurHazardRatio = 'Hazard Ratio';
-  sSurHeader1 = 'Kaplan Meier Survival Analysis - Life Tables';
-  sSurHeader2 = 'Kaplan Meier Survival Analysis - Summary';
+  sSurHeader = 'Kaplan-Meier Survival Analysis';
+  sSurHeader1 = ' - Life Tables';
+  sSurHeader2 = ' - Summary';
   sSurIntErr = 'Invalid interval';
   sSurIntNotSort = 'Intervals must be in ascending order';
   sSurLogRankChi = 'Log-Rank Chi-square';
@@ -656,7 +657,7 @@ var
   T: TOutputTable;
   StatFmt: String;
   Sz, Offset, i: Integer;
-  Stratum, FirstStratum, LastStratum, ColPerStratum: Integer;
+  Stratum, FirstStratum, LastStratum: Integer;
 
   function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;
   begin
@@ -667,15 +668,6 @@ var
   end;
 
 begin
-  {// show only rows with failures
-  Sz := 0;
-  for i := 0 to Length(FFail[0]) - 1 do
-    if (FFail[0,1] > 0) then
-      Sz += 1;
-  T.RowCount    := 0;
-  ColPerStratum := 4;
-  }
-  // set up output table size based on strata and options
   FirstStratum := 0;
   LastStratum  := FStrata;
   if (ST.HasOption('nou')) then
@@ -694,9 +686,9 @@ begin
       T.ColCount    := 5;
       T.RowCount    := 2;
       if (Stratum = 0) then
-        T.Header.Text := sSurHeader1 + LineEnding + sAllData
+        T.Header.Text := sSurHeader + sSurHeader1 + LineEnding + sAllData
       else
-        T.Header.Text := sSurHeader1 + LineEnding + FStratVarName + ' = ' + FStratLabels[Stratum-1];
+        T.Header.Text := sSurHeader + sSurHeader1 + LineEnding + FStratVarName + ' = ' + FStratLabels[Stratum-1];
       T.Cell[0, 0].Text := sSurFollowup;
       T.Cell[0, 1].Text := FTimeVarLabel;
       T.Cell[1, 0].Text := '#' + sSurAtRisk1;
@@ -726,8 +718,8 @@ begin
           Sz +=1;
         end;
     end;
-  T.SetRowBorders(1, [cbTop]);
-  T.SetRowBorders(2, [cbBottom]);
+  T.SetRowBorders(0, [cbTop]);
+  T.SetRowBorders(1, [cbBottom]);
   end;
 end;
 
@@ -755,15 +747,17 @@ var
     if (s = FRefStratum) then
       T.Cell[7, r].Text := sReferenceAbbr
     else
-      T.Cell[7, r].Text := Format(StatFmt, [FHazRatio[s]]);
-    T.Cell[8, r].Text := '(' + Format(StatFmt, [FHRCILo[s]]) + ',' + Format(StatFmt, [FHRCIHi[s]]) + ')';
+      begin
+        T.Cell[7, r].Text := Format(StatFmt, [FHazRatio[s]]);
+        T.Cell[8, r].Text := '(' + Format(StatFmt, [FHRCILo[s]]) + ',' + Format(StatFmt, [FHRCIHi[s]]) + ')';
+      end;
   end;
 
 begin
   StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
 
   T                 := FOutputCreator.AddTable;
-  T.Header.Text     := sSurHeader2;
+  T.Header.Text     := sSurHeader +  sSurHeader2;
   T.ColCount        := 9;
   T.RowCount        := FStrata + 3;
   for i := 0 to high(line1) do
@@ -828,7 +822,7 @@ begin
 // create graph and set titles, etc
   aTitle := sSurGraphHead + ' ' + FOutcomeVarLabel;
   if (FStrata > 0) then
-    aTitle += sBy + ' ' + FStratVarName;
+    aTitle += ' ' + sBy + ' ' + FStratVarName;
   aFoot := sSurFailure + ': ' + FOutcomeVarLabel + ' = ' + FFailOutcomeText;
   if (FWeightVarName <> '') then
     aFoot += ' (' + sWeighted + ' ' + sBy + ' ' + FWeightVarName + ')';
@@ -1021,6 +1015,7 @@ var
   Stratum1,
   vCount:           Integer;
   showKMPlot:       Boolean;
+  intervalArray: array of integer;
 
 begin
   FExecutor.ClearResults('$survival');
