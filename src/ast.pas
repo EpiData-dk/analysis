@@ -2484,7 +2484,7 @@ begin
   Result.Insert('exit',[rtDate]);                       // date to assign when time2 is missing
   Result.Insert('ref', [rtInteger, rtString]);          // reference value of by variable
   Result.Insert('agg', [rtString]);                     // aggregate time for specified values
-  Result.Insert('i', ['int'], [rtUndefined, rtString]); //, rtArray]); // use set intervals
+  Result.Insert('i', ['int'], [rtUndefined, rtString]); // use set intervals
   Result.Insert('adj', [rtUndefined]);                  // censored obs assigned mid-point of interval
 end;
 
