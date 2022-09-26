@@ -3,6 +3,13 @@ unit survival;
 {$codepage UTF-8}
 {$mode objfpc}{$H+}
 
+{
+  References
+  Most methods:
+  Machin D, Gardner MJ. in Altman DG, Nacgub D, Bryant TN, Gardner MJ. Statistics with Confidence. BMJ Books. 2000.
+  Adjusted survival with intervals:
+  Hosmer DW, Lemeshow S. Applied survival Analysis. SCRIBO.
+}
 interface
 
 uses
@@ -47,6 +54,7 @@ resourcestring
   sSurHeader = 'Kaplan-Meier Survival Analysis';
   sSurHeader1 = 'Life Tables';
   sSurHeader2 = 'Summary';
+  sSurIgnoreAdj = '!adj ignored when !int is not specified';
   sSurIntErr = 'Invalid interval';
   sSurIntNotSort = 'Intervals must be in ascending order';
   sSurLogRankChi = 'Log-Rank Chi-square';
@@ -79,6 +87,7 @@ type
     FRefValue:            EpiString;
     FintFlag:             Boolean;
     FintervalString:      String;
+    FAdjFlag:             Boolean;
   // survival table results
     FInterval:            Array of Array of UTF8String;
     FTime,
@@ -233,28 +242,41 @@ procedure TSurvival.DoCalcSurvival(InputDF: TEpiDataFile;
   ST: TCustomVariableCommand);
 
 var
-  i, int0, time, FailIx, Row, Col, Stratum, NAtRisk, NEffective: Integer;
-  iLost, iFail, iTotal: Integer;
-  iLo, iHi, iTime: array of Integer;
-  iLabel: array of UTF8String;
+  i,
+  time,
+  FailIx,
+  Row,
+  Col,
+  Stratum,
+  NAtRisk,
+  NEffective,
+  iLost,
+  iFail,
+  iTotal:     Integer;
+  iLo,
+  iHi,
+  iTime:      array of Integer;
+  iLabel:     array of UTF8String;
   sIntervals: array of String;
   nIntervals: array of Integer;
-  S, SE, SumF: EpiFloat;
-  T: TTables;
-  Statistics: TTableStatistics;
-  ASurvivalTable: TTwowayTable;
-  TablesRefMap: TEpiReferenceMap;
-  GetMedian: Boolean;
+  S, SE:      EpiFloat;
+//  SumF:       EpiFloat;  // for Greenwood CI only
+  nAdj:       EpiFloat;
+  GetMedian:  Boolean;
+  T:          TTables;
+  ATable:     TTwowayTable;
+  NilStats:   TTableStatistics;
+  NilRefMap:  TEpiReferenceMap;
 
   function accumTotals(i1, i2: Integer): Integer;
   var
     ix: Integer;
   begin
     if (i1 < 0) then exit(0);
-    if (not FintFlag) then exit(ASurvivalTable.RowTotal[i1]);
+    if (not FintFlag) then exit(ATable.RowTotal[i1]);
     result := 0;
     for ix := i1 to i2 do
-      result += ASurvivalTable.RowTotal[ix];
+      result += ATable.RowTotal[ix];
   end;
 
   function accumFailures(i1, i2: Integer): Integer;
@@ -262,17 +284,17 @@ var
     ix: Integer;
   begin
     if (i1 < 0) then exit(0);
-    if (not FintFlag) then exit(ASurvivalTable.Counts[Failix, i1]);
+    if (not FintFlag) then exit(ATable.Counts[Failix, i1]);
     result := 0;
     for ix := i1 to i2 do
-      result += ASurvivalTable.Counts[Failix, ix];
+      result += ATable.Counts[Failix, ix];
   end;
 
 begin
 // Use TABLES to get counts of outcomes by time for each stratum
   T := TTables.Create(FExecutor, FOutputCreator);
   FSurvivalTable  := T.CalcTables(InputDF, Variables,
-    StratVariable, FWeightVarName, ST.Options, TablesRefMap, Statistics);
+    StratVariable, FWeightVarName, ST.Options, NilRefMap, NilStats);
 
   with FSurvivalTable.UnstratifiedTable do
   begin
@@ -424,11 +446,11 @@ begin
     begin
       if (Stratum = 0) then
         begin
-          ASurvivalTable := FSurvivalTable.UnstratifiedTable;
+          ATable := FSurvivalTable.UnstratifiedTable;
         end
       else
         begin
-          ASurvivalTable := FSurvivalTable.Tables[Stratum - 1];
+          ATable := FSurvivalTable.Tables[Stratum - 1];
           FStratLabels[Stratum - 1] := FSurvivalTable.StratifyVariables.Field[0].GetValueLabel(Stratum - 1);
           // identify the reference stratum by value
           if (FRefStratum < 0) then
@@ -436,7 +458,7 @@ begin
                 FRefStratum := Stratum;
         end;
 
-       with ASurvivalTable do
+       with ATable do
         begin
           // get summary data for this stratum
           FTotal[Stratum]   := Total;
@@ -456,10 +478,10 @@ begin
         end;
 
       FSumTime[Stratum]  := 0;
-      NAtRisk   := ASurvivalTable.Total;
+      NAtRisk   := ATable.Total;
       NEffective:= NAtRisk;
       S         := 1.0;
-      SumF      := 0.0;
+//      SumF      := 0.0;
       GetMedian := true;
       // here, Row is the index for saved values (output table rows with NAtRisk>0)
       Row       := 0;
@@ -473,7 +495,12 @@ begin
               if (iTotal > 0) then
                 FMaxRow[Stratum] := Row;
               iFail := accumFailures(iLo[i], iHi[i]);
-              S     := S * Float((NAtRisk - iFail)) / Float(NAtRisk);
+              iLost := iTotal - iFail;
+              if (FAdjFlag) then
+                nAdj := Float(NAtRisk) - (Float(iLost) / 2)
+              else
+                nAdj := Float(NAtRisk);
+              S := S * (nAdj - Float(iFail)) / nAdj;
 // Greennwood's method
 //              SumF     += Float(iFail) / Float(NAtRisk*(NAtRisk - iFail));
 //              SE       := S * SQRT(SumF);
@@ -483,7 +510,6 @@ begin
               FTime    [Stratum, Row] := iTime[i];
               FAtRisk  [Stratum, Row] := NAtRisk;
               FFail    [Stratum, Row] := iFail;
-              iLost                   := iTotal - iFail;
               FSurvival[Stratum, Row] := S;
               FLowCI   [Stratum, Row] := max(S - SE * FConfz , 0);
               FHighCI  [Stratum, Row] := min(S + SE * FConfz , 1);
@@ -655,7 +681,7 @@ procedure TSurvival.DoOutputSurvival(ST:TCustomVariableCommand);
 var
   T: TOutputTable;
   StatFmt: String;
-  Sz, Offset, i: Integer;
+  Sz, i: Integer;
   Stratum, FirstStratum, LastStratum: Integer;
 
   function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;
@@ -1015,6 +1041,7 @@ begin
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FintFlag             := false;
+  FAdjFlag             := false;
   showKMPlot           := true;
   // time variables specified?
   vCount := VarNames.Count;
@@ -1093,7 +1120,15 @@ begin
           FintFlag := FintervalString <> '';
         end;
 
+      'adj': // adjust intervals
+        begin
+          if not (Command.HasOption('i')) then
+            FOutputCreator.DoInfoShort(sSurIgnoreAdj)
+          else
+            FAdjFlag := true;
+        end;
     end;
+
     if (FFailOutcomeValue = '') then
         FFailOutcomeValue := '0';
 
