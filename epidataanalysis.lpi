@@ -1099,7 +1099,7 @@
       <SmartLinkUnit Value="True"/>
       <RelocatableUnit Value="True"/>
       <Optimizations>
-        <OptimizationLevel Value="2"/>
+        <OptimizationLevel Value="0"/>
       </Optimizations>
       <SmallerCode Value="True"/>
     </CodeGeneration>

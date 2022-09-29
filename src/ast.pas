@@ -2497,14 +2497,15 @@ end;
 function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
 begin
   Result := inherited GetAcceptedVariableCount;
-  Result[0] := 2;
+  SetLength(Result,2);
+  Result[0] := 1;
+  Result[1] := 2;
 end;
 
 function TBarchartCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
   ): TTypesAndFlagsRec;
 begin
   Result := inherited GetAcceptedVariableTypesAndFlags(Index);
-  Result.ResultTypes := [rtDate, rtInteger, rtFloat];
 end;
 
 constructor TBarchartCommand.Create(AVariableList: TVariableList;

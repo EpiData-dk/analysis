@@ -5,7 +5,8 @@ unit barchartsource;
 interface
 
 uses
-  Classes, SysUtils, TASources, TACustomSource, epidatafiles;
+  Classes, SysUtils, TASources, TACustomSource, executor,
+  epidatafiles, epifields_helper, tables_types, tables, freq;
 
 type
 
@@ -13,22 +14,19 @@ type
 
   TBarSource = class(TUserDefinedChartSource)
   private
-    FDatafile: TEpiDataFile;
-    FXVar: TEpiField;
-    FXVariableName: UTF8String;
-    FYVar: TEpiField;
-    FYVariableName: UTF8String;
+    FPct:    Boolean;
+    FFreqs:  Boolean;
+    FFreq: TFreqDataFile;
+    FTable: TTwoWayTable;
+    FValueLabelOutput: TEpiGetValueLabelType;
     procedure GetDataItem(ASource: TUserDefinedChartSource; AIndex: Integer;
       var AItem: TChartDataItem);
-    procedure SetDatafile(AValue: TEpiDataFile);
-    procedure SetXVariableName(AValue: UTF8String);
-    procedure SetYVariableName(AValue: UTF8String);
   public
+    property Pct: Boolean read FPct write FPct;
     constructor Create(AOwner: TComponent); override;
+    procedure SetSource(F: TFreqDataFile);
+    procedure SetSource(T: TTwoWayTable; V: TEpiGetValueLabelType);
     destructor Destroy; override;
-    property Datafile: TEpiDataFile read FDatafile write SetDatafile;
-    property XVariableName: UTF8String read FXVariableName write SetXVariableName;
-    property YVariableName: UTF8String read FYVariableName write SetYVariableName;
   end;
 
 implementation
@@ -37,33 +35,44 @@ implementation
 
 procedure TBarSource.GetDataItem(ASource: TUserDefinedChartSource;
   AIndex: Integer; var AItem: TChartDataItem);
+var
+  i: Integer;
 begin
-  AItem.X := FXVar.AsFloat[AIndex];
-  AItem.Y := FYVar.AsFloat[AIndex];
+  if (FFreqs) then
+    begin
+      AItem.X := AIndex.ToDouble;
+      if (FPct) then
+        AItem.Y := FFreq.Percent.AsFloat[AIndex]
+      else
+        AItem.Y := FFreq.Count.AsFloat[AIndex];
+    end
+  else
+    begin
+      AItem.X := AIndex.ToDouble;
+      if (FPct) then
+        for i := 0 to YCount - 1 do
+          AItem.YList[i] := FTable.Cell[i, AIndex].TotalPct
+      else
+        for i := 0 to YCount - 1 do
+          AItem.YList[i] := FTable.Cell[i, AIndex].N.ToDouble;
+    end;
 end;
 
-procedure TBarSource.SetDatafile(AValue: TEpiDataFile);
+procedure TBarSource.SetSource(F: TFreqDataFile);
 begin
-  if FDatafile = AValue then Exit;
-  FDatafile := AValue;
-
-  PointsNumber := FDatafile.Size;
+  FFreqs := true;
+  FFreq  := F;
+  YCount := 1;
+  PointsNumber := F.Count.Size;
 end;
 
-procedure TBarSource.SetXVariableName(AValue: UTF8String);
+procedure TBarSource.SetSource(T: TTwoWayTable; V: TEpiGetValueLabelType);
 begin
-  if FXVariableName=AValue then Exit;
-  FXVariableName:=AValue;
-
-  FXVar := FDatafile.Fields.FieldByName[FXVariableName];
-end;
-
-procedure TBarSource.SetYVariableName(AValue: UTF8String);
-begin
-  if FYVariableName=AValue then Exit;
-  FYVariableName:=AValue;
-
-  FYVar := FDatafile.Fields.FieldByName[FYVariableName];
+  FFreqs := false;
+  FValueLabelOutput := V;
+  FTable  := T;
+  YCount := T.ColCount;
+  PointsNumber := T.RowCount;
 end;
 
 constructor TBarSource.Create(AOwner: TComponent);
@@ -74,10 +83,9 @@ end;
 
 destructor TBarSource.Destroy;
 begin
-  FXVar := nil;
-  FYVar := nil;
-  FreeAndNil(FDatafile);
   inherited Destroy;
+  FTable.Free;
+  FFreq.Free;
 end;
 
 end.

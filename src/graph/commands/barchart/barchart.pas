@@ -6,14 +6,14 @@ interface
 
 uses
   Classes, SysUtils, chartcommandresult, TAGraph, executor, outputcreator,
-  ast, epidatafiles, chartcommand, chartfactory, chartconfiguration;
+  ast, epidatafiles, chartcommand, chartfactory, chartconfiguration,
+  tables_types, tables, freq;
 
 type
 
   {TODO: Completely revamp!!
-    should always show frequencies by the x-variable (numeric or string usually)
-    Will create an instance of histogramdata that does not fill in the x-axis with consecutive values
-    So can also use histogramsource to display. Maybe change this to barchartsource in future.
+    use barchartsource
+    similar code to histogram to get variables, datafile and choose execfreq or exectables
   }
   { TBarChart }
 
@@ -30,8 +30,9 @@ type
 implementation
 
 uses
-  TASeries, TASources, TATypes, TAChartUtils, Graphics, charttitles, ast_types, epidatafilestypes,
-  epifields_helper, options_utils, scattersource; //barchartsource;
+  TASeries, TASources, TATypes, TAStyles, TAChartUtils, TALegend,
+  Graphics, charttitles, ast_types, epidatafilestypes,
+  epicustombase, epifields_helper, options_utils, barchartsource;
 
 { TBarChart }
 
@@ -45,67 +46,140 @@ end;
 
 function TBarChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 var
-  BarSeries: TBarSeries;
-  BarSource: TScatterSource; //TBarSource;
-  LabelSeries: TListChartSource;
-  VarNames: TStrings;
-  Chart: TChart;
-  Titles: IChartTitleConfiguration;
-  DataFile: TEpiDataFile;
-  XVar, YVar: TEpiField;
-  ChartConfiguration: IChartConfiguration;
-  VariableLabelType: TEpiGetVariableLabelType;
-  i: Integer;
+  {Chart}
+  Chart:               TChart;
+  ChartConfiguration:  IChartConfiguration;
+  Titles:              IChartTitleConfiguration;
+  DataFile:            TEpiDataFile;
+  BarSource:           TBarSource;
+  LabelSeries:         TListChartSource;
+  BarSeries:           TBarSeries;
+  SeriesStyles:        TChartStyles;
+  aStyle:              TChartStyle;
+  // for now, use default colours from classic analysis
+  // TODO: put in graph options
+  sColor:              array of TColor = (clBlue, clRed, clBlack, clGreen, clYellow, clWhite, clSkyBlue, clFuchsia, clGray, clAqua);
+  {Frequencies}
+  T:                   TTables;
+  Statistics:          TTableStatistics;
+  StratVariable:       TStringList;
+  TablesRefMap:        TEpiReferenceMap;
+  TableData:           TTwowayTable;
+  F:                   TFreqCommand;
+  FreqData:            TFreqDatafile;
+  {command}
+  VarNames:            TStrings;
+  XVar:                TEpiField;
+  WeightVarName:       UTF8String;
+  Opt:                 TOption;
+
+  ValueLabelOutput:    TEpiGetValueLabelType;
+  VariableLabelOutput: TEpiGetVariableLabelType;
+  ReverseStrata:       Boolean;
+  ByVarName:           UTF8String;
+  i, colour:           Integer;
+  sTitle:              UTF8String;
+  yPct:                Boolean;
+  yType:               UTF8String;
 begin
-  // Get Variable names
+  VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   VarNames := Command.VariableList.GetIdentsAsList;
+  StratVariable := TStringList.Create;
+  ReverseStrata := Command.HasOption('sd', Opt);
+  if (ReverseStrata) then
+    begin
+      Command.Options.Remove(Opt); // don't pass this to TABLES!
+      if (Varnames.Count = 1) then
+        FOutputCreator.DoInfoShort('!sd ignored with a single variable');
+    end;
 
-  // Get the data and fields.
+   WeightVarName := '';
+  if (Command.HasOption(['w'],Opt)) then
+    begin
+      WeightVarName := Opt.Expr.AsIdent;
+      VarNames.Add(WeightVarName);
+    end;
+
+  yPct := Command.HasOption('pct');
+
   DataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
-  XVar := Datafile.Fields.FieldByName[VarNames[1]];
-  YVar := Datafile.Fields.FieldByName[Varnames[0]];
-  Varnames.Free;
-
-  // Create the charts
+  XVar := Datafile.Fields.FieldByName[VarNames[0]];
   Chart := FChartFactory.NewChart();
+  BarSource := TBarSource.Create(Chart);
+  LabelSeries := TListChartSource.Create(Chart);
+  if (Varnames.Count > 1) then
+    begin
+   // Note: this does NOT call CalcTables with stratification
+      T := TTables.Create(FExecutor, FOutputCreator);
+      TableData  := T.CalcTables(Datafile, VarNames,
+                    StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics).UnstratifiedTable;
+      if (ReverseStrata) then
+        TableData.SortByRowLabel(true);
+      BarSource.SetSource(TableData, ValueLabelOutput);
+      ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
+      for i := 0 to TableData.ColCount - 1 do
+        LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.AsString[i]);   // TODO: use value label for 3rd parameter!
+    end
+  else
+    begin
+      F := TFreqCommand.Create(FExecutor, FOutputCreator);
+      FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
+      BarSource.SetSource(FreqData);
+      for i := 0 to FreqData.Count.Size - 1 do
+        LabelSeries.Add(i.ToDouble, 0, FreqData.Categ.AsString[i]);   // TODO: use value label for 3rd parameter!
+    end;
 
-  // Create our own datasource
-  // - datasource is destroyed by the chart, so we let it handle the datafile destruction
-  //   otherwise we would leak memory.
-  BarSource := TScatterSource.Create(Chart);     //TBarSource
-  BarSource.Datafile := DataFile;
-  BarSource.XVariableName := XVar.Name;
-  BarSource.YVariableName := YVar.Name;
-
-  // Create the bar series
   BarSeries := TBarSeries.Create(Chart);
   BarSeries.Source := BarSource;
-  BarSeries.BarWidthPercent:=75;
+  BarSeries.Stacked := Command.HasOption('stack');
+  BarSeries.BarWidthPercent := 80;
+  SeriesStyles := TChartStyles.Create(Chart);
+  if (Varnames.Count > 1) then
+    begin
+      colour := 0;
+      for i := 0 to TableData.RowCount - 1 do
+        begin
+          aStyle := SeriesStyles.Add;
+          aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
+          if (colour = length(sColor)) then colour := 0;
+          aStyle.Brush.Color:=sColor[colour];
+          aStyle.Pen.Color := clSilver;
+          colour += 1;
+        end;
+      BarSeries.Styles := SeriesStyles;
+      BarSeries.Legend.Multiplicity:=lmStyle;
+      BarSeries.Legend.GroupIndex  := 0;
 
-  // Create the bar labels
-  LabelSeries := TListChartSource.Create(Chart);
-  for i := 0 to DataFile.Size - 1 do
-    LabelSeries.Add(XVar.AsFloat[i], YVar.AsFloat[i], XVar.AsString[i]);   // TODO: use value label for 3rd parameter!
+      Chart.Legend.Visible        := true;
+      Chart.Legend.UseSidebar     := true;
+      Chart.Legend.Frame.Visible  := false;
+      Chart.Legend.GroupTitles.Add(ByVarName);
+    end  // stratified
+  else
+    begin
+      aStyle := SeriesStyles.Add;
+      aStyle.Brush.Color := sColor[0];
+      aStyle.Pen.Color := clSilver;
+    end;
 
   // Add series to the chart
   Chart.AddSeries(BarSeries);
 
   // Create the titles
   ChartConfiguration := FChartFactory.NewChartConfiguration();
-  VariableLabelType := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions, sovStatistics);
+  VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions, sovStatistics);
   Titles := ChartConfiguration.GetTitleConfiguration()
-    .SetTitle(XVar.GetVariableLabel(VariableLabelType) + ' by ' + YVar.GetVariableLabel(VariableLabelType))
+    .SetTitle(XVar.GetVariableLabel(VariableLabelOutput))
     .SetFootnote('')
-    .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelType))
-    .SetYAxisTitle(YVar.GetVariableLabel(VariableLabelType));
+    .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput));
 
   ChartConfiguration.GetAxesConfiguration()
     .GetXAxisConfiguration()
     .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
 
   ChartConfiguration.GetAxesConfiguration()
-    .GetYAxisConfiguration()
-    .SetShowAxisMarksAsDates(YVar.FieldType in DateFieldTypes);
+    .GetYAxisConfiguration();
 
   Chart.BottomAxis.Marks.Source := LabelSeries;
   Chart.BottomAxis.Marks.Style := smsLabel;
