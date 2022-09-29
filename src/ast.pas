@@ -1301,6 +1301,7 @@ type
 
   TBarchartCommand = class(TCustomGraphCommand)
   protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
     function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
   public
@@ -2493,6 +2494,16 @@ begin
 end;
 
 { TBarchartCommand }
+function TBarchartCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+  Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
+  Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('stack', [rtUndefined]);
+  Result.Insert('pct', [rtUndefined]);
+end;
 
 function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
 begin
@@ -2558,7 +2569,6 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('interval', [rtInteger, rtFloat]);
   Result.Insert('stack', [rtUndefined]);
-  Result.Insert('pct', [rtUndefined]);
 end;
 
 function THistogramCommand.GetAcceptedVariableCount: TBoundArray;
