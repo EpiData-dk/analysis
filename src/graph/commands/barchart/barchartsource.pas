@@ -51,10 +51,10 @@ begin
       AItem.X := AIndex.ToDouble;
       if (FPct) then
         for i := 0 to YCount - 1 do
-          AItem.YList[i] := FTable.Cell[i, AIndex].TotalPct
+          AItem.SetY(i, 100 * FTable.Cell[AIndex, i].ColPct)
       else
         for i := 0 to YCount - 1 do
-          AItem.YList[i] := FTable.Cell[i, AIndex].N.ToDouble;
+          AItem.SetY(i, FTable.Cell[AIndex, i].N.ToDouble);
     end;
 end;
 
@@ -71,8 +71,8 @@ begin
   FFreqs := false;
   FValueLabelOutput := V;
   FTable  := T;
-  YCount := T.ColCount;
-  PointsNumber := T.RowCount;
+  YCount := T.RowCount;
+  PointsNumber := T.ColCount;
 end;
 
 constructor TBarSource.Create(AOwner: TComponent);
