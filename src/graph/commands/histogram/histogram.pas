@@ -64,6 +64,7 @@ var
   FreqData:            TFreqDatafile;
   {command}
   VarNames:            TStrings;
+  DFVars:              TStrings;
   XVar:                TEpiField;
   WeightVarName:       UTF8String;
   Opt:                 TOption;
@@ -81,6 +82,7 @@ begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   VarNames := Command.VariableList.GetIdentsAsList;
+  DFVars := Command.VariableList.GetIdentsAsList;
   StratVariable := TStringList.Create;
   ReverseStrata := Command.HasOption('sd', Opt);
   if (ReverseStrata) then
@@ -94,12 +96,12 @@ begin
   if (Command.HasOption(['w'],Opt)) then
     begin
       WeightVarName := Opt.Expr.AsIdent;
-      VarNames.Add(WeightVarName);
+      DFVars.Add(WeightVarName);
     end;
 
   yPct := Command.HasOption('pct');
 
-  DataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
+  DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
   XVar := Datafile.Fields.FieldByName[VarNames[0]];
   Chart := FChartFactory.NewChart();
   HistogramData := THistogram.Create(FExecutor, Command);
@@ -170,6 +172,9 @@ begin
   sTitle := yType + ' by ' + XVar.GetVariableLabel(VariableLabelOutput);
   if (Varnames.Count > 1) then
     sTitle += ' by ' + ByVarName;
+  if (WeightVarName <> '') then
+    sTitle += ' weighted (' + WeightVarName + ')';
+
   ChartConfiguration := FChartFactory.NewChartConfiguration();
   Titles := ChartConfiguration.GetTitleConfiguration()
     .SetTitle(sTitle)

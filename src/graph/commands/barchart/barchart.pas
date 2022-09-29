@@ -50,7 +50,6 @@ var
   Chart:               TChart;
   ChartConfiguration:  IChartConfiguration;
   Titles:              IChartTitleConfiguration;
-  DataFile:            TEpiDataFile;
   BarSource:           TBarSource;
   LabelSeries:         TListChartSource;
   BarSeries:           TBarSeries;
@@ -60,6 +59,7 @@ var
   // TODO: put in graph options
   sColor:              array of TColor = (clBlue, clRed, clBlack, clGreen, clYellow, clWhite, clSkyBlue, clFuchsia, clGray, clAqua);
   {Frequencies}
+  DataFile:            TEpiDataFile;
   T:                   TTables;
   Statistics:          TTableStatistics;
   StratVariable:       TStringList;
@@ -69,6 +69,7 @@ var
   FreqData:            TFreqDatafile;
   {command}
   VarNames:            TStrings;
+  DFVars:              TStrings;
   XVar:                TEpiField;
   WeightVarName:       UTF8String;
   Opt:                 TOption;
@@ -85,6 +86,7 @@ begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   VarNames := Command.VariableList.GetIdentsAsList;
+  DFVars   := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
   StratVariable := TStringList.Create;
   ReverseStrata := Command.HasOption('sd', Opt);
   if (ReverseStrata) then
@@ -94,19 +96,20 @@ begin
         FOutputCreator.DoInfoShort('!sd ignored with a single variable');
     end;
 
-   WeightVarName := '';
+  WeightVarName := '';
   if (Command.HasOption(['w'],Opt)) then
     begin
       WeightVarName := Opt.Expr.AsIdent;
-      VarNames.Add(WeightVarName);
+      DFVars.Add(WeightVarName);
     end;
 
   yPct := Command.HasOption('pct');
 
-  DataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
+  DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
   XVar := Datafile.Fields.FieldByName[VarNames[0]];
   Chart := FChartFactory.NewChart();
   BarSource := TBarSource.Create(Chart);
+  BarSource.Pct := yPct;
   LabelSeries := TListChartSource.Create(Chart);
   if (Varnames.Count > 1) then
     begin
@@ -119,7 +122,7 @@ begin
       BarSource.SetSource(TableData, ValueLabelOutput);
       ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
       for i := 0 to TableData.ColCount - 1 do
-        LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.AsString[i]);   // TODO: use value label for 3rd parameter!
+        LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, ValueLabelOutput)); //.AsString[i]);   // TODO: use value label for 3rd parameter!
     end
   else
     begin
@@ -127,7 +130,7 @@ begin
       FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
       BarSource.SetSource(FreqData);
       for i := 0 to FreqData.Count.Size - 1 do
-        LabelSeries.Add(i.ToDouble, 0, FreqData.Categ.AsString[i]);   // TODO: use value label for 3rd parameter!
+        LabelSeries.Add(i.ToDouble, 0, FreqData.Categ.GetValueLabel(i, ValueLabelOutput)); // .AsString[i]);   // TODO: use value label for 3rd parameter!
     end;
 
   BarSeries := TBarSeries.Create(Chart);
@@ -166,13 +169,23 @@ begin
   // Add series to the chart
   Chart.AddSeries(BarSeries);
 
-  // Create the titles
+  if (yPct) then
+    yType := 'Percent'
+  else
+    yType := 'Count';
+  sTitle := yType + ' by ' + XVar.GetVariableLabel(VariableLabelOutput);
+  if (Varnames.Count > 1) then
+    sTitle += ' by ' + ByVarName;
+  if (WeightVarName <> '') then
+    sTitle += ' weighted (' + WeightVarName + ')';
+
   ChartConfiguration := FChartFactory.NewChartConfiguration();
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions, sovStatistics);
   Titles := ChartConfiguration.GetTitleConfiguration()
-    .SetTitle(XVar.GetVariableLabel(VariableLabelOutput))
+    .SetTitle(sTitle)
     .SetFootnote('')
-    .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput));
+    .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
+    .SetYAxisTitle(yType);
 
   ChartConfiguration.GetAxesConfiguration()
     .GetXAxisConfiguration()
