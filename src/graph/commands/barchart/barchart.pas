@@ -61,9 +61,9 @@ var
   {Frequencies}
   DataFile:            TEpiDataFile;
   T:                   TTables;
-  Statistics:          TTableStatistics;
+  nilStatistics:       TTableStatistics;
   StratVariable:       TStringList;
-  TablesRefMap:        TEpiReferenceMap;
+  nilTablesRefMap:     TEpiReferenceMap;
   TableData:           TTwowayTable;
   F:                   TFreqCommand;
   FreqData:            TFreqDatafile;
@@ -116,7 +116,7 @@ begin
    // Note: this does NOT call CalcTables with stratification
       T := TTables.Create(FExecutor, FOutputCreator);
       TableData  := T.CalcTables(Datafile, VarNames,
-                    StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics).UnstratifiedTable;
+                    StratVariable, WeightVarName, Command.Options, nilTablesRefMap, nilStatistics).UnstratifiedTable;
       if (ReverseStrata) then
         TableData.SortByRowLabel(true);
       BarSource.SetSource(TableData, ValueLabelOutput);
@@ -127,7 +127,7 @@ begin
   else
     begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
-      FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
+      FreqData := F.CalcFreq(Datafile, VarNames[0],nilTablesRefMap);
       BarSource.SetSource(FreqData);
       for i := 0 to FreqData.Count.Size - 1 do
         LabelSeries.Add(i.ToDouble, 0, FreqData.Categ.GetValueLabel(i, ValueLabelOutput)); // .AsString[i]);   // TODO: use value label for 3rd parameter!
@@ -143,14 +143,14 @@ begin
       colour := 0;
       for i := 0 to TableData.RowCount - 1 do
         begin
+          if (colour = length(sColor)) then
+            colour := 0;
           aStyle := SeriesStyles.Add;
           aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
-          if (colour = length(sColor)) then colour := 0;
           aStyle.Brush.Color:=sColor[colour];
           aStyle.Pen.Color := clSilver;
           colour += 1;
         end;
-      BarSeries.Styles := SeriesStyles;
       BarSeries.Legend.Multiplicity:=lmStyle;
       BarSeries.Legend.GroupIndex  := 0;
 
@@ -165,6 +165,7 @@ begin
       aStyle.Brush.Color := sColor[0];
       aStyle.Pen.Color := clSilver;
     end;
+    BarSeries.Styles := SeriesStyles;
 
   // Add series to the chart
   Chart.AddSeries(BarSeries);

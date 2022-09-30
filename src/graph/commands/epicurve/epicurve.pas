@@ -59,9 +59,9 @@ var
   sColor:              array of TColor = (clBlue, clRed, clBlack, clGreen, clYellow, clWhite, clSkyBlue, clFuchsia, clGray, clAqua);
   {Frequencies}
   T:                   TTables;
-  Statistics:          TTableStatistics;
+  nilStatistics:       TTableStatistics;
   StratVariable:       TStringList;
-  TablesRefMap:        TEpiReferenceMap;
+  nilTablesRefMap:     TEpiReferenceMap;
   TableData:           TTwowayTable;
   F:                   TFreqCommand;
   FreqData:            TFreqDatafile;
@@ -107,7 +107,7 @@ begin
   // Note: this does NOT call CalcTables with stratification
       T := TTables.Create(FExecutor, FOutputCreator);
       TableData  := T.CalcTables(Datafile, VarNames,
-                    StratVariable, WeightVarName, Command.Options, TablesRefMap, Statistics).UnstratifiedTable;
+                    StratVariable, WeightVarName, Command.Options, nilTablesRefMap, nilStatistics).UnstratifiedTable;
       if (ReverseStrata) then
         TableData.SortByRowLabel(true);
       HistogramData.Fill(TableData);
@@ -118,7 +118,7 @@ begin
   else
     begin
       F := TFreqCommand.Create(FExecutor, FOutputCreator);
-      FreqData := F.CalcFreq(Datafile, VarNames[0],TablesRefMap);
+      FreqData := F.CalcFreq(Datafile, VarNames[0], nilTablesRefMap);
 
       HistogramData.Fill(FreqData);
       HistogramData.HistogramToEpicurve;
@@ -133,7 +133,6 @@ begin
   BarSeries.BarWidthPercent := 100;
   BarSeries.ShowInLegend := false;
   SeriesStyles := TChartStyles.Create(Chart);
-  BarSeries.Styles := SeriesStyles;
 
   if (Varnames.Count > 1) then
     begin
@@ -152,6 +151,8 @@ begin
       for i := 0 to TableData.RowCount - 1 do
         begin
           // individual box styles
+          if (colour = length(sColor)) then
+            colour := 0;     // if more strata than colours, recycle the colours
           for box := box1 to box1 + HistogramData.MaxCount[i] - 1 do
             begin
               aStyle := SeriesStyles.Add;
@@ -162,7 +163,6 @@ begin
           aStyle := LegendStyles.Add;
           aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
           aStyle.Brush.Color:=sColor[colour];
-          if (colour = length(sColor)) then colour := 0;     // if more strata than colours, recycle the colours
           colour += 1;
           box1 += HistogramData.MaxCount[i];
         end;
@@ -178,6 +178,7 @@ begin
       aStyle.Brush.Color := sColor[0];
       aStyle.Pen.Color := clSilver;
     end;
+  BarSeries.Styles := SeriesStyles;
 
   Chart.AddSeries(BarSeries);
 

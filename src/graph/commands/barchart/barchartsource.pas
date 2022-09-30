@@ -84,8 +84,8 @@ end;
 destructor TBarSource.Destroy;
 begin
   inherited Destroy;
-  FTable.Free;
-  FFreq.Free;
+  FreeAndNil(FTable);
+  FreeAndNil(FFreq);
 end;
 
 end.
