@@ -132,7 +132,6 @@ begin
   BarSeries.BarWidthPercent := 100;
   BarSeries.ShowInLegend := false;
   SeriesStyles := TChartStyles.Create(Chart);
-  BarSeries.Styles := SeriesStyles;
 
   if (Varnames.Count > 1) then
     begin
