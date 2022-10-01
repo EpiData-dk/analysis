@@ -2,25 +2,26 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
     <id>binary</id>
-    <baseDirectory>analysis/</baseDirectory>
+    <baseDirectory>/analysis/</baseDirectory>
     <formats>
         <format>tar.gz</format>
     </formats>
     <fileSets>
         <fileSet>
             <directory>${project.build.directory}/binary/</directory>
-            <outputDirectory>analysis/</outputDirectory>
+            <outputDirectory>binaries/</outputDirectory>
             <includes>
                 <include>*/*</include>
             </includes>
         </fileSet>
         <fileSet>
             <directory>help/</directory>
-            <outputDirectory>help/</outputDirectory>
+            <outputDirectory>docs/</outputDirectory>
             <includes>
                 <include>commands.html</include>
                 <include>howto.html</include>
                 <include>How_to_adapt_your_pgm_file_to_new_EpiData_Analysis_format.pdf</include>
+                <include>EpiDataAnalysis_Introduction.pdf</include>
             </includes>
         </fileSet>
     </fileSets>
