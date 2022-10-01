@@ -56,7 +56,7 @@ var
   aStyle:              TChartStyle;
   // for now, use default colours from classic analysis
   // TODO: put in graph options
-  sColor:              array of TColor = (clBlue, clRed, clBlack, clGreen, clYellow, clWhite, clSkyBlue, clFuchsia, clGray, clAqua);
+  sColor:              TColorMap;
   {Frequencies}
   T:                   TTables;
   nilStatistics:       TTableStatistics;
@@ -82,7 +82,7 @@ var
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-
+  sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
   VarNames := Command.VariableList.GetIdentsAsList;
   StratVariable := TStringList.Create;
   ReverseStrata := Command.HasOption('sd', Opt);
