@@ -2503,6 +2503,7 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('stack', [rtUndefined]);
   Result.Insert('pct', [rtUndefined]);
+  Result.Insert('colors', [rtInteger]);
 end;
 
 function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2533,6 +2534,7 @@ begin
   AddValueLabelOptions(Result);
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('interval', [rtInteger]);
+  Result.Insert('colors', [rtInteger]);
 end;
 
 function TEpicurveCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2569,6 +2571,7 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('interval', [rtInteger, rtFloat]);
   Result.Insert('stack', [rtUndefined]);
+  Result.Insert('colors', [rtInteger]);
 end;
 
 function THistogramCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2604,17 +2607,17 @@ begin
   AddValueLabelOptions(Result);
   Result.Insert('by',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('o',   [rtInteger, rtString]);          // outcome value
-  Result.Insert('nt',  ['notab'],  [rtUndefined]);      // no tables
-  Result.Insert('ng',  ['nokmplot'],  [rtUndefined]);   // no km plot
-  Result.Insert('nou', [rtUndefined]);                  // no unstratified table
-  Result.Insert('nos', [rtUndefined]);                  // no stratified tables
-  Result.Insert('ns',  [rtUndefined]);                  // no summary output
-  Result.Insert('t',   ['test'], [rtUndefined]);        // log-rank test and hazard ratio (valid with !by)
-  Result.Insert('cb',  [rtUndefined]);                  // put KM plot points into clipboard
-  Result.Insert('cin', ['cinone'], [rtUndefined]);      // no confidence intervals on plots
-  Result.Insert('cib', ['ciband'], [rtUndefined]);      // show CI as bands
+  Result.Insert('o',   [rtInteger, rtString]);  // outcome value
+  Result.Insert('nt', ['notab'],  [rtUndefined]);     // no tables
+  Result.Insert('nou', [rtUndefined]);     // no unstratified table
+  Result.Insert('nos', [rtUndefined]);     // no stratified tables
+  Result.Insert('ns',  [rtUndefined]);     // no summary output
+  Result.Insert('t',  ['test'], [rtUndefined]);     // log-rank test and hazard ratio (valid with !by)
+  Result.Insert('cb',  [rtUndefined]);     // put KM plot points into clipboard
+  Result.Insert('cin',['cinone'], [rtUndefined]);     // no confidence intervals on plots
+  Result.Insert('cib',['ciband'], [rtUndefined]);     // show CI as bands
   Result.Insert('cil', ['ciline'], [rtUndefined]);      // show CI uppper and lower lines
+  Result.Insert('colors', [rtInteger]);    // color map (9 digits)
   Result.Insert('q',   [rtUndefined]);
   Result.Insert('mt',  [rtUndefined]);                  // missing values of time2 become max(time2)
   Result.Insert('exit',[rtDate]);                       // date to assign when time2 is missing

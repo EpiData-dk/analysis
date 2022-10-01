@@ -57,7 +57,7 @@ var
   aStyle:              TChartStyle;
   // for now, use default colours from classic analysis
   // TODO: put in graph options
-  sColor:              array of TColor = (clBlue, clRed, clBlack, clGreen, clYellow, clWhite, clSkyBlue, clFuchsia, clGray, clAqua);
+  sColor:              TColorMap;
   {Frequencies}
   DataFile:            TEpiDataFile;
   T:                   TTables;
@@ -85,6 +85,7 @@ var
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
   VarNames := Command.VariableList.GetIdentsAsList;
   DFVars   := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
   StratVariable := TStringList.Create;
@@ -195,8 +196,16 @@ begin
   ChartConfiguration.GetAxesConfiguration()
     .GetYAxisConfiguration();
 
-  Chart.BottomAxis.Marks.Source := LabelSeries;
-  Chart.BottomAxis.Marks.Style := smsLabel;
+  with Chart do
+    begin
+      BottomAxis.Marks.Source := LabelSeries;
+      BottomAxis.Marks.Style  := smsLabel;
+      BottomAxis.Grid.Style   := psClear;
+      BottomAxis.Margin       := 0;
+      LeftAxis.Grid.Style     := psClear;
+      LeftAxis.Margin         := 0;
+      Frame.Visible           := false;
+    end;
 
   // Create the command result
   Result := FChartFactory.NewGraphCommandResult();

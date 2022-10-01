@@ -14,6 +14,9 @@ type
     sovBrowser       //      -- do --               ANA_SO_BROWSE_VALUE_LABEL and ANA_SO_BROWSE_VARIABLE_LABEL
   );
 
+  TColorMap = Array of TColor;
+  TDigitIndex = Array of Integer;
+
 procedure AddValueLabelOptions(STOptionList: TStatementOptionsMap);
 function ValueLabelTypeFromOptionList(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil; SetOptionVariant: TSetOptionVariant = sovStatistics): TEpiGetValueLabelType;
 
@@ -31,6 +34,8 @@ function FontFromSetOptions(Const FontName, SizeName, ColorName, StyleName: Stri
 procedure FontToSetOptions(AFont: TFont; Const FontName, SizeName, ColorName, StyleName: String;
   SetOptions: TSetOptionsMap);
 
+function ChartColorsFromOptions(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil): TColorMap;
+function IntToDigits(n: Integer): TDigitIndex;
 
 function BGRToRGB(Color: TColor): Integer;
 function RGBToBGR(Color: Integer): TColor;
@@ -218,6 +223,47 @@ begin
 
   if StyleName <> '' then
     ChangeSetOption(SetOptions[StyleName], StyleName, SetToString(PTypeInfo(TypeInfo(TFontStyles)), Integer(AFont.Style), false), rtString);
+end;
+
+function ChartColorsFromOptions(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil): TColorMap;
+var
+  i:    Integer;
+  iMap: Integer;
+  vMap: TDigitIndex;
+  Opt:  TOption;
+  anaColors: array of TColor = (clBlue, clRed, clBlack, clGreen, clYellow, clWhite, clSkyBlue, clFuchsia, clGray, clAqua);
+begin
+  result := copy(anaColors);
+  if (Assigned(SetOptions)) then
+    begin
+      iMap := StrToInt(SetOptions.GetValue(ANA_SO_CHART_COLORS).Value);
+    end;
+  if (OptionList.HasOption('colors', Opt)) then
+    iMap := Opt.Expr.AsInteger;
+  vMap := IntToDigits(iMap);
+  for i := 0 to high(vMap) do
+    result[i] := anaColors[vMap[i]-1];
+end;
+
+{ IntToDigits parses integer n into array of it's non-zero digits
+  Use it to convert a set option like 12345 into a color or pattern array
+}
+function IntToDigits(n: Integer): TDigitIndex;
+var
+  i: Integer;
+  s, d: String;
+begin
+  if (n < 0) then n := -n;
+  if (n > 999999999) then
+    n := 123456789; // fallback to legal value
+  s := IntToStr(n);
+  result := [];
+  for i := 0 to Length(s)-1 do
+    begin
+      d := s.Substring(i,1);
+      if (d <> '0') then
+        result := concat(result, [d.ToInteger]);
+    end;
 end;
 
 function BGRToRGB(Color: TColor): Integer;
