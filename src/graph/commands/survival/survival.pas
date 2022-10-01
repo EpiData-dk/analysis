@@ -9,7 +9,7 @@ uses
   Classes, SysUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
   tables_types, tables,
   executor, result_variables, epifields_helper, ana_globals,
-  outputcreator,
+  outputcreator, options_utils,
   TAGraph, TASeries, TATypes, TASources, Graphics, FPCanvas,
   chartcommandresult, chartcommand, chartfactory, chartconfiguration, charttitles;
 
@@ -56,6 +56,7 @@ type
     FChartConfiguration:  IChartConfiguration;
     FTitles:              IChartTitleConfiguration;
     FCIType:              Integer;
+    FColors:              TColorMap;
   // plot points for one KM graph series
     FPlotT,
     FPlotS,
@@ -95,7 +96,7 @@ type
 implementation
 
 uses
-  generalutils, Math, statfunctions, options_utils, Clipbrd,
+  generalutils, Math, statfunctions, Clipbrd,
   ast_types, forms, graphformfactory;
 
 { TSurvival }
@@ -504,16 +505,21 @@ procedure TSurvival.DoAddGraphSeries(Stratum: Integer);
 var
   aText:      UTF8String;
   aColor:     TColor;
-  sColor:     array of TColor = (clBlack, clBlue, clGreen, clRed, clMaroon);
   aPattern:   TFPBrushStyle;
-  sPattern:   array of TFPBrushStyle = (bsDiagCross, bsFDiagonal, bsBDiagonal, bsCross, bsDiagCross);
+  sPattern:   array of TFPBrushStyle = (bsFDiagonal, bsBDiagonal, bsCross, bsDiagCross);
 begin
   if (Stratum > 0) then
-    aText  := FStratVarname + '=' + FStratLabels[Stratum - 1]
+    begin
+      aText  := FStratVarname + '=' + FStratLabels[Stratum - 1];
+      aColor   := FColors[min(Stratum-1,8)];
+      aPattern := sPattern[min(Stratum-1,3)];
+    end
   else
+  begin
     aText  := '';
-  aColor   := sColor[min(Stratum,4)];
-  aPattern := sPattern[min(Stratum,4)];
+    aColor   := FColors[0];
+    aPattern := sPattern[0];
+  end;
   case FCIType of
     1 :    // line
       begin
@@ -629,6 +635,7 @@ begin
   FDecimals            := DecimalFromOption(Command.Options, 3);
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  FColors              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
   AllVariables         := Command.VariableList.GetIdentsAsList;
 
   Result := FChartFactory.NewGraphCommandResult(); // always create chart object

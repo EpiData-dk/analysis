@@ -2503,6 +2503,7 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('stack', [rtUndefined]);
   Result.Insert('pct', [rtUndefined]);
+  Result.Insert('colors', [rtInteger]);
 end;
 
 function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2533,6 +2534,7 @@ begin
   AddValueLabelOptions(Result);
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('interval', [rtInteger]);
+  Result.Insert('colors', [rtInteger]);
 end;
 
 function TEpicurveCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2569,6 +2571,7 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('interval', [rtInteger, rtFloat]);
   Result.Insert('stack', [rtUndefined]);
+  Result.Insert('colors', [rtInteger]);
 end;
 
 function THistogramCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2613,6 +2616,7 @@ begin
   Result.Insert('cb',  [rtUndefined]);     // put KM plot points into clipboard
   Result.Insert('cin',['cinone'], [rtUndefined]);     // no confidence intervals on plots
   Result.Insert('cib',['ciband'], [rtUndefined]);     // show CI as bands
+  Result.Insert('colors', [rtInteger]);    // color map (9 digits)
   Result.Insert('q',   [rtUndefined]);
 end;
 
