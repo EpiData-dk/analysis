@@ -46,6 +46,7 @@
 -Fu./src/graph/commands/survival
 -Fu./src/graph/commands/histogram
 -Fu./src/graph/commands/epicurve
+-Fu./src/graph/commands/barchart
 -Fu./src/graph/graphform
 -Fu./src/output
 -Fu./src/parser
