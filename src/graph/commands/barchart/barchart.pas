@@ -11,10 +11,6 @@ uses
 
 type
 
-  {TODO: Completely revamp!!
-    use barchartsource
-    similar code to histogram to get variables, datafile and choose execfreq or exectables
-  }
   { TBarChart }
 
   TBarChart = class(TInterfacedObject, IChartCommand)

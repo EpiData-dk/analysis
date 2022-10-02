@@ -18,6 +18,7 @@ uses
   freq_contribution, tables_contribution, ctable_contribution,
   means_contribution, describe_contribution,
   epicurve_contribution, histogram_contribution, scatter_contribution, survival_contribution,
+  barchart_contribution,
 
   // ONLY ADD GRAPH COMMANDS HERE (delete all other automatically added units).
    scatter, barchart, survival, epicurve, histogram;
