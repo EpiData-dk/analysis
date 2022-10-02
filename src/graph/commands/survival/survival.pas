@@ -168,7 +168,7 @@ type
 implementation
 
 uses
-  generalutils, Math, statfunctions, options_utils, strutils, Clipbrd,
+  generalutils, Math, statfunctions, strutils, Clipbrd,
   ast_types, forms, graphformfactory, TACustomSource;
 
 { TSurvival }
