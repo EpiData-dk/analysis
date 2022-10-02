@@ -1,4 +1,4 @@
-unit histogram_primaryoption_model;
+unit barchart_primaryoption_model;
 
 {$mode objfpc}{$H+}
 
@@ -10,9 +10,9 @@ uses
 type
 
 
-   { ThistogramStatDialogPrimaryOptionModel }
+   { TBarchartStatDialogPrimaryOptionModel }
 
-   THistogramStatDialogPrimaryOptionModel = class(IStatDialogModel)
+   TBarchartStatDialogPrimaryOptionModel = class(IStatDialogModel)
    private
      FExecutor: TExecutor;
      FValueLabelType: TEpiGetValueLabelType;
@@ -43,23 +43,23 @@ implementation
 uses
   LazUTF8;
 
-{ THistogramStatDialogPrimaryOptionModel }
+{ TBarchartStatDialogPrimaryOptionModel }
 
-procedure THistogramStatDialogPrimaryOptionModel.SetValueLabelType(
+procedure TBarchartStatDialogPrimaryOptionModel.SetValueLabelType(
   AValue: TEpiGetValueLabelType);
 begin
   if FValueLabelType = AValue then Exit;
   FValueLabelType := AValue;
 end;
 
-procedure THistogramStatDialogPrimaryOptionModel.SetVariableLabelType(
+procedure TBarchartStatDialogPrimaryOptionModel.SetVariableLabelType(
   AValue: TEpiGetVariableLabelType);
 begin
   if FVariableLabelType = AValue then Exit;
   FVariableLabelType := AValue;
 end;
 
-constructor THistogramStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
+constructor TBarchartStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
 var
     defaults: TStringList;
 begin
@@ -74,7 +74,7 @@ begin
   defaults.Free;
 end;
 
-function THistogramStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
+function TBarchartStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
 var
   compareOption: UTF8String;
 begin
@@ -102,13 +102,9 @@ begin
     Result += ' !stack';
   if (FSortD) then
     Result += ' !sd';
-//  if (FInterval) then
-//    Result += ' !interval:=' + FInterval;
-
-//  Result := UTF8Trim(Result);
 end;
 
-function THistogramStatDialogPrimaryOptionModel.IsDefined(): boolean;
+function TBarchartStatDialogPrimaryOptionModel.IsDefined(): boolean;
 begin
   result := true;
 end;

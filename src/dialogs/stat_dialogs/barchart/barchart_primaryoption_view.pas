@@ -1,4 +1,4 @@
-unit histogram_primaryoption_view;
+unit barchart_primaryoption_view;
 
 {$mode objfpc}{$H+}
 
@@ -6,16 +6,16 @@ interface
 
 uses
   Classes, SysUtils, ExtCtrls, Controls, stat_dialog_contribution,
-  histogram_primaryoption_model, stat_dialog_custom_view;
+  barchart_primaryoption_model, stat_dialog_custom_view;
 
 type
 
-  { ThistogramStatPrimaryOptionsView }
+  { TBarchartStatPrimaryOptionsView }
 
-  ThistogramStatPrimaryOptionsView = class(TCustomStatDialogView)
+  TBarchartStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
     FOnModified: IStatDiaglogViewModified;
-    FDataModel: ThistogramStatDialogPrimaryOptionModel;
+    FDataModel: TBarchartStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FValueLabelsGroup: TRadioGroup;
     FVariableLabelsGroup: TRadioGroup;
@@ -33,7 +33,7 @@ type
     function GetViewCaption(): UTF8String; override;
     function IsDefined(): boolean; override;
     procedure ResetView(); override;
-    procedure SetModel(DataModel: ThistogramStatDialogPrimaryOptionModel);
+    procedure SetModel(DataModel: TBarchartStatDialogPrimaryOptionModel);
   end;
 
 implementation
@@ -41,9 +41,9 @@ implementation
 uses
   StdCtrls, epifields_helper;
 
-{ ThistogramStatPrimaryOptionsView }
+{ TBarchartStatPrimaryOptionsView }
 
-procedure ThistogramStatPrimaryOptionsView.CreateValueLabelsRadios(
+procedure TBarchartStatPrimaryOptionsView.CreateValueLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Value');
@@ -53,7 +53,7 @@ begin
   RadioGroup.OnSelectionChanged := @ValueLabelSelectionChanged;
 end;
 
-procedure ThistogramStatPrimaryOptionsView.CreateVariableLabelsRadios(
+procedure TBarchartStatPrimaryOptionsView.CreateVariableLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Variable Name');
@@ -63,7 +63,7 @@ begin
   RadioGroup.OnSelectionChanged := @VariableLabelSelectionChanged;
 end;
 
-procedure ThistogramStatPrimaryOptionsView.VariableLabelSelectionChanged(
+procedure TBarchartStatPrimaryOptionsView.VariableLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -75,7 +75,7 @@ begin
   DoModified();
 end;
 
-procedure ThistogramStatPrimaryOptionsView.ValueLabelSelectionChanged(
+procedure TBarchartStatPrimaryOptionsView.ValueLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -87,7 +87,7 @@ begin
   DoModified();
 end;
 
-procedure ThistogramStatPrimaryOptionsView.OptionGroupCheck(Sender: TObject; Index: integer);
+procedure TBarchartStatPrimaryOptionsView.OptionGroupCheck(Sender: TObject; Index: integer);
 var
   Value: Boolean;
 begin
@@ -98,7 +98,7 @@ begin
   end;
 end;
 
-constructor ThistogramStatPrimaryOptionsView.Create(TheOwner: TComponent);
+constructor TBarchartStatPrimaryOptionsView.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
@@ -155,28 +155,28 @@ begin
   CreateVariableLabelsRadios(FVariableLabelsGroup);
 end;
 
-procedure ThistogramStatPrimaryOptionsView.EnterView();
+procedure TBarchartStatPrimaryOptionsView.EnterView();
 begin
   FHorizontalDivider.Top := ((Self.Height - FHorizontalDivider.Height) div 2);
   FVerticalDivider.Left := ((Self.Width - FVerticalDivider.Width) div 2);
 end;
 
-function ThistogramStatPrimaryOptionsView.ExitView(): boolean;
+function TBarchartStatPrimaryOptionsView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function ThistogramStatPrimaryOptionsView.GetViewCaption(): UTF8String;
+function TBarchartStatPrimaryOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Output';
 end;
 
-function ThistogramStatPrimaryOptionsView.IsDefined(): boolean;
+function TBarchartStatPrimaryOptionsView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure ThistogramStatPrimaryOptionsView.ResetView();
+procedure TBarchartStatPrimaryOptionsView.ResetView();
 begin
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
@@ -188,8 +188,8 @@ begin
 
 end;
 
-procedure ThistogramStatPrimaryOptionsView.SetModel(
-  DataModel: ThistogramStatDialogPrimaryOptionModel);
+procedure TBarchartStatPrimaryOptionsView.SetModel(
+  DataModel: TBarchartStatDialogPrimaryOptionModel);
 begin
   FDataModel := DataModel;
   FValueLabelsGroup.ItemIndex := FDataModel.ValueLabelsDefault;
