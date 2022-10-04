@@ -5,7 +5,7 @@ unit survival_variables_view;
 interface
 
 uses
-  Classes, SysUtils, Controls, ExtCtrls, StdCtrls,
+  Classes, SysUtils, Controls, ExtCtrls, StdCtrls, epidatafilestypes,
   stat_dialog_contribution, survival_model, fields_combobox, stat_dialog_custom_view;
 
 type
@@ -40,7 +40,8 @@ uses
 
 const
   XVARIABLE_TAG   = Ord(tvX);
-  YVARIABLE_TAG   = Ord(tvY);
+  TVARIABLE_TAG   = Ord(tvT);
+  T2VARIABLE_TAG  = Ord(tvT2);
   WVARIABLE_TAG   = Ord(tvW);
   ByVariable_TAG  = Ord(tvBy);
 
@@ -65,8 +66,22 @@ begin
         CreateFailureRadios(FFailureGroup);
       end;
 
-    YVARIABLE_TAG:
-      FDataModel.YVariable := Field;
+    TVARIABLE_TAG:
+      begin
+        FDataModel.TVariable := Field;
+        if (Field.FieldType in DateFieldTypes) then
+          FComboBoxes[T2VARIABLE_TAG].Visible := true
+        else
+          with (FComboBoxes[T2VARIABLE_TAG]) do
+          begin
+            Visible := false;
+            Fields.Free;
+            Fields := nil;
+          end;
+      end;
+
+    T2VARIABLE_TAG:
+      FDataModel.T2Variable := Field;
 
     WVARIABLE_TAG:
       FDataModel.WVariable := Field;
@@ -117,25 +132,39 @@ begin
   FVerticalDivider.AnchorParallel(akBottom, 0, Self);
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
+  ComboBox.Filter := [ftInteger, ftString, ftUpperString];
   ComboBox.Parent := self;
   ComboBox.AnchorParallel(akTop, 10, Self);
-  ComboBox.AnchorParallel(akLeft, 10, Self);
-  ComboBox.AnchorToNeighbour(akRight, 10, FVerticalDivider);
-  ComboBox.OnSelect := @VariableSelect;
-  ComboBox.Tag := YVARIABLE_TAG;
-  ComboBox.NoItemText := 'Time Variable';
-  FComboBoxes[YVARIABLE_TAG] := ComboBox;
-  PrevCombo := ComboBox;
-
-  ComboBox := TEpiFieldsComboBox.Create(TheOwner);
-  ComboBox.Parent := self;
-  ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
   ComboBox.AnchorParallel(akLeft, 10, Self);
   ComboBox.AnchorToNeighbour(akRight, 10, FVerticalDivider);
   ComboBox.OnSelect := @VariableSelect;
   ComboBox.Tag := XVARIABLE_TAG;
   ComboBox.NoItemText := 'Outcome Variable';
   FComboBoxes[XVARIABLE_TAG] := ComboBox;
+  PrevCombo := ComboBox;
+
+  ComboBox := TEpiFieldsComboBox.Create(TheOwner);
+  ComboBox.Filter := [ftInteger] + DateFieldTypes;
+  ComboBox.Parent := self;
+  ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
+  ComboBox.AnchorParallel(akLeft, 10, Self);
+  ComboBox.AnchorToNeighbour(akRight, 10, FVerticalDivider);
+  ComboBox.OnSelect := @VariableSelect;
+  ComboBox.Tag := TVARIABLE_TAG;
+  ComboBox.NoItemText := 'Time Variable (integer time or date)';
+  FComboBoxes[TVARIABLE_TAG] := ComboBox;
+  PrevCombo := ComboBox;
+
+  ComboBox := TEpiFieldsComboBox.Create(TheOwner);
+  ComboBox.Filter := DateFieldTypes;
+  ComboBox.Parent := self;
+  ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
+  ComboBox.AnchorParallel(akLeft, 10, Self);
+  ComboBox.AnchorToNeighbour(akRight, 10, FVerticalDivider);
+  ComboBox.OnSelect := @VariableSelect;
+  ComboBox.Tag := T2VARIABLE_TAG;
+  ComboBox.NoItemText := 'Time Variable (optional date)';
+  FComboBoxes[T2VARIABLE_TAG] := ComboBox;
   PrevCombo := ComboBox;
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
@@ -164,7 +193,7 @@ begin
   FFailureGroup.Caption := 'Outcome value indicating death / failure';
   FFailureGroup.Anchors := [];
   FFailureGroup.AnchorParallel(akLeft, 10, Self);
-  FFailureGroup.AnchorToNeighbour(akTop, 10, FComboBoxes[XVARIABLE_TAG]);
+  FFailureGroup.AnchorToNeighbour(akTop, 10, FComboBoxes[T2VARIABLE_TAG]);
   FFailureGroup.AnchorToNeighbour(akRight, 10, FVerticalDivider);
   FFailureGroup.AnchorParallel(akBottom, 10, Self);
 
@@ -209,7 +238,8 @@ begin
     Combobox.ItemIndex := 0;
 
   FDataModel.XVariable := nil;
-  FDataModel.YVariable := nil;
+  FDataModel.TVariable := nil;
+  FDataModel.T2Variable := nil;
   FDataModel.WVariable := nil;
   FDataModel.ByVariable := nil;
 

@@ -185,7 +185,7 @@ begin
   FVariableLabelsGroup.ItemIndex := FDataModel.VariableLabelsDefault;
 
   FDataModel.Stack := false;
-
+  FDataModel.SortD := false;
 end;
 
 procedure TBarchartStatPrimaryOptionsView.SetModel(
