@@ -18,10 +18,13 @@ type
     FOnModified: IStatDiaglogViewModified;
     FDataModel: TSurvivalStatDialogStatisticOptionsModel;
     FStatisticsGroup: TCheckGroup;
+    FCIGroup: TRadioGroup;
+    FCITypes: TCITypes;
 //    FVerticalDivider: TBevel;
-//    FSortResultsGroup: TRadioGroup;
     procedure CreateStatisticsCheckboxes(CheckGroup: TCheckGroup);
     procedure StatisticsItemChecked(Sender: TObject; Index: integer);
+    procedure CreateCIRadios(RadioGroup: TRadioGroup);
+    procedure CISelectionChanged(Sender: TObject);
   public
     constructor Create(TheOwner: TComponent); override;
     procedure EnterView(); override;
@@ -57,17 +60,35 @@ begin
   FStatisticsGroup.AnchorParallel(akLeft, 5, self);
   FStatisticsGroup.AnchorParallel(akRight, 5, self);
 
+  FCIGroup := TRadioGroup.Create(Self);
+  FCIGroup.Parent := self;
+  FCIGroup.Caption := 'Confidence interval style';
+  FCIGroup.Anchors := [];
+  FCIGroup.AnchorToNeighbour(akTop, 10, FStatisticsGroup);
+  FCIGroup.AnchorParallel(akLeft, 5, self);
+  FCIGroup.AnchorParallel(akRight, 5, self);
 
 //  FStatisticsGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
 
   CreateStatisticsCheckBoxes(FStatisticsGroup);
-
+  CreateCIRadios(FCIGroup);
 end;
 
 procedure TSurvivalStatDialogStatisticOptionsView.CreateStatisticsCheckboxes(CheckGroup: TCheckGroup);
 begin
   CheckGroup.Items.Add('Log rank test');
+  CheckGroup.Items.Add('Use time intervals' + LineEnding + '(set "survival intervals")');
+  CheckGroup.Items.Add('Adjust survival for intervals');
   CheckGroup.OnItemClick := @StatisticsItemChecked;
+end;
+
+procedure TSurvivalStatDialogStatisticOptionsView.CreateCIRadios(RadioGroup: TRadioGroup);
+begin
+  RadioGroup.Items.Add('Default (vertical bars)');
+  RadioGroup.Items.Add('Upper and Lower lines');
+  RadioGroup.Items.Add('CI band');
+  RadioGroup.Items.Add('No CI');
+  RadioGroup.OnClick := @CISelectionChanged;
 end;
 
 procedure TSurvivalStatDialogStatisticOptionsView.StatisticsItemChecked(Sender: TObject; Index: integer);
@@ -85,9 +106,20 @@ begin
   DoModified();
 end;
 
+procedure TSurvivalStatDialogStatisticOptionsView.CISelectionChanged(Sender: TObject);
+begin
+  case TRadioGroup(Sender).ItemIndex of
+    0: FDataModel.CIType := ciDefault;
+    1: FDataModel.CIType := ciLine;
+    2: FDataModel.CIType := ciBand;
+    3: FDataModel.CIType := ciNone;
+  end;
+  DoModified();
+end;
+
 procedure TSurvivalStatDialogStatisticOptionsView.EnterView();
 begin
-
+  FCITypes := [ciDefault, ciLine, ciBand, ciNone];
 end;
 
 function TSurvivalStatDialogStatisticOptionsView.ExitView(): boolean;
@@ -113,6 +145,7 @@ begin
   for i := 0 to FStatisticsGroup.Items.Count - 1 do
     FStatisticsGroup.Checked[i] := false;
 
+  FDataModel.CIType := ciDefault;
 end;
 
 procedure TSurvivalStatDialogStatisticOptionsView.SetModel(
