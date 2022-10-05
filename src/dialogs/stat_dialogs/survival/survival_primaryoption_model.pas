@@ -22,8 +22,7 @@ type
      FDecimals: UTF8String;
      FOutputTable,
      FOutputSummary,
-     FOutputClipboard,
-     FOutputCIBand: boolean;
+     FOutputClipboard:  Boolean;
      procedure SetValueLabelType(AValue: TEpiGetValueLabelType);
      procedure SetVariableLabelType(AValue: TEpiGetVariableLabelType);
      procedure SetDecimals(AValue: UTF8String);
@@ -40,7 +39,6 @@ type
      property OutputTable: boolean read FOutputTable write FOutputTable;
      property OutputSummary: boolean read FOutputSummary write FOutputSummary;
      property OutputClipboard: boolean read FOutputClipboard write FOutputClipboard;
-     property OutputCIBand: boolean read FOutputCIBand write FOutputCIBand;
    end;
 
 
@@ -120,8 +118,6 @@ begin
     Result += ' !ns';
   if (FOutputClipboard) then
     Result += ' !cb';
-  if (FOutputCIBand) then
-    Result += ' !cib';
 
 //  Result := UTF8Trim(Result);
 end;

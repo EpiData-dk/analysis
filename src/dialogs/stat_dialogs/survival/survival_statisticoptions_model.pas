@@ -12,7 +12,6 @@ type
   TStatisticType = (pChi);
   TStatisticTypes = set of TStatisticType ;
   TCIType = (ciDefault, ciLine, ciBand, ciNone);
-  TCITypes = set of TCIType;
 
   { TSurvivalStatDialogStatisticOptionsModel }
 
@@ -72,7 +71,6 @@ begin
     ciDefault:
       ;
   end;
-//  Result := UTF8Trim(Result);
 end;
 
 function TSurvivalStatDialogStatisticOptionsModel.IsDefined(): boolean;
