@@ -5,7 +5,8 @@ unit options_utils;
 interface
 
 uses
-  Classes, sysutils, ast, epifields_helper, options_hashmap, ast_types, Graphics;
+  Classes, sysutils, ast, epifields_helper, epidatafiles, epivaluelabels,
+  options_hashmap, ast_types, Graphics;
 
 
 type
@@ -39,6 +40,8 @@ function IntToDigits(n: Integer): TDigitIndex;
 
 function BGRToRGB(Color: TColor): Integer;
 function RGBToBGR(Color: Integer): TColor;
+
+function GetFieldValues(AField: TEpiField): TStringList;
 
 implementation
 
@@ -278,6 +281,34 @@ begin
   result := ((Color and $FF0000) shr 16) or
             ((Color and $00FF00))        or
             ((Color and $0000FF) shl 16);
+end;
+
+{ GetFieldValues returns a StringList of the known values for AField
+  If AField has value labels, the list is taken from the value labels
+  Otherwise, the non-missing values of AField are enumerated
+}
+function GetFieldValues(AField: TEpiField): TStringList;
+var
+  i:       Integer;
+  labels:  TEpiValueLabelSet;
+begin
+  result := TStringList.Create;
+  if (AField = nil) then
+    exit;
+  labels := AField.ValueLabelSet;
+  if (labels <> nil) then
+    begin
+      for i := 0 to labels.Count - 1 do
+        result.Add(labels.ValueLabels[i].ValueAsString + '=' + labels.ValueLabels[i].TheLabel.Text);
+      exit;
+    end;
+  // find non-missing values in the data
+  for i := 0 to AField.Size - 1 do
+    if (not AField.IsMissing[i]) and
+       (result.IndexOf(AField.AsString[i]) < 0)
+      then
+        result.Add(AField.AsString[i]);
+
 end;
 
 end.
