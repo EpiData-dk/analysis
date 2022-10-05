@@ -19,7 +19,6 @@ type
     FDataModel: TSurvivalStatDialogStatisticOptionsModel;
     FStatisticsGroup: TCheckGroup;
     FCIGroup: TRadioGroup;
-    FCITypes: TCITypes;
 //    FVerticalDivider: TBevel;
     procedure CreateStatisticsCheckboxes(CheckGroup: TCheckGroup);
     procedure StatisticsItemChecked(Sender: TObject; Index: integer);
@@ -119,7 +118,7 @@ end;
 
 procedure TSurvivalStatDialogStatisticOptionsView.EnterView();
 begin
-  FCITypes := [ciDefault, ciLine, ciBand, ciNone];
+
 end;
 
 function TSurvivalStatDialogStatisticOptionsView.ExitView(): boolean;

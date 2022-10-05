@@ -117,7 +117,6 @@ begin
     0:  FDataModel.OutputTable := not Value;
     1:  FDataModel.OutputSummary := not Value;
     2:  FDataModel.OutputClipboard := Value;
-    3:  FDataModel.OutputCIBand := Value;
   end;
 end;
 
@@ -182,7 +181,6 @@ begin
   FOutputGroup.Items.Add('No survival tables');
   FOutputGroup.Items.Add('No summary table');
   FOutputGroup.Items.Add('Save plot to clipboard');
-  FOutputGroup.Items.Add('Show CI as band');
   FOutputGroup.OnItemClick:= @OutputGroupCheck;
 
   CreateValueLabelsRadios(FValueLabelsGroup);
@@ -224,7 +222,6 @@ begin
   FDataModel.OutputTable := true;
   FDataModel.OutputSummary := true;
   FDataModel.OutputClipboard := false;
-  FDataModel.OutputCIBand := false;;
 
 end;
 
