@@ -18,10 +18,13 @@ type
     FComboBoxes: Array of TEpiFieldsComboBox;
     FOnModified: IStatDiaglogViewModified;
     FFailureGroup: TRadioGroup;
+    FStrataGroup: TRadioGroup;
     FVerticalDivider: TBevel;
     procedure VariableSelect(Sender: TObject);
     procedure CreateFailureRadios(RadioGroup: TRadioGroup);
     procedure FailureSelectionChanged(Sender: TObject);
+    procedure CreateRefStratumRadios(RadioGroup: TRadioGroup);
+    procedure RefStratumSelectionChanged(Sender: TObject);
     procedure UpdateCombos();
   public
     constructor Create(TheOwner: TComponent);
@@ -59,9 +62,7 @@ begin
     XVARIABLE_TAG:
       begin
         FDataModel.XVariable := Field;
-        if (Assigned(Field)) then
-          FDataModel.FailureType := FDataModel.XVariable.FieldType
-        else
+        if not (Assigned(Field)) then
           FDataModel.Failure := '';
         CreateFailureRadios(FFailureGroup);
       end;
@@ -86,9 +87,13 @@ begin
     WVARIABLE_TAG:
       FDataModel.WVariable := Field;
 
-    ByVariable_TAG:
-      FDataModel.ByVariable := Field;
-
+    BYVARIABLE_TAG:
+      begin
+        FDataModel.ByVariable := Field;
+        if (not Assigned(Field)) then
+          FDataModel.RefStratum := '';
+        CreateRefStratumRadios(FStrataGroup);
+      end;
   end;
 
   UpdateCombos();
@@ -197,6 +202,15 @@ begin
   FFailureGroup.AnchorToNeighbour(akRight, 10, FVerticalDivider);
   FFailureGroup.AnchorParallel(akBottom, 10, Self);
 
+  FStrataGroup := TRadioGroup.Create(TheOwner);
+  FStrataGroup.Parent := self;
+  FStrataGroup.Caption := 'Reference stratum (only used with !t)';
+  FStrataGroup.Anchors := [];
+  FStrataGroup.AnchorParallel(akRight, 10, Self);
+  FStrataGroup.AnchorToNeighbour(akTop, 10, FComboBoxes[WVARIABLE_TAG]);
+  FStrataGroup.AnchorToNeighbour(akLeft, 10, FVerticalDivider);
+  FStrataGroup.AnchorParallel(akBottom, 10, Self);
+
   EnterView(); // Must do this to get combo boxes aligned and visible
 end;
 
@@ -212,6 +226,21 @@ procedure TSurvivalStatDialogVariablesView.FailureSelectionChanged(
   Sender: TObject);
 begin
   FDataModel.Failure := TRadioGroup(Sender).Items[TRadioGroup(Sender).ItemIndex];
+  DoModified();
+end;
+
+procedure TSurvivalStatDialogVariablesView.CreateRefStratumRadios(
+  RadioGroup: TRadioGroup);
+begin
+  RadioGroup.Items := FDatamodel.StrataValues;;
+  RadioGroup.Visible := true;
+  RadioGroup.OnSelectionChanged := @RefStratumSelectionChanged;
+end;
+
+procedure TSurvivalStatDialogVariablesView.RefStratumSelectionChanged(
+  Sender: TObject);
+begin
+  FDataModel.RefStratum := TRadioGroup(Sender).Items[TRadioGroup(Sender).ItemIndex];
   DoModified();
 end;
 

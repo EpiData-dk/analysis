@@ -764,7 +764,7 @@ var
     T.Cell[4, r].Text := FMaxTime[s].ToString;
     T.Cell[5, r].Text := FSumTime[s].ToString;
     T.Cell[6, r].Text := FMedian[s];
-    if (s = 0) then exit;
+    if (s = 0) or (not ST.HasOption('t')) then exit;
     if (s = FRefStratum) then
       T.Cell[7, r].Text := sReferenceAbbr
     else
@@ -776,20 +776,19 @@ var
 
 begin
   StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
-
+  line2[high(line2)] :=  '(' + IntToStr(FConf) + '% ' + sConfIntervalAbbr + ')';
   T                 := FOutputCreator.AddTable;
   T.Header.Text     := sSurHeader + ' - ' + sSurHeader2;
   T.ColCount        := 9;
   T.RowCount        := FStrata + 2;
-  for i := 0 to high(line1) do
-      if (i < 7) or (FStrata > 0) then
-          T.Cell[i, 0].Text := line1[i] + LineEnding +line2[i];
+  // table headings
   if (FStrata > 0) then
-    begin
-      T.Cell[0, 0].Text := sBy + LineEnding + FStratVarName;
-      T.Cell[high(line1), 0].Text := LineEnding + '(' + IntToStr(FConf) + '% ' + sConfIntervalAbbr + ')';
-    end;
-
+    T.Cell[0, 0].Text := sBy + LineEnding + FStratVarName;
+  for i := 1 to high(line1) do
+      if (i < 7) or
+         ((FStrata > 0) and (ST.HasOption('t'))) then
+        T.Cell[i, 0].Text := line1[i] + LineEnding +line2[i];
+  // table contents
   for i := 1 to FStrata do
     outputStratumResults(i, i);
   outputStratumResults(0, FStrata + 1);
