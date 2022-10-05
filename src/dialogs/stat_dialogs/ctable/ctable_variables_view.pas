@@ -32,7 +32,7 @@ type
 implementation
 
 uses
-  epidatafiles;
+  epidatafiles, epidatafilestypes;
 
 const
   XVARIABLE_TAG   = Ord(tvX);
@@ -104,6 +104,7 @@ begin
   SetLength(FComboBoxes, Ord(High(TCtableStatDiaglogVariable)) + 1);
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
+  ComboBox.Filter := [ftInteger, ftFloat, ftString];
   ComboBox.Parent := self;
   ComboBox.AnchorParallel(akLeft, 10, Self);
   ComboBox.AnchorParallel(akRight, 10, Self);

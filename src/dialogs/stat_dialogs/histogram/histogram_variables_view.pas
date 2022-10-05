@@ -32,7 +32,7 @@ type
 implementation
 
 uses
-  epidatafiles;
+  epidatafiles, epidatafilestypes;
 
 const
   XVARIABLE_TAG   = Ord(tvX);
@@ -93,6 +93,7 @@ begin
   SetLength(FComboBoxes, Ord(High(THistogramStatDialogVariable)) + 1);
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
+  ComboBox.Filter := DateFieldTypes + [ftInteger, ftFloat];
   ComboBox.Parent := self;
   ComboBox.AnchorParallel(akTop, 10, Self);
   ComboBox.AnchorParallel(akLeft, 10, Self);

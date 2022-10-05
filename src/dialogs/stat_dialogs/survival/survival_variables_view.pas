@@ -5,7 +5,7 @@ unit survival_variables_view;
 interface
 
 uses
-  Classes, SysUtils, Controls, ExtCtrls, StdCtrls, epidatafilestypes,
+  Classes, SysUtils, Controls, ExtCtrls, StdCtrls,
   stat_dialog_contribution, survival_model, fields_combobox, stat_dialog_custom_view;
 
 type
@@ -39,7 +39,7 @@ type
 implementation
 
 uses
-  epidatafiles;
+  epidatafiles, epidatafilestypes;
 
 const
   XVARIABLE_TAG   = Ord(tvX);

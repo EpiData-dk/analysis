@@ -1175,6 +1175,7 @@ type
   protected
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec;
   public
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
@@ -1752,6 +1753,13 @@ function TCTableCommand.GetAcceptedVariableCount: TBoundArray;
 begin
   result := inherited GetAcceptedVariableCount;
   result[0] := -1;
+end;
+
+function TCTableCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  Result.ResultTypes := [rtFloat, rtInteger, rtString];
 end;
 
 constructor TCTableCommand.Create(AVariableList: TVariableList;
