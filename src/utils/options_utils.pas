@@ -308,7 +308,7 @@ begin
        (result.IndexOf(AField.AsString[i]) < 0)
       then
         result.Add(AField.AsString[i]);
-
+  result.Sort;
 end;
 
 end.

@@ -277,6 +277,9 @@ begin
   if (FFailureGroup.Items.Count > 0) then
     FFailureGroup.Visible := false;       // easier than emptying the group
 
+  if (FStrataGroup.Items.Count > 0) then
+    FStrataGroup.Visible := false;
+
   DoModified();
 end;
 
