@@ -232,7 +232,7 @@ end;
 procedure TSurvivalStatDialogVariablesView.CreateRefStratumRadios(
   RadioGroup: TRadioGroup);
 begin
-  RadioGroup.Items := FDatamodel.StrataValues;;
+  RadioGroup.Items := FDatamodel.StrataValues;
   RadioGroup.Visible := true;
   RadioGroup.OnSelectionChanged := @RefStratumSelectionChanged;
 end;
