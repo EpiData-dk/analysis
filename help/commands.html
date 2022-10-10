@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -406,6 +407,467 @@ etc ....</font>
             <font class="cmd">
 // Load a project
 read "Clinical Example.epx";
+=======
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>commands</title>
+
+
+<style type="text/css">
+*{margin:0;padding:0;}
+body {
+	font:13.34px helvetica,arial,freesans,clean,sans-serif;
+	color:black;
+	line-height:1.4em;
+	background-color: #F8F8F8;
+	padding: 0.7em;
+}
+p {
+	margin:1em 0;
+	line-height:1.5em;
+}
+table {
+	font-size:inherit;
+	font:100%;
+	margin:1em;
+}
+table th{border-bottom:1px solid #bbb;padding:.2em 1em;}
+table td{border-bottom:1px solid #ddd;padding:.2em 1em;}
+input[type=text],input[type=password],input[type=image],textarea{font:99% helvetica,arial,freesans,sans-serif;}
+select,option{padding:0 .25em;}
+optgroup{margin-top:.5em;}
+pre,code{font:12px Monaco,"Courier New","DejaVu Sans Mono","Bitstream Vera Sans Mono",monospace;}
+pre {
+	margin:1em 0;
+	font-size:12px;
+	background-color:#eee;
+	border:1px solid #ddd;
+	padding:5px;
+	line-height:1.5em;
+	color:#444;
+	overflow:auto;
+	-webkit-box-shadow:rgba(0,0,0,0.07) 0 1px 2px inset;
+	-webkit-border-radius:3px;
+	-moz-border-radius:3px;border-radius:3px;
+}
+pre code {
+	padding:0;
+	font-size:12px;
+	background-color:#eee;
+	border:none;
+}
+code {
+	font-size:12px;
+	background-color:#f8f8ff;
+	color:#444;
+	padding:0 .2em;
+	border:1px solid #dedede;
+}
+img{border:0;max-width:100%;}
+abbr{border-bottom:none;}
+a{color:#4183c4;text-decoration:none;}
+a:hover{text-decoration:underline;}
+a code,a:link code,a:visited code{color:#4183c4;}
+h2,h3{margin:1em 0;}
+h1,h2,h3,h4,h5,h6{border:0;}
+h1{font-size:170%;border-top:4px solid #aaa;padding-top:.5em;margin-top:1.5em;}
+h1:first-child{margin-top:0;padding-top:.25em;border-top:none;}
+h2{font-size:150%;margin-top:1.5em;border-top:4px solid #e0e0e0;padding-top:.5em;}
+h3{margin-top:1em;}
+hr{border:1px solid #ddd;}
+ul{margin:1em 0 1em 2em;}
+ol{margin:1em 0 1em 2em;}
+ul li,ol li{margin-top:.5em;margin-bottom:.5em;}
+ul ul,ul ol,ol ol,ol ul{margin-top:0;margin-bottom:0;}
+blockquote{margin:1em 0;border-left:5px solid #ddd;padding-left:.6em;color:#555;}
+dt{font-weight:bold;margin-left:1em;}
+dd{margin-left:2em;margin-bottom:1em;}
+sup {
+    font-size: 0.83em;
+    vertical-align: super;
+    line-height: 0;
+}
+* {
+	-webkit-print-color-adjust: exact;
+}
+@media screen and (min-width: 914px) {
+    body {
+        width: 854px;
+        margin:0 auto;
+    }
+}
+@media print {
+	table, pre {
+		page-break-inside: avoid;
+	}
+	pre {
+		word-wrap: break-word;
+	}
+}
+</style>
+
+
+</head>
+
+<body>
+
+<h1 id="toc_0">EpiData Analysis</h1>
+
+<h3 id="toc_1">Command and Function Reference Guide (version 2.8)</h3>
+
+<hr>
+
+<h3 id="toc_2">Commands</h3>
+
+<table>
+<thead>
+<tr>
+<th>Manage data</th>
+<th>Analyze data</th>
+<th>Write programs</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><a href="#read">read</a><br/><a href="#save">save</a><br/><a href="#append">append</a><br/><a href="#merge">merge</a><br/><a href="#aggregate">aggregate</a><br/><a href="#use">use datasets</a><br/>create <a href="#new">new</a> content<br/><a href="#list">list</a> content<br/><a href="#edit">edit</a> content<br/><a href="#delete">delete</a> content<br/><a href="#check">Consistency and Validity Checks</a><br/><a href="#reports">Reports</a><br/></td>
+<td><a href="#describe">describe</a> variabless<br/><a href="#tables">tables</a><br/><a href="#freq">frequencies</a><br/><a href="#means">means</a><br/><a href="#count">count</a><br/><a href="#survival">survival</a> analysis<br/><a href="#scatter">scatter</a> plot <br/><a href="#line">line</a> plot <br/><a href="#bar">bar</a> chart <br/><a href="#histogram">histogram</a><br/><a href="#epicurve">epicurve</a></td>
+<td><a href="#select">select</a> observations<br/><a href="#if-then">if-then</a><br/><a href="#sort">sort</a> data<br/><a href="#disk">Disk and file commands</a><br/><a href="#set">set</a> parameters <br/><a href="#options">Labels, Values and format in output</a><br/><a href="#types">Types of Variables</a><br/><a href="#referencedvars">How to use Variables and References</a><br/><a href="#run">run</a> scripts <br/><a href="#stop">Clean up &amp; stop</a><br/><a href="#functions">Functions</a><br/><a href="#operators">Operators</a><br/><a href="#startoptions">Startup options</a></td>
+</tr>
+</tbody>
+</table>
+
+<p>Some commands are currently only available in EpiData Analysis Classic. <a href="http://epidata.dk/download.php#ea">Download EpiData Classic here</a></p>
+
+<ul>
+<li>  Linear regression</li>
+<li>  SPC graphs - Pareto Charts, Ichart etc.</li>
+</ul>
+
+<h3 id="toc_3">Syntax for all commands</h3>
+
+<div><pre><code class="language-none">command &lt;variables | expression&gt; [!option] [!option := a|b]</code></pre></div>
+
+<p>In command descriptions, the following notation is used</p>
+
+<div><pre><code class="language-none">  [ ] : optional specification of observation number.    
+  {a|b|...} : indicates alternative choices  
+  &lt;...&gt; : indicates user specified name/identifier  </code></pre></div>
+
+<p>If you are in doubt of when to use double quotes &quot;&quot; and when not, the rule is:  </p>
+
+<ul>
+<li>Use <q>...</q> for all external references (e.g. <q>file names.ext</q>) or assignments of text values ( e.g. set <q>COMMANDLOG</q> := <q>ON</q>)<br></li>
+<li>Double quotes are NOT needed for variables, defined value labels, or dataset names</li>
+</ul>
+
+<h1 id="toc_4">Read and Save Data</h1>
+
+<p><a id=read></p>
+
+<h2 id="toc_5">read</h2>
+
+<p></a></p>
+
+<div><pre><code class="language-none">read [{&quot;&lt;filename&gt;&quot; | &lt;expression&gt;}] [!options ...]</code></pre></div>
+
+<p>Read a copy of the data file into memory.</p>
+
+<blockquote>
+<p>Note: The file name, including the file extension must be contained in &quot; &quot;.<br>
+If you use a case sensitive operating system (Linux) then the case of filename and extension is important.  </p>
+</blockquote>
+
+<h3> parameters</h3>
+
+<ul>
+<li><p><code>filename</code></p>
+
+<p>An optional <em>filename</em> may be given in quotes. The file format is detected based on the file extension, which must be one of {<em>csv</em> | <em>epx</em> | <em>epz</em> | <em>dta</em>}. If no <em>filename</em> is given, the open file dialog is started.</p>
+
+<p>All <strong><em>EpiData</em></strong> products support reading Stata files from version 4 to 16 (format 105 to 118). Stata has a special .dta version (format 119) which is only for datasets with more than 32767 variables. This format may also be used in Stata 15 and 16, but is not the standard format. This format is not supported by <strong><em>EpiData</em></strong>.</p>
+
+<p><a href="https://www.stata.com/help.cgi?dta">See this link for at technical description of the .dta formats</a></p></li>
+<li><p><code>expression</code></p>
+
+<p>An optional <em>expression</em> (instead of &lt;<em>filename</em>&gt;) that resolves to a string specifying the filename. (see examples)</p></li>
+</ul>
+
+<h3>options</h3>
+
+<ul>
+<li><p><code>!force</code></p>
+
+<p>Will force reading a locked epx/epz file.</p>
+
+<blockquote>
+<p>Note: Use with caution since the project may be used by someone else</p>
+</blockquote></li>
+<li><p><code>!c</code></p>
+
+<p>Close the current project. It is only required when project (data, labels, variables, valuelabels, etc.) has changed.</p></li>
+<li><p><code>!d := &quot;&lt;_single character_&gt;&quot;</code></p>
+
+<p>Use the character as the delimiter used when reading .txt/.csv files. This option is only valid when importing delimited files. During import the delimiter will be validated. If the structure of the file does not fit with the selected delimiter, it will be rejected.</p>
+
+<p>If no delimiter is set for importing delimited files, the program will guess which delimiter is used.</p></li>
+<li><p><code>!q := &quot;&lt;_single character_&gt;&quot;</code></p>
+
+<p>Use the character for recognizing quoted strings when reading .txt/.csv files. This option is only valid when importing delimited files. If character is set to empty/nothing (e.g. !q := &quot;<q>) then the complete content of the file is used in guessing/validating delimiters.
+If no quote characters is set, the default</q> (double quote) is used to identify strings.</p></li>
+<li><p><code>!vn := {true|false}</code></p>
+
+<p>Read the first line in a .txt/.csv file as either variable names or as data.</p>
+
+<ul>
+<li>true: read the first line as variable names, with no regards to the actual content.</li>
+<li>false: read the first line as data, with no regards to the actual content.</li>
+</ul>
+
+<p>If the option is not used when reading delimited files, the program will look at the line and guess if it is data or headers.</p></li>
+</ul>
+
+<blockquote>
+<p>Note: In files with all string data and where first line is known to be variable names, the program has a high probability of guessing incorrectly whether first line is headers or not. In such cases please use this option to ensure correct reading of data.</p>
+</blockquote>
+
+<ul>
+<li><p><code>!pw := &quot;&lt;_string&gt;_&quot;</code></p>
+
+<p>If you use this option with a password protected file (.epx | .epz | .rec), reading will occur directly, otherwise you will be prompted for a password.</p></li>
+<li><p><code>!login := &quot;&lt;_string_&gt;&quot;</code></p>
+
+<p>When an EpiData project (.epx or .epz) has Extended Access enabled, you will be prompted to log in with a password and a username. With this option, the file is opened with the supplied login. A password for that user may be supplied with option</p></li>
+<li><p><code>!pw := &quot;&lt;_string_&gt;&quot;</code></p></li>
+</ul>
+
+<h3>examples</h3>
+
+<div><pre><code class="language-none">read &quot;bromar.rec&quot;;      // complete filename provided
+read &quot;bromar&quot; + &quot;.epx&quot;; // expression using two strings in concatenation
+new global fn string;
+fn := &quot;bromar.epx&quot;;
+read fn;                // expression using the variable fn</code></pre></div>
+
+<p><a id=save></a></p>
+
+<h2 id="toc_6">save</h2>
+
+<div><pre><code class="language-none">save [{&quot;&lt;filename&gt;&quot; | &lt;expression&gt;}] [!replace] [!force] [!output [:=&quot;{html | text}&quot;] ]
+     [!format:=&quot;{stata|epidata|csv}&quot;] [options]</code></pre></div>
+
+<p>Save a copy of all variables in memory to a file, to use the data again</p>
+
+<h3>parameters</h3>
+
+<ul>
+<li><p><code>filename</code></p>
+
+<p>An optional filename may be given in quotes. The file format is detected based on the file extension which must be one of {csv|epx|epz|dta}. If no filename is given the save file dialog is started.</p></li>
+<li><p><code>expression</code></p>
+
+<p>An optional expression (instead of <em>filename</em>) that resolves to a string with the filename. This can be e.g. a concatenation of strings, a global variable or something else. See <a href="read">read</a> for examples.</p></li>
+</ul>
+
+<h3>options</h3>
+
+<ul>
+<li><p><code>!replace</code></p>
+
+<p>Overwrite existing file</p></li>
+<li><p><code>!force</code></p>
+
+<p>Will force overwriting a locked .epx/.epz file</p>
+
+<blockquote>
+<p>Note: Use with caution since the project may be used by someone else</p>
+</blockquote></li>
+<li><p><code>!output [:= &quot;html | text&quot;\]</code></p>
+
+<p>Instead of saving to the project, this options saves the output to a file. If no format is specified (text/html) then the current output format is used.</p></li>
+<li><p><code>!format := &quot;{stata|epidata|csv}</code></p>
+
+<p>Save the project as a specific type.</p>
+
+<blockquote>
+<p>This will ONLY change the content. The user must make sure the file has the correct extension.</p>
+</blockquote></li>
+<li><p><code>!d := &quot;&lt;single character&gt;&quot;</code></p>
+
+<p>Will force the delimiter of values/names used when writing .txt/.csv files. This option is only valid when saving delimited files. The default value is <q>,</q> (comma)</p></li>
+<li><p><code>!q := &quot;&lt;single character&gt;&quot;</code></p>
+
+<p>Will force the character used for writing quoted strings. This option is only valid when saving delimited files. The default value is &quot; (double quotation mark)</p></li>
+<li><p><code>!version := &lt;integer&gt;</code></p>
+
+<p>Specify which stata version to save the data as. Accept values range from 4 -&gt; 14, default is 14</p></li>
+<li><p><code>!vn := {true|false}</code></p>
+
+<p>If true the first line in the .csv/.txt file is the variable names. Default value is <q>true</q></p></li>
+<li><p><code>!dated := &quot;&lt;single character&gt;&quot;</code></p>
+
+<p>Will force the character used for writing date delimiters. Default value is <q>/</q> (slash)</p></li>
+<li><p><code>!timed := &quot;&lt;single character&gt;&quot;</code></p>
+
+<p>Will force the character used for writing time delimiters. Default value is <q>:</q> (colon)</p></li>
+<li><p><code>!decd:= &quot;&lt;single character&gt;&quot;</code></p>
+
+<p>Will force the character used for writing decimal seperators. Default value is <q>.</q> (dot)</p></li>
+<li><p><code>!nl := &quot;&lt;single character&gt;&quot;</code></p>
+
+<p>Will force the end of line character used in the .txt/.csv file. Default value is that of the operating system:<br>
+Linux: #10 MacOS: #13 Windows: #13#10</p></li>
+<li><p><code>!memonl := &quot;&lt;single character&gt;&quot;</code></p>
+
+<p>Will force the character used for writing the linebreaks from a memo variable. Default value is &quot; &quot; (space)</p></li>
+<li><p><code>!fixed</code></p>
+
+<p>Forces the writing of the .csv/.txt in a fixed format, where the length of each variable is used to specify the length of each column.</p>
+
+<blockquote>
+<p>Note: Using !fixed ignores the use of the option !d</p>
+</blockquote></li>
+<li><p><code>!bom</code>  </p>
+
+<p>This options adds the <a href="https://en.wikipedia.org/wiki/Byte_order_mark">UTF-8 Byte Order Mark</a> to the .csv/.txt file.</p>
+
+<hr></li>
+</ul>
+
+<h1 id="toc_7">Merge, Append &amp; Aggregate</h1>
+
+<p><a name="append"></a></p>
+
+<h2 id="toc_8">append</h2>
+
+<div><pre><code class="language-none">append [&lt;var1&gt; &lt;var2&gt;...] [!ds := &lt;dataset&gt;] [!fn := lt;filename&gt;]</code></pre></div>
+
+<p>Add observations after all observations in current file</p>
+
+<h3 id="toc_9">Options</h3>
+
+<ul>
+<li><p><code>!fn := &lt;filename&gt;</code></p>
+
+<p>Append
+            this file. Without !fn the file open dialog is shown. All known
+            file types may be used and all options from <a href="#read">read</a>
+            associated with reading of data may be used.
+            e.g. !d or !h options for reading csv files.</p></li>
+<li><p><code>!ds := &lt;dataset&gt;</code></p>
+
+<p>Specifies
+            which dataset to use from the external file. It is only needed
+            if the external file contains multiple datasets.</p>
+
+<p>Only fields with same name as variables in memory will be read.
+          Variables from previous  class=<q>cmd</q>&gt;read which are
+          not in the appended file will be set to missing for the appended
+          observations.
+See <a href="#referencedvars">variables</a> on using referenced
+          variables for this command</p></li>
+</ul>
+
+<p><a name="merge"></a></p>
+
+<h2 id="toc_10">merge</h2>
+
+<div><pre><code class="language-none">merge [&lt;key&lt;sub&gt;1&lt;/sub&gt;&gt; &lt;key&lt;sub&gt;2&lt;/sub&gt;&gt; ...]
+      [!fn [:= &quot;&lt;filename&gt;&quot;:]] [!ds := &lt;dataset&gt;]
+      [!table] [!combine&gt; !update&gt; !replace]</code></pre></div>
+
+<p>Merge the current data file with another dataset file based on <em>key</em>
+                variable(s). The result is a <strong>NEW</strong> dataset which is
+              added to the top level of the project.</p>
+
+<h3 id="toc_11">Options</h3>
+
+<ul>
+<li><p><code>!fn [:= &lt;filename&gt;]</code></p>
+
+<p>Merge
+            with a dataset in this file. Without !fn it is assumed that
+            current used dataset should be merge with a related dataset. If
+            no <filename> is provided then a dialog is shown to open
+            the external file. All known file types may be used and all
+            options from <a href="#read">read</a> associated with reading
+            of data can be used too.
+            e.g. !d or !h options for reading csv files.</p></li>
+<li><p><code>!ds := &lt;dataset&gt;</code></p>
+
+<p>Specifies
+            which dataset to use. It is only needed if the multiple datasets
+            exist (either as related datasets or in an external file).</p></li>
+<li><p><code>!label := &quot;&lt;text&gt;&quot;</code></p></li>
+<li><p><code>!l := &quot;&lt;text&gt;&quot;</code></p>
+
+<p>Assign the
+            descriptive text as a caption/label for the resulting dataset.</p></li>
+<li><p><code>!table</code></p>
+
+<p>The external file is used
+            as a lookup table. e.g. to add person information to a file with
+            clinical results</p></li>
+<li><p><code>!combine</code></p>
+
+<p>All non-missing values in
+            the external dataset replaces all MISSING values for common
+            variables</p></li>
+<li><p><code>!update</code></p>
+
+<p>All non-missing values in
+            the external dataset replaces ALL values for common variables</p></li>
+<li><p><code>!replace</code></p>
+
+<p>All values in the
+            external dataset replace all values for common variables</p></li>
+<li><p><code>!nu</code></p>
+
+<p>By default the resulting data
+            is automatically used. By using this option the program will
+            stay on the current dataset after the command has completed.</p></li>
+<li><p><code>!r</code></p>
+
+<p>Specify a different name for
+            the resulting dataset. Default naming is a concatenation of the
+            two used datasets</p>
+
+<p>To keep information in variables with an identical name (e.g.
+        mergevar or name) from all files rename (see <a href="#editvariable">edit</a>)
+        the variables <strong>before</strong> you merge the next file. e.g.</p></li>
+</ul>
+
+<div><pre><code class="language-none">read &quot;pt.epx&quot;;
+edit variable name !r := &quot;ptname&quot;;
+merge hospid !filename := &quot;hospital.epx&quot; !r := MergeDs;
+use MergeDs;
+edit variable name !r := &quot;hospname&quot;;
+etc ....</code></pre></div>
+
+<p>After  <code>merge</code> the variable <strong>mergevar</strong>
+              indicates source of information for each observation (records).
+              <strong>mergevar</strong> is defined with variable labels for these values:</p>
+
+<p>1 In main dataset only
+2 In merged dataset only
+3 In both datasets</p>
+
+<blockquote>
+<p>Note: if **mergevar already exists
+            in the dataset, an error will occur and the merge will be stopped.
+            Drop the **mergevar variable first.</p>
+</blockquote>
+
+<h3 id="toc_12">Example</h3>
+
+<div><pre><code class="language-none">// Load a project
+read &quot;Clinical Example.epx&quot;;
+>>>>>>> 69067c8 (Command help created as Markdown)
 
 // A: Internal merge (1 related dataset)
 // Since the current used dataset only has a single related dataset,
@@ -415,16 +877,26 @@ merge;
 // B: Internal merge (2+ related datasets)
 // The currently used dataset have 2 or more related datasets, so we need to use the
 // option !ds := &lt;id&gt; to specify which dataset we want to merge with.
+<<<<<<< HEAD
 list ds        // Use <font class="cmd">list</font> to see which dataset id's you have in the project
+=======
+// Use  list to see which dataset id&#39;s you have in the project
+list ds        
+>>>>>>> 69067c8 (Command help created as Markdown)
 merge !ds := labdata
 
 // C: External merge (1+ dataset in external file - e.g. a .csv file)
 // In order to merge with an external file the key variables to merge on must be provided
+<<<<<<< HEAD
 merge patientid !ds := "PatientNames.csv":labdata
+=======
+merge patientid !ds := &quot;PatientNames.csv&quot;:labdata
+>>>>>>> 69067c8 (Command help created as Markdown)
 
 // D: External merge (2+ datasets in external file)
 // In order to merge with an external file that has 2+ dataset, both the key variables
 // AND the dataset you wish to merge with must be provided!
+<<<<<<< HEAD
 merge patientid !ds := firstdataset !filename := "PatientNames.epx"
        </font>
             <p>See <a href="#referencedvars">variables</a> on using referenced
@@ -1990,6 +2462,1246 @@ id="reportsgrp"></a> Reports</td>
        </ul>
        Examples:<font class="cmd">
 read "bromar.epx";               // Load the project
+=======
+merge patientid !ds := firstdataset !filename := &quot;PatientNames.epx&quot;</code></pre></div>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced
+              variables for this command</p>
+
+<p><a name="aggregate" id="aggregate"></a><a name="agg" id="agg"></a></p>
+
+<h2 id="toc_13">aggregate / agg</h2>
+
+<div><pre><code class="language-none">aggregate [&lt;var1&gt; &lt;var2&gt;...] [!options]</code></pre></div>
+
+<p>Aggregate - collapse - combine - data when you wish to change
+              from individual to group level.</p>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced
+              variables for this command</p>
+
+<h3 id="toc_14">Options</h3>
+
+<ul>
+<li><p><code>!m</code> Include observations with
+            missing data (.)</p></li>
+<li><p><code>!q</code> Hides all output</p></li>
+<li><p><code>!nc</code>Do not show counts of
+            observations for each variable</p></li>
+<li><p><code>!nt</code>Do not show total counts of
+            observations</p></li>
+<li><p><code>!ds := &lt;dataset&gt;</code> Save the
+            aggregated dataset as it&#39;s own dataset with given name</p></li>
+<li><p><code>!replace</code> use in combination with
+            !ds to replace an existing dataset</p></li>
+<li><p><code>!caption := &quot;&lt;string&gt;&quot;</code> give
+            the dataset a caption (used both in output and with !ds)</p></li>
+<li><p><code>!hd := &lt;global string vector&gt;</code>
+            give a custom label for the generated variables and show these
+            as column descriptors in table head</p></li>
+<li><p><code>!u</code> use in combination with !ds.
+            Use the generated dataset after this command completes. Cannot
+            be used with an active select!</p></li>
+<li><p><code>!full</code> Expands the resulting
+            dataset with ALL possible value-combinations from <var1>
+            <var2>...
+            All entries with no data will contain system missing.
+          See <a href="#labeling">labeling</a> for options on changing
+            between labels/values
+          See <a href="#formatting">formatting</a> for options on
+            formatting percentages</p></li>
+</ul>
+
+<h3 id="toc_15">Summary statistic options</h3>
+
+<p>Each of these options must be followed by  class=<q>cmd</q>&gt;:= variable.
+              Only one variable can be given, but each option can be used
+              multiple times with different variables.</p>
+
+<ul>
+<li><p><code>!mv</code> Count of missing values
+            (system and user defined)</p></li>
+<li><p><code>!mean</code> Mean of the variable</p></li>
+<li><p><code>!sd</code> Standard deviation</p></li>
+<li><p><code>!sv</code> Variance</p></li>
+<li><p><code>!min</code> Minimum value</p></li>
+<li><p><code>!med</code> Median value</p></li>
+<li><p><code>!max</code> Maximum value</p></li>
+<li><p><code>!pXX</code> XX percentile (XX = 1, 5, 10,25, 50, 75, 90, 95, 99)</p></li>
+<li><p><code>!sum</code> Sum of values</p></li>
+<li><p><code>!des</code> Min, Median and Max</p></li>
+<li><p><code>!iqr</code> p25 and p75</p></li>
+<li><p><code>!idr</code> p10 and p90</p></li>
+<li><p><code>!isr</code> p5 and p95</p></li>
+<li><p><code>!mci</code> Mean and 95% CI (low + high)</p></li>
+</ul>
+
+<h3 id="toc_16">Example</h3>
+
+<div><pre><code class="language-none">// define a global vectore for column texts:
+new global columntxt[5] string;
+columntxt[1] := &quot;Group&quot;;
+columntxt[2] := &quot;N Total&quot;;
+columntxt[3] := &quot;n (observed)&quot;;
+columntxt[4] := &quot;Mean&quot;;
+columntxt[5] := .;
+agg sex age family !hd:=columntxt  !mci:=economy !mci:=children ;</code></pre></div>
+
+<h1 id="toc_17">Using datasets &amp; Sorting</h1>
+
+<p><a name="use" id="use"></a></p>
+
+<h2 id="toc_18">use</h2>
+
+<div><pre><code class="language-none">use &lt;dataset&gt;</code></pre></div>
+
+<p>Change the active dataset of a project.
+       See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<h3 id="toc_19">Example</h3>
+
+<div><pre><code class="language-none">read &quot;Clinical Example.epx&quot;;
+list dataset;
+use datafile_id_2;</code></pre></div>
+
+<p><a name="sort" id="sort"></a></p>
+
+<h2 id="toc_20">sort</h2>
+
+<div><pre><code class="language-none">sort *variable&lt;sub&gt;1&lt;/sub&gt; [*variable&lt;sub&gt;2&lt;/sub&gt; ...] [!&lt;u&gt;d&lt;/u&gt;escending]</code></pre></div>
+
+<p>Sorts the current dataset based on the given variables. Sort respects current select!</p>
+
+<ul>
+<li><code>!descending
+!d</code> Sorts the dataset in decending order</li>
+</ul>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<h1 id="toc_21">Creating content</h1>
+
+<p><a name="creategrp"id="creategrp"></a>
+<a name="new"></a></p>
+
+<p><a name="newproject" id="newproject"></a></p>
+
+<h2 id="toc_22">new project / new p</h2>
+
+<div><pre><code class="language-none">new project</code></pre></div>
+
+<p>Creates a new empty project, e.g. for simulation or testing.</p>
+
+<h3 id="toc_23">Options</h3>
+
+<ul>
+<li><p><code>!size:= &lt;integer&gt;</code>
+          Adds an initial dataform with <size> observations in it.
+          If omitted, no dataform is created and must be created manually.</p></li>
+<li><p><code>!label:= &quot;&lt;text&gt;&quot;</code>
+          Adds a title to the project. If not used a default title is given.</p></li>
+<li><p><code>!c</code>
+          Closes and open project if modified</p></li>
+<li><p><code>!pw := &lt;string&gt;</code>
+        Encrypts the data of the project with a single password. All data is encrypted with the <a
+href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES/Rijndael algorithm</a>, but metadata is not encrypted.</p></li>
+<li><p><code>!showFieldNames := &lt;boolean&gt;</code><br/>
+<code>!sfn := &lt;boolean&gt;</code>
+        Show/Hide the field name next to the entry field in Manager and EntryClient</p></li>
+<li><p><code>!showFieldBorders := &lt;boolean&gt;</code><br/>
+<code>!sfb := &lt;boolean&gt;</code>
+        Show/Hide the border of the entry field in Manager and EntryClient</p></li>
+<li><p><code>!backupInterval := &lt;integer&gt;</code><br/>
+<code>!bi := &lt;integer&gt;</code>
+        Interval at witch Manager and EntryClient automatically saved the project</p></li>
+<li><p><code>!backupOnShutdown := &lt;boolean&gt;</code><br/>
+<code>!bos := &lt;boolean&gt;</code>
+        Perform a backup when closing the project. The name for the backup is based on the current date/time.</p></li>
+</ul>
+
+<p><a name="newdataset" id="newdataset"></a></p>
+
+<h2 id="toc_24">new dataset / new</h2>
+
+<div><pre><code class="language-none">new dataset &lt;dataset&gt; [!options...]</code></pre></div>
+
+<p>Create a new dataset for the project. Use the options to specify relations between datasets.  If the command completes successfully, the newly created dataset is automatically <a href="#use">used</a></p>
+
+<h3 id="toc_25">Options</h3>
+
+<ul>
+<li><p><code>!parent := &quot;&lt;parentform id&gt;&quot;</code>
+          Used for creating parent-child relations. If omitted the dataform is created
+          as a top-level dataform.</p></li>
+<li><p><code>!label := &quot;&lt;text&gt;&quot;</code><br/>
+<code>!l := &quot;&lt;text&gt;&quot;</code>
+          Assign the descriptive text as a caption/label for the dataset.</p></li>
+<li><p><code>!childobs := &lt;integer&gt;</code>
+          Used only in combination with !parent. Gives the number of allowed child observations in the child dataset
+          (0 = no limit)</p></li>
+<li><p><code>!afterobs := &lt;integer&gt;</code>
+          Used only in combination with !parent. Tells EntryClient what happens after entry of one complete observation
+          0 = new observation, 1 = return to parent, 2 = return on max number of observataions, 3 = stay on the current observation</p></li>
+<li><p><code>!statusbar := &quot;&lt;text&gt;&quot;</code>
+          Sets the <q>content string</q> of a dataform (see manager for formatting).</p></li>
+<li><p><code>!size := &lt;integer&gt;</code>
+          Initialize the dataform with <size> empty observations.</p></li>
+</ul>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="newvariable" id="newvariable"></a></p>
+
+<h2 id="toc_26">new variable / new var / new v</h2>
+
+<div><pre><code class="language-none">new variable *variable &lt;type&gt; [:= expression] [!options...]</code></pre></div>
+
+<p>Create a new variable of a given <a href="#types">type</a> and optionally assign the value in expression.
+            The variable type and expressions type must be compatible. Variables contain a value for each observation.
+            If no expression is given, all values will be missing.</p>
+
+<h3 id="toc_27">Options</h3>
+
+<ul>
+<li><p><code>!label := &quot;&lt;text&gt;&quot; class=&quot;option&quot;&gt;!l := &quot;&lt;text&gt;&quot;</code>
+          Assign the descriptive text as a label for the variable.
+          An existing variable label will be replaced with the new one.</p></li>
+<li><p><code>!valuelabel := &lt;valuelabel name&gt;</code><br/>
+<code>!vl := &lt;valuelabel name&gt;</code>
+          Assign an existing valuelabel set to the variable.
+          An existing assignment will be replaced but not deleted. To delete the existing valuelabel
+          set see <a href="#deletegrp">deleting content</a></p></li>
+<li><p><code>!length := &lt;integer&gt; class=&quot;option&quot;&gt;!le := &lt;integer&gt;</code>
+          Changes the entry length of a variable</p></li>
+<li><p><code>!decimal := &lt;integer&gt; class=&quot;option&quot;&gt;!dec := &lt;integer&gt;</code>
+          Change the decimal entry length for floating point variables. Changing the decimal length for other variable types have no impact</p></li>
+<li><p><code>!rangelow := &lt;value&gt;</code>
+          Set the lower bound for a range of values. Must be used in combination with !rangehigh</p></li>
+<li><p><code>!rangehigh:= &lt;value&gt;</code>
+          Set the upper bound for a range of values. Must be used in combination with !rangelow</p></li>
+<li><p><code>!entrymode := {0|1|2}</code>
+          Change the entry mode used in EpiData EntryClient</p>
+
+<ul>
+<li>0 = default</li>
+<li>1 = must enter</li>
+<li>2 = no enter</li>
+</ul></li>
+<li><p><code>!confirm</code>
+          If used, the variable has the <q>confirm entry</q> flag set. Used in EpiData EntryClient</p></li>
+<li><p><code>!key</code>
+          Adds the variable to be part of the key for the current dataset</p></li>
+<li><p><code>!cmpX := *variable</code>
+        Where <q>X</q> is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between the new variable and the assigned variable</p></li>
+<li><p><code>!u&gt; !memo</code>
+        When creating a string variable it is possible to specify the sub type using one of the above options. !u specifies this is an uppercase string variable. !memo specifies this a memo variable</p></li>
+<li><p><code>!dmy&gt; !mdy&gt; !ymd</code>
+        When creating a date variable it is possible to specify the sub type using one of the above options. !dmy is the default type if no option is used else the specified sub type is used</p></li>
+<li><p><code>!auto [{0|1|2}]</code>
+        When creating a variable that supports automatic content (date, time or integer), using this option changes the default type to the automatic type.<br>
+Integer become AutoIncrement, DMY becomes AutoDMY, etc.</p>
+
+<p>For time and date variables the number specifies when the variable is updated:</p>
+
+<ul>
+<li>0 = When obervation is created (default)</li>
+<li>1 = When observation is first saved</li>
+<li>2 = Each time the record is saved after being edited</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_28">Examples</h3>
+
+<p>Examples where all observations get the same value:</p>
+
+<div><pre><code class="language-none">new variable v1 integer := 1 + 2 * 3 - 4;
+new variable v2 float   := (2 * pi) * 5;
+new variable v3 string  := &quot;Hello World!&quot;;
+new variable v4 time    := now();
+new variable v5 boolean := (2 &gt; 3);
+new variable v6 date    := today();</code></pre></div>
+
+<p>Examples where a value depends on other variables:</p>
+
+<div><pre><code class="language-none">new variable v1 integer := v14 + v17;
+// v1 is equal to sum of v14 and v17
+new variable age date   := integer((today() - dateborn)/365.25)
+// calculated age in whole years</code></pre></div>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="newglobal" id="newglobal"></a></p>
+
+<h2 id="toc_29">new global / new g</h2>
+
+<div><pre><code class="language-none">new global *variable &lt;type&gt; [:= expression]
+new global *variable &lt;integer expression&gt; &lt;type&gt; [:= expression]</code></pre></div>
+
+<p>Create a new global parameter variable with a given <a href="#types">type</a> and optionally assign the value given in an expression.
+            The global variable or parameter has only one value, whereas a standard variable has one value for each observation.
+            The global variable type and expressions type must be compatible otherwise an error will occur.
+            Global variables can for most parts be used like as a regular variable, but they cannot be evaluated as a vector.
+          If the variable name is followed by square brackets [...], then a global <em>vector</em> is created, where each entry can be individually
+            accessed using e.g.</p>
+
+<div><pre><code class="language-none">g[3] := 20. </code></pre></div>
+
+<p>If a value is assigned when creating a new global vector all entries of the vector will have the same value!</p>
+
+<h3 id="toc_30">Example</h3>
+
+<div><pre><code class="language-none">new global g1 integer     := 1 + 2 * 3 - 4;
+new global g2 float       := (2 * pi) * 5;
+new global g3 string      := &quot;Hello World!&quot;;
+new global g4 time        := now();
+new global g5 boolean     := (2 &gt; 3);
+new global g6 date        := today();
+new global g7[10] integer := 10;</code></pre></div>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="newvaluelabel" id="newvaluelabel"></a></p>
+
+<h2 id="toc_31">new valuelabel / new vl</h2>
+
+<div><pre><code class="language-none">new valuelabel &lt;name&gt; &lt;type&gt; (&lt;value&gt; , &lt;label&gt;) (...) [!m := &lt;value&gt;]</code></pre></div>
+
+<p>Create a new value label set with a given <a href="#types">type</a> (boolean not supported) and assign at least one (value, label) pair.</p>
+
+<h3 id="toc_32">Parameters</h3>
+
+<ul>
+<li><p>Each <code>(value, label)</code> pair will be added to the newly created set.
+      The datatype of the value MUST match the defined datatype for the value label set itself.
+      It is not possible to create an empty valuelabel set.</p></li>
+<li><p>The valuelabel name must be unique; it cannot be the same as any variable.
+      A useful practice is to start the valuelabel name with an underscore: _</p></li>
+</ul>
+
+<blockquote>
+<p>Note: An empty set will restrict data entry to system missing only!</p>
+</blockquote>
+
+<h3 id="toc_33">Options</h3>
+
+<ul>
+<li><code>!m := &lt;value&gt;</code>
+          Marks the given value in the value label set as missing.
+          If the value is not part of the (value, label) pairs or the datatype does not match an error will be reported.
+          This option can be used multiple times with different values.</li>
+</ul>
+
+<h3 id="toc_34">Example</h3>
+
+<div><pre><code class="language-none">// &quot;normal&quot; value label
+new valuelabel _VL1 integer (1, &quot;Value A&quot;) (2, &quot;Value B&quot;) (9, &quot;Missing&quot;) !m := 9;
+// using expression
+new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;value &quot; + 1) (1 + 1, &quot;This &quot; + &quot;is &quot; + &quot;value &quot; + 2) (2 + 1, &quot;This &quot; + &quot;is&quot; + &quot;value &quot; + 2);</code></pre></div>
+
+<p>See <a href="#editvaluelabel">edit valuelabels</a> for more advanced use of variables and loops to create additional valuelabels</p>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<h1 id="toc_35">Listing content</h1>
+
+<p><a name="browse" id="browse"></a></p>
+
+<h2 id="toc_36">browse</h2>
+
+<div><pre><code class="language-none">browse [variable1 [variable2 ...] ] [options]</code></pre></div>
+
+<p>Show the variables mentioned in a spreadsheet grid</p>
+
+<h3 id="toc_37">Parameters</h3>
+
+<ul>
+<li>without variable names, browse all variables</li>
+</ul>
+
+<p>After browse has started you may Right Click and see how to close or adapt columns. Browse will, by default, follow the show formats setting.</p>
+
+<h3 id="toc_38">Options</h3>
+
+<ul>
+<li><p><code>!caption := &quot;&lt;string&gt;&quot;</code> Give the browser window a custom caption</p></li>
+<li><p><code>!c</code> Close all currently open browsers</p></li>
+<li><p><code>!a</code> Arrange all browsers in a cascade</p></li>
+<li><p><code>!vn</code>Show variable names instead of following the &#39;set <q>FORMAT VALUE LABEL</q>&#39; and<br>
+<code>set &quot;FORMAT VARIABLE LABEL&quot;</code> options
+```</p></li>
+</ul>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<blockquote>
+<p>Note: browse is much faster than list</p>
+</blockquote>
+
+<p><a name="list"></a><a name="listdata" id="listdata"></a></p>
+
+<h2 id="toc_39">list data / list d</h2>
+
+<div><pre><code class="language-none">list data [variable1 [variable2 ...]]</code></pre></div>
+
+<p>Show values on the screen for all variables mentioned, with one observation per line (not limited by the width of the display)</p>
+
+<h2 id="toc_40">parameters</h2>
+
+<ul>
+<li>without variable names, list all variables.</li>
+</ul>
+
+<p>See <a href="#labeling">labeling</a> for options on changing between labels/values</p>
+
+<blockquote>
+<p>Note: browse is much faster than list.</p>
+
+<p>Note: When list follows  class=<q>cmd</q>&gt;select: the sequence number is within the current select, not for the whole dataset.</p>
+</blockquote>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="list_project" id="list_project"></a></p>
+
+<h2 id="toc_41">list project / list p</h2>
+
+<div><pre><code class="language-none">list project</code></pre></div>
+
+<p>Shows a brief overview of the project</p>
+
+<h3 id="toc_42">Options</h3>
+
+<ul>
+<li><code>!info</code> Also shows the study information</li>
+</ul>
+
+<p><a name="listdataset" id="listdataset"></a></p>
+
+<h2 id="toc_43">list dataset / list ds</h2>
+
+<div><pre><code class="language-none">list dataset</code></pre></div>
+
+<p>Shows a list of datasets for the project</p>
+
+<h3 id="toc_44">Options</h3>
+
+<ul>
+<li><code>!all</code> Outputs additional information about the listed datasets</li>
+</ul>
+
+<p><a name="listvariable" id="listvariable"></a></p>
+
+<h2 id="toc_45">list variable / list var / list v</h2>
+
+<div><pre><code class="language-none">list variable</code></pre></div>
+
+<p>List all currently defined variable names, types, formats and labels</p>
+
+<p><a name="listvaluelabel" id="listvaluelabel"></a></p>
+
+<h2 id="toc_46">list valuelabel / list vl</h2>
+
+<div><pre><code class="language-none">list valuelabel</code></pre></div>
+
+<p>Show the full list of all valuelabel sets. Each set is listed individually as value/label pair and marked whether a value is considered missing or not.</p>
+
+<p><a name="listresults" id="listresults"></a></p>
+
+<h2 id="toc_47">list results / list res / list r</h2>
+
+<div><pre><code class="language-none">list results</code></pre></div>
+
+<p>List all current result variables and their values.</p>
+
+<p><code>means</code>, <code>describe</code>, <code>tables</code> and other estimation commands create result variables, e.g. $mean[1] or $count. All result variables for a commandn are cleared when running the same command again.</p>
+
+<p><a name="listglobal" id="listglobal"></a></p>
+
+<h2 id="toc_48">list global / list g</h2>
+
+<div><pre><code class="language-none">list global</code></pre></div>
+
+<p>List currently defined global variables and their types and value. Global variables contain a single value and global vectors contain multiple values. The list shows both types.</p>
+
+<h1 id="toc_49">Editing variable and label definitions</h1>
+
+<p><a name="editproject" id="editproject"></a></p>
+
+<h2 id="toc_50">edit project / edit p</h2>
+
+<div><pre><code class="language-none">edit project</code></pre></div>
+
+<p>Edits a project.</p>
+
+<h3 id="toc_51">Options</h3>
+
+<ul>
+<li><p><code>!label:= &quot;&lt;text&gt;&quot;</code>
+          Adds a title to the project. If not used a default title is given.</p></li>
+<li><p><code>!showFieldNames := &lt;boolean&gt;</code></p></li>
+<li><p><code>!sfn := &lt;boolean&gt;</code>
+        Show/Hide the field name next to the entry field in Manager and EntryClient</p></li>
+<li><p><code>!showFieldBorders := &lt;boolean&gt;</code></p></li>
+<li><p><code>!sfb := &lt;boolean&gt;</code>
+        Show/Hide the border of the entry field in Manager and EntryClient</p></li>
+<li><p><code>!backupInterval := &lt;integer&gt;</code></p></li>
+<li><p><code>!bi := &lt;integer&gt;</code>
+        Interval at witch Manager and EntryClient automatically saved the project</p></li>
+<li><p><code>!backupOnShutdown := &lt;boolean&gt;</code></p></li>
+<li><p><code>!bos := &lt;boolean&gt;</code>
+        Perform a backup when closing the project. The name for the backup is based on the current date/time.</p></li>
+</ul>
+
+<p><a name="editdataset" id="editdataset"></a></p>
+
+<h2 id="toc_52">edit dataset / edit ds</h2>
+
+<div><pre><code class="language-none">edit dataset *dataset&lt;sub&gt;1&lt;/sub&gt; [!options...]</code></pre></div>
+
+<p>Edit an existing dataset in the project.</p>
+
+<h3 id="toc_53">Options</h3>
+
+<ul>
+<li><p><code>!label := &quot;&lt;text&gt;&quot;</code>
+          Assign the descriptive text as a caption/label for the dataset.</p></li>
+<li><p><code>!childobs := &lt;integer&gt;</code>
+          Used only if dataset is related to a parent. Gives the number of allowed child observations
+          (0 = no limit)</p></li>
+<li><p><code>!afterobs := &lt;integer&gt;</code>
+          Used only if the dataset is related to a parent. Tells EntryClient what happens after entering the whole observation
+          0 = new observation, 1 = return to parent, 2 = return on max observation, 3 = stay on current observation</p></li>
+<li><p><code>!statusbar := &quot;&lt;text&gt;&quot;</code>
+          Sets the <q>content string</q> of a dataform (see manager for formatting).</p></li>
+<li><p><code>!size := &lt;integer&gt;</code>
+          Changes the size of the dataset to <size> amount of observations.</p></li>
+<li><p><code>!r := &lt;new dataset name&gt;</code>
+        Changes the name of the dataset. If the name is already in use an error will occur.</p></li>
+<li><p><code>!noparent</code>
+          Moves the current dataset (and all related datasets) to be a top-level dataset.</p></li>
+</ul>
+
+<blockquote>
+<p>Note: create a new empty child dataset to restore the relate situation followed by a merge of data in child datasets.</p>
+</blockquote>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="editvariable" id="editvariable"></a></p>
+
+<h2 id="toc_54">edit variable / edit var / edit v</h2>
+
+<div><pre><code class="language-none">edit variable *variable&lt;sub&gt;1&lt;/sub&gt; [!&lt;options&gt;...]</code></pre></div>
+
+<p>Edit the metadata of *variable<sub>1</sub>. The options specify which metadata are changed, multiple options may be used at once</p>
+
+<h3 id="toc_55">Options</h3>
+
+<ul>
+<li><p><code>!label := &quot;&lt;text&gt;&quot;</code>
+       Assign the descriptive text as a label for the variable.
+       An existing variable label will be replaced with the new one.</p></li>
+<li><p><code>!vl := &lt;valuelabel id&gt;</code>
+       Assign an existing valuelabel set to the variable.
+       An existing assignment will be replaced but not deleted. To delete the existing valuelabel set see <a
+href="#deletegrp">deleting content</a></p></li>
+<li><p><code>!novl</code>
+       Removes an existing valuelabel set from the variable.</p></li>
+<li><p><code>!l := &lt;integer&gt;</code>
+       Changes the entry length of a variable</p></li>
+<li><p><code>!d := &lt;integer&gt;</code>
+       Changes the decimal entry length for floating point variables. Changing the decimal length for other variable types have no impact</p></li>
+<li><p><code>!min := &lt;value&gt;</code>
+       Set the lower bound for a range of values. Must be used in combination with !max</p></li>
+<li><p><code>!max:= &lt;value&gt;</code>
+       Set the upper bound for a range of values. Must be used in combination with !min</p></li>
+<li><p><code>!norange</code>
+       Removes an existing defined range for the variable</p></li>
+<li><p><code>!entry := &lt;integer&gt;</code>
+       Changes the entry mode used in EpiData EntryClient
+       0 = default, 1 = must enter, 2 = no enter</p></li>
+<li><p><code>!cmpX := *variable</code>
+     Where <q>X</q> is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between this variable and the assigned variable.</p></li>
+<li><p><code>!confirm</code>
+       If used, the variable has the <q>confirm entry</q> flag set. Used in EpiData EntryClient.</p></li>
+<li><p><code>!noconfirm</code>
+       If used, the variable has the <q>confirm entry</q> flag unset. Used in EpiData EntryClient.</p></li>
+<li><p><code>!key</code>
+       Adds the variable to be part of the key for the current dataset</p></li>
+<li><p><code>!nokey</code>
+       Removes the variable from being part of the key for the current dataset</p></li>
+<li><p><code>!r := &lt;new variable name&gt;</code>
+       Changes the name of the variable. If the name is already in use an error will occur.</p></li>
+</ul>
+
+<blockquote>
+<p>Note: Data values are NOT changed! Even if the new length or decimals is shorter than actual content. To keep the changes made you must save the data.</p>
+</blockquote>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="editvaluelabel" id="editvaluelabel"></a></p>
+
+<h2 id="toc_56">edit valuelabel / edit vl</h2>
+
+<div><pre><code class="language-none">edit valuelabel *valuelabel&lt;sub&gt;1&lt;/sub&gt; [(&lt;value&gt; , &lt;text&gt;) ...] [!m := &lt;value&gt;] [!delete := &lt;value&gt;] [!nomissing := &lt;value&gt;]</code></pre></div>
+
+<p>Edit an existing value label set and optionally assign any number of (value, label) pairs.</p>
+
+<p>If a (value, label) pair already exist, the new label will replace the old label. Otherwise the (value, label) pair will be added to the set. The datatype of the value MUST match the datatype for the value label set itself.</p>
+
+<h3 id="toc_57">Options</h3>
+
+<ul>
+<li><p><code>!m := &lt;value&gt;</code>
+     Marks the given value in the value label set as missing. If the value is not part of the (value, label) pairs, an already existing pair or the datatype does not match an error will be reported.</p>
+
+<p>This option can be used multiple times with different values.</p></li>
+<li><p><code>!d := &lt;value&gt;</code>
+     Deletes the value label pair with the given value. If no such pair exists and error will be reported.</p>
+
+<p>This option can be used multiple times with different values.</p></li>
+<li><p><code>!nom := &lt;value&gt;</code>
+     Removes the marks on the given value label pair that it should be considered missing. If no such pair exists and error will be reported.</p>
+
+<p>This option can be used multiple times with different values.</p></li>
+<li><p><code>!r := &lt;new value label name&gt;</code>
+     Changes the name of the value label. If the new name is already in use an error will occur.</p></li>
+</ul>
+
+<blockquote>
+<p>Note: All variables already using this value label will continue to have the same label.</p>
+</blockquote>
+
+<p>To remove a valuelabel from a variable, see <a href="#editvariable">edit variable</a></p>
+
+<h3 id="toc_58">Example</h3>
+
+<div><pre><code class="language-none">// Create a new simple valuelabel
+new vl _VL1 int (1, &quot;A&quot;);
+
+// Simple edit: add another valuelabel
+edit vl _VL1 (2, &quot;B&quot;);
+
+// Simple edit: replace an existing valuelabel
+edit vl _VL1 (2, &quot;Replaced B&quot;);
+
+// Create a valuelabel set using a loop.
+new valuelabel _VL2 int (1, &quot;This is the first value label&quot;); // create a new valuelabel set
+new global i integer;                                         // we also need a loop variable
+
+// now create 5 pairs (2, &quot;... 2&quot;) (3, &quot;... 3&quot;) ...
+for i := 2 to 5 do
+  edit valuelabel _VL2 (i, &quot;This is valuelabel no: &quot; + i);</code></pre></div>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="editdata" id="editdata"></a></p>
+
+<h2 id="toc_59">edit data / edit d</h2>
+
+<div><pre><code class="language-none">edit data [!md] [!nomd] [!mv] [!nomv]</code></pre></div>
+
+<p>Edit the status of observations</p>
+
+<h3 id="toc_60">Options</h3>
+
+<ul>
+<li><p><code>!md / !nomd</code>
+          Marks / Unmarks the current select observations for deletion</p></li>
+<li><p><code>!mv / !nomv</code>
+          Marks / Unmarks the current select observations as verified</p></li>
+</ul>
+
+<h1 id="toc_61">Deleting content</h1>
+
+<p><a name="drop"></a><a name="dropdataset" id="dropdataset"></a></p>
+
+<h2 id="toc_62">drop dataset / drop ds</h2>
+
+<div><pre><code class="language-none">drop dataset *dataset1* [*dataset2* ...]</code></pre></div>
+
+<p>Remove the listed datasets (and related datasets) from memory</p>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="dropdata" id="dropdata"></a></p>
+
+<h2 id="toc_63">drop data / drop d</h2>
+
+<div><pre><code class="language-none">drop data [!del]</code></pre></div>
+
+<p>Drop all data within current select from memory. Save the data first if you wish to keep any changes.</p>
+
+<h3 id="toc_64">Options</h3>
+
+<ul>
+<li><code>!del</code> Drops all observations marked for deletion.</li>
+</ul>
+
+<blockquote>
+<p>Note: Make sure to test whether this creates a problem in a related dataset with the check command        </p>
+</blockquote>
+
+<h3 id="toc_65">Example</h3>
+
+<div><pre><code class="language-none">read &quot;bromar.epx&quot;;
+select (id &gt; 1000) do
+  drop data;  // Drops all observations where id &gt; 1000, but keeps the rest.
+
+read &quot;bromar.epx&quot;;
+drop data !del ; // drop all observations &quot;marked for deletion&quot;</code></pre></div>
+
+<p><a name="dropvariable" id="dropvariable"></a></p>
+
+<h2 id="toc_66">drop variable / drop var / drop v</h2>
+
+<div><pre><code class="language-none">drop variable *variable&lt;sub&gt;1&lt;/sub&gt; [*variable&lt;sub&gt;2&lt;/sub&gt; ...]</code></pre></div>
+
+<p>Remove the listed variables from memory</p>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<blockquote>
+<p>Note: The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the <ahref="#set">set command</a> to choose a different interval.</p>
+</blockquote>
+
+<h1 id="toc_67">Descriptive statistics</h1>
+
+<p><a name="freq" id="freq"></a><a name="fre" id="fre"></a></p>
+
+<h2 id="toc_68">freq / fre</h2>
+
+<div><pre><code class="language-none">freq variable1 [!&lt;option&gt; ...]</code></pre></div>
+
+<p>Frequency distribution for <em>variable1</em></p>
+
+<h3 id="toc_69">Parameters</h3>
+
+<ul>
+<li>variable1 may be any <a href="#type">type</a></li>
+</ul>
+
+<h3 id="toc_70">Options</h3>
+
+<ul>
+<li><p><code>!m</code> Include observations with missing data (.)</p></li>
+<li><p><code>!cum</code> Add cumulative percentage</p></li>
+<li><p><code>!r</code> Add row percentage</p></li>
+</ul>
+
+<p>See <a href="#labeling">labeling</a> for options on changing between labels/values</p>
+
+<p>See <a href="#formatting">formatting</a> for options on formatting percentages</p>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="means" id="means"></a>
+<a name="t-test" id="t-test"></a>
+<a name="ttest" id="ttest"></a>
+<a name="ftest" id="ftest"></a></p>
+
+<h2 id="toc_71">means</h2>
+
+<div><pre><code class="language-none">means variable1 [!by=*variable2] [!t]</code></pre></div>
+
+<p>Basic descriptive statistics for variable1, optionally stratified by variable2 with analysis of variance.</p>
+
+<ul>
+<li>Statistics: count, total, mean, variance, standard deviation, 95% confidence interval for the mean, standard error, skewness, excess kurtosis.</li>
+<li>Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.</li>
+</ul>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<h3 id="toc_72">Parameters</h3>
+
+<ul>
+<li>variable1 must be numeric</li>
+</ul>
+
+<h3 id="toc_73">Options</h3>
+
+<ul>
+<li><p><code>!by:</code> Stratify by this variable          </p></li>
+<li><p><code>!t:</code> Analysis of Variance to test for homogeneity of the mean across strata,
+     including Bartletts test for homogeneity of variance.
+    With  class=<q>cmd</q>&gt;!by (stratified), F-test is given.
+    Without  class=<q>cmd</q>&gt;!by (one stratum), T-test that mean=0.
+     (e.g. as a paired T-test for the difference in before and after measures)</p></li>
+</ul>
+
+<blockquote>
+<p>Warning:  Check results carefully if !by variable has only one observation in a stratum</p>
+</blockquote>
+
+<p>Estimates are saved as result variables. Use  class=<q>cmd</q>&gt;list results for details</p>
+
+<p>See <a href="#labeling">labeling</a> for options on changing between labels/values</p>
+
+<h3 id="toc_74">Methodology notes:</h3>
+
+<ul>
+<li>confidence intervals given are based on the t-distribution with N-1 degrees of freedom.</li>
+<li>adjusted Fisher-Pearson coefficient of skewness: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm"
+target="_blank">NIST handbook 1.3.5.11</a></li>
+<li>excess kurtosis: see <a href="https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis"
+target="_blank">Wikipedia - Kurtosis (accessed 2020/02/08)</a></li>
+<li>Bartlett&#39;s Test: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm"
+target="_blank">NIST handbook 1.3.5.7</a></li>
+</ul>
+
+<p><a name="describe" id="describe"></a></p>
+
+<h2 id="toc_75">describe</h2>
+
+<div><pre><code class="language-none">describe *variable list [option list]</code></pre></div>
+
+<p>Basic descriptive statistics and frequencies for a group of variables</p>
+
+<p>With no options specified, a single table will be provided, with one row per variable showing:
+       number of observations, number of unique values</p>
+
+<p>For numerical variables, the output will also include
+       mean, standard deviation, minimum, median, maximum</p>
+
+<h3 id="toc_76">Options</h3>
+
+<p>Use any combination of options to customize the output</p>
+
+<ul>
+<li><p><code>!msd:</code> mean, standard deviation and sum</p></li>
+<li><p><code>!mci:</code> mean and confidence interval. See <a href="#setgrp">set</a> to change the confidence interval</p></li>
+<li><p><code>!rm:</code> minimum, median, maximum</p></li>
+<li><p><code>!idr:</code> 10th percentile, median, 90th percentile</p></li>
+<li><p><code>!iqr:</code> 25th percentile, median, 75th percentile</p></li>
+<li><p><code>!fh:</code> 5 most frequent values</p></li>
+<li><p><code>!fl:</code> 5 least frequent values</p></li>
+<li><p><code>!fb:</code> 5 most frequent and 5 least frequent values</p></li>
+<li><p><code>!ct:</code> force one row per variable when the above options are specified.
+    This will be ignored if one of  class=<q>cmd</q>&gt;!fh !fl !fb is specified.</p></li>
+<li><p><code>!m:</code>number of missing values</p></li>
+</ul>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p>See <a href="#labeling">labeling</a> for options on changing between labels/values</p>
+
+<h3 id="toc_77">Methodology notes</h3>
+
+<ul>
+<li>All statistics are based on the <code>means</code> command
+   and all frequencies are based on the <code>freq</code> command,
+   so results from <code>describe</code> will be exactly the same
+   as those from <code>means</code> or <code>freq</code>.</li>
+</ul>
+
+<p><a name="count" id="count"></a></p>
+
+<h2 id="toc_78">count</h2>
+
+<div><pre><code class="language-none">count</code></pre></div>
+
+<p>Counts number of observations. Count may be used with select to count within a subgroup. No parameters or options apply.</p>
+
+<h3 id="toc_79">Result variables:</h3>
+
+<ul>
+<li>$count</li>
+</ul>
+
+<p><a name="tables" id="tables"></a><a name="tab" id="tab"></a></p>
+
+<h2 id="toc_80">tables / tab</h2>
+
+<div><pre><code class="language-none">tab *&lt;column variable&gt; &lt;row variable&gt; [!&lt;option&gt; ...]</code></pre></div>
+
+<p>Crosstabulate the variables chosen.</p>
+
+<h3 id="toc_81">Data and output options</h3>
+
+<ul>
+<li><p><code>!m</code> Include observations with missing data (.)</p></li>
+<li><p><code>!w := &lt;variable&gt;</code> Use number of observations in the variable as frequency weight</p></li>
+<li><p><code>!by := &lt;variable&gt;</code> Stratify the data by this variable.
+      If multiple !by options are used, each unique combination of values from the by-variables will have it&#39;s own sub-table.</p></li>
+<li><p><code>!q</code> Hide all output! Result variable are still calculated</p></li>
+<li><p><code>!nc</code> Hide combined/unstratified tables</p></li>
+<li><p><code>!nb</code> Hide sub/stratified tables</p></li>
+<li><p><code>!ns</code> Hide summary table</p></li>
+</ul>
+
+<h3 id="toc_82">Percentage options</h3>
+
+<ul>
+<li><p><code>!pr</code> Show row percents for each table cell and col/row totals</p></li>
+<li><p><code>!pc</code> Show col percents for each table cell and col/row totals</p></li>
+<li><p><code>!pt</code> Show total percents for each table cell and col/row totals</p></li>
+</ul>
+
+<h3 id="toc_83">Sort optionlist</h3>
+
+<p>Indicate by !sxxx where the x may include<br/>
+           r:row c:Column a:Ascending d:Descending t:Total l:label (else numerical)</p>
+
+<ul>
+<li><p><code>!sa</code> Sort col &amp; row in ascending value order</p></li>
+<li><p><code>!sd</code> Sort col &amp; row in descending value order</p></li>
+<li><p><code>!sla</code> Sort col &amp; row in ascending label order</p></li>
+<li><p><code>!sld</code> Sort col &amp; row in descending label order</p></li>
+<li><p><code>!sca := &lt;index&gt;</code> Sort col ascending value order in given index</p></li>
+<li><p><code>!scd := &lt;index&gt;</code> Sort col descending value order in given index</p></li>
+<li><p><code>!sra := &lt;index&gt;</code> Sort row ascending value order in given index</p></li>
+<li><p><code>!srd := &lt;index&gt;</code> Sort row descending value order in given index</p></li>
+<li><p><code>!scta</code> Sort on col totals ascending order</p></li>
+<li><p><code>!scta</code> Sort on col totals descending order</p></li>
+<li><p><code>!srta</code> Sort on row totals ascending order</p></li>
+<li><p><code>!srtd</code> Sort on row totals descending order</p></li>
+</ul>
+
+<h3 id="toc_84">Estimation and testing options</h3>
+
+<ul>
+<li><p><code>!t</code> Chi<sup>2</sup></p></li>
+<li><p><code>!ex</code> Fisher Exact test for 2x2 tables only</p></li>
+<li><p><code>!odds</code> Odds Ratio and confidence interval for 2x2 tables, including Mantel-Haenszel adjustment for stratified data</p></li>
+<li><p><code>!rr</code> Risk Ratio and confidence interval for 2x2 tables, including Mantel-Haenszel adjustment for stratified data</p></li>
+</ul>
+
+<blockquote>
+<p>Note:The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the <a
+href="#set">set command</a> to choose a different interval.</p>
+</blockquote>
+
+<p>See <a href="#labeling">labeling</a> for options on changing between labels/values</p>
+
+<p>See <a href="#formatting">formatting</a> for options on formatting percentages</p>
+
+<p><a name="ctable" id="ctable"></a><a name="cta" id="cta"></a></p>
+
+<h2 id="toc_85">ctable / cta</h2>
+
+<div><pre><code class="language-none">cta &lt;column variable&gt; &lt;row variables&gt; [!&lt;option&gt; ...]</code></pre></div>
+
+<p>The ctable command summarizes a series of cross tables for the first variable against each of the following variables.</p>
+
+<h3 id="toc_86">Parameters</h3>
+
+<ul>
+<li>column variable will usually have only two values, as with an outcome</li>
+</ul>
+
+<p>The ctable options have the same meaning as in the tables command.</p>
+
+<h3 id="toc_87">Data and output options</h3>
+
+<ul>
+<li><p><code>!m</code> Include observations with missing data (.)</p></li>
+<li><p><code>!w := &lt;variable&gt;</code> Use number of observations in the variable as frequency weight</p></li>
+<li><p><code>!by := &lt;variable&gt;</code> Stratify the data by this variable.
+     If multiple !by options are used, estimates of odds ratio, risk ratio and chi-square will be based on the combination of all stratifying variables.</p></li>
+</ul>
+
+<blockquote>
+<p>Note that attack rates and the Fisher Exact Test will be based on unstratified data always.</p>
+</blockquote>
+
+<ul>
+<li><code>!q</code> Hide all output! Result variable are still calculated</li>
+</ul>
+
+<h3 id="toc_88">Sort options</h3>
+
+<p>Sorting (applies to individual variable tables). Indicate by !sxxx where the x indicate:<br/>
+          r:row c:Column a:Ascending d:Descending t:Total l:label (else numerical)</p>
+
+<ul>
+<li><p><code>!sa</code> Sort col &amp; row in ascending value order</p></li>
+<li><p><code>!sd</code> Sort col &amp; row in descending value order</p></li>
+<li><p><code>!sla</code> Sort col &amp; row in ascending label order</p></li>
+<li><p><code>!sld</code> Sort col &amp; row in descending label order</p></li>
+<li><p><code>!sca := &lt;integer&gt;</code> Sort col ascending value order in given index</p></li>
+<li><p><code>!scd := &lt;integer&gt;</code> Sort col descending value order in given index</p></li>
+<li><p><code>!sra := &lt;integer&gt;</code> Sort row ascending value order in given index</p></li>
+<li><p><code>!srd := &lt;integer&gt;</code> Sort row descending value order in given index</p></li>
+<li><p><code>!scta</code> Sort on col totals ascending order</p></li>
+<li><p><code>!scta</code> Sort on col totals descending order</p></li>
+<li><p><code>!srta</code> Sort on row totals ascending order</p></li>
+<li><p><code>!srtd</code> Sort on row totals descending order</p></li>
+</ul>
+
+<h3 id="toc_89">Estimation and testing options</h3>
+
+<ul>
+<li><p><code>!t</code> Chi<sup>2</sup> and p-value</p></li>
+<li><p><code>!ex</code> Fisher Exact test for 2x2 tables only</p></li>
+<li><p><code>!odds</code> Odds Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data</p></li>
+<li><p><code>!rr</code> Risk Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data</p></li>
+</ul>
+
+<blockquote>
+<p>Note:The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the <a
+href="#set">set command</a> to choose a different interval.</p>
+</blockquote>
+
+<h3 id="toc_90">Attack rate table</h3>
+
+<p>An attack rate table is commonly used in food-borne outbreak investigations. These options simpligy review and reporting of multiple exposures.</p>
+
+<ul>
+<li><p><code>!ar</code> Show unstratified 2x2 tables, attack rates and risk ratios</p></li>
+<li><p><code>!en</code> Show unstratified 2x2 tables</p></li>
+</ul>
+
+<h3 id="toc_91">Output table sort options</h3>
+
+<p>Only one may be given</p>
+
+<ul>
+<li><p><code>!sn</code> Sort the table rows by variable name</p></li>
+<li><p><code>!sl</code> Sort the table rows by variable label</p></li>
+<li><p><code>!ss</code> Sort the table rows by key statistic, depending on the estimation options</p>
+
+<ul>
+<li>priority is given to RR then OR then Fisher Exact P then Chi<sup>2</sup> P</li>
+</ul></li>
+</ul>
+
+<p>See <a href="#labeling">labeling</a> for options on changing between labels/values</p>
+
+<p>See <a href="#formatting">formatting</a> for options on formatting percentages</p>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="means" id="means"></a><a name="t-test" id="t-test"></a><a name="ttest"
+id="ttest"></a><a name="ftest" id="ftest"></a></p>
+
+<h2 id="toc_92">means</h2>
+
+<div><pre><code class="language-none">means variable1 [!by=variable2] [!t]</code></pre></div>
+
+<p>Basic descriptive statistics for variable1, optionally stratified by variable2 with analysis of variance.</p>
+
+<p>Statistics: count, total, mean, variance, standard deviation, 95% confidence interval for the mean, standard error, skewness, excess kurtosis.</p>
+
+<p>Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.</p>
+
+<h3 id="toc_93">Parameters</h3>
+
+<ul>
+<li>variable1 must be numeric</li>
+</ul>
+
+<h3 id="toc_94">Options</h3>
+
+<ul>
+<li><p><code>!by</code> Stratify by this variable   , which may be of any type      </p></li>
+<li><p><code>!t</code> Analysis of Variance to test for homogeneity of the mean across strata (F-test),
+     including Bartletts test for homogeneity of variance.</p>
+
+<p>Without  <code>!by</code> , T-test that mean=0
+     (as a paired T-test for the difference in before and after measures)</p></li>
+</ul>
+
+<blockquote>
+<p>Warning:  Check results carefully if !by variable has only one observation in a stratum</p>
+</blockquote>
+
+<h3 id="toc_95">Result variables</h3>
+
+<p>Estimates are saved as result variables. Use <code>list results</code> for details</p>
+
+<h3 id="toc_96">Methodology</h3>
+
+<ul>
+<li>confidence intervals are based on the t-distribution with N-1 degrees of freedom.</li>
+<li>adjusted Fisher-Pearson coefficient of skewness: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm"
+target="_blank">NIST handbook 1.3.5.11</a></li>
+<li>excess kurtosis: see <a href="https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis"
+target="_blank">Wikipedia - Kurtosis (accessed 2020/02/08)</a></li>
+<li>artlett&#39;s Test: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm"
+target="_blank">NIST handbook 1.3.5.7</a></li>
+</ul>
+
+<p>See <a href="#labeling">labeling</a> for options on changing between labels/values</p>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="survival" id="survival"></a><a name="sur"></a></p>
+
+<h2 id="toc_97">survival / sur</h2>
+
+<div><pre><code class="language-none">survival outcomevariable timevariable [!by:=stratifyvariable] [options]
+survival outcomevariable time1 time2 [!by:=stratifyvariable] [options]</code></pre></div>
+
+<p>Kaplan-Meier plots and lifetables for time-to-failure data with censoring. Tabulations of survival at each time when there were deaths (failures), plus confidence intervals. A summary table shows the median survival by stratum. The KM plot is always provided in a separate window unless !q is specified as an option.</p>
+
+<h3 id="toc_98">Parameters</h3>
+
+<ul>
+<li><code>outcome variable</code> must have discrete values, one of which indicates failure or death</li>
+<li><code>time variable</code> must be an integer. The outcome variable may be numeric or string</li>
+<li><code>time</code> and <code>time2</code> must be date variables. Elapsed time is calculated as <code>time2 - time1</code></li>
+</ul>
+
+<h3 id="toc_99">Options</h3>
+
+<ul>
+<li><p><code>!by</code> Stratify by this variable</p></li>
+<li><p><code>!t</code> Log-rank test for equality of survival among strata</p></li>
+<li><p><code>!o</code> Specify the value of outcome indicating death (failure), which may be numeric or text</p>
+
+<p>the default is zero</p></li>
+<li><p><code>!w</code> Specify a weight variableTable output options</p></li>
+<li><p><code>!nt</code> Omit the lifetables</p></li>
+<li><p><code>!nou</code> Omit the unstratified lifetable</p></li>
+<li><p><code>!nos</code> Omit the stratified lifetables</p></li>
+<li><p><code>!ns</code> Omit the summary tableGraph options</p></li>
+</ul>
+
+<h3 id="toc_100">Kaplan-Meier plot options</h3>
+
+<ul>
+<li><code>!cb</code> Copy the KM plot points to the clipboard for use in other software</li>
+</ul>
+
+<p>By default, confidence intervals are shown as error bars</p>
+
+<ul>
+<li><p><code>!cin</code> Omit the confidence intervals from the KM plot</p></li>
+<li><p><code>!cib</code> Show the confidence intervals as shaded bands. The default KM plot shows the upper and lower confidence intervals as dotted lines.</p></li>
+<li><p><code>!cil</code> Show the confidence intervals as dotted lines.</p></li>
+<li><p><code>See graph options</code>
+<code>survival</code> is a graph command and any graph option may be specified</p></li>
+</ul>
+
+<h3 id="toc_101">Result variables</h3>
+
+<p>Estimates are saved as result variables. Use  <code>list results</code> for details</p>
+
+<h3 id="toc_102">Methodology notes</h3>
+
+<ul>
+<li>confidence intervals are based on Greenwood&#39;s method of estimating standard error.</li>
+</ul>
+
+<p>See <a href="#labeling">labeling</a> for options on changing between labels/values</p>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<h1 id="toc_103">Consistency and Validity Check of data</h1>
+
+<p><a name="checkdata" id="checkdata"></a><a name="check"></a></p>
+
+<h2 id="toc_104">check data</h2>
+
+<div><pre><code class="language-none">check data [var1 ...]</code></pre></div>
+
+<p>Use this command to perform a check of the data in selected variables (if no variable are specified, then ALL variable are checked).</p>
+
+<p>The data is checked for:</p>
+
+<ul>
+<li>Data length: Is the number of characters used in data within the length specified for the variable</li>
+<li>Range/Valuelabel: Is the data within the specified range and/or is it a legal value label</li>
+<li>Must Enter: Does the variable have data for all observations if it is marked as Must Enter</li>
+<li>Jumps: If a variable has jumps assigned, do the skipped fields have the correct values</li>
+<li>Comparison: If a variable is compared to another variable, is the comparison uphold.</li>
+</ul>
+
+<h3 id="toc_105">Example</h3>
+
+<div><pre><code class="language-none">read &quot;bromar.epx&quot;
+check data                   // checks all variable
+check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age</code></pre></div>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="checkkey" id="checkkey"></a></p>
+
+<h2 id="toc_106">check key</h2>
+
+<div><pre><code class="language-none">check key [var1 ...]</code></pre></div>
+
+<p>Check that the data in specified variables are unique and represent a key.</p>
+
+<p>If no variables are specified and a key is already present in the current dataset, this key is checked.</p>
+
+<h3 id="toc_107">Example</h3>
+
+<div><pre><code class="language-none">read &quot;bromar.epx&quot;
+check key id                 // checks if the variable ID represents a unique key</code></pre></div>
+
+<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
+
+<p><a name="checkrelate" id="checkrelate"></a></p>
+
+<h2 id="toc_108">check relate</h2>
+
+<div><pre><code class="language-none">check relate</code></pre></div>
+
+<p>Check that all observations have a valid parent observation</p>
+
+<h3 id="toc_109">Example</h3>
+
+<div><pre><code class="language-none">read &quot;related_data.epx&quot;;  // Load the project
+use child_dataset;        // Change dataset to a related dataset
+check relate;             // Perform the check from the child dataset &quot;upwards&quot; to the parent.
+```                          // Must be repeated if you have more levels
+
+&lt;a name=&quot;checkstudy&quot; id=&quot;checkstudy&quot;&gt;&lt;/a&gt;
+## check study</code></pre></div>
+
+<p>check study
+```
+Check that the study information of is specified or not.</p>
+
+<h3 id="toc_110">Example</h3>
+
+<div><pre><code class="language-none">read &quot;samplev3.epx&quot;;  // Load the project
+check study;          // Perform the check</code></pre></div>
+
+<h1 id="toc_111">REPORTS</h1>
+
+<p><a name="report" id="report_users"></a></p>
+
+<h2 id="toc_112">report users</h2>
+
+<div><pre><code class="language-none">report users</code></pre></div>
+
+<p>If a project is using Extended Access control, this command will show a condensed report of the log entries and a list of failed login attempts.</p>
+
+<p>If the project is not using Extended Access control, an error will be displayed.</p>
+
+<p><a name="report" id="report_validate"></a></p>
+
+<h2 id="toc_113">report valiedate / report val</h2>
+
+<div><pre><code class="language-none">report validate [var1 var2 ...] [!options]</code></pre></div>
+
+<p>Compares two dataset / projects against each other, validating the data content and outputs a report of differences based on the comparison.</p>
+
+<h3 id="toc_114">Parameters</h3>
+
+<p>The variables var1 .. var2 denotes the sorting variables. This is required if not comparing whole projects OR if the datasets does not contain and key variables.</p>
+
+<h3 id="toc_115">Options</h3>
+
+<ul>
+<li><p><code>!fn := &quot;&lt;string&gt;&quot;</code> Opens an external file to compare with.</p></li>
+<li><p><code>!ds := &lt;dataset id&gt;</code> Specifies a single dataset (internal/external) to compare with.</p></li>
+<li><p><code>!nos</code> Excludes all string types from comparison</p></li>
+<li><p><code>!nodt</code> Excludes all date and time types from comparison</p></li>
+<li><p><code>!noauto</code> Excludes all auto types from comparison</p></li>
+<li><p><code>!noc</code> All text comparisons are done case in-sensitive</p></li>
+<li><p><code>!nol</code> Only show the condensed report - do not show the list of observations</p></li>
+<li><p><code>!val</code> All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!</p></li>
+</ul>
+
+<h3 id="toc_116">Example</h3>
+
+<div><pre><code class="language-none">read &quot;bromar.epx&quot;;               // Load the project
+>>>>>>> 69067c8 (Command help created as Markdown)
 
 // Run a report based on the two internal datasets
 // (1st is currently used, 2nd is the one marked with !ds :=...)
@@ -1997,18 +3709,27 @@ report val id !ds := ds2;
 
 // Run a report based on the two datasets, one internal and one external
 // (1st is currently used, 2nd is the one marked with !ds :=...)
+<<<<<<< HEAD
 report val id !fn := "double_entry.epx" !ds := ds1
+=======
+report val id !fn := &quot;double_entry.epx&quot; !ds := ds1
+>>>>>>> 69067c8 (Command help created as Markdown)
 
 // If you have two projects there are two ways compare there.
 // If you wish to compare individual dataset, use the options above.
 // If you have two project you wish to make a complete validation on, use following:
 
 // Run a report based on the two complete projects, one internal and one external
+<<<<<<< HEAD
 report val !fn := "double_entry.epx"
+=======
+report val !fn := &quot;double_entry.epx&quot;
+>>>>>>> 69067c8 (Command help created as Markdown)
 
 // The last example is a special case where both the internal and external project only contains
 // a single dataset each. In this case you only need to specify the sorting variable(s)
 // and the external file. The dataset option is not needed since the external project only has a single dataset.
+<<<<<<< HEAD
 report val id !fn := "double_entry.epx"</font>
       </td>
      </tr>
@@ -2032,12 +3753,43 @@ filenames[1] := "count_file_1.epx";
 filenames[2] := "count_file_2.rec";
 filenames[3] := "count_file_3.dta";
 filenames[4] := "count_file_4.csv";
+=======
+report val id !fn := &quot;double_entry.epx&quot;</code></pre></div>
+
+<p><a name="report" id="report_countby"></a></p>
+
+<h2 id="toc_117">report Countby / report cby</h2>
+
+<div><pre><code class="language-none">report cby [var1 var2 ...] [!options]</code></pre></div>
+
+<p>Compares the combination of variables across several datasets. The variables var1 .. varn is considere a <q>key</q> and each unique combination of this key is counted across all the specified datasets.</p>
+
+<p>The output is a report with a condensed table of the found keys and a complete table with the found unique key values and the count of these in each dataset.</p>
+
+<h3 id="toc_118">Options</h3>
+
+<ul>
+<li><p><code>!fn := &lt;global string vector&gt;</code> This option accepts a global vector with the filenames that is included in the report</p></li>
+<li><p><code>!ds := &lt;global string vector&gt;</code> This option accepts a global vector with the dataset name that is included in the report</p></li>
+<li><p><code>!nol</code> Only show the condensed report - do not show the list of observations</p></li>
+</ul>
+
+<h3 id="toc_119">Example</h3>
+
+<div><pre><code class="language-none">// Setup the input for the report:
+new global filenames[5] string;
+filenames[1] := &quot;count_file_1.epx&quot;;
+filenames[2] := &quot;count_file_2.rec&quot;;
+filenames[3] := &quot;count_file_3.dta&quot;;
+filenames[4] := &quot;count_file_4.csv&quot;;
+>>>>>>> 69067c8 (Command help created as Markdown)
 filenames[5] := .;
 // NOTE: the files can be in different format, but the variable names MUST be the same
 //       if a file name is sys.missing, the dataset in the currently opened project is used.
 
 // The number of entries in the dataset variable MUST be the same as the filenames
 new global datasets[5] string;
+<<<<<<< HEAD
 datasets[1] := "ds1";
 datasets[2] := "ds1";
 datasets[3] := "ds1";
@@ -2607,6 +4359,520 @@ freq @{gvar1};  // Does the same as above, because the content of gvar1 is "sex"
          <p>This can be combined with indexing of a variable. Using some of the builtin result variables like $dataset and $variable:</p>
          <font class="cmd">
 new global i integer;
+=======
+datasets[1] := &quot;ds1&quot;;
+datasets[2] := &quot;ds1&quot;;
+datasets[3] := &quot;ds1&quot;;
+datasets[4] := &quot;ds1&quot;;
+datasets[5] := &quot;ds1&quot;;
+
+// Run the report:
+report cby id !fn := filenames !ds := datasets</code></pre></div>
+
+<h1 id="toc_120">Disk commands</h1>
+
+<p><a name="cd">cd</a></p>
+
+<h2 id="toc_121">cd</h2>
+
+<div><pre><code class="language-none">cd [&quot;&lt;directory path&gt;&quot;]</code></pre></div>
+
+<p>Change the working directory (folder) to the specified path.
+        If no path is given a dialog is shown to select the working directory.</p>
+
+<p><a name="dir" id="dir"></a><a name="ls"></a></p>
+
+<h2 id="toc_122">ls / dir</h2>
+
+<div><pre><code class="language-none">ls [&quot;&lt;directory path&gt;&quot;]
+dir [&quot;&lt;directory path&quot;]</code></pre></div>
+
+<p>List files in a directory</p>
+
+<h3 id="toc_123">Parameters</h3>
+
+<ul>
+<li><em>directory</em> name may include wild cards (* or ?)
+    If no path is given a dialog is shown to select the working directory</li>
+</ul>
+
+<p><a name="erase" id="erase"></a></p>
+
+<h2 id="toc_124">erase</h2>
+
+<div><pre><code class="language-none">erase &quot;&lt;file name&gt;&quot;</code></pre></div>
+
+<p>Delete the file from disk.</p>
+
+<h3 id="toc_125">parameters</h3>
+
+<ul>
+<li><file name> may use wildcards (* or ?), but the directory name should not as this may or may not be allowed by the operating system</li>
+<li>If no path is given, the current working directory is used.</li>
+</ul>
+
+<blockquote>
+<p>Warning: The file is deleted (if the file exist) with no confirmatory question</p>
+</blockquote>
+
+<h1 id="toc_126">Program-wide options</h1>
+
+<p><a name="setgrp" id="setgrp"></a></p>
+
+<h2 id="toc_127">set</h2>
+
+<div><pre><code class="language-none">set [&quot;parameter&quot;] [:= &quot;value&quot;]</code></pre></div>
+
+<p>Change the value of an EpiData setting. An example of this is colour or font selection.</p>
+
+<p>All  <code>set</code> [<q>parameter</q>] definitions may be added to the file <strong>startup.pgm</strong> to define your own defaults. Edit this file using the menu as its location will vary, depending on the operating system.
+- <strong><em>MacOS</em></strong> Analysis / Preferences
+- <strong><em>Windows / Linux</em></strong> Edit / Options</p>
+
+<h3 id="toc_128">Parameters</h3>
+
+<ul>
+<li><p>Without parameters, provides a list of available parameters and their current values</p></li>
+<li><p><code>parameter</code> any legal set option (must be enclosed in double quotes)</p></li>
+<li><p><code>value</code> will be depending on the parameter, but may be a number, text, ON/OFF or a hexadecimal font colour (<a
+href="https://www.w3schools.com/colors/colors_hexadecimal.asp">See colour examples here (requires internet) </a>)
+For settings with ON/OFF or a text value include this in double quotes
+If no value is specified, show the curent value</p></li>
+<li><p>The case of parameters and values does not matter.</p></li>
+</ul>
+
+<h3 id="toc_129">Examples</h3>
+
+<div><pre><code class="language-none">set &quot;echo&quot;
+set &quot;echo&quot; := &quot;off&quot;
+set &quot;COMMANDLINE FONT COLOUR&quot; := &quot;#FFF000&quot;</code></pre></div>
+
+<!-- NOT IMPLEMENTED
+For any command:  class="cmd">set option [cmd] := [options] 
+e.g.  
+set option means := "!t!
+When the specified command is executed the options mentioned will be added to the command. 
+-->
+
+<h3 id="toc_130">Set parameters and defaults</h3>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Possible values</th>
+<th>Default Value</th>
+<th>Comments or example</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>BROWSER BG COLOUR</td>
+<td>hex colour code</td>
+<td><q>#FFFFFF</q></td>
+<td>Adjust the colour of the background. e.g. #000000 is black.</td>
+</tr>
+<tr>
+<td>BROWSER FONT COLOUR</td>
+<td>hex colour code</td>
+<td><q>#000000</q></td>
+<td>Adjust the colour of the font. e.g. #FFF000 is yellow.</td>
+</tr>
+<tr>
+<td>BROWSER FONT NAME</td>
+<td>string</td>
+<td>(depends on the operating system)</td>
+<td>Name of the font used in the browser.</td>
+</tr>
+<tr>
+<td>BROWSER FONT SIZE</td>
+<td><integer></td>
+<td>10</td>
+<td>Adjust the size of the font in the browser.</td>
+</tr>
+<tr>
+<td>BROWSER FONT STYLE</td>
+<td><fsBold/fsItalic/fsUnderline></td>
+<td>&quot; &quot;</td>
+<td>Adjust the style of the text in the browser. Eg. underlines text, bold text.</td>
+</tr>
+<tr>
+<td>BROWSER OBS DEFAULT COLOUR</td>
+<td>hex colour code</td>
+<td><q>#F0F0F0</q></td>
+<td>Adjust the colour of <q>obs</q> column for normal/default observations</td>
+</tr>
+<tr>
+<td>BROWSER OBS DELETED COLOUR</td>
+<td>hex colour code</td>
+<td><q>#FF0000</q></td>
+<td>Adjust the colour of <q>obs</q> column for observations marked for deletion</td>
+</tr>
+<tr>
+<td>BROWSER OBS VERIFIED COLOUR</td>
+<td>hex colour code</td>
+<td><q>#008080</q></td>
+<td>Adjust the colour of <q>obs</q> column for verified observations</td>
+</tr>
+<tr>
+<td>BROWSER VALUE LABEL</td>
+<td>L/V/LV/VL</td>
+<td>V</td>
+<td>Default option for output of variable data (value and/or label). See <a href="#labeling">Valuelabels</a> for options. This options applies to <q>list data</q> and <q>browse</q> only</td>
+</tr>
+<tr>
+<td>BROWSER VARIABLE LABEL</td>
+<td>VLA / VLN / VN / VNL</td>
+<td>VN</td>
+<td>Default option for displaying variable name and/or label. See <a href="#variablelabels">Variable labels</a> for options</td>
+</tr>
+<tr>
+<td>This options applies to <q>list data</q> and <q>browse</q> only</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>COMMANDLINE BG COLOUR</td>
+<td>hex colour code</td>
+<td><q>#FFFFFF</q></td>
+<td>Adjust the colour of the background. e.g. #000000 is black.</td>
+</tr>
+<tr>
+<td>COMMANDLINE FONT COLOUR</td>
+<td>hex colour code</td>
+<td><q>#000000</q></td>
+<td>Adjust the colour of the font. e.g. #FFF000 is yellow.</td>
+</tr>
+<tr>
+<td>COMMANDLINE FONT NAME</td>
+<td>string</td>
+<td>(depends on the operating system)</td>
+<td>Name of the font used in the commandline edit.</td>
+</tr>
+<tr>
+<td>COMMANDLINE FONT SIZE</td>
+<td><integer></td>
+<td>10</td>
+<td>Adjust the size of the font in the commandline edit.</td>
+</tr>
+<tr>
+<td>COMMANDLINE FONT STYLE</td>
+<td><fsBold/fsItalic/fsUnderline></td>
+<td><q> </q></td>
+<td>Adjust the style of the font, e.g. bold, underline etc</td>
+</tr>
+<tr>
+<td>COMMANDLOG</td>
+<td>ON/OFF</td>
+<td>ON</td>
+<td>When <q>ON</q> a complete list of executed commands is saved to a file in current active dir.</td>
+</tr>
+<tr>
+<td>COMMANDLOGFILE</td>
+<td>string</td>
+<td>commandlog.pgm</td>
+<td>Name of the file to save the executed commands</td>
+</tr>
+<tr>
+<td>COMMANDLOGLINES</td>
+<td><integer></td>
+<td>1000</td>
+<td>The number of lines kept in the commandlog file. If the number of lines is exceeded, the lines are dropped from the beginning</td>
+</tr>
+<tr>
+<td>CONFIDENCE INTERVAL</td>
+<td>90&gt; 95&gt; 99</td>
+<td>95</td>
+<td>Set the default confidence interval to be estimated by <code>table</code> or <code>ctable</code></td>
+</tr>
+<tr>
+<td>CSV DELIMITER</td>
+<td><any desired delimiter></td>
+<td>,</td>
+<td>The separator used between variables when you export to the clipboard from the browser.</td>
+</tr>
+<tr>
+<td>DISPLAY COMMANDTREE WINDOW</td>
+<td>ON/OFF</td>
+<td>OFF</td>
+<td>Opens/Closes the command tree window</td>
+</tr>
+<tr>
+<td>DISPLAY DATASET WINDOW</td>
+<td>ON/OFF</td>
+<td>OFF</td>
+<td>Opens/Closes the dataset window</td>
+</tr>
+<tr>
+<td>DISPLAY HISTORY WINDOW</td>
+<td>ON/OFF</td>
+<td>OFF</td>
+<td>Opens/Closes the history window</td>
+</tr>
+<tr>
+<td>DISPLAY VARIABLE WINDOW</td>
+<td>ON/OFF</td>
+<td>OFF</td>
+<td>Opens/Closes the variable window</td>
+</tr>
+<tr>
+<td>ECHO</td>
+<td>ON/OFF</td>
+<td>ON</td>
+<td>When = ON show results, OFF: <q>silent</q><br/>Use <code>show error</code> if you wish to suppress errors too!</td>
+</tr>
+<tr>
+<td>EDITOR FONT NAME</td>
+<td>string</td>
+<td>(depends on the operating system)</td>
+<td>Name of the font used in the editor.</td>
+</tr>
+<tr>
+<td>EDITOR FONT SIZE</td>
+<td><integer></td>
+<td>10</td>
+<td>Adjust the size of the font.</td>
+</tr>
+<tr>
+<td>EXITSAVE</td>
+<td>YES/NO</td>
+<td>NO</td>
+<td>If <q>YES</q> the user is prompted on closing the program for saving if a project is open and has been modified</td>
+</tr>
+<tr>
+<td>INCLUDE DELETED</td>
+<td>ON/OFF</td>
+<td>OFF</td>
+<td>If <q>ON</q> then observations marked for deletion is also included in calculations</td>
+</tr>
+<tr>
+<td>OUTPUT BG COLOUR</td>
+<td>hex colour code</td>
+<td><q>#FFFFFF</q></td>
+<td>Adjust the colour of the output background. e.g. #000000 is black.</td>
+</tr>
+<tr>
+<td>OUTPUT CSS FILE</td>
+<td>string</td>
+<td>(empty)</td>
+<td>When using HTML output it is possible to use an external CSS file. If the file name specified does not exist a file will be created with the content of the built in CSS.</td>
+</tr>
+<tr>
+<td>OUTPUT CSS INTERNAL</td>
+<td>YES/NO</td>
+<td>YES</td>
+<td>If set to YES, the content of the CSS FILE is embedded into the HTML. If set to NO the CSS FILE is referenced from within the HTML output.</td>
+</tr>
+<tr>
+<td>OUTPUT FONT COLOUR</td>
+<td>hex colour code</td>
+<td><q>#000000</q></td>
+<td>Adjust the colour of the output font. e.g. #FFF000 is yellow.</td>
+</tr>
+<tr>
+<td>OUTPUT FONT NAME</td>
+<td>string</td>
+<td>(depends on the operating system)</td>
+<td>Name of the font used in the text output.</td>
+</tr>
+<tr>
+<td>OUTPUT FONT SIZE</td>
+<td><integer></td>
+<td>10</td>
+<td>Adjust the size of the font in the text output.</td>
+</tr>
+<tr>
+<td>OUTPUT FONT STYLE</td>
+<td><fsBold/fsItalic/fsUnderline></td>
+<td><q> </q></td>
+<td>Adjust the style of the font, e.g. bold, underline etc</td>
+</tr>
+<tr>
+<td>OUTPUT FORMAT</td>
+<td>TEXT/HTML</td>
+<td>TEXT</td>
+<td>Format of the output window HTML viewing is current in beta</td>
+</tr>
+<tr>
+<td>OUTPUT SAVE FORMAT</td>
+<td>TEXT/HTML</td>
+<td>TEXT</td>
+<td>Set the default format when saving the output to file.</td>
+</tr>
+<tr>
+<td>SHORT MONTH NAMES</td>
+<td>string</td>
+<td>(depends on the language of the operating system)eg. Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec</td>
+<td>The function <code>createdate</code> will use these value when trying to match against the short month names. This list MUST contain 12 items seperated by commas</td>
+</tr>
+<tr>
+<td>SHOW COMMAND</td>
+<td>ON/OFF</td>
+<td>ON</td>
+<td>If <q>ON</q> then each line that is run (from command line or editor) is added to output as <q>.<command...></q>. <q>OFF</q> = no output</td>
+</tr>
+<tr>
+<td>SHOW DEBUG</td>
+<td>ON/OFF</td>
+<td>ON</td>
+<td>If <q>ON</q> then lines containing debug information is shown. <q>OFF</q> = no output</td>
+</tr>
+<tr>
+<td>SHOW ERROR</td>
+<td>ON/OFF</td>
+<td>ON</td>
+<td>If <q>ON</q> then lines containing error information is shown. <q>OFF</q> = no output</td>
+</tr>
+<tr>
+<td>SHOW INFO</td>
+<td>ON/OFF</td>
+<td>ON</td>
+<td>If <q>ON</q> then lines containing informational output is shown. <q>OFF</q> = no output</td>
+</tr>
+<tr>
+<td>SHOW WARNING</td>
+<td>ON/OFF</td>
+<td>ON</td>
+<td>If <q>ON</q> then lines containing warning information is shown. <q>OFF</q> = no output</td>
+</tr>
+<tr>
+<td>STATISTICS VALUE LABEL</td>
+<td>L/V/LV/VL</td>
+<td>L</td>
+<td>Default option for output of variable data (value and/or label). See <a href="#labeling">Valuelabels</a> for options. This options applies to commands not covered by <q>BROWSER VALUE LABEL</q></td>
+</tr>
+<tr>
+<td>STATISTICS VARIABLE LABEL</td>
+<td>VLA / VLN / VN / VNL</td>
+<td>VLA</td>
+<td>Default option for displaying variable name and/or label. See <a href="#variablelabels">Variable labels</a> for options. This options applies to commands not covered by <q>BROWSER VALUE LABEL</q></td>
+</tr>
+</tbody>
+</table>
+
+<h1 id="toc_131">Common options</h1>
+
+<p><a name="labeling" id="labeling"></a></p>
+
+<h3 id="toc_132">Valuelabels</h3>
+
+<ul>
+<li><p><code>!v</code>  Show only the value, (**fallback if no label to corresponding value)</p></li>
+<li><p><code>!l</code>  Show only the label (**default)</p></li>
+<li><p><code>!vl</code>  Show the value then the label</p></li>
+<li><p><code>!lv</code>  Show the label then the value</p></li>
+</ul>
+
+<p><a name="labeling" id="variablelabels"></a></p>
+
+<h3 id="toc_133">Variable Labels</h3>
+
+<ul>
+<li><p><code>!vn</code>  Show only the name, (**fallback if no variable label assigned)</p></li>
+<li><p><code>!vla</code>  Show only the label (**default)</p></li>
+<li><p><code>!vnl</code>  Show the name then the label</p></li>
+<li><p><code>!vln</code>  Show the label then the name</p></li>
+</ul>
+
+<p><a name="formatting" id="formatting"></a></p>
+
+<h3 id="toc_134">Decimals for percentages or statistics</h3>
+
+<ul>
+<li><p><code>!d0</code> 0 decimals</p></li>
+<li><p><code>!d1</code> 1 decimal</p></li>
+<li><p><code>!d2</code> 2 decimals</p></li>
+<li><p><code>!d3</code> 3 decimal</p></li>
+<li><p><code>!d4</code> 4 decimals</p></li>
+<li><p><code>!d5</code> 5 decimals</p></li>
+</ul>
+
+<h2 id="toc_135">Variable types</h2>
+
+<ul>
+<li><p>integer / int / i</p>
+
+<p>A variable (standard, result or global) that contains an integer value.</p></li>
+<li><p>float / f
+A variable (standard, result or global) that contains an floating point value.</p></li>
+</ul>
+
+<blockquote>
+<p>Note: all floating points shown on screen appear in the current national setting (locale),
+        but input (from editor or command line) must always use <q>.</q> (period) as the decimal separator.
+         The saved data in a given project can be used in different national settings without giving problems or need for conversions.</p>
+</blockquote>
+
+<ul>
+<li><p>string / str / s</p>
+
+<p>A variable (standard, result or global) that may contain any string</p></li>
+<li><p>boolean / bool / b</p>
+
+<p>A variable (standard, result or global) that contains only true or false</p></li>
+<li><p>time / t</p>
+
+<p>A variable (standard, result or global) that contains a time value.</p></li>
+<li><p>date / d</p>
+
+<p>A variable (standard, result or global) that contains a date value. All new date variables created will be a DMY type, but this may change in the future.</p></li>
+</ul>
+
+<p><a name="referencedvars" id="referencedvars"></a></p>
+
+<h2 id="toc_136">Variable references</h2>
+
+<ul>
+<li>Variable expansion with range or wildcards
+<code>
+var1 - var4
+va*
+var?
+</code>
+Any command that accepts more than one variable as parameters can use the following schemes for variable expansion.</li>
+<li><q>-</q> (dash) tells the program to use the two variables given and all variables between them.</li>
+<li><q>*</q> (asterisk) is used as a replacement for 0 to many characters. This cannot be the first character.</li>
+<li><q>?</q> (question mark) is used as a replacement for exactly 1 character. This cannot be the first character.</li>
+</ul>
+
+<blockquote>
+<p>Note: If there are no variables matching the result, e.g. t? and you have no variables with t, then you get an error</p>
+</blockquote>
+
+<p>It is possible to combine <q>*</q> and <q>?</q> for more elaborate expressions, but neither can be combined with <q>-</q></p>
+
+<p>Variables for expansion cannot start with the <q>*</q> or <q>?</q>, but must start with a <q>normal</q> character.</p>
+
+<h3 id="toc_137">Examples</h3>
+
+<div><pre><code class="language-none">// Consider the following set of variables (and in that order):
+// V1, V2, V3, V4, V10, V11, V100
+list data V2 - V10;      // V2 - V10 is expanded to the variables V2, V3, V4 and V10
+list data V1* ;          // V1* is expanded to V1, V10, V11, V100 because * can be &quot;&quot; (empty character) and &quot;0&quot;, &quot;1&quot; and &quot;00&quot;
+list data V?  ;          // V?  is expanded to V1, V2, V3 and V4, because ? can be be replaced by &quot;1&quot;, &quot;2&quot;, &quot;3&quot; and &quot;4&quot; but not any other.
+list data V1??;          // V1?? is expanded to V100 only!</code></pre></div>
+
+<p>A <code>referenced</code> variable may also be used in the expansion. These will be evaluated before the expansion!</p>
+
+<h2 id="toc_138">Referenced Variable</h2>
+
+<div><pre><code class="language-none">@{variable1}</code></pre></div>
+
+<p>With a referenced variable, you essentially use the content of another variable (global, result) <u>to provide the variable name</u>.</p>
+
+<h3 id="toc_139">Examples</h3>
+
+<div><pre><code class="language-none">new global gvar1 string := &quot;sex&quot;;
+read &quot;bromar.epx&quot;;
+freq sex;       // Outputs a frequency table for the variable &quot;sex&quot;
+freq @{gvar1};  // Does the same as above, because the content of gvar1 is &quot;sex&quot;</code></pre></div>
+
+<p>This can be combined with indexing of a variable. Using some of the builtin result variables like $dataset and $variable:</p>
+
+<div><pre><code class="language-none">new global i integer;
+>>>>>>> 69067c8 (Command help created as Markdown)
 for i := 1 to size($variable) do
   begin
     // Here we output the name of all the variables:
@@ -2614,6 +4880,7 @@ for i := 1 to size($variable) do
     ? $variable[i]
 
     // Here we do a frequency table of the variable.
+<<<<<<< HEAD
     // - using @{..} because "freq" needs a variable and not the content of $variable
     freq @{$variable[i]}
   end;
@@ -2637,6 +4904,31 @@ freq @{ @{h[1]}[1] };
 Example of how to loop over a referenced variable:
 
 // you wish to estimate the time for parts of an analysis and have created a number of time stamps:
+=======
+    // - using @{..} because &quot;freq&quot; needs a variable and not the content of $variable
+    freq @{$variable[i]}
+  end;</code></pre></div>
+
+<p>The Variable inside the @{..} may itself be another reference (with or without index), making it possible to combine multiple levels of references.</p>
+
+<div><pre><code class="language-none">new global f    string := &quot;age&quot;
+new global g[3] string := &quot;f&quot;;  // All entries have the value &quot;f&quot;, but that is fine for this example.
+new global h[3] string := &quot;g&quot;;  // All entries have the value &quot;g&quot;, but that is fine for this example.
+
+// The line below is a valid construction, which evalutes the following way
+// 1: h[1] is evaluated into the string &quot;g&quot;
+// 2: &quot;g&quot; is used in @{&quot;g&quot;}, which means - use the content of g as a variable
+// 3: g[1] is evaluated into the string &quot;f&quot;
+// 4: &quot;f is used in @{&quot;f&quot;}, which means - use the content of f as a variable
+// 5: @{f} is evalued to the variable AGE
+// 6: The command freq is run on the variable AGE.
+
+freq @{ @{h[1]}[1] };</code></pre></div>
+
+<p>Example of how to loop over a referenced variable:</p>
+
+<div><pre><code class="language-none">// you wish to estimate the time for parts of an analysis and have created a number of time stamps:
+>>>>>>> 69067c8 (Command help created as Markdown)
 new global tx t:= now(); // where x is 1 , 2, 3 etc.
 
 // now to display these and the difference: - assume you had five of these:
@@ -2644,7 +4936,11 @@ new global tx t:= now(); // where x is 1 , 2, 3 etc.
 new global i i;
 for i:= 1 to 5 do
    begin
+<<<<<<< HEAD
      ? i + " time: " + @{"t" + i};  // this works becaus the parenthesis will be t1 t2 t3 etc.
+=======
+     ? i + &quot; time: &quot; + @{&quot;t&quot; + i};  // this works becaus the parenthesis will be t1 t2 t3 etc.
+>>>>>>> 69067c8 (Command help created as Markdown)
      end;
 
 // now also calculate the difference in time between the two:
@@ -2653,6 +4949,7 @@ new global tdif t;   // tdif is a time difference
 
 for i:= 2 to 5 do
    begin
+<<<<<<< HEAD
      tdif := (@{"t" + i} - @{"t" + (i-1)});  // notice again the (tdif = t2 -t1 ) when i was = 2
      ? i + " difference : " + tdif;
    end;
@@ -2731,10 +5028,86 @@ id="programgrp"></a> Programming aids - not normally used in interactive mode</t
        <p>Complete reset of all parameters of the program!<br />
         This is almost equivalent of doing:<br />
        <font class="cmd">
+=======
+     tdif := (@{&quot;t&quot; + i} - @{&quot;t&quot; + (i-1)});  // notice again the (tdif = t2 -t1 ) when i was = 2
+     ? i + &quot; difference : &quot; + tdif;
+   end;</code></pre></div>
+
+<h1 id="toc_140">Programming aids</h1>
+
+<p>These are not normally used in interactive mode</p>
+
+<p><a name="programgrp" id="programgrp"></a> </p>
+
+<p><a name="runtest" id="runtest"></a></p>
+
+<h2 id="toc_141">runtest</h2>
+
+<div><pre><code class="language-none">runtest [&quot;&lt;directory path&gt;&quot;]</code></pre></div>
+
+<p>Run all .pgm files in a given directory (folder) to verify function.</p>
+
+<p>This is provided for testing of correct estimation etc.
+        If no path is given, a dialog is shown to select the working directory.</p>
+
+<p><a name="run"></a></p>
+
+<h2 id="toc_142">run</h2>
+
+<div><pre><code class="language-none">run [&quot;&lt;filename.pgm&gt;&quot;]</code></pre></div>
+
+<p>Execute the commands saved in a .pgm file</p>
+
+<h3 id="toc_143">Parameters</h3>
+
+<ul>
+<li><p><code>filename.pgm</code> may include a path</p></li>
+<li><p>without parameters, the open file dialogue is started</p></li>
+</ul>
+
+<h1 id="toc_144">Clean up - stop</h1>
+
+<p><a name="close" id="close"></a></p>
+
+<h2 id="toc_145">close</h2>
+
+<div><pre><code class="language-none">close</code></pre></div>
+
+<p>Stop using a project
+- all unsaved variables and changes to existing variables and labels will be lost
+- global variables will remain in memory</p>
+
+<p><a name="cls" id="cls"></a></p>
+
+<h2 id="toc_146">cls</h2>
+
+<div><pre><code class="language-none">cls</code></pre></div>
+
+<p>Clear the output screen</p>
+
+<p><a name="clh" id="clh"></a></p>
+
+<h2 id="toc_147">clh</h2>
+
+<div><pre><code class="language-none">clh</code></pre></div>
+
+<p>Clear the history of commands</p>
+
+<p><a name="reset" id="reset"></a></p>
+
+<h2 id="toc_148">reset</h2>
+
+<div><pre><code class="language-none">reset</code></pre></div>
+
+<p>Reset of all parameters of the program!
+This is almost equivalent of doing:
+<code>
+>>>>>>> 69067c8 (Command help created as Markdown)
 close;
 drop global !all;
 cls;
 clh;
+<<<<<<< HEAD
        </font>
        <br />But <font class="cmd">reset</font> also clears all result variables!</p>
       </td>
@@ -3531,3 +5904,690 @@ border="1">
             </td></tr>
   </tbody></table>
 </body></html>
+=======
+</code></p>
+
+<blockquote>
+<p>Note:  <code>reset</code> also clears all result variables!</p>
+</blockquote>
+
+<h1 id="toc_149">Functions available in EpiData Analysis</h1>
+
+<p>In the following, <em>takes</em> indicates the variable type for each parameter and <em>result</em> indicates the type of the result of the function:
+- s: string
+- b: boolean
+- d: date
+- t: time
+- i: integer
+- f: floating point
+- n: any numeric
+- v: variable</p>
+
+<p>Parameters may be variables read from fields, created variables, or any expression that evaluates to the correct type.</p>
+
+<h2 id="toc_150">String functions</h2>
+
+<table>
+<thead>
+<tr>
+<th>function</th>
+<th>takes</th>
+<th>result</th>
+<th>example</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><a name="length"></a>length(str)</td>
+<td>s</td>
+<td>i</td>
+<td>length(<q>Abcde</q>) =&gt; 5</td>
+</tr>
+<tr>
+<td><a name="post"></a>pos(instr, findstr)</td>
+<td>s, s</td>
+<td>i</td>
+<td>pos(<q>Abcde</q>, <q>cd</q>) =&gt; 3<br/>pos(<q>Abcde</q>, <q>z</q>) =&gt; 0</td>
+</tr>
+<tr>
+<td><a name="substring"></a><a name="substr"></a>substring(str, start, len)</td>
+<td>s, i, i</td>
+<td>s</td>
+<td>substring(<q>Abcde</q>, 2, 3) =&gt; <q>bcd</q></td>
+</tr>
+<tr>
+<td><a name="trim"></a>trim(str)</td>
+<td>s</td>
+<td>s</td>
+<td>trim(<q>Abcde</q>) =&gt; <q>Abcde</q><br/>trim(<q>Abcde</q>) =&gt; <q>Abcde</q></td>
+</tr>
+<tr>
+<td><a name="lower"></a>lower(str)</td>
+<td>s</td>
+<td>s</td>
+<td>lower(<q>Abcde</q>) =&gt; <q>abcde</q></td>
+</tr>
+<tr>
+<td><a name="upper"></a>upper(str)</td>
+<td>s</td>
+<td>s</td>
+<td>upper(<q>Abcde</q>) =&gt; <q>ABCDE</q></td>
+</tr>
+<tr>
+<td><a name="concat"></a>concat(X, s1, s2, ..., sn)</td>
+<td>s, any, ...</td>
+<td>s</td>
+<td>Concat(...) concatenates values s1 -&gt; sn into a string. If any of the sx parameters return system missing it will be replaced by the value of X<br/>concat(<q>X</q>, <q>a</q>, v1) =&gt; <q>aX</q> if v1 is missing, else a + the value of v1<br/>For user defined missing values, the actual value is added to the string.</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_151">Arithmetic functions (including Random numbers)</h2>
+
+<table>
+<thead>
+<tr>
+<th>function</th>
+<th>takes</th>
+<th>result</th>
+<th>example</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><a name="abs"></a>abs(x)</td>
+<td>n</td>
+<td>n</td>
+<td>abs(-12) =&gt; 12</td>
+</tr>
+<tr>
+<td><a name="exp"></a>exp(x)</td>
+<td>n</td>
+<td>f</td>
+<td>exp(1) =&gt; 2.71828182845905</td>
+</tr>
+<tr>
+<td><a name="frac"></a><a name="fraction"></a>fraction(x)</td>
+<td>f</td>
+<td>f</td>
+<td>fraction(12.34) =&gt; 0.34</td>
+</tr>
+<tr>
+<td><a name="ln"></a>ln(x)</td>
+<td>n</td>
+<td>f</td>
+<td>ln(2.71828182845905) =&gt; 1<br/>ln(0) =&gt; missing</td>
+</tr>
+<tr>
+<td><a name="log"></a>log(x)</td>
+<td>n</td>
+<td>f</td>
+<td>log(10) =&gt; 1<br/>log(0) =&gt; missing</td>
+</tr>
+<tr>
+<td><a name="round"></a>round(x, digits)</td>
+<td>n, d, t</td>
+<td>f</td>
+<td>round(12.44,1) =&gt; 12.4<br/>round(12.5,0) =&gt; 13</td>
+</tr>
+<tr>
+<td><a name="sqrt"></a>sqrt(x)</td>
+<td>n</td>
+<td>f</td>
+<td>sqrt(4) =&gt; 2</td>
+</tr>
+<tr>
+<td><a name="random"></a>random(x)</td>
+<td>i</td>
+<td>i</td>
+<td>Random integer from 0 to x</td>
+</tr>
+<tr>
+<td><a name="sum"></a>sum(n1, n2, ..., nn)</td>
+<td>n, ...</td>
+<td>n</td>
+<td>Sums that values n1 =&gt; nn, but ignores the entries if they are either sys. missing or user defined missing</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_152">Trigonomety functions</h2>
+
+<table>
+<thead>
+<tr>
+<th>function</th>
+<th>takes</th>
+<th>result</th>
+<th>example</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><a name="tan"></a>tan(x)</td>
+<td>f</td>
+<td>f</td>
+<td>tan(0) =&gt; 0</td>
+</tr>
+<tr>
+<td><a name="arctan"></a>arctan(x)</td>
+<td>f</td>
+<td>f</td>
+<td>arctan(1) =&gt; pi/2</td>
+</tr>
+<tr>
+<td><a name="cos"></a>cos(r)</td>
+<td>f</td>
+<td>f</td>
+<td>cos(pi/2) =&gt; 6.12303176911189E-17<br/>cos(pi) =&gt; -1</td>
+</tr>
+<tr>
+<td><a name="arccos"></a>arccos(r)</td>
+<td>f</td>
+<td>f</td>
+<td>arccos(0) =&gt; pi / 2</td>
+</tr>
+<tr>
+<td><a name="sin"></a>sin(r)</td>
+<td>f</td>
+<td>f</td>
+<td>sin(pi/2) =&gt; 1<br/>sin(pi) =&gt; 6.12303176911189E-17</td>
+</tr>
+<tr>
+<td><a name="arcsin"></a>arcsin(r)</td>
+<td>f</td>
+<td>f</td>
+<td>arcsin(0) =&gt; 0</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_153">Date functions</h2>
+
+<table>
+<thead>
+<tr>
+<th>function</th>
+<th>takes</th>
+<th>result</th>
+<th>example</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><a name="createdate"></a>createdate(datestr)</td>
+<td>s</td>
+<td>d</td>
+<td>createdate(<q>31/12/2016</q>) =&gt; 31/12/2016<br/>The form of *datestr is automatically detected, but if the string is ambiguous the preference is always DMY over MDY.<br/>If parts of the datestr are omitted, then these parts are filled with todays values.<br/>If the string is not recognised as a date, system missing is returned.</td>
+</tr>
+<tr>
+<td>createdate(datestr,date-type)</td>
+<td>s, s</td>
+<td>d</td>
+<td>createdate(<q>31/12/2016</q>, <q>dmy</q>) =&gt; 31/12/2016<br/>createdate(<q>12/31/2016</q>, <q>mdy</q>) =&gt; 31/12/2016<br/>createdate(<q>2016/12/31</q>, <q>ymd</q>) =&gt; 31/12/2016</td>
+</tr>
+<tr>
+<td>createdate(datestr,fmt-string)</td>
+<td>s, s</td>
+<td>d</td>
+<td>Converts any string to a date based on the format specified in fmt-string. The format options can be found in the FPC source documentation <a href="https://www.freepascal.org/docs-html/rtl/sysutils/formatchars.html">here</a><br/>createdate(<q>31-dec-16</q>, <q>dd-mmm-yy</q>) =&gt; 31/12/2016<br/>For the <q>mmm</q> format it is possible to control the abbreviated month names using the <a href="#setgrp">set options</a>. The default is based on the language of the Operating System.</td>
+</tr>
+<tr>
+<td>createdate(d, m, y)</td>
+<td>i, i, i</td>
+<td>d</td>
+<td>createdate(31, 12, 2016) =&gt; 31/12/2016</td>
+</tr>
+<tr>
+<td><a name="today"></a>today()</td>
+<td>-</td>
+<td>i</td>
+<td>returns today&#39;s date; may be assigned to a date variable or an integer</td>
+</tr>
+<tr>
+<td><a name="day"></a>day(d)</td>
+<td>d</td>
+<td>i</td>
+<td>day(31/12/2004) =&gt; 31</td>
+</tr>
+<tr>
+<td><a name="dayofweek"></a><a name="dow"></a>dayofweek(d)</td>
+<td>d</td>
+<td>i</td>
+<td>dayofweek(31/12/2004) =&gt; 5<br/>Monday=1, Sunday=7</td>
+</tr>
+<tr>
+<td><a name="month"></a>month(d)</td>
+<td>d</td>
+<td>i</td>
+<td>month(31/12/2004) =&gt; 12</td>
+</tr>
+<tr>
+<td><a name="week"></a>week(d)</td>
+<td>d</td>
+<td>i</td>
+<td>week(22/02/2001) =&gt; 8</td>
+</tr>
+<tr>
+<td><a name="year"></a>year(d)</td>
+<td>d</td>
+<td>i</td>
+<td>year(31/12/2004) =&gt; 2004</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_154">Time functions</h2>
+
+<table>
+<thead>
+<tr>
+<th>function</th>
+<th>takes</th>
+<th>result</th>
+<th>example</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><a name="createtime"></a>createtime(timestr)</td>
+<td>s</td>
+<td>t</td>
+<td>createtime(<q>12:34:56</q>) =&gt; 12:34:56<br/>The form of *timestr is automatically detected. If parts of the timestr are omitted, then these parts are filled with 0 (zero).</td>
+</tr>
+<tr>
+<td><a name="createtime"></a>     createtime(h, m, s)</td>
+<td>i, i, i</td>
+<td>t</td>
+<td>createtime(12, 34, 56) =&gt; 12:34:56</td>
+</tr>
+<tr>
+<td><a name="now"></a>now()</td>
+<td>-</td>
+<td>f</td>
+<td>returns the time right now. It can be assigned to a time or float variable</td>
+</tr>
+<tr>
+<td><a name="second"></a>second(t)</td>
+<td>t</td>
+<td>i</td>
+<td>second(12:34:56) =&gt; 56</td>
+</tr>
+<tr>
+<td><a name="minute"></a>minute(t)</td>
+<td>t</td>
+<td>i</td>
+<td>minut(12:34:56) =&gt; 34</td>
+</tr>
+<tr>
+<td><a name="hour"></a>hour(t)</td>
+<td>t</td>
+<td>i</td>
+<td>hour(12:34:56) =&gt; 12</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_155">Logic functions</h2>
+
+<table>
+<thead>
+<tr>
+<th>function</th>
+<th>takes</th>
+<th>result</th>
+<th>example</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><a name="and"></a>b1 and b2</td>
+<td>b,b</td>
+<td>b</td>
+<td>true and true   =&gt; TRUE<br/>true and false  =&gt; FALSE<br/>false and true  =&gt; FALSE<br/>false and false =&gt; FALSE</td>
+</tr>
+<tr>
+<td><a name="or"></a>b1 or b2</td>
+<td>b,b</td>
+<td>b</td>
+<td>true or true   =&gt; TRUE<br/>true or false  =&gt; TRUE<br/>false or true  =&gt; TRUE<br/>false or false =&gt; FALSE</td>
+</tr>
+<tr>
+<td><a name="xor"></a>b1 xor b2</td>
+<td>b,b</td>
+<td>b</td>
+<td>true xor true   =&gt; FALSE<br/>true xor false  =&gt; TRUE<br/>false xor true  =&gt; TRUE<br/>false xor false =&gt; FALSE</td>
+</tr>
+<tr>
+<td><a name="not">not</td>
+<td>b</td>
+<td>b</td>
+<td>not(false) =&gt; TRUE</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_156">Conversion functions</h2>
+
+<table>
+<thead>
+<tr>
+<th>function</th>
+<th>takes</th>
+<th>result</th>
+<th>example</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><a name="boolean"></a>boolean(x)</td>
+<td>any</td>
+<td>b</td>
+<td>boolean(x) =&gt; TRUE, for any non-zero x<br/>boolean(0) =&gt; FALSE<br/>boolean(<q>true</q>) =&gt; TRUE, <q>true</q> text is case in-sensitive<br/>boolean(x) =&gt; FALSE, for any text other than <q>true</q></td>
+</tr>
+<tr>
+<td><a name="integer"></a>integer(x)</td>
+<td>any</td>
+<td>i</td>
+<td>integer(1.23) =&gt; 1<br/>integer(31/12/2016) =&gt; 42735<br/>integer(<q>2</q>) =&gt; 2<br/>integer(<q>a</q>) =&gt; .<br/>Any input x that cannot be interpreted as an integer returns missing <q>.</q></td>
+</tr>
+<tr>
+<td><a name="float"></a>float(x)</td>
+<td>any</td>
+<td>f</td>
+<td>float(1) =&gt; 1.00<br/>float(<q>12,34</q>) =&gt; 12.34<br/>Any input *x that cannot be interpreted as a float returns missing <q>.</q></td>
+</tr>
+<tr>
+<td><a name="string"></a>string(x)</td>
+<td>n</td>
+<td>s</td>
+<td>string(1.23) =&gt; <q>1.23</q></td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_157">Identifier functions</h2>
+
+<table>
+<thead>
+<tr>
+<th>function</th>
+<th>takes</th>
+<th>result</th>
+<th>example</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><a name="exist"></a>exist(x)</td>
+<td>v</td>
+<td>b</td>
+<td>Returns true/false whether the provided identifier exist</td>
+</tr>
+<tr>
+<td><a name="idtype"></a>idtype(x)</td>
+<td>v</td>
+<td>i</td>
+<td>Returns the type of the identifier provided. This function can be used on all valid identifiers and the integer value returned have the following associations:<br/>0: Global variable<br/>1: Global vector<br/>2: Regular Variable<br/>3: Dataset<br/>4: Valuelabel<br/>5: Result Variable<br/>6: Result Vector<br/>7: Result Matrix<br/>if using idtype(x) with the eval function <q>?</q>, the output will be in text.</td>
+</tr>
+<tr>
+<td><a name="datatype"></a>datatype(x)</td>
+<td>v</td>
+<td>i</td>
+<td>Similarly as to idtype(x) this function takes any variable, but in this case returns the type of date stored in the variable. The integer value return have the following associations:<br/>-1: Variable has no data type - e.g. a dataset variable.<br/>0: Boolean<br/>1: Integer<br/>2: Auto Increment<br/>3: Float<br/>4: DMY Date<br/>5: MDY Date<br/>6: YMD Date<br/>7: DMY Auto Date<br/>8: MDY Auto Date<br/>9: YMD Auto Date<br/>10: Time<br/>11: Auto Time<br/>12: Uppercase String<br/>13: String<br/>14: Memo<br/>if using datatype(x) with the eval function <q>?</q>, the output will be in text.</td>
+</tr>
+<tr>
+<td><a name="size"></a>size(x)</td>
+<td>v</td>
+<td>i</td>
+<td>Size returns the size/length of an identifier (if applicable).<br/>Global &amp; Result variables always have size 1<br/>Global vector, Result Vector, Variable &amp; Valuelabel return the length/size/count of elements/data<br/>Result Matrix is not implemented yet - it returns -1;<br/>Dataset returns the total number of observations (even if a select is applied).</td>
+</tr>
+<tr>
+<td><a name="string"></a>label(v)</td>
+<td>v</td>
+<td>s</td>
+<td>Return the descriptive label of the identifier. This is only possible for variables and datasets.</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_158">Test and special functions</h2>
+
+<table>
+<thead>
+<tr>
+<th>function</th>
+<th>takes</th>
+<th>result</th>
+<th>example</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><a name="lre"></a>lre(x,y)</td>
+<td>n</td>
+<td>n</td>
+<td>lre($mean1, 1.23456789123456) returns number of digits precision of $mean1</td>
+</tr>
+<tr>
+<td><a name="iif"></a>iif(b, x, y)</td>
+<td>b, n, n</td>
+<td>n</td>
+<td>iif(..., true value, false value) evaluates the boolean expression (b) inline, and based on the result either returns the true value or false value.<br/>iif(2 = 3, <q>This is true</q>, <q>This is false</q>) =&gt; <q>This is false</q></td>
+</tr>
+<tr>
+<td><a name="samevalue"></a>samevalue(x, y, z)</td>
+<td>x,y = n, d, t <br/>z = i</td>
+<td>b</td>
+<td>samevalue($mean1, 1.23456789123456, 10<sup>-7</sup>) returns true or false indicating if</td>
+</tr>
+<tr>
+<td>samevalue(x, y)</td>
+<td>n, d, t</td>
+<td>b</td>
+<td>samevalue($mean1, 1.23456789123456) returns true or false indicating if x = y<br/>Essentially the same as calling samevalue(x, y, 15)</td>
+</tr>
+<tr>
+<td>cwd()</td>
+<td></td>
+<td>s</td>
+<td>Returns the current working directory</td>
+</tr>
+<tr>
+<td>deleted([index])</td>
+<td>[i]</td>
+<td>b</td>
+<td>Returns true/false whether the record is marked for deletion. If no index is supplied the current record number is tested<br/>select deleted() do edit data !nomd<br/>// selects current records marked for deletion and unmark them</td>
+</tr>
+<tr>
+<td>verified([index])</td>
+<td>[i]</td>
+<td>b</td>
+<td>Returns true/false whether the record is marked as verified. If no index is supplied the current record number is tested:<br/>select verified() do edit data !nomd <br/>// selects current records marked for deletion and unmark them</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_159">Operators used in EpiData Analysis</h2>
+
+<table>
+<thead>
+<tr>
+<th>operator</th>
+<th>syntax</th>
+<th>result</th>
+<th>meaning</th>
+<th>example</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>+</td>
+<td>n+n</td>
+<td>n</td>
+<td>addition</td>
+<td>1+2 =&gt; 3</td>
+</tr>
+<tr>
+<td>+</td>
+<td>s+any<br/>any+s</td>
+<td>s</td>
+<td>concatenation</td>
+<td><q>A</q>+<q>B</q> =&gt; <q>AB</q><br/><q>A</q>+1 =&gt; <q>A1</q></td>
+</tr>
+<tr>
+<td>+</td>
+<td>d+n</td>
+<td>d</td>
+<td>date addition</td>
+<td><q>30/11/2004</q>+31 =&gt; <q>31/12/2004</q></td>
+</tr>
+<tr>
+<td>-</td>
+<td>n-n</td>
+<td>n</td>
+<td>subtraction</td>
+<td>2-1 =&gt; 1</td>
+</tr>
+<tr>
+<td>-</td>
+<td>d-d</td>
+<td>n</td>
+<td>date subtraction</td>
+<td><q>31/12/2004</q>-<q>30/11/2004</q> =&gt; 31</td>
+</tr>
+<tr>
+<td>-</td>
+<td>d-n</td>
+<td>d</td>
+<td>date subtraction</td>
+<td><q>31/12/2004</q>-31 =&gt; <q>30/11/2004</q></td>
+</tr>
+<tr>
+<td>*</td>
+<td>n*n</td>
+<td>n</td>
+<td>multiplication</td>
+<td>2*3 =&gt; 6</td>
+</tr>
+<tr>
+<td>/</td>
+<td>n/n</td>
+<td>n</td>
+<td>division</td>
+<td>5/2 =&gt; 2.5<br/>5/0 =&gt; missing</td>
+</tr>
+<tr>
+<td>div</td>
+<td>n div n</td>
+<td>i</td>
+<td>integer result of division</td>
+<td>5 div 2 =&gt; 2<br/>5 div 0 =&gt; missing</td>
+</tr>
+<tr>
+<td>^</td>
+<td>n<sup>n</sup></td>
+<td>f</td>
+<td>exponentiation<br/>5<sup>2</sup> =&gt; 25</td>
+<td>4<sup>0.5</sup> =&gt; 2</td>
+</tr>
+<tr>
+<td>( )</td>
+<td></td>
+<td></td>
+<td>group expressions</td>
+<td>(5<em>(2+4))/2 =&gt; 15<br/>5</em>2+4/2 == (5*2)+(4/2) =&gt; 12</td>
+</tr>
+<tr>
+<td>=</td>
+<td>n = n</td>
+<td>b</td>
+<td>equal</td>
+<td>1 = 2 =&gt; FALSE</td>
+</tr>
+<tr>
+<td>&lt;</td>
+<td>n &lt; n</td>
+<td>b</td>
+<td>less than</td>
+<td>1<2 => TRUE</td>
+</tr>
+<tr>
+<td>&gt;</td>
+<td>n &gt; n</td>
+<td>b</td>
+<td>greater than</td>
+<td>1&gt;2 =&gt; FALSE</td>
+</tr>
+<tr>
+<td>&lt;=</td>
+<td>n &lt;= n</td>
+<td>b</td>
+<td>less than or equal</td>
+<td>1&lt;=2 =&gt; TRUE<br/>2&lt;=2 =&gt; TRUE</td>
+</tr>
+<tr>
+<td>&gt;=</td>
+<td>n &gt;= n</td>
+<td>b</td>
+<td>greater than or equal</td>
+<td>1&lt;=2 =&gt; FALSE<br/>2&gt;=2 =&gt; TRUE</td>
+</tr>
+<tr>
+<td>&lt;&gt;</td>
+<td>n &lt;&gt; n</td>
+<td>b</td>
+<td>not equal to</td>
+<td>1&lt;&gt;2 =&gt; TRUE<br/>1&lt;&gt;1 =&gt; FALSE</td>
+</tr>
+<tr>
+<td>$</td>
+<td>$resultvar</td>
+<td></td>
+<td>result value</td>
+<td>? $count =&gt; 4027</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_160">Startup options for EpiData Analysis</h2>
+
+<p>The use of startup options depends on the operating system. You may be able to create a desktop shortcut that includes these or start analysis from the command line.</p>
+
+<p>epidataanalysis [options]</p>
+
+<h3 id="toc_161">Options</h3>
+
+<ul>
+<li><p><code>-h or --help</code>
+               Show this help and exit.</p></li>
+<li><p><code>-v or --version</code>
+                Show version info and exit.</p></li>
+<li><p><code>-i or --inifile [FILE]</code>
+                Uses [FILE] as startup program. If no location is specified startup.pgm is used.</p></li>
+</ul>
+
+<h3 id="toc_162">Examples</h3>
+
+<p>With Linux:
+<code>
+./epidataanalysis -i /path/to/startup.pgm
+</code></p>
+
+
+
+
+</body>
+
+</html>
+>>>>>>> 69067c8 (Command help created as Markdown)
