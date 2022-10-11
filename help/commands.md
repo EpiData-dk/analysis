@@ -8,7 +8,7 @@ ___
 
 Manage data | Analyze data | Write programs
 ---|---|---
-[read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#delete) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#reports)<br/> | [describe](#describe) variabless<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis<br/>[scatter](#scatter) plot <br/>[line](#line) plot <br/>[bar](#bar) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve) | [select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#type)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startoptions) |
+[read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [describe](#describe) variables<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis<br/>[scatter](#scatter) plot <br/>[line](#line) plot <br/>[bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve) | [select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#type)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup) |
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
 
@@ -830,7 +830,7 @@ List currently defined global variables and their types and value. Global variab
 
 # Editing variable and label definitions
 
-<a name="editproject" id="editproject"></a>
+<a name="edit" id="edit"></a><a name="editproject" id="editproject"></a>
 ## edit project / edit p
 ```
 edit project
@@ -1831,6 +1831,7 @@ datasets[5] := "ds1";
 report cby id !fn := filenames !ds := datasets
 ```
 
+<a name="disk" id="disk"></a>
 # Disk commands
 
 <a name="cd" id="cd"</a>
@@ -1869,7 +1870,7 @@ Delete the file from disk.
 
 # Program-wide options
 
-<a name="setgrp" id="setgrp"></a>
+<a name="set" id="set"></a>
 ## set
 ```
 set ["parameter"] [:= "value"]
@@ -1877,8 +1878,9 @@ set ["parameter"] [:= "value"]
 Change the value of an EpiData setting. An example of this is colour or font selection.
 
 All  `set` ["parameter"] definitions may be added to the file **startup.pgm** to define your own defaults. Edit this file using the menu as its location will vary, depending on the operating system.
-- ***MacOS*** Analysis / Preferences
-- ***Windows / Linux*** Edit / Options
+
+- ***MacOS***: Analysis / Preferences
+- ***Windows / Linux***: Edit / Options
 
 ### Parameters
 
@@ -1891,7 +1893,7 @@ All  `set` ["parameter"] definitions may be added to the file **startup.pgm** to
 
   If no value is specified, show the curent value
 
-- The case of parameters and values does not matter.
+The case of parameters and values does not matter.
 
 ### Examples
 ```
@@ -1957,6 +1959,7 @@ SHOW WARNING | ON/OFF | ON | If "ON" then lines containing warning information i
 STATISTICS VALUE LABEL | L/V/LV/VL | L | Default option for output of variable data (value and/or label). See [Valuelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
 STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for displaying variable name and/or label. See [Variablelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
 
+<a name="options" id="options"></a>
 # Common options
 
 <a name="labeling" id="labeling"></a>
@@ -1970,7 +1973,7 @@ STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for disp
 
 - `!lv`  Show the label then the value
 
-<a name="labeling" id="variablelabels"></a>
+<a name="variablelabels" id="variablelabels"></a>
 ### Variable Labels
 
 - `!vn`  Show only the name, (**fallback if no variable label assigned)
@@ -2158,6 +2161,7 @@ Execute the commands saved in a .pgm file
 
 - without parameters, the open file dialogue is started
 
+<a name="stop" id="stop"></a>
 # Clean up - stop
 
 <a name="close" id="close"></a>
@@ -2198,6 +2202,7 @@ clh;
 ```
 > Note:  `reset` also clears all result variables!
 
+<a name="functions" id="functions"></a>
 # Functions available in EpiData Analysis
 
 In the following, *takes* indicates the variable type for each parameter and *result* indicates the type of the result of the function:
@@ -2314,6 +2319,7 @@ cwd() | | s | Returns the current working directory
 deleted([index]) | [i] |  b | Returns true/false whether the record is marked for deletion. If no index is supplied the current record number is tested<br/>select deleted() do edit data !nomd<br/>// selects current records marked for deletion and unmark them
 verified([index]) | [i] | b | Returns true/false whether the record is marked as verified. If no index is supplied the current record number is tested:<br/>select verified() do edit data !nomd <br/>// selects current records marked for deletion and unmark them
 
+<a name="operators" id="operators"></a>
 ## Operators used in EpiData Analysis
 
 operator | syntax | result | meaning | example
@@ -2337,6 +2343,7 @@ div | n div n | i | integer result of division | 5 div 2 => 2<br/>5 div 0 => mis
 <> | n <> n | b | not equal to | 1<>2 => TRUE<br/>1<>1 => FALSE
 $ | $resultvar  | | result value | ? $count => 4027
 
+<a name="startup" id="startup"></a>
 ## Startup options for EpiData Analysis
 
 The use of startup options depends on the operating system. You may be able to create a desktop shortcut that includes these or start analysis from the command line.

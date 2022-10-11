@@ -535,9 +535,9 @@ sup {
 
 <tbody>
 <tr>
-<td><a href="#read">read</a><br/><a href="#save">save</a><br/><a href="#append">append</a><br/><a href="#merge">merge</a><br/><a href="#aggregate">aggregate</a><br/><a href="#use">use datasets</a><br/>create <a href="#new">new</a> content<br/><a href="#list">list</a> content<br/><a href="#edit">edit</a> content<br/><a href="#delete">delete</a> content<br/><a href="#check">Consistency and Validity Checks</a><br/><a href="#reports">Reports</a><br/></td>
-<td><a href="#describe">describe</a> variabless<br/><a href="#tables">tables</a><br/><a href="#freq">frequencies</a><br/><a href="#means">means</a><br/><a href="#count">count</a><br/><a href="#survival">survival</a> analysis<br/><a href="#scatter">scatter</a> plot <br/><a href="#line">line</a> plot <br/><a href="#bar">bar</a> chart <br/><a href="#histogram">histogram</a><br/><a href="#epicurve">epicurve</a></td>
-<td><a href="#select">select</a> observations<br/><a href="#if-then">if-then</a><br/><a href="#sort">sort</a> data<br/><a href="#disk">Disk and file commands</a><br/><a href="#set">set</a> parameters <br/><a href="#options">Labels, Values and format in output</a><br/><a href="#type">Types of Variables</a><br/><a href="#referencedvars">How to use Variables and References</a><br/><a href="#run">run</a> scripts <br/><a href="#stop">Clean up &amp; stop</a><br/><a href="#functions">Functions</a><br/><a href="#operators">Operators</a><br/><a href="#startoptions">Startup options</a></td>
+<td><a href="#read">read</a><br/><a href="#save">save</a><br/><a href="#append">append</a><br/><a href="#merge">merge</a><br/><a href="#aggregate">aggregate</a><br/><a href="#use">use datasets</a><br/>create <a href="#new">new</a> content<br/><a href="#list">list</a> content<br/><a href="#edit">edit</a> content<br/><a href="#drop">delete</a> content<br/><a href="#check">Consistency and Validity Checks</a><br/><a href="#report">Reports</a><br/></td>
+<td><a href="#describe">describe</a> variables<br/><a href="#tables">tables</a><br/><a href="#freq">frequencies</a><br/><a href="#means">means</a><br/><a href="#count">count</a><br/><a href="#survival">survival</a> analysis<br/><a href="#scatter">scatter</a> plot <br/><a href="#line">line</a> plot <br/><a href="#barchart">bar</a> chart <br/><a href="#histogram">histogram</a><br/><a href="#epicurve">epicurve</a></td>
+<td><a href="#select">select</a> observations<br/><a href="#if-then">if-then</a><br/><a href="#sort">sort</a> data<br/><a href="#disk">Disk and file commands</a><br/><a href="#set">set</a> parameters <br/><a href="#options">Labels, Values and format in output</a><br/><a href="#type">Types of Variables</a><br/><a href="#referencedvars">How to use Variables and References</a><br/><a href="#run">run</a> scripts <br/><a href="#stop">Clean up &amp; stop</a><br/><a href="#functions">Functions</a><br/><a href="#operators">Operators</a><br/><a href="#startup">Startup options</a></td>
 </tr>
 </tbody>
 </table>
@@ -2916,7 +2916,7 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 
 <h1 id="toc_50">Editing variable and label definitions</h1>
 
-<p><a name="editproject" id="editproject"></a></p>
+<p><a name="edit" id="edit"></a><a name="editproject" id="editproject"></a></p>
 
 <h2 id="toc_51">edit project / edit p</h2>
 
@@ -4558,6 +4558,8 @@ datasets[5] := &quot;ds1&quot;;
 // Run the report:
 report cby id !fn := filenames !ds := datasets</code></pre></div>
 
+<p><a name="disk" id="disk"></a></p>
+
 <h1 id="toc_131">Disk commands</h1>
 
 <p><a name="cd" id="cd"</a></p>
@@ -4606,7 +4608,7 @@ dir [&quot;&lt;directory path&quot;]</code></pre></div>
 
 <h1 id="toc_137">Program-wide options</h1>
 
-<p><a name="setgrp" id="setgrp"></a></p>
+<p><a name="set" id="set"></a></p>
 
 <h2 id="toc_138">set</h2>
 
@@ -4614,9 +4616,12 @@ dir [&quot;&lt;directory path&quot;]</code></pre></div>
 
 <p>Change the value of an EpiData setting. An example of this is colour or font selection.</p>
 
-<p>All  <code>set</code> [<q>parameter</q>] definitions may be added to the file <strong>startup.pgm</strong> to define your own defaults. Edit this file using the menu as its location will vary, depending on the operating system.
-- <strong><em>MacOS</em></strong> Analysis / Preferences
-- <strong><em>Windows / Linux</em></strong> Edit / Options</p>
+<p>All  <code>set</code> [<q>parameter</q>] definitions may be added to the file <strong>startup.pgm</strong> to define your own defaults. Edit this file using the menu as its location will vary, depending on the operating system.</p>
+
+<ul>
+<li><strong><em>MacOS</em></strong>: Analysis / Preferences</li>
+<li><strong><em>Windows / Linux</em></strong>: Edit / Options</li>
+</ul>
 
 <h3 id="toc_139">Parameters</h3>
 
@@ -4628,8 +4633,9 @@ dir [&quot;&lt;directory path&quot;]</code></pre></div>
 <p>For settings with ON/OFF or a text value include this in double quotes</p>
 
 <p>If no value is specified, show the curent value</p></li>
-<li><p>The case of parameters and values does not matter.</p></li>
 </ul>
+
+<p>The case of parameters and values does not matter.</p>
 
 <h3 id="toc_140">Examples</h3>
 
@@ -4936,6 +4942,8 @@ When the specified command is executed the options mentioned will be added to th
 </tbody>
 </table>
 
+<p><a name="options" id="options"></a></p>
+
 <h1 id="toc_142">Common options</h1>
 
 <p><a name="labeling" id="labeling"></a></p>
@@ -4949,7 +4957,7 @@ When the specified command is executed the options mentioned will be added to th
 <li><p><code>!lv</code>  Show the label then the value</p></li>
 </ul>
 
-<p><a name="labeling" id="variablelabels"></a></p>
+<p><a name="variablelabels" id="variablelabels"></a></p>
 
 <h3 id="toc_144">Variable Labels</h3>
 
@@ -5250,6 +5258,8 @@ id="programgrp"></a> Programming aids - not normally used in interactive mode</t
 <li><p><code>filename.pgm</code> may include a path</p></li>
 <li><p>without parameters, the open file dialogue is started</p></li>
 </ul>
+
+<p><a name="stop" id="stop"></a></p>
 
 <h1 id="toc_155">Clean up - stop</h1>
 
@@ -6097,6 +6107,8 @@ border="1">
 <p>Note:  <code>reset</code> also clears all result variables!</p>
 </blockquote>
 
+<p><a name="functions" id="functions"></a></p>
+
 <h1 id="toc_160">Functions available in EpiData Analysis</h1>
 
 <p>In the following, <em>takes</em> indicates the variable type for each parameter and <em>result</em> indicates the type of the result of the function:
@@ -6603,6 +6615,8 @@ border="1">
 </tbody>
 </table>
 
+<p><a name="operators" id="operators"></a></p>
+
 <h2 id="toc_170">Operators used in EpiData Analysis</h2>
 
 <table>
@@ -6745,6 +6759,8 @@ border="1">
 </tr>
 </tbody>
 </table>
+
+<p><a name="startup" id="startup"></a></p>
 
 <h2 id="toc_171">Startup options for EpiData Analysis</h2>
 
