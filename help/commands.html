@@ -3469,68 +3469,18 @@ target="_blank">NIST handbook 1.3.5.7</a></li>
 <p><a name="means" id="means"></a><a name="t-test" id="t-test"></a><a name="ttest"
 id="ttest"></a><a name="ftest" id="ftest"></a></p>
 
-<h2 id="toc_92">means</h2>
-
-<div><pre><code class="language-none">means Variable [!by=Stratifyvariable] [!t]</code></pre></div>
-
-<p>Basic descriptive statistics for variable1, optionally stratified by variable2 with analysis of variance.</p>
-
-<p>Statistics: count, total, mean, variance, standard deviation, 95% confidence interval for the mean, standard error, skewness, excess kurtosis.</p>
-
-<p>Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.</p>
-
-<h3 id="toc_93">Parameters</h3>
-
-<ul>
-<li>Variable must be numeric</li>
-</ul>
-
-<h3 id="toc_94">Options</h3>
-
-<ul>
-<li><p><code>!by</code> Stratify by Stratifyvariable    , which may be of any type      </p></li>
-<li><p><code>!t</code> Analysis of Variance to test for homogeneity of the mean across strata (F-test), including Bartletts test for homogeneity of variance.</p>
-
-<p>Without  <code>!by</code> , T-test that mean=0
-     (as a paired T-test for the difference in before and after measures)</p></li>
-</ul>
-
-<blockquote>
-<p>Warning:  Check results carefully if !by variable has only one observation in a stratum</p>
-</blockquote>
-
-<h3 id="toc_95">Result variables</h3>
-
-<p>Estimates are saved as result variables. Use <code>list results</code> for details</p>
-
-<h3 id="toc_96">Methodology</h3>
-
-<ul>
-<li>confidence intervals are based on the t-distribution with N-1 degrees of freedom.</li>
-<li>adjusted Fisher-Pearson coefficient of skewness: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm"
-target="_blank">NIST handbook 1.3.5.11</a></li>
-<li>excess kurtosis: see <a href="https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis"
-target="_blank">Wikipedia - Kurtosis (accessed 2020/02/08)</a></li>
-<li>artlett&#39;s Test: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm"
-target="_blank">NIST handbook 1.3.5.7</a></li>
-</ul>
-
-<p>See <a href="#labeling">labeling</a> for options on changing between labels/values</p>
-
-<p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
-
-<h1 id="toc_97">Graphs and charts</h1>
+<h1 id="toc_92">Graphs and charts</h1>
 
 <p><a name="survival" id="survival"></a><a name="sur"></a></p>
 
-<h2 id="toc_98">survival / sur</h2>
+<h2 id="toc_93">survival / sur</h2>
 
 <div><pre><code class="language-none">survival outcomevariable timevariable [!by:=stratifyvariable] [options]
 survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]</code></pre></div>
 
 <p>Kaplan-Meier plots and lifetables for time-to-failure data with censoring. Tabulations of survival at each time when there were deaths (failures), plus confidence intervals. A summary table shows the median survival by stratum. The KM plot is always provided in a separate window unless !q is specified as an option.</p>
 
-<h3 id="toc_99">Parameters</h3>
+<h3 id="toc_94">Parameters</h3>
 
 <ul>
 <li><code>outcome variable</code> must have discrete values, one of which indicates failure or death</li>
@@ -3538,7 +3488,7 @@ survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]</code></p
 <li><code>date1</code> and <code>date2</code> must be date variables. Elapsed time is calculated as <code>date2 - date1</code></li>
 </ul>
 
-<h3 id="toc_100">Options</h3>
+<h3 id="toc_95">Options</h3>
 
 <ul>
 <li><p><code>!o</code> Specify the value of outcome indicating death (failure), which may be numeric or text; the default is zero</p></li>
@@ -3555,7 +3505,7 @@ Aggregate data to these time intervals. If the string is missing, the set value 
 When intervals are specified, adjust the number at risk to exclude half of the censored subjects (Hosmer, Lemeshow)</p></li>
 </ul>
 
-<h3 id="toc_101">Output options</h3>
+<h3 id="toc_96">Output options</h3>
 
 <ul>
 <li><p><code>!nt</code> Omit the lifetables</p></li>
@@ -3565,7 +3515,7 @@ When intervals are specified, adjust the number at risk to exclude half of the c
 <li><p><code>!ng</code> Do not show the KM plot</p></li>
 </ul>
 
-<h3 id="toc_102">Kaplan-Meier plot options</h3>
+<h3 id="toc_97">Kaplan-Meier plot options</h3>
 
 <ul>
 <li><code>!cb</code> Copy the KM plot points to the clipboard for use in other software</li>
@@ -3581,11 +3531,11 @@ When intervals are specified, adjust the number at risk to exclude half of the c
 <code>survival</code> is a graph command and any graph option may be specified</p></li>
 </ul>
 
-<h3 id="toc_103">Result variables</h3>
+<h3 id="toc_98">Result variables</h3>
 
 <p>Estimates are saved as result variables. Use  <code>list results</code> for details</p>
 
-<h3 id="toc_104">Methodology</h3>
+<h3 id="toc_99">Methodology</h3>
 
 <ul>
 <li>confidence intervals calculated using the method in Statistics with Confidence, referenced elsewhere.</li>
@@ -3599,20 +3549,20 @@ When intervals are specified, adjust the number at risk to exclude half of the c
 
 <p><a name="scatter" id="scatter"></a></p>
 
-<h2 id="toc_105">scatter</h2>
+<h2 id="toc_100">scatter</h2>
 
 <div><pre><code class="language-none">scatter Xvariable Yvariable [graphoptionlist]</code></pre></div>
 
 <p>Simple scatter plot for two variables.</p>
 
-<h3 id="toc_106">Parameters</h3>
+<h3 id="toc_101">Parameters</h3>
 
 <ul>
 <li>Xvariable may also be integer, float or date/time</li>
 <li>Yvariable may be integers or float </li>
 </ul>
 
-<h3 id="toc_107">Options</h3>
+<h3 id="toc_102">Options</h3>
 
 <ul>
 <li><code>scatter</code> is a graph command and any graph option may be specified</li>
@@ -3622,20 +3572,20 @@ When intervals are specified, adjust the number at risk to exclude half of the c
 
 <p><a name="barchart" id="barchart"></a></p>
 
-<h2 id="toc_108">barchart</h2>
+<h2 id="toc_103">barchart</h2>
 
 <div><pre><code class="language-none">barchart Variable [StratifyVariable] [options]</code></pre></div>
 
 <p>Draw a barchart for Variable. A barchart shows frequencies at each indiviual value of Variable.</p>
 
-<h3 id="toc_109">Parameters</h3>
+<h3 id="toc_104">Parameters</h3>
 
 <ul>
 <li>Variable may be of any type</li>
 <li>Stratifyvariable may be of any type</li>
 </ul>
 
-<h3 id="toc_110">Options</h3>
+<h3 id="toc_105">Options</h3>
 
 <ul>
 <li><code>!pct</code>
@@ -3652,7 +3602,7 @@ stack bars for stratified data; !stack and !pct together will have stacked bars 
 
 <p><a name="histogram" id="histogram"></a></p>
 
-<h2 id="toc_111">histogram</h2>
+<h2 id="toc_106">histogram</h2>
 
 <div><pre><code class="language-none">histogram Variable [StratifyVariable] [options]</code></pre></div>
 
@@ -3660,14 +3610,14 @@ stack bars for stratified data; !stack and !pct together will have stacked bars 
 
 <p>A histogram is a bar chart where every integer value within range is represented on the X-axis.</p>
 
-<h3 id="toc_112">Parameters</h3>
+<h3 id="toc_107">Parameters</h3>
 
 <ul>
 <li>Variable may be integer or date</li>
 <li>Stratifyvariable may be of any type</li>
 </ul>
 
-<h3 id="toc_113">Options</h3>
+<h3 id="toc_108">Options</h3>
 
 <ul>
 <li><code>!interval:=i</code>
@@ -3684,7 +3634,7 @@ stack bars for stratified data.</li>
 
 <p><a name="epicurve" id="epicurve"></a></p>
 
-<h2 id="toc_114">epicurve</h2>
+<h2 id="toc_109">epicurve</h2>
 
 <div><pre><code class="language-none">epicurve Variable [StratifyVariable] [options]</code></pre></div>
 
@@ -3692,14 +3642,14 @@ stack bars for stratified data.</li>
 
 <p>An epicurve is a stacked histogram, where individual boxes are shown for each subject</p>
 
-<h3 id="toc_115">Parameters</h3>
+<h3 id="toc_110">Parameters</h3>
 
 <ul>
 <li>Variable may be integer or date</li>
 <li>Stratifyvariable may be of any type</li>
 </ul>
 
-<h3 id="toc_116">Options</h3>
+<h3 id="toc_111">Options</h3>
 
 <ul>
 <li><code>!interval:=i</code>
@@ -3708,11 +3658,11 @@ where i is an integer &gt; 1, will group bars; the default is 1</li>
 <code>epicurve</code> is a graph command and any graph option may be specified</li>
 </ul>
 
-<h1 id="toc_117">Consistency and Validity Check of data</h1>
+<h1 id="toc_112">Consistency and Validity Check of data</h1>
 
 <p><a name="checkdata" id="checkdata"></a><a name="check"></a></p>
 
-<h2 id="toc_118">check data</h2>
+<h2 id="toc_113">check data</h2>
 
 <div><pre><code class="language-none">check data [var1 ...]</code></pre></div>
 
@@ -3728,7 +3678,7 @@ where i is an integer &gt; 1, will group bars; the default is 1</li>
 <li>Comparison: If a variable is compared to another variable, is the comparison uphold.</li>
 </ul>
 
-<h3 id="toc_119">Example</h3>
+<h3 id="toc_114">Example</h3>
 
 <div><pre><code class="language-none">read &quot;bromar.epx&quot;
 check data                   // checks all variable
@@ -3738,7 +3688,7 @@ check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age
 
 <p><a name="checkkey" id="checkkey"></a></p>
 
-<h2 id="toc_120">check key</h2>
+<h2 id="toc_115">check key</h2>
 
 <div><pre><code class="language-none">check key [var1 ...]</code></pre></div>
 
@@ -3746,7 +3696,7 @@ check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age
 
 <p>If no variables are specified and a key is already present in the current dataset, this key is checked.</p>
 
-<h3 id="toc_121">Example</h3>
+<h3 id="toc_116">Example</h3>
 
 <div><pre><code class="language-none">read &quot;bromar.epx&quot;
 check key id                 // checks if the variable ID represents a unique key</code></pre></div>
@@ -3755,13 +3705,13 @@ check key id                 // checks if the variable ID represents a unique ke
 
 <p><a name="checkrelate" id="checkrelate"></a></p>
 
-<h2 id="toc_122">check relate</h2>
+<h2 id="toc_117">check relate</h2>
 
 <div><pre><code class="language-none">check relate</code></pre></div>
 
 <p>Check that all observations have a valid parent observation</p>
 
-<h3 id="toc_123">Example</h3>
+<h3 id="toc_118">Example</h3>
 
 <div><pre><code class="language-none">read &quot;related_data.epx&quot;;  // Load the project
 use child_dataset;        // Change dataset to a related dataset
@@ -3775,16 +3725,16 @@ check relate;             // Perform the check from the child dataset &quot;upwa
 ```
 Check that the study information of is specified or not.</p>
 
-<h3 id="toc_124">Example</h3>
+<h3 id="toc_119">Example</h3>
 
 <div><pre><code class="language-none">read &quot;samplev3.epx&quot;;  // Load the project
 check study;          // Perform the check</code></pre></div>
 
-<h1 id="toc_125">REPORTS</h1>
+<h1 id="toc_120">REPORTS</h1>
 
 <p><a name="report" id="report_users"></a></p>
 
-<h2 id="toc_126">report users</h2>
+<h2 id="toc_121">report users</h2>
 
 <div><pre><code class="language-none">report users</code></pre></div>
 
@@ -3794,17 +3744,17 @@ check study;          // Perform the check</code></pre></div>
 
 <p><a name="report" id="report_validate"></a></p>
 
-<h2 id="toc_127">report validate / report val</h2>
+<h2 id="toc_122">report validate / report val</h2>
 
 <div><pre><code class="language-none">report validate [var1 var2 ...] [!options]</code></pre></div>
 
 <p>Compares two dataset / projects against each other, validating the data content and outputs a report of differences based on the comparison.</p>
 
-<h3 id="toc_128">Parameters</h3>
+<h3 id="toc_123">Parameters</h3>
 
 <p>The variables var1 .. var2 denotes the sorting variables. This is required if not comparing whole projects OR if the datasets does not contain and key variables.</p>
 
-<h3 id="toc_129">Options</h3>
+<h3 id="toc_124">Options</h3>
 
 <ul>
 <li><p><code>!fn := &quot;&lt;string&gt;&quot;</code> Opens an external file to compare with.</p></li>
@@ -3817,7 +3767,7 @@ check study;          // Perform the check</code></pre></div>
 <li><p><code>!val</code> All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!</p></li>
 </ul>
 
-<h3 id="toc_130">Example</h3>
+<h3 id="toc_125">Example</h3>
 
 <div><pre><code class="language-none">read &quot;bromar.epx&quot;;               // Load the project
 >>>>>>> 69067c8 (Command help created as Markdown)
@@ -3877,7 +3827,7 @@ report val id !fn := &quot;double_entry.epx&quot;</code></pre></div>
 
 <p><a name="report" id="report_countby"></a></p>
 
-<h2 id="toc_131">report countby / report cby</h2>
+<h2 id="toc_126">report countby / report cby</h2>
 
 <div><pre><code class="language-none">report cby [var1 var2 ...] [!options]</code></pre></div>
 
@@ -3885,7 +3835,7 @@ report val id !fn := &quot;double_entry.epx&quot;</code></pre></div>
 
 <p>The output is a report with a condensed table of the found keys and a complete table with the found unique key values and the count of these in each dataset.</p>
 
-<h3 id="toc_132">Options</h3>
+<h3 id="toc_127">Options</h3>
 
 <ul>
 <li><p><code>!fn := &lt;global string vector&gt;</code> This option accepts a global vector with the filenames that is included in the report</p></li>
@@ -3893,7 +3843,7 @@ report val id !fn := &quot;double_entry.epx&quot;</code></pre></div>
 <li><p><code>!nol</code> Only show the condensed report - do not show the list of observations</p></li>
 </ul>
 
-<h3 id="toc_133">Example</h3>
+<h3 id="toc_128">Example</h3>
 
 <div><pre><code class="language-none">// Setup the input for the report:
 new global filenames[5] string;
@@ -4488,11 +4438,11 @@ datasets[5] := &quot;ds1&quot;;
 // Run the report:
 report cby id !fn := filenames !ds := datasets</code></pre></div>
 
-<h1 id="toc_134">Disk commands</h1>
+<h1 id="toc_129">Disk commands</h1>
 
-<p><a name="cd">cd</a></p>
+<p><a name="cd" id="cd"</a></p>
 
-<h2 id="toc_135">cd</h2>
+<h2 id="toc_130">cd</h2>
 
 <div><pre><code class="language-none">cd [&quot;&lt;directory path&gt;&quot;]</code></pre></div>
 
@@ -4501,14 +4451,14 @@ report cby id !fn := filenames !ds := datasets</code></pre></div>
 
 <p><a name="dir" id="dir"></a><a name="ls"></a></p>
 
-<h2 id="toc_136">ls / dir</h2>
+<h2 id="toc_131">ls / dir</h2>
 
 <div><pre><code class="language-none">ls [&quot;&lt;directory path&gt;&quot;]
 dir [&quot;&lt;directory path&quot;]</code></pre></div>
 
 <p>List files in a directory</p>
 
-<h3 id="toc_137">Parameters</h3>
+<h3 id="toc_132">Parameters</h3>
 
 <ul>
 <li><em>directory</em> name may include wild cards (* or ?)
@@ -4517,13 +4467,13 @@ dir [&quot;&lt;directory path&quot;]</code></pre></div>
 
 <p><a name="erase" id="erase"></a></p>
 
-<h2 id="toc_138">erase</h2>
+<h2 id="toc_133">erase</h2>
 
 <div><pre><code class="language-none">erase &quot;&lt;file name&gt;&quot;</code></pre></div>
 
 <p>Delete the file from disk.</p>
 
-<h3 id="toc_139">parameters</h3>
+<h3 id="toc_134">parameters</h3>
 
 <ul>
 <li><file name> may use wildcards (* or ?), but the directory name should not as this may or may not be allowed by the operating system</li>
@@ -4534,11 +4484,11 @@ dir [&quot;&lt;directory path&quot;]</code></pre></div>
 <p>Warning: The file is deleted (if the file exist) with no confirmatory question</p>
 </blockquote>
 
-<h1 id="toc_140">Program-wide options</h1>
+<h1 id="toc_135">Program-wide options</h1>
 
 <p><a name="setgrp" id="setgrp"></a></p>
 
-<h2 id="toc_141">set</h2>
+<h2 id="toc_136">set</h2>
 
 <div><pre><code class="language-none">set [&quot;parameter&quot;] [:= &quot;value&quot;]</code></pre></div>
 
@@ -4548,7 +4498,7 @@ dir [&quot;&lt;directory path&quot;]</code></pre></div>
 - <strong><em>MacOS</em></strong> Analysis / Preferences
 - <strong><em>Windows / Linux</em></strong> Edit / Options</p>
 
-<h3 id="toc_142">Parameters</h3>
+<h3 id="toc_137">Parameters</h3>
 
 <ul>
 <li><p>Without parameters, provides a list of available parameters and their current values</p></li>
@@ -4560,7 +4510,7 @@ If no value is specified, show the curent value</p></li>
 <li><p>The case of parameters and values does not matter.</p></li>
 </ul>
 
-<h3 id="toc_143">Examples</h3>
+<h3 id="toc_138">Examples</h3>
 
 <div><pre><code class="language-none">set &quot;echo&quot;;
 set &quot;echo&quot; := &quot;off&quot;;
@@ -4573,7 +4523,7 @@ set option means := "!t!
 When the specified command is executed the options mentioned will be added to the command. 
 -->
 
-<h3 id="toc_144">Set parameters and defaults</h3>
+<h3 id="toc_139">Set parameters and defaults</h3>
 
 <table>
 <thead>
@@ -4865,11 +4815,11 @@ When the specified command is executed the options mentioned will be added to th
 </tbody>
 </table>
 
-<h1 id="toc_145">Common options</h1>
+<h1 id="toc_140">Common options</h1>
 
 <p><a name="labeling" id="labeling"></a></p>
 
-<h3 id="toc_146">Valuelabels</h3>
+<h3 id="toc_141">Valuelabels</h3>
 
 <ul>
 <li><p><code>!v</code>  Show only the value, (**fallback if no label to corresponding value)</p></li>
@@ -4880,7 +4830,7 @@ When the specified command is executed the options mentioned will be added to th
 
 <p><a name="labeling" id="variablelabels"></a></p>
 
-<h3 id="toc_147">Variable Labels</h3>
+<h3 id="toc_142">Variable Labels</h3>
 
 <ul>
 <li><p><code>!vn</code>  Show only the name, (**fallback if no variable label assigned)</p></li>
@@ -4891,7 +4841,7 @@ When the specified command is executed the options mentioned will be added to th
 
 <p><a name="formatting" id="formatting"></a></p>
 
-<h3 id="toc_148">Decimals for percentages or statistics</h3>
+<h3 id="toc_143">Decimals for percentages or statistics</h3>
 
 <ul>
 <li><p><code>!d0</code> 0 decimals</p></li>
@@ -4904,7 +4854,7 @@ When the specified command is executed the options mentioned will be added to th
 
 <p><a name="type" id="type"></a></p>
 
-<h2 id="toc_149">Variable types</h2>
+<h2 id="toc_144">Variable types</h2>
 
 <ul>
 <li><p>integer / int / i</p>
@@ -4937,7 +4887,7 @@ A variable (standard, result or global) that contains an floating point value.</
 
 <p><a name="referencedvars" id="referencedvars"></a></p>
 
-<h2 id="toc_150">Variable references</h2>
+<h2 id="toc_145">Variable references</h2>
 
 <ul>
 <li>Variable expansion with range or wildcards
@@ -4960,7 +4910,7 @@ Any command that accepts more than one variable as parameters can use the follow
 
 <p>Variables for expansion cannot start with the <q>*</q> or <q>?</q>, but must start with a <q>normal</q> character.</p>
 
-<h3 id="toc_151">Examples</h3>
+<h3 id="toc_146">Examples</h3>
 
 <div><pre><code class="language-none">// Consider the following set of variables (and in that order):
 // V1, V2, V3, V4, V10, V11, V100
@@ -4971,13 +4921,13 @@ list data V1??;          // V1?? is expanded to V100 only!</code></pre></div>
 
 <p>A <code>referenced</code> variable may also be used in the expansion. These will be evaluated before the expansion!</p>
 
-<h2 id="toc_152">Referenced Variable</h2>
+<h2 id="toc_147">Referenced Variable</h2>
 
 <div><pre><code class="language-none">@{variable1}</code></pre></div>
 
 <p>With a referenced variable, you essentially use the content of another variable (global, result) <u>to provide the variable name</u>.</p>
 
-<h3 id="toc_153">Examples</h3>
+<h3 id="toc_148">Examples</h3>
 
 <div><pre><code class="language-none">new global gvar1 string := &quot;sex&quot;;
 read &quot;bromar.epx&quot;;
@@ -5148,7 +5098,7 @@ id="programgrp"></a> Programming aids - not normally used in interactive mode</t
      ? i + &quot; difference : &quot; + tdif;
    end;</code></pre></div>
 
-<h1 id="toc_154">Programming aids</h1>
+<h1 id="toc_149">Programming aids</h1>
 
 <p>These are not normally used in interactive mode</p>
 
@@ -5156,7 +5106,7 @@ id="programgrp"></a> Programming aids - not normally used in interactive mode</t
 
 <p><a name="runtest" id="runtest"></a></p>
 
-<h2 id="toc_155">runtest</h2>
+<h2 id="toc_150">runtest</h2>
 
 <div><pre><code class="language-none">runtest [&quot;&lt;directory path&gt;&quot;]</code></pre></div>
 
@@ -5167,24 +5117,24 @@ id="programgrp"></a> Programming aids - not normally used in interactive mode</t
 
 <p><a name="run"></a></p>
 
-<h2 id="toc_156">run</h2>
+<h2 id="toc_151">run</h2>
 
 <div><pre><code class="language-none">run [&quot;&lt;filename.pgm&gt;&quot;]</code></pre></div>
 
 <p>Execute the commands saved in a .pgm file</p>
 
-<h3 id="toc_157">Parameters</h3>
+<h3 id="toc_152">Parameters</h3>
 
 <ul>
 <li><p><code>filename.pgm</code> may include a path</p></li>
 <li><p>without parameters, the open file dialogue is started</p></li>
 </ul>
 
-<h1 id="toc_158">Clean up - stop</h1>
+<h1 id="toc_153">Clean up - stop</h1>
 
 <p><a name="close" id="close"></a></p>
 
-<h2 id="toc_159">close</h2>
+<h2 id="toc_154">close</h2>
 
 <div><pre><code class="language-none">close</code></pre></div>
 
@@ -5194,7 +5144,7 @@ id="programgrp"></a> Programming aids - not normally used in interactive mode</t
 
 <p><a name="cls" id="cls"></a></p>
 
-<h2 id="toc_160">cls</h2>
+<h2 id="toc_155">cls</h2>
 
 <div><pre><code class="language-none">cls</code></pre></div>
 
@@ -5202,7 +5152,7 @@ id="programgrp"></a> Programming aids - not normally used in interactive mode</t
 
 <p><a name="clh" id="clh"></a></p>
 
-<h2 id="toc_161">clh</h2>
+<h2 id="toc_156">clh</h2>
 
 <div><pre><code class="language-none">clh</code></pre></div>
 
@@ -5210,7 +5160,7 @@ id="programgrp"></a> Programming aids - not normally used in interactive mode</t
 
 <p><a name="reset" id="reset"></a></p>
 
-<h2 id="toc_162">reset</h2>
+<h2 id="toc_157">reset</h2>
 
 <div><pre><code class="language-none">reset</code></pre></div>
 
@@ -6026,7 +5976,7 @@ border="1">
 <p>Note:  <code>reset</code> also clears all result variables!</p>
 </blockquote>
 
-<h1 id="toc_163">Functions available in EpiData Analysis</h1>
+<h1 id="toc_158">Functions available in EpiData Analysis</h1>
 
 <p>In the following, <em>takes</em> indicates the variable type for each parameter and <em>result</em> indicates the type of the result of the function:
 - s: string
@@ -6040,7 +5990,7 @@ border="1">
 
 <p>Parameters may be variables read from fields, created variables, or any expression that evaluates to the correct type.</p>
 
-<h2 id="toc_164">String functions</h2>
+<h2 id="toc_159">String functions</h2>
 
 <table>
 <thead>
@@ -6098,7 +6048,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_165">Arithmetic functions (including Random numbers)</h2>
+<h2 id="toc_160">Arithmetic functions (including Random numbers)</h2>
 
 <table>
 <thead>
@@ -6168,7 +6118,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_166">Trigonomety functions</h2>
+<h2 id="toc_161">Trigonomerty functions</h2>
 
 <table>
 <thead>
@@ -6220,7 +6170,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_167">Date functions</h2>
+<h2 id="toc_162">Date functions</h2>
 
 <table>
 <thead>
@@ -6296,7 +6246,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_168">Time functions</h2>
+<h2 id="toc_163">Time functions</h2>
 
 <table>
 <thead>
@@ -6348,7 +6298,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_169">Logic functions</h2>
+<h2 id="toc_164">Logic functions</h2>
 
 <table>
 <thead>
@@ -6388,7 +6338,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_170">Conversion functions</h2>
+<h2 id="toc_165">Conversion functions</h2>
 
 <table>
 <thead>
@@ -6428,7 +6378,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_171">Identifier functions</h2>
+<h2 id="toc_166">Identifier functions</h2>
 
 <table>
 <thead>
@@ -6474,7 +6424,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_172">Test and special functions</h2>
+<h2 id="toc_167">Test and special functions</h2>
 
 <table>
 <thead>
@@ -6532,7 +6482,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_173">Operators used in EpiData Analysis</h2>
+<h2 id="toc_168">Operators used in EpiData Analysis</h2>
 
 <table>
 <thead>
@@ -6675,13 +6625,13 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_174">Startup options for EpiData Analysis</h2>
+<h2 id="toc_169">Startup options for EpiData Analysis</h2>
 
 <p>The use of startup options depends on the operating system. You may be able to create a desktop shortcut that includes these or start analysis from the command line.</p>
 
 <p>epidataanalysis [options]</p>
 
-<h3 id="toc_175">Options</h3>
+<h3 id="toc_170">Options</h3>
 
 <ul>
 <li><p><code>-h or --help</code>
@@ -6692,12 +6642,11 @@ border="1">
                 Uses [FILE] as startup program. If no location is specified startup.pgm is used.</p></li>
 </ul>
 
-<h3 id="toc_176">Examples</h3>
+<h3 id="toc_171">Examples</h3>
 
-<p>With Linux:
-<code>
-./epidataanalysis -i /path/to/startup.pgm
-</code></p>
+<p>With Linux:</p>
+
+<div><pre><code class="language-none">./epidataanalysis -i /path/to/startup.pgm</code></pre></div>
 
 
 

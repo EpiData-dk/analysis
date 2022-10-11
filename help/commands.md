@@ -1480,46 +1480,6 @@ See [variables](#referencedvars) on using referenced variables for this command
 <a name="means" id="means"></a><a name="t-test" id="t-test"></a><a name="ttest"
 id="ttest"></a><a name="ftest" id="ftest"></a>
 
-## means
-  
-```
-means Variable [!by=Stratifyvariable] [!t]
-```
-Basic descriptive statistics for variable1, optionally stratified by variable2 with analysis of variance.
-
-Statistics: count, total, mean, variance, standard deviation, 95% confidence interval for the mean, standard error, skewness, excess kurtosis.
-
-Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.
-
-### Parameters
-- Variable must be numeric
-
-### Options
-- `!by` Stratify by Stratifyvariable	, which may be of any type	    
-
-- `!t` Analysis of Variance to test for homogeneity of the mean across strata (F-test), including Bartletts test for homogeneity of variance.
-
-  Without  `!by` , T-test that mean=0
-         (as a paired T-test for the difference in before and after measures)
-
-> Warning:  Check results carefully if !by variable has only one observation in a stratum
-
-### Result variables
-Estimates are saved as result variables. Use `list results` for details
-
-### Methodology
-- confidence intervals are based on the t-distribution with N-1 degrees of freedom.
-- adjusted Fisher-Pearson coefficient of skewness: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm"
-target="_blank">NIST handbook 1.3.5.11</a>
-- excess kurtosis: see <a href="https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis"
-target="_blank">Wikipedia - Kurtosis (accessed 2020/02/08)</a>
-- artlett's Test: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm"
-target="_blank">NIST handbook 1.3.5.7</a>
-
-See [labeling](#labeling) for options on changing between labels/values
-
-See [variables](#referencedvars) on using referenced variables for this command
-
 # Graphs and charts
 
 <a name="survival" id="survival"></a><a name="sur"></a>
@@ -1861,7 +1821,7 @@ report cby id !fn := filenames !ds := datasets
 
 # Disk commands
 
-<a name="cd">cd</a>
+<a name="cd" id="cd"</a>
 ## cd
 ```
 cd ["<directory path>"]
@@ -2264,7 +2224,7 @@ function | takes | result | example
 <a name="random"></a>random(x) | i | i | Random integer from 0 to x
 <a name="sum"></a>sum(n1, n2, ..., nn) | n, ... | n | Sums that values n1 => nn, but ignores the entries if they are either sys. missing or user defined missing
 
-## Trigonomety functions
+## Trigonomerty functions
 
 function | takes | result | example
 ---|---|---|---
@@ -2385,6 +2345,7 @@ epidataanalysis [options]
 ### Examples
 
 With Linux:
+
 ```
 ./epidataanalysis -i /path/to/startup.pgm
 ```
