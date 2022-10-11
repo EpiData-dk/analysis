@@ -8,7 +8,7 @@ ___
 
 Manage data | Analyze data | Write programs
 ---|---|---
-[read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#delete) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#reports)<br/> | [describe](#describe) variabless<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis<br/>[scatter](#scatter) plot <br/>[line](#line) plot <br/>[bar](#bar) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve) |[select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#types)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startoptions) |
+[read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#delete) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#reports)<br/> | [describe](#describe) variabless<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis<br/>[scatter](#scatter) plot <br/>[line](#line) plot <br/>[bar](#bar) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve) | [select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#type)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startoptions) |
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
 
@@ -218,11 +218,7 @@ Add observations after all observations in current file
 
 - `!fn := <filename>`
 
-  Append
-                this file. Without !fn the file open dialog is shown. All known
-                file types may be used and all options from <a href="#read">read</a>
-                associated with reading of data may be used.
-                e.g. !d or !h options for reading csv files.
+  Append this file. Without !fn the file open dialog is shown. All known file types may be used and all options from [read](#read) associated with reading of data may be used. e.g. !d or !h options for reading csv files.
 
 - `!ds := <dataset>`
 
@@ -231,10 +227,10 @@ Add observations after all observations in current file
                 if the external file contains multiple datasets.
 
   Only fields with same name as variables in memory will be read.
-              Variables from previous  class="cmd">read which are
+              Variables from previous `read` which are
               not in the appended file will be set to missing for the appended
               observations.
-  See <a href="#referencedvars">variables</a> on using referenced
+  See [variables](#referencedvars) on using referenced
               variables for this command
 
 
@@ -261,7 +257,7 @@ Merge the current data file with another dataset file based on *key*
                 current used dataset should be merge with a related dataset. If
                 no <filename> is provided then a dialog is shown to open
                 the external file. All known file types may be used and all
-                options from <a href="#read">read</a> associated with reading
+                options from [read](#read) associated with reading
                 of data can be used too.
                 e.g. !d or !h options for reading csv files.
 
@@ -314,7 +310,7 @@ Merge the current data file with another dataset file based on *key*
                 two used datasets
 
  To keep information in variables with an identical name (e.g.
-            mergevar or name) from all files rename (see <a href="#editvariable">edit</a>)
+            mergevar or name) from all files [rename](#edit)
             the variables **before** you merge the next file. e.g.
 
 ```            
@@ -365,7 +361,7 @@ merge patientid !ds := "PatientNames.csv":labdata
 // AND the dataset you wish to merge with must be provided!
 merge patientid !ds := firstdataset !filename := "PatientNames.epx"
 ```       
-See <a href="#referencedvars">variables</a> on using referenced
+See [variables](#referencedvars) on using referenced
               variables for this command
 
 
@@ -380,7 +376,7 @@ aggregate [<var1> <var2>...] [!options]
 Aggregate - collapse - combine - data when you wish to change
               from individual to group level.
 
-See <a href="#referencedvars">variables</a> on using referenced
+See [variables](#referencedvars) on using referenced
               variables for this command
 
 ### Options
@@ -418,9 +414,9 @@ See <a href="#referencedvars">variables</a> on using referenced
                 dataset with ALL possible value-combinations from <var1>
                 <var2>...
                 All entries with no data will contain system missing.
-              See <a href="#labeling">labeling</a> for options on changing
+              See [labeling](#labeling) for options on changing
                 between labels/values
-              See <a href="#formatting">formatting</a> for options on
+              See [formatting](#formatting) for options on
                 formatting percentages
 
 ### Summary statistic options
@@ -482,7 +478,7 @@ use <dataset>
 ```
 
 Change the active dataset of a project.
-       See <a href="#referencedvars">variables</a> on using referenced variables for this command
+       See [variables](#referencedvars) on using referenced variables for this command
 
 ### Example
 
@@ -506,7 +502,7 @@ Sorts the current dataset based on the given variables. Sort respects current se
 - `!descending
   !d` Sorts the dataset in decending order
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 # Creating content
 
@@ -576,7 +572,7 @@ href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES/Rijndael a
 new dataset <dataset> [!options...]
 ```
 
-Create a new dataset for the project. Use the options to specify relations between datasets.  If the command completes successfully, the newly created dataset is automatically <a href="#use">used</a>
+Create a new dataset for the project. Use the options to specify relations between datasets.  If the command completes successfully, the newly created dataset is automatically [used](#use)
 
 ### Options            
 
@@ -613,7 +609,7 @@ Create a new dataset for the project. Use the options to specify relations betwe
               Initialize the dataform with <size> empty observations.
 
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="newvariable" id="newvariable"></a>
 
@@ -623,7 +619,7 @@ See <a href="#referencedvars">variables</a> on using referenced variables for th
 new variable *variable <type> [:= expression] [!options...]
 ```
 
-Create a new variable of a given <a href="#types">type</a> and optionally assign the value in expression.
+Create a new variable of a given [type](#types) and optionally assign the value in expression.
             The variable type and expressions type must be compatible. Variables contain a value for each observation.
             If no expression is given, all values will be missing.
 
@@ -639,7 +635,7 @@ Create a new variable of a given <a href="#types">type</a> and optionally assign
   `!vl := <valuelabel name>`
               Assign an existing valuelabel set to the variable.
               An existing assignment will be replaced but not deleted. To delete the existing valuelabel
-              set see <a href="#deletegrp">deleting content</a>
+              set see [deleting content](#deletegrp)
 
 - `!length := <integer> class="option">!le := <integer>`
               Changes the entry length of a variable
@@ -705,7 +701,7 @@ new variable age date   := integer((today() - dateborn)/365.25)
 // calculated age in whole years
 ```
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="newglobal" id="newglobal"></a>
 ## new global / new g
@@ -716,7 +712,7 @@ new global *variable <integer expression> <type> [:= expression]
 ```          
 
 
-Create a new global parameter variable with a given <a href="#types">type</a> and optionally assign the value given in an expression.
+Create a new global parameter variable with a given [types](#type) and optionally assign the value given in an expression.
             The global variable or parameter has only one value, whereas a standard variable has one value for each observation.
             The global variable type and expressions type must be compatible otherwise an error will occur.
             Global variables can for most parts be used like as a regular variable, but they cannot be evaluated as a vector.
@@ -739,7 +735,7 @@ new global g6 date        := today();
 new global g7[10] integer := 10;
 ```          
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="newvaluelabel" id="newvaluelabel"></a>
 ## new valuelabel / new vl
@@ -748,7 +744,7 @@ See <a href="#referencedvars">variables</a> on using referenced variables for th
 new valuelabel <name> <type> (<value> , <label>) (...) [!m := <value>]
 ```
 
-Create a new value label set with a given <a href="#types">type</a> (boolean not supported) and assign at least one (value, label) pair.
+Create a new value label set with a given [type](#types) (boolean not supported) and assign at least one (value, label) pair.
 ### Parameters
 - Each `(value, label)` pair will be added to the newly created set.
           The datatype of the value MUST match the defined datatype for the value label set itself.
@@ -775,9 +771,9 @@ new valuelabel _VL1 integer (1, "Value A") (2, "Value B") (9, "Missing") !m := 9
 new valuelabel _VL2 integer (0 + 1, "This " + "is " + "value " + 1) (1 + 1, "This " + "is " + "value " + 2) (2 + 1, "This " + "is" + "value " + 2);
 ```
 
-See <a href="#editvaluelabel">edit valuelabels</a> for more advanced use of variables and loops to create additional valuelabels
+See [edit valuelabels](#editvaluelabel)"> for more advanced use of variables and loops to create additional valuelabels
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 # Listing content
 
@@ -807,7 +803,7 @@ After browse has started you may Right Click and see how to close or adapt colum
  `set "FORMAT VARIABLE LABEL"` options
 ```
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 > Note: browse is much faster than list
 
@@ -823,13 +819,13 @@ Show values on the screen for all variables mentioned, with one observation per 
 ## parameters
 - without variable names, list all variables.
 
-See <a href="#labeling">labeling</a> for options on changing between labels/values
+See [labeling](#labeling) for options on changing between labels/values
 
 > Note: browse is much faster than list.
 
 > Note: When list follows  class="cmd">select: the sequence number is within the current select, not for the whole dataset.
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="list_project" id="list_project"></a>
 ## list project / list p
@@ -971,7 +967,7 @@ Edit an existing dataset in the project.
 
 > Note: create a new empty child dataset to restore the relate situation followed by a merge of data in child datasets.
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="editvariable" id="editvariable"></a>
 ## edit variable / edit var / edit v
@@ -991,8 +987,7 @@ Edit the metadata of *variable<sub>1</sub>. The options specify which metadata a
 
 - `!vl := <valuelabel id>`
            Assign an existing valuelabel set to the variable.
-           An existing assignment will be replaced but not deleted. To delete the existing valuelabel set see <a
-href="#deletegrp">deleting content</a>
+           An existing assignment will be replaced but not deleted. To delete the existing valuelabel set, see [deleting content](#deletegrp)
 
 
 
@@ -1062,7 +1057,7 @@ href="#deletegrp">deleting content</a>
 
 > Note: Data values are NOT changed! Even if the new length or decimals is shorter than actual content. To keep the changes made you must save the data.
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="editvaluelabel" id="editvaluelabel"></a>
 ## edit valuelabel / edit vl
@@ -1098,7 +1093,7 @@ If a (value, label) pair already exist, the new label will replace the old label
 
 > Note: All variables already using this value label will continue to have the same label.
 
-To remove a valuelabel from a variable, see <a href="#editvariable">edit variable</a>
+To remove a valuelabel from a variable, see [edit variable](#editvariable)
 
 ### Example
 ```
@@ -1120,7 +1115,7 @@ for i := 2 to 5 do
   edit valuelabel _VL2 (i, "This is valuelabel no: " + i);
 ```
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="editdata" id="editdata"></a>
 ## edit data / edit d
@@ -1151,7 +1146,7 @@ drop dataset *dataset1* [*dataset2* ...]
 
 Remove the listed datasets (and related datasets) from memory
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="dropdata" id="dropdata"></a>
 ## drop data / drop d
@@ -1186,9 +1181,9 @@ drop variable *variable<sub>1</sub> [*variable<sub>2</sub> ...]
 
 Remove the listed variables from memory
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
-> Note: The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the <ahref="#set">set command</a> to choose a different interval.
+> Note: The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the [set command](#set) to choose a different interval.
 
 # Descriptive statistics
 
@@ -1209,11 +1204,11 @@ Frequency distribution for *variable1*
 
 - `!r` Add row percentage
 
-See <a href="#labeling">labeling</a> for options on changing between labels/values
+See [labeling](#labeling) for options on changing between labels/values
 
-See <a href="#formatting">formatting</a> for options on formatting percentages
+See [formatting](#formatting) for options on formatting percentages
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="means" id="means"></a>
 <a name="t-test" id="t-test"></a>
@@ -1229,7 +1224,7 @@ Basic descriptive statistics for variable1, optionally stratified by variable2 w
 - Statistics: count, total, mean, variance, standard deviation, 95% confidence interval for the mean, standard error, skewness, excess kurtosis.
 - Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 ### Parameters
 - variable1 must be numeric
@@ -1247,7 +1242,7 @@ See <a href="#referencedvars">variables</a> on using referenced variables for th
 
 Estimates are saved as result variables. Use  class="cmd">list results for details
 
-See <a href="#labeling">labeling</a> for options on changing between labels/values
+See [labeling](#labeling) for options on changing between labels/values
 
 ### Methodology notes:
 
@@ -1277,7 +1272,7 @@ Use any combination of options to customize the output
 
 - `!msd:` mean, standard deviation and sum
 
-- `!mci:` mean and confidence interval. See <a href="#setgrp">set</a> to change the confidence interval
+- `!mci:` mean and confidence interval. See [set](#set) to change the confidence interval
 
 - `!rm:` minimum, median, maximum
 
@@ -1296,9 +1291,9 @@ Use any combination of options to customize the output
 
 - `!m:`number of missing values
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
-See <a href="#labeling">labeling</a> for options on changing between labels/values
+See [labeling](#labeling) for options on changing between labels/values
 
 ### Methodology notes
 - All statistics are based on the `means` command
@@ -1388,12 +1383,11 @@ Indicate by !sxxx where the x may include<br/>
 
 - `!rr` Risk Ratio and confidence interval for 2x2 tables, including Mantel-Haenszel adjustment for stratified data
 
-> Note:The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the <a
-href="#set">set command</a> to choose a different interval.
+> Note:The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the [set command](#set) to choose a different interval.
 
-See <a href="#labeling">labeling</a> for options on changing between labels/values
+See [labeling](#labeling) for options on changing between labels/values
 
-See <a href="#formatting">formatting</a> for options on formatting percentages
+See [formatting](#formatting) for options on formatting percentages
 
 <a name="ctable" id="ctable"></a><a name="cta" id="cta"></a>
 ## ctable / cta
@@ -1458,8 +1452,7 @@ Sorting (applies to individual variable tables). Indicate by !sxxx where the x i
 
 - `!rr` Risk Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data
 
-> Note:The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the <a
-href="#set">set command</a> to choose a different interval.
+> Note:The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the [set command](#set) to choose a different interval.
 
 ### Attack rate table
 An attack rate table is commonly used in food-borne outbreak investigations. These options simpligy review and reporting of multiple exposures.
@@ -1478,11 +1471,11 @@ Only one may be given
 - `!ss` Sort the table rows by key statistic, depending on the estimation options
  - priority is given to RR then OR then Fisher Exact P then Chi<sup>2</sup> P
 
-See <a href="#labeling">labeling</a> for options on changing between labels/values
+See [labeling](#labeling) for options on changing between labels/values
 
-See <a href="#formatting">formatting</a> for options on formatting percentages
+See [formatting](#formatting) for options on formatting percentages
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="means" id="means"></a><a name="t-test" id="t-test"></a><a name="ttest"
 id="ttest"></a><a name="ftest" id="ftest"></a>
@@ -1490,7 +1483,7 @@ id="ttest"></a><a name="ftest" id="ftest"></a>
 ## means
   
 ```
-means variable1 [!by=variable2] [!t]
+means Variable [!by=Stratifyvariable] [!t]
 ```
 Basic descriptive statistics for variable1, optionally stratified by variable2 with analysis of variance.
 
@@ -1499,13 +1492,12 @@ Statistics: count, total, mean, variance, standard deviation, 95% confidence int
 Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.
 
 ### Parameters
-- variable1 must be numeric
+- Variable must be numeric
 
 ### Options
-- `!by` Stratify by this variable	, which may be of any type	    
+- `!by` Stratify by Stratifyvariable	, which may be of any type	    
 
-- `!t` Analysis of Variance to test for homogeneity of the mean across strata (F-test),
-         including Bartletts test for homogeneity of variance.
+- `!t` Analysis of Variance to test for homogeneity of the mean across strata (F-test), including Bartletts test for homogeneity of variance.
 
   Without  `!by` , T-test that mean=0
          (as a paired T-test for the difference in before and after measures)
@@ -1524,33 +1516,48 @@ target="_blank">Wikipedia - Kurtosis (accessed 2020/02/08)</a>
 - artlett's Test: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm"
 target="_blank">NIST handbook 1.3.5.7</a>
 
-See <a href="#labeling">labeling</a> for options on changing between labels/values
+See [labeling](#labeling) for options on changing between labels/values
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
+
+# Graphs and charts
 
 <a name="survival" id="survival"></a><a name="sur"></a>
 ## survival / sur
 ```
 survival outcomevariable timevariable [!by:=stratifyvariable] [options]
-survival outcomevariable time1 time2 [!by:=stratifyvariable] [options]
+survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]
 ```
 Kaplan-Meier plots and lifetables for time-to-failure data with censoring. Tabulations of survival at each time when there were deaths (failures), plus confidence intervals. A summary table shows the median survival by stratum. The KM plot is always provided in a separate window unless !q is specified as an option.
 
 ### Parameters
 - `outcome variable` must have discrete values, one of which indicates failure or death
-- `time variable` must be an integer. The outcome variable may be numeric or string
-- `time` and `time2` must be date variables. Elapsed time is calculated as `time2 - time1`
+- `date variable` must be an integer. The outcome variable may be numeric or string
+- `date1` and `date2` must be date variables. Elapsed time is calculated as `date2 - date1`
 
 ### Options
+- `!o` Specify the value of outcome indicating death (failure), which may be numeric or text; the default is zero
+
 - `!by` Stratify by this variable
 
 - `!t` Log-rank test for equality of survival among strata
 
-- `!o` Specify the value of outcome indicating death (failure), which may be numeric or text
+- `!ref:=value`  reference value for the hazard ratio (only with !t)
 
- the default is zero
+- `!w:=weightVariable` Specify a weight variable
 
-- `!w` Specify a weight variableTable output options
+- `!mt` Missing values of date2 take the maximum value of date2
+
+- `!exit:=datevalue` Missing values of date2 are assigned this date.
+  It may be easiest so use the createdate function to specify the date.
+
+- `!i:="t1,t2,t3,...tn"`
+  Aggregate data to these time intervals. If the string is missing, the set value for LIFETABLE INTERVAL is used
+
+- `!adj`
+  When intervals are specified, adjust the number at risk to exclude half of the censored subjects (Hosmer, Lemeshow)
+
+### Output options
 
 - `!nt` Omit the lifetables
 
@@ -1558,7 +1565,8 @@ Kaplan-Meier plots and lifetables for time-to-failure data with censoring. Tabul
 
 - `!nos` Omit the stratified lifetables
 
-- `!ns` Omit the summary tableGraph options
+- `!ns` Omit the summary table
+- `!ng` Do not show the KM plot
 
 ### Kaplan-Meier plot options
 
@@ -1573,17 +1581,104 @@ By default, confidence intervals are shown as error bars
 - `!cil` Show the confidence intervals as dotted lines.
  
 - `See graph options`
-`survival` is a graph command and any graph option may be specified
+ `survival` is a graph command and any graph option may be specified
 
 ### Result variables
 Estimates are saved as result variables. Use  `list results` for details
 
-### Methodology notes
-- confidence intervals are based on Greenwood's method of estimating standard error.
+### Methodology
+- confidence intervals calculated using the method in Statistics with Confidence, referenced elsewhere.
 
-See <a href="#labeling">labeling</a> for options on changing between labels/values
+See [labeling](#labeling) for options on changing between labels/values
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+<a name="scatter" id="scatter"></a>
+## scatter
+```
+scatter Xvariable Yvariable [graphoptionlist]
+```
+
+Simple scatter plot for two variables.
+
+### Parameters
+- Xvariable may also be integer, float or date/time
+- Yvariable may be integers or float 
+ 
+### Options
+- `scatter` is a graph command and any graph option may be specified
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+<a name="barchart" id="barchart"></a>
+## barchart
+```
+barchart Variable [StratifyVariable] [options]
+```
+Draw a barchart for Variable. A barchart shows frequencies at each indiviual value of Variable.
+
+### Parameters
+- Variable may be of any type
+- Stratifyvariable may be of any type
+
+### Options
+- `!pct`
+  Y-axis values are percentage of the total across strata
+- `!w:=weightVariable`
+ for grouped data, specify the weights
+- `!stack`
+ stack bars for stratified data; !stack and !pct together will have stacked bars that sum to 100%
+- graph options
+ `histogram` is a graph command and any graph option may be specified
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+<a name="histogram" id="histogram"></a>
+## histogram
+```
+histogram Variable [StratifyVariable] [options]
+```
+Draw a histogram for a variable, based on consecutive integer or day intervals. The user is responsible for recoding variables so that consecutive intervals make sense. 
+
+A histogram is a bar chart where every integer value within range is represented on the X-axis.
+
+### Parameters
+- Variable may be integer or date
+- Stratifyvariable may be of any type
+
+### Options
+- `!interval:=i`
+ where i is an integer > 1, will group bars; the default is 1
+- `!w:=weightVariable`
+ for grouped data, specify the weights.
+- `!stack`
+ stack bars for stratified data.
+- graph options
+ `histogram` is a graph command and any graph option may be specified
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+<a name="epicurve" id="epicurve"></a>
+## epicurve
+```
+epicurve Variable [StratifyVariable] [options]
+```
+Draw an epidemic curve for a variable, based on consecutive integer or day intervals. The user is responsible for recoding variables so that consecutive intervals make sense.
+
+An epicurve is a stacked histogram, where individual boxes are shown for each subject
+
+### Parameters
+- Variable may be integer or date
+- Stratifyvariable may be of any type
+
+### Options
+- `!interval:=i`
+ where i is an integer > 1, will group bars; the default is 1
+- graph options
+ `epicurve` is a graph command and any graph option may be specified
+
 
 # Consistency and Validity Check of data
 
@@ -1610,7 +1705,7 @@ check data                   // checks all variable
 check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age
 ```
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="checkkey" id="checkkey"></a>
 ## check key
@@ -1628,7 +1723,7 @@ read "bromar.epx"
 check key id                 // checks if the variable ID represents a unique key
 ```
 
-See <a href="#referencedvars">variables</a> on using referenced variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="checkrelate" id="checkrelate"></a>
 ## check relate
@@ -1671,7 +1766,7 @@ If a project is using Extended Access control, this command will show a condense
 If the project is not using Extended Access control, an error will be displayed.
 
 <a name="report" id="report_validate"></a>
-## report valiedate / report val
+## report validate / report val
 ```
 report validate [var1 var2 ...] [!options]
 ```
@@ -1724,7 +1819,7 @@ report val id !fn := "double_entry.epx"
 ```
 
 <a name="report" id="report_countby"></a>
-## report Countby / report cby
+## report countby / report cby
 ```
 report cby [var1 var2 ...] [!options]
 ```
@@ -1827,9 +1922,9 @@ href="https://www.w3schools.com/colors/colors_hexadecimal.asp">See colour exampl
 
 ### Examples
 ```
-set "echo"
-set "echo" := "off"
-set "COMMANDLINE FONT COLOUR" := "#FFF000"
+set "echo";
+set "echo" := "off";
+set "COMMANDLINE FONT COLOUR" := "#FFF000";
 ```
 <!-- NOT IMPLEMENTED
 For any command:  class="cmd">set option [cmd] := [options] 
@@ -1850,9 +1945,8 @@ BROWSER FONT STYLE | <fsBold/fsItalic/fsUnderline> | " " | Adjust the style of t
 BROWSER OBS DEFAULT COLOUR | hex colour code | "#F0F0F0" | Adjust the colour of "obs" column for normal/default observations | 
 BROWSER OBS DELETED COLOUR | hex colour code | "#FF0000" | Adjust the colour of "obs" column for observations marked for deletion | 
 BROWSER OBS VERIFIED COLOUR | hex colour code | "#008080" | Adjust the colour of "obs" column for verified observations | 
-BROWSER VALUE LABEL | L/V/LV/VL | V | Default option for output of variable data (value and/or label). See <a href="#labeling">Valuelabels</a> for options. This options applies to "list data" and "browse" only | 
-BROWSER VARIABLE LABEL | VLA / VLN / VN / VNL | VN | Default option for displaying variable name and/or label. See <a href="#variablelabels">Variable labels</a> for options
-                  This options applies to "list data" and "browse" only | 
+BROWSER VALUE LABEL | L/V/LV/VL | V | Default option for output of variable data (value and/or label). See [Valuelabels](#labeling) for options. This options applies to "list data" and "browse" only | 
+BROWSER VARIABLE LABEL | VLA / VLN / VN / VNL | VN | Default option for displaying variable name and/or label. See [Variable labels](#variablelabels) for options. This options applies to "list data" and "browse" only | 
 COMMANDLINE BG COLOUR | hex colour code | "#FFFFFF" | Adjust the colour of the background. e.g. #000000 is black.  | 
 COMMANDLINE FONT COLOUR | hex colour code | "#000000" | Adjust the colour of the font. e.g. #FFF000 is yellow.  | 
 COMMANDLINE FONT NAME | string | (depends on the operating system) | Name of the font used in the commandline edit.  | 
@@ -1887,8 +1981,8 @@ SHOW DEBUG | ON/OFF | ON | If "ON" then lines containing debug information is sh
 SHOW ERROR | ON/OFF | ON | If "ON" then lines containing error information is shown. "OFF" = no output 
 SHOW INFO | ON/OFF | ON | If "ON" then lines containing informational output is shown. "OFF" = no output 
 SHOW WARNING | ON/OFF | ON | If "ON" then lines containing warning information is shown. "OFF" = no output 
-STATISTICS VALUE LABEL | L/V/LV/VL | L | Default option for output of variable data (value and/or label). See <a href="#labeling">Valuelabels</a> for options. This options applies to commands not covered by "BROWSER VALUE LABEL" 
-STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for displaying variable name and/or label. See <a href="#variablelabels">Variable labels</a> for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
+STATISTICS VALUE LABEL | L/V/LV/VL | L | Default option for output of variable data (value and/or label). See [Valuelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL" 
+STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for displaying variable name and/or label. See [Variablelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
 
 # Common options
 
@@ -1929,6 +2023,7 @@ STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for disp
 
 - `!d5` 5 decimals
 
+<a name="type" id="type"></a>
 ## Variable types
 
 - integer / int / i
@@ -2186,7 +2281,7 @@ function | takes | result | example
 ---|---|---|---
 <a name="createdate"></a>createdate(datestr) | s | d | createdate("31/12/2016") => 31/12/2016<br/>The form of *datestr is automatically detected, but if the string is ambiguous the preference is always DMY over MDY.<br/>If parts of the datestr are omitted, then these parts are filled with todays values.<br/>If the string is not recognised as a date, system missing is returned.
 createdate(datestr,date-type) | s, s | d | createdate("31/12/2016", "dmy") => 31/12/2016<br/>createdate("12/31/2016", "mdy") => 31/12/2016<br/>createdate("2016/12/31", "ymd") => 31/12/2016
-createdate(datestr,fmt-string) | s, s | d  | Converts any string to a date based on the format specified in fmt-string. The format options can be found in the FPC source documentation <a href="https://www.freepascal.org/docs-html/rtl/sysutils/formatchars.html">here</a><br/>createdate("31-dec-16", "dd-mmm-yy") => 31/12/2016<br/>For the "mmm" format it is possible to control the abbreviated month names using the <a href="#setgrp">set options</a>. The default is based on the language of the Operating System.
+createdate(datestr,fmt-string) | s, s | d  | Converts any string to a date based on the format specified in fmt-string. The format options can be found in the FPC source documentation <a href="https://www.freepascal.org/docs-html/rtl/sysutils/formatchars.html">here</a><br/>createdate("31-dec-16", "dd-mmm-yy") => 31/12/2016<br/>For the "mmm" format it is possible to control the abbreviated month names using the [set options](#set). The default is based on the language of the Operating System.
 createdate(d, m, y) | i, i, i | d | createdate(31, 12, 2016) => 31/12/2016
 <a name="today"></a>today() | - | i | returns today's date; may be assigned to a date variable or an integer
 <a name="day"></a>day(d) | d | i | day(31/12/2004) => 31
