@@ -200,10 +200,7 @@ Save a copy of all variables in memory to a file, to use the data again
 
  This options adds the [UTF-8 Byte Order Mark](https://en.wikipedia.org/wiki/Byte_order_mark) to the .csv/.txt file.
 
- -----
-
 # Merge, Append & Aggregate      
-
 
 <a name="append"></a>
 ## append  
@@ -222,18 +219,11 @@ Add observations after all observations in current file
 
 - `!ds := <dataset>`
 
-  Specifies
-                which dataset to use from the external file. It is only needed
-                if the external file contains multiple datasets.
+  Specifies which dataset to use from the external file. It is only needed if the external file contains multiple datasets.
 
-  Only fields with same name as variables in memory will be read.
-              Variables from previous `read` which are
-              not in the appended file will be set to missing for the appended
-              observations.
-  See [variables](#referencedvars) on using referenced
-              variables for this command
+  Only fields with same name as variables in memory will be read. Variables from previous `read` which are not in the appended file will be set to missing for the appended observations.
 
-
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="merge"></a>
 
@@ -244,74 +234,49 @@ merge [<key<sub>1</sub>> <key<sub>2</sub>> ...]
       [!table] [!combine> !update> !replace]
 ```
 
-Merge the current data file with another dataset file based on *key*
-                variable(s). The result is a **NEW** dataset which is
-              added to the top level of the project.
+Merge the current data file with another dataset file based on *key* variable(s). The result is a **NEW** dataset which is added to the top level of the project.
 
 ### Options
 
 - `!fn [:= <filename>]`
 
-  Merge
-                with a dataset in this file. Without !fn it is assumed that
-                current used dataset should be merge with a related dataset. If
-                no <filename> is provided then a dialog is shown to open
-                the external file. All known file types may be used and all
-                options from [read](#read) associated with reading
-                of data can be used too.
-                e.g. !d or !h options for reading csv files.
+  Merge with a dataset in this file. Without !fn it is assumed that current used dataset should be merge with a related dataset. If no <filename> is provided then a dialog is shown to open the external file. All known file types may be used and all options from [read](#read) associated with reading of data can be used too. e.g. !d or !h options for reading csv files.
 
 - `!ds := <dataset>`
 
-  Specifies
-                which dataset to use. It is only needed if the multiple datasets
-                exist (either as related datasets or in an external file).
+  Specifies which dataset to use. It is only needed if the multiple datasets exist (either as related datasets or in an external file).
 
 - `!label := "<text>"`
 
-
 - `!l := "<text>"`
 
-  Assign the
-                descriptive text as a caption/label for the resulting dataset.
+  Assign the descriptive text as a caption/label for the resulting dataset.
 
 - `!table`
 
-  The external file is used
-                as a lookup table. e.g. to add person information to a file with
-                clinical results
+  The external file is used as a lookup table. e.g. to add person information to a file with clinical results
 
 - `!combine`
 
-  All non-missing values in
-                the external dataset replaces all MISSING values for common
-                variables
+  All non-missing values in the external dataset replaces all MISSING values for common variables
 
 - `!update`
 
-  All non-missing values in
-                the external dataset replaces ALL values for common variables
+  All non-missing values in the external dataset replaces ALL values for common variables
 
 - `!replace`
 
-  All values in the
-                external dataset replace all values for common variables
+  All values in the external dataset replace all values for common variables
 
 - `!nu`
 
-  By default the resulting data
-                is automatically used. By using this option the program will
-                stay on the current dataset after the command has completed.
+  By default the resulting data is automatically used. By using this option the program will stay on the current dataset after the command has completed.
 
 - `!r`
 
- Specify a different name for
-                the resulting dataset. Default naming is a concatenation of the
-                two used datasets
+ Specify a different name for the resulting dataset. Default naming is a concatenation of the two used datasets
 
- To keep information in variables with an identical name (e.g.
-            mergevar or name) from all files [rename](#edit)
-            the variables **before** you merge the next file. e.g.
+ To keep information in variables with an identical name (e.g. mergevar or name) from all files [rename](#edit) the variables **before** you merge the next file. e.g.
 
 ```            
 read "pt.epx";
@@ -322,17 +287,13 @@ edit variable name !r := "hospname";
 etc ....
 ```
 
-  After  `merge` the variable **mergevar**
-              indicates source of information for each observation (records).
-              **mergevar** is defined with variable labels for these values:
+  After  `merge` the variable **mergevar** indicates source of information for each observation (records). **mergevar** is defined with variable labels for these values:
 
-1 In main dataset only
-2 In merged dataset only
-3 In both datasets
+- 1 In main dataset only
+- 2 In merged dataset only
+- 3 In both datasets
 
-> Note: if **mergevar already exists
-            in the dataset, an error will occur and the merge will be stopped.
-            Drop the **mergevar variable first.
+> Note: if **mergevar already exists in the dataset, an error will occur and the merge will be stopped. Drop the **mergevar variable first.
 
 ### Example
 
@@ -361,9 +322,7 @@ merge patientid !ds := "PatientNames.csv":labdata
 // AND the dataset you wish to merge with must be provided!
 merge patientid !ds := firstdataset !filename := "PatientNames.epx"
 ```       
-See [variables](#referencedvars) on using referenced
-              variables for this command
-
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="aggregate" id="aggregate"></a><a name="agg" id="agg"></a>
 
@@ -373,60 +332,61 @@ See [variables](#referencedvars) on using referenced
 aggregate [<var1> <var2>...] [!options]
 ```
 
-Aggregate - collapse - combine - data when you wish to change
-              from individual to group level.
+Aggregate - collapse - combine - data when you wish to change from individual to group level.
 
-See [variables](#referencedvars) on using referenced
-              variables for this command
+See [variables](#referencedvars) on using referenced variables for this command
 
 ### Options
 
+- `!m`
 
-- `!m` Include observations with
-                missing data (.)
+ Include observations with missing data (.)
 
-- `!q` Hides all output
+- `!q`
 
-- `!nc`Do not show counts of
-                observations for each variable
+ Hides all output
 
-- `!nt`Do not show total counts of
-                observations
+- `!nc
 
-- `!ds := <dataset>` Save the
-                aggregated dataset as it's own dataset with given name
+`Do not show counts of observations for each variable
 
-- `!replace` use in combination with
-                !ds to replace an existing dataset
+- `!nt`
 
-- `!caption := "<string>"` give
-                the dataset a caption (used both in output and with !ds)
+ Do not show total counts of observations
+
+- `!ds := <dataset>`
+
+ Save the aggregated dataset as it's own dataset with given name
+
+- `!replace`
+
+ use in combination with  !ds to replace an existing dataset
+
+- `!caption := "<string>"`
+
+ give the dataset a caption (used both in output and with !ds)
 
 - `!hd := <global string vector>`
-                give a custom label for the generated variables and show these
-                as column descriptors in table head
 
-- `!u` use in combination with !ds.
-                Use the generated dataset after this command completes. Cannot
-                be used with an active select!
+ give a custom label for the generated variables and show these as column descriptors in table head
 
-- `!full` Expands the resulting
-                dataset with ALL possible value-combinations from <var1>
-                <var2>...
-                All entries with no data will contain system missing.
-              See [labeling](#labeling) for options on changing
-                between labels/values
-              See [formatting](#formatting) for options on
-                formatting percentages
+- `!u`
+
+ use in combination with !ds. Use the generated dataset after this command completes. Cannot be used with an active select!
+
+- `!full`
+
+ Expands the resulting dataset with ALL possible value-combinations from <var1> <var2>... All entries with no data will contain system missing.
+
+See [labeling](#labeling) for options on changing between labels/values
+
+See [formatting](#formatting) for options on formatting percentages
 
 ### Summary statistic options
- Each of these options must be followed by  class="cmd">:= variable.
-              Only one variable can be given, but each option can be used
-              multiple times with different variables.
 
+Each of these options must be followed by  class="cmd">:= variable. Only one variable can be given, but each option can be used multiple times with different variables.
 
-- `!mv` Count of missing values
-                (system and user defined)
+- `!mv` Count of missing values (system and user defined)
 
 - `!mean` Mean of the variable
 
@@ -478,7 +438,8 @@ use <dataset>
 ```
 
 Change the active dataset of a project.
-       See [variables](#referencedvars) on using referenced variables for this command
+
+See [variables](#referencedvars) on using referenced variables for this command
 
 ### Example
 
@@ -496,11 +457,11 @@ use datafile_id_2;
 sort *variable<sub>1</sub> [*variable<sub>2</sub> ...] [!<u>d</u>escending]
 ```
 
-Sorts the current dataset based on the given variables. Sort respects current select!
+Sort the current dataset based on the given variables. Sort respects current select!
 
+- `!descending`<br/>`!d`
 
-- `!descending
-  !d` Sorts the dataset in decending order
+ Sorts the dataset in decending order
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -522,49 +483,40 @@ Creates a new empty project, e.g. for simulation or testing.
 ### Options            
 
 - `!size:= <integer>`
-              Adds an initial dataform with <size> observations in it.
-              If omitted, no dataform is created and must be created manually.
 
-
+ Adds an initial dataform with <size> observations in it. If omitted, no dataform is created and must be created manually.
 
 - `!label:= "<text>"`
-              Adds a title to the project. If not used a default title is given.
 
-
+ Adds a title to the project. If not used a default title is given.
 
 - `!c`
-              Closes and open project if modified
 
-
+ Closes and open project if modified
 
 - `!pw := <string>`
-            Encrypts the data of the project with a single password. All data is encrypted with the <a
-href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES/Rijndael algorithm</a>, but metadata is not encrypted.
 
-
+ Encrypts the data of the project with a single password. All data is encrypted with the [AES/Rijndael algorithm](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard), but metadata is not encrypted.
 
 - `!showFieldNames := <boolean>`<br/>
   `!sfn := <boolean>`
-            Show/Hide the field name next to the entry field in Manager and EntryClient
 
-
+ Show/Hide the field name next to the entry field in Manager and EntryClient
 
 - `!showFieldBorders := <boolean>`<br/>
   `!sfb := <boolean>`
-            Show/Hide the border of the entry field in Manager and EntryClient
 
-
+ Show/Hide the border of the entry field in Manager and EntryClient
 
 - `!backupInterval := <integer>`<br/>
    `!bi := <integer>`
-            Interval at witch Manager and EntryClient automatically saved the project
 
-
+ Interval at witch Manager and EntryClient automatically saved the project
 
 - `!backupOnShutdown := <boolean>`<br/>
   `!bos := <boolean>`
-            Perform a backup when closing the project. The name for the backup is based on the current date/time.
 
+ Perform a backup when closing the project. The name for the backup is based on the current date/time.
 
 <a name="newdataset" id="newdataset"></a>
 ## new dataset / new
@@ -577,37 +529,32 @@ Create a new dataset for the project. Use the options to specify relations betwe
 ### Options            
 
 - `!parent := "<parentform id>"`
-              Used for creating parent-child relations. If omitted the dataform is created
-              as a top-level dataform.
 
-
+ Used for creating parent-child relations. If omitted the dataform is created as a top-level dataform.
 
 - `!label := "<text>"`<br/>
   `!l := "<text>"`
-              Assign the descriptive text as a caption/label for the dataset.
 
 
+  Assign the descriptive text as a caption/label for the dataset.
 
 - `!childobs := <integer>`
-              Used only in combination with !parent. Gives the number of allowed child observations in the child dataset
-              (0 = no limit)
 
 
+  Used only in combination with !parent. Gives the number of allowed child observations in the child dataset   (0 = no limit)
 
 - `!afterobs := <integer>`
-              Used only in combination with !parent. Tells EntryClient what happens after entry of one complete observation
-              0 = new observation, 1 = return to parent, 2 = return on max number of observataions, 3 = stay on the current observation
 
 
+  Used only in combination with !parent. Tells EntryClient what happens after entry of one complete observation   0 = new observation, 1 = return to parent, 2 = return on max number of observataions, 3 = stay on the current observation
 
 - `!statusbar := "<text>"`
-              Sets the "content string" of a dataform (see manager for formatting).
 
-
+  Sets the "content string" of a dataform (see manager for formatting).
 
 - `!size := <integer>`
-              Initialize the dataform with <size> empty observations.
 
+  Initialize the dataform with <size> empty observations.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -619,59 +566,65 @@ See [variables](#referencedvars) on using referenced variables for this command
 new variable *variable <type> [:= expression] [!options...]
 ```
 
-Create a new variable of a given [type](#types) and optionally assign the value in expression.
-            The variable type and expressions type must be compatible. Variables contain a value for each observation.
-            If no expression is given, all values will be missing.
+Create a new variable of a given [type](#types) and optionally assign the value in expression. The variable type and expressions type must be compatible. Variables contain a value for each observation. If no expression is given, all values will be missing.
 
 ### Options            
 
 - `!label := "<text>" class="option">!l := "<text>"`
-              Assign the descriptive text as a label for the variable.
-              An existing variable label will be replaced with the new one.
 
-
+  Assign the descriptive text as a label for the variable.   An existing variable label will be replaced with the new one.
 
 - `!valuelabel := <valuelabel name>`<br/>
   `!vl := <valuelabel name>`
-              Assign an existing valuelabel set to the variable.
-              An existing assignment will be replaced but not deleted. To delete the existing valuelabel
-              set see [deleting content](#deletegrp)
+
+  Assign an existing valuelabel set to the variable.   An existing assignment will be replaced but not deleted. To delete the existing valuelabel   set see [deleting content](#deletegrp)
 
 - `!length := <integer> class="option">!le := <integer>`
-              Changes the entry length of a variable
+
+  Changes the entry length of a variable
 
 - `!decimal := <integer> class="option">!dec := <integer>`
-              Change the decimal entry length for floating point variables. Changing the decimal length for other variable types have no impact
+
+  Change the decimal entry length for floating point variables. Changing the decimal length for other variable types have no impact
 
 - `!rangelow := <value>`
-              Set the lower bound for a range of values. Must be used in combination with !rangehigh
+
+  Set the lower bound for a range of values. Must be used in combination with !rangehigh
 
 - `!rangehigh:= <value>`
-              Set the upper bound for a range of values. Must be used in combination with !rangelow
+
+  Set the upper bound for a range of values. Must be used in combination with !rangelow
 
 - `!entrymode := {0|1|2}`
-              Change the entry mode used in EpiData EntryClient
+
+  Change the entry mode used in EpiData EntryClient
  - 0 = default
  - 1 = must enter
  - 2 = no enter
 
 - `!confirm`
-              If used, the variable has the "confirm entry" flag set. Used in EpiData EntryClient
+
+  If used, the variable has the "confirm entry" flag set. Used in EpiData EntryClient
 
 - `!key`
-              Adds the variable to be part of the key for the current dataset
+
+  Adds the variable to be part of the key for the current dataset
 
 - `!cmpX := *variable`
-            Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between the new variable and the assigned variable
+
+Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between the new variable and the assigned variable
 
 - `!u> !memo`
-            When creating a string variable it is possible to specify the sub type using one of the above options. !u specifies this is an uppercase string variable. !memo specifies this a memo variable
+
+When creating a string variable it is possible to specify the sub type using one of the above options. !u specifies this is an uppercase string variable. !memo specifies this a memo variable
 
 - `!dmy> !mdy> !ymd`
-            When creating a date variable it is possible to specify the sub type using one of the above options. !dmy is the default type if no option is used else the specified sub type is used
+
+When creating a date variable it is possible to specify the sub type using one of the above options. !dmy is the default type if no option is used else the specified sub type is used
 
 - `!auto [{0|1|2}]`
-            When creating a variable that supports automatic content (date, time or integer), using this option changes the default type to the automatic type.         
+
+When creating a variable that supports automatic content (date, time or integer), using this option changes the default type to the automatic type.         
 Integer become AutoIncrement, DMY becomes AutoDMY, etc.
 
   For time and date variables the number specifies when the variable is updated:
@@ -707,21 +660,20 @@ See [variables](#referencedvars) on using referenced variables for this command
 ## new global / new g
 
 ```
-new global *variable <type> [:= expression]
-new global *variable <integer expression> <type> [:= expression]
+new global Variable <type> [:= expression]
+new global Variable <integer expression> <type> [:= expression]
 ```          
 
+Create a new global variable
 
-Create a new global parameter variable with a given [types](#type) and optionally assign the value given in an expression.
-            The global variable or parameter has only one value, whereas a standard variable has one value for each observation.
-            The global variable type and expressions type must be compatible otherwise an error will occur.
-            Global variables can for most parts be used like as a regular variable, but they cannot be evaluated as a vector.
-          If the variable name is followed by square brackets [...], then a global *vector* is created, where each entry can be individually
-            accessed using e.g.
+### Parameters
 
-```
-g[3] := 20. 
-```
+- Variable must be unique. If the variable name is followed by square brackets [...], then a global *vector* is created, where each entry can be individually accessed using
+- *type* is a valid EpiData [type](#type)
+- expression is a value assigned to the global variable. The global variable type and expressions type must be compatible
+
+A global variable or parameter has only one value, whereas a standard variable has one value for each observation.  Global variables can for most parts be used like as a regular variable.
+
 If a value is assigned when creating a new global vector all entries of the vector will have the same value!
 
 ### Example
@@ -733,6 +685,7 @@ new global g4 time        := now();
 new global g5 boolean     := (2 > 3);
 new global g6 date        := today();
 new global g7[10] integer := 10;
+g7[3]                     := 20;
 ```          
 
 See [variables](#referencedvars) on using referenced variables for this command
@@ -746,22 +699,17 @@ new valuelabel <name> <type> (<value> , <label>) (...) [!m := <value>]
 
 Create a new value label set with a given [type](#types) (boolean not supported) and assign at least one (value, label) pair.
 ### Parameters
-- Each `(value, label)` pair will be added to the newly created set.
-          The datatype of the value MUST match the defined datatype for the value label set itself.
-          It is not possible to create an empty valuelabel set.
+- Each `(value, label)` pair will be added to the newly created set. The datatype of the value MUST match the defined datatype for the value label set itself. It is not possible to create an empty valuelabel set.
 
-- The valuelabel name must be unique; it cannot be the same as any variable.
-          A useful practice is to start the valuelabel name with an underscore: _
+- The valuelabel name must be unique; it cannot be the same as any variable. A useful practice is to start the valuelabel name with an underscore: _
 
 > Note: An empty set will restrict data entry to system missing only!
-
 
 ### Options
 
 - `!m := <value>`
-              Marks the given value in the value label set as missing.
-              If the value is not part of the (value, label) pairs or the datatype does not match an error will be reported.
-              This option can be used multiple times with different values.
+
+  Marks the given value in the value label set as missing.   If the value is not part of the (value, label) pairs or the datatype does not match an error will be reported.   This option can be used multiple times with different values.
 
 ### Example
 ```
@@ -801,12 +749,10 @@ After browse has started you may Right Click and see how to close or adapt colum
 
 - `!vn `Show variable names instead of following the 'set "FORMAT VALUE LABEL"' and  
  `set "FORMAT VARIABLE LABEL"` options
-```
 
 See [variables](#referencedvars) on using referenced variables for this command
 
 > Note: browse is much faster than list
-
 
 <a name="list"></a><a name="listdata" id="listdata"></a>
 ## list data / list d
@@ -894,32 +840,30 @@ Edits a project.
 ### Options            
 
 - `!label:= "<text>"`
-              Adds a title to the project. If not used a default title is given.
 
-
+  Adds a title to the project. If not used a default title is given.
 
 - `!showFieldNames := <boolean>`
 
 - `!sfn := <boolean>`
-            Show/Hide the field name next to the entry field in Manager and EntryClient
 
+Show/Hide the field name next to the entry field in Manager and EntryClient
 
-- `!showFieldBorders := <boolean>`
+- `!showFieldBorders := <boolean>`<br/>
+  `!sfb := <boolean>`
 
-- `!sfb := <boolean>`
-            Show/Hide the border of the entry field in Manager and EntryClient
-
-
+Show/Hide the border of the entry field in Manager and EntryClient
 
 - `!backupInterval := <integer>`
 
 - `!bi := <integer>`
-            Interval at witch Manager and EntryClient automatically saved the project
 
-- `!backupOnShutdown := <boolean>`
+Interval at witch Manager and EntryClient automatically saved the project
 
-- `!bos := <boolean>`
-            Perform a backup when closing the project. The name for the backup is based on the current date/time.
+- `!backupOnShutdown := <boolean>`<br/>
+  `!bos := <boolean>`
+
+Perform a backup when closing the project. The name for the backup is based on the current date/time.
 
 <a name="editdataset" id="editdataset"></a>
 ## edit dataset / edit ds
@@ -931,39 +875,32 @@ Edit an existing dataset in the project.
 ### Options           
 
 - `!label := "<text>"`
-              Assign the descriptive text as a caption/label for the dataset.
 
-
+  Assign the descriptive text as a caption/label for the dataset.
 
 - `!childobs := <integer>`
-              Used only if dataset is related to a parent. Gives the number of allowed child observations
-              (0 = no limit)
 
-
+  Used only if dataset is related to a parent. Gives the number of allowed child observations   (0 = no limit)
 
 - `!afterobs := <integer>`
-              Used only if the dataset is related to a parent. Tells EntryClient what happens after entering the whole observation
-              0 = new observation, 1 = return to parent, 2 = return on max observation, 3 = stay on current observation
 
-
+  Used only if the dataset is related to a parent. Tells EntryClient what happens after entering the whole observation   0 = new observation, 1 = return to parent, 2 = return on max observation, 3 = stay on current observation
 
 - `!statusbar := "<text>"`
-              Sets the "content string" of a dataform (see manager for formatting).
 
-
+  Sets the "content string" of a dataform (see manager for formatting).
 
 - `!size := <integer>`
-              Changes the size of the dataset to <size> amount of observations.
 
-
+  Changes the size of the dataset to <size> amount of observations.
 
 - `!r := <new dataset name>`
-            Changes the name of the dataset. If the name is already in use an error will occur.
 
-
+  Changes the name of the dataset. If the name is already in use an error will occur.
 
 - `!noparent`
-              Moves the current dataset (and all related datasets) to be a top-level dataset.
+
+  Moves the current dataset (and all related datasets) to be a top-level dataset.
 
 > Note: create a new empty child dataset to restore the relate situation followed by a merge of data in child datasets.
 
@@ -980,80 +917,65 @@ Edit the metadata of *variable<sub>1</sub>. The options specify which metadata a
 ### Options         
 
 - `!label := "<text>"`
-           Assign the descriptive text as a label for the variable.
-           An existing variable label will be replaced with the new one.
 
-
+  Assign the descriptive text as a label for the variable. An existing variable label will be replaced with the new one.
 
 - `!vl := <valuelabel id>`
-           Assign an existing valuelabel set to the variable.
-           An existing assignment will be replaced but not deleted. To delete the existing valuelabel set, see [deleting content](#deletegrp)
 
-
+  Assign an existing valuelabel set to the variable. An existing assignment will be replaced but not deleted. To delete the existing valuelabel set, see [deleting content](#deletegrp)
 
 - `!novl`
-           Removes an existing valuelabel set from the variable.
 
-
+  Removes an existing valuelabel set from the variable.
 
 - `!l := <integer>`
-           Changes the entry length of a variable
 
-
+  Changes the entry length of a variable
 
 - `!d := <integer>`
-           Changes the decimal entry length for floating point variables. Changing the decimal length for other variable types have no impact
 
-
+   Changes the decimal entry length for floating point variables. Changing the decimal length for other variable types have no impact
 
 - `!min := <value>`
-           Set the lower bound for a range of values. Must be used in combination with !max
 
-
+   Set the lower bound for a range of values. Must be used in combination with !max
 
 - `!max:= <value>`
-           Set the upper bound for a range of values. Must be used in combination with !min
 
-
+   Set the upper bound for a range of values. Must be used in combination with !min
 
 - `!norange`
-           Removes an existing defined range for the variable
 
-
+   Removes an existing defined range for the variable
 
 - `!entry := <integer>`
-           Changes the entry mode used in EpiData EntryClient
+
+   Changes the entry mode used in EpiData EntryClient
            0 = default, 1 = must enter, 2 = no enter
 
-
-
 - `!cmpX := *variable`
-         Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between this variable and the assigned variable.
 
-
+  Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between this variable and the assigned variable.
 
 - `!confirm`
-           If used, the variable has the "confirm entry" flag set. Used in EpiData EntryClient.
 
-
+  If used, the variable has the "confirm entry" flag set. Used in EpiData EntryClient.
 
 - `!noconfirm`
-           If used, the variable has the "confirm entry" flag unset. Used in EpiData EntryClient.
 
-
+   If used, the variable has the "confirm entry" flag unset. Used in EpiData EntryClient.
 
 - `!key`
-           Adds the variable to be part of the key for the current dataset
 
-
+   Adds the variable to be part of the key for the current dataset
 
 - `!nokey`
-           Removes the variable from being part of the key for the current dataset
 
-
+   Removes the variable from being part of the key for the current dataset
 
 - `!r := <new variable name>`
-           Changes the name of the variable. If the name is already in use an error will occur.
+
+   Changes the name of the variable. If the name is already in use an error will occur.
 
 > Note: Data values are NOT changed! Even if the new length or decimals is shorter than actual content. To keep the changes made you must save the data.
 
@@ -1072,24 +994,26 @@ If a (value, label) pair already exist, the new label will replace the old label
 ### Options        
 
 - `!m := <value>`
-         Marks the given value in the value label set as missing. If the value is not part of the (value, label) pairs, an already existing pair or the datatype does not match an error will be reported.
 
- This option can be used multiple times with different values.
+  Marks the given value in the value label set as missing. If the value is not part of the (value, label) pairs, an already existing pair or the datatype does not match an error will be reported.
 
-
+  This option can be used multiple times with different values.
 
 - `!d := <value>`
-         Deletes the value label pair with the given value. If no such pair exists and error will be reported.
+
+ Deletes the value label pair with the given value. If no such pair exists and error will be reported.
 
  This option can be used multiple times with different values.
 
 - `!nom := <value>`
-         Removes the marks on the given value label pair that it should be considered missing. If no such pair exists and error will be reported.
+
+ Removes the marks on the given value label pair that it should be considered missing. If no such pair exists and error will be reported.
 
  This option can be used multiple times with different values.
 
 - `!r := <new value label name>`
-         Changes the name of the value label. If the new name is already in use an error will occur.
+
+ Changes the name of the value label. If the new name is already in use an error will occur.
 
 > Note: All variables already using this value label will continue to have the same label.
 
@@ -1128,12 +1052,12 @@ Edit the status of observations
 ### Options           
 
 - `!md / !nomd`
-              Marks / Unmarks the current select observations for deletion
 
-
+  Marks / Unmarks the current select observations for deletion
 
 - `!mv / !nomv`
-              Marks / Unmarks the current select observations as verified
+
+  Marks / Unmarks the current select observations as verified
 
 # Deleting content
 
@@ -1198,11 +1122,17 @@ Frequency distribution for *variable1*
 - variable1 may be any [type](#type)
 
 ### Options
-- `!m` Include observations with missing data (.)
+- `!m`
 
-- `!cum` Add cumulative percentage
+ Include observations with missing data (.)
 
-- `!r` Add row percentage
+- `!cum`
+
+ Add cumulative percentage
+
+- `!r`
+
+ Add row percentage
 
 See [labeling](#labeling) for options on changing between labels/values
 
@@ -1230,13 +1160,17 @@ See [variables](#referencedvars) on using referenced variables for this command
 - variable1 must be numeric
 
 ### Options
-- `!by:` Stratify by this variable		    
+- `!by:`
 
-- `!t:` Analysis of Variance to test for homogeneity of the mean across strata,
-         including Bartletts test for homogeneity of variance.
-        With  class="cmd">!by (stratified), F-test is given.
-        Without  class="cmd">!by (one stratum), T-test that mean=0.
-         (e.g. as a paired T-test for the difference in before and after measures)
+ Stratify by this variable		    
+
+- `!t:`
+
+ Analysis of Variance to test for homogeneity of the mean across strata, including Bartletts test for homogeneity of variance.
+
+ With class="cmd">!by (stratified), F-test is given.
+
+ Without  class="cmd">!by (one stratum), T-test that mean=0 (e.g. as a paired T-test for the difference in before and after measures)
 
 > Warning:  Check results carefully if !by variable has only one observation in a stratum
 
@@ -1247,12 +1181,9 @@ See [labeling](#labeling) for options on changing between labels/values
 ### Methodology notes:
 
 - confidence intervals given are based on the t-distribution with N-1 degrees of freedom.
-- adjusted Fisher-Pearson coefficient of skewness: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm"
-target="_blank">NIST handbook 1.3.5.11</a>
-- excess kurtosis: see <a href="https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis"
-target="_blank">Wikipedia - Kurtosis (accessed 2020/02/08)</a>
-- Bartlett's Test: see <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm"
-target="_blank">NIST handbook 1.3.5.7</a>
+- adjusted Fisher-Pearson coefficient of skewness: see [NIST handbook 1.3.5.11](https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm)
+- excess kurtosis: see [Wikipedia - Kurtosis (accessed 2020/02/08)](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis)
+- Bartlett's Test: see [NIST handbook 1.3.5.7](https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm)
 
 <a name="describe" id="describe"></a>
 ## describe
@@ -1261,13 +1192,11 @@ describe *variable list [option list]
 ```
 Basic descriptive statistics and frequencies for a group of variables
 
-With no options specified, a single table will be provided, with one row per variable showing:
-       number of observations, number of unique values
+With no options specified, a single table will be provided, with one row per variable showing: number of observations, number of unique values
 
-For numerical variables, the output will also include
-       mean, standard deviation, minimum, median, maximum
+For numerical variables, the output will also include mean, standard deviation, minimum, median, maximum
 
-### Options
+### Statistic options
 Use any combination of options to customize the output
 
 - `!msd:` mean, standard deviation and sum
@@ -1286,8 +1215,7 @@ Use any combination of options to customize the output
 
 - `!fb:` 5 most frequent and 5 least frequent values
 
-- `!ct:` force one row per variable when the above options are specified.
-        This will be ignored if one of  class="cmd">!fh !fl !fb is specified.
+- `!ct:` force one row per variable when the above options are specified. This will be ignored if one of  class="cmd">!fh !fl !fb is specified.
 
 - `!m:`number of missing values
 
@@ -1296,10 +1224,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 See [labeling](#labeling) for options on changing between labels/values
 
 ### Methodology notes
-- All statistics are based on the `means` command
-       and all frequencies are based on the `freq` command,
-       so results from `describe` will be exactly the same
-       as those from `means` or `freq`.
+- All statistics are based on the `means` command and all frequencies are based on the `freq` command, so results from `describe` will be exactly the same as those from `means` or `freq`.
 
 <a name="count" id="count"></a>
 ## count
@@ -1311,7 +1236,6 @@ Counts number of observations. Count may be used with select to count within a s
 ### Result variables:  
 - $count
 
-
 <a name="tables" id="tables"></a><a name="tab" id="tab"></a>
 ## tables / tab
 ```
@@ -1321,28 +1245,47 @@ Crosstabulate the variables chosen.
 
 ###  Data and output options
 
-- `!m` Include observations with missing data (.)
+- `!m`
 
-- `!w := <variable>` Use number of observations in the variable as frequency weight
+  Include observations with missing data (.)
 
-- `!by := <variable>` Stratify the data by this variable.
-          If multiple !by options are used, each unique combination of values from the by-variables will have it's own sub-table.
+- `!w := <variable>`
 
-- `!q` Hide all output! Result variable are still calculated
+ Use number of observations in the variable as frequency weight
 
-- `!nc` Hide combined/unstratified tables
+- `!by := <variable>`
 
-- `!nb` Hide sub/stratified tables
+ Stratify the data by this variable. If multiple !by options are used, each unique combination of values from the by-variables will have it's own sub-table.
 
-- `!ns` Hide summary table
+- `!q`
+
+ Hide all output! Result variable are still calculated
+
+- `!nc`
+
+ Hide combined/unstratified tables
+
+- `!nb`
+
+ Hide sub/stratified tables
+
+- `!ns`
+
+ Hide summary table
 
 ### Percentage options
 
-- `!pr` Show row percents for each table cell and col/row totals
+- `!pr`
 
-- `!pc` Show col percents for each table cell and col/row totals
+ Show row percents for each table cell and col/row totals
 
-- `!pt` Show total percents for each table cell and col/row totals
+- `!pc`
+
+ Show col percents for each table cell and col/row totals
+
+- `!pt`
+
+ Show total percents for each table cell and col/row totals
 
 ### Sort optionlist
 
@@ -1375,13 +1318,21 @@ Indicate by !sxxx where the x may include<br/>
 
 ### Estimation and testing options
 
-- `!t` Chi<sup>2</sup>
+- `!t`
 
-- `!ex` Fisher Exact test for 2x2 tables only
+ Chi<sup>2</sup>
 
-- `!odds` Odds Ratio and confidence interval for 2x2 tables, including Mantel-Haenszel adjustment for stratified data
+- `!ex`
 
-- `!rr` Risk Ratio and confidence interval for 2x2 tables, including Mantel-Haenszel adjustment for stratified data
+ Fisher Exact test for 2x2 tables only
+
+- `!odds`
+
+ Odds Ratio and confidence interval for 2x2 tables, including Mantel-Haenszel adjustment for stratified data
+
+- `!rr`
+
+ Risk Ratio and confidence interval for 2x2 tables, including Mantel-Haenszel adjustment for stratified data
 
 > Note:The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the [set command](#set) to choose a different interval.
 
@@ -1403,12 +1354,17 @@ The ctable options have the same meaning as in the tables command.
 
 ### Data and output options
 
-- `!m` Include observations with missing data (.)
+- `!m`
 
-- `!w := <variable>` Use number of observations in the variable as frequency weight
+ Include observations with missing data (.)
 
-- `!by := <variable>` Stratify the data by this variable.
-         If multiple !by options are used, estimates of odds ratio, risk ratio and chi-square will be based on the combination of all stratifying variables.
+- `!w := <variable>`
+
+ Use number of observations in the variable as frequency weight
+
+- `!by := <variable>`
+
+ Stratify the data by this variable.  If multiple !by options are used, estimates of odds ratio, risk ratio and chi-square will be based on the combination of all stratifying variables.
 
 > Note that attack rates and the Fisher Exact Test will be based on unstratified data always.
 
@@ -1444,32 +1400,50 @@ Sorting (applies to individual variable tables). Indicate by !sxxx where the x i
 
 ### Estimation and testing options
 
-- `!t` Chi<sup>2</sup> and p-value
+- `!t`
 
-- `!ex` Fisher Exact test for 2x2 tables only
+ Chi<sup>2</sup> and p-value
 
-- `!odds` Odds Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data
+- `!ex`
 
-- `!rr` Risk Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data
+ Fisher Exact test for 2x2 tables only
+
+- `!odds`
+
+ Odds Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data
+
+- `!rr`
+
+ Risk Ratio for 2x2 tables, including Mantel-Haenszel adjustment for stratified data
 
 > Note:The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the [set command](#set) to choose a different interval.
 
 ### Attack rate table
 An attack rate table is commonly used in food-borne outbreak investigations. These options simpligy review and reporting of multiple exposures.
 
-- `!ar` Show unstratified 2x2 tables, attack rates and risk ratios
+- `!ar`
 
-- `!en` Show unstratified 2x2 tables
+ Show unstratified 2x2 tables, attack rates and risk ratios
+
+- `!en`
+
+ Show unstratified 2x2 tables
 
 ### Output table sort options
 Only one may be given
 
-- `!sn` Sort the table rows by variable name
+- `!sn`
 
-- `!sl` Sort the table rows by variable label
+ Sort the table rows by variable name
 
-- `!ss` Sort the table rows by key statistic, depending on the estimation options
- - priority is given to RR then OR then Fisher Exact P then Chi<sup>2</sup> P
+- `!sl`
+
+ Sort the table rows by variable label
+
+- `!ss`
+
+ Sort the table rows by key statistic, depending on the estimation options<br/>
+ priority is given to RR then OR then Fisher Exact P then Chi<sup>2</sup> P
 
 See [labeling](#labeling) for options on changing between labels/values
 
@@ -1496,25 +1470,38 @@ Kaplan-Meier plots and lifetables for time-to-failure data with censoring. Tabul
 - `date1` and `date2` must be date variables. Elapsed time is calculated as `date2 - date1`
 
 ### Options
-- `!o` Specify the value of outcome indicating death (failure), which may be numeric or text; the default is zero
+- `!o`
 
-- `!by` Stratify by this variable
+ Specify the value of outcome indicating death (failure), which may be numeric or text; the default is zero
 
-- `!t` Log-rank test for equality of survival among strata
+- `!by`
 
-- `!ref:=value`  reference value for the hazard ratio (only with !t)
+ Stratify by this variable
 
-- `!w:=weightVariable` Specify a weight variable
+- `!t`
+
+ Log-rank test for equality of survival among strata
+
+- `!ref:=value`
+
+ reference value for the hazard ratio (only with !t)
+
+- `!w:=weightVariable`
+
+ Specify a weight variable
 
 - `!mt` Missing values of date2 take the maximum value of date2
 
-- `!exit:=datevalue` Missing values of date2 are assigned this date.
-  It may be easiest so use the createdate function to specify the date.
+- `!exit:=datevalue`
+
+ Missing values of date2 are assigned this date. It may be easiest so use the createdate function to specify the date.
 
 - `!i:="t1,t2,t3,...tn"`
+
   Aggregate data to these time intervals. If the string is missing, the set value for LIFETABLE INTERVAL is used
 
 - `!adj`
+
   When intervals are specified, adjust the number at risk to exclude half of the censored subjects (Hosmer, Lemeshow)
 
 ### Output options
@@ -1539,8 +1526,9 @@ By default, confidence intervals are shown as error bars
 - `!cib` Show the confidence intervals as shaded bands. The default KM plot shows the upper and lower confidence intervals as dotted lines.
 
 - `!cil` Show the confidence intervals as dotted lines.
- 
+
 - `See graph options`
+
  `survival` is a graph command and any graph option may be specified
 
 ### Result variables
@@ -1565,8 +1553,8 @@ Simple scatter plot for two variables.
 
 ### Parameters
 - Xvariable may also be integer, float or date/time
-- Yvariable may be integers or float 
- 
+- Yvariable may be integers or float
+
 ### Options
 - `scatter` is a graph command and any graph option may be specified
 
@@ -1585,12 +1573,17 @@ Draw a barchart for Variable. A barchart shows frequencies at each indiviual val
 
 ### Options
 - `!pct`
+
   Y-axis values are percentage of the total across strata
 - `!w:=weightVariable`
+
  for grouped data, specify the weights
 - `!stack`
+
  stack bars for stratified data; !stack and !pct together will have stacked bars that sum to 100%
+
 - graph options
+
  `histogram` is a graph command and any graph option may be specified
 
 See [variables](#referencedvars) on using referenced variables for this command
@@ -1600,7 +1593,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 ```
 histogram Variable [StratifyVariable] [options]
 ```
-Draw a histogram for a variable, based on consecutive integer or day intervals. The user is responsible for recoding variables so that consecutive intervals make sense. 
+Draw a histogram for a variable, based on consecutive integer or day intervals. The user is responsible for recoding variables so that consecutive intervals make sense.
 
 A histogram is a bar chart where every integer value within range is represented on the X-axis.
 
@@ -1610,10 +1603,13 @@ A histogram is a bar chart where every integer value within range is represented
 
 ### Options
 - `!interval:=i`
+
  where i is an integer > 1, will group bars; the default is 1
 - `!w:=weightVariable`
+
  for grouped data, specify the weights.
 - `!stack`
+
  stack bars for stratified data.
 - graph options
  `histogram` is a graph command and any graph option may be specified
@@ -1635,10 +1631,10 @@ An epicurve is a stacked histogram, where individual boxes are shown for each su
 
 ### Options
 - `!interval:=i`
+
  where i is an integer > 1, will group bars; the default is 1
 - graph options
  `epicurve` is a graph command and any graph option may be specified
-
 
 # Consistency and Validity Check of data
 
@@ -1698,8 +1694,8 @@ Check that all observations have a valid parent observation
 read "related_data.epx";  // Load the project
 use child_dataset;        // Change dataset to a related dataset
 check relate;             // Perform the check from the child dataset "upwards" to the parent.
-```                          // Must be repeated if you have more levels
-
+                          // Must be repeated if you have more levels
+```
 <a name="checkstudy" id="checkstudy"></a>
 ## check study
 ```
@@ -1737,21 +1733,37 @@ The variables var1 .. var2 denotes the sorting variables. This is required if no
 
 ### Options
 
-- `!fn := "<string>"` Opens an external file to compare with.
+- `!fn := "<string>"`
 
-- `!ds := <dataset id>` Specifies a single dataset (internal/external) to compare with.
+ Opens an external file to compare with.
 
-- `!nos` Excludes all string types from comparison
+- `!ds := <dataset id>`
 
-- `!nodt` Excludes all date and time types from comparison
+ Specifies a single dataset (internal/external) to compare with.
 
-- `!noauto` Excludes all auto types from comparison
+- `!nos`
 
-- `!noc` All text comparisons are done case in-sensitive
+ Excludes all string types from comparison
 
-- `!nol` Only show the condensed report - do not show the list of observations
+- `!nodt`
 
-- `!val` All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!
+ Excludes all date and time types from comparison
+
+- `!noauto`
+
+ Excludes all auto types from comparison
+
+- `!noc`
+
+ All text comparisons are done case in-sensitive
+
+- `!nol`
+
+ Only show the condensed report - do not show the list of observations
+
+- `!val`
+
+ All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!
 
 ### Example
 ```
@@ -1871,11 +1883,12 @@ All  `set` ["parameter"] definitions may be added to the file **startup.pgm** to
 ### Parameters
 
 - Without parameters, provides a list of available parameters and their current values
-            
+
 - `parameter` any legal set option (must be enclosed in double quotes)
-- `value` will be depending on the parameter, but may be a number, text, ON/OFF or a hexadecimal font colour (<a
-href="https://www.w3schools.com/colors/colors_hexadecimal.asp">See colour examples here (requires internet) </a>)
+- `value` will be depending on the parameter, but may be a number, text, ON/OFF or a hexadecimal font colour [See colour examples here](https://www.w3schools.com/colors/colors_hexadecimal.asp))
+
   For settings with ON/OFF or a text value include this in double quotes
+
   If no value is specified, show the curent value
 
 - The case of parameters and values does not matter.
@@ -1887,61 +1900,61 @@ set "echo" := "off";
 set "COMMANDLINE FONT COLOUR" := "#FFF000";
 ```
 <!-- NOT IMPLEMENTED
-For any command:  class="cmd">set option [cmd] := [options] 
+For any command:  class="cmd">set option [cmd] := [options]
 e.g.  
 set option means := "!t!
-When the specified command is executed the options mentioned will be added to the command. 
+When the specified command is executed the options mentioned will be added to the command.
 -->
 
 ### Set parameters and defaults
 
 Option | Possible values | Default Value | Comments or example
 ---|---|---|---
-BROWSER BG COLOUR | hex colour code | "#FFFFFF" | Adjust the colour of the background. e.g. #000000 is black.  | 
-BROWSER FONT COLOUR | hex colour code | "#000000" | Adjust the colour of the font. e.g. #FFF000 is yellow.  | 
-BROWSER FONT NAME | string | (depends on the operating system) | Name of the font used in the browser.  | 
-BROWSER FONT SIZE | <integer> | 10 | Adjust the size of the font in the browser.  | 
-BROWSER FONT STYLE | <fsBold/fsItalic/fsUnderline> | " " | Adjust the style of the text in the browser. Eg. underlines text, bold text. | 
-BROWSER OBS DEFAULT COLOUR | hex colour code | "#F0F0F0" | Adjust the colour of "obs" column for normal/default observations | 
-BROWSER OBS DELETED COLOUR | hex colour code | "#FF0000" | Adjust the colour of "obs" column for observations marked for deletion | 
-BROWSER OBS VERIFIED COLOUR | hex colour code | "#008080" | Adjust the colour of "obs" column for verified observations | 
-BROWSER VALUE LABEL | L/V/LV/VL | V | Default option for output of variable data (value and/or label). See [Valuelabels](#labeling) for options. This options applies to "list data" and "browse" only | 
-BROWSER VARIABLE LABEL | VLA / VLN / VN / VNL | VN | Default option for displaying variable name and/or label. See [Variable labels](#variablelabels) for options. This options applies to "list data" and "browse" only | 
-COMMANDLINE BG COLOUR | hex colour code | "#FFFFFF" | Adjust the colour of the background. e.g. #000000 is black.  | 
-COMMANDLINE FONT COLOUR | hex colour code | "#000000" | Adjust the colour of the font. e.g. #FFF000 is yellow.  | 
-COMMANDLINE FONT NAME | string | (depends on the operating system) | Name of the font used in the commandline edit.  | 
-COMMANDLINE FONT SIZE | <integer> | 10 | Adjust the size of the font in the commandline edit.  | 
-COMMANDLINE FONT STYLE | <fsBold/fsItalic/fsUnderline> | " " | Adjust the style of the font, e.g. bold, underline etc | 
-COMMANDLOG | ON/OFF | ON | When "ON" a complete list of executed commands is saved to a file in current active dir. | 
-COMMANDLOGFILE | string | commandlog.pgm | Name of the file to save the executed commands | 
-COMMANDLOGLINES | <integer> | 1000 | The number of lines kept in the commandlog file. If the number of lines is exceeded, the lines are dropped from the beginning | 
-CONFIDENCE INTERVAL | 90> 95> 99 | 95 | Set the default confidence interval to be estimated by `table` or `ctable` 
-CSV DELIMITER | <any desired delimiter> | , | The separator used between variables when you export to the clipboard from the browser. 
-DISPLAY COMMANDTREE WINDOW | ON/OFF | OFF | Opens/Closes the command tree window 
-DISPLAY DATASET WINDOW | ON/OFF | OFF | Opens/Closes the dataset window 
-DISPLAY HISTORY WINDOW | ON/OFF | OFF | Opens/Closes the history window 
-DISPLAY VARIABLE WINDOW | ON/OFF | OFF | Opens/Closes the variable window 
+BROWSER BG COLOUR | hex colour code | "#FFFFFF" | Adjust the colour of the background. e.g. #000000 is black.  |
+BROWSER FONT COLOUR | hex colour code | "#000000" | Adjust the colour of the font. e.g. #FFF000 is yellow.  |
+BROWSER FONT NAME | string | (depends on the operating system) | Name of the font used in the browser.  |
+BROWSER FONT SIZE | <integer> | 10 | Adjust the size of the font in the browser.  |
+BROWSER FONT STYLE | <fsBold/fsItalic/fsUnderline> | " " | Adjust the style of the text in the browser. Eg. underlines text, bold text. |
+BROWSER OBS DEFAULT COLOUR | hex colour code | "#F0F0F0" | Adjust the colour of "obs" column for normal/default observations |
+BROWSER OBS DELETED COLOUR | hex colour code | "#FF0000" | Adjust the colour of "obs" column for observations marked for deletion |
+BROWSER OBS VERIFIED COLOUR | hex colour code | "#008080" | Adjust the colour of "obs" column for verified observations |
+BROWSER VALUE LABEL | L/V/LV/VL | V | Default option for output of variable data (value and/or label). See [Valuelabels](#labeling) for options. This options applies to "list data" and "browse" only |
+BROWSER VARIABLE LABEL | VLA / VLN / VN / VNL | VN | Default option for displaying variable name and/or label. See [Variable labels](#variablelabels) for options. This options applies to "list data" and "browse" only |
+COMMANDLINE BG COLOUR | hex colour code | "#FFFFFF" | Adjust the colour of the background. e.g. #000000 is black.  |
+COMMANDLINE FONT COLOUR | hex colour code | "#000000" | Adjust the colour of the font. e.g. #FFF000 is yellow.  |
+COMMANDLINE FONT NAME | string | (depends on the operating system) | Name of the font used in the commandline edit.  |
+COMMANDLINE FONT SIZE | <integer> | 10 | Adjust the size of the font in the commandline edit.  |
+COMMANDLINE FONT STYLE | <fsBold/fsItalic/fsUnderline> | " " | Adjust the style of the font, e.g. bold, underline etc |
+COMMANDLOG | ON/OFF | ON | When "ON" a complete list of executed commands is saved to a file in current active dir. |
+COMMANDLOGFILE | string | commandlog.pgm | Name of the file to save the executed commands |
+COMMANDLOGLINES | <integer> | 1000 | The number of lines kept in the commandlog file. If the number of lines is exceeded, the lines are dropped from the beginning |
+CONFIDENCE INTERVAL | 90> 95> 99 | 95 | Set the default confidence interval to be estimated by `table` or `ctable`
+CSV DELIMITER | <any desired delimiter> | , | The separator used between variables when you export to the clipboard from the browser.
+DISPLAY COMMANDTREE WINDOW | ON/OFF | OFF | Opens/Closes the command tree window
+DISPLAY DATASET WINDOW | ON/OFF | OFF | Opens/Closes the dataset window
+DISPLAY HISTORY WINDOW | ON/OFF | OFF | Opens/Closes the history window
+DISPLAY VARIABLE WINDOW | ON/OFF | OFF | Opens/Closes the variable window
 ECHO | ON/OFF | ON | When = ON show results, OFF: "silent"<br/>Use `show error` if you wish to suppress errors too!
 EDITOR FONT NAME | string | (depends on the operating system) | Name of the font used in the editor.  
 EDITOR FONT SIZE | <integer> | 10 | Adjust the size of the font.  
-EXITSAVE | YES/NO | NO | If "YES" the user is prompted on closing the program for saving if a project is open and has been modified 
-INCLUDE DELETED | ON/OFF | OFF | If "ON" then observations marked for deletion is also included in calculations 
+EXITSAVE | YES/NO | NO | If "YES" the user is prompted on closing the program for saving if a project is open and has been modified
+INCLUDE DELETED | ON/OFF | OFF | If "ON" then observations marked for deletion is also included in calculations
 OUTPUT BG COLOUR | hex colour code | "#FFFFFF" | Adjust the colour of the output background. e.g. #000000 is black.  
-OUTPUT CSS FILE | string | (empty) | When using HTML output it is possible to use an external CSS file. If the file name specified does not exist a file will be created with the content of the built in CSS. 
-OUTPUT CSS INTERNAL | YES/NO | YES | If set to YES, the content of the CSS FILE is embedded into the HTML. If set to NO the CSS FILE is referenced from within the HTML output. 
+OUTPUT CSS FILE | string | (empty) | When using HTML output it is possible to use an external CSS file. If the file name specified does not exist a file will be created with the content of the built in CSS.
+OUTPUT CSS INTERNAL | YES/NO | YES | If set to YES, the content of the CSS FILE is embedded into the HTML. If set to NO the CSS FILE is referenced from within the HTML output.
 OUTPUT FONT COLOUR | hex colour code | "#000000" | Adjust the colour of the output font. e.g. #FFF000 is yellow.  
 OUTPUT FONT NAME | string | (depends on the operating system) | Name of the font used in the text output.  
 OUTPUT FONT SIZE | <integer> | 10 | Adjust the size of the font in the text output.  
-OUTPUT FONT STYLE | <fsBold/fsItalic/fsUnderline> | " " | Adjust the style of the font, e.g. bold, underline etc 
-OUTPUT FORMAT | TEXT/HTML | TEXT | Format of the output window HTML viewing is current in beta 
+OUTPUT FONT STYLE | <fsBold/fsItalic/fsUnderline> | " " | Adjust the style of the font, e.g. bold, underline etc
+OUTPUT FORMAT | TEXT/HTML | TEXT | Format of the output window HTML viewing is current in beta
 OUTPUT SAVE FORMAT | TEXT/HTML | TEXT | Set the default format when saving the output to file.  
-SHORT MONTH NAMES | string | (depends on the language of the operating system)eg. Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec | The function `createdate` will use these value when trying to match against the short month names. This list MUST contain 12 items seperated by commas 
-SHOW COMMAND | ON/OFF | ON | If "ON" then each line that is run (from command line or editor) is added to output as ".<command...>". "OFF" = no output 
-SHOW DEBUG | ON/OFF | ON | If "ON" then lines containing debug information is shown. "OFF" = no output 
-SHOW ERROR | ON/OFF | ON | If "ON" then lines containing error information is shown. "OFF" = no output 
-SHOW INFO | ON/OFF | ON | If "ON" then lines containing informational output is shown. "OFF" = no output 
-SHOW WARNING | ON/OFF | ON | If "ON" then lines containing warning information is shown. "OFF" = no output 
-STATISTICS VALUE LABEL | L/V/LV/VL | L | Default option for output of variable data (value and/or label). See [Valuelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL" 
+SHORT MONTH NAMES | string | (depends on the language of the operating system)eg. Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec | The function `createdate` will use these value when trying to match against the short month names. This list MUST contain 12 items seperated by commas
+SHOW COMMAND | ON/OFF | ON | If "ON" then each line that is run (from command line or editor) is added to output as ".<command...>". "OFF" = no output
+SHOW DEBUG | ON/OFF | ON | If "ON" then lines containing debug information is shown. "OFF" = no output
+SHOW ERROR | ON/OFF | ON | If "ON" then lines containing error information is shown. "OFF" = no output
+SHOW INFO | ON/OFF | ON | If "ON" then lines containing informational output is shown. "OFF" = no output
+SHOW WARNING | ON/OFF | ON | If "ON" then lines containing warning information is shown. "OFF" = no output
+STATISTICS VALUE LABEL | L/V/LV/VL | L | Default option for output of variable data (value and/or label). See [Valuelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
 STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for displaying variable name and/or label. See [Variablelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
 
 # Common options
@@ -2118,11 +2131,11 @@ for i:= 2 to 5 do
    end;
 ```
 
-#Programming aids 
+#Programming aids
 
 These are not normally used in interactive mode
 
-<a name="programgrp" id="programgrp"></a> 
+<a name="programgrp" id="programgrp"></a>
 
 <a name="runtest" id="runtest"></a>
 ## runtest
@@ -2241,7 +2254,7 @@ function | takes | result | example
 ---|---|---|---
 <a name="createdate"></a>createdate(datestr) | s | d | createdate("31/12/2016") => 31/12/2016<br/>The form of *datestr is automatically detected, but if the string is ambiguous the preference is always DMY over MDY.<br/>If parts of the datestr are omitted, then these parts are filled with todays values.<br/>If the string is not recognised as a date, system missing is returned.
 createdate(datestr,date-type) | s, s | d | createdate("31/12/2016", "dmy") => 31/12/2016<br/>createdate("12/31/2016", "mdy") => 31/12/2016<br/>createdate("2016/12/31", "ymd") => 31/12/2016
-createdate(datestr,fmt-string) | s, s | d  | Converts any string to a date based on the format specified in fmt-string. The format options can be found in the FPC source documentation <a href="https://www.freepascal.org/docs-html/rtl/sysutils/formatchars.html">here</a><br/>createdate("31-dec-16", "dd-mmm-yy") => 31/12/2016<br/>For the "mmm" format it is possible to control the abbreviated month names using the [set options](#set). The default is based on the language of the Operating System.
+createdate(datestr,fmt-string) | s, s | d  | Converts any string to a date based on the format specified in fmt-string. The format options can be found in the [FPC source documentation](https://www.freepascal.org/docs-html/rtl/sysutils/formatchars.html)<br/>createdate("31-dec-16", "dd-mmm-yy") => 31/12/2016<br/>For the "mmm" format it is possible to control the abbreviated month names using the [set options](#set). The default is based on the language of the Operating System.
 createdate(d, m, y) | i, i, i | d | createdate(31, 12, 2016) => 31/12/2016
 <a name="today"></a>today() | - | i | returns today's date; may be assigned to a date variable or an integer
 <a name="day"></a>day(d) | d | i | day(31/12/2004) => 31
@@ -2301,7 +2314,6 @@ cwd() | | s | Returns the current working directory
 deleted([index]) | [i] |  b | Returns true/false whether the record is marked for deletion. If no index is supplied the current record number is tested<br/>select deleted() do edit data !nomd<br/>// selects current records marked for deletion and unmark them
 verified([index]) | [i] | b | Returns true/false whether the record is marked as verified. If no index is supplied the current record number is tested:<br/>select verified() do edit data !nomd <br/>// selects current records marked for deletion and unmark them
 
-
 ## Operators used in EpiData Analysis
 
 operator | syntax | result | meaning | example
@@ -2334,13 +2346,16 @@ epidataanalysis [options]
 ### Options
 
 - `-h or --help`
-                   Show this help and exit.
+
+  Show this help and exit.
 
 - `-v or --version`
-                    Show version info and exit.
+
+        Show version info and exit.
 
 - `-i or --inifile [FILE]`
-                    Uses [FILE] as startup program. If no location is specified startup.pgm is used.
+
+        Uses [FILE] as startup program. If no location is specified startup.pgm is used.
 
 ### Examples
 
