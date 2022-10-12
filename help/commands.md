@@ -986,11 +986,11 @@ Edit the metadata of *variable<sub>1</sub>. The options specify which metadata a
 
    Changes the entry mode used in EpiData EntryClient
    
-   ```
+```
 0 = default
 1 = must enter
 2 = no enter
-   ```
+```
    
 - `!cmpX := *variable`
 
