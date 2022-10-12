@@ -550,12 +550,12 @@ Create a new dataset for the project. Use the options to specify relations betwe
 
   Used only in combination with !parent. Tells EntryClient what happens after entry of one complete observation   
 
-  ```  
+```  
 0 = new observation
 1 = return to parent
 2 = return on max number of observataions
 3 = stay on the current observation
-  ```
+```
 
 - `!statusbar := "<text>"`
 
