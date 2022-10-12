@@ -747,7 +747,7 @@ Linux: #10 MacOS: #13 Windows: #13#10</p></li>
 
 <p>Add observations after all observations in current file</p>
 
-<h3 id="toc_9">Options</h3>
+<h3 id="toc_9">options</h3>
 
 <ul>
 <li><p><code>!fn := &lt;filename&gt;</code></p>
@@ -772,7 +772,7 @@ Linux: #10 MacOS: #13 Windows: #13#10</p></li>
 
 <p>Merge the current data file with another dataset file based on <em>key</em> variable(s). The result is a <strong>NEW</strong> dataset which is added to the top level of the project.</p>
 
-<h3 id="toc_11">Options</h3>
+<h3 id="toc_11">options</h3>
 
 <ul>
 <li><p><code>!fn [:= &lt;filename&gt;]</code></p>
@@ -816,17 +816,15 @@ etc ....</code></pre></div>
 
 <p>After  <code>merge</code> the variable <strong>mergevar</strong> indicates source of information for each observation (records). <strong>mergevar</strong> is defined with variable labels for these values:</p>
 
-<ul>
-<li>1 In main dataset only</li>
-<li>2 In merged dataset only</li>
-<li>3 In both datasets</li>
-</ul>
+<div><pre><code class="language-none">1 = In main dataset only
+2 = In merged dataset only
+3 = In both datasets</code></pre></div>
 
 <blockquote>
 <p>Note: if **mergevar already exists in the dataset, an error will occur and the merge will be stopped. Drop the **mergevar variable first.</p>
 </blockquote>
 
-<h3 id="toc_12">Example</h3>
+<h3 id="toc_12">example</h3>
 
 <div><pre><code class="language-none">// Load a project
 read &quot;Clinical Example.epx&quot;;
@@ -2440,7 +2438,7 @@ merge patientid !ds := firstdataset !filename := &quot;PatientNames.epx&quot;</c
 
 <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
 
-<h3 id="toc_14">Options</h3>
+<h3 id="toc_14">options</h3>
 
 <ul>
 <li><p><code>!m</code></p>
@@ -2503,7 +2501,7 @@ merge patientid !ds := firstdataset !filename := &quot;PatientNames.epx&quot;</c
 <li><p><code>!mci</code> Mean and 95% CI (low + high)</p></li>
 </ul>
 
-<h3 id="toc_16">Example</h3>
+<h3 id="toc_16">example</h3>
 
 <div><pre><code class="language-none">// define a global vectore for column texts:
 new global columntxt[5] string;
@@ -2526,7 +2524,7 @@ agg sex age family !hd:=columntxt  !mci:=economy !mci:=children ;</code></pre></
 
 <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
 
-<h3 id="toc_19">Example</h3>
+<h3 id="toc_19">example</h3>
 
 <div><pre><code class="language-none">read &quot;Clinical Example.epx&quot;;
 list dataset;
@@ -2561,7 +2559,7 @@ use datafile_id_2;</code></pre></div>
 
 <p>Creates a new empty project, e.g. for simulation or testing.</p>
 
-<h3 id="toc_23">Options</h3>
+<h3 id="toc_23">options</h3>
 
 <ul>
 <li><p><code>!size:= &lt;integer&gt;</code></p>
@@ -2602,7 +2600,7 @@ use datafile_id_2;</code></pre></div>
 
 <p>Create a new dataset for the project. Use the options to specify relations between datasets.  If the command completes successfully, the newly created dataset is automatically <a href="#use">used</a></p>
 
-<h3 id="toc_25">Options</h3>
+<h3 id="toc_25">options</h3>
 
 <ul>
 <li><p><code>!parent := &quot;&lt;parentform id&gt;&quot;</code></p>
@@ -2617,7 +2615,12 @@ use datafile_id_2;</code></pre></div>
 <p>Used only in combination with !parent. Gives the number of allowed child observations in the child dataset   (0 = no limit)</p></li>
 <li><p><code>!afterobs := &lt;integer&gt;</code></p>
 
-<p>Used only in combination with !parent. Tells EntryClient what happens after entry of one complete observation   0 = new observation, 1 = return to parent, 2 = return on max number of observataions, 3 = stay on the current observation</p></li>
+<p>Used only in combination with !parent. Tells EntryClient what happens after entry of one complete observation   </p>
+
+<div><pre><code class="language-none">0 = new observation
+1 = return to parent
+2 = return on max number of observataions
+3 = stay on the current observation</code></pre></div></li>
 <li><p><code>!statusbar := &quot;&lt;text&gt;&quot;</code></p>
 
 <p>Sets the <q>content string</q> of a dataform (see manager for formatting).</p></li>
@@ -2636,7 +2639,7 @@ use datafile_id_2;</code></pre></div>
 
 <p>Create a new variable of a given <a href="#types">type</a> and optionally assign the value in expression. The variable type and expressions type must be compatible. Variables contain a value for each observation. If no expression is given, all values will be missing.</p>
 
-<h3 id="toc_27">Options</h3>
+<h3 id="toc_27">options</h3>
 
 <ul>
 <li><p><code>!label := &quot;&lt;text&gt;&quot; class=&quot;option&quot;&gt;!l := &quot;&lt;text&gt;&quot;</code></p>
@@ -2662,11 +2665,9 @@ use datafile_id_2;</code></pre></div>
 
 <p>Change the entry mode used in EpiData EntryClient</p>
 
-<ul>
-<li>0 = default</li>
-<li>1 = must enter</li>
-<li>2 = no enter</li>
-</ul></li>
+<div><pre><code class="language-none">0 = default
+1 = must enter
+2 = no enter</code></pre></div></li>
 <li><p><code>!confirm</code></p>
 
 <p>If used, the variable has the <q>confirm entry</q> flag set. Used in EpiData EntryClient</p></li>
@@ -2697,12 +2698,13 @@ use datafile_id_2;</code></pre></div>
 <p>When creating a variable that supports automatic content (date, time or integer), using this option changes the default type to the automatic type.<br>
 Integer become AutoIncrement, DMY becomes AutoDMY, etc.</p>
 
-<p>For time and date variables the number specifies when the variable is updated:
- - 0 = When obervation is created (default)
- - 1 = When observation is first saved
- - 2 = Each time the record is saved after being edited</p>
+<p>For time and date variables the number specifies when the variable is updated:</p>
 
-<h3 id="toc_28">Examples</h3>
+<div><pre><code class="language-none"> 0 = When obervation is created (default)
+ 1 = When observation is first saved
+ 2 = Each time the record is saved after being edited</code></pre></div>
+
+<h3 id="toc_28">examples</h3>
 
 <p>Examples where all observations get the same value:</p>
 
@@ -2731,7 +2733,7 @@ new global Variable &lt;integer expression&gt; &lt;type&gt; [:= expression]</cod
 
 <p>Create a new global variable</p>
 
-<h3 id="toc_30">Parameters</h3>
+<h3 id="toc_30">parameters</h3>
 
 <ul>
 <li>Variable must be unique. If the variable name is followed by square brackets [...], then a global <em>vector</em> is created, where each entry can be individually accessed using</li>
@@ -2743,7 +2745,7 @@ new global Variable &lt;integer expression&gt; &lt;type&gt; [:= expression]</cod
 
 <p>If a value is assigned when creating a new global vector all entries of the vector will have the same value!</p>
 
-<h3 id="toc_31">Example</h3>
+<h3 id="toc_31">example</h3>
 
 <div><pre><code class="language-none">new global g1 integer     := 1 + 2 * 3 - 4;
 new global g2 float       := (2 * pi) * 5;
@@ -2764,7 +2766,7 @@ g7[3]                     := 20;</code></pre></div>
 
 <p>Create a new value label set with a given <a href="#types">type</a> (boolean not supported) and assign at least one (value, label) pair.</p>
 
-<h3 id="toc_33">Parameters</h3>
+<h3 id="toc_33">parameters</h3>
 
 <ul>
 <li><p>Each <code>(value, label)</code> pair will be added to the newly created set. The datatype of the value MUST match the defined datatype for the value label set itself. It is not possible to create an empty valuelabel set.</p></li>
@@ -2775,7 +2777,7 @@ g7[3]                     := 20;</code></pre></div>
 <p>Note: An empty set will restrict data entry to system missing only!</p>
 </blockquote>
 
-<h3 id="toc_34">Options</h3>
+<h3 id="toc_34">options</h3>
 
 <ul>
 <li><p><code>!m := &lt;value&gt;</code></p>
@@ -2783,7 +2785,7 @@ g7[3]                     := 20;</code></pre></div>
 <p>Marks the given value in the value label set as missing.   If the value is not part of the (value, label) pairs or the datatype does not match an error will be reported.   This option can be used multiple times with different values.</p></li>
 </ul>
 
-<h3 id="toc_35">Example</h3>
+<h3 id="toc_35">example</h3>
 
 <div><pre><code class="language-none">// &quot;normal&quot; value label
 new valuelabel _VL1 integer (1, &quot;Value A&quot;) (2, &quot;Value B&quot;) (9, &quot;Missing&quot;) !m := 9;
@@ -2804,7 +2806,7 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 
 <p>Show the variables mentioned in a spreadsheet grid</p>
 
-<h3 id="toc_38">Parameters</h3>
+<h3 id="toc_38">parameters</h3>
 
 <ul>
 <li>without variable names, browse all variables</li>
@@ -2812,13 +2814,21 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 
 <p>After browse has started you may Right Click and see how to close or adapt columns. Browse will, by default, follow the show formats setting.</p>
 
-<h3 id="toc_39">Options</h3>
+<h3 id="toc_39">options</h3>
 
 <ul>
-<li><p><code>!caption := &quot;&lt;string&gt;&quot;</code> Give the browser window a custom caption</p></li>
-<li><p><code>!c</code> Close all currently open browsers</p></li>
-<li><p><code>!a</code> Arrange all browsers in a cascade</p></li>
-<li><p><code>!vn</code>Show variable names instead of following the &#39;set <q>FORMAT VALUE LABEL</q>&#39; and<br>
+<li><p><code>!caption := &quot;&lt;string&gt;&quot;</code></p>
+
+<p>Give the browser window a custom caption</p></li>
+<li><p><code>!c</code> </p>
+
+<p>Close all currently open browsers</p></li>
+<li><p><code>!a</code> </p>
+
+<p>Arrange all browsers in a cascade</p></li>
+<li><p><code>!vn</code></p>
+
+<p>Show variable names instead of following the &#39;set <q>FORMAT VALUE LABEL</q>&#39; and<br>
 <code>set &quot;FORMAT VARIABLE LABEL&quot;</code> options</p></li>
 </ul>
 
@@ -2863,7 +2873,9 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 <h3 id="toc_43">Options</h3>
 
 <ul>
-<li><code>!info</code> Also shows the study information</li>
+<li><p><code>!info</code> </p>
+
+<p>Also shows the study information</p></li>
 </ul>
 
 <p><a name="listdataset" id="listdataset"></a></p>
@@ -2874,10 +2886,12 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 
 <p>Shows a list of datasets for the project</p>
 
-<h3 id="toc_45">Options</h3>
+<h3 id="toc_45">options</h3>
 
 <ul>
-<li><code>!all</code> Outputs additional information about the listed datasets</li>
+<li><p><code>!all</code> </p>
+
+<p>Outputs additional information about the listed datasets</p></li>
 </ul>
 
 <p><a name="listvariable" id="listvariable"></a></p>
@@ -2924,7 +2938,7 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 
 <p>Edits a project.</p>
 
-<h3 id="toc_52">Options</h3>
+<h3 id="toc_52">options</h3>
 
 <ul>
 <li><p><code>!label:= &quot;&lt;text&gt;&quot;</code></p>
@@ -2965,7 +2979,7 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 
 <p>Edit an existing dataset in the project.</p>
 
-<h3 id="toc_54">Options</h3>
+<h3 id="toc_54">options</h3>
 
 <ul>
 <li><p><code>!label := &quot;&lt;text&gt;&quot;</code></p>
@@ -2976,7 +2990,12 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 <p>Used only if dataset is related to a parent. Gives the number of allowed child observations   (0 = no limit)</p></li>
 <li><p><code>!afterobs := &lt;integer&gt;</code></p>
 
-<p>Used only if the dataset is related to a parent. Tells EntryClient what happens after entering the whole observation   0 = new observation, 1 = return to parent, 2 = return on max observation, 3 = stay on current observation</p></li>
+<p>Used only if the dataset is related to a parent. Tells EntryClient what happens after entering the whole observation</p>
+
+<div><pre><code class="language-none">0 = new observation,
+1 = return to parent
+2 = return on max observation
+3 = stay on current observation</code></pre></div></li>
 <li><p><code>!statusbar := &quot;&lt;text&gt;&quot;</code></p>
 
 <p>Sets the <q>content string</q> of a dataform (see manager for formatting).</p></li>
@@ -3005,7 +3024,7 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 
 <p>Edit the metadata of *variable<sub>1</sub>. The options specify which metadata are changed, multiple options may be used at once</p>
 
-<h3 id="toc_56">Options</h3>
+<h3 id="toc_56">options</h3>
 
 <ul>
 <li><p><code>!label := &quot;&lt;text&gt;&quot;</code></p>
@@ -3034,8 +3053,11 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 <p>Removes an existing defined range for the variable</p></li>
 <li><p><code>!entry := &lt;integer&gt;</code></p>
 
-<p>Changes the entry mode used in EpiData EntryClient
-       0 = default, 1 = must enter, 2 = no enter</p></li>
+<p>Changes the entry mode used in EpiData EntryClient</p>
+
+<div><pre><code class="language-none">0 = default
+1 = must enter
+2 = no enter</code></pre></div></li>
 <li><p><code>!cmpX := *variable</code></p>
 
 <p>Where <q>X</q> is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between this variable and the assigned variable.</p></li>
@@ -3072,7 +3094,7 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 
 <p>If a (value, label) pair already exist, the new label will replace the old label. Otherwise the (value, label) pair will be added to the set. The datatype of the value MUST match the datatype for the value label set itself.</p>
 
-<h3 id="toc_58">Options</h3>
+<h3 id="toc_58">options</h3>
 
 <ul>
 <li><p><code>!m := &lt;value&gt;</code></p>
@@ -3101,7 +3123,7 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 
 <p>To remove a valuelabel from a variable, see <a href="#editvariable">edit variable</a></p>
 
-<h3 id="toc_59">Example</h3>
+<h3 id="toc_59">example</h3>
 
 <div><pre><code class="language-none">// Create a new simple valuelabel
 new vl _VL1 int (1, &quot;A&quot;);
@@ -3130,7 +3152,7 @@ for i := 2 to 5 do
 
 <p>Edit the status of observations</p>
 
-<h3 id="toc_61">Options</h3>
+<h3 id="toc_61">options</h3>
 
 <ul>
 <li><p><code>!md / !nomd</code></p>
@@ -3161,7 +3183,7 @@ for i := 2 to 5 do
 
 <p>Drop all data within current select from memory. Save the data first if you wish to keep any changes.</p>
 
-<h3 id="toc_65">Options</h3>
+<h3 id="toc_65">options</h3>
 
 <ul>
 <li><code>!del</code> Drops all observations marked for deletion.</li>
@@ -3171,7 +3193,7 @@ for i := 2 to 5 do
 <p>Note: Make sure to test whether this creates a problem in a related dataset with the check command        </p>
 </blockquote>
 
-<h3 id="toc_66">Example</h3>
+<h3 id="toc_66">example</h3>
 
 <div><pre><code class="language-none">read &quot;bromar.epx&quot;;
 select (id &gt; 1000) do
@@ -3204,13 +3226,13 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 
 <p>Frequency distribution for <em>variable1</em></p>
 
-<h3 id="toc_70">Parameters</h3>
+<h3 id="toc_70">parameters</h3>
 
 <ul>
 <li>variable1 may be any <a href="#type">type</a></li>
 </ul>
 
-<h3 id="toc_71">Options</h3>
+<h3 id="toc_71">options</h3>
 
 <ul>
 <li><p><code>!m</code></p>
@@ -3248,13 +3270,13 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 
 <p>See <a href="#referencedvars">variables</a> on using referenced variables for this command</p>
 
-<h3 id="toc_73">Parameters</h3>
+<h3 id="toc_73">parameters</h3>
 
 <ul>
 <li>variable1 must be numeric</li>
 </ul>
 
-<h3 id="toc_74">Options</h3>
+<h3 id="toc_74">options</h3>
 
 <ul>
 <li><p><code>!by:</code></p>
@@ -3277,7 +3299,7 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 
 <p>See <a href="#labeling">labeling</a> for options on changing between labels/values</p>
 
-<h3 id="toc_75">Methodology notes:</h3>
+<h3 id="toc_75">methodology notes:</h3>
 
 <ul>
 <li>confidence intervals given are based on the t-distribution with N-1 degrees of freedom.</li>
@@ -3298,7 +3320,7 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 
 <p>For numerical variables, the output will also include mean, standard deviation, minimum, median, maximum</p>
 
-<h3 id="toc_77">Statistic options</h3>
+<h3 id="toc_77">statistic options</h3>
 
 <p>Use any combination of options to customize the output</p>
 
@@ -3319,7 +3341,7 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 
 <p>See <a href="#labeling">labeling</a> for options on changing between labels/values</p>
 
-<h3 id="toc_78">Methodology notes</h3>
+<h3 id="toc_78">methodology notes</h3>
 
 <ul>
 <li>All statistics are based on the <code>means</code> command and all frequencies are based on the <code>freq</code> command, so results from <code>describe</code> will be exactly the same as those from <code>means</code> or <code>freq</code>.</li>
@@ -3333,7 +3355,7 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 
 <p>Counts number of observations. Count may be used with select to count within a subgroup. No parameters or options apply.</p>
 
-<h3 id="toc_80">Result variables:</h3>
+<h3 id="toc_80">result variables:</h3>
 
 <ul>
 <li>$count</li>
@@ -3373,7 +3395,7 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 <p>Hide summary table</p></li>
 </ul>
 
-<h3 id="toc_83">Percentage options</h3>
+<h3 id="toc_83">percentage options</h3>
 
 <ul>
 <li><p><code>!pr</code></p>
@@ -3387,7 +3409,7 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 <p>Show total percents for each table cell and col/row totals</p></li>
 </ul>
 
-<h3 id="toc_84">Sort optionlist</h3>
+<h3 id="toc_84">sort optionlist</h3>
 
 <p>Indicate by !sxxx where the x may include<br/>
            r:row c:Column a:Ascending d:Descending t:Total l:label (else numerical)</p>
@@ -3407,7 +3429,7 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 <li><p><code>!srtd</code> Sort on row totals descending order</p></li>
 </ul>
 
-<h3 id="toc_85">Estimation and testing options</h3>
+<h3 id="toc_85">estimation and testing options</h3>
 
 <ul>
 <li><p><code>!t</code></p>
@@ -3440,7 +3462,7 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 
 <p>The ctable command summarizes a series of cross tables for the first variable against each of the following variables.</p>
 
-<h3 id="toc_87">Parameters</h3>
+<h3 id="toc_87">parameters</h3>
 
 <ul>
 <li>column variable will usually have only two values, as with an outcome</li>
@@ -3448,7 +3470,7 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 
 <p>The ctable options have the same meaning as in the tables command.</p>
 
-<h3 id="toc_88">Data and output options</h3>
+<h3 id="toc_88">data and output options</h3>
 
 <ul>
 <li><p><code>!m</code></p>
@@ -3470,7 +3492,7 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 <li><code>!q</code> Hide all output! Result variable are still calculated</li>
 </ul>
 
-<h3 id="toc_89">Sort options</h3>
+<h3 id="toc_89">sort options</h3>
 
 <p>Sorting (applies to individual variable tables). Indicate by !sxxx where the x indicate:<br/>
           r:row c:Column a:Ascending d:Descending t:Total l:label (else numerical)</p>
@@ -3490,7 +3512,7 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 <li><p><code>!srtd</code> Sort on row totals descending order</p></li>
 </ul>
 
-<h3 id="toc_90">Estimation and testing options</h3>
+<h3 id="toc_90">estimation and testing options</h3>
 
 <ul>
 <li><p><code>!t</code></p>
@@ -3524,7 +3546,7 @@ drop data !del ; // drop all observations &quot;marked for deletion&quot;</code>
 <p>Show unstratified 2x2 tables</p></li>
 </ul>
 
-<h3 id="toc_92">Output table sort options</h3>
+<h3 id="toc_92">output table sort options</h3>
 
 <p>Only one may be given</p>
 
@@ -3561,7 +3583,7 @@ survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]</code></p
 
 <p>Kaplan-Meier plots and lifetables for time-to-failure data with censoring. Tabulations of survival at each time when there were deaths (failures), plus confidence intervals. A summary table shows the median survival by stratum. The KM plot is always provided in a separate window unless !q is specified as an option.</p>
 
-<h3 id="toc_95">Parameters</h3>
+<h3 id="toc_95">parameters</h3>
 
 <ul>
 <li><code>outcome variable</code> must have discrete values, one of which indicates failure or death</li>
@@ -3569,7 +3591,7 @@ survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]</code></p
 <li><code>date1</code> and <code>date2</code> must be date variables. Elapsed time is calculated as <code>date2 - date1</code></li>
 </ul>
 
-<h3 id="toc_96">Options</h3>
+<h3 id="toc_96">options</h3>
 
 <ul>
 <li><p><code>!o</code></p>
@@ -3599,7 +3621,7 @@ survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]</code></p
 <p>When intervals are specified, adjust the number at risk to exclude half of the censored subjects (Hosmer, Lemeshow)</p></li>
 </ul>
 
-<h3 id="toc_97">Output options</h3>
+<h3 id="toc_97">output options</h3>
 
 <ul>
 <li><p><code>!nt</code> Omit the lifetables</p></li>
@@ -3626,11 +3648,11 @@ survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]</code></p
 <p><code>survival</code> is a graph command and any graph option may be specified</p></li>
 </ul>
 
-<h3 id="toc_99">Result variables</h3>
+<h3 id="toc_99">result variables</h3>
 
 <p>Estimates are saved as result variables. Use  <code>list results</code> for details</p>
 
-<h3 id="toc_100">Methodology</h3>
+<h3 id="toc_100">methodology</h3>
 
 <ul>
 <li>confidence intervals calculated using the method in Statistics with Confidence, referenced elsewhere.</li>
@@ -3650,14 +3672,14 @@ survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]</code></p
 
 <p>Simple scatter plot for two variables.</p>
 
-<h3 id="toc_102">Parameters</h3>
+<h3 id="toc_102">parameters</h3>
 
 <ul>
 <li>Xvariable may also be integer, float or date/time</li>
 <li>Yvariable may be integers or float</li>
 </ul>
 
-<h3 id="toc_103">Options</h3>
+<h3 id="toc_103">options</h3>
 
 <ul>
 <li><code>scatter</code> is a graph command and any graph option may be specified</li>
@@ -3673,14 +3695,14 @@ survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]</code></p
 
 <p>Draw a barchart for Variable. A barchart shows frequencies at each indiviual value of Variable.</p>
 
-<h3 id="toc_105">Parameters</h3>
+<h3 id="toc_105">parameters</h3>
 
 <ul>
 <li>Variable may be of any type</li>
 <li>Stratifyvariable may be of any type</li>
 </ul>
 
-<h3 id="toc_106">Options</h3>
+<h3 id="toc_106">options</h3>
 
 <ul>
 <li><p><code>!pct</code></p>
@@ -3709,14 +3731,14 @@ survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]</code></p
 
 <p>A histogram is a bar chart where every integer value within range is represented on the X-axis.</p>
 
-<h3 id="toc_108">Parameters</h3>
+<h3 id="toc_108">parameters</h3>
 
 <ul>
 <li>Variable may be integer or date</li>
 <li>Stratifyvariable may be of any type</li>
 </ul>
 
-<h3 id="toc_109">Options</h3>
+<h3 id="toc_109">options</h3>
 
 <ul>
 <li><p><code>!interval:=i</code></p>
@@ -3744,14 +3766,14 @@ survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]</code></p
 
 <p>An epicurve is a stacked histogram, where individual boxes are shown for each subject</p>
 
-<h3 id="toc_111">Parameters</h3>
+<h3 id="toc_111">parameters</h3>
 
 <ul>
 <li>Variable may be integer or date</li>
 <li>Stratifyvariable may be of any type</li>
 </ul>
 
-<h3 id="toc_112">Options</h3>
+<h3 id="toc_112">options</h3>
 
 <ul>
 <li><p><code>!interval:=i</code></p>
@@ -3781,7 +3803,7 @@ survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]</code></p
 <li>Comparison: If a variable is compared to another variable, is the comparison uphold.</li>
 </ul>
 
-<h3 id="toc_115">Example</h3>
+<h3 id="toc_115">example</h3>
 
 <div><pre><code class="language-none">read &quot;bromar.epx&quot;
 check data                   // checks all variable
@@ -3799,7 +3821,7 @@ check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age
 
 <p>If no variables are specified and a key is already present in the current dataset, this key is checked.</p>
 
-<h3 id="toc_117">Example</h3>
+<h3 id="toc_117">example</h3>
 
 <div><pre><code class="language-none">read &quot;bromar.epx&quot;
 check key id                 // checks if the variable ID represents a unique key</code></pre></div>
@@ -3814,7 +3836,7 @@ check key id                 // checks if the variable ID represents a unique ke
 
 <p>Check that all observations have a valid parent observation</p>
 
-<h3 id="toc_119">Example</h3>
+<h3 id="toc_119">example</h3>
 
 <div><pre><code class="language-none">read &quot;related_data.epx&quot;;  // Load the project
 use child_dataset;        // Change dataset to a related dataset
@@ -3829,7 +3851,7 @@ check relate;             // Perform the check from the child dataset &quot;upwa
 
 <p>Check that the study information of is specified or not.</p>
 
-<h3 id="toc_121">Example</h3>
+<h3 id="toc_121">example</h3>
 
 <div><pre><code class="language-none">read &quot;samplev3.epx&quot;;  // Load the project
 check study;          // Perform the check</code></pre></div>
@@ -3854,11 +3876,11 @@ check study;          // Perform the check</code></pre></div>
 
 <p>Compares two dataset / projects against each other, validating the data content and outputs a report of differences based on the comparison.</p>
 
-<h3 id="toc_125">Parameters</h3>
+<h3 id="toc_125">parameters</h3>
 
 <p>The variables var1 .. var2 denotes the sorting variables. This is required if not comparing whole projects OR if the datasets does not contain and key variables.</p>
 
-<h3 id="toc_126">Options</h3>
+<h3 id="toc_126">options</h3>
 
 <ul>
 <li><p><code>!fn := &quot;&lt;string&gt;&quot;</code></p>
@@ -3887,7 +3909,7 @@ check study;          // Perform the check</code></pre></div>
 <p>All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!</p></li>
 </ul>
 
-<h3 id="toc_127">Example</h3>
+<h3 id="toc_127">example</h3>
 
 <div><pre><code class="language-none">read &quot;bromar.epx&quot;;               // Load the project
 >>>>>>> 69067c8 (Command help created as Markdown)
@@ -3955,7 +3977,7 @@ report val id !fn := &quot;double_entry.epx&quot;</code></pre></div>
 
 <p>The output is a report with a condensed table of the found keys and a complete table with the found unique key values and the count of these in each dataset.</p>
 
-<h3 id="toc_129">Options</h3>
+<h3 id="toc_129">options</h3>
 
 <ul>
 <li><p><code>!fn := &lt;global string vector&gt;</code> This option accepts a global vector with the filenames that is included in the report</p></li>
@@ -3963,7 +3985,7 @@ report val id !fn := &quot;double_entry.epx&quot;</code></pre></div>
 <li><p><code>!nol</code> Only show the condensed report - do not show the list of observations</p></li>
 </ul>
 
-<h3 id="toc_130">Example</h3>
+<h3 id="toc_130">example</h3>
 
 <div><pre><code class="language-none">// Setup the input for the report:
 new global filenames[5] string;
@@ -4580,7 +4602,7 @@ dir [&quot;&lt;directory path&quot;]</code></pre></div>
 
 <p>List files in a directory</p>
 
-<h3 id="toc_134">Parameters</h3>
+<h3 id="toc_134">parameters</h3>
 
 <ul>
 <li><em>directory</em> name may include wild cards (* or ?)
@@ -4623,7 +4645,7 @@ dir [&quot;&lt;directory path&quot;]</code></pre></div>
 <li><strong><em>Windows / Linux</em></strong>: Edit / Options</li>
 </ul>
 
-<h3 id="toc_139">Parameters</h3>
+<h3 id="toc_139">parameters</h3>
 
 <ul>
 <li><p>Without parameters, provides a list of available parameters and their current values</p></li>
@@ -4637,7 +4659,7 @@ dir [&quot;&lt;directory path&quot;]</code></pre></div>
 
 <p>The case of parameters and values does not matter.</p>
 
-<h3 id="toc_140">Examples</h3>
+<h3 id="toc_140">examples</h3>
 
 <div><pre><code class="language-none">set &quot;echo&quot;;
 set &quot;echo&quot; := &quot;off&quot;;
@@ -5039,7 +5061,7 @@ Any command that accepts more than one variable as parameters can use the follow
 
 <p>Variables for expansion cannot start with the <q>*</q> or <q>?</q>, but must start with a <q>normal</q> character.</p>
 
-<h3 id="toc_148">Examples</h3>
+<h3 id="toc_148">examples</h3>
 
 <div><pre><code class="language-none">// Consider the following set of variables (and in that order):
 // V1, V2, V3, V4, V10, V11, V100
@@ -5056,7 +5078,7 @@ list data V1??;          // V1?? is expanded to V100 only!</code></pre></div>
 
 <p>With a referenced variable, you essentially use the content of another variable (global, result) <u>to provide the variable name</u>.</p>
 
-<h3 id="toc_150">Examples</h3>
+<h3 id="toc_150">examples</h3>
 
 <div><pre><code class="language-none">new global gvar1 string := &quot;sex&quot;;
 read &quot;bromar.epx&quot;;
@@ -5244,28 +5266,39 @@ id="programgrp"></a> Programming aids - not normally used in interactive mode</t
 <p>This is provided for testing of correct estimation etc.
         If no path is given, a dialog is shown to select the working directory.</p>
 
+<h3 id="toc_153">parameters</h3>
+
+<ul>
+<li><p><code>directory path</code></p>
+
+<p>a directory that contains multiple .pgm files</p></li>
+<li><p>without parameters, the open file dialogue is started</p></li>
+</ul>
+
 <p><a name="run"></a></p>
 
-<h2 id="toc_153">run</h2>
+<h2 id="toc_154">run</h2>
 
 <div><pre><code class="language-none">run [&quot;&lt;filename.pgm&gt;&quot;]</code></pre></div>
 
 <p>Execute the commands saved in a .pgm file</p>
 
-<h3 id="toc_154">Parameters</h3>
+<h3 id="toc_155">parameters</h3>
 
 <ul>
-<li><p><code>filename.pgm</code> may include a path</p></li>
+<li><p><code>filename.pgm</code></p>
+
+<p>may include a path</p></li>
 <li><p>without parameters, the open file dialogue is started</p></li>
 </ul>
 
 <p><a name="stop" id="stop"></a></p>
 
-<h1 id="toc_155">Clean up - stop</h1>
+<h1 id="toc_156">Clean up - stop</h1>
 
 <p><a name="close" id="close"></a></p>
 
-<h2 id="toc_156">close</h2>
+<h2 id="toc_157">close</h2>
 
 <div><pre><code class="language-none">close</code></pre></div>
 
@@ -5275,7 +5308,7 @@ id="programgrp"></a> Programming aids - not normally used in interactive mode</t
 
 <p><a name="cls" id="cls"></a></p>
 
-<h2 id="toc_157">cls</h2>
+<h2 id="toc_158">cls</h2>
 
 <div><pre><code class="language-none">cls</code></pre></div>
 
@@ -5283,7 +5316,7 @@ id="programgrp"></a> Programming aids - not normally used in interactive mode</t
 
 <p><a name="clh" id="clh"></a></p>
 
-<h2 id="toc_158">clh</h2>
+<h2 id="toc_159">clh</h2>
 
 <div><pre><code class="language-none">clh</code></pre></div>
 
@@ -5291,7 +5324,7 @@ id="programgrp"></a> Programming aids - not normally used in interactive mode</t
 
 <p><a name="reset" id="reset"></a></p>
 
-<h2 id="toc_159">reset</h2>
+<h2 id="toc_160">reset</h2>
 
 <div><pre><code class="language-none">reset</code></pre></div>
 
@@ -6109,7 +6142,7 @@ border="1">
 
 <p><a name="functions" id="functions"></a></p>
 
-<h1 id="toc_160">Functions available in EpiData Analysis</h1>
+<h1 id="toc_161">Functions available in EpiData Analysis</h1>
 
 <p>In the following, <em>takes</em> indicates the variable type for each parameter and <em>result</em> indicates the type of the result of the function:
 - s: string
@@ -6123,7 +6156,7 @@ border="1">
 
 <p>Parameters may be variables read from fields, created variables, or any expression that evaluates to the correct type.</p>
 
-<h2 id="toc_161">String functions</h2>
+<h2 id="toc_162">String functions</h2>
 
 <table>
 <thead>
@@ -6181,7 +6214,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_162">Arithmetic functions (including Random numbers)</h2>
+<h2 id="toc_163">Arithmetic functions (including Random numbers)</h2>
 
 <table>
 <thead>
@@ -6251,7 +6284,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_163">Trigonomerty functions</h2>
+<h2 id="toc_164">Trigonomerty functions</h2>
 
 <table>
 <thead>
@@ -6303,7 +6336,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_164">Date functions</h2>
+<h2 id="toc_165">Date functions</h2>
 
 <table>
 <thead>
@@ -6379,7 +6412,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_165">Time functions</h2>
+<h2 id="toc_166">Time functions</h2>
 
 <table>
 <thead>
@@ -6431,7 +6464,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_166">Logic functions</h2>
+<h2 id="toc_167">Logic functions</h2>
 
 <table>
 <thead>
@@ -6471,7 +6504,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_167">Conversion functions</h2>
+<h2 id="toc_168">Conversion functions</h2>
 
 <table>
 <thead>
@@ -6511,7 +6544,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_168">Identifier functions</h2>
+<h2 id="toc_169">Identifier functions</h2>
 
 <table>
 <thead>
@@ -6557,7 +6590,7 @@ border="1">
 </tbody>
 </table>
 
-<h2 id="toc_169">Test and special functions</h2>
+<h2 id="toc_170">Test and special functions</h2>
 
 <table>
 <thead>
@@ -6617,7 +6650,7 @@ border="1">
 
 <p><a name="operators" id="operators"></a></p>
 
-<h2 id="toc_170">Operators used in EpiData Analysis</h2>
+<h2 id="toc_171">Operators used in EpiData Analysis</h2>
 
 <table>
 <thead>
@@ -6762,13 +6795,13 @@ border="1">
 
 <p><a name="startup" id="startup"></a></p>
 
-<h2 id="toc_171">Startup options for EpiData Analysis</h2>
+<h2 id="toc_172">Startup options for EpiData Analysis</h2>
 
 <p>The use of startup options depends on the operating system. You may be able to create a desktop shortcut that includes these or start analysis from the command line.</p>
 
 <p>epidataanalysis [options]</p>
 
-<h3 id="toc_172">Options</h3>
+<h3 id="toc_173">options</h3>
 
 <ul>
 <li><p><code>-h or --help</code></p>
@@ -6782,7 +6815,7 @@ border="1">
 <div><pre><code class="language-none">Uses [FILE] as startup program. If no location is specified startup.pgm is used.</code></pre></div></li>
 </ul>
 
-<h3 id="toc_173">Examples</h3>
+<h3 id="toc_174">examples</h3>
 
 <p>With Linux:</p>
 
