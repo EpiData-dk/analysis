@@ -2663,11 +2663,14 @@ use datafile_id_2;</code></pre></div>
 <p>Set the upper bound for a range of values. Must be used in combination with !rangelow</p></li>
 <li><p><code>!entrymode := {0|1|2}</code></p>
 
-<p>Change the entry mode used in EpiData EntryClient</p>
+<p>Change the entry mode used in EpiData EntryClient</p></li>
+</ul>
 
 <div><pre><code class="language-none">0 = default
 1 = must enter
-2 = no enter</code></pre></div></li>
+2 = no enter</code></pre></div>
+
+<ul>
 <li><p><code>!confirm</code></p>
 
 <p>If used, the variable has the <q>confirm entry</q> flag set. Used in EpiData EntryClient</p></li>
@@ -2990,12 +2993,15 @@ new valuelabel _VL2 integer (0 + 1, &quot;This &quot; + &quot;is &quot; + &quot;
 <p>Used only if dataset is related to a parent. Gives the number of allowed child observations   (0 = no limit)</p></li>
 <li><p><code>!afterobs := &lt;integer&gt;</code></p>
 
-<p>Used only if the dataset is related to a parent. Tells EntryClient what happens after entering the whole observation</p>
+<p>Used only if the dataset is related to a parent. Tells EntryClient what happens after entering the whole observation</p></li>
+</ul>
 
 <div><pre><code class="language-none">0 = new observation,
 1 = return to parent
 2 = return on max observation
-3 = stay on current observation</code></pre></div></li>
+3 = stay on current observation</code></pre></div>
+
+<ul>
 <li><p><code>!statusbar := &quot;&lt;text&gt;&quot;</code></p>
 
 <p>Sets the <q>content string</q> of a dataform (see manager for formatting).</p></li>

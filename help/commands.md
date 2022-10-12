@@ -608,11 +608,11 @@ Create a new variable of a given [type](#types) and optionally assign the value 
 
   Change the entry mode used in EpiData EntryClient
   
-  ```
+```
 0 = default
 1 = must enter
 2 = no enter
-  ```
+```
 
 - `!confirm`
 
@@ -641,11 +641,11 @@ Integer become AutoIncrement, DMY becomes AutoDMY, etc.
 
   For time and date variables the number specifies when the variable is updated:
   
-  ``` 
+``` 
  0 = When obervation is created (default)
  1 = When observation is first saved
  2 = Each time the record is saved after being edited
-  ```
+```
   
 ### examples
 
@@ -913,12 +913,12 @@ Edit an existing dataset in the project.
 
   Used only if the dataset is related to a parent. Tells EntryClient what happens after entering the whole observation
   
-  ```
+```
 0 = new observation,
 1 = return to parent
 2 = return on max observation
 3 = stay on current observation
-  ```
+```
   
 - `!statusbar := "<text>"`
 
