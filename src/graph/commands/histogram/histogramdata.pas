@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, executor, epifields_helper,
   ast, epidatafiles, epicustombase, chartfactory,
-  TAGraph, TALegend, tables_types, tables, freq;
+  TAGraph, TALegend, tables_types, tables;
 
 type
 
@@ -51,7 +51,6 @@ type
       property XValue[index: Integer]:     Integer read getXValue;
       property Name[index: Integer]:       UTF8String read getName;
       property MaxCount[stratum: Integer]: Integer read getMaxCount;
-      procedure Fill(F: TFreqDataFile);
       procedure Fill(T: TTwoWayTable);
       procedure HistogramToEpicurve;
   end;
@@ -150,20 +149,6 @@ begin
   if (FCount > 0) then
     raise Exception.Create('Histogram--SetInterval called before Fill.');
   FInterval := i;
-end;
-
-procedure THistogram.Fill(F: TFreqDataFile);
-var
-  i: Integer;
-begin
-  initBins(1, F.Categ.AsInteger[0], F.Categ.AsInteger[F.Categ.Size - 1]);
-  FStrataName[0] := '';
-  for i := 0 to F.Categ.Size - 1 do
-    begin
-      FBins[getSlot(F.Categ.AsInteger[i]), 0] += F.Count[i];
-    end;
-  setMaxCount(0);
-  FTotal := F.Sum;
 end;
 
 procedure THistogram.Fill(T: TTwoWayTable);

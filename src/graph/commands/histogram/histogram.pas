@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, chartcommandresult, executor, outputcreator, epifields_helper,
   ast, epidatafiles, epidatafilestypes, epicustombase, chartcommand, chartfactory, chartconfiguration,
-  TAGraph, TALegend, tables_types, tables, freq, histogramsource, histogramdata;
+  TAGraph, TALegend, tables_types, tables, histogramsource, histogramdata;
 
 type
 
@@ -51,7 +51,6 @@ var
   BarSeries:           TBarSeries;
   SeriesStyles:        TChartStyles;
   aStyle:              TChartStyle;
-  // for now, use default colours from classic analysis
   // TODO: put in graph options
   sColor:              TColorMap;
   {Frequencies}
@@ -60,8 +59,6 @@ var
   StratVariable:       TStringList;
   nilTablesRefMap:     TEpiReferenceMap;
   TableData:           TTwowayTable;
-  F:                   TFreqCommand;
-  FreqData:            TFreqDatafile;
   {command}
   VarNames:            TStrings;
   DFVars:              TStrings;
@@ -83,10 +80,10 @@ begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
-  VarNames := Command.VariableList.GetIdentsAsList;
-  DFVars := Command.VariableList.GetIdentsAsList;
-  StratVariable := TStringList.Create;
-  ReverseStrata := Command.HasOption('sd', Opt);
+  VarNames            := Command.VariableList.GetIdentsAsList;
+  DFVars              := Command.VariableList.GetIdentsAsList;
+  StratVariable       := TStringList.Create;
+  ReverseStrata       := Command.HasOption('sd', Opt);
   if (ReverseStrata) then
     begin
       Command.Options.Remove(Opt); // don't pass this to TABLES!
@@ -94,7 +91,7 @@ begin
         FOutputCreator.DoInfoShort('!sd ignored with a single variable');
     end;
 
-   WeightVarName := '';
+  WeightVarName := '';
   if (Command.HasOption(['w'],Opt)) then
     begin
       WeightVarName := Opt.Expr.AsIdent;
@@ -110,35 +107,25 @@ begin
   if (Command.HasOption('interval', Opt)) then
     HistogramData.Interval := Opt.Expr.AsInteger;
   HistogramData.PctCalc := yPct;
-  if (Varnames.Count > 1) or (WeightVarName <> '') then
+  if (Varnames.Count = 1) then
+// add dummy variable to use Tables with one variable
     begin
-      if (Varnames.Count = 1) then
-    // add dummy variable to use Tables with one variable plus weight variable
-        begin
-          dummyVar := DataFile.NewField(ftInteger);
-          dummyVar.Name := '_dummy';
-          Varnames.Add('_dummy');
-        end;
-   // Note: this does NOT call CalcTables with stratification
-      T := TTables.Create(FExecutor, FOutputCreator);
-      TableData  := T.CalcTables(Datafile, VarNames,
-                    StratVariable, WeightVarName, Command.Options, nilTablesRefMap, nilStatistics).UnstratifiedTable;
-      if (ReverseStrata) then
-        TableData.SortByRowLabel(true);
-      HistogramData.Fill(TableData);
-      T.Free;
-      ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
-      // if dummy var was created, remove it now
-        if (Varnames.IndexOf('_dummy') > -1) then
-          Varnames.Delete(Varnames.IndexOf('_dummy'));
-    end
-  else
-    begin
-      F := TFreqCommand.Create(FExecutor, FOutputCreator);
-      FreqData := F.CalcFreq(Datafile, VarNames[0], nilTablesRefMap);
-      HistogramData.Fill(FreqData);
-      F.Free;
+      dummyVar := DataFile.NewField(ftInteger);
+      dummyVar.Name := '_dummy4histogram';
+      Varnames.Add('_dummy4histogram');
     end;
+// Note: this does NOT call CalcTables with stratification
+  T := TTables.Create(FExecutor, FOutputCreator);
+  TableData  := T.CalcTables(Datafile, VarNames,
+                StratVariable, WeightVarName, Command.Options, nilTablesRefMap, nilStatistics).UnstratifiedTable;
+  if (ReverseStrata) then
+    TableData.SortByRowLabel(true);
+  HistogramData.Fill(TableData);
+  T.Free;
+  ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
+  // if dummy var was created, remove it now
+  if (Varnames.IndexOf('_dummy4histogram') > -1) then
+    Varnames.Delete(Varnames.IndexOf('_dummy4histogram'));
 
   HistogramSource := THistogramSource.Create(Chart);
   HistogramSource.Histogram := HistogramData;
