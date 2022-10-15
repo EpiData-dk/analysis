@@ -67,6 +67,7 @@ var
   VarNames:            TStrings;
   DFVars:              TStrings;
   XVar:                TEpiField;
+  dummyVar:            TEpiField;
   WeightVarName:       UTF8String;
   Opt:                 TOption;
 
@@ -108,9 +109,16 @@ begin
   BarSource := TBarSource.Create(Chart);
   BarSource.Pct := yPct;
   LabelSeries := TListChartSource.Create(Chart);
-  if (Varnames.Count > 1) then
+  if (Varnames.Count > 1) or (WeightVarName <> '') then
     begin
-   // Note: this does NOT call CalcTables with stratification
+      if (Varnames.Count = 1) then
+    // add dummy variable to use Tables with one variable plus weight variable
+        begin
+          dummyVar := DataFile.NewField(ftInteger);
+          dummyVar.Name := '_dummy';
+          Varnames.Add('_dummy');
+        end;
+    // Note: this does NOT call CalcTables with stratification
       T := TTables.Create(FExecutor, FOutputCreator);
       TableData  := T.CalcTables(Datafile, VarNames,
                     StratVariable, WeightVarName, Command.Options, nilTablesRefMap, nilStatistics).UnstratifiedTable;
@@ -119,7 +127,10 @@ begin
       BarSource.SetSource(TableData, ValueLabelOutput);
       ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
       for i := 0 to TableData.ColCount - 1 do
-        LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, ValueLabelOutput)); //.AsString[i]);   // TODO: use value label for 3rd parameter!
+        LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, ValueLabelOutput));
+    // if dummy var was created, remove it now
+      if (Varnames.IndexOf('_dummy') > -1) then
+        Varnames.Delete(Varnames.IndexOf('_dummy'));
     end
   else
     begin
@@ -127,7 +138,7 @@ begin
       FreqData := F.CalcFreq(Datafile, VarNames[0],nilTablesRefMap);
       BarSource.SetSource(FreqData);
       for i := 0 to FreqData.Count.Size - 1 do
-        LabelSeries.Add(i.ToDouble, 0, FreqData.Categ.GetValueLabel(i, ValueLabelOutput)); // .AsString[i]);   // TODO: use value label for 3rd parameter!
+        LabelSeries.Add(i.ToDouble, 0, FreqData.Categ.GetValueLabel(i, ValueLabelOutput));
     end;
 
   BarSeries := TBarSeries.Create(Chart);

@@ -66,6 +66,7 @@ var
   VarNames:            TStrings;
   DFVars:              TStrings;
   XVar:                TEpiField;
+  dummyVar:            TEpiField;
   WeightVarName:       UTF8String;
   Opt:                 TOption;
 
@@ -109,8 +110,15 @@ begin
   if (Command.HasOption('interval', Opt)) then
     HistogramData.Interval := Opt.Expr.AsInteger;
   HistogramData.PctCalc := yPct;
-  if (Varnames.Count > 1) then
+  if (Varnames.Count > 1) or (WeightVarName <> '') then
     begin
+      if (Varnames.Count = 1) then
+    // add dummy variable to use Tables with one variable plus weight variable
+        begin
+          dummyVar := DataFile.NewField(ftInteger);
+          dummyVar.Name := '_dummy';
+          Varnames.Add('_dummy');
+        end;
    // Note: this does NOT call CalcTables with stratification
       T := TTables.Create(FExecutor, FOutputCreator);
       TableData  := T.CalcTables(Datafile, VarNames,
@@ -120,6 +128,9 @@ begin
       HistogramData.Fill(TableData);
       T.Free;
       ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
+      // if dummy var was created, remove it now
+        if (Varnames.IndexOf('_dummy') > -1) then
+          Varnames.Delete(Varnames.IndexOf('_dummy'));
     end
   else
     begin
