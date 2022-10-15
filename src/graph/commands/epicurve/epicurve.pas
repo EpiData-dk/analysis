@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, chartcommandresult, executor, outputcreator, epifields_helper,
   ast, epidatafiles, epidatafilestypes, epicustombase, chartcommand, chartfactory, chartconfiguration,
-  TAGraph, TASources, TALegend, tables_types, tables, freq, histogramsource, histogramdata;
+  TAGraph, TASources, TALegend, tables_types, tables, histogramsource, histogramdata;
 
 type
 
@@ -54,7 +54,6 @@ var
   BarSeries:           TBarSeries;
   SeriesStyles:        TChartStyles;
   aStyle:              TChartStyle;
-  // for now, use default colours from classic analysis
   // TODO: put in graph options
   sColor:              TColorMap;
   {Frequencies}
@@ -63,11 +62,10 @@ var
   StratVariable:       TStringList;
   nilTablesRefMap:     TEpiReferenceMap;
   TableData:           TTwowayTable;
-  F:                   TFreqCommand;
-  FreqData:            TFreqDatafile;
   {command}
   VarNames:            TStrings;
   XVar:                TEpiField;
+  dummyVar:            TEpiField;
   WeightVarName:       UTF8String;
   Opt:                 TOption;
 
@@ -83,9 +81,9 @@ begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
-  VarNames := Command.VariableList.GetIdentsAsList;
-  StratVariable := TStringList.Create;
-  ReverseStrata := Command.HasOption('sd', Opt);
+  VarNames            := Command.VariableList.GetIdentsAsList;
+  StratVariable       := TStringList.Create;
+  ReverseStrata       := Command.HasOption('sd', Opt);
   if (ReverseStrata) then
     begin
       Command.Options.Remove(Opt); // don't pass this to TABLES!
@@ -102,28 +100,25 @@ begin
   HistogramData := THistogram.Create(FExecutor, Command);
   if (Command.HasOption('interval', Opt)) then
     HistogramData.Interval := Opt.Expr.AsInteger;
-  if (Varnames.Count > 1) then
+  if (Varnames.Count = 1) then
     begin
-  // Note: this does NOT call CalcTables with stratification
-      T := TTables.Create(FExecutor, FOutputCreator);
-      TableData  := T.CalcTables(Datafile, VarNames,
-                    StratVariable, WeightVarName, Command.Options, nilTablesRefMap, nilStatistics).UnstratifiedTable;
-      if (ReverseStrata) then
-        TableData.SortByRowLabel(true);
-      HistogramData.Fill(TableData);
-      HistogramData.HistogramToEpicurve;
-      T.Free;
-      ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
-    end
-  else
-    begin
-      F := TFreqCommand.Create(FExecutor, FOutputCreator);
-      FreqData := F.CalcFreq(Datafile, VarNames[0], nilTablesRefMap);
-
-      HistogramData.Fill(FreqData);
-      HistogramData.HistogramToEpicurve;
-      F.Free;
+      dummyVar := DataFile.NewField(ftInteger);
+      dummyVar.Name := '_dummy4epicurve';
+      Varnames.Add('_dummy4epicurve');
     end;
+  // Note: this does NOT call CalcTables with stratification
+  T := TTables.Create(FExecutor, FOutputCreator);
+  TableData  := T.CalcTables(Datafile, VarNames,
+                StratVariable, WeightVarName, Command.Options, nilTablesRefMap, nilStatistics).UnstratifiedTable;
+  if (ReverseStrata) then
+    TableData.SortByRowLabel(true);
+  HistogramData.Fill(TableData);
+  HistogramData.HistogramToEpicurve;
+  T.Free;
+  ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
+  // if dummy var was created, remove it now
+  if (Varnames.IndexOf('_dummy4epicurve') > -1) then
+    Varnames.Delete(Varnames.IndexOf('_dummy4epicurve'));
 
   HistogramSource := THistogramSource.Create(Chart);
   HistogramSource.Histogram := HistogramData;

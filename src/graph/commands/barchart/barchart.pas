@@ -51,7 +51,6 @@ var
   BarSeries:           TBarSeries;
   SeriesStyles:        TChartStyles;
   aStyle:              TChartStyle;
-  // for now, use default colours from classic analysis
   // TODO: put in graph options
   sColor:              TColorMap;
   {Frequencies}
@@ -67,6 +66,7 @@ var
   VarNames:            TStrings;
   DFVars:              TStrings;
   XVar:                TEpiField;
+  dummyVar:            TEpiField;
   WeightVarName:       UTF8String;
   Opt:                 TOption;
 
@@ -82,10 +82,10 @@ begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
-  VarNames := Command.VariableList.GetIdentsAsList;
-  DFVars   := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
-  StratVariable := TStringList.Create;
-  ReverseStrata := Command.HasOption('sd', Opt);
+  VarNames            := Command.VariableList.GetIdentsAsList;
+  DFVars              := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
+  StratVariable       := TStringList.Create;
+  ReverseStrata       := Command.HasOption('sd', Opt);
   if (ReverseStrata) then
     begin
       Command.Options.Remove(Opt); // don't pass this to TABLES!
@@ -108,27 +108,26 @@ begin
   BarSource := TBarSource.Create(Chart);
   BarSource.Pct := yPct;
   LabelSeries := TListChartSource.Create(Chart);
-  if (Varnames.Count > 1) then
+  if (Varnames.Count = 1) then
+// add dummy variable to use Tables with one variable plus weight variable
     begin
-   // Note: this does NOT call CalcTables with stratification
-      T := TTables.Create(FExecutor, FOutputCreator);
-      TableData  := T.CalcTables(Datafile, VarNames,
-                    StratVariable, WeightVarName, Command.Options, nilTablesRefMap, nilStatistics).UnstratifiedTable;
-      if (ReverseStrata) then
-        TableData.SortByRowLabel(true);
-      BarSource.SetSource(TableData, ValueLabelOutput);
-      ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
-      for i := 0 to TableData.ColCount - 1 do
-        LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, ValueLabelOutput)); //.AsString[i]);   // TODO: use value label for 3rd parameter!
-    end
-  else
-    begin
-      F := TFreqCommand.Create(FExecutor, FOutputCreator);
-      FreqData := F.CalcFreq(Datafile, VarNames[0],nilTablesRefMap);
-      BarSource.SetSource(FreqData);
-      for i := 0 to FreqData.Count.Size - 1 do
-        LabelSeries.Add(i.ToDouble, 0, FreqData.Categ.GetValueLabel(i, ValueLabelOutput)); // .AsString[i]);   // TODO: use value label for 3rd parameter!
+      dummyVar := DataFile.NewField(ftInteger);
+      dummyVar.Name := '_dummy4barchart';    // for random string:  IntToHex(Random(Int64($7fffffffffffffff)), 16);
+      Varnames.Add('_dummy4barchart');
     end;
+// Note: this does NOT call CalcTables with stratification
+  T := TTables.Create(FExecutor, FOutputCreator);
+  TableData  := T.CalcTables(Datafile, VarNames,
+                StratVariable, WeightVarName, Command.Options, nilTablesRefMap, nilStatistics).UnstratifiedTable;
+  if (ReverseStrata) then
+    TableData.SortByRowLabel(true);
+  BarSource.SetSource(TableData, ValueLabelOutput);
+  ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
+  for i := 0 to TableData.ColCount - 1 do
+    LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, ValueLabelOutput));
+// if dummy var was created, remove it now
+  if (Varnames.IndexOf('_dummy4barchart') > -1) then
+    Varnames.Delete(Varnames.IndexOf('_dummy4barchart'));
 
   BarSeries := TBarSeries.Create(Chart);
   BarSeries.Source := BarSource;
