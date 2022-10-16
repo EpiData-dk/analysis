@@ -33,35 +33,46 @@ type
   { TMainForm }
 
   TMainForm = class(TForm, IScriptMediator)
+    MainMenu: TMainMenu;
     {$IFDEF DARWIN}
-      AppMenu     : TMenuItem;
-      AppAboutCmd : TMenuItem;
-      AppSep1Cmd  : TMenuItem;
-      AppPrefCmd  : TMenuItem;
+      mnuMainAppDarwin       : TMenuItem;
+      mnuMainAppAbout        : TMenuItem;
+      mnuMainAppSep1         : TMenuItem;
+      mnuMainAppPreferences  : TMenuItem;
     {$ENDIF}
     AlwaysAvailableActionList: TActionList;
     CloseAllWindowsAction: TAction;
     ColorDialog1: TColorDialog;
     HistoryListBox: TListBox;
-    MenuItem43: TMenuItem;
-    MenuItem44: TMenuItem;
-    MenuItem45: TMenuItem;
-    GraphMainMenuItem: TMenuItem;
-    StatisticsMainMenuItem: TMenuItem;
-    OutputBGColourMenuItem: TMenuItem;
-    OutputFontColourMenuItem: TMenuItem;
-    CMDBGColourMenuItem: TMenuItem;
-    CMDFontColourMenuItem: TMenuItem;
+    mnuMainWindowCMDTree: TMenuItem;
+    mnuMainWindowCloseAll: TMenuItem;
+    mnuMainEditColour: TMenuItem;
+    mnuMainFileCD: TMenuItem;
+    mnuMainFileClose: TMenuItem;
+    mnuMainFileOpen: TMenuItem;
+    mnuMainFileSave: TMenuItem;
+    mnuMainFileSep2: TMenuItem;
+    mnuMainGraphs: TMenuItem;
+    mnuMainResults: TMenuItem;
+    mnuMainResultsClear: TMenuItem;
+    mnuMainAnalysis: TMenuItem;
+    mnuMainEditColourOutputBG: TMenuItem;
+    mnuMainEditColourOutputFont: TMenuItem;
+    mnuMainEditColourCMDBG: TMenuItem;
+    mnuMainEditColourCMDFont: TMenuItem;
+    mnuMainWindowDatasets: TMenuItem;
+    mnuMainWindowHistory: TMenuItem;
+    mnuMainWindowVarnames: TMenuItem;
     SaveOutputAction: TAction;
     Label3: TLabel;
-    MenuItem36: TMenuItem;
-    MenuItem37: TMenuItem;
-    MenuItem39: TMenuItem;
-    OutputFontMenuItem: TMenuItem;
-    CommandLineFontMenuItem: TMenuItem;
-    MenuItem40: TMenuItem;
-    MenuItem41: TMenuItem;
-    MenuItem42: TMenuItem;
+    mnuMainEdit: TMenuItem;
+    mnuMainEditFont: TMenuItem;
+    mnuMainResultsSave: TMenuItem;
+    mnuMainEditFontOutput: TMenuItem;
+    mnuMainEditFontCommandLine: TMenuItem;
+    mnuMainEditSep1: TMenuItem;
+    mnuMainEditPreferences: TMenuItem;
+    mnuMainEditDefaultWindowing: TMenuItem;
     LeftPanelSplitter: TSplitter;
     TutorialsWebAction: TAction;
     TutorialsWikiAction: TAction;
@@ -73,32 +84,31 @@ type
     CopyAllHistoryAction: TAction;
     Label1: TLabel;
     Label2: TLabel;
-    MenuItem21: TMenuItem;
-    MenuItem30: TMenuItem;
-    MenuItem31: TMenuItem;
-    MenuItem32: TMenuItem;
-    MenuItem33: TMenuItem;
-    MenuItem34: TMenuItem;
-    TutorialSubMenu: TMenuItem;
+    mnuMainHelpSep1: TMenuItem;
+    mnuMainWindowSep1: TMenuItem;
+    mnuMainWindowDefault: TMenuItem;
+    mnuMainHelpTutorialsWeb: TMenuItem;
+    mnuMainHelpTutorialsWiki: TMenuItem;
+    mnuMainFileReadClipboard: TMenuItem;
+    mnuMainHelpTutorials: TMenuItem;
     QuitAction: TAction;
     CmdEditFocusAction: TAction;
     CopyVersionInfoAction: TAction;
-    MenuItem23: TMenuItem;
-    MenuItem24: TMenuItem;
-    MenuItem25: TMenuItem;
-    MenuItem26: TMenuItem;
-    MenuItem3: TMenuItem;
-    MenuItem8: TMenuItem;
+    mnuHistoryCopyAll: TMenuItem;
+    mnuHistoryCopySelected: TMenuItem;
+    mnuMainWindowCMDPrompt: TMenuItem;
+    mnuMainWindowEditor: TMenuItem;
+    mnuMainHelpCopyVersion: TMenuItem;
+    mnuMainFileQuit: TMenuItem;
     HistoryPopupMenu: TPopupMenu;
     LeftSidePanel: TPanel;
     ShowAboutAction: TAction;
     ActionList1: TActionList;
     Button2: TButton;
     FontDialog1: TFontDialog;
-    MainMenu1: TMainMenu;
-    MenuItem1: TMenuItem;
-    MenuItem5: TMenuItem;
-    MenuItem6: TMenuItem;
+    mnuMainFile: TMenuItem;
+    mnuMainHelp: TMenuItem;
+    mnuMainHelpAbout: TMenuItem;
     Panel2: TPanel;
     LeftSideSplitter: TSplitter;
     Button3: TButton;
@@ -110,55 +120,55 @@ type
     ToggleHistoryListAction: TAction;
     RightSideSplitter: TSplitter;
     VarnamesList: TVirtualStringTree;
-    MenuItem9: TMenuItem;
-    MenuItem10: TMenuItem;
-    MenuItem11: TMenuItem;
-    MenuItem12: TMenuItem;
-    MenuItem13: TMenuItem;
-    MenuItem14: TMenuItem;
-    MenuItem15: TMenuItem;
-    MenuItem16: TMenuItem;
+    mnuMainWindow: TMenuItem;
+    mnuMainFile0: TMenuItem;
+    mnuMainFile1: TMenuItem;
+    mnuMainFile2: TMenuItem;
+    mnuMainFile3: TMenuItem;
+    mnuMainFile4: TMenuItem;
+    mnuMainFile5: TMenuItem;
+    mnuMainFile6: TMenuItem;
     ReadAction: TAction;
     SaveAction: TAction;
     CloseAction: TAction;
-    MenuItem17: TMenuItem;
+    mnuMainFile7: TMenuItem;
     ClearOutputAction: TAction;
     ToggleProjectTree: TAction;
-    MenuItem18: TMenuItem;
-    MenuItem2: TMenuItem;
-    MenuItem19: TMenuItem;
+    mnuMainFile8: TMenuItem;
+    mnuMainFileSep1: TMenuItem;
+    mnuMainFile9: TMenuItem;
     ChangeDirAction: TAction;
-    MenuItem20: TMenuItem;
+    mnuMainHelpSep3: TMenuItem;
     BrowseAction: TAction;
-    MenuItem22: TMenuItem;
+    mnuMainWindowBrowse: TMenuItem;
     ShowEditorAction: TAction;
-    MenuItem27: TMenuItem;
+    mnuMainHelpCommands: TMenuItem;
     CommandsHelpAction: TAction;
-    MenuItem28: TMenuItem;
-    MenuItem29: TMenuItem;
+    mnuHistorySep1: TMenuItem;
+    mnuHistoryClear: TMenuItem;
     ClearHistoryAction: TAction;
-    RecentFilesSubMenu: TMenuItem;
+    mnuMainFileOpenRecent: TMenuItem;
     RecentFilesActionList: TActionList;
     PageControl1: TPageControl;
-    MenuItem4: TMenuItem;
-    MenuItem7: TMenuItem;
-    MenuItem35: TMenuItem;
-    MenuItem38: TMenuItem;
+    mnuMainHelpShortcuts: TMenuItem;
+    mnuMainHelpSep2: TMenuItem;
+    mnuMainHelpCheckVersion: TMenuItem;
+    mnuMainHelpReleaseNotes: TMenuItem;
     CheckVersionOnlineAction: TAction;
     ReleaseNotesAction: TAction;
     ShowShortcutAction: TAction;
     procedure Button2Click(Sender: TObject);
     procedure CancelExecActionExecute(Sender: TObject);
     procedure CloseAllWindowsActionExecute(Sender: TObject);
-    procedure CMDBGColourMenuItemClick(Sender: TObject);
+    procedure mnuMainEditColourCMDBGClick(Sender: TObject);
     procedure CmdEditFocusActionExecute(Sender: TObject);
-    procedure CMDFontColourMenuItemClick(Sender: TObject);
+    procedure mnuMainEditColourCMDFontClick(Sender: TObject);
     procedure CopyAllHistoryActionExecute(Sender: TObject);
     procedure CopySelectedHistoryActionExecute(Sender: TObject);
     procedure CopyVersionInfoActionExecute(Sender: TObject);
     procedure DefaultWindowPositionActionExecute(Sender: TObject);
-    procedure OutputBGColourMenuItemClick(Sender: TObject);
-    procedure OutputFontColourMenuItemClick(Sender: TObject);
+    procedure mnuMainEditColourOutputBGClick(Sender: TObject);
+    procedure mnuMainEditColourOutputFontClick(Sender: TObject);
     procedure QuitActionExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -386,7 +396,7 @@ begin
   CloseWindows(true);
 end;
 
-procedure TMainForm.CMDBGColourMenuItemClick(Sender: TObject);
+procedure TMainForm.mnuMainEditColourCMDBGClick(Sender: TObject);
 begin
   ChangeColour(ANA_SO_CMDEDIT_BG_COLOR);
 end;
@@ -402,7 +412,7 @@ begin
     end;
 end;
 
-procedure TMainForm.CMDFontColourMenuItemClick(Sender: TObject);
+procedure TMainForm.mnuMainEditColourCMDFontClick(Sender: TObject);
 begin
   ChangeColour(ANA_SO_CMDEDIT_FONT_COLOR);
 end;
@@ -442,12 +452,12 @@ begin
   RestoreDefaultPos;
 end;
 
-procedure TMainForm.OutputBGColourMenuItemClick(Sender: TObject);
+procedure TMainForm.mnuMainEditColourOutputBGClick(Sender: TObject);
 begin
   ChangeColour(ANA_SO_OUTPUT_BG_COLOR);
 end;
 
-procedure TMainForm.OutputFontColourMenuItemClick(Sender: TObject);
+procedure TMainForm.mnuMainEditColourOutputFontClick(Sender: TObject);
 begin
   ChangeColour(ANA_SO_OUTPUT_FONT_COLOR);
 end;
@@ -460,28 +470,28 @@ end;
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
   {$IFDEF DARWIN}
-    AppMenu := TMenuItem.Create(Self);  {Application menu}
-    AppMenu.Caption := #$EF#$A3#$BF;  {Unicode Apple logo char}
-    MainMenu1.Items.Insert(0, AppMenu);
+    mnuMainAppDarwin := TMenuItem.Create(MainMenu);  {Application menu}
+    mnuMainAppDarwin.Caption := #$EF#$A3#$BF;  {Unicode Apple logo char}
+    MainMenu.Items.Insert(0, mnuMainAppDarwin);
 
-    AppAboutCmd := TMenuItem.Create(Self);
-    AppAboutCmd.Caption := 'About ' + 'EpiData Analysis'; // BundleName;  //<== BundleName set elsewhere
-    AppAboutCmd.OnClick := @ShowAboutActionExecute;
-    AppMenu.Add(AppAboutCmd);  {Add About as item in application menu}
+    mnuMainAppAbout := TMenuItem.Create(mnuMainAppDarwin);
+    mnuMainAppAbout.Caption := 'About ' + 'EpiData Analysis'; // BundleName;  //<== BundleName set elsewhere
+    mnuMainAppAbout.OnClick := @ShowAboutActionExecute;
+    mnuMainAppDarwin.Add(mnuMainAppAbout);  {Add About as item in application menu}
 
-    AppSep1Cmd := TMenuItem.Create(Self);
-    AppSep1Cmd.Caption := '-';
-    AppMenu.Add(AppSep1Cmd);
+    mnuMainAppSep1 := TMenuItem.Create(mnuMainAppDarwin);
+    mnuMainAppSep1.Caption := '-';
+    mnuMainAppDarwin.Add(mnuMainAppSep1);
 
-    AppPrefCmd := TMenuItem.Create(Self);
-    AppPrefCmd.Caption := 'Preferences...';
-    AppPrefCmd.Shortcut := ShortCut(VK_OEM_COMMA, [ssMeta]);
-    AppPrefCmd.OnClick := @ShowEditorStartupActionExecute;  //<== "Options" on other platforms
-    AppMenu.Add(AppPrefCmd);
+    mnuMainAppPreferences := TMenuItem.Create(mnuMainAppDarwin);
+    mnuMainAppPreferences.Caption := 'Preferences...';
+    mnuMainAppPreferences.Shortcut := ShortCut(VK_OEM_COMMA, [ssMeta]);
+    mnuMainAppPreferences.OnClick := @ShowEditorStartupActionExecute;  //<== "Options" on other platforms
+    mnuMainAppDarwin.Add(mnuMainAppPreferences);
   // remove duplicate menu items?
-    MenuItem36.Remove(MenuItem41); // Edit/Preferences
-    MenuItem5.Remove(MenuItem6);   // Help/About
-    MenuItem1.Remove(MenuItem8);   // File/Quit
+    mnuMainEdit.Remove(mnuMainEditPreferences); // Edit/Preferences
+    mnuMainHelp.Remove(mnuMainHelpAbout);   // Help/About
+    mnuMainFile.Remove(mnuMainFileQuit);   // File/Quit
     {$ENDIF}
 
   FLastCreatorCount := 0;
@@ -548,8 +558,8 @@ begin
 
   {$IFNDEF LINUX}
   // Do not show font colour items unless on linux
-  CMDFontColourMenuItem.Visible := false;
-  OutputFontColourMenuItem.Visible := false;
+  mnuMainEditColourCMDFont.Visible := false;
+  mnuMainEditColourOutputFont.Visible := false;
   {$ENDIF}
 
 
@@ -693,7 +703,7 @@ var
   AFont: TFont;
   FN, FS, FC, FSt: String;
 begin
-  if (Sender = OutputFontMenuItem) then
+  if (Sender = mnuMainEditFontOutput) then
     begin
       FN := ANA_SO_OUTPUT_FONT_NAME;
       FS := ANA_SO_OUTPUT_FONT_SIZE;
@@ -701,7 +711,7 @@ begin
       FSt := ANA_SO_OUTPUT_FONT_STYLE;
     end;
 
-  if (Sender = CommandLineFontMenuItem) then
+  if (Sender = mnuMainEditFontCommandLine) then
     begin
       FN  := ANA_SO_CMDEDIT_FONT_NAME;
       FS  := ANA_SO_CMDEDIT_FONT_SIZE;
@@ -1442,10 +1452,10 @@ var
   P: String;
 begin
   // First delete all previous tutorials.. (could be a change in tutorial dir).
-  for i := TutorialSubMenu.Count - 1 downto 0 do
+  for i := mnuMainHelpTutorials.Count - 1 downto 0 do
   begin
-    MenuItem := TutorialSubMenu[i];
-    TutorialSubMenu.Delete(i);
+    MenuItem := mnuMainHelpTutorials[i];
+    mnuMainHelpTutorials.Delete(i);
     MenuItem.Free;
   end;
 
@@ -1459,18 +1469,18 @@ begin
 
   for i := 0 to FileList.Count - 1 do
   begin
-    MenuItem := TMenuItem.Create(TutorialSubMenu);
+    MenuItem := TMenuItem.Create(mnuMainHelpTutorials);
     MenuItem.Name := 'TutorialMenuItem' + IntToStr(i);
     MenuItem.Caption := ExtractFileName(FileList[i]);
     MenuItem.OnClick := @OpenTutorialMenuItemClick;
 
-    TutorialSubMenu.Add(MenuItem);
+    mnuMainHelpTutorials.Add(MenuItem);
   end;
 
   if FileList.Count = 0 then
-    TutorialSubMenu.Enabled := false
+    mnuMainHelpTutorials.Enabled := false
   else
-    TutorialSubMenu.Enabled := true;
+    mnuMainHelpTutorials.Enabled := true;
 
   FileList.Free;
 end;
@@ -1998,8 +2008,8 @@ var
 begin
   LoadRecentFilesFromIni(GetRecentDataIniFileName, RecentDataFiles);
 
-  RecentFilesSubMenu.Visible := RecentDataFiles.Count > 0;
-  RecentFilesSubMenu.Clear;
+  mnuMainFileOpenRecent.Visible := RecentDataFiles.Count > 0;
+  mnuMainFileOpenRecent.Clear;
 
   for i := 0 to 19 do
   begin
@@ -2016,10 +2026,10 @@ begin
     A.Enabled := true;
     A.Caption := RecentDataFiles[i];
 
-    Mi := TMenuItem.Create(RecentFilesSubMenu);
+    Mi := TMenuItem.Create(mnuMainFileOpenRecent);
     Mi.Name := 'recent' + inttostr(i);
     Mi.Action := A;
-    RecentFilesSubMenu.Add(Mi);
+    mnuMainFileOpenRecent.Add(Mi);
   end;
 end;
 
@@ -2092,11 +2102,11 @@ begin
 
   for Contribution in ContributionList do
   begin
-    MenuItem := TMenuItem.Create(MainMenu1);
+    MenuItem := TMenuItem.Create(MainMenu);
     MenuItem.Caption := Contribution.GetCaption();
     MenuItem.Action  := FStatDialogFactory.CreateDialogAction(Contribution);
 
-    StatisticsMainMenuItem.Add(MenuItem);
+    mnuMainAnalysis.Add(MenuItem);
   end;
 end;
 
@@ -2110,11 +2120,11 @@ begin
 
   for Contribution in ContributionList do
   begin
-    MenuItem := TMenuItem.Create(MainMenu1);
+    MenuItem := TMenuItem.Create(MainMenu);
     MenuItem.Caption := Contribution.GetCaption();
     MenuItem.Action  := FStatDialogFactory.CreateDialogAction(Contribution);
 
-    GraphMainMenuItem.Add(MenuItem);
+    mnuMainGraphs.Add(MenuItem);
   end;
 end;
 
