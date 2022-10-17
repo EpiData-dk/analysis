@@ -36,9 +36,7 @@ type
     MainMenu: TMainMenu;
     {$IFDEF DARWIN}
       mnuMainAppDarwin       : TMenuItem;
-      mnuMainAppAbout        : TMenuItem;
       mnuMainAppSep1         : TMenuItem;
-      mnuMainAppPreferences  : TMenuItem;
     {$ENDIF}
     AlwaysAvailableActionList: TActionList;
     CloseAllWindowsAction: TAction;
@@ -470,29 +468,18 @@ end;
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
   {$IFDEF DARWIN}
-    mnuMainAppDarwin := TMenuItem.Create(MainMenu);  {Application menu}
+    mnuMainAppDarwin := TMenuItem.Create(MainMenu);
     mnuMainAppDarwin.Caption := #$EF#$A3#$BF;  {Unicode Apple logo char}
     MainMenu.Items.Insert(0, mnuMainAppDarwin);
-
-    mnuMainAppAbout := TMenuItem.Create(mnuMainAppDarwin);
-    mnuMainAppAbout.Caption := 'About ' + 'EpiData Analysis'; // BundleName;  //<== BundleName set elsewhere
-    mnuMainAppAbout.OnClick := @ShowAboutActionExecute;
-    mnuMainAppDarwin.Add(mnuMainAppAbout);  {Add About as item in application menu}
-
+    mnuMainHelp.Remove(mnuMainHelpAbout);
+    mnuMainAppDarwin.Add(mnuMainHelpAbout);
     mnuMainAppSep1 := TMenuItem.Create(mnuMainAppDarwin);
     mnuMainAppSep1.Caption := '-';
     mnuMainAppDarwin.Add(mnuMainAppSep1);
-
-    mnuMainAppPreferences := TMenuItem.Create(mnuMainAppDarwin);
-    mnuMainAppPreferences.Caption := 'Preferences...';
-    mnuMainAppPreferences.Shortcut := ShortCut(VK_OEM_COMMA, [ssMeta]);
-    mnuMainAppPreferences.OnClick := @ShowEditorStartupActionExecute;  //<== "Options" on other platforms
-    mnuMainAppDarwin.Add(mnuMainAppPreferences);
-  // remove duplicate menu items?
-    mnuMainEdit.Remove(mnuMainEditPreferences); // Edit/Preferences
-    mnuMainHelp.Remove(mnuMainHelpAbout);   // Help/About
-    mnuMainFile.Remove(mnuMainFileQuit);   // File/Quit
-    {$ENDIF}
+    mnuMainEdit.Remove(mnuMainEditPreferences);
+    mnuMainAppDarwin.Add(mnuMainEditPreferences);
+    mnuMainFile.Remove(mnuMainFileQuit);
+  {$ENDIF}
 
   FLastCreatorCount := 0;
   FOutputCreator := TOutputCreator.Create;
