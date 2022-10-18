@@ -15,90 +15,99 @@ type
   { TEditorForm }
 
   TEditorForm = class(TForm)
-    EditPreferencesAction: TAction;
-    CancelExecutionAction: TAction;
-    mnuWindow: TMenuItem;
-    mnuWindowProjectTree: TMenuItem;
-    mnuHelp: TMenuItem;
-    mnuHelpCommands: TMenuItem;
-    mnuWindowVarnamesList: TMenuItem;
-    mnuWindowCmdEdit: TMenuItem;
-    mnuWindowShowEditor: TMenuItem;
-    mnuWindowBrowse: TMenuItem;
-    mnuWindowHistoryList: TMenuItem;
-    mnuWindowSep1: TMenuItem;
-    mnuWindowDefaultPosition: TMenuItem;
-    mnuHelpSep1: TMenuItem;
-    mnuHelpTutorialsWiki: TMenuItem;
-    mnuPopupCopy: TMenuItem;
-    mnuPopupCut: TMenuItem;
-    mnuPopupPaste: TMenuItem;
-    mnuPopupSep1: TMenuItem;
-    mnuPopupRunSelected: TMenuItem;
-    mnuPopupRunAll: TMenuItem;
-    mnuWindowCmdTree: TMenuItem;
-    mnuEditSep2: TMenuItem;
-    mnuEditPreferences: TMenuItem;
-    mnuPopup: TPopupMenu;
-    mnuHelpTutorial: TMenuItem;
-    mnuHelpTutorialsWeb: TMenuItem;
-    QuitAction: TAction;
-    mnuEditSep1: TMenuItem;
-    mnuEditCut: TMenuItem;
-    mnuEditCopy: TMenuItem;
-    mnuEditPaste: TMenuItem;
-    mnuFileQuit: TMenuItem;
-    PasteAction: TAction;
-    CopyAction: TAction;
-    CutAction: TAction;
-    InsertHistoryAction: TAction;
-    EditorMenu: TMainMenu;
-    mnuFile: TMenuItem;
-    mnuEditInsertHistory: TMenuItem;
-    mnuEdit: TMenuItem;
-    mnuRun: TMenuItem;
-    StatusBar1: TStatusBar;
-    SynEdit1: TSynEdit;
-    SynCompletion1: TSynCompletion;
-    SynAnySyn1: TSynAnySyn;
-    ActionList1: TActionList;
-    RunAllAction: TAction;
-    RunSelectedAction: TAction;
-    mnuRunSelected: TMenuItem;
-    mnuRunAll: TMenuItem;
-    SaveAction: TAction;
-    SaveAsAction: TAction;
-    OpenAction: TAction;
-    CloseTabAction: TAction;
-    SaveDialog1: TSaveDialog;
-    OpenDialog1: TOpenDialog;
-    mnuFileOpen: TMenuItem;
-    mnuFIleSave: TMenuItem;
-    mnuFIleSaveAs: TMenuItem;
-    mnuFileSep1: TMenuItem;
-    mnuFileClose: TMenuItem;
-    NewAction: TAction;
-    mnuFIleNew: TMenuItem;
-    TabControl1: TTabControl;
-    mnuOpenRecent: TMenuItem;
-    RecentFilesActionList: TActionList;
-    FontDialog1: TFontDialog;
-    mnuFileFont: TMenuItem;
-    mnuFileSep2: TMenuItem;
-    FontAction: TAction;
-    ReplaceDialog1: TReplaceDialog;
-    mnuSearch: TMenuItem;
-    mnuSearchFind: TMenuItem;
-    mnuSearchFindNext: TMenuItem;
-    mnuSearchFindPrevious: TMenuItem;
-    mnuSearchReplace: TMenuItem;
-    FindDialog1: TFindDialog;
-    FindAction: TAction;
-    ReplaceAction: TAction;
-    FindNextAction: TAction;
-    FindPrevAction: TAction;
-    InsertSetOptionsAction: TAction;
-    mnuEditInsertSetOptions: TMenuItem;
+    EditorMenu:                   TMainMenu;
+    {File menu}
+    mnuFile:                      TMenuItem;
+    mnuFileClose:                 TMenuItem;
+      CloseTabAction:             TAction;
+    mnuFIleNew:                   TMenuItem;
+      NewAction:                  TAction;
+    mnuFileOpen:                  TMenuItem;
+      OpenAction:                 TAction;
+      OpenDialog1:                TOpenDialog;
+    mnuFileOpenRecent:            TMenuItem;
+    mnuFileQuit:                  TMenuItem;
+      QuitAction:                 TAction;
+    mnuFIleSave:                  TMenuItem;
+      SaveAction:                 TAction;
+    mnuFileSaveAs:                TMenuItem;
+      SaveAsAction:               TAction;
+    mnuFileSep1:                  TMenuItem;
+    mnuFileSep2:                  TMenuItem;
+      RecentFilesActionList:      TActionList;
+    {Edit menu}
+    mnuEdit:                      TMenuItem;
+    mnuEditCopy:                  TMenuItem;
+      CopyAction:                 TAction;
+    mnuEditCut:                   TMenuItem;
+      CutAction:                  TAction;
+    mnuEditFont:                  TMenuItem;
+      FontAction:                 TAction;
+      FontDialog1:                TFontDialog;
+    mnuEditInsertHistory:         TMenuItem;
+      InsertHistoryAction:        TAction;
+    mnuEditInsertSetOptions:      TMenuItem;
+      InsertSetOptionsAction:     TAction;
+    mnuEditPaste:                 TMenuItem;
+      PasteAction:                TAction;
+    mnuEditPreferences:           TMenuItem;
+      EditPreferencesAction:      TAction;
+      SaveDialog1:                TSaveDialog;
+    mnuEditSep1:                  TMenuItem;
+    mnuEditSep2:                  TMenuItem;
+    {Search menu}
+    mnuSearch:                    TMenuItem;
+    mnuSearchFind:                TMenuItem;
+      FindAction:                 TAction;
+      FindDialog1:                TFindDialog;
+    mnuSearchFindNext:            TMenuItem;
+      FindNextAction:             TAction;
+    mnuSearchFindPrevious:        TMenuItem;
+      FindPrevAction:             TAction;
+    mnuSearchReplace:             TMenuItem;
+      ReplaceAction:              TAction;
+      ReplaceDialog1:             TReplaceDialog;
+    {Run menu}
+    mnuRun:                       TMenuItem;
+    mnuRunAll:                    TMenuItem;
+      RunAllAction:               TAction;
+    mnuRunSelected:               TMenuItem;
+      RunSelectedAction:          TAction;
+    {Window menu}
+    mnuWindow:                    TMenuItem;
+    mnuWindowBrowse:              TMenuItem;
+    mnuWindowCmdEdit:             TMenuItem;
+    mnuWindowCmdTree:             TMenuItem;
+    mnuWindowDefaultPosition:     TMenuItem;
+    mnuWindowHistoryList:         TMenuItem;
+    mnuWindowProjectTree:         TMenuItem;
+    mnuWindowShowEditor:          TMenuItem;
+    mnuWindowVarnamesList:        TMenuItem;
+    mnuWindowSep1:                TMenuItem;
+    {Help menu}
+    mnuHelp:                      TMenuItem;
+    mnuHelpCommands:              TMenuItem;
+    mnuHelpTutorial:              TMenuItem;
+    mnuHelpTutorialsWeb:          TMenuItem;
+    mnuHelpTutorialsWiki:         TMenuItem;
+    mnuHelpSep1:                  TMenuItem;
+    {Popup menu}
+    mnuPopup:                     TPopupMenu;
+    mnuPopupCopy:                 TMenuItem;
+    mnuPopupCut:                  TMenuItem;
+    mnuPopupPaste:                TMenuItem;
+    mnuPopupRunAll:               TMenuItem;
+    mnuPopupRunSelected:          TMenuItem;
+    mnuPopupSep1:                 TMenuItem;
+    {Misc controls}
+    CancelExecutionAction:        TAction;
+    ActionList1:                  TActionList;
+    StatusBar1:                   TStatusBar;
+    SynAnySyn1:                   TSynAnySyn;
+    SynCompletion1:               TSynCompletion;
+    SynEdit1:                     TSynEdit;
+    TabControl1:                  TTabControl;
+
     procedure CancelExecutionActionExecute(Sender: TObject);
     procedure CutActionExecute(Sender: TObject);
     procedure CopyActionExecute(Sender: TObject);
@@ -1293,8 +1302,8 @@ var
 begin
   LoadRecentFilesFromIni(GetRecentPGMIniFileName, RecentPGMFiles);
 
-  mnuOpenRecent.Visible := RecentPGMFiles.Count > 0;
-  mnuOpenRecent.Clear;
+  mnuFileOpenRecent.Visible := RecentPGMFiles.Count > 0;
+  mnuFileOpenRecent.Clear;
 
   for i := 0 to MaxRecentFiles - 1 do
   begin
@@ -1311,10 +1320,10 @@ begin
     A.Enabled := true;
     A.Caption := RecentPGMFiles[i];
 
-    Mi := TMenuItem.Create(mnuOpenRecent);
+    Mi := TMenuItem.Create(mnuFileOpenRecent);
     Mi.Name := 'recent' + inttostr(i);
     Mi.Action := A;
-    mnuOpenRecent.Add(Mi);
+    mnuFileOpenRecent.Add(Mi);
   end;
 end;
 

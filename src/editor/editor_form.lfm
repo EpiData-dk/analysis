@@ -452,7 +452,7 @@ object EditorForm: TEditorForm
       object mnuFileOpen: TMenuItem
         Action = OpenAction
       end
-      object mnuOpenRecent: TMenuItem
+      object mnuFileOpenRecent: TMenuItem
         Caption = 'Open &Recent...'
       end
       object mnuFIleSave: TMenuItem
@@ -464,7 +464,7 @@ object EditorForm: TEditorForm
       object mnuFileSep1: TMenuItem
         Caption = '-'
       end
-      object mnuFileFont: TMenuItem
+      object mnuEditFont: TMenuItem
         Action = FontAction
       end
       object mnuFileSep2: TMenuItem
