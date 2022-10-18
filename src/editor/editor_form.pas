@@ -17,46 +17,46 @@ type
   TEditorForm = class(TForm)
     EditPreferencesAction: TAction;
     CancelExecutionAction: TAction;
-    MenuItem25: TMenuItem;
-    MenuItem26: TMenuItem;
-    MenuItem27: TMenuItem;
-    MenuItem28: TMenuItem;
-    MenuItem29: TMenuItem;
-    MenuItem30: TMenuItem;
-    MenuItem31: TMenuItem;
-    MenuItem32: TMenuItem;
-    MenuItem33: TMenuItem;
-    MenuItem34: TMenuItem;
-    MenuItem35: TMenuItem;
-    MenuItem36: TMenuItem;
-    MenuItem37: TMenuItem;
-    MenuItem38: TMenuItem;
-    MenuItem40: TMenuItem;
-    MenuItem41: TMenuItem;
-    MenuItem42: TMenuItem;
-    MenuItem43: TMenuItem;
-    MenuItem44: TMenuItem;
-    MenuItem46: TMenuItem;
-    N1: TMenuItem;
-    MenuItem47: TMenuItem;
-    PopupMenu1: TPopupMenu;
-    TutorialSubMenu: TMenuItem;
-    MenuItem39: TMenuItem;
+    mnuWindow: TMenuItem;
+    mnuWindowProjectTree: TMenuItem;
+    mnuHelp: TMenuItem;
+    mnuHelpCommands: TMenuItem;
+    mnuWindowVarnamesList: TMenuItem;
+    mnuWindowCmdEdit: TMenuItem;
+    mnuWindowShowEditor: TMenuItem;
+    mnuWindowBrowse: TMenuItem;
+    mnuWindowHistoryList: TMenuItem;
+    mnuWindowSep1: TMenuItem;
+    mnuWindowDefaultPosition: TMenuItem;
+    mnuHelpSep1: TMenuItem;
+    mnuHelpTutorialsWiki: TMenuItem;
+    mnuPopupCopy: TMenuItem;
+    mnuPopupCut: TMenuItem;
+    mnuPopupPaste: TMenuItem;
+    mnuPopupSep1: TMenuItem;
+    mnuPopupRunSelected: TMenuItem;
+    mnuPopupRunAll: TMenuItem;
+    mnuWindowCmdTree: TMenuItem;
+    mnuEditSep2: TMenuItem;
+    mnuEditPreferences: TMenuItem;
+    mnuPopup: TPopupMenu;
+    mnuHelpTutorial: TMenuItem;
+    mnuHelpTutorialsWeb: TMenuItem;
     QuitAction: TAction;
-    MenuItem13: TMenuItem;
-    MenuItem14: TMenuItem;
-    MenuItem15: TMenuItem;
-    MenuItem16: TMenuItem;
-    MenuItem17: TMenuItem;
+    mnuEditSep1: TMenuItem;
+    mnuEditCut: TMenuItem;
+    mnuEditCopy: TMenuItem;
+    mnuEditPaste: TMenuItem;
+    mnuFileQuit: TMenuItem;
     PasteAction: TAction;
     CopyAction: TAction;
     CutAction: TAction;
     InsertHistoryAction: TAction;
-    MainMenu1: TMainMenu;
-    MenuItem1: TMenuItem;
-    MenuItem12: TMenuItem;
-    MenuItem2: TMenuItem;
-    MenuItem3: TMenuItem;
+    EditorMenu: TMainMenu;
+    mnuFile: TMenuItem;
+    mnuEditInsertHistory: TMenuItem;
+    mnuEdit: TMenuItem;
+    mnuRun: TMenuItem;
     StatusBar1: TStatusBar;
     SynEdit1: TSynEdit;
     SynCompletion1: TSynCompletion;
@@ -64,41 +64,41 @@ type
     ActionList1: TActionList;
     RunAllAction: TAction;
     RunSelectedAction: TAction;
-    MenuItem4: TMenuItem;
-    MenuItem5: TMenuItem;
+    mnuRunSelected: TMenuItem;
+    mnuRunAll: TMenuItem;
     SaveAction: TAction;
     SaveAsAction: TAction;
     OpenAction: TAction;
     CloseTabAction: TAction;
     SaveDialog1: TSaveDialog;
     OpenDialog1: TOpenDialog;
-    MenuItem6: TMenuItem;
-    MenuItem7: TMenuItem;
-    MenuItem8: TMenuItem;
-    MenuItem9: TMenuItem;
-    MenuItem10: TMenuItem;
+    mnuFileOpen: TMenuItem;
+    mnuFIleSave: TMenuItem;
+    mnuFIleSaveAs: TMenuItem;
+    mnuFileSep1: TMenuItem;
+    mnuFileClose: TMenuItem;
     NewAction: TAction;
-    MenuItem11: TMenuItem;
+    mnuFIleNew: TMenuItem;
     TabControl1: TTabControl;
-    RecentFilesSubMenu: TMenuItem;
+    mnuOpenRecent: TMenuItem;
     RecentFilesActionList: TActionList;
     FontDialog1: TFontDialog;
-    MenuItem18: TMenuItem;
-    MenuItem19: TMenuItem;
+    mnuFileFont: TMenuItem;
+    mnuFileSep2: TMenuItem;
     FontAction: TAction;
     ReplaceDialog1: TReplaceDialog;
-    MenuItem20: TMenuItem;
-    MenuItem21: TMenuItem;
-    MenuItem22: TMenuItem;
-    MenuItem23: TMenuItem;
-    MenuItem24: TMenuItem;
+    mnuSearch: TMenuItem;
+    mnuSearchFind: TMenuItem;
+    mnuSearchFindNext: TMenuItem;
+    mnuSearchFindPrevious: TMenuItem;
+    mnuSearchReplace: TMenuItem;
     FindDialog1: TFindDialog;
     FindAction: TAction;
     ReplaceAction: TAction;
     FindNextAction: TAction;
     FindPrevAction: TAction;
     InsertSetOptionsAction: TAction;
-    MenuItem45: TMenuItem;
+    mnuEditInsertSetOptions: TMenuItem;
     procedure CancelExecutionActionExecute(Sender: TObject);
     procedure CutActionExecute(Sender: TObject);
     procedure CopyActionExecute(Sender: TObject);
@@ -106,7 +106,7 @@ type
     procedure FindNextActionExecute(Sender: TObject);
     procedure FindPrevActionExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure MenuItem28Click(Sender: TObject);
+    procedure mnuHelpCommandsClick(Sender: TObject);
     procedure QuitActionExecute(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormShow(Sender: TObject);
@@ -328,13 +328,14 @@ begin
   SaveFormPosition(Self, 'Editor');
 end;
 
-procedure TEditorForm.MenuItem28Click(Sender: TObject);
+procedure TEditorForm.mnuHelpCommandsClick(Sender: TObject);
 begin
   MainForm.HelpLookup(false);
 end;
 
 procedure TEditorForm.QuitActionExecute(Sender: TObject);
 begin
+  MainForm.CmdEditFocusActionExecute(Self); // why does this do nothing?
   Close;
 end;
 
@@ -883,10 +884,10 @@ var
   P: String;
 begin
   // First delete all previous tutorials.. (could be a change in tutorial dir).
-  for i := TutorialSubMenu.Count - 1 downto 0 do
+  for i := mnuHelpTutorial.Count - 1 downto 0 do
   begin
-    MenuItem := TutorialSubMenu[i];
-    TutorialSubMenu.Delete(i);
+    MenuItem := mnuHelpTutorial[i];
+    mnuHelpTutorial.Delete(i);
     MenuItem.Free;
   end;
 
@@ -899,18 +900,18 @@ begin
 
   for i := 0 to FileList.Count - 1 do
   begin
-    MenuItem := TMenuItem.Create(TutorialSubMenu);
+    MenuItem := TMenuItem.Create(mnuHelpTutorial);
     MenuItem.Name := 'TutorialMenuItem' + IntToStr(i);
     MenuItem.Caption := ExtractFileName(FileList[i]);
     MenuItem.OnClick := @MainForm.OpenTutorialMenuItemClick;
 
-    TutorialSubMenu.Add(MenuItem);
+    mnuHelpTutorial.Add(MenuItem);
   end;
 
   if FileList.Count = 0 then
-    TutorialSubMenu.Enabled := false
+    mnuHelpTutorial.Enabled := false
   else
-    TutorialSubMenu.Enabled := true;
+    mnuHelpTutorial.Enabled := true;
 
   FileList.Free;
 end;
@@ -1292,8 +1293,8 @@ var
 begin
   LoadRecentFilesFromIni(GetRecentPGMIniFileName, RecentPGMFiles);
 
-  RecentFilesSubMenu.Visible := RecentPGMFiles.Count > 0;
-  RecentFilesSubMenu.Clear;
+  mnuOpenRecent.Visible := RecentPGMFiles.Count > 0;
+  mnuOpenRecent.Clear;
 
   for i := 0 to MaxRecentFiles - 1 do
   begin
@@ -1310,10 +1311,10 @@ begin
     A.Enabled := true;
     A.Caption := RecentPGMFiles[i];
 
-    Mi := TMenuItem.Create(RecentFilesSubMenu);
+    Mi := TMenuItem.Create(mnuOpenRecent);
     Mi.Name := 'recent' + inttostr(i);
     Mi.Action := A;
-    RecentFilesSubMenu.Add(Mi);
+    mnuOpenRecent.Add(Mi);
   end;
 end;
 
