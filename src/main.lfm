@@ -260,19 +260,19 @@ object MainForm: TMainForm
         Caption = 'Colour'
         object mnuMainEditColourOutputBG: TMenuItem
           Caption = 'Output Background Colour'
-          OnClick = mnuMainEditColourOutputBGClick
+          OnClick = MainEditColourOutputBGClick
         end
         object mnuMainEditColourOutputFont: TMenuItem
           Caption = 'Output Font Colour'
-          OnClick = mnuMainEditColourOutputFontClick
+          OnClick = MainEditColourOutputFontClick
         end
         object mnuMainEditColourCMDBG: TMenuItem
           Caption = 'Command Background Colour'
-          OnClick = mnuMainEditColourCMDBGClick
+          OnClick = MainEditColourCMDBGClick
         end
         object mnuMainEditColourCMDFont: TMenuItem
           Caption = 'Command Font Colour'
-          OnClick = mnuMainEditColourCMDFontClick
+          OnClick = MainEditColourCMDFontClick
         end
       end
       object mnuMainEditSep1: TMenuItem
