@@ -576,7 +576,7 @@ object EditorForm: TEditorForm
       end
       object mnuHelpCommands: TMenuItem
         Action = MainForm.CommandsHelpAction
-        OnClick = mnuHelpCommandsClick
+        OnClick = HelpCommandsClick
       end
     end
   end

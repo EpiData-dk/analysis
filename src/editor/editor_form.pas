@@ -115,7 +115,7 @@ type
     procedure FindNextActionExecute(Sender: TObject);
     procedure FindPrevActionExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure mnuHelpCommandsClick(Sender: TObject);
+    procedure HelpCommandsClick(Sender: TObject);
     procedure QuitActionExecute(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormShow(Sender: TObject);
@@ -337,7 +337,7 @@ begin
   SaveFormPosition(Self, 'Editor');
 end;
 
-procedure TEditorForm.mnuHelpCommandsClick(Sender: TObject);
+procedure TEditorForm.HelpCommandsClick(Sender: TObject);
 begin
   MainForm.HelpLookup(false);
 end;
