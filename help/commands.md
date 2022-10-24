@@ -6,8 +6,8 @@ ___
 
 ###Commands
 
-Manage data | Analyze data | Write programs
----|---|---
+| Manage data | Analyze data | Write programs
+:---|:---|:---
 [read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [describe](#describe) variables<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis<br/>[scatter](#scatter) plot <br/>[line](#line) plot <br/>[bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve) | [select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#type)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup) |
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
@@ -579,7 +579,8 @@ Create a new variable of a given [type](#types) and optionally assign the value 
 
 ### options            
 
-- `!label := "<text>" class="option">!l := "<text>"`
+- `!label := "<text>" class="option">`<br/>
+   `!l := "<text>"`
 
   Assign the descriptive text as a label for the variable.   An existing variable label will be replaced with the new one.
 
@@ -588,11 +589,13 @@ Create a new variable of a given [type](#types) and optionally assign the value 
 
   Assign an existing valuelabel set to the variable.   An existing assignment will be replaced but not deleted. To delete the existing valuelabel   set see [deleting content](#deletegrp)
 
-- `!length := <integer> class="option">!le := <integer>`
+- `!length := <integer> class="option">`<br/>
+   `!le := <integer>`
 
   Changes the entry length of a variable
 
-- `!decimal := <integer> class="option">!dec := <integer>`
+- `!decimal := <integer> class="option">`<br/>
+   `!dec := <integer>`
 
   Change the decimal entry length for floating point variables. Changing the decimal length for other variable types have no impact
 
@@ -870,9 +873,8 @@ Edits a project.
 
   Adds a title to the project. If not used a default title is given.
 
-- `!showFieldNames := <boolean>`
-
-- `!sfn := <boolean>`
+- `!showFieldNames := <boolean>`<br/>
+   `!sfn := <boolean>`
 
 Show/Hide the field name next to the entry field in Manager and EntryClient
 
@@ -1840,11 +1842,19 @@ The output is a report with a condensed table of the found keys and a complete t
 
 ### options
 
-- `!fn := <global string vector>` This option accepts a global vector with the filenames that is included in the report
+- `!fn := <global string vector>` 
 
-- `!ds := <global string vector>` This option accepts a global vector with the dataset name that is included in the report
+   This option accepts a global vector with the filenames that are included in the report. The files can be in different formats, but the variable names MUST be the same in each file.
+   
+   If a file name is sys.missing (.), the dataset in the currently opened project is used.
 
-- `!nol` Only show the condensed report - do not show the list of observations
+- `!ds := <global string vector>` 
+
+   This option accepts a global vector with the dataset name that is included in the report. The number of entries in the dataset variable MUST be the same as the filenames.
+
+- `!nol` 
+
+   Only show the condensed report - do not show the list of observations
 
 ### example
 ```
@@ -1854,18 +1864,14 @@ filenames[1] := "count_file_1.epx";
 filenames[2] := "count_file_2.rec";
 filenames[3] := "count_file_3.dta";
 filenames[4] := "count_file_4.csv";
-filenames[5] := .;
-// NOTE: the files can be in different format, but the variable names MUST be the same
-//       if a file name is sys.missing, the dataset in the currently opened project is used.
-
-// The number of entries in the dataset variable MUST be the same as the filenames
+filenames[5] := .;   // use the current file
+// Setup the dataset names
 new global datasets[5] string;
 datasets[1] := "ds1";
 datasets[2] := "ds1";
 datasets[3] := "ds1";
 datasets[4] := "ds1";
 datasets[5] := "ds1";
-
 // Run the report:
 report cby id !fn := filenames !ds := datasets
 ```
@@ -1950,7 +1956,7 @@ When the specified command is executed the options mentioned will be added to th
 ### Set parameters and defaults
 
 Option | Possible values | Default Value | Comments or example
----|---|---|---
+:---|:---|:---|:---
 BROWSER BG COLOUR | hex colour code | "#FFFFFF" | Adjust the colour of the background. e.g. #000000 is black.  |
 BROWSER FONT COLOUR | hex colour code | "#000000" | Adjust the colour of the font. e.g. #FFF000 is yellow.  |
 BROWSER FONT NAME | string | (depends on the operating system) | Name of the font used in the browser.  |
@@ -2071,30 +2077,31 @@ STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for disp
 <a name="referencedvars" id="referencedvars"></a>
 ## Variable references
 
-- Variable expansion with range or wildcards
-```
-var1 - var4
-va*
-var?
-```
 Any command that accepts more than one variable as parameters can use the following schemes for variable expansion.
-- "-" (dash) tells the program to use the two variables given and all variables between them.
-- "*" (asterisk) is used as a replacement for 0 to many characters. This cannot be the first character.
-- "?" (question mark) is used as a replacement for exactly 1 character. This cannot be the first character.
 
-> Note: If there are no variables matching the result, e.g. t? and you have no variables with t, then you get an error
+- `var1-var4` (dash) 
+
+   Use the two variables given and all variables between them.
+   
+- `var*` (asterisk) 
+
+   `*` is used as a replacement for 0 to many characters. This cannot be the first character.
+
+- `var?` (question mark) 
+
+   `?` is used as a replacement for exactly 1 character. This cannot be the first character.
+
+> Note: If there are no variables matching the result then you get an error
 
 It is possible to combine "*" and "?" for more elaborate expressions, but neither can be combined with "-"
-
-Variables for expansion cannot start with the "*" or "?", but must start with a "normal" character.
 
 ### examples
 ```
 // Consider the following set of variables (and in that order):
 // V1, V2, V3, V4, V10, V11, V100
 list data V2 - V10;      // V2 - V10 is expanded to the variables V2, V3, V4 and V10
-list data V1* ;          // V1* is expanded to V1, V10, V11, V100 because * can be "" (empty character) and "0", "1" and "00"
-list data V?  ;          // V?  is expanded to V1, V2, V3 and V4, because ? can be be replaced by "1", "2", "3" and "4" but not any other.
+list data V1* ;          // V1* is expanded to V1, V10, V11, V100 
+list data V?  ;          // V?  is expanded to V1, V2, V3 and V4
 list data V1??;          // V1?? is expanded to V100 only!
 ```
 
@@ -2104,7 +2111,7 @@ A `referenced` variable may also be used in the expansion. These will be evaluat
 ```
 @{variable1}
 ```
-With a referenced variable, you essentially use the content of another variable (global, result) <u>to provide the variable name</u>.
+With a referenced variable, you essentially use the content of another variable (global, result) to provide the variable name.
 
 ### examples
 
@@ -2268,128 +2275,128 @@ Parameters may be variables read from fields, created variables, or any expressi
 ## String functions
 
 function | takes | result | example
----|---|---|---
-<a name="length"></a>length(str) | s | i | length("Abcde") => 5
-<a name="post"></a>pos(instr, findstr) | s, s | i | pos("Abcde", "cd") => 3<br/>pos("Abcde", "z") => 0
-<a name="substring"></a><a name="substr"></a>substring(str, start, len) | s, i, i | s | substring("Abcde", 2, 3) => "bcd"
-<a name="trim"></a>trim(str) | s | s | trim("Abcde ") => "Abcde"<br/>trim(" Abcde") => "Abcde"
-<a name="lower"></a>lower(str) | s | s | lower("Abcde") => "abcde"
-<a name="upper"></a>upper(str) | s | s | upper("Abcde") => "ABCDE"
-<a name="concat"></a>concat(X, s1, s2, ..., sn) | s, any, ... | s | Concat(...) concatenates values s1 -> sn into a string. If any of the sx parameters return system missing it will be replaced by the value of X<br/>concat("X", "a", v1) => "aX" if v1 is missing, else a + the value of v1<br/>For user defined missing values, the actual value is added to the string.
+:---|:---|:---|:---
+<a name="length"></a>length(str) | s | i | `length("Abcde")` => 5
+<a name="post"></a>pos(instr, findstr) | s, s | i | `pos("Abcde", "cd")` => 3<br/>`pos("Abcde", "z")` => 0
+<a name="substring"></a><a name="substr"></a>substring(str, start, len) | s, i, i | s | `substring("Abcde", 2, 3)` => "bcd"
+<a name="trim"></a>trim(str) | s | s | trim("Abcde ") => "Abcde"<br/>`trim(" Abcde")` => "Abcde"
+<a name="lower"></a>lower(str) | s | s | `lower("Abcde")` => "abcde"
+<a name="upper"></a>upper(str) | s | s | `upper("Abcde")` => "ABCDE"
+<a name="concat"></a>concat(X, s1, s2, ..., sn) | s, any, ... | s | Concat(...) concatenates values s1 -> sn into a string. If any of the s<sub>x</sub> parameters returns system missing it will be replaced by the value of X<br/>`concat("X", "a", v1)` => "aX" if v1 is missing, otherwise a + the value of v1<br/>For user defined missing values, the actual value is added to the string.
 
 ## Arithmetic functions (including Random numbers)
 function | takes | result | example
----|---|---|---
-<a name="abs"></a>abs(x) | n | n | abs(-12) => 12
-<a name="exp"></a>exp(x) | n | f | exp(1) => 2.71828182845905
-<a name="frac"></a><a name="fraction"></a>fraction(x) | f | f | fraction(12.34) => 0.34
-<a name="ln"></a>ln(x) | n | f | ln(2.71828182845905) => 1<br/>ln(0) => missing
-<a name="log"></a>log(x) | n | f | log(10) => 1<br/>log(0) => missing
-<a name="round"></a>round(x, digits) | n, d, t | f | round(12.44,1) => 12.4<br/>round(12.5,0) => 13
-<a name="sqrt"></a>sqrt(x) | n | f | sqrt(4) => 2
+:---|:---|:---|:---
+<a name="abs"></a>abs(x) | n | n | `abs(-12)` => 12
+<a name="exp"></a>exp(x) | n | f | `exp(1)` => 2.71828182845905
+<a name="frac"></a><a name="fraction"></a>fraction(x) | f | f | `fraction(12.34)` => 0.34
+<a name="ln"></a>ln(x) | n | f | `ln(2.71828182845905)` => 1<br/>`ln(0)` => missing
+<a name="log"></a>log(x) | n | f | `log(10)` => 1<br/>`log(0)` => missing
+<a name="round"></a>round(x, digits) | n, d, t | f | `round(12.44,1)` => 12.4<br/>`round(12.5,0)` => 13
+<a name="sqrt"></a>sqrt(x) | n | f | `sqrt(4)` => 2
 <a name="random"></a>random(x) | i | i | Random integer from 0 to x
-<a name="sum"></a>sum(n1, n2, ..., nn) | n, ... | n | Sums that values n1 => nn, but ignores the entries if they are either sys. missing or user defined missing
+<a name="sum"></a>sum(n1, n2, ..., nn) | n, ... | n | Sums the non-missing values n1 => nn;  missing or user defined missing values are ignored.
 
 ## Trigonomerty functions
 
 function | takes | result | example
----|---|---|---
-<a name="tan"></a>tan(x) | f | f | tan(0) => 0
-<a name="arctan"></a>arctan(x) | f | f | arctan(1) => pi/2
-<a name="cos"></a>cos(r) | f | f | cos(pi/2) => 6.12303176911189E-17<br/>cos(pi) => -1
-<a name="arccos"></a>arccos(r) | f | f | arccos(0) => pi / 2
-<a name="sin"></a>sin(r) | f | f | sin(pi/2) => 1<br/>sin(pi) => 6.12303176911189E-17
-<a name="arcsin"></a>arcsin(r) | f | f | arcsin(0) => 0
+:---|:---|:---|:---
+<a name="tan"></a>tan(x) | f | f | `tan(0)` => 0
+<a name="arctan"></a>arctan(x) | f | f | `arctan(1)` => pi/2
+<a name="cos"></a>cos(r) | f | f | `cos(pi/2)` => 6.12303176911189E-17<br/>`cos(pi)` => -1
+<a name="arccos"></a>arccos(r) | f | f | `arccos(0)` => pi / 2
+<a name="sin"></a>sin(r) | f | f | `sin(pi/2)` => 1<br/>`sin(pi)` => 6.12303176911189E-17
+<a name="arcsin"></a>arcsin(r) | f | f | `arcsin(0)` => 0
 
 ## Date functions
 
 function | takes | result | example
----|---|---|---
-<a name="createdate"></a>createdate(datestr) | s | d | createdate("31/12/2016") => 31/12/2016<br/>The form of *datestr is automatically detected, but if the string is ambiguous the preference is always DMY over MDY.<br/>If parts of the datestr are omitted, then these parts are filled with todays values.<br/>If the string is not recognised as a date, system missing is returned.
-createdate(datestr,date-type) | s, s | d | createdate("31/12/2016", "dmy") => 31/12/2016<br/>createdate("12/31/2016", "mdy") => 31/12/2016<br/>createdate("2016/12/31", "ymd") => 31/12/2016
-createdate(datestr,fmt-string) | s, s | d  | Converts any string to a date based on the format specified in fmt-string. The format options can be found in the [FPC source documentation](https://www.freepascal.org/docs-html/rtl/sysutils/formatchars.html)<br/>createdate("31-dec-16", "dd-mmm-yy") => 31/12/2016<br/>For the "mmm" format it is possible to control the abbreviated month names using the [set options](#set). The default is based on the language of the Operating System.
-createdate(d, m, y) | i, i, i | d | createdate(31, 12, 2016) => 31/12/2016
+:---|:---|:---|:---
+<a name="createdate"></a>createdate(datestr) | s | d | The form of datestr is automatically detected, but if the string is ambiguous the preference is always DMY over MDY.<br/>If parts of the datestr are omitted, then these parts are filled with todays values.<br/>If the string is not recognised as a date, system missing is returned.<br/>`createdate("31/12/2016")` => 31/12/2016
+createdate(datestr,date-type) | s, s | d | `createdate("31/12/2016", "dmy")` => 31/12/2016<br/>`createdate("12/31/2016", "mdy")` => 31/12/2016<br/>`createdate("2016/12/31", "ymd")` => 31/12/2016
+createdate(datestr,fmt-string) | s, s | d  | Converts any string to a date based on the format specified in fmt-string. The format options can be found in the [FPC source documentation](https://www.freepascal.org/docs-html/rtl/sysutils/formatchars.html)<br/>`createdate("31-dec-16", "dd-mmm-yy"`) => 31/12/2016<br/>For the "mmm" format it is possible to control the abbreviated month names using the [set options](#set). The default is based on the language of the Operating System.
+createdate(d, m, y) | i, i, i | d | `createdate(31, 12, 2016)` => 31/12/2016
 <a name="today"></a>today() | - | i | returns today's date; may be assigned to a date variable or an integer
-<a name="day"></a>day(d) | d | i | day(31/12/2004) => 31
-<a name="dayofweek"></a><a name="dow"></a>dayofweek(d) | d | i | dayofweek(31/12/2004) => 5<br/>Monday=1, Sunday=7
-<a name="month"></a>month(d) | d | i | month(31/12/2004) => 12
-<a name="week"></a>week(d) | d | i | week(22/02/2001) => 8
-<a name="year"></a>year(d) | d | i | year(31/12/2004) => 2004
+<a name="day"></a>day(d) | d | i | `day(31/12/2004)` => 31
+<a name="dayofweek"></a><a name="dow"></a>dayofweek(d) | d | i | `dayofweek(31/12/2004)` => 5<br/>Monday=1, Sunday=7
+<a name="month"></a>month(d) | d | i | `month(31/12/2004)` => 12
+<a name="week"></a>week(d) | d | i | `week(22/02/2001)` => 8
+<a name="year"></a>year(d) | d | i | `year(31/12/2004)` => 2004
 
 ## Time functions
 
 function | takes | result | example
----|---|---|---
-<a name="createtime"></a>createtime(timestr) | s | t | createtime("12:34:56") => 12:34:56<br/>The form of *timestr is automatically detected. If parts of the timestr are omitted, then these parts are filled with 0 (zero).
-<a name="createtime"></a>     createtime(h, m, s) | i, i, i | t | createtime(12, 34, 56) => 12:34:56
+:---|:---|:---|:---
+<a name="createtime"></a>createtime(timestr) | s | t | `createtime("12:34:56")` => 12:34:56<br/>The form of *timestr is automatically detected. If parts of the timestr are omitted, then these parts are filled with 0 (zero).
+<a name="createtime"></a> createtime(h, m, s) | i, i, i | t | `createtime(12, 34, 56)` => 12:34:56
 <a name="now"></a>now() | - | f | returns the time right now. It can be assigned to a time or float variable
-<a name="second"></a>second(t) | t | i | second(12:34:56) => 56
-<a name="minute"></a>minute(t) | t | i | minut(12:34:56) => 34
-<a name="hour"></a>hour(t) | t | i | hour(12:34:56) => 12
+<a name="second"></a>second(t) | t | i | `second(12:34:56)` => 56
+<a name="minute"></a>minute(t) | t | i | `minute(12:34:56)` => 34
+<a name="hour"></a>hour(t) | t | i | `hour(12:34:56)` => 12
 
 ## Logic functions
 
 function | takes | result | example
----|---|---|---
-<a name="and"></a>b1 and b2 | b,b | b | true and true   => TRUE<br/>true and false  => FALSE<br/>false and true  => FALSE<br/>false and false => FALSE
-<a name="or"></a>b1 or b2 | b,b | b | true or true   => TRUE<br/>true or false  => TRUE<br/>false or true  => TRUE<br/>false or false => FALSE
-<a name="xor"></a>b1 xor b2 | b,b | b | true xor true   => FALSE<br/>true xor false  => TRUE<br/>false xor true  => TRUE<br/>false xor false => FALSE
-<a name="not">not | b | b | not(false) => TRUE
+:---|:---|:---|:---
+<a name="and"></a>b1 and b2 | b,b | b | `true and true`   => TRUE<br/>`true and false  `=> FALSE<br/>`false and true`  => FALSE<br/>`false and false` => FALSE
+<a name="or"></a>b1 or b2 | b,b | b | `true or true`   => TRUE<br/>`true or false`  => TRUE<br/>`false or true`  => TRUE<br/>`false or false` => FALSE
+<a name="xor"></a>b1 xor b2 | b,b | b | `true xor true `  => FALSE<br/>`true xor false`  => TRUE<br/>`false xor true`  => TRUE<br/>`false xor false` => FALSE
+<a name="not">not | b | b | `not(false)` => TRUE
 
 ## Conversion functions
 
 function | takes | result | example
----|---|---|---
-<a name="boolean"></a>boolean(x) | any | b | boolean(x) => TRUE, for any non-zero x<br/>boolean(0) => FALSE<br/>boolean("true") => TRUE, "true" text is case in-sensitive<br/>boolean(x) => FALSE, for any text other than "true"
-<a name="integer"></a>integer(x) | any | i | integer(1.23) => 1<br/>integer(31/12/2016) => 42735<br/>integer("2") => 2<br/>integer("a") => .<br/>Any input x that cannot be interpreted as an integer returns missing "."
-<a name="float"></a>float(x) | any | f | float(1) => 1.00<br/>float("12,34") => 12.34<br/>Any input *x that cannot be interpreted as a float returns missing "."
-<a name="string"></a>string(x) | n | s | string(1.23) => "1.23"
+:---|:---|:---|:---
+<a name="boolean"></a>boolean(x) | any | b | `boolean(x)` => TRUE, for any non-zero x<br/>`boolean(0)` => FALSE<br/>`boolean("true")` => TRUE, "true" text is case in-sensitive<br/>`boolean(x)` => FALSE, for any text other than "true"
+<a name="integer"></a>integer(x) | any | i | `integer(1.23)` => 1<br/>`integer(31/12/2016)` => 42735<br/>`integer("2")` => 2<br/>`integer("a")` => .<br/>Any input x that cannot be interpreted as an integer returns missing "."
+<a name="float"></a>float(x) | any | f | `float(1)` => 1.00<br/>`float("12,34")` => 12.34<br/>Any input *x that cannot be interpreted as a float returns missing "."
+<a name="string"></a>string(x) | n | s | `string(1.23)` => "1.23"
 
 ## Identifier functions
 
 function | takes | result | example
----|---|---|---
-<a name="exist"></a>exist(x) | v | b | Returns true/false whether the provided identifier exist
-<a name="idtype"></a>idtype(x) | v | i | Returns the type of the identifier provided. This function can be used on all valid identifiers and the integer value returned have the following associations:<br/>0: Global variable<br/>1: Global vector<br/>2: Regular Variable<br/>3: Dataset<br/>4: Valuelabel<br/>5: Result Variable<br/>6: Result Vector<br/>7: Result Matrix<br/>if using idtype(x) with the eval function "?", the output will be in text.
-<a name="datatype"></a>datatype(x) | v | i | Similarly as to idtype(x) this function takes any variable, but in this case returns the type of date stored in the variable. The integer value return have the following associations:<br/>-1: Variable has no data type - e.g. a dataset variable.<br/>0: Boolean<br/>1: Integer<br/>2: Auto Increment<br/>3: Float<br/>4: DMY Date<br/>5: MDY Date<br/>6: YMD Date<br/>7: DMY Auto Date<br/>8: MDY Auto Date<br/>9: YMD Auto Date<br/>10: Time<br/>11: Auto Time<br/>12: Uppercase String<br/>13: String<br/>14: Memo<br/>if using datatype(x) with the eval function "?", the output will be in text.
+:---|:---|:---|:---
+<a name="exist"></a>exist(x) | v | b | Returns true/false whether the provided identifier exists
+<a name="idtype"></a>idtype(x) | v | i | Returns the type of the identifier provided. This function can be used on all valid identifiers and the integer value returned has the following meaning:<br/>0: Global variable<br/>1: Global vector<br/>2: Regular Variable<br/>3: Dataset<br/>4: Valuelabel<br/>5: Result Variable<br/>6: Result Vector<br/>7: Result Matrix<br/>if using idtype(x) with the eval function "?", the output will be in text.
+<a name="datatype"></a>datatype(x) | v | i | Returns the type of date stored in the variable. The integer value returned has the following meaning:<br/>-1: Variable has no data type - e.g. a dataset variable.<br/>0: Boolean<br/>1: Integer<br/>2: Auto Increment<br/>3: Float<br/>4: DMY Date<br/>5: MDY Date<br/>6: YMD Date<br/>7: DMY Auto Date<br/>8: MDY Auto Date<br/>9: YMD Auto Date<br/>10: Time<br/>11: Auto Time<br/>12: Uppercase String<br/>13: String<br/>14: Memo<br/>if using datatype(x) with the eval function "?", the output will be in text.
 <a name="size"></a>size(x) | v | i | Size returns the size/length of an identifier (if applicable).<br/>Global & Result variables always have size 1<br/>Global vector, Result Vector, Variable & Valuelabel return the length/size/count of elements/data<br/>Result Matrix is not implemented yet - it returns -1;<br/>Dataset returns the total number of observations (even if a select is applied).
 <a name="string"></a>label(v) | v | s | Return the descriptive label of the identifier. This is only possible for variables and datasets.
 
 ## Test and special functions
 
 function | takes | result | example
----|---|---|---
-<a name="lre"></a>lre(x,y) | n | n | lre($mean1, 1.23456789123456) returns number of digits precision of $mean1
-<a name="iif"></a>iif(b, x, y) | b, n, n | n | iif(..., true value, false value) evaluates the boolean expression (b) inline, and based on the result either returns the true value or false value.<br/>iif(2 = 3, "This is true", "This is false") => "This is false"
-<a name="samevalue"></a>samevalue(x, y, z) | x,y = n, d, t <br/>z = i | b | samevalue($mean1, 1.23456789123456, 10<sup>-7</sup>) returns true or false indicating if |(x-y)> < 10<sup>z</sup><br/>Best used for comparing floating point values. Since internal binary representation of two seemingly even numbers may differ, using x = y can fail.
-samevalue(x, y) | n, d, t | b | samevalue($mean1, 1.23456789123456) returns true or false indicating if x = y<br/>Essentially the same as calling samevalue(x, y, 15)
+:---|:---|:---|:---
+<a name="lre"></a>lre(x,y) | n | n | `lre($mean1, 1.23456789123456)`<br/>returns number of digits precision of $mean1
+<a name="iif"></a>iif(b, x, y) | b<br/>n<br/>n | n | iif(..., true value, false value) evaluates the boolean expression (b) inline, and based on the result either returns the true value or false value.<br/>`iif(2 = 3, "This is true", "This is false")` => "This is false"
+<a name="samevalue"></a>samevalue<br/>(x, y, z) | n, d, t<br/>n, d, t<br/>i | b | `samevalue($mean1, 1.23456789123456, 10)`<br/>returns true or false indicating if \|x-y\| < 10<sup>-10</sup><br/>Best used for comparing floating point values. Since the internal binary representation of two seemingly similar numbers may differ, using `x = y` can fail.
+samevalue<br/>(x, y) | n, d, t | b | `samevalue($mean1, 1.23456789123456)`<br/>returns true or false indicating if x = y<br/>The same as calling `samevalue(x, y, 15)`
 cwd() | | s | Returns the current working directory
-deleted([index]) | [i] |  b | Returns true/false whether the record is marked for deletion. If no index is supplied the current record number is tested<br/>select deleted() do edit data !nomd<br/>// selects current records marked for deletion and unmark them
-verified([index]) | [i] | b | Returns true/false whether the record is marked as verified. If no index is supplied the current record number is tested:<br/>select verified() do edit data !nomd <br/>// selects current records marked for deletion and unmark them
+deleted([index]) | [i] |  b | Returns true/false whether the record is marked for deletion. If no index is supplied the current record number is tested<br/>`select deleted() do edit data !nomd`<br/>selects records marked for deletion and unmarks them
+verified([index]) | [i] | b | Returns true/false whether the record is marked as verified. If no index is supplied the current record number is tested:<br/>`select verified() do edit data !nomd` <br/>selects records marked for deletion and unmarks them
 
 <a name="operators" id="operators"></a>
 ## Operators used in EpiData Analysis
 
 operator | syntax | result | meaning | example
----|---|---|---|---
-+ | n+n | n | addition | 1+2 => 3
-+ | s+any<br/>any+s | s | concatenation | "A"+"B" => "AB"<br/>"A"+1 => "A1"
-+ | d+n | d | date addition | "30/11/2004"+31 => "31/12/2004"
-- | n-n | n | subtraction|2-1 => 1
-- | d-d | n | date subtraction | "31/12/2004"-"30/11/2004" => 31
-- | d-n | d | date subtraction | "31/12/2004"-31 => "30/11/2004"
-* | n*n | n | multiplication | 2*3 => 6
-/ | n/n | n | division | 5/2 => 2.5<br/>5/0 => missing
-div | n div n | i | integer result of division | 5 div 2 => 2<br/>5 div 0 => missing
-^ | n^n | f | exponentiation<br/>5^2 => 25 | 4^0.5 => 2
-( ) | | | group expressions | (5*(2+4))/2 => 15<br/>5*2+4/2 == (5*2)+(4/2) => 12
-= | n = n | b | equal |1 = 2 => FALSE
-< | n < n | b | less than | 1<2 => TRUE
-> | n > n | b | greater than | 1>2 => FALSE
-<= | n <= n | b | less than or equal | 1<=2 => TRUE<br/>2<=2 => TRUE
->= | n >= n | b | greater than or equal | 1<=2 => FALSE<br/>2>=2 => TRUE
-<> | n <> n | b | not equal to | 1<>2 => TRUE<br/>1<>1 => FALSE
-$ | $resultvar  | | result value | ? $count => 4027
+:---|:---|:---|:---|:---
++ | n+n | n | addition | `1+2` => 3
++ | s+any<br/>any+s | s | concatenation | `"A"+"B"` => "AB"<br/>`"A"+1` => "A1"
++ | d+n | d | date addition | `"30/11/2004"+31` => "31/12/2004"
+- | n-n | n | subtraction|`2-1` => 1
+- | d-d | n | date subtraction | `"31/12/2004"-"30/11/2004"` => 31
+- | d-n | d | date subtraction | `"31/12/2004"-31` => "30/11/2004"
+\* | n\*n | n | multiplication | `2*3` => 6
+/ | n/n | n | division | `5/2` => 2.5<br/>`5/0` => missing
+div | n div n | i | integer result of division | `5 div 2` => 2<br/>`5 div 0` => missing
+^ | n^n | f | exponentiation | `5^2` => 25 <br/> `4^0.`5 => 2
+( ) | | | group expressions | `(5\*(2+4))/2` => 15<br/>`5\*2+4/2` == (5\*2)+(4/2) => 12
+= | n = n | b | equal |`1 = 2` => FALSE
+< | n < n | b | less than | `1<2` => TRUE
+> | n > n | b | greater than | `1>2` => FALSE
+<= | n <= n | b | less than or equal | `1<=2` => TRUE<br/>`2<=2` => TRUE
+>= | n >= n | b | greater than or equal | `1<=2` => FALSE<br/>`2>=2` => TRUE
+<> | n <> n | b | not equal to | `1<>2` => TRUE<br/>`1<>1` => FALSE
+$ | $resultvar  | | result value | `? $count` => 4027
 
 <a name="startup" id="startup"></a>
 ## Startup options for EpiData Analysis
@@ -2406,11 +2413,11 @@ epidataanalysis [options]
 
 - `-v or --version`
 
-        Show version info and exit.
+  Show version info and exit.
 
 - `-i or --inifile [FILE]`
 
-        Uses [FILE] as startup program. If no location is specified startup.pgm is used.
+  Uses [FILE] as startup program. If no location is specified startup.pgm is used.
 
 ### examples
 
