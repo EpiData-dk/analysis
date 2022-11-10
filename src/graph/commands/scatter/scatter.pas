@@ -107,4 +107,3 @@ initialization
   RegisterChartCommand(stScatter, TScatterChart);
 
 end.
-
