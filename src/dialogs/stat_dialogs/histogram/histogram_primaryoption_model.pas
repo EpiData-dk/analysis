@@ -19,7 +19,6 @@ type
      FVariableLabelType: TEpiGetVariableLabelType;
      FValueLabelsDefault: Integer;
      FVariableLabelsDefault: Integer;
-     FDecimals: UTF8String;
      FStack: Boolean;
      FSortD:  Boolean;
      procedure SetValueLabelType(AValue: TEpiGetValueLabelType);
@@ -102,10 +101,6 @@ begin
     Result += ' !stack';
   if (FSortD) then
     Result += ' !sd';
-//  if (FInterval) then
-//    Result += ' !interval:=' + FInterval;
-
-//  Result := UTF8Trim(Result);
 end;
 
 function THistogramStatDialogPrimaryOptionModel.IsDefined(): boolean;

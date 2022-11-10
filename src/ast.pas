@@ -2511,7 +2511,7 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('stack', [rtUndefined]);
   Result.Insert('pct', [rtUndefined]);
-  Result.Insert('colors', [rtInteger]);
+  Result.Insert('colors', [rtString]);
 end;
 
 function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2542,7 +2542,7 @@ begin
   AddValueLabelOptions(Result);
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('interval', [rtInteger]);
-  Result.Insert('colors', [rtInteger]);
+  Result.Insert('colors', [rtString]);
 end;
 
 function TEpicurveCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2579,7 +2579,7 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('interval', [rtInteger, rtFloat]);
   Result.Insert('stack', [rtUndefined]);
-  Result.Insert('colors', [rtInteger]);
+  Result.Insert('colors', [rtString]);
 end;
 
 function THistogramCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2625,7 +2625,7 @@ begin
   Result.Insert('cin',['cinone'], [rtUndefined]);     // no confidence intervals on plots
   Result.Insert('cib',['ciband'], [rtUndefined]);     // show CI as bands
   Result.Insert('cil', ['ciline'], [rtUndefined]);      // show CI uppper and lower lines
-  Result.Insert('colors', [rtInteger]);    // color map (9 digits)
+  Result.Insert('colors', [rtString]);    // color map (9 digits)
   Result.Insert('q',   [rtUndefined]);
   Result.Insert('mt',  [rtUndefined]);                  // missing values of time2 become max(time2)
   Result.Insert('exit',[rtDate]);                       // date to assign when time2 is missing

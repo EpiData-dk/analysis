@@ -14,7 +14,6 @@ type
 
   TEpicurveStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
-    FOnModified: IStatDiaglogViewModified;
     FDataModel: TEpicurveStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FVerticalDivider: TBevel;

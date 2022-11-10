@@ -49,6 +49,7 @@
 -Fu./src/graph/commands/scatter
 -Fu./src/graph/commands/survival
 -Fu./src/graph/graphform
+-Fu./src/graph/utils
 -Fu./src/output
 -Fu./src/parser
 -Fu./src/sidewindows

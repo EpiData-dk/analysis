@@ -10,27 +10,25 @@ uses
 
 type
 
-  TSurvivalStatDialogVariable = (tvX, tvT, tvT2, tvBy, tvW);
+  TSurvivalStatDialogVariable = (svOutcome, svTime1, svTime2, svBy, svW);
 
   { TSurvivalStatDialogVariableModel }
 
   TSurvivalStatDialogVariableModel = class(IStatDialogModel)
   private
     FExecutor: TExecutor;
-    FXVariable: TEpiField;    // Outcome
-    FTVariable: TEpiField;    // Time
-    FT2Variable: TEpiField;    // Time 2
+    FOutcomeVariable: TEpiField;
+    FTime1Variable: TEpiField;
+    FTime2Variable: TEpiField;
     FWVariable: TEpiField;
     FByVariable: TEpiField;
     FFailure: UTF8String;
-//    FFailureType: TEpiFieldType;
     FRefStratum: UTF8String;
-//    FRefStratumType: TEpiFieldType;
     FOutcomeValues: TStringList;
     FStrataValues:  TStringList;
-    procedure SetXVariable(AValue: TEpiField);
-    procedure SetTVariable(AValue: TEpiField);
-    procedure SetT2Variable(AValue: TEpiField);
+    procedure SetOutcomeVariable(AValue: TEpiField);
+    procedure SetTime1Variable(AValue: TEpiField);
+    procedure SetTime2Variable(AValue: TEpiField);
     procedure SetByVariable(AValue: TEpiField);
     procedure SetWVariable(AValue: TEpiField);
     procedure SetFailure(AValue: UTF8String);
@@ -44,13 +42,12 @@ type
   public
     constructor Create(Executor: TExecutor);
     function GetComboFields(SurvivalVariable: TSurvivalStatDialogVariable): TEpiFields;
-    property XVariable: TEpiField read FXVariable write SetXVariable;
-    property TVariable: TEpiField read FTVariable write SetTVariable;
-    property T2Variable: TEpiField read FT2Variable write SetT2Variable;
+    property OutcomeVariable: TEpiField read FOutcomeVariable write SetOutcomeVariable;
+    property Time1Variable: TEpiField read FTime1Variable write SetTime1Variable;
+    property Time2Variable: TEpiField read FTime2Variable write SetTime2Variable;
     property ByVariable: TEpiField read FByVariable write SetByVariable;
     property WVariable: TEpiField read FWVariable write SetWVariable;
     property Failure: UTF8String read FFailure write SetFailure;
-//    property FailureType: TEpiFieldType read FFailureType write FFailureType;
     property OutcomeValues: TStringList read FOutcomeValues;
     property StrataValues: TStringList read FStrataValues;
     property RefStratum: UTF8String read FRefStratum write SetRefStratum;
@@ -60,23 +57,23 @@ implementation
 
 { TSurvivalStatDialgoModel }
 
-procedure TSurvivalStatDialogVariableModel.SetXVariable(AValue: TEpiField);
+procedure TSurvivalStatDialogVariableModel.SetOutcomeVariable(AValue: TEpiField);
 begin
-  if FXVariable = AValue then Exit;
-  FXVariable := AValue;
-  SetOutcomeValues(FXVariable);
+  if FOutcomeVariable = AValue then Exit;
+  FOutcomeVariable := AValue;
+  SetOutcomeValues(FOutcomeVariable);
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetTVariable(AValue: TEpiField);
+procedure TSurvivalStatDialogVariableModel.SetTime1Variable(AValue: TEpiField);
 begin
-  if FTVariable = AValue then Exit;
-  FTVariable := AValue;
+  if FTime1Variable = AValue then Exit;
+  FTime1Variable := AValue;
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetT2Variable(AValue: TEpiField);
+procedure TSurvivalStatDialogVariableModel.SetTime2Variable(AValue: TEpiField);
 begin
-  if FT2Variable = AValue then Exit;
-  FT2Variable := AValue;
+  if FTime2Variable = AValue then Exit;
+  FTime2Variable := AValue;
 end;
 
 procedure TSurvivalStatDialogVariableModel.SetWVariable(AValue: TEpiField);
@@ -123,31 +120,31 @@ end;
 function TSurvivalStatDialogVariableModel.IsUsed(Field: TEpiField;
   SurvivalVariable: TSurvivalStatDialogVariable): boolean;
 begin
-  result := (not (SurvivalVariable = tvX)) and (Field = FXVariable);
-  result := result or ((not (SurvivalVariable = tvT)) and (Field = FTVariable));
-  result := result or ((not (SurvivalVariable = tvT2)) and (Field = FT2Variable));
-  result := result or ((not (SurvivalVariable = tvBy)) and (Field = FByVariable));
-  result := result or ((not (SurvivalVariable = tvW)) and (Field = FWVariable));
+  result := (not (SurvivalVariable = svOutcome)) and (Field = FOutcomeVariable);
+  result := result or ((not (SurvivalVariable = svTime1)) and (Field = FTime1Variable));
+  result := result or ((not (SurvivalVariable = svTime2)) and (Field = FTime2Variable));
+  result := result or ((not (SurvivalVariable = svBy)) and (Field = FByVariable));
+  result := result or ((not (SurvivalVariable = svW)) and (Field = FWVariable));
 end;
 
 function TSurvivalStatDialogVariableModel.GenerateScript(): UTF8String;
 var
 p:   Integer;
 begin
-  result := FXVariable.Name;
+  result := FOutcomeVariable.Name;
 
-  if Assigned(FTVariable) then
-    result += ' ' + FTVariable.Name;
+  if Assigned(FTime1Variable) then
+    result += ' ' + FTime1Variable.Name;
 
-  if Assigned(FT2Variable) then
-    result += ' ' + FT2Variable.Name;
+  if Assigned(FTime2Variable) then
+    result += ' ' + FTime2Variable.Name;
 
   if ((FFailure <> '0') and (FFailure <> '')) then
     begin
       p := Pos('=',FFailure) - 1;
       if (p < 0) then
         p := length(FFailure);
-      if (FXVariable.FieldType = ftInteger) then
+      if (FOutcomeVariable.FieldType = ftInteger) then
         Result += ' !o:=' + copy(FFailure,0,p)
       else
         Result += ' !o:="' + copy(FFailure,0,p) + '"';
@@ -176,12 +173,12 @@ end;
 function TSurvivalStatDialogVariableModel.IsDefined(): boolean;
 begin
   result :=
-    (Assigned(FXVariable) and (FFailure <> '')) and
-    (((Assigned(FTVariable) and
-     (FTVariable.FieldType in [ftInteger, ftString, ftUpperString]))
+    (Assigned(FOutcomeVariable) and (FFailure <> '')) and
+    (((Assigned(FTime1Variable) and
+     (FTime1Variable.FieldType in [ftInteger, ftString, ftUpperString]))
      ) or
-     ((Assigned(FTVariable) and (FTVariable.FieldType in DateFieldTypes)) and
-      (Assigned(FT2Variable) and (FT2Variable.FieldType in DateFieldTypes))
+     ((Assigned(FTime1Variable) and (FTime1Variable.FieldType in DateFieldTypes)) and
+      (Assigned(FTime2Variable) and (FTime2Variable.FieldType in DateFieldTypes))
     ));
 end;
 

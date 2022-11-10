@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Controls, ExtCtrls, StdCtrls,
-  stat_dialog_contribution, barchart_model, fields_combobox, stat_dialog_custom_view;
+  barchart_model, fields_combobox, stat_dialog_custom_view;
 
 type
 
@@ -16,11 +16,10 @@ type
   private
     FDataModel: TBarchartStatDialogVariableModel;
     FComboBoxes: Array of TEpiFieldsComboBox;
-    FOnModified: IStatDiaglogViewModified;
     procedure VariableSelect(Sender: TObject);
     procedure UpdateCombos();
   public
-    constructor Create(TheOwner: TComponent);
+    constructor Create(TheOwner: TComponent); override;
     procedure EnterView(); override;
     function ExitView(): boolean; override;
     function GetViewCaption(): UTF8String; override;

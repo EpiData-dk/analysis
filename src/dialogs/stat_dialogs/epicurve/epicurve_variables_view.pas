@@ -16,11 +16,10 @@ type
   private
     FDataModel: TEpicurveStatDialogVariableModel;
     FComboBoxes: Array of TEpiFieldsComboBox;
-    FOnModified: IStatDiaglogViewModified;
     procedure VariableSelect(Sender: TObject);
     procedure UpdateCombos();
   public
-    constructor Create(TheOwner: TComponent);
+    constructor Create(TheOwner: TComponent); override;
     procedure EnterView(); override;
     function ExitView(): boolean; override;
     function GetViewCaption(): UTF8String; override;

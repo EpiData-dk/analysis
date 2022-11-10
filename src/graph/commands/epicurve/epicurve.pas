@@ -27,7 +27,7 @@ implementation
 
 uses
   TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types,
-  options_utils;
+  options_utils, graph_utils;
 
 { TEpicurveChart }
 
@@ -40,11 +40,12 @@ begin
 end;
 
 function TEpicurveChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
+const
+  dummyVarName = '_dummy4barchart';
 var
   {Chart}
   Chart:               TChart;
   ChartConfiguration:  IChartConfiguration;
-  Titles:              IChartTitleConfiguration;
   DataFile:            TEpiDataFile;
   LegendSeries:        TBarSeries;
   LegendStyles:        TChartStyles;
@@ -54,19 +55,19 @@ var
   BarSeries:           TBarSeries;
   SeriesStyles:        TChartStyles;
   aStyle:              TChartStyle;
-  // TODO: put in graph options
   sColor:              TColorMap;
   {Frequencies}
   T:                   TTables;
-  nilStatistics:       TTableStatistics;
   StratVariable:       TStringList;
   nilTablesRefMap:     TEpiReferenceMap;
-  TableData:           TTwowayTable;
+  TablesAll:           TTwoWayTables;
+  TableData:           TTwoWayTable;
   {command}
   VarNames:            TStrings;
   XVar:                TEpiField;
   dummyVar:            TEpiField;
   WeightVarName:       UTF8String;
+  cOptions:            TOptionList;
   Opt:                 TOption;
 
   ValueLabelOutput:    TEpiGetValueLabelType;
@@ -83,10 +84,11 @@ begin
   sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
   VarNames            := Command.VariableList.GetIdentsAsList;
   StratVariable       := TStringList.Create;
-  ReverseStrata       := Command.HasOption('sd', Opt);
+  cOptions            := Command.Options;
+  ReverseStrata       := cOptions.HasOption('sd', Opt);
   if (ReverseStrata) then
     begin
-      Command.Options.Remove(Opt); // don't pass this to TABLES!
+      cOptions.Remove(Opt);
       if (Varnames.Count = 1) then
         FOutputCreator.DoInfoShort('!sd ignored with a single variable');
     end;
@@ -98,30 +100,32 @@ begin
   XVar := Datafile.Fields.FieldByName[VarNames[0]];
   Chart := FChartFactory.NewChart();
   HistogramData := THistogram.Create(FExecutor, Command);
-  if (Command.HasOption('interval', Opt)) then
+  if (cOptions.HasOption('interval', Opt)) then
     HistogramData.Interval := Opt.Expr.AsInteger;
   if (Varnames.Count = 1) then
     begin
       dummyVar := DataFile.NewField(ftInteger);
-      dummyVar.Name := '_dummy4epicurve';
-      Varnames.Add('_dummy4epicurve');
+      dummyVar.Name := dummyVarName;
+      Varnames.Add(dummyVarName);
     end;
   // Note: this does NOT call CalcTables with stratification
   T := TTables.Create(FExecutor, FOutputCreator);
-  TableData  := T.CalcTables(Datafile, VarNames,
-                StratVariable, WeightVarName, Command.Options, nilTablesRefMap, nilStatistics).UnstratifiedTable;
+  TablesAll  := T.CalcTables(Datafile, VarNames,
+                StratVariable, WeightVarName, cOptions, nilTablesRefMap);
+  TableData := TablesAll.UnstratifiedTable;
   if (ReverseStrata) then
     TableData.SortByRowLabel(true);
   HistogramData.Fill(TableData);
   HistogramData.HistogramToEpicurve;
-  T.Free;
+
   ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
-  // if dummy var was created, remove it now
-  if (Varnames.IndexOf('_dummy4epicurve') > -1) then
-    Varnames.Delete(Varnames.IndexOf('_dummy4epicurve'));
+
+  if (Varnames.IndexOf(dummyVarName) > -1) then
+    Varnames.Delete(Varnames.IndexOf(dummyVarName));
 
   HistogramSource := THistogramSource.Create(Chart);
   HistogramSource.Histogram := HistogramData;
+
   BarSeries := TBarSeries.Create(Chart);
   BarSeries.Source := HistogramSource;
   BarSeries.Stacked := true;
@@ -166,7 +170,7 @@ begin
       Chart.Legend.UseSidebar     := true;
       Chart.Legend.Frame.Visible  := false;
       Chart.Legend.GroupTitles.Add(ByVarName);
-    end  // stratified
+    end
   else
     begin
       aStyle := SeriesStyles.Add;
@@ -181,7 +185,7 @@ begin
   if (Varnames.Count > 1) then
     sTitle += ' by ' + ByVarName;
   ChartConfiguration := FChartFactory.NewChartConfiguration();
-  Titles := ChartConfiguration.GetTitleConfiguration()
+    .GetTitleConfiguration()
     .SetTitle(sTitle)
     .SetFootnote('')
     .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
@@ -190,8 +194,6 @@ begin
   ChartConfiguration.GetAxesConfiguration()
     .GetXAxisConfiguration()
     .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
-  ChartConfiguration.GetAxesConfiguration()
-    .GetYAxisConfiguration();
 
   with Chart do
     begin
@@ -207,7 +209,10 @@ begin
   Result.AddChart(Chart, ChartConfiguration);
   XVar := nil;
   VarNames.Free;
-  Datafile.Free;
+  TablesAll.Free;
+  T.Free;
+  DataFile.Free;
+  StratVariable.Free;
 end;
 
 initialization

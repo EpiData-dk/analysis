@@ -60,8 +60,8 @@ end;
 
 destructor TBarSource.Destroy;
 begin
-  inherited Destroy;
   FreeAndNil(FTable);
+  inherited Destroy;
 end;
 
 end.

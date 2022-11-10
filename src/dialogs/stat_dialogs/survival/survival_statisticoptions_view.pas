@@ -19,7 +19,6 @@ type
     FDataModel: TSurvivalStatDialogStatisticOptionsModel;
     FStatisticsGroup: TCheckGroup;
     FCIGroup: TRadioGroup;
-//    FVerticalDivider: TBevel;
     procedure CreateStatisticsCheckboxes(CheckGroup: TCheckGroup);
     procedure StatisticsItemChecked(Sender: TObject; Index: integer);
     procedure CreateCIRadios(RadioGroup: TRadioGroup);
@@ -42,15 +41,6 @@ constructor TSurvivalStatDialogStatisticOptionsView.Create(TheOwner: TComponent)
 begin
   inherited Create(TheOwner);
 
-{  FVerticalDivider := TBevel.Create(self);
-  FVerticalDivider.Parent := self;
-  FVerticalDivider.Style := bsLowered;
-  FVerticalDivider.Shape := bsSpacer;
-  FVerticalDivider.Width := 5;
-  FVerticalDivider.Anchors := [];
-  FVerticalDivider.AnchorParallel(akTop, 5, Self);
-  FVerticalDivider.AnchorParallel(akBottom, 0, Self);
-}
   FStatisticsGroup := TCheckGroup.Create(self);
   FStatisticsGroup.Parent := self;
   FStatisticsGroup.Caption := 'Statistics';
@@ -66,8 +56,6 @@ begin
   FCIGroup.AnchorToNeighbour(akTop, 10, FStatisticsGroup);
   FCIGroup.AnchorParallel(akLeft, 5, self);
   FCIGroup.AnchorParallel(akRight, 5, self);
-
-//  FStatisticsGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
 
   CreateStatisticsCheckBoxes(FStatisticsGroup);
   CreateCIRadios(FCIGroup);

@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, executor, epidatafiles, stat_dialog_contribution,
-  epidatafilestypes,epivaluelabels, outputcreator, freq, epicustombase;
+  epicustombase;
 
 type
 

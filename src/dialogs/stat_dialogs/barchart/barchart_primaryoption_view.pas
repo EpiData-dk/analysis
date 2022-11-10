@@ -5,7 +5,7 @@ unit barchart_primaryoption_view;
 interface
 
 uses
-  Classes, SysUtils, ExtCtrls, Controls, stat_dialog_contribution,
+  Classes, SysUtils, ExtCtrls, Controls,
   barchart_primaryoption_model, stat_dialog_custom_view;
 
 type
@@ -14,7 +14,6 @@ type
 
   TBarchartStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
-    FOnModified: IStatDiaglogViewModified;
     FDataModel: TBarchartStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FValueLabelsGroup: TRadioGroup;

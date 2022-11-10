@@ -14,7 +14,6 @@ type
 
   ThistogramStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
-    FOnModified: IStatDiaglogViewModified;
     FDataModel: ThistogramStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FValueLabelsGroup: TRadioGroup;

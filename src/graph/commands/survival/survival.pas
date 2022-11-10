@@ -16,7 +16,7 @@ uses
   Classes, SysUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
   tables_types, tables,
   executor, result_variables, epifields_helper, ana_globals,
-  outputcreator, options_utils,
+  outputcreator, options_utils, graph_utils,
   TAGraph, TASeries, TATypes, TASources, Graphics, FPCanvas,
   chartcommandresult, chartcommand, chartfactory, chartconfiguration, charttitles;
 

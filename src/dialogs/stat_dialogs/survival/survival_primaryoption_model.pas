@@ -118,8 +118,6 @@ begin
     Result += ' !ns';
   if (FOutputClipboard) then
     Result += ' !cb';
-
-//  Result := UTF8Trim(Result);
 end;
 
 function TSurvivalStatDialogPrimaryOptionModel.IsDefined(): boolean;

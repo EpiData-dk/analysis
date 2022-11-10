@@ -19,7 +19,6 @@ type
      FVariableLabelType: TEpiGetVariableLabelType;
      FValueLabelsDefault: Integer;
      FVariableLabelsDefault: Integer;
-     FDecimals: UTF8String;
      FStack: Boolean;
      FSortD:  Boolean;
      procedure SetValueLabelType(AValue: TEpiGetValueLabelType);

@@ -1872,7 +1872,7 @@ begin
   FOptions.Insert(ANA_SO_BROWSER_OBS_VERIFIED_COLOR,     TFontColorOption.Create('#008080', rtString));
 
   // Common chart options
-  FOptions.Insert(ANA_SO_CHART_COLORS,                   TSetOption.Create('123456789', rtInteger));
+  FOptions.Insert(ANA_SO_CHART_COLORS,                   TSetOption.Create('1234567890', rtString));
 
   // OUTPUT VIEWER
   SOpt := TSetOption.Create('TEXT', rtString);

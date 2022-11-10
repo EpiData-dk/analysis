@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, executor, epidatafiles, stat_dialog_contribution,
-  epidatafilestypes,epivaluelabels, outputcreator, freq, epicustombase;
+  epicustombase;
 
 type
 
@@ -17,8 +17,8 @@ type
   THistogramStatDialogVariableModel = class(IStatDialogModel)
   private
     FExecutor: TExecutor;
-    FXVariable: TEpiField;    // Time
-    FYVariable: TEpiField;    // Strata
+    FXVariable: TEpiField;
+    FYVariable: TEpiField;
     FWVariable: TEpiField;
     procedure SetXVariable(AValue: TEpiField);
     procedure SetYVariable(AValue: TEpiField);

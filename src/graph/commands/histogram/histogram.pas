@@ -27,7 +27,7 @@ implementation
 
 uses
   TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types,
-  options_utils;
+  options_utils, graph_utils;
 
 { THistogramChart }
 
@@ -40,11 +40,12 @@ begin
 end;
 
 function THistogramChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
+const
+  dummyVarName = '_dummy4barchart';
 var
   {Chart}
   Chart:               TChart;
   ChartConfiguration:  IChartConfiguration;
-  Titles:              IChartTitleConfiguration;
   DataFile:            TEpiDataFile;
   HistogramSource:     THistogramSource;
   HistogramData:       THistogram;
@@ -55,16 +56,17 @@ var
   sColor:              TColorMap;
   {Frequencies}
   T:                   TTables;
-  nilStatistics:       TTableStatistics;
   StratVariable:       TStringList;
   nilTablesRefMap:     TEpiReferenceMap;
-  TableData:           TTwowayTable;
+  TablesAll:           TTwoWayTables;
+  TableData:           TTwoWayTable;
   {command}
   VarNames:            TStrings;
   DFVars:              TStrings;
   XVar:                TEpiField;
   dummyVar:            TEpiField;
   WeightVarName:       UTF8String;
+  cOptions:            TOptionList;
   Opt:                 TOption;
 
   ValueLabelOutput:    TEpiGetValueLabelType;
@@ -83,55 +85,57 @@ begin
   VarNames            := Command.VariableList.GetIdentsAsList;
   DFVars              := Command.VariableList.GetIdentsAsList;
   StratVariable       := TStringList.Create;
-  ReverseStrata       := Command.HasOption('sd', Opt);
+  cOptions            := Command.Options;
+  ReverseStrata       := cOptions.HasOption('sd', Opt);
   if (ReverseStrata) then
     begin
-      Command.Options.Remove(Opt); // don't pass this to TABLES!
+      cOptions.Remove(Opt); // don't pass this to TABLES!
       if (Varnames.Count = 1) then
         FOutputCreator.DoInfoShort('!sd ignored with a single variable');
     end;
 
   WeightVarName := '';
-  if (Command.HasOption(['w'],Opt)) then
+  if (cOptions.HasOption('w',Opt)) then
     begin
       WeightVarName := Opt.Expr.AsIdent;
       DFVars.Add(WeightVarName);
     end;
 
-  yPct := Command.HasOption('pct');
+  yPct := cOptions.HasOption('pct');
 
   DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
   XVar := Datafile.Fields.FieldByName[VarNames[0]];
   Chart := FChartFactory.NewChart();
   HistogramData := THistogram.Create(FExecutor, Command);
-  if (Command.HasOption('interval', Opt)) then
+  if (cOptions.HasOption('interval', Opt)) then
     HistogramData.Interval := Opt.Expr.AsInteger;
   HistogramData.PctCalc := yPct;
   if (Varnames.Count = 1) then
 // add dummy variable to use Tables with one variable
     begin
       dummyVar := DataFile.NewField(ftInteger);
-      dummyVar.Name := '_dummy4histogram';
-      Varnames.Add('_dummy4histogram');
+      dummyVar.Name := dummyVarName;
+      Varnames.Add(dummyVarName);
     end;
 // Note: this does NOT call CalcTables with stratification
   T := TTables.Create(FExecutor, FOutputCreator);
-  TableData  := T.CalcTables(Datafile, VarNames,
-                StratVariable, WeightVarName, Command.Options, nilTablesRefMap, nilStatistics).UnstratifiedTable;
+  TablesAll  := T.CalcTables(Datafile, VarNames,
+                StratVariable, WeightVarName, cOptions, nilTablesRefMap);
+  TableData := TablesAll.UnstratifiedTable;
   if (ReverseStrata) then
     TableData.SortByRowLabel(true);
   HistogramData.Fill(TableData);
-  T.Free;
+
   ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
   // if dummy var was created, remove it now
-  if (Varnames.IndexOf('_dummy4histogram') > -1) then
-    Varnames.Delete(Varnames.IndexOf('_dummy4histogram'));
+  if (Varnames.IndexOf(dummyVarName) > -1) then
+    Varnames.Delete(Varnames.IndexOf(dummyVarName));
 
   HistogramSource := THistogramSource.Create(Chart);
   HistogramSource.Histogram := HistogramData;
   BarSeries := TBarSeries.Create(Chart);
   BarSeries.Source := HistogramSource;
-  BarSeries.Stacked := Command.HasOption('stack');
+  BarSeries.Stacked := cOptions.HasOption('stack');
   BarSeries.BarWidthPercent := 100;
   SeriesStyles := TChartStyles.Create(Chart);
   if (Varnames.Count > 1) then
@@ -176,7 +180,7 @@ begin
     sTitle += ' weighted (' + WeightVarName + ')';
 
   ChartConfiguration := FChartFactory.NewChartConfiguration();
-  Titles := ChartConfiguration.GetTitleConfiguration()
+    .GetTitleConfiguration()
     .SetTitle(sTitle)
     .SetFootnote('')
     .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
@@ -185,8 +189,6 @@ begin
   ChartConfiguration.GetAxesConfiguration()
     .GetXAxisConfiguration()
     .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
-  ChartConfiguration.GetAxesConfiguration()
-    .GetYAxisConfiguration();
 
   with Chart do
     begin
@@ -202,7 +204,10 @@ begin
   Result.AddChart(Chart, ChartConfiguration);
   XVar := nil;
   VarNames.Free;
-  Datafile.Free;
+  TablesAll.Free;
+  T.Free;
+  DataFile.Free;
+  StratVariable.Free;
 end;
 
 initialization
