@@ -73,7 +73,7 @@ var
   VariableLabelOutput: TEpiGetVariableLabelType;
   ReverseStrata:       Boolean;
   ByVarName:           UTF8String;
-  i, colour:           Integer;
+  i, colourNum:        Integer;
   sTitle:              UTF8String;
   yPct:                Boolean;
   yType:               UTF8String;
@@ -140,16 +140,16 @@ begin
   SeriesStyles := TChartStyles.Create(Chart);
   if (Varnames.Count > 1) then
     begin
-      colour := 0;
+      colourNum := 0;
       for i := 0 to TableData.RowCount - 1 do
         begin
-          if (colour = length(sColor)) then
-            colour := 0;
+          if (colourNum = length(sColor)) then
+            colourNum := 0;
           aStyle := SeriesStyles.Add;
           aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
-          aStyle.Brush.Color:=sColor[colour];
+          aStyle.Brush.Color:=sColor[colourNum];
           aStyle.Pen.Color := clSilver;
-          colour += 1;
+          colourNum += 1;
         end;
       BarSeries.Legend.Multiplicity:=lmStyle;
       BarSeries.Legend.GroupIndex  := 0;
@@ -178,9 +178,8 @@ begin
     sTitle += ' by ' + ByVarName;
   if (WeightVarName <> '') then
     sTitle += ' weighted (' + WeightVarName + ')';
-
   ChartConfiguration := FChartFactory.NewChartConfiguration();
-    .GetTitleConfiguration()
+  ChartConfiguration.GetTitleConfiguration()
     .SetTitle(sTitle)
     .SetFootnote('')
     .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))

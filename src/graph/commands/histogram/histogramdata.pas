@@ -206,6 +206,8 @@ end;
 destructor THistogram.Destroy;
 begin
   FBins := nil;
+  FStrataName := nil;
+  FMaxCounts := nil;
   inherited Destroy;
 end;
 

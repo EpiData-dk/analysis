@@ -75,7 +75,7 @@ var
   ReverseStrata:       Boolean;
   ByVarName:           UTF8String;
   box1, box:           Integer;
-  i, colour:           Integer;
+  i, colourNum:        Integer;
   sTitle:              UTF8String;
 
 begin
@@ -145,24 +145,24 @@ begin
       LegendSeries.Legend.GroupIndex  := 0;
       Chart.AddSeries(LegendSeries);
 
-      colour := 0;
+      colourNum := 0;
       box1 := 0;
       for i := 0 to TableData.RowCount - 1 do
         begin
           // individual box styles
-          if (colour = length(sColor)) then
-            colour := 0;     // if more strata than colours, recycle the colours
+          if (colourNum = length(sColor)) then
+            colourNum := 0;     // if more strata than colours, recycle the colours
           for box := box1 to box1 + HistogramData.MaxCount[i] - 1 do
             begin
               aStyle := SeriesStyles.Add;
-              aStyle.Brush.Color:=sColor[colour];
+              aStyle.Brush.Color:=sColor[colourNum];
               aStyle.Pen.Color := clSilver;     // will work with any box colours
             end;
           LegendSource.Add(HistogramData.Base.ToDouble, 0);
           aStyle := LegendStyles.Add;
           aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
-          aStyle.Brush.Color:=sColor[colour];
-          colour += 1;
+          aStyle.Brush.Color:=sColor[colourNum];
+          colourNum += 1;
           box1 += HistogramData.MaxCount[i];
         end;
 
@@ -185,7 +185,7 @@ begin
   if (Varnames.Count > 1) then
     sTitle += ' by ' + ByVarName;
   ChartConfiguration := FChartFactory.NewChartConfiguration();
-    .GetTitleConfiguration()
+  ChartConfiguration.GetTitleConfiguration()
     .SetTitle(sTitle)
     .SetFootnote('')
     .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
