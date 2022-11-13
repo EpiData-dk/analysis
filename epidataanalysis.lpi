@@ -293,7 +293,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="191">
+    <Units Count="190">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1008,93 +1008,89 @@
         <IsPartOfProject Value="True"/>
       </Unit168>
       <Unit169>
-        <Filename Value="src/graph/commands/epicurve/epicurvesource.pas"/>
+        <Filename Value="src/graph/commands/histogram/histogram.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit169>
       <Unit170>
-        <Filename Value="src/graph/commands/histogram/histogram.pas"/>
+        <Filename Value="src/graph/commands/histogram/histogramsource.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit170>
       <Unit171>
-        <Filename Value="src/graph/commands/histogram/histogramsource.pas"/>
+        <Filename Value="src/graph/commands/histogram/histogramdata.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit171>
       <Unit172>
-        <Filename Value="src/graph/commands/histogram/histogramdata.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_contribution.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit172>
       <Unit173>
-        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_contribution.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit173>
       <Unit174>
-        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_model.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_primaryoption_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit174>
       <Unit175>
-        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_primaryoption_model.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_primaryoption_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit175>
       <Unit176>
-        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_primaryoption_view.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_variables_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit176>
       <Unit177>
-        <Filename Value="src/dialogs/stat_dialogs/histogram/histogram_variables_view.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/epicurve/epicurve_contribution.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit177>
       <Unit178>
-        <Filename Value="src/dialogs/stat_dialogs/epicurve/epicurve_contribution.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/epicurve/epicurve_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit178>
       <Unit179>
-        <Filename Value="src/dialogs/stat_dialogs/epicurve/epicurve_model.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/epicurve/epicurve_primaryoption_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit179>
       <Unit180>
-        <Filename Value="src/dialogs/stat_dialogs/epicurve/epicurve_primaryoption_model.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/epicurve/epicurve_primaryoption_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit180>
       <Unit181>
-        <Filename Value="src/dialogs/stat_dialogs/epicurve/epicurve_primaryoption_view.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/epicurve/epicurve_variables_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit181>
       <Unit182>
-        <Filename Value="src/dialogs/stat_dialogs/epicurve/epicurve_variables_view.pas"/>
+        <Filename Value="src/graph/commands/barchart/barchart.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit182>
       <Unit183>
-        <Filename Value="src/graph/commands/barchart/barchart.pas"/>
+        <Filename Value="src/graph/commands/barchart/barchartsource.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit183>
       <Unit184>
-        <Filename Value="src/graph/commands/barchart/barchartsource.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_contribution.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit184>
       <Unit185>
-        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_contribution.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit185>
       <Unit186>
-        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_model.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_primaryoption_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit186>
       <Unit187>
-        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_primaryoption_model.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_primaryoption_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit187>
       <Unit188>
-        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_primaryoption_view.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_variables_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit188>
       <Unit189>
-        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_variables_view.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit189>
-      <Unit190>
         <Filename Value="src/graph/utils/graph_utils.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit190>
+      </Unit189>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

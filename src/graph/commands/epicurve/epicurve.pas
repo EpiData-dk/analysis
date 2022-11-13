@@ -84,7 +84,9 @@ begin
   sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
   VarNames            := Command.VariableList.GetIdentsAsList;
   StratVariable       := TStringList.Create;
-  cOptions            := Command.Options;
+  cOptions            := TOptionList.Create;
+  for Opt in Command.Options do
+    cOptions.Add(Opt);
   ReverseStrata       := cOptions.HasOption('sd', Opt);
   if (ReverseStrata) then
     begin

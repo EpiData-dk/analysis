@@ -85,7 +85,9 @@ begin
   VarNames            := Command.VariableList.GetIdentsAsList;
   DFVars              := Command.VariableList.GetIdentsAsList;
   StratVariable       := TStringList.Create;
-  cOptions            := Command.Options;
+  cOptions            := TOptionList.Create;
+  for Opt in Command.Options do
+    cOptions.Add(Opt);
   ReverseStrata       := cOptions.HasOption('sd', Opt);
   if (ReverseStrata) then
     begin
@@ -207,6 +209,7 @@ begin
   T.Free;
   DataFile.Free;
   StratVariable.Free;
+  cOptions.Free;
 end;
 
 initialization
