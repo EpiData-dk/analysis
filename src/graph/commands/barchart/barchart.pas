@@ -210,6 +210,7 @@ begin
   TablesAll.Free;
   T.Free;
   DataFile.Free;
+  cOptions.Free;
   StratVariable.Free;
 end;
 

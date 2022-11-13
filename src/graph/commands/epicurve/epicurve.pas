@@ -215,6 +215,7 @@ begin
   T.Free;
   DataFile.Free;
   StratVariable.Free;
+  cOptions.Free;
 end;
 
 initialization
