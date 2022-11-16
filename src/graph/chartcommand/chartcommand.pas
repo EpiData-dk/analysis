@@ -73,10 +73,8 @@ function GetChartCommand(AStatementType: TASTStatementType
   ): IChartCommand;
 begin
   Result := nil;
-
   if (Assigned(GraphCommandClassMap)) then
     Result := GraphCommandClassMap.GetValue(AStatementType).Create as IChartCommand;
 end;
 
 end.
-

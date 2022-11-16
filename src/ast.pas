@@ -1175,6 +1175,7 @@ type
   protected
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec;
   public
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
@@ -1297,7 +1298,41 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+  { TBarchartCommand }
+
+  TBarchartCommand = class(TCustomGraphCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
+  { TEpicurveCommand }
+
+  TEpicurveCommand = class(TCustomGraphCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
+  { THistogramCommand }
+
+  THistogramCommand = class(TCustomGraphCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TSurvivalCommand }
+
   TSurvivalCommand = class(TCustomGraphCommand)
   protected
     function GetAcceptedOptions: TStatementOptionsMap; override;
@@ -1718,6 +1753,13 @@ function TCTableCommand.GetAcceptedVariableCount: TBoundArray;
 begin
   result := inherited GetAcceptedVariableCount;
   result[0] := -1;
+end;
+
+function TCTableCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  Result.ResultTypes := [rtFloat, rtInteger, rtString];
 end;
 
 constructor TCTableCommand.Create(AVariableList: TVariableList;
@@ -2459,6 +2501,111 @@ begin
   inherited Create(AVariableList, AOptionList, stScatter);
 end;
 
+{ TBarchartCommand }
+function TBarchartCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+  Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
+  Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('stack', [rtUndefined]);
+  Result.Insert('pct', [rtUndefined]);
+  Result.Insert('colors', [rtString]);
+end;
+
+function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  SetLength(Result,2);
+  Result[0] := 1;
+  Result[1] := 2;
+end;
+
+function TBarchartCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+end;
+
+constructor TBarchartCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stBarchart);
+end;
+
+{ TEpicurveCommand }
+function TEpicurveCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+  Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
+  Result.Insert('interval', [rtInteger]);
+  Result.Insert('colors', [rtString]);
+end;
+
+function TEpicurveCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  SetLength(Result, 2);
+  Result[0] := 1;
+  Result[1] := 2;
+end;
+
+function TEpicurveCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  case Index of
+    0: Result.ResultTypes := [rtDate, rtInteger];
+    1: Result.ResultTypes := AllResultDataTypes;
+  end;
+end;
+
+constructor TEpicurveCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stEpicurve);
+end;
+
+{ THistogramCommand }
+function THistogramCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+  Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
+  Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('interval', [rtInteger, rtFloat]);
+  Result.Insert('stack', [rtUndefined]);
+  Result.Insert('colors', [rtString]);
+end;
+
+function THistogramCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  SetLength(Result, 2);
+  Result[0] := 1;
+  Result[1] := 2;
+end;
+
+function THistogramCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  case Index of
+    0: Result.ResultTypes := [rtDate, rtInteger, rtFloat];
+    1: Result.ResultTypes := AllResultDataTypes;
+  end;
+end;
+
+constructor THistogramCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stHistogram);
+end;
+
 {TSurvivalCommand}
 function TSurvivalCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
@@ -2477,22 +2624,45 @@ begin
   Result.Insert('cb',  [rtUndefined]);     // put KM plot points into clipboard
   Result.Insert('cin',['cinone'], [rtUndefined]);     // no confidence intervals on plots
   Result.Insert('cib',['ciband'], [rtUndefined]);     // show CI as bands
+  Result.Insert('cil', ['ciline'], [rtUndefined]);      // show CI uppper and lower lines
+  Result.Insert('colors', [rtString]);    // color map (9 digits)
   Result.Insert('q',   [rtUndefined]);
+  Result.Insert('mt',  [rtUndefined]);                  // missing values of time2 become max(time2)
+  Result.Insert('exit',[rtDate]);                       // date to assign when time2 is missing
+  Result.Insert('ref', [rtInteger, rtString]);          // reference value of by variable
+//  Result.Insert('agg', [rtString]);                     // aggregate time for specified values
+  Result.Insert('i', ['int'], [rtUndefined, rtString]); // use set intervals
+  Result.Insert('adj', [rtUndefined]);                  // censored obs assigned mid-point of interval
 end;
 
 function TSurvivalCommand.GetAcceptedVariableCount: TBoundArray;
 begin
-  result := inherited GetAcceptedVariableCount;
+  //result := inherited GetAcceptedVariableCount;
+  SetLength(result, 2);
   result[0] := 2;
+  result[1] := 3;
 end;
 
 function TSurvivalCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
   ): TTypesAndFlagsRec;
 begin
   Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  if (VariableList.Count = 2) then
   case Index of
     0: Result.ResultTypes := [rtString, rtInteger];
     1: Result.ResultTypes := [rtInteger];
+  end;
+  if (VariableList.Count = 3) then
+  case Index of
+    0: Result.ResultTypes := [rtString, rtInteger];
+    1: Result.ResultTypes := [rtDate];
+    2: Result.ResultTypes := [rtDate];
+  end;
+  if (VariableList.Count = 3) then
+  case Index of
+    0: Result.ResultTypes := [rtString, rtInteger];
+    1: Result.ResultTypes := [rtDate];
+    2: Result.ResultTypes := [rtDate];
   end;
 end;
 
@@ -3939,6 +4109,9 @@ begin
     stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
     stDescribe:  Result := TDescribeCommand.Create(AVariablelist, AOptionList);
     stScatter:   Result := TScatterCommand.Create(AVariableList, AOptionList);
+    stBarchart:  Result := TBarchartCommand.Create(AVariableList, AOptionList);
+    stEpicurve:  Result := TEpicurveCommand.Create(AVariableList, AOptionList);
+    stHistogram: Result := THistogramCommand.Create(AVariableList, AOptionList);
     stSurvival:  Result := TSurvivalCommand.Create(AVariableList, AOptionList);
   else
     DoError();
@@ -7042,6 +7215,9 @@ begin
     'use': Result := stUse;
     'ver': Result := stVersion;
     'sca': Result := stScatter;
+    'bar': Result := stBarchart;
+    'epi': Result := stEpicurve;
+    'his': Result := stHistogram;
     'sur': Result := stSurvival;
   else
     DoError();

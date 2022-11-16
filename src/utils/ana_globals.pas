@@ -59,6 +59,8 @@ const
   ANA_SO_OUTPUT_CSS_FILE               = 'OUTPUT CSS FILE';
   ANA_SO_OUTPUT_CSS_INTERNAL           = 'OUTPUT CSS INTERNAL';
 
+  ANA_SO_CHART_COLORS                  = 'CHART COLORS';
+
   ANA_SO_SHORT_MONTH_NAMES             = 'SHORT MONTH NAMES';
 
   ANA_SO_SHOW_COMMAND                  = 'SHOW COMMAND';
@@ -76,6 +78,8 @@ const
 
   ANA_SO_TUTORIAL_FOLDER               = 'TUTORIAL FOLDER';
   ANA_SO_WEB_URL                       = 'WEB URL';
+
+  ANA_SO_LIFETABLE_INTERVAL            = 'LIFETABLE INTERVAL';
 
   //  Executor Field Names
   ANA_EXEC_PREPAREDS_OBSNO_FIELD       = '@obsno';

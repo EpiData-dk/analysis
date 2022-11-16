@@ -10,3 +10,5 @@ target/
 commandlog.pgm
 src/grammar/*.cgt
 src/grammar/*.log
+*.sh
+ppas.sh

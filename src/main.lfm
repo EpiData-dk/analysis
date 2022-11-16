@@ -1,13 +1,13 @@
 object MainForm: TMainForm
-  Left = 1498
+  Left = 225
   Height = 663
-  Top = 226
+  Top = 133
   Width = 1010
   AllowDropFiles = True
   Caption = 'AMainForm'
   ClientHeight = 663
   ClientWidth = 1010
-  Menu = MainMenu
+  Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -209,167 +209,167 @@ object MainForm: TMainForm
     ParentColor = False
     ParentFont = False
   end
-  object MainMenu: TMainMenu
+  object MainMenu1: TMainMenu
     Images = DM.Icons16
     Left = 280
     Top = 192
-    object mnuFile: TMenuItem
+    object MenuItem1: TMenuItem
       Caption = '&File'
-      object mnuFileCD: TMenuItem
+      object MenuItem19: TMenuItem
         Action = ChangeDirAction
       end
-      object mnuFileSep1: TMenuItem
+      object MenuItem2: TMenuItem
         Caption = '-'
       end
-      object mnuFileOpen: TMenuItem
+      object MenuItem14: TMenuItem
         Action = ReadAction
       end
-      object mnuFileOpenRecent: TMenuItem
+      object RecentFilesSubMenu: TMenuItem
         Caption = 'Open &Recent...'
       end
-      object mnuFileReadClipboard: TMenuItem
+      object MenuItem34: TMenuItem
         Action = ReadCBAction
       end
-      object mnuFileSave: TMenuItem
+      object MenuItem15: TMenuItem
         Action = SaveAction
       end
-      object mnuFileClose: TMenuItem
+      object MenuItem17: TMenuItem
         Action = CloseAction
       end
-      object mnuFileSep2: TMenuItem
+      object MenuItem16: TMenuItem
         Caption = '-'
       end
-      object mnuFileQuit: TMenuItem
+      object MenuItem8: TMenuItem
         Action = QuitAction
       end
     end
-    object mnuEdit: TMenuItem
+    object MenuItem36: TMenuItem
       Caption = '&Edit'
-      object mnuEditFont: TMenuItem
+      object MenuItem37: TMenuItem
         Caption = '&Font'
-        object mnuEditFontOutput: TMenuItem
+        object OutputFontMenuItem: TMenuItem
           Caption = '&Output'
           OnClick = FontChangeClick
         end
-        object mnuEditFontCommandLine: TMenuItem
+        object CommandLineFontMenuItem: TMenuItem
           Caption = '&Command Line'
           OnClick = FontChangeClick
         end
       end
-      object mnuEditColour: TMenuItem
+      object MenuItem45: TMenuItem
         Caption = 'Colour'
-        object mnuEditColourOutputBG: TMenuItem
+        object OutputBGColourMenuItem: TMenuItem
           Caption = 'Output Background Colour'
-          OnClick = MainEditColourOutputBGClick
+          OnClick = OutputBGColourMenuItemClick
         end
-        object mnuEditColourOutputFont: TMenuItem
+        object OutputFontColourMenuItem: TMenuItem
           Caption = 'Output Font Colour'
-          OnClick = MainEditColourOutputFontClick
+          OnClick = OutputFontColourMenuItemClick
         end
-        object mnuEditColourCMDBG: TMenuItem
+        object CMDBGColourMenuItem: TMenuItem
           Caption = 'Command Background Colour'
-          OnClick = MainEditColourCMDBGClick
+          OnClick = CMDBGColourMenuItemClick
         end
-        object mnuEditColourCMDFont: TMenuItem
+        object CMDFontColourMenuItem: TMenuItem
           Caption = 'Command Font Colour'
-          OnClick = MainEditColourCMDFontClick
+          OnClick = CMDFontColourMenuItemClick
         end
       end
-      object mnuEditSep1: TMenuItem
+      object MenuItem40: TMenuItem
         Caption = '-'
       end
-      object mnuEditPreferences: TMenuItem
+      object MenuItem41: TMenuItem
         Action = ShowEditorStartupAction
       end
-      object mnuEditDefaultWindowing: TMenuItem
+      object MenuItem42: TMenuItem
         Caption = 'Default Windowing'
         OnClick = DefaultWindowPositionActionExecute
       end
     end
-    object mnuResults: TMenuItem
+    object MenuItem12: TMenuItem
       Caption = '&Results'
-      object mnuResultsSave: TMenuItem
+      object MenuItem39: TMenuItem
         Action = SaveOutputAction
       end
-      object mnuResultsClear: TMenuItem
+      object MenuItem13: TMenuItem
         Action = ClearOutputAction
       end
     end
-    object mnuAnalysis: TMenuItem
+    object StatisticsMainMenuItem: TMenuItem
       Caption = '&Analysis'
     end
-    object mnuGraphs: TMenuItem
+    object GraphMainMenuItem: TMenuItem
       Caption = '&Graphs'
     end
-    object mnuWindow: TMenuItem
+    object MenuItem9: TMenuItem
       Caption = '&Window'
-      object mnuWindowCMDTree: TMenuItem
+      object MenuItem43: TMenuItem
         Action = ToggleCmdTreeAction
       end
-      object mnuWindowVarnames: TMenuItem
+      object MenuItem11: TMenuItem
         Action = ToggleVarnamesListAction
       end
-      object mnuWindowCMDPrompt: TMenuItem
+      object MenuItem25: TMenuItem
         Action = CmdEditFocusAction
       end
-      object mnuWindowEditor: TMenuItem
+      object MenuItem26: TMenuItem
         Action = ShowEditorAction
       end
-      object mnuWindowBrowse: TMenuItem
+      object MenuItem22: TMenuItem
         Action = BrowseAction
       end
-      object mnuWindowHistory: TMenuItem
+      object MenuItem10: TMenuItem
         Action = ToggleHistoryListAction
       end
-      object mnuWindowDatasets: TMenuItem
+      object MenuItem18: TMenuItem
         Action = ToggleProjectTree
       end
-      object mnuWindowCloseAll: TMenuItem
+      object MenuItem44: TMenuItem
         Action = CloseAllWindowsAction
       end
-      object mnuWindowSep1: TMenuItem
+      object MenuItem30: TMenuItem
         Caption = '-'
       end
-      object mnuWindowDefault: TMenuItem
+      object MenuItem31: TMenuItem
         Action = DefaultWindowPositionAction
       end
     end
-    object mnuHelp: TMenuItem
+    object MenuItem5: TMenuItem
       Caption = '&Help'
-      object mnuHelpTutorials: TMenuItem
+      object TutorialSubMenu: TMenuItem
         Caption = 'Tutorials (Local)'
       end
-      object mnuHelpTutorialsWiki: TMenuItem
+      object MenuItem33: TMenuItem
         Action = TutorialsWikiAction
       end
-      object mnuHelpTutorialsWeb: TMenuItem
+      object MenuItem32: TMenuItem
         Action = TutorialsWebAction
       end
-      object mnuHelpSep1: TMenuItem
+      object MenuItem21: TMenuItem
         Caption = '-'
       end
-      object mnuHelpCommands: TMenuItem
+      object MenuItem27: TMenuItem
         Action = CommandsHelpAction
       end
-      object mnuHelpShortcuts: TMenuItem
+      object MenuItem4: TMenuItem
         Action = ShowShortcutAction
       end
-      object mnuHelpSep2: TMenuItem
+      object MenuItem7: TMenuItem
         Caption = '-'
       end
-      object mnuHelpCopyVersion: TMenuItem
+      object MenuItem3: TMenuItem
         Action = CopyVersionInfoAction
       end
-      object mnuHelpCheckVersion: TMenuItem
+      object MenuItem35: TMenuItem
         Action = CheckVersionOnlineAction
       end
-      object mnuHelpReleaseNotes: TMenuItem
+      object MenuItem38: TMenuItem
         Action = ReleaseNotesAction
       end
-      object mnuHelpSep3: TMenuItem
+      object MenuItem20: TMenuItem
         Caption = '-'
       end
-      object mnuHelpAbout: TMenuItem
+      object MenuItem6: TMenuItem
         Action = ShowAboutAction
       end
     end
@@ -495,16 +495,16 @@ object MainForm: TMainForm
   object HistoryPopupMenu: TPopupMenu
     Left = 816
     Top = 336
-    object mnuHistoryCopyAll: TMenuItem
+    object MenuItem23: TMenuItem
       Action = CopyAllHistoryAction
     end
-    object mnuHistoryCopySelected: TMenuItem
+    object MenuItem24: TMenuItem
       Action = CopySelectedHistoryAction
     end
-    object mnuHistorySep1: TMenuItem
+    object MenuItem28: TMenuItem
       Caption = '-'
     end
-    object mnuHistoryClear: TMenuItem
+    object MenuItem29: TMenuItem
       Action = ClearHistoryAction
     end
   end

@@ -1,4 +1,4 @@
-unit survival_primaryoption_model;
+unit epicurve_primaryoption_model;
 
 {$mode objfpc}{$H+}
 
@@ -10,22 +10,17 @@ uses
 type
 
 
-   { TSurvivalStatDialogPrimaryOptionModel }
+   { TEpicurveStatDialogPrimaryOptionModel }
 
-   TSurvivalStatDialogPrimaryOptionModel = class(IStatDialogModel)
+   TEpicurveStatDialogPrimaryOptionModel = class(IStatDialogModel)
    private
      FExecutor: TExecutor;
      FValueLabelType: TEpiGetValueLabelType;
      FVariableLabelType: TEpiGetVariableLabelType;
      FValueLabelsDefault: Integer;
      FVariableLabelsDefault: Integer;
-     FDecimals: UTF8String;
-     FOutputTable,
-     FOutputSummary,
-     FOutputClipboard:  Boolean;
      procedure SetValueLabelType(AValue: TEpiGetValueLabelType);
      procedure SetVariableLabelType(AValue: TEpiGetVariableLabelType);
-     procedure SetDecimals(AValue: UTF8String);
    public
      constructor Create(Executor: TExecutor);
      function GenerateScript(): UTF8String;
@@ -33,12 +28,8 @@ type
    public
      property VariableLabelType: TEpiGetVariableLabelType read FVariableLabelType write SetVariableLabelType;
      property ValueLabelType: TEpiGetValueLabelType read FValueLabelType write SetValueLabelType;
-     property Decimals: UTF8String read FDecimals write SetDecimals;
      property ValueLabelsDefault: Integer read FValueLabelsDefault write FValueLabelsDefault;
      property VariableLabelsDefault: Integer read FVariableLabelsDefault write FVariableLabelsDefault;
-     property OutputTable: boolean read FOutputTable write FOutputTable;
-     property OutputSummary: boolean read FOutputSummary write FOutputSummary;
-     property OutputClipboard: boolean read FOutputClipboard write FOutputClipboard;
    end;
 
 
@@ -47,30 +38,23 @@ implementation
 uses
   LazUTF8;
 
-{ TSurvivalStatDialogPrimaryOptionModel }
+{ TEpicurveStatDialogPrimaryOptionModel }
 
-procedure TSurvivalStatDialogPrimaryOptionModel.SetValueLabelType(
+procedure TEpicurveStatDialogPrimaryOptionModel.SetValueLabelType(
   AValue: TEpiGetValueLabelType);
 begin
   if FValueLabelType = AValue then Exit;
   FValueLabelType := AValue;
 end;
 
-procedure TSurvivalStatDialogPrimaryOptionModel.SetVariableLabelType(
+procedure TEpicurveStatDialogPrimaryOptionModel.SetVariableLabelType(
   AValue: TEpiGetVariableLabelType);
 begin
   if FVariableLabelType = AValue then Exit;
   FVariableLabelType := AValue;
 end;
 
-procedure TSurvivalStatDialogPrimaryOptionModel.SetDecimals(
-  AValue: UTF8String);
-begin
-  if FDecimals = AValue then Exit;
-  FDecimals := AValue;
-end;
-
-constructor TSurvivalStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
+constructor TEpicurveStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
 var
     defaults: TStringList;
 begin
@@ -85,7 +69,7 @@ begin
   defaults.Free;
 end;
 
-function TSurvivalStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
+function TEpicurveStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
 var
   compareOption: UTF8String;
 begin
@@ -109,18 +93,9 @@ begin
   if (LowerCase(FExecutor.GetSetOptionValue('STATISTICS VARIABLE LABEL')) <> compareOption) then
     Result += ' !' + compareOption;
 
-  if (FDecimals <> '3') then
-    Result += ' !d' + FDecimals;
-
-  if (not FOutputTable) then
-    Result += ' !nt';
-  if (not FOutputSummary) then
-    Result += ' !ns';
-  if (FOutputClipboard) then
-    Result += ' !cb';
 end;
 
-function TSurvivalStatDialogPrimaryOptionModel.IsDefined(): boolean;
+function TEpicurveStatDialogPrimaryOptionModel.IsDefined(): boolean;
 begin
   result := true;
 end;
