@@ -51,7 +51,7 @@ jobs:
         run:  mvn compile -Pwin64
 
       - name: Compile Mac
-        run:  mvn compile -Pdarwin64
+        run:  mvn compile -e -Pdarwin64
 
       - name: Deploy
         run: |

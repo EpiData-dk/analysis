@@ -1,32 +1,31 @@
-unit means_variables_view;
+unit epicurve_variables_view;
 
 {$mode objfpc}{$H+}
 
 interface
 
 uses
-  Classes, SysUtils, stat_dialog_contribution, Controls, ExtCtrls,
-  StdCtrls, means_model, fields_combobox, stat_dialog_custom_view;
+  Classes, SysUtils, Controls, ExtCtrls, StdCtrls,
+  stat_dialog_contribution, epicurve_model, fields_combobox, stat_dialog_custom_view;
 
 type
 
-  { TMeansStatDialogVariablesView }
+  { TEpicurveStatDialogVariablesView }
 
-  TMeansStatDialogVariablesView = class(TCustomStatDialogView)
+  TEpicurveStatDialogVariablesView = class(TCustomStatDialogView)
   private
-    FDataModel: TMeansStatDialogVariableModel;
+    FDataModel: TEpicurveStatDialogVariableModel;
     FComboBoxes: Array of TEpiFieldsComboBox;
-    FOnModified: IStatDiaglogViewModified;
     procedure VariableSelect(Sender: TObject);
     procedure UpdateCombos();
   public
-    constructor Create(TheOwner: TComponent);
+    constructor Create(TheOwner: TComponent); override;
     procedure EnterView(); override;
     function ExitView(): boolean; override;
     function GetViewCaption(): UTF8String; override;
     procedure ResetView(); override;
     function IsDefined(): boolean; override;
-    procedure SetModel(DataModel: TMeansStatDialogVariableModel);
+    procedure SetModel(DataModel: TEpicurveStatDialogVariableModel);
   end;
 
 implementation
@@ -36,12 +35,11 @@ uses
 
 const
   XVARIABLE_TAG   = Ord(tvX);
- // WVARIABLE_TAG   = Ord(tvW);
-  BYVARIABLE_TAG = Ord(tvBy);
+  YVARIABLE_TAG   = Ord(tvY);
 
-{ TMeansStatDialogVariablesView }
+{ TEpicurveStatDialogVariablesView }
 
-procedure TMeansStatDialogVariablesView.VariableSelect(Sender: TObject);
+procedure TEpicurveStatDialogVariablesView.VariableSelect(Sender: TObject);
 var
   Field: TEpiField;
   ComboBox: TCustomComboBox;
@@ -52,12 +50,9 @@ begin
   case ComboBox.Tag of
     XVARIABLE_TAG:
       FDataModel.XVariable := Field;
-{
-    WVARIABLE_TAG:
-      FDataModel.WVariable := Field;
- }
-    BYVARIABLE_TAG:
-      FDataModel.ByVariable := Field;
+
+    YVARIABLE_TAG:
+      FDataModel.YVariable := Field;
 
   end;
 
@@ -65,7 +60,7 @@ begin
   DoModified();
 end;
 
-procedure TMeansStatDialogVariablesView.UpdateCombos();
+procedure TEpicurveStatDialogVariablesView.UpdateCombos();
 var
   Field: TEpiField;
   ComboBox: TEpiFieldsComboBox;
@@ -78,70 +73,62 @@ begin
       Field := ComboBox.SelectedField;
       ComboBox.Fields.Free;
       ComboBox.Fields := nil;
-      ComboBox.Fields := FDataModel.GetComboFields(TMeansStatDiaglogVariable(i));
+      ComboBox.Fields := FDataModel.GetComboFields(TEpicurveStatDialogVariable(i));
       ComboBox.ItemIndex := ComboBox.Items.IndexOfObject(Field);
     end;
 end;
 
-constructor TMeansStatDialogVariablesView.Create(TheOwner: TComponent);
+constructor TEpicurveStatDialogVariablesView.Create(TheOwner: TComponent);
 var
   ComboBox: TEpiFieldsComboBox;
   PrevCombo: TEpiFieldsComboBox;
 begin
   inherited Create(TheOwner);
 
-  SetLength(FComboBoxes, Ord(High(TMeansStatDiaglogVariable)) + 1);
+  SetLength(FComboBoxes, Ord(High(TEpicurveStatDialogVariable)) + 1);
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
-  ComboBox.Filter := [ftInteger, ftFloat];
+  ComboBox.Filter := DateFieldTypes + [ftInteger];
   ComboBox.Parent := self;
+  ComboBox.AnchorParallel(akTop, 10, Self);
   ComboBox.AnchorParallel(akLeft, 10, Self);
   ComboBox.AnchorParallel(akRight, 10, Self);
-  ComboBox.AnchorParallel(akTop, 10, Self);
   ComboBox.OnSelect := @VariableSelect;
   ComboBox.Tag := XVARIABLE_TAG;
-  ComboBox.NoItemText := 'Variable';
+  ComboBox.NoItemText := 'Time Variable';
   FComboBoxes[XVARIABLE_TAG] := ComboBox;
   PrevCombo := ComboBox;
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
   ComboBox.Parent := self;
+  ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
   ComboBox.AnchorParallel(akLeft, 10, Self);
   ComboBox.AnchorParallel(akRight, 10, Self);
-  ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
   ComboBox.OnSelect := @VariableSelect;
-  ComboBox.Tag := BYVARIABLE_TAG;
-  ComboBox.NoItemText := 'By Variable (optional)';
-  FComboBoxes[BYVARIABLE_TAG] := ComboBox;
+  ComboBox.Tag := YVARIABLE_TAG;
+  ComboBox.NoItemText := 'Stratifying Variable';
+  FComboBoxes[YVARIABLE_TAG] := ComboBox;
   PrevCombo := ComboBox;
- {
-  ComboBox := TEpiFieldsComboBox.Create(TheOwner);
-  ComboBox.Parent := self;
-  ComboBox.AnchorParallel(akLeft, 10, Self);
-  ComboBox.AnchorParallel(akRight, 10, Self);
-  ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
-  ComboBox.OnSelect := @VariableSelect;
-  ComboBox.Tag := WVARIABLE_TAG;
-  ComboBox.NoItemText := 'Weight Variable (optional)';
-  FComboBoxes[WVARIABLE_TAG] := ComboBox;
-}
+
+  EnterView(); // Must do this to get combo boxes aligned and visible
 end;
 
-procedure TMeansStatDialogVariablesView.EnterView();
+procedure TEpicurveStatDialogVariablesView.EnterView();
 begin
+
 end;
 
-function TMeansStatDialogVariablesView.ExitView(): boolean;
+function TEpicurveStatDialogVariablesView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function TMeansStatDialogVariablesView.GetViewCaption(): UTF8String;
+function TEpicurveStatDialogVariablesView.GetViewCaption(): UTF8String;
 begin
   result := 'Variables';
 end;
 
-procedure TMeansStatDialogVariablesView.ResetView();
+procedure TEpicurveStatDialogVariablesView.ResetView();
 var
   Combobox: TCustomComboBox;
 begin
@@ -149,26 +136,23 @@ begin
     Combobox.ItemIndex := 0;
 
   FDataModel.XVariable := nil;
-//  FDataModel.WVariable := nil;
-  FDataModel.ByVariable := nil;
+  FDataModel.YVariable := nil;
 
   UpdateCombos();
   DoModified();
 end;
 
-function TMeansStatDialogVariablesView.IsDefined(): boolean;
+function TEpicurveStatDialogVariablesView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure TMeansStatDialogVariablesView.SetModel(
-  DataModel: TMeansStatDialogVariableModel);
+procedure TEpicurveStatDialogVariablesView.SetModel(
+  DataModel: TEpicurveStatDialogVariableModel);
 begin
   FDataModel := DataModel;
 
   UpdateCombos();
 end;
 
-
 end.
-

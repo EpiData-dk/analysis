@@ -1871,6 +1871,9 @@ begin
   FOptions.Insert(ANA_SO_BROWSER_OBS_DELETED_COLOR,      TFontColorOption.Create('#FF0000', rtString));
   FOptions.Insert(ANA_SO_BROWSER_OBS_VERIFIED_COLOR,     TFontColorOption.Create('#008080', rtString));
 
+  // Common chart options
+  FOptions.Insert(ANA_SO_CHART_COLORS,                   TSetOption.Create('1234567890', rtString));
+
   // OUTPUT VIEWER
   SOpt := TSetOption.Create('TEXT', rtString);
   SOpt.LegalValues.Add('HTML');
@@ -1935,6 +1938,8 @@ begin
   SOpt.LegalValues.Add('95');
   SOpt.LegalValues.Add('99');
   FOptions.Insert(ANA_SO_CONFIDENCE_INTERVAL, SOpt);
+
+  FOptions.Insert(ANA_SO_LIFETABLE_INTERVAL, TSetOption.Create('', rtString));
 
   // TABLES:
   FOptions.Insert(ANA_SO_TABLE_PERCENT_FORMAT_COL,   TTablePercentFormatOption.Create('{}', rtString));

@@ -6,30 +6,35 @@ interface
 
 uses
   Classes, SysUtils, executor, epidatafiles, stat_dialog_contribution,
-  epidatafilestypes,epivaluelabels, outputcreator, freq, epicustombase;
+  epidatafilestypes,epivaluelabels, options_utils, epicustombase;
 
 type
 
-  TSurvivalStatDialogVariable = (tvX, tvY, tvW, tvBy);
+  TSurvivalStatDialogVariable = (svOutcome, svTime1, svTime2, svBy, svW);
 
   { TSurvivalStatDialogVariableModel }
 
   TSurvivalStatDialogVariableModel = class(IStatDialogModel)
   private
     FExecutor: TExecutor;
-    FXVariable: TEpiField;    // Outcome
-    FYVariable: TEpiField;    // Time
+    FOutcomeVariable: TEpiField;
+    FTime1Variable: TEpiField;
+    FTime2Variable: TEpiField;
     FWVariable: TEpiField;
     FByVariable: TEpiField;
     FFailure: UTF8String;
-    FFailureType: TEpiFieldType;
+    FRefStratum: UTF8String;
     FOutcomeValues: TStringList;
-    procedure SetXVariable(AValue: TEpiField);
-    procedure SetYVariable(AValue: TEpiField);
-    procedure SetWVariable(AValue: TEpiField);
+    FStrataValues:  TStringList;
+    procedure SetOutcomeVariable(AValue: TEpiField);
+    procedure SetTime1Variable(AValue: TEpiField);
+    procedure SetTime2Variable(AValue: TEpiField);
     procedure SetByVariable(AValue: TEpiField);
+    procedure SetWVariable(AValue: TEpiField);
     procedure SetFailure(AValue: UTF8String);
     procedure SetOutcomeValues(Field: TEpiField);
+    procedure SetStrataValues(Field: TEpiField);
+    procedure SetRefStratum(AValue: UTF8String);
     function IsUsed(Field: TEpiField; SurvivalVariable: TSurvivalStatDialogVariable): boolean;
   public
     function GenerateScript(): UTF8String;
@@ -37,30 +42,38 @@ type
   public
     constructor Create(Executor: TExecutor);
     function GetComboFields(SurvivalVariable: TSurvivalStatDialogVariable): TEpiFields;
-    property XVariable: TEpiField read FXVariable write SetXVariable;
-    property YVariable: TEpiField read FYVariable write SetYVariable;
-    property WVariable: TEpiField read FWVariable write SetWVariable;
+    property OutcomeVariable: TEpiField read FOutcomeVariable write SetOutcomeVariable;
+    property Time1Variable: TEpiField read FTime1Variable write SetTime1Variable;
+    property Time2Variable: TEpiField read FTime2Variable write SetTime2Variable;
     property ByVariable: TEpiField read FByVariable write SetByVariable;
+    property WVariable: TEpiField read FWVariable write SetWVariable;
     property Failure: UTF8String read FFailure write SetFailure;
-    property FailureType: TEpiFieldType read FFailureType write FFailureType;
     property OutcomeValues: TStringList read FOutcomeValues;
+    property StrataValues: TStringList read FStrataValues;
+    property RefStratum: UTF8String read FRefStratum write SetRefStratum;
   end;
 
 implementation
 
 { TSurvivalStatDialgoModel }
 
-procedure TSurvivalStatDialogVariableModel.SetXVariable(AValue: TEpiField);
+procedure TSurvivalStatDialogVariableModel.SetOutcomeVariable(AValue: TEpiField);
 begin
-  if FXVariable = AValue then Exit;
-  FXVariable := AValue;
-  SetOutcomeValues(FXVariable);
+  if FOutcomeVariable = AValue then Exit;
+  FOutcomeVariable := AValue;
+  SetOutcomeValues(FOutcomeVariable);
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetYVariable(AValue: TEpiField);
+procedure TSurvivalStatDialogVariableModel.SetTime1Variable(AValue: TEpiField);
 begin
-  if FYVariable = AValue then Exit;
-  FYVariable := AValue;
+  if FTime1Variable = AValue then Exit;
+  FTime1Variable := AValue;
+end;
+
+procedure TSurvivalStatDialogVariableModel.SetTime2Variable(AValue: TEpiField);
+begin
+  if FTime2Variable = AValue then Exit;
+  FTime2Variable := AValue;
 end;
 
 procedure TSurvivalStatDialogVariableModel.SetWVariable(AValue: TEpiField);
@@ -73,99 +86,107 @@ procedure TSurvivalStatDialogVariableModel.SetByVariable(AValue: TEpiField);
 begin
   if FByVariable = AValue then Exit;
   FByVariable := AValue;
+  SetStrataValues(FByVariable);
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetFailure(
-  AValue: UTF8String);
+procedure TSurvivalStatDialogVariableModel.SetOutcomeValues(Field: TEpiField);
+begin
+  FOutcomeValues.Clear;
+  if (Field = nil) then
+    exit;
+  FOutcomeValues := GetFieldValues(Field);
+end;
+
+procedure TSurvivalStatDialogVariableModel.SetFailure(AValue: UTF8String);
 begin
   if FFailure = AValue then Exit;
   FFailure := AValue;
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetOutcomeValues(Field: TEpiField);
-var
-  i:             Integer;
-  l:             TEpiValueLabelSet;
-  DF:            TEpiDataFile;
-  F:             TFreqCommand;
-  O:             TEpiReferenceMap;
-  CategV:        TEpiField;
-  OutcomeFreq:   TFreqDatafile;
-  AVar:          TStringList;
-  OutputCreator: TOutputCreator;
+procedure TSurvivalStatDialogVariableModel.SetStrataValues(Field: TEpiField);
 begin
-  FOutcomeValues.Clear;
+  FStrataValues.Clear;
   if (Field = nil) then
     exit;
+  FStrataValues := GetFieldValues(Field);
+end;
 
-// check for value labels
-  l := Field.ValueLabelSet;
-  if (l <> nil) then
-    begin
-      for i := 0 to l.Count - 1 do
-        FOutcomeValues.Add(l.ValueLabels[i].ValueAsString);
-      exit;
-    end;
-
-// get frequencies to identify possible values
-  F :=           TFreqCommand.Create(FExecutor, OutputCreator);
-  AVar :=        TStringList.Create;
-  AVar.Add(Field.Name);
-  DF :=          FExecutor.PrepareDatafile(AVar, AVar);
-  OutcomeFreq := F.CalcFreq(DF, Field.Name, O);
-  CategV :=      OutcomeFreq.Categ;
-  for i:= 0 to OutcomeFreq.Size - 1 do
-    FOutcomeValues.Add(CategV.AsString[i]);
-  DF.Free;
-  F.Free;
-  OutcomeFreq.Free;
-  AVar.Free;
+procedure TSurvivalStatDialogVariableModel.SetRefStratum(AValue: UTF8String);
+begin
+  if FRefStratum = AValue then Exit;
+  FRefStratum := AValue;
 end;
 
 function TSurvivalStatDialogVariableModel.IsUsed(Field: TEpiField;
   SurvivalVariable: TSurvivalStatDialogVariable): boolean;
 begin
-  result := (not (SurvivalVariable = tvX)) and (Field = FXVariable);
-  result := result or ((not (SurvivalVariable = tvY)) and (Field = FYVariable));
-  result := result or ((not (SurvivalVariable = tvW)) and (Field = FWVariable));
-  result := result or ((not (SurvivalVariable = tvBy)) and (Field = FByVariable));
+  result := (not (SurvivalVariable = svOutcome)) and (Field = FOutcomeVariable);
+  result := result or ((not (SurvivalVariable = svTime1)) and (Field = FTime1Variable));
+  result := result or ((not (SurvivalVariable = svTime2)) and (Field = FTime2Variable));
+  result := result or ((not (SurvivalVariable = svBy)) and (Field = FByVariable));
+  result := result or ((not (SurvivalVariable = svW)) and (Field = FWVariable));
 end;
 
 function TSurvivalStatDialogVariableModel.GenerateScript(): UTF8String;
 var
-  Field: TEpiField;
+p:   Integer;
 begin
-  result := FXVariable.Name;
+  result := FOutcomeVariable.Name;
 
-  if Assigned(FYVariable) then
-    result += ' ' + FYVariable.Name;
+  if Assigned(FTime1Variable) then
+    result += ' ' + FTime1Variable.Name;
 
-  if Assigned(FWVariable) then
-      result += ' !w := ' + FWVariable.Name;
-
-  if Assigned(FByVariable) then
-    result += ' !by:=' + FByVariable.Name;
+  if Assigned(FTime2Variable) then
+    result += ' ' + FTime2Variable.Name;
 
   if ((FFailure <> '0') and (FFailure <> '')) then
-    if (FFailureType = ftInteger) then
-      Result += ' !o:=' + FFailure
-    else
-      Result += ' !o:="' + FFailure + '"';
+    begin
+      p := Pos('=',FFailure) - 1;
+      if (p < 0) then
+        p := length(FFailure);
+      if (FOutcomeVariable.FieldType = ftInteger) then
+        Result += ' !o:=' + copy(FFailure,0,p)
+      else
+        Result += ' !o:="' + copy(FFailure,0,p) + '"';
+    end;
+
+  if Assigned(FByVariable) then
+    begin
+      result += ' !by:=' + FByVariable.Name;
+
+      if (FRefStratum <> '') then
+        begin
+          p := Pos('=',FRefStratum) - 1;
+          if (p < 0) then
+            p := length(FRefStratum);
+          if (FByVariable.FieldType = ftInteger) then
+            Result += ' !ref:=' + Copy(FRefStratum,0,p)
+          else
+            Result += ' !ref:="' + Copy(FRefStratum,0,p) + '"';
+        end;
+    end;
+  if Assigned(FWVariable) then
+      result += ' !w := ' + FWVariable.Name;
 
 end;
 
 function TSurvivalStatDialogVariableModel.IsDefined(): boolean;
 begin
   result :=
-    Assigned(FXVariable) and
-    Assigned(FYVariable) and
-    (FFailure <> '');
+    (Assigned(FOutcomeVariable) and (FFailure <> '')) and
+    (((Assigned(FTime1Variable) and
+     (FTime1Variable.FieldType in [ftInteger, ftString, ftUpperString]))
+     ) or
+     ((Assigned(FTime1Variable) and (FTime1Variable.FieldType in DateFieldTypes)) and
+      (Assigned(FTime2Variable) and (FTime2Variable.FieldType in DateFieldTypes))
+    ));
 end;
 
 constructor TSurvivalStatDialogVariableModel.Create(Executor: TExecutor);
 begin
   FExecutor := Executor;
   FOutcomeValues := TStringList.Create;
+  FStrataValues  := TStringList.Create;
 end;
 
 function TSurvivalStatDialogVariableModel.GetComboFields(

@@ -44,7 +44,6 @@ var
   ScatterSource: TScatterSource;
   VarNames: TStrings;
   Chart: TChart;
-  Titles: IChartTitleConfiguration;
   DataFile: TEpiDataFile;
   XVar, YVar: TEpiField;
   ChartConfiguration: IChartConfiguration;
@@ -83,9 +82,9 @@ begin
   Chart.AddSeries(LineSeries);
 
   // Create the titles
-  ChartConfiguration := FChartFactory.NewChartConfiguration();
   VariableLabelType := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions, sovStatistics);
-  Titles := ChartConfiguration.GetTitleConfiguration()
+  ChartConfiguration := FChartFactory.NewChartConfiguration();
+  ChartConfiguration.GetTitleConfiguration()
     .SetTitle(XVar.GetVariableLabel(VariableLabelType) + ' vs. ' + YVar.GetVariableLabel(VariableLabelType))
     .SetFootnote('')
     .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelType))
@@ -108,4 +107,3 @@ initialization
   RegisterChartCommand(stScatter, TScatterChart);
 
 end.
-
