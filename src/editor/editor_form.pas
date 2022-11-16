@@ -344,7 +344,6 @@ end;
 
 procedure TEditorForm.QuitActionExecute(Sender: TObject);
 begin
-  MainForm.CmdEditFocusActionExecute(Self); // why does this do nothing?
   Close;
 end;
 
