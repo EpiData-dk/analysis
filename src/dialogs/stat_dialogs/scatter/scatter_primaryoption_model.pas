@@ -1,4 +1,4 @@
-unit epicurve_primaryoption_model;
+unit scatter_primaryoption_model;
 
 {$mode objfpc}{$H+}
 
@@ -10,16 +10,17 @@ uses
 type
 
 
-   { TEpicurveStatDialogPrimaryOptionModel }
+   { TScatterStatDialogPrimaryOptionModel }
 
-   TEpicurveStatDialogPrimaryOptionModel = class(IStatDialogModel)
+   TScatterStatDialogPrimaryOptionModel = class(IStatDialogModel)
    private
      FExecutor: TExecutor;
      FValueLabelType: TEpiGetValueLabelType;
      FVariableLabelType: TEpiGetVariableLabelType;
      FValueLabelsDefault: Integer;
      FVariableLabelsDefault: Integer;
-     FSortD: Boolean;
+     FLine: Boolean;
+     FPoints:  Boolean;
      procedure SetValueLabelType(AValue: TEpiGetValueLabelType);
      procedure SetVariableLabelType(AValue: TEpiGetVariableLabelType);
    public
@@ -31,7 +32,8 @@ type
      property ValueLabelType: TEpiGetValueLabelType read FValueLabelType write SetValueLabelType;
      property ValueLabelsDefault: Integer read FValueLabelsDefault write FValueLabelsDefault;
      property VariableLabelsDefault: Integer read FVariableLabelsDefault write FVariableLabelsDefault;
-     property SortD: Boolean read FSortD write FSortD;
+     property Line: boolean read FLine write FLine;
+     property Points: boolean read FPoints write FPoints;
    end;
 
 
@@ -40,23 +42,23 @@ implementation
 uses
   LazUTF8;
 
-{ TEpicurveStatDialogPrimaryOptionModel }
+{ TScatterStatDialogPrimaryOptionModel }
 
-procedure TEpicurveStatDialogPrimaryOptionModel.SetValueLabelType(
+procedure TScatterStatDialogPrimaryOptionModel.SetValueLabelType(
   AValue: TEpiGetValueLabelType);
 begin
   if FValueLabelType = AValue then Exit;
   FValueLabelType := AValue;
 end;
 
-procedure TEpicurveStatDialogPrimaryOptionModel.SetVariableLabelType(
+procedure TScatterStatDialogPrimaryOptionModel.SetVariableLabelType(
   AValue: TEpiGetVariableLabelType);
 begin
   if FVariableLabelType = AValue then Exit;
   FVariableLabelType := AValue;
 end;
 
-constructor TEpicurveStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
+constructor TScatterStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
 var
     defaults: TStringList;
 begin
@@ -71,7 +73,7 @@ begin
   defaults.Free;
 end;
 
-function TEpicurveStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
+function TScatterStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
 var
   compareOption: UTF8String;
 begin
@@ -95,11 +97,13 @@ begin
   if (LowerCase(FExecutor.GetSetOptionValue('STATISTICS VARIABLE LABEL')) <> compareOption) then
     Result += ' !' + compareOption;
 
-  if (FSortD) then
-    Result += ' !sd';
+  if (Fline) then
+    Result += ' !l';
+  if (FPoints) then
+    Result += ' !p';
 end;
 
-function TEpicurveStatDialogPrimaryOptionModel.IsDefined(): boolean;
+function TScatterStatDialogPrimaryOptionModel.IsDefined(): boolean;
 begin
   result := true;
 end;

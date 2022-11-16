@@ -33,7 +33,7 @@ begin
   result := copy(anaColors);
   if (Assigned(SetOptions)) then
     cMap := SetOptions.GetValue(ANA_SO_CHART_COLORS).Value;
-  if (OptionList.HasOption('colors', Opt)) then
+  if (OptionList.HasOption(['colors','c'], Opt)) then
     cMap := Opt.Expr.AsString;
   l := min(length(anaColors), length(cMap));
   for i := 0 to l-1 do

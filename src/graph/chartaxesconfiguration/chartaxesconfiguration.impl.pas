@@ -14,6 +14,8 @@ type
   TChartAxisConfiguration = class(TInterfacedObject, IChartAxisConfiguration)
   private
     FShowAxisMarksAsDates: boolean;
+    FRangeMax,
+    FRangeMin: double;
   public
     constructor Create;
     destructor Destroy; override;

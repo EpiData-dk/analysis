@@ -1054,6 +1054,7 @@ type
     destructor  Destroy; override;
     procedure   Add(Option: TOption);
     procedure   Remove(Option: TOption);
+    function    HasOption(Idents: array of UTF8String; out AOption: TOption): boolean; overload;
     function    HasOption(Const Ident: UTF8String; out AOption: TOption): boolean; overload;
     function    HasOption(Const Ident: UTF8String): boolean; overload;
     function    GetEnumerator: TOptionListEnumerator;
@@ -1343,6 +1344,17 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+  { TParetoCommand }
+
+  TParetoCommand = class(TCustomGraphCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TCustomMergeCommand }
 
   TCustomMergeCommand = class(TCustomVariableCommand)
@@ -1581,7 +1593,7 @@ type
 implementation
 
 uses
-  LazUTF8Classes, epiconvertutils, typinfo, options_utils, parser,
+  LazUTF8Classes, epiconvertutils, typinfo, options_utils, parser, chart_options,
 
   // SCRIPT FUNCTIONS (placed ind ./functions/epi_script_function_<name>.pas
   epi_script_function_mathfunctions,
@@ -1600,15 +1612,15 @@ function TCustomGraphCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  result.Insert('title',  ['ti'],      [rtString]);
-  result.Insert('footer', ['fn'],      [rtString]);
+  result.Insert('title',  ['ti'],     [rtString]);
+  result.Insert('footer', ['fn'],     [rtString]);
   result.Insert('xtitle', ['xt'],     [rtString]);
   result.Insert('ytitle', ['yt'],     [rtString]);
   result.Insert('export', ['s', 'e'], [rtString]);
   result.Insert('sizex',  ['sx'],     [rtInteger]);
   result.Insert('sizey',  ['sy'],     [rtInteger]);
-
-  result.Insert('replace', [rtUndefined]);
+  result.Insert('colors', ['c'],      [rtString]);
+  result.Insert('replace',            [rtUndefined]);
 end;
 
 { TRecodeInterval }
@@ -2476,13 +2488,15 @@ end;
 { TScatterCommand }
 
 function TScatterCommand.GetAcceptedOptions: TStatementOptionsMap;
+
 begin
   Result := inherited GetAcceptedOptions;
-  AddVariableLabelOptions(Result);
-  AddValueLabelOptions(Result);
   Result.Insert('l', [rtUndefined]);
   Result.Insert('p', [rtUndefined]);
-  Result.Insert('colors', [rtString]);
+  Result.Insert('xmin', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('xmax', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('ymin', AxisTypeFromVariableType(VariableList, 1));
+  Result.Insert('ymax', AxisTypeFromVariableType(VariableList, 1));
 end;
 
 function TScatterCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2512,7 +2526,7 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('stack', [rtUndefined]);
   Result.Insert('pct', [rtUndefined]);
-  Result.Insert('colors', [rtString]);
+  Result.Insert('ymax', [rtInteger]);
 end;
 
 function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2541,7 +2555,9 @@ begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('interval', [rtInteger]);
-  Result.Insert('colors', [rtString]);
+  Result.Insert('xmin', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('xmax', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('ymax', [rtInteger]);
 end;
 
 function TEpicurveCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2576,7 +2592,9 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('interval', [rtInteger, rtFloat]);
   Result.Insert('stack', [rtUndefined]);
-  Result.Insert('colors', [rtString]);
+  Result.Insert('xmin', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('xmax', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('ymax', [rtInteger]);
 end;
 
 function THistogramCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2620,7 +2638,6 @@ begin
   Result.Insert('cin',['cinone'], [rtUndefined]);     // no confidence intervals on plots
   Result.Insert('cib',['ciband'], [rtUndefined]);     // show CI as bands
   Result.Insert('cil', ['ciline'], [rtUndefined]);      // show CI uppper and lower lines
-  Result.Insert('colors', [rtString]);    // color map (9 digits)
   Result.Insert('q',   [rtUndefined]);
   Result.Insert('mt',  [rtUndefined]);                  // missing values of time2 become max(time2)
   Result.Insert('exit',[rtDate]);                       // date to assign when time2 is missing
@@ -2653,18 +2670,39 @@ begin
     1: Result.ResultTypes := [rtDate];
     2: Result.ResultTypes := [rtDate];
   end;
-  if (VariableList.Count = 3) then
-  case Index of
-    0: Result.ResultTypes := [rtString, rtInteger];
-    1: Result.ResultTypes := [rtDate];
-    2: Result.ResultTypes := [rtDate];
-  end;
 end;
 
 constructor TSurvivalCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
   inherited Create(AVariableList, AOptionList, stSurvival);
+end;
+
+{ TParetoCommand }
+function TParetoCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('w', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+end;
+
+function TParetoCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  Result[0] := 1;
+end;
+
+function TParetoCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  Result.ResultTypes := AllResultDataTypes;
+end;
+
+constructor TParetoCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stPareto);
 end;
 
 { TAppendCommand }
@@ -4107,6 +4145,7 @@ begin
     stEpicurve:  Result := TEpicurveCommand.Create(AVariableList, AOptionList);
     stHistogram: Result := THistogramCommand.Create(AVariableList, AOptionList);
     stSurvival:  Result := TSurvivalCommand.Create(AVariableList, AOptionList);
+    stPareto:    Result := TParetoCommand.Create(AVariableList, AOptionList);
   else
     DoError();
   end;
@@ -4563,6 +4602,18 @@ end;
 procedure TOptionList.Remove(Option: TOption);
 begin
   FOptList.Remove(Option);
+end;
+
+function TOptionList.HasOption(Idents: array of UTF8String; out
+  AOption: TOption): boolean;
+var
+  Ident: UTF8String;
+begin
+  for Ident in Idents do
+    if HasOption(Ident, AOption) then
+      Exit(true);
+
+  Result := false;
 end;
 
 function TOptionList.HasOption(const Ident: UTF8String; out AOption: TOption
@@ -7213,6 +7264,7 @@ begin
     'epi': Result := stEpicurve;
     'his': Result := stHistogram;
     'sur': Result := stSurvival;
+    'par': Result := stPareto;
   else
     DoError();
   end;

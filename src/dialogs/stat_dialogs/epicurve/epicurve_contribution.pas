@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
-  epicurve_model, epicurve_primaryoption_model;
+  epicurve_model, epicurve_primaryoption_model, chart_options_model;
 
 type
 
@@ -16,8 +16,10 @@ type
   private
     FPrimaryOptionsModel: TEpicurveStatDialogPrimaryOptionModel;
     FVariablesModel: TEpicurveStatDialogVariableModel;
+    FChartOptionsModel: TChartOptionsModel;
     function CreateMainView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
     function CreatePrimaryOptionView(Owner: TComponent;  Executor: TExecutor): IStatDialogView;
+    function CreateChartOptionsView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
   public
     function GenerateScript(): UTF8String;
     function GetCaption(): UTF8String;
@@ -29,7 +31,8 @@ implementation
 
 uses
   Epicurve_variables_view,
-  Epicurve_primaryoption_view;
+  Epicurve_primaryoption_view,
+  chart_options_view;
 
 { TEpicurveStatDialogContribution }
 
@@ -55,11 +58,24 @@ begin
   Result := View;
 end;
 
+function TEpicurveStatDialogContribution.CreateChartOptionsView(Owner: TComponent;
+  Executor: TExecutor ): IStatDialogView;
+var
+  View: TChartOptionsView;
+begin
+  FChartOptionsModel := TChartOptionsModel.Create(Executor,%1011);
+  FChartOptionsModel.SetVariableModel(FVariablesModel);
+  View := TChartOptionsView.Create(Owner);
+  View.SetModel(FChartOptionsModel);
+  Result := View;
+end;
+
 function TEpicurveStatDialogContribution.GenerateScript(): UTF8String;
 begin
   result := 'epicurve ' +
     FVariablesModel.GenerateScript() +
     FPrimaryOptionsModel.GenerateScript() +
+    FChartOptionsModel.GenerateScript() +
     ';';
 end;
 
@@ -82,6 +98,7 @@ begin
   result := TStatDialogContributionViewList.Create;
   result.Add(CreateMainView(Owner, Executor));
   result.Add(CreatePrimaryOptionView(Owner, Executor));
+  result.Add(CreateChartOptionsView(Owner, Executor));
 end;
 
 initialization

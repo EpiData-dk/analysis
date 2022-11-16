@@ -12,3 +12,6 @@ src/grammar/*.cgt
 src/grammar/*.log
 *.sh
 ppas.sh
+help/commands.html
+*.o
+*.ppu

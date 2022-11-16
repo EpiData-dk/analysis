@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, fgl, Forms, ast, executor, chartcommandresult, graphform,
   charttitles, chartaxesconfiguration, outputcreator, TATextElements,
-  TAChartAxisUtils, TAChartAxis;
+  TAChartAxisUtils, TAChartAxis, TATypes;
 
 type
 
@@ -33,7 +33,7 @@ implementation
 
 uses
   chartcommand, chartfactory, graphformfactory, savegraphaction, TAGraph, chartpair,
-  LazFileUtils;
+  LazFileUtils, ana_globals, ast_types, options_utils, Graphics;
 
 { TGraphCommandExecutor }
 
@@ -110,6 +110,7 @@ var
   Chart: TChart;
   Titles: IChartTitles;
   Opt: TOption;
+  inc: Integer;
 begin
   ChartPairs := CommandResult.GetChartPairs();
 
@@ -120,6 +121,10 @@ begin
 
     ST.HasOption(['title', 'ti'], Opt);
     ApplyChartTitle(Chart.Title, Titles.GetTitle(), Opt);
+    // main title may be larger
+    inc := StrToInt(FExecutor.SetOptions.GetValue(ANA_SO_CHART_TITLE_SIZE_INCREMENT).Value);
+    if (inc > 0) then
+      Chart.Title.Font.Size := Chart.Title.Font.Size + inc;
 
     ST.HasOption(['footer', 'fn'], Opt);
     ApplyChartTitle(Chart.Foot, Titles.GetFootnote(), Opt);
@@ -134,6 +139,8 @@ end;
 
 procedure TGraphCommandExecutor.ApplyChartTitle(ChartTitle: TChartTitle;
   MainCaption: UTF8String; Option: TOption);
+var
+  AFont: TFont;
 begin
   if (Assigned(Option)) then
     MainCaption := Option.Expr.AsString;
@@ -141,6 +148,15 @@ begin
   ChartTitle.Visible := MainCaption <> '';
   ChartTitle.Text.Clear;
   ChartTitle.Text.Add(MainCaption);
+  AFont := FontFromSetOptions(
+           ANA_SO_CHART_FONT_NAME,
+           ANA_SO_CHART_FONT_SIZE,
+           ANA_SO_CHART_FONT_COLOR,
+           ANA_SO_CHART_FONT_STYLE,
+           FExecutor.SetOptions
+         );
+
+  ChartTitle.Font.Assign(AFont);
 end;
 
 procedure TGraphCommandExecutor.ApplyAxisTitle(AxisTitle: TChartAxisTitle;
@@ -160,24 +176,103 @@ var
   Pair: TChartPair;
   Chart: TChart;
   Configuration: IChartAxesConfiguration;
+  Opt: TOption;
+  isDate: Boolean;
+  minmax: double;
+  validRange: boolean;
+  rangeMsg: UTF8String;
+  errorMsg: UTF8String;
+
+  function setMinMax(out value: double; out msg: UTF8String): boolean;
+  begin
+    result := true;
+    msg := '';
+    if (isDate) then
+      begin
+        if (opt.Expr.ResultType = rtDate) then
+          begin
+            value := opt.Expr.AsDate;
+            exit;
+          end;
+      end
+    else
+      begin
+        if (opt.Expr.ResultType <> rtDate) then
+          begin
+            value := opt.Expr.AsFloat;
+            exit;
+          end;
+      end;
+    result := false;
+    msg := ' Ignored invalid ' + opt.Ident + ': ' + opt.Expr.AsString;
+  end;
+
 begin
   ChartPairs := CommandResult.GetChartPairs();
+  validRange := true;
+  errorMsg := '';
 
   for Pair in ChartPairs do
     begin
       Chart := Pair.Chart;
       Configuration := Pair.Configuration.GetAxesConfiguration();
 
-      if (Configuration.GetXAxisConfiguration().GetShowAxisMarksAsDates) then
+      with (Chart.BottomAxis) do
         begin
-          Chart.BottomAxis.OnMarkToText := @ShowMarksAsDates;
-          Chart.BottomAxis.Marks.OverlapPolicy := opHideNeighbour;
-          Chart.BottomAxis.Marks.SetAdditionalAngle(Pi / 2);
+          isDate := Configuration.GetXAxisConfiguration().GetShowAxisMarksAsDates;
+          if (isDate) then
+            begin
+              OnMarkToText := @ShowMarksAsDates;
+              Marks.OverlapPolicy := opHideNeighbour;
+              Marks.SetAdditionalAngle(Pi / 2);
+            end;
+
+          if (ST.HasOption('xmin', opt)) then
+            if (setMinMax(minmax, rangeMsg))then
+              begin
+                Range.UseMin := true;
+                Range.Min := minmax;
+              end
+            else
+              ErrorMsg += rangeMsg + LineEnding;
+
+          if (ST.HasOption('xmax', opt)) then
+            if (setMinMax(minmax, rangeMsg))then
+              begin
+                Range.UseMax  := true;
+                Range.Max := minmax;
+              end
+            else
+              ErrorMsg += rangeMsg + LineEnding;
         end;
 
-      if (Configuration.GetYAxisConfiguration().GetShowAxisMarksAsDates) then
-        Chart.LeftAxis.OnMarkToText := @ShowMarksAsDates;
-    end;
+      with (Chart.LeftAxis) do
+        begin
+          isDate := Configuration.GetYAxisConfiguration().GetShowAxisMarksAsDates;
+          if (isDate) then
+            OnMarkToText := @ShowMarksAsDates;
+
+          if (ST.HasOption('ymin', opt)) then
+            if (setMinMax(minmax, rangeMsg))then
+              begin
+                Range.UseMin := true;
+                Range.Min := minmax;
+              end
+            else
+              ErrorMsg += rangeMsg + LineEnding;
+
+          if (ST.HasOption('ymax', opt)) then
+            if (setMinMax(minmax, rangeMsg))then
+              begin
+                Range.UseMax  := true;
+                Range.Max := minmax;
+              end
+            else
+              ErrorMsg += rangeMsg + LineEnding;
+        end;
+      end;
+    if (errorMsg <> '') then
+      FExecutor.Error(errorMsg);
 end;
 
 constructor TGraphCommandExecutor.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);

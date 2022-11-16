@@ -6,14 +6,14 @@ ___
 
 ###Commands
 
-| Manage data | Analyze data | Write programs
-:---|:---|:---
-[read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [describe](#describe) variables<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis<br/>[scatter](#scatter) plot <br/>[line](#line) plot <br/>[bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve) | [select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#type)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup) |
+| Manage data | Analyze data | Graph data | Write programs
+:---|:---|:---|:---
+[read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [describe](#describe) variables<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis | [scatter](#scatter) plot <br/>[line](#line) plot <br/>[bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve)<br/>[Kaplan-Meier plot](#survival)<br/>*SPC Charts*<br/>[pareto chart](#pareto) | [select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#type)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
 
 *   Linear regression
-*   SPC graphs - Pareto Charts, Ichart etc.
+*   SPC graphs - Ichart etc.
 
 ### Syntax for all commands
 
@@ -1568,9 +1568,10 @@ By default, confidence intervals are shown as error bars
 
 - `!cil` Show the confidence intervals as dotted lines.
 
-- `See graph options`
+### Graph options
 
- `survival` is a graph command and any graph option may be specified
+ `survival` is a graph command and any other [graph option](#graphoptions) may be specified except for `!xmin !xmax !ymin !ymax`
+ 
 
 ### result variables
 Estimates are saved as result variables. Use  `list results` for details
@@ -1610,7 +1611,7 @@ Simple scatter plot for two variables.
 	colorMap is a string of up to 10 digits mapping the Analysis colours to the chart series. For `scatter`, a single digit may be specified:
 	`scatter xvar yvar !colors:="4"`
 	
-- `scatter` is a graph command and any graph option may be specified
+- `scatter` is a graph command and any [graph option](#graphoptions) may be specified
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -1638,7 +1639,7 @@ Draw a barchart for Variable. A barchart shows frequencies at each indiviual val
 
 - graph options
 
- `histogram` is a graph command and any graph option may be specified
+ `barchart` is a graph command and any graph option may be specified
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -1666,14 +1667,14 @@ A histogram is a bar chart where every integer value within range is represented
 
  stack bars for stratified data.
 - graph options
- `histogram` is a graph command and any graph option may be specified
+ `histogram` is a graph command and any [graph option](#graphoptions) may be specified except for `!ymin`
 
 See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="epicurve" id="epicurve"></a>
 ## epicurve
 ```
-epicurve Variable [StratifyVariable] [options]
+epicurve <Variable> [StratifyVariable] [options]
 ```
 Draw an epidemic curve for a variable, based on consecutive integer or day intervals. The user is responsible for recoding variables so that consecutive intervals make sense.
 
@@ -1681,14 +1682,90 @@ An epicurve is a stacked histogram, where individual boxes are shown for each su
 
 ### parameters
 - Variable may be integer or date
-- Stratifyvariable may be of any type
+- StratifyVariable may be of any type
 
 ### options
 - `!interval:=i`
 
  where i is an integer > 1, will group bars; the default is 1
+ 
+- graph options 
+
+ `epicurve` is a graph command and any [graph option](#graphoptions) may be specified except for `!ymin`
+
+<a name="graphoptions" id="graphoptions"></a> 
+## graph options
+
+Any of the graph commands may use the following options.
+
+- `!ti|title := "Custom main title"`
+
+- `!fn|footnote:= "Custom footnote"`
+
+- `!xt|xtitle := "Custom x-axis title"`
+
+- `!yt|ytitle := "Custom y-axis title"`
+
+- `!xmin := <real number|date>`
+
+- `!xmax := <real number|date>`
+
+- `!ymin := <real number|date>`
+
+- `!ymax := <real number|date>`
+
+	- axis minimum and maximum values are not available to all chart types [*see the indiviual commands*]
+	- axis minumum and maximum values may be expressed for some graphs as numbers with or without a decimal place or as date values, depending on the variable type 
+	- if a given value will excluded data from the graph, then it is ignored
+	- for some graphs, specifing xmin or ymin := 0 may be required to force the axis to begin at zero
+
+- `!c|colors := "color specification string"`
+
+   `color specification string` can take two forms
+   
+   - up to ten digits (0-9) representing the order that the standard colors will be used. The standard colors (0-9) are Black, Blue, Red, Green, Yellow, White, SkyBlue, Fuchsia, Gray, Aqua. The default order is 1234567890. That means the first color for a graph is blue, then red, green, etc.
+
+   - one or more hexadecimal color codes (#xxxxxx), where each 'x' can be any of {0..9 A..F}. Many online resources explain how to create color codes. #000000 is black, #FFFFFF is white, #0000FF is blue.
+
+   Any errors in specification of the colors leads to an error message. However, the graph command will execute normally, with black being substituted for the incorrect color.
+   
+### examples
+
+```
+   // use red, green, blue for the strata
+   barchart var stratifyvar !c:="231"
+   // use custom colors (dark blue, purple) for the survival curve strata
+   survival outcome time !by:=group !c:="#00008B#C517FF"
+   // extend an epicurve beyond the highest date in the data
+   epicurve onset !xmax:=createdate(31,10,2022)
+```
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+# SPC Charts
+<a name="pareto" id="pareto"></a>
+## pareto
+```
+pareto <Variable> [options]
+```
+Draw a pareto chart for a variable. The chart has two components: a bar chart showing counts for the variable in descending order by count and a line chart showing cumulative percentages.
+
+### parameters
+- `Variable` may be of any type
+
+### options
+- `!by:=sVariable`
+
+  `sVariable` may be of any type
+- `!w:=wVariable`
+
+   weight the counts using `wVariable`
+   
 - graph options
- `epicurve` is a graph command and any graph option may be specified
+
+   `pareto` is a graph command and any graph option may be specified
+
+See [variables](#referencedvars) on using referenced variables for this command
 
 # Consistency and Validity Check of data
 

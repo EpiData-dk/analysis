@@ -17,6 +17,9 @@ uses
   {$IFDEF DARWIN}
   CFPreferences, CFString, CocoaAll,
   {$ENDIF}
+  {$IFDEF LINUX}
+  clocale,
+  {$ENDIF}
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
@@ -1621,16 +1624,20 @@ end;
 
 procedure TMainForm.MainExceptionHandler(Sender: TObject; E: Exception);
 begin
-  ShowMessage(
-    'An unhandled error occurred in the program!' + LineEnding +
-    LineEnding +
-    'Please verify that the error can be reproduced.' + LineEnding +
-    'Report to the: EpiData-list (mail.....)' + LineEnding +
-    '               and mail to info@epidata.dk' + LineEnding +
-    LineEnding +
-    'Include most recent 5-10 lines of history in your report.'
-  );
-
+  case E.Message.ToLower of
+    'drawdata leak':
+      ; // ugly trap to Draw Data leak error condition caused by persistent axis transformations
+  else
+      ShowMessage(
+        'An unhandled error occurred in the program!' + LineEnding +
+        LineEnding +
+        'Please verify that the error can be reproduced.' + LineEnding +
+        'Report to the: EpiData-list (mail.....)' + LineEnding +
+        '               and mail to info@epidata.dk' + LineEnding +
+        LineEnding +
+        'Include most recent 5-10 lines of history in your report.'
+      );
+  end;
   Screen.Cursor := crDefault;
 end;
 
