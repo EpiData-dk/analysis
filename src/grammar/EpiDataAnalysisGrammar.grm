@@ -60,12 +60,12 @@ opDescribe    = 'des'('cribe')?
 opRecode      = 'recode'
 
 ! -- Graph commands
-opScatter     = 'scatter'
+opScatter     = 'scat'('ter')?
 opSurvival    = 'sur'('vival')?
-opEpicurve    = 'epicurve'
-opHistogram   = 'histogram'
-opBarChart    = 'barchart'
-opLine        = 'line'
+opEpicurve    = 'epi'('curve')?
+opHistogram   = 'his'('togram')?
+opBarChart    = 'bar'('chart')?
+opPareto      = 'par'('eto')?
 
 ! -- String commands
 opRunTest     = 'runtest'
@@ -152,6 +152,7 @@ opSet         = 'set'
                                            |   opDescribe
                                            |   opScatter
                                            |   opSurvival
+                                           |   opPareto
 
 <String Command>                           ::= opRead
                                            |   opRuntest

@@ -293,7 +293,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="190">
+    <Units Count="192">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1091,6 +1091,14 @@
         <Filename Value="src/graph/utils/graph_utils.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit189>
+      <Unit190>
+        <Filename Value="src/graph/commands/pareto/pareto.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit190>
+      <Unit191>
+        <Filename Value="src/graph/commands/pareto/paretosource.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit191>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -1100,7 +1108,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/graph/utils;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/graph/commands/epicurve;src/graph/commands/histogram;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/epicurve;src/graph/commands/barchart;src/dialogs/stat_dialogs/barchart"/>
+      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/graph/utils;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/graph/commands/epicurve;src/graph/commands/histogram;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/epicurve;src/graph/commands/barchart;src/dialogs/stat_dialogs/barchart;src/graph/commands/pareto"/>
       <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

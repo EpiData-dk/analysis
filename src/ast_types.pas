@@ -105,6 +105,7 @@ type
     stEpicurve,
     stHistogram,
     stBarchart,
+    stPareto,
 
   // String Commands
     stRead,

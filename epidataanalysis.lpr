@@ -21,7 +21,7 @@ uses
   barchart_contribution,
 
   // ONLY ADD GRAPH COMMANDS HERE (delete all other automatically added units).
-   scatter, barchart, survival, epicurve, histogram;
+   scatter, barchart, survival, epicurve, histogram, pareto, paretosource;
 
 {$R *.res}
 
