@@ -2523,7 +2523,7 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('stack', [rtUndefined]);
   Result.Insert('pct', [rtUndefined]);
-  Result.Insert('colors', [rtString]);
+  Result.Insert('colors', ['c'], [rtString]);
 end;
 
 function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2678,7 +2678,8 @@ begin
   Result := inherited GetAcceptedOptions;
   AddVariableLabelOptions(Result);
   AddValueLabelOptions(Result);
-  Result.Insert('colors', [rtString]);
+  Result.Insert('colors', ['c'], [rtString]);
+  Result.Insert('w', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
 end;
 
 function TParetoCommand.GetAcceptedVariableCount: TBoundArray;
