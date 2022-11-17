@@ -48,6 +48,8 @@ end;
 function TParetoChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 const
   dummyVarName = '_dummy4barchart';
+  barTitle     = 'Count';
+  lineTitle    = 'Cumulative %';
 var
   {Chart}
   Chart:               TChart;
@@ -58,8 +60,10 @@ var
   LineSource:          TParetoLineSource;
   LineSeries:          TLineSeries;
   RightAxis:           TChartAxis;
-  SeriesStyles:        TChartStyles;
-  aStyle:              TChartStyle;
+  BarStyles,
+  LineStyles  :        TChartStyles;
+  bStyle,
+  lStyle:              TChartStyle;
   sColor:              TColorMap;
   {Frequencies}
   DataFile:            TEpiDataFile;
@@ -85,7 +89,7 @@ begin
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
   VarNames            := Command.VariableList.GetIdentsAsList;
-  DFVars              := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
+  DFVars              := Command.VariableList.GetIdentsAsList;
   nilStratVariable    := TStringList.Create;
   WeightVarName       := '';
   if (Command.HasOption(['w'],Opt)) then
@@ -117,15 +121,14 @@ begin
   for i := 0 to TableData.ColCount - 1 do
     LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, ValueLabelOutput));
 
-  SeriesStyles := TChartStyles.Create(Chart);
-  aStyle       := SeriesStyles.Add;
-  with aStyle do
+  BarStyles := TChartStyles.Create(Chart);
+  bStyle    := BarStyles.Add;
+  with bStyle do
     begin
-      Brush.Style := bsClear;
-      Pen.Color   := sColor[0];
-      Pen.Width   := 2;
+      Brush.Style := bsSolid;
+      Brush.Color := sColor[0];
+      Text        := barTitle;
     end;
-
   BarSeries := TBarSeries.Create(Chart);
   with BarSeries do
     begin
@@ -133,20 +136,41 @@ begin
       Stacked         := false;
       BarWidthPercent := 80;
       AxisIndexY      := 0;
-      Styles          := SeriesStyles;
+      Styles          := BarStyles;
+      Legend.Multiplicity:=lmStyle;
+      Legend.GroupIndex := 0;
     end;
 
+  LineStyles := TChartStyles.Create(Chart);
+  lStyle     := LineStyles.Add;
+  with lStyle do
+    begin
+      Pen.Style   := psSolid;
+      Pen.Color   := sColor[1];
+      Pen.Width   := 4;
+      Text        := lineTitle;
+    end;
   LineSeries := TLineSeries.Create(Chart);
   with LineSeries do
     begin
       Source     := LineSource;
       AxisIndexY := 2;
-      Styles     := SeriesStyles;
+      Styles     := LineStyles;
+      Legend.Multiplicity:=lmStyle;
+      Legend.GroupIndex := 1;
     end;
 
-  // Add series to the chart
-  Chart.AddSeries(BarSeries);
+  // Add series to the chart; line will be on top of bars
   Chart.AddSeries(LineSeries);
+  Chart.AddSeries(BarSeries);
+  with Chart.Legend do
+    begin
+      Visible       := true;
+      UseSidebar    := true;
+      Frame.Visible := false;
+      Alignment     := laTopCenter;
+      ColumnCount   := 2;
+    end;
 
   sTitle := 'Pareto Chart for ' + XVar.GetVariableLabel(VariableLabelOutput);
   if (WeightVarName <> '') then
@@ -158,7 +182,7 @@ begin
     .SetTitle(sTitle)
     .SetFootnote('')
     .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
-    .SetYAxisTitle('Count');
+    .SetYAxisTitle(barTitle);
 
   ChartConfiguration.GetAxesConfiguration()
     .GetXAxisConfiguration()
@@ -199,7 +223,7 @@ begin
   with RightAxis do
     begin
       Alignment                   := calRight;
-      Title.Caption               := 'Cumulative %';
+      Title.Caption               := lineTitle;
       Title.Visible               := true;
       Transformations             := RightAxisTransform;
       Grid.Style                  := psClear;
