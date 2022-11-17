@@ -1292,6 +1292,7 @@ type
 
   TScatterCommand = class(TCustomGraphCommand)
   protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
     function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
   public
@@ -2481,6 +2482,16 @@ begin
 end;
 
 { TScatterCommand }
+
+function TScatterCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+  Result.Insert('l', [rtUndefined]);
+  Result.Insert('p', [rtUndefined]);
+  Result.Insert('colors', [rtString]);
+end;
 
 function TScatterCommand.GetAcceptedVariableCount: TBoundArray;
 begin
