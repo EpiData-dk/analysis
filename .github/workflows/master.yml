@@ -13,7 +13,7 @@ jobs:
     name: Compile Code
     runs-on: ubuntu-latest
     container:
-      image: epidata/fpcbuild:3.2.0-13
+      image: epidata/fpcbuild:3.2.0-14
 
     steps:
       - name: Checkout code
@@ -52,6 +52,9 @@ jobs:
 
       - name: Compile Mac
         run:  mvn compile -e -Pdarwin64
+
+      - name: Convert markdown to html
+        run:  grip --export help/commands.md
 
       - name: Deploy
         run: |
