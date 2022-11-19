@@ -75,9 +75,11 @@ var
   {command}
   VarNames:            TStrings;
   DFVars:              TStrings;
-  XVar:                TEpiField;
   dummyVar:            TEpiField;
+  WeightVar:           TEpiField;
   WeightVarName:       UTF8String;
+  XVar:                TEpiField;
+  XVarTitle:           UTF8String;
   Opt:                 TOption;
 
   ValueLabelOutput:    TEpiGetValueLabelType;
@@ -98,7 +100,6 @@ begin
       DFVars.Add(WeightVarName);
     end;
   DataFile      := FExecutor.PrepareDatafile(DFVars, DFVars);
-  XVar          := Datafile.Fields.FieldByName[VarNames[0]];
   Chart         := FChartFactory.NewChart();
   dummyVar      := DataFile.NewField(ftInteger);
   dummyVar.Name := dummyVarName;
@@ -172,16 +173,20 @@ begin
       ColumnCount   := 2;
     end;
 
-  sTitle := 'Pareto Chart for ' + XVar.GetVariableLabel(VariableLabelOutput);
+  XVar := Datafile.Fields.FieldByName[Varnames[0]];
+  XVarTitle := XVar.GetVariableLabel(VariableLabelOutput);
+  sTitle := 'Pareto Chart for ' + XVarTitle;
   if (WeightVarName <> '') then
-    sTitle += ' weighted (' + WeightVarName + ')';
-
+    begin
+      WeightVar := Datafile.Fields.FieldByName[WeightVarName];
+      sTitle += ' weighted (' + WeightVar.GetVariableLabel(VariableLabelOutput)+ ')';
+    end;
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions, sovStatistics);
   ChartConfiguration := FChartFactory.NewChartConfiguration();
   ChartConfiguration.GetTitleConfiguration()
     .SetTitle(sTitle)
     .SetFootnote('')
-    .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
+    .SetXAxisTitle(XVarTitle)
     .SetYAxisTitle(barTitle);
 
   ChartConfiguration.GetAxesConfiguration()
@@ -234,13 +239,14 @@ begin
       Range.UseMax                := true;
     end;
 
-  // Create the command result
   Result := FChartFactory.NewGraphCommandResult();
   Result.AddChart(Chart, ChartConfiguration);
   VarNames.Free;
   DFVars.Free;
   T.Free;
   TablesAll.Free;
+  XVar.Free;
+  WeightVar.Free;
   Datafile.Free;
 end;
 

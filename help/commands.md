@@ -1692,6 +1692,9 @@ An epicurve is a stacked histogram, where individual boxes are shown for each su
 
  `epicurve` is a graph command and any graph option may be specified
 
+See [variables](#referencedvars) on using referenced variables for this command
+
+# SPC Charts
 <a name="pareto" id="pareto"></a>
 ## pareto
 ```
@@ -1700,12 +1703,18 @@ pareto <Variable> [options]
 Draw a pareto chart for a variable. The chart has two components: a bar chart showing counts for the variable in descending order by count and a line chart showing cumulative percentages.
 
 ### parameters
-- Variable may be of any type
+- `Variable` may be of any type
 
 ### options
+- `!w:=wvariable`
+
+   weight the counts using `wvariable`
+   
 - graph options
 
    `pareto` is a graph command and any graph option may be specified
+
+See [variables](#referencedvars) on using referenced variables for this command
 
 # Consistency and Validity Check of data
 

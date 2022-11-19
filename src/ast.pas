@@ -1054,6 +1054,7 @@ type
     destructor  Destroy; override;
     procedure   Add(Option: TOption);
     procedure   Remove(Option: TOption);
+    function    HasOption(Idents: array of UTF8String; out AOption: TOption): boolean; overload;
     function    HasOption(Const Ident: UTF8String; out AOption: TOption): boolean; overload;
     function    HasOption(Const Ident: UTF8String): boolean; overload;
     function    GetEnumerator: TOptionListEnumerator;
@@ -4598,6 +4599,18 @@ end;
 procedure TOptionList.Remove(Option: TOption);
 begin
   FOptList.Remove(Option);
+end;
+
+function TOptionList.HasOption(Idents: array of UTF8String; out
+  AOption: TOption): boolean;
+var
+  Ident: UTF8String;
+begin
+  for Ident in Idents do
+    if HasOption(Ident, AOption) then
+      Exit(true);
+
+  Result := false;
 end;
 
 function TOptionList.HasOption(const Ident: UTF8String; out AOption: TOption
