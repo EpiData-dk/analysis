@@ -66,12 +66,6 @@ opEpicurve    = 'epi'('curve')?
 opHistogram   = 'his'('togram')?
 opBarChart    = 'bar'('chart')?
 opPareto      = 'par'('eto')?
-opXBarChart   = 'spcx'
-opIChart      = 'spci'
-opCChart      = 'spcc'
-opUChart      = 'spcu'
-opPChart      = 'spcp'
-opGChart      = 'spcg'
 
 ! -- String commands
 opRunTest     = 'runtest'
@@ -157,16 +151,7 @@ opSet         = 'set'
                                            |   opCTable
                                            |   opDescribe
                                            |   opScatter
-                                           |   opBarChart
-                                           |   opEpicurve
-                                           |   opHistogram
                                            |   opSurvival
-                                           |   opXBarChart
-                                           |   opIChart
-                                           |   opCChart
-                                           |   opUChart
-                                           |   opPChart
-                                           |   opGChart
                                            |   opPareto
 
 <String Command>                           ::= opRead

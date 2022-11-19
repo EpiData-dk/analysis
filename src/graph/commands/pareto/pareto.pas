@@ -180,6 +180,7 @@ begin
     begin
       WeightVar := Datafile.Fields.FieldByName[WeightVarName];
       sTitle += ' weighted (' + WeightVar.GetVariableLabel(VariableLabelOutput)+ ')';
+      WeightVar.Free;
     end;
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions, sovStatistics);
   ChartConfiguration := FChartFactory.NewChartConfiguration();
@@ -246,7 +247,6 @@ begin
   T.Free;
   TablesAll.Free;
   XVar.Free;
-  WeightVar.Free;
   Datafile.Free;
 end;
 
