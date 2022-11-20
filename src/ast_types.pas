@@ -130,7 +130,8 @@ type
 
 const
   ASTGraphCommands: TASTStatementTypes = [stScatter, stSurvival, stEpiCurve, stHistogram, stBarchart];
-
+  ASTVLabelCommands: TASTStatementTypes = [stTables, stCTable, stBrowse, stAggregate, stFreq, stDescribe,
+                                           stScatter, stSurvival, stEpiCurve, stHistogram, stBarchart];
 
 type
   TParserOperationType = (
