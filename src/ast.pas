@@ -1293,6 +1293,7 @@ type
 
   TScatterCommand = class(TCustomGraphCommand)
   protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
     function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
   public
@@ -1676,8 +1677,6 @@ function TTablesCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
   AddDecimalOptions(Result);
-  AddVariableLabelOptions(Result);
-  AddValueLabelOptions(Result);
   AddSortingOptions(Result);
 
   Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
@@ -1732,8 +1731,6 @@ function TCTableCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
   AddDecimalOptions(Result);
-  AddVariableLabelOptions(Result);
-  AddValueLabelOptions(Result);
   AddSortingOptions(Result);
 
   Result.Insert('by',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
@@ -1816,8 +1813,6 @@ begin
   Result.Insert('full',    [rtUndefined]);
 
   AddDecimalOptions(Result);
-  AddVariableLabelOptions(Result);
-  AddValueLabelOptions(Result);
 
   // Summary statistics
   Result.Insert('des',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
@@ -2396,8 +2391,6 @@ begin
   Result.Insert('nf',  [rtUndefined]);  // no footer (not relevant)
   Result.Insert('ct',  [rtUndefined]);  // force compact table
   AddDecimalOptions(Result);
-  AddVariableLabelOptions(Result);
-  AddValueLabelOptions(Result);
 end;
 function TDescribeCommand.GetAcceptedVariableCount: TBoundArray;
 begin
@@ -2494,6 +2487,16 @@ end;
 
 { TScatterCommand }
 
+function TScatterCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  AddVariableLabelOptions(Result);
+  AddValueLabelOptions(Result);
+  Result.Insert('l', [rtUndefined]);
+  Result.Insert('p', [rtUndefined]);
+  Result.Insert('colors', [rtString]);
+end;
+
 function TScatterCommand.GetAcceptedVariableCount: TBoundArray;
 begin
   Result := inherited GetAcceptedVariableCount;
@@ -2517,8 +2520,6 @@ end;
 function TBarchartCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  AddVariableLabelOptions(Result);
-  AddValueLabelOptions(Result);
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('stack', [rtUndefined]);
@@ -2550,8 +2551,6 @@ end;
 function TEpicurveCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  AddVariableLabelOptions(Result);
-  AddValueLabelOptions(Result);
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('interval', [rtInteger]);
   Result.Insert('colors', [rtString]);
@@ -2585,8 +2584,6 @@ end;
 function THistogramCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  AddVariableLabelOptions(Result);
-  AddValueLabelOptions(Result);
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('interval', [rtInteger, rtFloat]);
@@ -2623,8 +2620,6 @@ function TSurvivalCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
   AddDecimalOptions(Result);
-  AddVariableLabelOptions(Result);
-  AddValueLabelOptions(Result);
   Result.Insert('by',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('o',   [rtInteger, rtString]);  // outcome value
@@ -4080,8 +4075,7 @@ function TCustomVariableCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  // TODO : make a list of common commands that all support v,l,vl,lv
-  if StatementType in [stMeans, stFreq, stBrowse] then
+  if StatementType in ASTVLabelCommands then
     begin
       AddValueLabelOptions(Result);
       AddVariableLabelOptions(Result);

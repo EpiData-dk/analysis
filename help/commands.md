@@ -1597,9 +1597,20 @@ Simple scatter plot for two variables.
 - Yvariable may be integers or float
 
 ### options
-- `scatter` 
+- `!l`
 
-   is a graph command and any graph option may be specified
+   Draw a line instead of points
+   
+- `!p`
+
+   Draw points as well as a line (use if `!l` was specified)
+   
+- `!colors:="colorMap"`
+
+	colorMap is a string of up to 10 digits mapping the Analysis colours to the chart series. For `scatter`, a single digit may be specified:
+	`scatter xvar yvar !colors:="4"`
+	
+- `scatter` is a graph command and any graph option may be specified
 
 See [variables](#referencedvars) on using referenced variables for this command
 

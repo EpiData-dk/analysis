@@ -26,7 +26,7 @@ implementation
 
 uses
   TASeries, TATypes, Graphics, charttitles, ast_types, scattersource, epidatafilestypes,
-  epifields_helper, options_utils;
+  epifields_helper, options_utils, graph_utils;
 
 { TScatterChart }
 
@@ -47,7 +47,9 @@ var
   DataFile: TEpiDataFile;
   XVar, YVar: TEpiField;
   ChartConfiguration: IChartConfiguration;
+  sColor: TColorMap;
   VariableLabelType: TEpiGetVariableLabelType;
+  sPoints, sLine: Boolean;
 begin
   // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
@@ -56,6 +58,7 @@ begin
   DataFile := FExecutor.PrepareDatafile(VarNames, VarNames);
   XVar := Datafile.Fields.FieldByName[VarNames[0]];
   YVar := Datafile.Fields.FieldByName[Varnames[1]];
+  DataFile.SortRecords(XVar);
   Varnames.Free;
 
   // Create the charts
@@ -68,16 +71,31 @@ begin
   ScatterSource.Datafile := DataFile;
   ScatterSource.XVariableName := XVar.Name;
   ScatterSource.YVariableName := YVar.Name;
+  ScatterSource.Sorted := true;
+
+  // Get options
+  sColor := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
+  sLine := Command.HasOption('l');
+  sPoints := (not Command.HasOption('l')) or Command.HasOption('p');
 
   // Create the line/point series
   LineSeries := TLineSeries.Create(Chart);
-  LineSeries.ShowPoints := true;
-  LineSeries.LineType := ltNone;
-  LineSeries.Pointer.Brush.Style := bsClear;
-  LineSeries.Pointer.Pen.Color := clBlack;
-  LineSeries.Pointer.Style := psCircle;
-  LineSeries.Source := ScatterSource;
-
+  with LineSeries do
+    begin
+      Source := ScatterSource;
+      ShowPoints := sPoints;
+      if (sPoints) then
+      begin
+        Pointer.Pen.Color := sColor[0];
+        Pointer.Style := psCircle;
+        Linetype := ltNone;
+      end;
+      if (Sline) then
+      begin
+        LineType := ltFromPrevious;
+        LinePen.Color:= sColor[0];
+      end;
+    end;
   // Add series to the chart
   Chart.AddSeries(LineSeries);
 
