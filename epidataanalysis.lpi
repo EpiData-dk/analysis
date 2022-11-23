@@ -1092,9 +1092,8 @@
         <IsPartOfProject Value="True"/>
       </Unit189>
       <Unit190>
-        <Filename Value="src/graph/options/graph_options.pas"/>
+        <Filename Value="src/graph/options/chart_options.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="chart_options"/>
       </Unit190>
     </Units>
   </ProjectOptions>

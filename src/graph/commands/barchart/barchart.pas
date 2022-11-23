@@ -28,7 +28,8 @@ implementation
 uses
   TASeries, TASources, TATypes, TAStyles, TAChartUtils, TALegend,
   Graphics, charttitles, ast_types, epidatafilestypes,
-  epicustombase, epifields_helper, options_utils, graph_utils, barchartsource;
+  epicustombase, epifields_helper, options_utils, graph_utils, chart_options,
+  barchartsource;
 
 { TBarChart }
 
@@ -52,7 +53,7 @@ var
   BarSeries:           TBarSeries;
   SeriesStyles:        TChartStyles;
   aStyle:              TChartStyle;
-  sColor:              TColorMap;
+  sColors:             TColorMap;
   {Frequencies}
   DataFile:            TEpiDataFile;
   T:                   TTables;
@@ -80,7 +81,7 @@ var
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
+  sColors             := GetColorsFromOptions(Command.Options, FExecutor.SetOptions);
   VarNames            := Command.VariableList.GetIdentsAsList;
   DFVars              := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
   StratVariable       := TStringList.Create;
@@ -143,11 +144,11 @@ begin
       colourNum := 0;
       for i := 0 to TableData.RowCount - 1 do
         begin
-          if (colourNum = length(sColor)) then
+          if (colourNum = length(sColors) then
             colourNum := 0;
           aStyle := SeriesStyles.Add;
           aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
-          aStyle.Brush.Color:=sColor[colourNum];
+          aStyle.Brush.Color:=sColors[colourNum];
           aStyle.Pen.Color := clSilver;
           colourNum += 1;
         end;
@@ -162,7 +163,7 @@ begin
   else
     begin
       aStyle := SeriesStyles.Add;
-      aStyle.Brush.Color := sColor[0];
+      aStyle.Brush.Color := sColors[0];
       aStyle.Pen.Color := clSilver;
     end;
     BarSeries.Styles := SeriesStyles;
