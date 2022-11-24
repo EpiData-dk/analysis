@@ -20,6 +20,7 @@ type
     procedure SaveGraph(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
     procedure ShowDialog(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
     procedure UpdateChartTitles(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
+    procedure ApplyMainChartTitle(ChartTitle: TChartTitle; MainCaption: UTF8String; Option: TOption);
     procedure ApplyChartTitle(ChartTitle: TChartTitle; MainCaption: UTF8String; Option: TOption);
     procedure ApplyAxisTitle(AxisTitle: TChartAxisTitle; MainCaption: UTF8String; Option: TOption);
     procedure UpdateChartAxes(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
@@ -33,7 +34,7 @@ implementation
 
 uses
   chartcommand, chartfactory, graphformfactory, savegraphaction, TAGraph, chartpair,
-  LazFileUtils;
+  LazFileUtils, ana_globals, options_utils, Graphics;
 
 { TGraphCommandExecutor }
 
@@ -119,7 +120,7 @@ begin
     Titles := Pair.Configuration.GetTitleConfiguration();
 
     ST.HasOption(['title', 'ti'], Opt);
-    ApplyChartTitle(Chart.Title, Titles.GetTitle(), Opt);
+    ApplyMainChartTitle(Chart.Title, Titles.GetTitle(), Opt);
 
     ST.HasOption(['footer', 'fn'], Opt);
     ApplyChartTitle(Chart.Foot, Titles.GetFootnote(), Opt);
@@ -132,8 +133,10 @@ begin
   end;
 end;
 
-procedure TGraphCommandExecutor.ApplyChartTitle(ChartTitle: TChartTitle;
+procedure TGraphCommandExecutor.ApplyMainChartTitle(ChartTitle: TChartTitle;
   MainCaption: UTF8String; Option: TOption);
+var
+  AFont: TFont;
 begin
   if (Assigned(Option)) then
     MainCaption := Option.Expr.AsString;
@@ -141,6 +144,35 @@ begin
   ChartTitle.Visible := MainCaption <> '';
   ChartTitle.Text.Clear;
   ChartTitle.Text.Add(MainCaption);
+  AFont := FontFromSetOptions(
+           ANA_SO_CHART_FONT_NAME,
+           ANA_SO_CHART_TITLE_FONT_SIZE,
+           ANA_SO_CHART_FONT_COLOR,
+           ANA_SO_CHART_FONT_STYLE,
+           FExecutor.SetOptions
+         );
+  ChartTitle.Font.Assign(AFont);
+end;
+
+procedure TGraphCommandExecutor.ApplyChartTitle(ChartTitle: TChartTitle;
+  MainCaption: UTF8String; Option: TOption);
+var
+  AFont: TFont;
+begin
+  if (Assigned(Option)) then
+    MainCaption := Option.Expr.AsString;
+
+  ChartTitle.Visible := MainCaption <> '';
+  ChartTitle.Text.Clear;
+  ChartTitle.Text.Add(MainCaption);
+  AFont := FontFromSetOptions(
+           ANA_SO_CHART_FONT_NAME,
+           ANA_SO_CHART_FONT_SIZE,
+           ANA_SO_CHART_FONT_COLOR,
+           ANA_SO_CHART_FONT_STYLE,
+           FExecutor.SetOptions
+         );
+  ChartTitle.Font.Assign(AFont);
 end;
 
 procedure TGraphCommandExecutor.ApplyAxisTitle(AxisTitle: TChartAxisTitle;

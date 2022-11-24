@@ -2478,8 +2478,8 @@ end;
 function TScatterCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  AddVariableLabelOptions(Result);
-  AddValueLabelOptions(Result);
+//  AddVariableLabelOptions(Result);
+//  AddValueLabelOptions(Result);
   Result.Insert('l', [rtUndefined]);
   Result.Insert('p', [rtUndefined]);
   Result.Insert('colors', [rtString]);

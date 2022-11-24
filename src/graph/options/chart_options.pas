@@ -77,11 +77,14 @@ begin
   for i := 1 to high(AHexValues) do
     begin
       s := AHexValues[i].ToUpper;
-      if (Length(s) <> 6) then
-        Msg += '"#' + s + '" is not a valid color (hexadecimal)! e.g. #000000 = black '
-      else if (not TryStrToInt('$'+s, Dummy)) then
-        Msg += '"#' + s + '" is not a valid color (hexadecimal)! e.g. #000000 = black';
-      result[i-1] := RGBToBGR(StrToInt('$'+s));
+      if (Length(s) <> 6) or
+         (not TryStrToInt('$'+s, Dummy)) then
+        begin
+          Msg += '"#' + s + '" is not a valid hexadecimal color';
+          result[i-1] := anaColors[i-1];
+        end
+      else
+        result[i-1] := RGBToBGR(StrToInt('$'+s));
     end;
 end;
 
