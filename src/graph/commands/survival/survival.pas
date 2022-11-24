@@ -16,7 +16,7 @@ uses
   Classes, SysUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
   tables_types, tables,
   executor, result_variables, epifields_helper, ana_globals,
-  outputcreator, options_utils, graph_utils,
+  outputcreator, options_utils, chart_options,
   TAGraph, TASeries, TATypes, TASources, Graphics, FPCanvas,
   chartcommandresult, chartcommand, chartfactory, chartconfiguration, charttitles;
 
@@ -1035,8 +1035,8 @@ var
   Stratum1,
   vCount:           Integer;
   showKMPlot:       Boolean;
-  intervalArray: array of integer;
-
+  intervalArray:    array of integer;
+  Msg:              UTF8String;
 begin
   FExecutor.ClearResults('$survival');
 
@@ -1048,7 +1048,11 @@ begin
   FintFlag             := false;
   FAdjFlag             := false;
   showKMPlot           := true;
-  FColors              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
+  FColors              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, Msg);
+  if (Msg <> '') then
+    begin
+      FExecutor.Error(Msg);
+    end;
   // time variables specified?
   vCount := VarNames.Count;
   if (vCount = 3) then

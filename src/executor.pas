@@ -1872,12 +1872,12 @@ begin
   FOptions.Insert(ANA_SO_BROWSER_OBS_VERIFIED_COLOR,     TFontColorOption.Create('#008080', rtString));
 
   // Common chart options
-  FOptions.Insert(ANA_SO_CHART_COLORS,                   TSetOption.Create('1234567890', rtString));
-  FOptions.Insert(ANA_SO_CHART_FONT_SIZE,                TSetOption.Create('10', rtInteger));
-  FOptions.Insert(ANA_SO_CHART_FONT_NAME,                TSetOption.Create('', rtString));
+  FOptions.Insert(ANA_SO_CHART_COLORS,                   TSetOption.Create('1234567890',    rtString));
+  FOptions.Insert(ANA_SO_CHART_FONT_SIZE,                TSetOption.Create('10',            rtInteger));
+  FOptions.Insert(ANA_SO_CHART_FONT_NAME,                TSetOption.Create('',              rtString));  // use default for charts unless defined
   FOptions.Insert(ANA_SO_CHART_FONT_COLOR,               TFontColorOption.Create('#000000', rtString));
   FOptions.Insert(ANA_SO_CHART_FONT_STYLE,               TFontStyleOption.Create('',        rtString));
-  FOptions.Insert(ANA_SO_CHART_TITLE_SIZE_INCREMENT,     TSetOption.Create('2', rtInteger));
+  FOptions.Insert(ANA_SO_CHART_TITLE_SIZE_INCREMENT,     TSetOption.Create('2',             rtInteger));
 
   // OUTPUT VIEWER
   SOpt := TSetOption.Create('TEXT', rtString);

@@ -28,7 +28,7 @@ implementation
 uses
   TASeries, TASources, TATypes, TAStyles, TAChartUtils, TALegend,
   Graphics, charttitles, ast_types, epidatafilestypes,
-  epicustombase, epifields_helper, options_utils, graph_utils, chart_options,
+  epicustombase, epifields_helper, options_utils, chart_options,
   barchartsource;
 
 { TBarChart }

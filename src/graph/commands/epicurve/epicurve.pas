@@ -27,7 +27,7 @@ implementation
 
 uses
   TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types,
-  options_utils, graph_utils;
+  options_utils, chart_options;
 
 { TEpicurveChart }
 
@@ -77,11 +77,16 @@ var
   box1, box:           Integer;
   i, colourNum:        Integer;
   sTitle:              UTF8String;
+  Msg:                 UTF8String;
 
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
+  sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, Msg);
+  if (Msg <> '') then
+    begin
+      FExecutor.Error(Msg);
+    end;
   VarNames            := Command.VariableList.GetIdentsAsList;
   StratVariable       := TStringList.Create;
   cOptions            := TOptionList.Create;

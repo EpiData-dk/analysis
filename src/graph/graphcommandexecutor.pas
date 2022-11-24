@@ -121,6 +121,7 @@ begin
 
     ST.HasOption(['title', 'ti'], Opt);
     ApplyChartTitle(Chart.Title, Titles.GetTitle(), Opt);
+    // main title may be larger
     inc := StrToInt(FExecutor.SetOptions.GetValue(ANA_SO_CHART_TITLE_SIZE_INCREMENT).Value);
     if (inc > 0) then
       Chart.Title.Font.Size := Chart.Title.Font.Size + inc;

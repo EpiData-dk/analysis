@@ -26,7 +26,7 @@ implementation
 
 uses
   TASeries, TATypes, Graphics, charttitles, ast_types, scattersource, epidatafilestypes,
-  epifields_helper, options_utils, graph_utils;
+  epifields_helper, options_utils, chart_options;
 
 { TScatterChart }
 
@@ -50,6 +50,7 @@ var
   sColor: TColorMap;
   VariableLabelType: TEpiGetVariableLabelType;
   sPoints, sLine: Boolean;
+  Msg: UTF8String;
 begin
   // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
@@ -74,7 +75,11 @@ begin
   ScatterSource.Sorted := true;
 
   // Get options
-  sColor := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
+  sColor := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, Msg);
+  if (Msg <> '') then
+    begin
+      FExecutor.Error(Msg);
+    end;
   sLine := Command.HasOption('l');
   sPoints := (not Command.HasOption('l')) or Command.HasOption('p');
 
