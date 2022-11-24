@@ -20,7 +20,6 @@ type
     procedure SaveGraph(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
     procedure ShowDialog(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
     procedure UpdateChartTitles(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
-    procedure ApplyMainChartTitle(ChartTitle: TChartTitle; MainCaption: UTF8String; Option: TOption);
     procedure ApplyChartTitle(ChartTitle: TChartTitle; MainCaption: UTF8String; Option: TOption);
     procedure ApplyAxisTitle(AxisTitle: TChartAxisTitle; MainCaption: UTF8String; Option: TOption);
     procedure UpdateChartAxes(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
@@ -111,6 +110,7 @@ var
   Chart: TChart;
   Titles: IChartTitles;
   Opt: TOption;
+  inc: Integer;
 begin
   ChartPairs := CommandResult.GetChartPairs();
 
@@ -120,7 +120,10 @@ begin
     Titles := Pair.Configuration.GetTitleConfiguration();
 
     ST.HasOption(['title', 'ti'], Opt);
-    ApplyMainChartTitle(Chart.Title, Titles.GetTitle(), Opt);
+    ApplyChartTitle(Chart.Title, Titles.GetTitle(), Opt);
+    inc := StrToInt(FExecutor.SetOptions.GetValue(ANA_SO_CHART_TITLE_SIZE_INCREMENT).Value);
+    if (inc > 0) then
+      Chart.Title.Font.Size := Chart.Title.Font.Size + inc;
 
     ST.HasOption(['footer', 'fn'], Opt);
     ApplyChartTitle(Chart.Foot, Titles.GetFootnote(), Opt);
@@ -131,27 +134,6 @@ begin
     ST.HasOption(['ytitle', 'yt'], Opt);
     ApplyAxisTitle(Chart.LeftAxis.Title, Titles.GetYAxisTitle(), Opt);
   end;
-end;
-
-procedure TGraphCommandExecutor.ApplyMainChartTitle(ChartTitle: TChartTitle;
-  MainCaption: UTF8String; Option: TOption);
-var
-  AFont: TFont;
-begin
-  if (Assigned(Option)) then
-    MainCaption := Option.Expr.AsString;
-
-  ChartTitle.Visible := MainCaption <> '';
-  ChartTitle.Text.Clear;
-  ChartTitle.Text.Add(MainCaption);
-  AFont := FontFromSetOptions(
-           ANA_SO_CHART_FONT_NAME,
-           ANA_SO_CHART_TITLE_FONT_SIZE,
-           ANA_SO_CHART_FONT_COLOR,
-           ANA_SO_CHART_FONT_STYLE,
-           FExecutor.SetOptions
-         );
-  ChartTitle.Font.Assign(AFont);
 end;
 
 procedure TGraphCommandExecutor.ApplyChartTitle(ChartTitle: TChartTitle;
@@ -172,6 +154,7 @@ begin
            ANA_SO_CHART_FONT_STYLE,
            FExecutor.SetOptions
          );
+
   ChartTitle.Font.Assign(AFont);
 end;
 
