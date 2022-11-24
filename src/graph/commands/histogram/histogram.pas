@@ -27,7 +27,7 @@ implementation
 
 uses
   TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types,
-  options_utils, graph_utils;
+  options_utils, chart_options;
 
 { THistogramChart }
 
@@ -77,11 +77,13 @@ var
   sTitle:              UTF8String;
   yPct:                Boolean;
   yType:               UTF8String;
-
+  Msg:                 UTF8String;
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
+  sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, Msg);
+  if (Msg <> '') then
+    FExecutor.Error(Msg);
   VarNames            := Command.VariableList.GetIdentsAsList;
   DFVars              := Command.VariableList.GetIdentsAsList;
   StratVariable       := TStringList.Create;

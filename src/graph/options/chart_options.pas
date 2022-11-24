@@ -15,83 +15,74 @@ type
 
   TColorMap = array of TColor;
 
-  TChartColors = class(TSetOption)
-private
-  FColorMap:   TColorMap;
-protected
-  procedure SetColors(AValue: String);
-  procedure SetColors(AHexColors: Array of String);
-public
-  constructor Create(AValue: UTF8String; AAstType: TASTResultType);
-end;
-
-  function GetColorsFromOptions(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil): TColorMap;
+  function ToColors(AValue: String; out Msg: UTF8String): TColorMap;
+  function ToColors(AHexValues: Array of String; out Msg: UTF8String): TColorMap;
+  function ChartColorsFromOptions(OptionList: TOptionList; SetOptions: TSetOptionsMap;
+    out Msg:UTF8String): TColorMap;
 
 implementation
 
 uses
-  LazUTF8, ana_globals, typinfo, math, strutils;
+  LazUTF8, ana_globals, typinfo, math, strutils, options_utils;
 
-function TChartColors.GetColorsFromOptions(OptionList: TOptionList; SetOptions: TSetOptionsMap = nil): TColorMap;
+function ChartColorsFromOptions(OptionList: TOptionList; SetOptions: TSetOptionsMap;
+  out Msg:UTF8String): TColorMap;
 var
   Opt:  TOption;
+  aMsg: UTF8String;
+  aColorOption: String;
 begin
+  result := anaColors;
   if (Assigned(SetOptions)) then
-    SetColors(SetOptions.GetValue(ANA_SO_CHART_COLORS).Value);
-  if (OptionList.HasOption('c', Opt)) then
-    SetColors(Opt.Expr.AsString);
-  result := FColorMap;
+    aColorOption := SetOptions.GetValue(ANA_SO_CHART_COLORS).Value;
+  if (OptionList.HasOption('colors', Opt)) then
+    aColorOption := Opt.Expr.AsString;
+  result := ToColors(aColorOption, Msg);
 end;
 
-procedure TChartColors.SetColors(AValue: String);
+function ToColors(AValue: String; out Msg: UTF8String): TColorMap;
 var
   i,
   l,
   ix:   Integer;
   d:    Char;
-  aColorMap: TColorMap;
-  cColors: Array of String;
-  Opt:  TOption;
 begin
+  Msg := '';
   if (AValue[1] = '#') then
-    SetColors(SplitString(copy(AValue,1,length(AValue) - 1), '#'))
+    result := ToColors(SplitString(AValue, '#'), Msg)
   else
     begin
-    aColorMap := copy(FColorMap);
       l := min(length(anaColors), length(AValue));
-      for i := 0 to l-1 do
+      SetLength(result, l);
+      for i := 0 to l - 1 do
         begin
-        d := AValue[i];
+        d := aValue.Chars[i];
         ix := ord(d) - ord('0');
         if (ix < 0) or (ix > 9) then
-          DoError('Invalid color option ' + d + ' in "' + AValue + '"')
+          Msg += 'Invalid color option ' + d + ' in "' + AValue + '". '
         else
-          FColorMap[i] := aColorMap[ix];
+          result[i] := anaColors[ix];
         end;
       end;
 end;
 
-procedure TChartColors.SetColors(AHexColors: Array of String);
+function ToColors(AHexValues: Array of String; out Msg: UTF8String): TColorMap;
 var
   i: Integer;
   Dummy: longint;
   s: String;
 begin
-  for i := 0 to high(AHexColors) do
+  Msg := '';
+  SetLength(result, length(AHexValues) - 1);
+  for i := 1 to high(AHexValues) do
     begin
-      s := AHexColors[i];
+      s := AHexValues[i].ToUpper;
       if (Length(s) <> 6) then
-        DoError('"' + s + '" is not a valid color (hexadecimal)! e.g. #000000 = black');
-      s := '$' + s;
-      if (not TryStrToInt(s, Dummy)) then
-        DoError('"#' + s + '" is not a valid color (hexadecimal)! e.g. #000000 = black');
-      FColorMap[i] := StrToInt(s); //TColor(s);
+        Msg += '"#' + s + '" is not a valid color (hexadecimal)! e.g. #000000 = black '
+      else if (not TryStrToInt('$'+s, Dummy)) then
+        Msg += '"#' + s + '" is not a valid color (hexadecimal)! e.g. #000000 = black';
+      result[i-1] := RGBToBGR(StrToInt('$'+s));
     end;
 end;
 
-constructor TChartColors.Create(AValue: UTF8String; AAstType: TASTResultType);
-begin
-  FColorMap := copy(anaColors);
-  inherited Create(AValue, AAstType);
-end;
 end.

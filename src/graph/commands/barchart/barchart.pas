@@ -74,14 +74,19 @@ var
   VariableLabelOutput: TEpiGetVariableLabelType;
   ReverseStrata:       Boolean;
   ByVarName:           UTF8String;
-  i, colourNum:           Integer;
+  i, colourNum:        Integer;
   sTitle:              UTF8String;
   yPct:                Boolean;
   yType:               UTF8String;
+  Msg:                 UTF8String;
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  sColors             := GetColorsFromOptions(Command.Options, FExecutor.SetOptions);
+  sColors             := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, Msg);
+  if (Msg <> '') then
+    begin
+      FExecutor.Error(Msg);
+    end;
   VarNames            := Command.VariableList.GetIdentsAsList;
   DFVars              := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
   StratVariable       := TStringList.Create;
@@ -144,7 +149,7 @@ begin
       colourNum := 0;
       for i := 0 to TableData.RowCount - 1 do
         begin
-          if (colourNum = length(sColors) then
+          if (colourNum = length(sColors)) then
             colourNum := 0;
           aStyle := SeriesStyles.Add;
           aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
