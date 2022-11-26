@@ -5,7 +5,7 @@ unit chart_options;
 interface
 
 uses
-  Classes, sysutils, ast, options_hashmap, ast_types, Graphics;
+  Classes, sysutils, ast, options_hashmap, ast_types, Graphics, executor;
 
 const
   anaColors: array of TColor =
@@ -17,27 +17,27 @@ type
 
   function ToColors(AValue: String; out Msg: UTF8String): TColorMap;
   function ToColors(AHexValues: Array of String; out Msg: UTF8String): TColorMap;
-  function ChartColorsFromOptions(OptionList: TOptionList; SetOptions: TSetOptionsMap;
-    out Msg:UTF8String): TColorMap;
+  function ChartColorsFromOptions(OptionList: TOptionList; Executor: TExecutor): TColorMap;
 
 implementation
 
 uses
   LazUTF8, ana_globals, typinfo, math, strutils, options_utils;
 
-function ChartColorsFromOptions(OptionList: TOptionList; SetOptions: TSetOptionsMap;
-  out Msg:UTF8String): TColorMap;
+function ChartColorsFromOptions(OptionList: TOptionList; Executor: TExecutor): TColorMap;
 var
   Opt:  TOption;
-  aMsg: UTF8String;
+  Msg: UTF8String;
   aColorOption: String;
 begin
   result := anaColors;
-  if (Assigned(SetOptions)) then
-    aColorOption := SetOptions.GetValue(ANA_SO_CHART_COLORS).Value;
+  if (Assigned(Executor.SetOptions)) then
+    aColorOption := Executor.SetOptions.GetValue(ANA_SO_CHART_COLORS).Value;
   if (OptionList.HasOption('colors', Opt)) then
     aColorOption := Opt.Expr.AsString;
   result := ToColors(aColorOption, Msg);
+  if (Msg<>'') then
+    Executor.Error(Msg);
 end;
 
 function ToColors(AValue: String; out Msg: UTF8String): TColorMap;
@@ -59,7 +59,7 @@ begin
         d := aValue.Chars[i];
         ix := ord(d) - ord('0');
         if (ix < 0) or (ix > 9) then
-          Msg += 'Invalid color option ' + d + ' in "' + AValue + '". '
+          Msg += 'Invalid color option ' + d + ' in "' + AValue + '". Color[0] used.'
         else
           result[i] := anaColors[ix];
         end;
@@ -80,7 +80,7 @@ begin
       if (Length(s) <> 6) or
          (not TryStrToInt('$'+s, Dummy)) then
         begin
-          Msg += '"#' + s + '" is not a valid hexadecimal color';
+          Msg += '"#' + s + '" is not a valid hexadecimal color. Color[0] used.';
           result[i-1] := anaColors[i-1];
         end
       else

@@ -78,15 +78,10 @@ var
   sTitle:              UTF8String;
   yPct:                Boolean;
   yType:               UTF8String;
-  Msg:                 UTF8String;
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  sColors             := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, Msg);
-  if (Msg <> '') then
-    begin
-      FExecutor.Error(Msg);
-    end;
+  sColors             := ChartColorsFromOptions(Command.Options, FExecutor);
   VarNames            := Command.VariableList.GetIdentsAsList;
   DFVars              := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
   StratVariable       := TStringList.Create;

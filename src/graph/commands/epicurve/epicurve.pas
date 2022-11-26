@@ -55,7 +55,7 @@ var
   BarSeries:           TBarSeries;
   SeriesStyles:        TChartStyles;
   aStyle:              TChartStyle;
-  sColor:              TColorMap;
+  sColors:             TColorMap;
   {Frequencies}
   T:                   TTables;
   StratVariable:       TStringList;
@@ -77,16 +77,11 @@ var
   box1, box:           Integer;
   i, colourNum:        Integer;
   sTitle:              UTF8String;
-  Msg:                 UTF8String;
 
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, Msg);
-  if (Msg <> '') then
-    begin
-      FExecutor.Error(Msg);
-    end;
+  sColors             := ChartColorsFromOptions(Command.Options, FExecutor);
   VarNames            := Command.VariableList.GetIdentsAsList;
   StratVariable       := TStringList.Create;
   cOptions            := TOptionList.Create;
@@ -157,18 +152,18 @@ begin
       for i := 0 to TableData.RowCount - 1 do
         begin
           // individual box styles
-          if (colourNum = length(sColor)) then
+          if (colourNum = length(sColors)) then
             colourNum := 0;     // if more strata than colours, recycle the colours
           for box := box1 to box1 + HistogramData.MaxCount[i] - 1 do
             begin
               aStyle := SeriesStyles.Add;
-              aStyle.Brush.Color:=sColor[colourNum];
+              aStyle.Brush.Color:=sColors[colourNum];
               aStyle.Pen.Color := clSilver;     // will work with any box colours
             end;
           LegendSource.Add(HistogramData.Base.ToDouble, 0);
           aStyle := LegendStyles.Add;
           aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
-          aStyle.Brush.Color:=sColor[colourNum];
+          aStyle.Brush.Color:=sColors[colourNum];
           colourNum += 1;
           box1 += HistogramData.MaxCount[i];
         end;
@@ -181,7 +176,7 @@ begin
   else
     begin
       aStyle := SeriesStyles.Add;
-      aStyle.Brush.Color := sColor[0];
+      aStyle.Brush.Color := sColors[0];
       aStyle.Pen.Color := clSilver;
     end;
   BarSeries.Styles := SeriesStyles;

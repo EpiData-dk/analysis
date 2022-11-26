@@ -53,7 +53,7 @@ var
   SeriesStyles:        TChartStyles;
   aStyle:              TChartStyle;
   // TODO: put in graph options
-  sColor:              TColorMap;
+  sColors:             TColorMap;
   {Frequencies}
   T:                   TTables;
   StratVariable:       TStringList;
@@ -77,13 +77,10 @@ var
   sTitle:              UTF8String;
   yPct:                Boolean;
   yType:               UTF8String;
-  Msg:                 UTF8String;
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, Msg);
-  if (Msg <> '') then
-    FExecutor.Error(Msg);
+  sColors             := ChartColorsFromOptions(Command.Options, FExecutor);
   VarNames            := Command.VariableList.GetIdentsAsList;
   DFVars              := Command.VariableList.GetIdentsAsList;
   StratVariable       := TStringList.Create;
@@ -147,11 +144,11 @@ begin
       colourNum := 0;
       for i := 0 to TableData.RowCount - 1 do
         begin
-          if (colourNum = length(sColor)) then
+          if (colourNum = length(sColors)) then
             colourNum := 0;
           aStyle := SeriesStyles.Add;
           aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
-          aStyle.Brush.Color:=sColor[colourNum];
+          aStyle.Brush.Color:=sColors[colourNum];
           aStyle.Pen.Color := clSilver;
           colourNum += 1;
         end;
@@ -166,7 +163,7 @@ begin
   else
     begin
       aStyle := SeriesStyles.Add;
-      aStyle.Brush.Color := sColor[0];
+      aStyle.Brush.Color := sColors[0];
       aStyle.Pen.Color := clSilver;
     end;
     BarSeries.Styles := SeriesStyles;

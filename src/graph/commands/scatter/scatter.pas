@@ -47,10 +47,9 @@ var
   DataFile: TEpiDataFile;
   XVar, YVar: TEpiField;
   ChartConfiguration: IChartConfiguration;
-  sColor: TColorMap;
+  sColors: TColorMap;
   VariableLabelType: TEpiGetVariableLabelType;
   sPoints, sLine: Boolean;
-  Msg: UTF8String;
 begin
   // Get Variable names
   VarNames := Command.VariableList.GetIdentsAsList;
@@ -75,11 +74,7 @@ begin
   ScatterSource.Sorted := true;
 
   // Get options
-  sColor := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, Msg);
-  if (Msg <> '') then
-    begin
-      FExecutor.Error(Msg);
-    end;
+  sColors := ChartColorsFromOptions(Command.Options, FExecutor);
   sLine := Command.HasOption('l');
   sPoints := (not Command.HasOption('l')) or Command.HasOption('p');
 
@@ -91,14 +86,14 @@ begin
       ShowPoints := sPoints;
       if (sPoints) then
       begin
-        Pointer.Pen.Color := sColor[0];
+        Pointer.Pen.Color := sColors[0];
         Pointer.Style := psCircle;
         Linetype := ltNone;
       end;
       if (Sline) then
       begin
         LineType := ltFromPrevious;
-        LinePen.Color:= sColor[0];
+        LinePen.Color:= sColors[0];
       end;
     end;
   // Add series to the chart

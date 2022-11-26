@@ -1036,7 +1036,6 @@ var
   vCount:           Integer;
   showKMPlot:       Boolean;
   intervalArray:    array of integer;
-  Msg:              UTF8String;
 begin
   FExecutor.ClearResults('$survival');
 
@@ -1048,11 +1047,7 @@ begin
   FintFlag             := false;
   FAdjFlag             := false;
   showKMPlot           := true;
-  FColors              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, Msg);
-  if (Msg <> '') then
-    begin
-      FExecutor.Error(Msg);
-    end;
+  FColors              := ChartColorsFromOptions(Command.Options, FExecutor);
   // time variables specified?
   vCount := VarNames.Count;
   if (vCount = 3) then
