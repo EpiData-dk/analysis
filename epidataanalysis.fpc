@@ -39,6 +39,7 @@
 -Fu./src/functions
 -Fu./src/grammar
 -Fu./src/graph
+-Fu./src/graph/options
 -Fu./src/graph/chartaxesconfiguration
 -Fu./src/graph/chartcommand
 -Fu./src/graph/chartconfiguration
@@ -52,7 +53,6 @@
 -Fu./src/graph/commands/histogram
 -Fu./src/graph/commands/epicurve
 -Fu./src/graph/graphform
--Fu./src/graph/utils
 -Fu./src/output
 -Fu./src/parser
 -Fu./src/sidewindows
