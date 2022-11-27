@@ -293,7 +293,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="192">
+    <Units Count="194">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1099,6 +1099,14 @@
         <Filename Value="src/dialogs/chart_options/chart_options_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit191>
+      <Unit192>
+        <Filename Value="src/dialogs/stat_dialogs/scatter/scatter_primaryoption_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit192>
+      <Unit193>
+        <Filename Value="src/dialogs/stat_dialogs/scatter/scatter_primaryoption_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit193>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

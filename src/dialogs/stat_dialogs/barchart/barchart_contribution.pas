@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
-  barchart_model, barchart_primaryoption_model;
+  barchart_model, barchart_primaryoption_model, chart_options_model;
 
 type
 
@@ -16,8 +16,10 @@ type
   private
     FPrimaryOptionsModel: TBarchartStatDialogPrimaryOptionModel;
     FVariablesModel: TBarchartStatDialogVariableModel;
+    FChartOptionsModel: TChartOptionsModel;
     function CreateMainView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
     function CreatePrimaryOptionView(Owner: TComponent;  Executor: TExecutor): IStatDialogView;
+    function CreateChartOptionsView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
   public
     function GenerateScript(): UTF8String;
     function GetCaption(): UTF8String;
@@ -29,7 +31,8 @@ implementation
 
 uses
   barchart_variables_view,
-  barchart_primaryoption_view;
+  barchart_primaryoption_view,
+  chart_options_view;
 
 { TBarchartStatDialogContribution }
 
@@ -55,11 +58,23 @@ begin
   Result := View;
 end;
 
+function TBarchartStatDialogContribution.CreateChartOptionsView(Owner: TComponent;
+  Executor: TExecutor ): IStatDialogView;
+var
+  View: TChartOptionsView;
+begin
+  FChartOptionsModel := TChartOptionsModel.Create(Executor);
+  View := TChartOptionsView.Create(Owner);
+  View.SetModel(FChartOptionsModel);
+  Result := View;
+end;
+
 function TBarchartStatDialogContribution.GenerateScript(): UTF8String;
 begin
   result := 'barchart ' +
     FVariablesModel.GenerateScript() +
     FPrimaryOptionsModel.GenerateScript() +
+    FChartOptionsModel.GenerateScript() +
     ';';
 end;
 
@@ -82,6 +97,7 @@ begin
   result := TStatDialogContributionViewList.Create;
   result.Add(CreateMainView(Owner, Executor));
   result.Add(CreatePrimaryOptionView(Owner, Executor));
+  result.Add(CreateChartOptionsView(Owner, Executor));
 end;
 
 initialization

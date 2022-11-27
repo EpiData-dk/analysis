@@ -23,6 +23,7 @@
 -Fu./src/dialogs
 -Fu./src/dialogs/graph
 -Fu./src/dialogs/stat_dialogs
+-Fu./src/dialogs/chart_options
 -Fu./src/dialogs/stat_dialogs/barchart
 -Fu./src/dialogs/stat_dialogs/ctable
 -Fu./src/dialogs/stat_dialogs/describe

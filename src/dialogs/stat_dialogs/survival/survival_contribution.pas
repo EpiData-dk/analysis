@@ -5,7 +5,8 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
-  survival_model, survival_primaryoption_model,survival_statisticoptions_model;
+  survival_model, survival_primaryoption_model,
+  survival_statisticoptions_model, chart_options_model;
 
 type
 
@@ -16,9 +17,11 @@ type
     FPrimaryOptionsModel: TSurvivalStatDialogPrimaryOptionModel;
     FStatisticsOptionsModel: TSurvivalStatDialogStatisticOptionsModel;
     FVariablesModel: TSurvivalStatDialogVariableModel;
+    FChartOptionsModel: TChartOptionsModel;
     function CreateMainView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
     function CreatePrimaryOptionView(Owner: TComponent;  Executor: TExecutor): IStatDialogView;
     function CreateStatisticOptionView(Owner: TComponent): IStatDialogView;
+    function CreateChartOptionsView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
   public
     function GenerateScript(): UTF8String;
     function GetCaption(): UTF8String;
@@ -31,7 +34,8 @@ implementation
 uses
   survival_variables_view,
   survival_primaryoption_view,
-  survival_statisticoptions_view;
+  survival_statisticoptions_view,
+  chart_options_view;
 
 { TSurvivalStatDialogContribution }
 
@@ -68,12 +72,24 @@ begin
   Result := View;
 end;
 
+function TSurvivalStatDialogContribution.CreateChartOptionsView(Owner: TComponent;
+  Executor: TExecutor ): IStatDialogView;
+var
+  View: TChartOptionsView;
+begin
+  FChartOptionsModel := TChartOptionsModel.Create(Executor);
+  View := TChartOptionsView.Create(Owner);
+  View.SetModel(FChartOptionsModel);
+  Result := View;
+end;
+
 function TSurvivalStatDialogContribution.GenerateScript(): UTF8String;
 begin
   result := 'survival ' +
     FVariablesModel.GenerateScript() +
     FPrimaryOptionsModel.GenerateScript() +
     FStatisticsOptionsModel.GenerateScript() +
+    FChartOptionsModel.GenerateScript() +
     ';';
 end;
 
@@ -97,6 +113,7 @@ begin
   result.Add(CreateMainView(Owner, Executor));
   result.Add(CreatePrimaryOptionView(Owner, Executor));
   result.Add(CreateStatisticOptionView(Owner));
+  result.Add(CreateChartOptionsView(Owner, Executor));
 end;
 
 initialization

@@ -1,25 +1,25 @@
-unit epicurve_primaryoption_view;
+unit scatter_primaryoption_view;
 
 {$mode objfpc}{$H+}
 
 interface
 
 uses
-  Classes, SysUtils, ExtCtrls, Controls, StdCtrls, stat_dialog_contribution,
-  Epicurve_primaryoption_model, stat_dialog_custom_view;
+  Classes, SysUtils, ExtCtrls, Controls,
+  scatter_primaryoption_model, stat_dialog_custom_view;
 
 type
 
-  { TEpicurveStatPrimaryOptionsView }
+  { TScatterStatPrimaryOptionsView }
 
-  TEpicurveStatPrimaryOptionsView = class(TCustomStatDialogView)
+  TScatterStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
-    FDataModel: TEpicurveStatDialogPrimaryOptionModel;
+    FDataModel: TScatterStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
-    FVerticalDivider: TBevel;
     FValueLabelsGroup: TRadioGroup;
     FVariableLabelsGroup: TRadioGroup;
     FOptionGroup: TCheckGroup;
+    FVerticalDivider: TBevel;
     procedure CreateValueLabelsRadios(RadioGroup: TRadioGroup);
     procedure CreateVariableLabelsRadios(RadioGroup: TRadioGroup);
     procedure ValueLabelSelectionChanged(Sender: TObject);
@@ -32,17 +32,17 @@ type
     function GetViewCaption(): UTF8String; override;
     function IsDefined(): boolean; override;
     procedure ResetView(); override;
-    procedure SetModel(DataModel: TEpicurveStatDialogPrimaryOptionModel);
+    procedure SetModel(DataModel: TScatterStatDialogPrimaryOptionModel);
   end;
 
 implementation
 
 uses
-  epifields_helper;
+  StdCtrls, epifields_helper;
 
-{ TEpicurveStatPrimaryOptionsView }
+{ TScatterStatPrimaryOptionsView }
 
-procedure TEpicurveStatPrimaryOptionsView.CreateValueLabelsRadios(
+procedure TScatterStatPrimaryOptionsView.CreateValueLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Value');
@@ -52,7 +52,7 @@ begin
   RadioGroup.OnSelectionChanged := @ValueLabelSelectionChanged;
 end;
 
-procedure TEpicurveStatPrimaryOptionsView.CreateVariableLabelsRadios(
+procedure TScatterStatPrimaryOptionsView.CreateVariableLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Variable Name');
@@ -62,7 +62,7 @@ begin
   RadioGroup.OnSelectionChanged := @VariableLabelSelectionChanged;
 end;
 
-procedure TEpicurveStatPrimaryOptionsView.VariableLabelSelectionChanged(
+procedure TScatterStatPrimaryOptionsView.VariableLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -74,7 +74,7 @@ begin
   DoModified();
 end;
 
-procedure TEpicurveStatPrimaryOptionsView.ValueLabelSelectionChanged(
+procedure TScatterStatPrimaryOptionsView.ValueLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -86,12 +86,24 @@ begin
   DoModified();
 end;
 
-constructor TEpicurveStatPrimaryOptionsView.Create(TheOwner: TComponent);
+procedure TScatterStatPrimaryOptionsView.OptionGroupCheck(Sender: TObject; Index: integer);
+var
+  Value: Boolean;
+begin
+  Value := TCheckGroup(Sender).Checked[Index];
+  case Index of
+    0:  FDataModel.Line := Value;
+    1:  FDataModel.Points := Value;
+  end;
+end;
+
+constructor TScatterStatPrimaryOptionsView.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
   FValueLabelsGroup := TRadioGroup.Create(self);
   FVariableLabelsGroup := TRadioGroup.Create(self);
+  FOptionGroup := TCheckGroup.Create(self);
 
   FHorizontalDivider := TBevel.Create(self);
   FHorizontalDivider.Parent := self;
@@ -127,42 +139,43 @@ begin
   FVariableLabelsGroup.AnchorToNeighbour(akBottom, 0, FHorizontalDivider);
   FVariableLabelsGroup.AnchorToNeighbour(akLeft, 0, FVerticalDivider);
 
-  FOptionGroup := TCheckGroup.Create(Self);
-  FOptionGroup.Anchors := [];
-  FOptionGroup.AnchorToNeighbour(akTop, 5, FHorizontalDivider);
-  FOptionGroup.AnchorToNeighbour(akRight, 5, FVerticalDivider);
-  FOptionGroup.AnchorParallel(akLeft, 5, Self);
-  FOptionGroup.Caption := 'Output Options';
-  FOptionGroup.Items.Add('Show strata in descending order' + LineEnding + '(Ignored if no stratifying variable)');
-  FOptionGroup.OnItemClick := @OptionGroupCheck;
   FOptionGroup.Parent := self;
+  FOptionGroup.Caption := 'Output options';
+  FOptionGroup.Anchors := [];
+  FOptionGroup.AnchorParallel(akLeft, 5, self);
+  FOptionGroup.AnchorParallel(akBottom, 5, Self);
+  FOptionGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
+  FOptionGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
+  FOptionGroup.Items.Add('Show line only');
+  FOptionGroup.Items.Add('Add points to line');
+  FOptionGroup.OnItemClick:= @OptionGroupCheck;
 
   CreateValueLabelsRadios(FValueLabelsGroup);
   CreateVariableLabelsRadios(FVariableLabelsGroup);
 end;
 
-procedure TEpicurveStatPrimaryOptionsView.EnterView();
+procedure TScatterStatPrimaryOptionsView.EnterView();
 begin
   FHorizontalDivider.Top := ((Self.Height - FHorizontalDivider.Height) div 2);
   FVerticalDivider.Left := ((Self.Width - FVerticalDivider.Width) div 2);
 end;
 
-function TEpicurveStatPrimaryOptionsView.ExitView(): boolean;
+function TScatterStatPrimaryOptionsView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function TEpicurveStatPrimaryOptionsView.GetViewCaption(): UTF8String;
+function TScatterStatPrimaryOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Output';
 end;
 
-function TEpicurveStatPrimaryOptionsView.IsDefined(): boolean;
+function TScatterStatPrimaryOptionsView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure TEpicurveStatPrimaryOptionsView.ResetView();
+procedure TScatterStatPrimaryOptionsView.ResetView();
 begin
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
@@ -170,21 +183,12 @@ begin
   FValueLabelsGroup.ItemIndex := FDataModel.ValueLabelsDefault;
   FVariableLabelsGroup.ItemIndex := FDataModel.VariableLabelsDefault;
 
-  FOptionGroup.Checked[0] := false;
+  FDataModel.Line := false;
+  FDataModel.Points := false;
 end;
 
-procedure TEpicurveStatPrimaryOptionsView.OptionGroupCheck(Sender: TObject; Index: integer);
-var
-  Value: Boolean;
-begin
-  Value := TCheckGroup(Sender).Checked[Index];
-  case Index of
-    0:  FDataModel.SortD := Value;
-  end;
-end;
-
-procedure TEpicurveStatPrimaryOptionsView.SetModel(
-  DataModel: TEpicurveStatDialogPrimaryOptionModel);
+procedure TScatterStatPrimaryOptionsView.SetModel(
+  DataModel: TScatterStatDialogPrimaryOptionModel);
 begin
   FDataModel := DataModel;
   FValueLabelsGroup.ItemIndex := FDataModel.ValueLabelsDefault;

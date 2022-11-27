@@ -147,7 +147,7 @@ begin
   FOptionGroup.AnchorToNeighbour(akTop, 0, FHorizontalDivider);
   FOptionGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
   FOptionGroup.Items.Add('Stack bars');
-  FOptionGroup.Items.Add('Strata in descending order');
+  FOptionGroup.Items.Add('Show strata in descending order' + LineEnding + '(ignored if no stratifying variable)');
   FOptionGroup.OnItemClick:= @OptionGroupCheck;
 
   CreateValueLabelsRadios(FValueLabelsGroup);
