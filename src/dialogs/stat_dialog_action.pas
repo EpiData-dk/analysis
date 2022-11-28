@@ -92,7 +92,9 @@ begin
       Dialog := TStatDialog.Create(Self, Contribution, FExecutor);
       Dialog.ScriptRunner := MainForm;
       FDialogMap.Add(Contribution.GetCaption(), Dialog);
-    end;
+    end
+  else
+    Dialog.ResetViews();
 
   Dialog.Show;
 end;
