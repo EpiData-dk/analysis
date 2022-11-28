@@ -1570,7 +1570,7 @@ By default, confidence intervals are shown as error bars
 
 - `See graph options`
 
- `survival` is a graph command and any graph option may be specified
+ `survival` is a graph command and any [graph option](#graphoptions) may be specified
 
 ### result variables
 Estimates are saved as result variables. Use  `list results` for details
@@ -1610,7 +1610,7 @@ Simple scatter plot for two variables.
 	colorMap is a string of up to 10 digits mapping the Analysis colours to the chart series. For `scatter`, a single digit may be specified:
 	`scatter xvar yvar !colors:="4"`
 	
-- `scatter` is a graph command and any graph option may be specified
+- `scatter` is a graph command and any [graph option](#graphoptions) may be specified
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -1638,7 +1638,7 @@ Draw a barchart for Variable. A barchart shows frequencies at each indiviual val
 
 - graph options
 
- `histogram` is a graph command and any graph option may be specified
+ `histogram` is a graph command and any [graph option](#graphoptions) may be specified
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -1666,7 +1666,7 @@ A histogram is a bar chart where every integer value within range is represented
 
  stack bars for stratified data.
 - graph options
- `histogram` is a graph command and any graph option may be specified
+ `histogram` is a graph command and any [graph option](#graphoptions) may be specified
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -1687,8 +1687,42 @@ An epicurve is a stacked histogram, where individual boxes are shown for each su
 - `!interval:=i`
 
  where i is an integer > 1, will group bars; the default is 1
-- graph options
- `epicurve` is a graph command and any graph option may be specified
+ 
+- graph options 
+
+ `epicurve` is a graph command and any [graph option](#graphoptions) may be specified
+
+<a name="graphoptions" id="graphoptions"></a> 
+## graph options
+
+Any of the graph commands may use the following options.
+
+- `!ti|title := "Custom main title"`
+
+- `!fn|footnote:= "Custom footnote"`
+
+- `!xt|xtitle := "Custom x-axis title"`
+
+- `!yt|ytitle := "Custom y-axis title"`
+
+- `!c|colors := "color specification string"`
+
+   `color specification string` can take two forms
+   
+   - up to ten digits (0-9) representing the order that the standard colors will be used. The standard colors (0-9) are Black, Blue, Red, Green, Yellow, White, SkyBlue, Fuchsia, Gray, Aqua. The default order is 1234567890. That means the first color for a graph is blue, then red, green, etc.
+
+   - one or more hexadecimal color codes (#xxxxxx), where each 'x' can be any of {0..9 A..F}. Many online resources explain how to create color codes. #000000 is black, #FFFFFF is white, #0000FF is blue.
+
+   Any errors in specification of the colors leads to an error message. However, the graph command will execute normally, with black being substituted for the incorrect color.
+   
+### examples
+
+```
+   // use red, green, blue for the strata
+   barchart var stratifyvar !c:="231"
+   // use custom colors (dark blue, purple) for the survival curve strata
+   survival outcome time !by:=group !c:="#00008B#C517FF"
+```
 
 # Consistency and Validity Check of data
 
