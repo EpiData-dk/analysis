@@ -180,7 +180,7 @@ begin
   FOutputGroup.AnchorToNeighbour(akRight, 0, FVerticalDivider);
   FOutputGroup.Items.Add('No survival tables');
   FOutputGroup.Items.Add('No summary table');
-  FOutputGroup.Items.Add('Save plot to clipboard');
+  FOutputGroup.Items.Add('Save plot data to clipboard');
   FOutputGroup.OnItemClick:= @OutputGroupCheck;
 
   CreateValueLabelsRadios(FValueLabelsGroup);
