@@ -9,11 +9,41 @@ env:
   ANALYSIS_VERSION: "3.1"
 
 jobs:
+  grammar:
+    name: Compile Grammars
+    runs-on: ubuntu-latest
+    container:
+      image: epidata/goldparser:1.0.0
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+    
+      - name: Compile Full grammar
+        run: goldbuild.sh src/grammar/EpiDataAnalysisGrammar.grm
+
+      - name: Compile OptionList grammar
+        run: goldbuild.sh src/grammar/EpiDataAnalysisOptionListGrammar.grm
+
+      - name: Fix git permissiong
+        run: git config --global --add safe.directory /__w/analysis/analysis
+
+      - name: Commit grammers
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Updated grammar files
+
   compile:
     name: Compile Code
     runs-on: ubuntu-latest
     container:
       image: epidata/fpcbuild:3.2.0-14
+    needs: grammar
 
     strategy:
       fail-fast: false
