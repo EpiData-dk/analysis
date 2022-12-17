@@ -369,7 +369,7 @@ var
   TempDF: TEpiDataFile;
   SortFields: TEpiFields;
   Runners: TBoundArray;
-  ResultIdx, i, ResultSize, Idx: Integer;
+  ResultIdx, i, ResultSize, Idx, r: Integer;
   InputVar, ResultVar: TEpiField;
 
 
@@ -464,7 +464,8 @@ begin
     end;
 
   // Check for missing obs. at the end of aggregate variables
-  while (Runners[0] > 0) do
+  for r := high(Runners) downto low(Runners) do begin
+  while (Runners[r] > 0) do
     begin
       Idx := ResultDF.NewRecords();
 
@@ -489,6 +490,7 @@ begin
           Runners[i] := 0;
         end;
     end;
+  end;
 
   SortFields := TEpiFields(ResultDF.Fields.GetItemFromList(Variables));
   ResultDF.SortRecords(SortFields);
