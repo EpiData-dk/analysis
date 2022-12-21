@@ -464,33 +464,34 @@ begin
     end;
 
   // Check for missing obs. at the end of aggregate variables
-  for r := high(Runners) downto low(Runners) do begin
-  while (Runners[r] > 0) do
+  for r := high(Runners) downto low(Runners) do
     begin
-      Idx := ResultDF.NewRecords();
-
-      i := 0;
-      for InputVar in AggregateVariables do
+      while (Runners[r] > 0) do
         begin
-          ResultVar := ResultDF.Fields.FieldByName[InputVar.Name];
-          ResultVar.CopyValue(InputVar, Runners[i], Idx);
-          Inc(i);
-        end;
+          Idx := ResultDF.NewRecords();
 
-      // Bump the runners sequencially (last -> first)
-      for i := High(Runners) downto Low(Runners) do
-        begin
-          Runners[i] := Runners[i] + 1;
+          i := 0;
+          for InputVar in AggregateVariables do
+            begin
+              ResultVar := ResultDF.Fields.FieldByName[InputVar.Name];
+              ResultVar.CopyValue(InputVar, Runners[i], Idx);
+              Inc(i);
+            end;
 
-          // Have we reach "end-of-size" for current runner?
-          if (Runners[i] < AggregateVariables[i].Size) then
-            break;
+          // Bump the runners sequencially (last -> first)
+          for i := High(Runners) downto Low(Runners) do
+            begin
+              Runners[i] := Runners[i] + 1;
 
-          // Yes - then reset it back to 0
-          Runners[i] := 0;
+              // Have we reach "end-of-size" for current runner?
+              if (Runners[i] < AggregateVariables[i].Size) then
+                break;
+
+              // Yes - then reset it back to 0
+              Runners[i] := 0;
+            end;
         end;
     end;
-  end;
 
   SortFields := TEpiFields(ResultDF.Fields.GetItemFromList(Variables));
   ResultDF.SortRecords(SortFields);
