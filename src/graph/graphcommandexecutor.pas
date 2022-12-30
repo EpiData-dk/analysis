@@ -176,6 +176,7 @@ var
   Pair: TChartPair;
   Chart: TChart;
   Configuration: IChartAxesConfiguration;
+  Opt: TOption;
 begin
   ChartPairs := CommandResult.GetChartPairs();
 
@@ -183,7 +184,6 @@ begin
     begin
       Chart := Pair.Chart;
       Configuration := Pair.Configuration.GetAxesConfiguration();
-
       if (Configuration.GetXAxisConfiguration().GetShowAxisMarksAsDates) then
         begin
           Chart.BottomAxis.OnMarkToText := @ShowMarksAsDates;
@@ -191,8 +191,45 @@ begin
           Chart.BottomAxis.Marks.SetAdditionalAngle(Pi / 2);
         end;
 
+      if (ST.HasOption('xmin', opt)) then
+        if (opt.Expr.AsFloat <= Chart.BottomAxis.Range.Min) then
+          begin
+            Chart.BottomAxis.Range.Min := opt.Expr.AsFloat;
+            Chart.BottomAxis.Range.UseMin := true
+          end
+        else
+          Chart.BottomAxis.range.UseMin := false;
+
+      if (ST.HasOption('xmax', opt)) then
+        if (opt.Expr.AsFloat >= Chart.BottomAxis.Range.Max) then
+          begin
+            Chart.BottomAxis.Range.Max := opt.Expr.AsFloat;
+            Chart.BottomAxis.Range.UseMax := true
+          end
+        else
+          Chart.BottomAxis.range.UseMin := false;
+
       if (Configuration.GetYAxisConfiguration().GetShowAxisMarksAsDates) then
         Chart.LeftAxis.OnMarkToText := @ShowMarksAsDates;
+
+      if (ST.HasOption('ymin', opt)) then
+        if (opt.Expr.AsFloat <= Chart.LeftAxis.Range.Min) then
+          begin
+            Chart.LeftAxis.Range.Min := opt.Expr.AsFloat;
+            Chart.LeftAxis.Range.UseMin := true
+          end
+        else
+          Chart.LeftAxis.range.UseMin := false;
+
+      if (ST.HasOption('ymax', opt)) then
+        if (opt.Expr.AsFloat >= Chart.LeftAxis.Range.Max) then
+          begin
+            Chart.LeftAxis.Range.Max := opt.Expr.AsFloat;
+            Chart.LeftAxis.Range.UseMax := true
+          end
+        else
+          Chart.LeftAxis.range.UseMin := false;
+
     end;
 end;
 
