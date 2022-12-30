@@ -1705,6 +1705,18 @@ Any of the graph commands may use the following options.
 
 - `!yt|ytitle := "Custom y-axis title"`
 
+- `!xmin := <real number>`
+
+- `!xmax := <real number>`
+
+- `!ymin := <real number>`
+
+- `!ymax := <real number>`
+
+	- axis minumum and maximum values may be expressed as numbers with or without a decimal place
+	- if a given value will excluded data from the graph, then it is ignored
+	- for some graphs, specifing xmin or ymin := 0 may be required to force the axis to begin at zero
+
 - `!c|colors := "color specification string"`
 
    `color specification string` can take two forms
