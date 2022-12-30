@@ -33,7 +33,7 @@ begin
   result := anaColors;
   if (Assigned(Executor.SetOptions)) then
     aColorOption := Executor.SetOptions.GetValue(ANA_SO_CHART_COLORS).Value;
-  if (OptionList.HasOption('colors', Opt)) then
+  if (OptionList.HasOption(['c','colors'], Opt)) then
     aColorOption := Opt.Expr.AsString;
   result := ToColors(aColorOption, Msg);
   if (Msg<>'') then

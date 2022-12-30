@@ -1054,6 +1054,7 @@ type
     destructor  Destroy; override;
     procedure   Add(Option: TOption);
     procedure   Remove(Option: TOption);
+    function    HasOption(Idents: array of UTF8String; out AOption: TOption): boolean; overload;
     function    HasOption(Const Ident: UTF8String; out AOption: TOption): boolean; overload;
     function    HasOption(Const Ident: UTF8String): boolean; overload;
     function    GetEnumerator: TOptionListEnumerator;
@@ -1607,7 +1608,7 @@ begin
   result.Insert('export', ['s', 'e'], [rtString]);
   result.Insert('sizex',  ['sx'],     [rtInteger]);
   result.Insert('sizey',  ['sy'],     [rtInteger]);
-
+  result.Insert('colors', ['c'],      [rtString]);
   result.Insert('replace', [rtUndefined]);
 end;
 
@@ -2480,7 +2481,6 @@ begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('l', [rtUndefined]);
   Result.Insert('p', [rtUndefined]);
-  Result.Insert('colors', [rtString]);
 end;
 
 function TScatterCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2510,7 +2510,6 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('stack', [rtUndefined]);
   Result.Insert('pct', [rtUndefined]);
-  Result.Insert('colors', [rtString]);
 end;
 
 function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2539,7 +2538,6 @@ begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('interval', [rtInteger]);
-  Result.Insert('colors', [rtString]);
 end;
 
 function TEpicurveCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2574,7 +2572,6 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('interval', [rtInteger, rtFloat]);
   Result.Insert('stack', [rtUndefined]);
-  Result.Insert('colors', [rtString]);
 end;
 
 function THistogramCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2618,7 +2615,6 @@ begin
   Result.Insert('cin',['cinone'], [rtUndefined]);     // no confidence intervals on plots
   Result.Insert('cib',['ciband'], [rtUndefined]);     // show CI as bands
   Result.Insert('cil', ['ciline'], [rtUndefined]);      // show CI uppper and lower lines
-  Result.Insert('colors', [rtString]);    // color map (9 digits)
   Result.Insert('q',   [rtUndefined]);
   Result.Insert('mt',  [rtUndefined]);                  // missing values of time2 become max(time2)
   Result.Insert('exit',[rtDate]);                       // date to assign when time2 is missing
@@ -4561,6 +4557,18 @@ end;
 procedure TOptionList.Remove(Option: TOption);
 begin
   FOptList.Remove(Option);
+end;
+
+function TOptionList.HasOption(Idents: array of UTF8String; out
+  AOption: TOption): boolean;
+var
+  Ident: UTF8String;
+begin
+  for Ident in Idents do
+    if HasOption(Ident, AOption) then
+      Exit(true);
+
+  Result := false;
 end;
 
 function TOptionList.HasOption(const Ident: UTF8String; out AOption: TOption
