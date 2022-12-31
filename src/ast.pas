@@ -1609,10 +1609,10 @@ begin
   result.Insert('sizex',  ['sx'],     [rtInteger]);
   result.Insert('sizey',  ['sy'],     [rtInteger]);
   result.Insert('colors', ['c'],      [rtString]);
-  result.Insert('xmin',               [rtFloat, rtInteger]);
-  result.Insert('xmax',               [rtFloat, rtInteger]);
-  result.Insert('ymin',               [rtFloat, rtInteger]);
-  result.Insert('ymax',               [rtFloat, rtInteger]);
+  result.Insert('xmin',               [rtFloat, rtInteger, rtDate]);
+  result.Insert('xmax',               [rtFloat, rtInteger, rtDate]);
+  result.Insert('ymin',               [rtFloat, rtInteger, rtDate]);
+  result.Insert('ymax',               [rtFloat, rtInteger, rtDate]);
   result.Insert('replace',            [rtUndefined]);
 end;
 
