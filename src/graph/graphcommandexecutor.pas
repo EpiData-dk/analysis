@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, fgl, Forms, ast, executor, chartcommandresult, graphform,
   charttitles, chartaxesconfiguration, outputcreator, TATextElements,
-  TAChartAxisUtils, TAChartAxis;
+  TAChartAxisUtils, TAChartAxis, TATypes;
 
 type
 
@@ -179,6 +179,25 @@ var
   Configuration: IChartAxesConfiguration;
   Opt: TOption;
   isDate: Boolean;
+
+  procedure setMin(range: TChartRange);
+  begin
+    if (isDate) then
+      range.Min := opt.Expr.AsDate
+    else
+      range.Min := opt.Expr.AsFloat;
+    range.UseMin := true;
+  end;
+
+  procedure setMax(range: TChartRange);
+  begin
+    if (isDate) then
+      range.Max := opt.Expr.AsDate
+    else
+      range.Max := opt.Expr.AsFloat;
+    range.UseMax := true;
+  end;
+
 begin
   ChartPairs := CommandResult.GetChartPairs();
 
@@ -198,50 +217,23 @@ begin
             end;
 
           if (ST.HasOption('xmin', opt)) then
-            begin
-              if (isDate) then
-                Range.Min := opt.Expr.AsDate
-              else
-                Range.Min := opt.Expr.AsFloat;
-              Range.UseMin := true;
-            end
-          else
-            Range.UseMin := false;
+            setMin(Range);
 
           if (ST.HasOption('xmax', opt)) then
-            begin
-              if (isDate) then
-                Range.Max := opt.Expr.AsDate
-              else
-               Range.Max := opt.Expr.AsFloat;
-              Range.UseMax := true;
-            end
-          else
-            Range.UseMin := false;
+            setMax(Range);
         end;
 
       with (Chart.LeftAxis) do
         begin
-          if (Configuration.GetYAxisConfiguration().GetShowAxisMarksAsDates) then
+          isDate := Configuration.GetYAxisConfiguration().GetShowAxisMarksAsDates;
+          if (isDate) then
             OnMarkToText := @ShowMarksAsDates;
 
           if (ST.HasOption('ymin', opt)) then
-            if (opt.Expr.AsFloat <= Range.Min) then
-              begin
-                Range.Min := opt.Expr.AsFloat;
-                Range.UseMin := true;
-              end
-              else
-                Range.UseMin := false;
+            setMin(Range);
 
           if (ST.HasOption('ymax', opt)) then
-            if (opt.Expr.AsFloat >= Range.Max) then
-              begin
-                Range.Max := opt.Expr.AsFloat;
-                Range.UseMax := true;
-              end
-              else
-                Range.UseMin := false;
+            setMax(Range);
         end;
     end;
 end;
