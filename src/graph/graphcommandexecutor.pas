@@ -99,7 +99,6 @@ end;
 procedure TGraphCommandExecutor.ShowMarksAsDates(var AText: String;
   AMark: Double);
 begin
-//  AText := DateToStr(AMark);
   AText := FormatDateTime('dd/mm/yyyy', AMark);
 end;
 

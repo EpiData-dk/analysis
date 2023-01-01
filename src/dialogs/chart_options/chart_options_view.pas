@@ -35,11 +35,11 @@ type
 implementation
 
 const
-  TITLE_TAG = Ord(cbT);
+  TITLE_TAG    = Ord(cbT);
   FOOTNOTE_TAG = Ord(cbF);
-  XTITLE_TAG = Ord(cbXT);
-  YTITLE_TAG = Ord(cbYT);
-  COLOR_TAG = Ord(cbC);
+  XTITLE_TAG   = Ord(cbXT);
+  YTITLE_TAG   = Ord(cbYT);
+  COLOR_TAG    = Ord(cbC);
   XMIN_TAG     = Ord(cbXMin);
   XMAX_TAG     = Ord(cbXMax);
   YMIN_TAG     = Ord(cbYMin);
@@ -48,6 +48,8 @@ const
 { TChartOptionsView }
 
 constructor TChartOptionsView.Create(TheOwner: TComponent);
+const
+  entryBox = 140;
 var
   EditText: TCustomEdit;
   PrevEditText: TCustomEdit;
@@ -61,13 +63,12 @@ begin
   LabelText := TLabel.Create(TheOwner);
   LabelText.Caption := 'Main Title';
   LabelText.AnchorParallel(akLeft,  10, Self);
-  LabelText.AnchorParallel(akRight, 10, Self);
   LabelText.AnchorParallel(akTop,   10, Self);
   LabelText.Parent := self;
 
   EditText := TCustomEdit.Create(TheOwner);
-  EditText.AnchorParallel(akLeft,  20, Self);
-  EditText.AnchorToNeighbour(akTop,   5, LabelText);
+  EditText.AnchorParallel(akTop,  10, Self);
+  EditText.AnchorParallel(akLeft, entryBox, Self);
   EditText.AnchorParallel(akRight, 10, Self);
   EditText.Tag := TITLE_TAG;
   EditText.OnChange := @SetText;
@@ -81,12 +82,11 @@ begin
   LabelText.Caption := 'Footnote';
   LabelText.AnchorParallel(akLeft,  10, Self);
   LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
-  LabelText.AnchorParallel(akRight,   10, Self);
 
   EditText := TCustomEdit.Create(TheOwner);
   EditText.Parent := self;
-  EditText.AnchorParallel(akLeft,  20, Self);
-  EditText.AnchorToNeighbour(akTop,   5, LabelText);
+  EditText.AnchorParallel(akLeft, entryBox, Self);
+  EditText.AnchorToNeighbour(akTop, 10, PrevEditText);
   EditText.AnchorParallel(akRight, 10, Self);
   EditText.Tag := FOOTNOTE_TAG;
   EditText.OnChange := @SetText;
@@ -99,12 +99,11 @@ begin
   LabelText.Caption := 'X-axis Title';
   LabelText.AnchorParallel(akLeft,  10, Self);
   LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
-  LabelText.AnchorParallel(akRight,   10, Self);
 
   EditText := TCustomEdit.Create(TheOwner);
   EditText.Parent := self;
-  EditText.AnchorParallel(akLeft,  20, Self);
-  EditText.AnchorToNeighbour(akTop, 5, LabelText);
+  EditText.AnchorParallel(akLeft, entryBox, Self);
+  EditText.AnchorToNeighbour(akTop, 10, PrevEditText);
   EditText.AnchorParallel(akRight, 10, Self);
   EditText.Tag := XTITLE_TAG;
   EditText.OnChange := @SetText;
@@ -117,12 +116,11 @@ begin
   LabelText.Caption := 'Y-axis Title';
   LabelText.AnchorParallel(akLeft,  10, Self);
   LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
-  LabelText.AnchorParallel(akRight,   10, Self);
 
   EditText := TCustomEdit.Create(TheOwner);
   EditText.Parent := self;
-  EditText.AnchorParallel(akLeft,  20, Self);
-  EditText.AnchorToNeighbour(akTop, 5, LabelText);
+  EditText.AnchorParallel(akLeft, entryBox, Self);
+  EditText.AnchorToNeighbour(akTop, 10, PrevEditText);
   EditText.AnchorParallel(akRight, 10, Self);
   EditText.Tag := YTITLE_TAG;
   EditText.OnChange := @SetText;
@@ -135,12 +133,11 @@ begin
   LabelText.Caption := 'Color selection';
   LabelText.AnchorParallel(akLeft,  10, Self);
   LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
-  LabelText.AnchorParallel(akRight,   10, Self);
 
   EditText := TCustomEdit.Create(TheOwner);
   EditText.Parent := self;
-  EditText.AnchorParallel(akLeft,  20, Self);
-  EditText.AnchorToNeighbour(akTop, 5, LabelText);
+  EditText.AnchorParallel(akLeft, entryBox, Self);
+  EditText.AnchorToNeighbour(akTop, 10, PrevEditText);
   EditText.AnchorParallel(akRight, 10, Self);
   EditText.Tag := COLOR_TAG;
   EditText.OnChange := @SetText;
@@ -158,13 +155,11 @@ begin
   LabelText.Caption := 'X-axis minumum';
   LabelText.AnchorParallel(akLeft,  10, Self);
   LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
-  LabelText.AnchorParallel(akRight,   10, Self);
 
   EditText := TCustomEdit.Create(TheOwner);
   EditText.Parent := self;
-  EditText.AnchorParallel(akLeft,  20, Self);
-  EditText.AnchorToNeighbour(akTop, 5, LabelText);
-  EditText.AnchorParallel(akRight, 10, Self);
+  EditText.AnchorParallel(akLeft, entryBox, Self);
+  EditText.AnchorToNeighbour(akTop, 10, PrevEditText);
   EditText.Tag := XMIN_TAG;
   EditText.OnChange := @SetText;
   FText[XMIN_TAG] := EditText;
@@ -176,13 +171,11 @@ begin
   LabelText.Caption := 'X-axis maximum';
   LabelText.AnchorParallel(akLeft,  10, Self);
   LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
-  LabelText.AnchorParallel(akRight,   10, Self);
 
   EditText := TCustomEdit.Create(TheOwner);
   EditText.Parent := self;
-  EditText.AnchorParallel(akLeft,  20, Self);
-  EditText.AnchorToNeighbour(akTop, 5, LabelText);
-  EditText.AnchorParallel(akRight, 10, Self);
+  EditText.AnchorParallel(akLeft, entryBox, Self);
+  EditText.AnchorToNeighbour(akTop, 10, PrevEditText);
   EditText.Tag := XMAX_TAG;
   EditText.OnChange := @SetText;
   FText[XMAX_TAG] := EditText;
@@ -194,13 +187,11 @@ begin
   LabelText.Caption := 'Y-axis minumum';
   LabelText.AnchorParallel(akLeft,  10, Self);
   LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
-  LabelText.AnchorParallel(akRight,   10, Self);
 
   EditText := TCustomEdit.Create(TheOwner);
   EditText.Parent := self;
-  EditText.AnchorParallel(akLeft,  20, Self);
-  EditText.AnchorToNeighbour(akTop, 5, LabelText);
-  EditText.AnchorParallel(akRight, 10, Self);
+  EditText.AnchorParallel(akLeft, entryBox, Self);
+  EditText.AnchorToNeighbour(akTop, 10, PrevEditText);
   EditText.Tag := YMIN_TAG;
   EditText.OnChange := @SetText;
   FText[YMIN_TAG] := EditText;
@@ -212,13 +203,11 @@ begin
   LabelText.Caption := 'Y-axis maximum';
   LabelText.AnchorParallel(akLeft,  10, Self);
   LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
-  LabelText.AnchorParallel(akRight,   10, Self);
 
   EditText := TCustomEdit.Create(TheOwner);
   EditText.Parent := self;
-  EditText.AnchorParallel(akLeft,  20, Self);
-  EditText.AnchorToNeighbour(akTop, 5, LabelText);
-  EditText.AnchorParallel(akRight, 10, Self);
+  EditText.AnchorParallel(akLeft, entryBox, Self);
+  EditText.AnchorToNeighbour(akTop, 10, PrevEditText);
   EditText.Tag := YMAX_TAG;
   EditText.OnChange := @SetText;
   FText[YMAX_TAG] := EditText;
