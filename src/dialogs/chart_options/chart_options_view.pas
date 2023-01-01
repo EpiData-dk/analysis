@@ -40,6 +40,10 @@ const
   XTITLE_TAG = Ord(cbXT);
   YTITLE_TAG = Ord(cbYT);
   COLOR_TAG = Ord(cbC);
+  XMIN_TAG     = Ord(cbXMin);
+  XMAX_TAG     = Ord(cbXMax);
+  YMIN_TAG     = Ord(cbYMin);
+  YMAX_TAG     = Ord(cbYMax);
   
 { TChartOptionsView }
 
@@ -142,11 +146,84 @@ begin
   EditText.OnChange := @SetText;
   FText[COLOR_TAG] := EditText;
   FLabel[COLOR_TAG] := LabelText;
+  PrevEditText := EditText;
 
   // TODO:  Show 10 color button controls with the standard colors. User can click
   //        on a button to change it? Maybe a bit too complicated
   //        Problem is: once a color is set, you have to use the hex colours for all 10
   //        For this Dialog, just show the colors; don't make them clickable
+
+  LabelText := TLabel.Create(TheOwner);
+  LabelText.Parent := self;
+  LabelText.Caption := 'X-axis minumum';
+  LabelText.AnchorParallel(akLeft,  10, Self);
+  LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
+  LabelText.AnchorParallel(akRight,   10, Self);
+
+  EditText := TCustomEdit.Create(TheOwner);
+  EditText.Parent := self;
+  EditText.AnchorParallel(akLeft,  20, Self);
+  EditText.AnchorToNeighbour(akTop, 5, LabelText);
+  EditText.AnchorParallel(akRight, 10, Self);
+  EditText.Tag := XMIN_TAG;
+  EditText.OnChange := @SetText;
+  FText[XMIN_TAG] := EditText;
+  FLabel[XMIN_TAG] := LabelText;
+  PrevEditText := EditText;
+
+  LabelText := TLabel.Create(TheOwner);
+  LabelText.Parent := self;
+  LabelText.Caption := 'X-axis maximum';
+  LabelText.AnchorParallel(akLeft,  10, Self);
+  LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
+  LabelText.AnchorParallel(akRight,   10, Self);
+
+  EditText := TCustomEdit.Create(TheOwner);
+  EditText.Parent := self;
+  EditText.AnchorParallel(akLeft,  20, Self);
+  EditText.AnchorToNeighbour(akTop, 5, LabelText);
+  EditText.AnchorParallel(akRight, 10, Self);
+  EditText.Tag := XMAX_TAG;
+  EditText.OnChange := @SetText;
+  FText[XMAX_TAG] := EditText;
+  FLabel[XMAX_TAG] := LabelText;
+  PrevEditText := EditText;
+
+  LabelText := TLabel.Create(TheOwner);
+  LabelText.Parent := self;
+  LabelText.Caption := 'Y-axis minumum';
+  LabelText.AnchorParallel(akLeft,  10, Self);
+  LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
+  LabelText.AnchorParallel(akRight,   10, Self);
+
+  EditText := TCustomEdit.Create(TheOwner);
+  EditText.Parent := self;
+  EditText.AnchorParallel(akLeft,  20, Self);
+  EditText.AnchorToNeighbour(akTop, 5, LabelText);
+  EditText.AnchorParallel(akRight, 10, Self);
+  EditText.Tag := YMIN_TAG;
+  EditText.OnChange := @SetText;
+  FText[YMIN_TAG] := EditText;
+  FLabel[YMIN_TAG] := LabelText;
+  PrevEditText := EditText;
+
+  LabelText := TLabel.Create(TheOwner);
+  LabelText.Parent := self;
+  LabelText.Caption := 'Y-axis maximum';
+  LabelText.AnchorParallel(akLeft,  10, Self);
+  LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
+  LabelText.AnchorParallel(akRight,   10, Self);
+
+  EditText := TCustomEdit.Create(TheOwner);
+  EditText.Parent := self;
+  EditText.AnchorParallel(akLeft,  20, Self);
+  EditText.AnchorToNeighbour(akTop, 5, LabelText);
+  EditText.AnchorParallel(akRight, 10, Self);
+  EditText.Tag := YMAX_TAG;
+  EditText.OnChange := @SetText;
+  FText[YMAX_TAG] := EditText;
+  FLabel[YMAX_TAG] := LabelText;
+
 end;
 
 procedure TChartOptionsView.SetText(Sender: TObject);
@@ -165,6 +242,14 @@ begin
     FDataModel.YTitle := EditText.Caption;
   COLOR_TAG:
     FDataModel.Colors := EditText.Caption;
+  XMIN_TAG:
+    FDataModel.XMin := EditText.Caption;
+  XMAX_TAG:
+    FDataModel.XMax := EditText.Caption;
+  YMIN_TAG:
+    FDataModel.YMin := EditText.Caption;
+  YMAX_TAG:
+    FDataModel.YMax := EditText.Caption;
   end;
   DoModified;
 end;
@@ -199,8 +284,14 @@ begin
   FDataModel.YTitle := '';
   FDataModel.Colors := '';
 
+  FDataModel.XMin := '';
+  FDataModel.XMax := '';
+  FDataModel.YMin := '';
+  FDataModel.YMax := '';
+
   for EditText in FText do
     EditText.Text := '';
+
   DoModified;
 end;
 

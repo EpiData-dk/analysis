@@ -17,7 +17,7 @@ uses
 
 type
 
-  TChartOptionsBox = (cbT, cbF, cbXT, cbYT, cbC);
+  TChartOptionsBox = (cbT, cbF, cbXT, cbYT, cbC, cbXmin, cbXmax, cbYmin, cbYmax);
   
   { TChartOptionsModel }
 
@@ -29,6 +29,7 @@ type
     FXTitle:   UTF8String;
     FYTitle:   UTF8String;
     FColors:   UTF8String;
+    FXMin, FXMax, FYMin, FYMax: UTF8String;
     procedure SetTitle(AValue: UTF8String);
     procedure SetFootnote(AValue: UTF8String);
     procedure SetXTitle(AValue: UTF8String);
@@ -45,6 +46,10 @@ type
     property XTitle: UTF8String read FXTitle write SetXTitle;
     property YTitle: UTF8String read FYTitle write SetYTitle;
     property Colors: UTF8String read FColors write SetColors;
+    property XMin: UTF8String read FXMin write FXMin;
+    property XMax: UTF8String read FXMax write FXMax;
+    property YMin: UTF8String read FYMin write FYMin;
+    property YMax: UTF8String read FYMax write FYMax;
   end;
 
 
@@ -90,6 +95,16 @@ begin
 end;
 
 function TChartOptionsModel.GenerateScript(): UTF8String;
+
+  function rangeFmt(Value: UTF8String): UTF8String;
+  var
+    i: Integer;
+  begin
+    if (tryStrToInt(Value, i)) then
+      Result := Value
+    else
+      Result := 'createDate("' + Value + '")';
+  end;
 begin
   result := '';
   if (FTitle <> '') then
@@ -102,6 +117,14 @@ begin
     result += ' !yt:="' + FYTitle + '"';
   if (FColors <> '') then
     result += ' !colors:="' + FColors + '"';
+  if (FXMin <> '') then
+    result += ' !xmin:=' + rangeFmt(FXMin);
+  if (FXMax <> '') then
+    result += ' !xmax:=' + rangeFmt(FXMax);
+  if (FYMin <> '') then
+    result += ' !ymin:=' + rangeFmt(FYMin);
+  if (FYMax <> '') then
+    result += ' !ymax:=' + rangeFmt(FYMax);
 end;
 
 function TChartOptionsModel.IsDefined(): boolean;
