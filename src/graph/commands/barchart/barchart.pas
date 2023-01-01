@@ -190,8 +190,7 @@ begin
     .SetYAxisTitle(yType);
 
   ChartConfiguration.GetAxesConfiguration()
-    .GetXAxisConfiguration()
-    .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
+    .GetXAxisConfiguration();
 
   with Chart do
     begin
