@@ -33,7 +33,7 @@ implementation
 
 uses
   chartcommand, chartfactory, graphformfactory, savegraphaction, TAGraph, chartpair,
-  LazFileUtils, ana_globals, options_utils, Graphics;
+  LazFileUtils, ana_globals, ast_types, options_utils, Graphics;
 
 { TGraphCommandExecutor }
 
@@ -182,18 +182,34 @@ var
   procedure setMin(range: TChartRange);
   begin
     if (isDate) then
-      range.Min := opt.Expr.AsDate
+      begin
+        if (opt.Expr.ResultType <> rtDate) then
+          exit;
+        range.Min := opt.Expr.AsDate
+      end
     else
-      range.Min := opt.Expr.AsFloat;
+      begin
+        if (opt.Expr.ResultType = rtDate) then
+          exit;
+        range.Min := opt.Expr.AsFloat;
+      end;
     range.UseMin := true;
   end;
 
   procedure setMax(range: TChartRange);
   begin
     if (isDate) then
-      range.Max := opt.Expr.AsDate
+      begin
+        if (opt.Expr.ResultType <> rtDate) then
+          exit;
+        range.Max := opt.Expr.AsDate
+      end
     else
+    begin
+      if (opt.Expr.ResultType = rtDate) then
+        exit;
       range.Max := opt.Expr.AsFloat;
+    end;
     range.UseMax := true;
   end;
 
