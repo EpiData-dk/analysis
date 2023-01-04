@@ -39,7 +39,7 @@ begin
   FPageControl.Parent := Self;
   FPageControl.Align := alClient;
   // Remove this to support multiple charts on the form
-  FPageControl.ShowTabs := false;
+  //FPageControl.ShowTabs := false;
 
   FSaveGraphAction := TSaveGraphDialogAction.Create(Self);
 
