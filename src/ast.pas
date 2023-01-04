@@ -2679,7 +2679,7 @@ begin
   Result := inherited GetAcceptedOptions;
   AddVariableLabelOptions(Result);
   AddValueLabelOptions(Result);
-  Result.Insert('colors', ['c'], [rtString]);
+  Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('w', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
 end;
 

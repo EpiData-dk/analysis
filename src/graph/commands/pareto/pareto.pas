@@ -7,8 +7,8 @@ interface
 uses
   Classes, SysUtils, chartcommandresult, executor, outputcreator,
   ast, epidatafiles, chartcommand, chartfactory, chartconfiguration,
-  TAGraph, TAChartAxis, TATransformations,
-  tables_types, tables;
+  TAGraph, TAChartAxis, TATransformations, graph_utils,
+  epifields_helper, tables_types, tables;
 
 type
 
@@ -19,6 +19,16 @@ type
     FChartFactory: IChartFactory;
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
+    Chart:               TChart;
+    ChartConfiguration:  IChartConfiguration;
+    FColor: TColorMap;
+    FValueLabelOutput:    TEpiGetValueLabelType;
+    FVariableLabelOutput: TEpiGetVariableLabelType;
+    FXVarTitle,
+    FWVarTitle: UTF8String;
+    FXDate: Boolean;
+  protected
+    procedure DoOneChart(TableData: TTwoWayTable; StratumLabel: UTF8String);
   public
     RightAxisTransform,
     LeftAxisTransform:   TChartAxisTransformations;
@@ -32,8 +42,8 @@ implementation
 
 uses
   TASeries, TASources, TATypes, TAStyles, TAChartUtils, TALegend, TAChartAxisUtils,
-  Graphics, charttitles, ast_types, epidatafilestypes,
-  epicustombase, epifields_helper, options_utils, graph_utils, paretosource;
+  Graphics, charttitles, ast_types,
+  epicustombase, options_utils, epidatafilestypes, paretosource;
 
 { TParetoChart }
 
@@ -48,12 +58,103 @@ end;
 function TParetoChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 const
   dummyVarName = '_dummy4barchart';
+var
+  {Frequencies}
+  DataFile:            TEpiDataFile;
+  T:                   TTables;
+  StratifyVarnames:    TStringList;
+  nilTablesRefMap:     TEpiReferenceMap;
+  TablesAll:           TTwoWayTables;
+  TableData:           TTwowayTable;
+  {command}
+  VarNames:            TStrings;
+  DFVars:              TStrings;
+  dummyVar:            TEpiField;
+  WeightVar:           TEpiField;
+  WeightVarName:       UTF8String;
+  wTitle:              UTF8String;
+  XVar:                TEpiField;
+  XVarTitle:           UTF8String;
+  Opt:                 TOption;
+
+  i:                   Integer;
+begin
+  FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  FColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
+  VarNames            := Command.VariableList.GetIdentsAsList;
+  DFVars              := Command.VariableList.GetIdentsAsList;
+
+  StratifyVarnames := TStringList.Create;
+  for Opt in Command.Options do
+    begin
+      if (Opt.Ident <> 'by') then
+        Continue;
+      DFVars.Add(Opt.Expr.AsIdent);
+      StratifyVarnames.Add(Opt.Expr.AsIdent);
+    end;
+
+  WeightVarName       := '';
+  if (Command.HasOption(['w'],Opt)) then
+    begin
+      WeightVarName := Opt.Expr.AsIdent;
+      DFVars.Add(WeightVarName);
+    end;
+  DataFile      := FExecutor.PrepareDatafile(DFVars, DFVars);
+  if (WeightVarName <> '') then
+    begin
+      WeightVar := Datafile.Fields.FieldByName[WeightVarName];
+      FWVarTitle += ' weighted (' + WeightVar.GetVariableLabel(FVariableLabelOutput)+ ')';
+      WeightVar.Free;
+    end
+  else
+    FWVarTitle := '';
+  dummyVar      := DataFile.NewField(ftInteger);
+  dummyVar.Name := dummyVarName;
+  Varnames.Add(dummyVarName);
+  T := TTables.Create(FExecutor, FOutputCreator);
+  TablesAll := T.CalcTables(Datafile, VarNames,
+                StratifyVarnames, WeightVarName, Command.Options, nilTablesRefMap);
+
+  XVar := Datafile.Fields.FieldByName[Varnames[0]];
+  FXVarTitle := XVar.GetVariableLabel(FVariableLabelOutput);
+  FXDate := XVar.FieldType in DateFieldTypes;
+
+  Result := FChartFactory.NewGraphCommandResult();
+
+  if (Command.HasOption('by')) then
+    for i := 0 to TablesAll.Count - 1 do
+      begin
+        TableData := TablesAll.Tables[i];
+        TableData.SortByColTotal(true);
+        DoOneChart(TableData, TablesAll.StratifyVariables[0].GetValueLabel(i, FValueLabelOutput));
+        Result.AddChart(Chart, ChartConfiguration);
+      end
+  else
+    begin;
+      TableData := TablesAll.UnstratifiedTable;
+      TableData.SortByColTotal(true);
+      DoOneChart(TableData, '');
+      Result.AddChart(Chart, ChartConfiguration);
+    end;
+
+  VarNames.Free;
+  DFVars.Free;
+  T.Free;
+  TablesAll.Free;
+  XVar.Free;
+  Datafile.Free;
+end;
+
+procedure TParetoChart.DoOneChart(TableData: TTwoWayTable; StratumLabel: UTF8String);
+const
   barTitle     = 'Count';
   lineTitle    = 'Cumulative %';
 var
+  i:                   Integer;
   {Chart}
-  Chart:               TChart;
-  ChartConfiguration:  IChartConfiguration;
+ // Chart:               TChart;
+ // ChartConfiguration:  IChartConfiguration;
   BarSource:           TParetoBarSource;
   LabelSeries:         TListChartSource;
   BarSeries:           TBarSeries;
@@ -65,69 +166,23 @@ var
   bStyle,
   lStyle:              TChartStyle;
   sColor:              TColorMap;
-  {Frequencies}
-  DataFile:            TEpiDataFile;
-  T:                   TTables;
-  nilStratVariable:    TStringList;
-  nilTablesRefMap:     TEpiReferenceMap;
-  TablesAll:           TTwoWayTables;
-  TableData:           TTwowayTable;
-  {command}
-  VarNames:            TStrings;
-  DFVars:              TStrings;
-  dummyVar:            TEpiField;
-  WeightVar:           TEpiField;
-  WeightVarName:       UTF8String;
-  XVar:                TEpiField;
-  XVarTitle:           UTF8String;
-  Opt:                 TOption;
-
-  ValueLabelOutput:    TEpiGetValueLabelType;
-  VariableLabelOutput: TEpiGetVariableLabelType;
-  i:                   Integer;
   sTitle:              UTF8String;
 begin
-  VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
-  VarNames            := Command.VariableList.GetIdentsAsList;
-  DFVars              := Command.VariableList.GetIdentsAsList;
-  nilStratVariable    := TStringList.Create;
-  WeightVarName       := '';
-  if (Command.HasOption(['w'],Opt)) then
-    begin
-      WeightVarName := Opt.Expr.AsIdent;
-      DFVars.Add(WeightVarName);
-    end;
-  DataFile      := FExecutor.PrepareDatafile(DFVars, DFVars);
   Chart         := FChartFactory.NewChart();
-  dummyVar      := DataFile.NewField(ftInteger);
-  dummyVar.Name := dummyVarName;
-  Varnames.Add(dummyVarName);
-// Note: for now, only a single variable is allowed
-//       for !by, set up loop to do one chart per stratum;
-//       will need to sort the table output for each stratum,
-//       with TableData.SortByCol(i,true) (don't need dummy var)
-  T := TTables.Create(FExecutor, FOutputCreator);
-  TablesAll := T.CalcTables(Datafile, VarNames,
-                nilStratVariable, WeightVarName, Command.Options, nilTablesRefMap);
-  TableData := TablesAll.UnstratifiedTable;
-  TableData.SortByColTotal(true);
-
   BarSource     := TParetoBarSource.Create(Chart);
   LineSource    := TParetoLineSource.Create(Chart);
   LabelSeries   := TListChartSource.Create(Chart);
   BarSource.SetSource(TableData);
   LineSource.SetSource(TableData);
   for i := 0 to TableData.ColCount - 1 do
-    LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, ValueLabelOutput));
+    LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, FValueLabelOutput));
 
   BarStyles := TChartStyles.Create(Chart);
   bStyle    := BarStyles.Add;
   with bStyle do
     begin
       Brush.Style := bsSolid;
-      Brush.Color := sColor[0];
+      Brush.Color := FColor[0];
       Text        := barTitle;
     end;
   BarSeries := TBarSeries.Create(Chart);
@@ -147,7 +202,7 @@ begin
   with lStyle do
     begin
       Pen.Style   := psSolid;
-      Pen.Color   := sColor[1];
+      Pen.Color   := FColor[1];
       Pen.Width   := 4;
       Text        := lineTitle;
     end;
@@ -173,26 +228,19 @@ begin
       ColumnCount   := 2;
     end;
 
-  XVar := Datafile.Fields.FieldByName[Varnames[0]];
-  XVarTitle := XVar.GetVariableLabel(VariableLabelOutput);
-  sTitle := 'Pareto Chart for ' + XVarTitle;
-  if (WeightVarName <> '') then
-    begin
-      WeightVar := Datafile.Fields.FieldByName[WeightVarName];
-      sTitle += ' weighted (' + WeightVar.GetVariableLabel(VariableLabelOutput)+ ')';
-      WeightVar.Free;
-    end;
-  VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions, sovStatistics);
+  sTitle := 'Pareto Chart for ' + FXVarTitle + FWVarTitle;
+  if (StratumLabel <> '') then
+    sTitle += LineEnding + StratumLabel;
   ChartConfiguration := FChartFactory.NewChartConfiguration();
   ChartConfiguration.GetTitleConfiguration()
     .SetTitle(sTitle)
     .SetFootnote('')
-    .SetXAxisTitle(XVarTitle)
+    .SetXAxisTitle(FXVarTitle)
     .SetYAxisTitle(barTitle);
 
   ChartConfiguration.GetAxesConfiguration()
     .GetXAxisConfiguration()
-    .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
+    .SetShowAxisMarksAsDates(FXDate);
 
   // set up left and right axis transformations to make them independent
   LeftAxisTransform     := TChartAxisTransformations.Create(Chart);
@@ -236,18 +284,8 @@ begin
       Title.LabelFont.Orientation := 900;
       Range.Min                   := 0;
       Range.UseMin                := true;
-      Range.Max                   := 100;
-      Range.UseMax                := true;
     end;
-
-  Result := FChartFactory.NewGraphCommandResult();
-  Result.AddChart(Chart, ChartConfiguration);
-  VarNames.Free;
-  DFVars.Free;
-  T.Free;
-  TablesAll.Free;
-  XVar.Free;
-  Datafile.Free;
+//  ChartResult.AddChart(Chart, ChartConfiguration);
 end;
 
 initialization
