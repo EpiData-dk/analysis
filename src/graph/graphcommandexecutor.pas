@@ -178,43 +178,39 @@ var
   Configuration: IChartAxesConfiguration;
   Opt: TOption;
   isDate: Boolean;
+  minmax: double;
+  validRange: boolean;
+  rangeMsg: UTF8String;
+  errorMsg: UTF8String;
 
-  procedure setMin(range: TChartRange);
+  function setMinMax(out value: double; out msg: UTF8String): boolean;
   begin
+    result := true;
+    msg := '';
     if (isDate) then
-      begin
-        if (opt.Expr.ResultType <> rtDate) then
-          exit;
-        range.Min := opt.Expr.AsDate
-      end
-    else
       begin
         if (opt.Expr.ResultType = rtDate) then
-          exit;
-        range.Min := opt.Expr.AsFloat;
-      end;
-    range.UseMin := true;
-  end;
-
-  procedure setMax(range: TChartRange);
-  begin
-    if (isDate) then
-      begin
-        if (opt.Expr.ResultType <> rtDate) then
-          exit;
-        range.Max := opt.Expr.AsDate
+          begin
+            value := opt.Expr.AsDate;
+            exit;
+          end;
       end
     else
-    begin
-      if (opt.Expr.ResultType = rtDate) then
-        exit;
-      range.Max := opt.Expr.AsFloat;
-    end;
-    range.UseMax := true;
+      begin
+        if (opt.Expr.ResultType <> rtDate) then
+          begin
+            value := opt.Expr.AsFloat;
+            exit;
+          end;
+      end;
+    result := false;
+    msg := ' Ignored invalid ' + opt.Ident + ': ' + opt.Expr.AsString;
   end;
 
 begin
   ChartPairs := CommandResult.GetChartPairs();
+  validRange := true;
+  errorMsg := '';
 
   for Pair in ChartPairs do
     begin
@@ -232,10 +228,22 @@ begin
             end;
 
           if (ST.HasOption('xmin', opt)) then
-            setMin(Range);
+            if (setMinMax(minmax, rangeMsg))then
+              begin
+                Range.UseMin := true;
+                Range.Min := minmax;
+              end
+            else
+              ErrorMsg += rangeMsg + LineEnding;
 
           if (ST.HasOption('xmax', opt)) then
-            setMax(Range);
+            if (setMinMax(minmax, rangeMsg))then
+              begin
+                Range.UseMax  := true;
+                Range.Max := minmax;
+              end
+            else
+              ErrorMsg += rangeMsg + LineEnding;
         end;
 
       with (Chart.LeftAxis) do
@@ -245,12 +253,26 @@ begin
             OnMarkToText := @ShowMarksAsDates;
 
           if (ST.HasOption('ymin', opt)) then
-            setMin(Range);
+            if (setMinMax(minmax, rangeMsg))then
+              begin
+                Range.UseMin := true;
+                Range.Min := minmax;
+              end
+            else
+              ErrorMsg += rangeMsg + LineEnding;
 
           if (ST.HasOption('ymax', opt)) then
-            setMax(Range);
+            if (setMinMax(minmax, rangeMsg))then
+              begin
+                Range.UseMax  := true;
+                Range.Max := minmax;
+              end
+            else
+              ErrorMsg += rangeMsg + LineEnding;
         end;
-    end;
+      end;
+    if (errorMsg <> '') then
+      FExecutor.Error(errorMsg);
 end;
 
 constructor TGraphCommandExecutor.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
