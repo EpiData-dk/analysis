@@ -68,6 +68,8 @@ begin
       Chart.Parent := Sheet;
       Chart.Align := alClient;
       Sheet.InsertComponent(Chart);
+// could put some chart-specific info into the title here (one line only)
+//      Sheet.Caption := Pair.Configuration.GetTitleConfiguration().GetTitle();
     end;
 
   FSaveGraphAction.Chart := ChartPairs.First.Chart;

@@ -16,24 +16,19 @@ type
 
   TParetoChart = class(TInterfacedObject, IChartCommand)
   private
-    FChartFactory: IChartFactory;
-    FExecutor: TExecutor;
-    FOutputCreator: TOutputCreator;
-    Chart:               TChart;
-    ChartConfiguration:  IChartConfiguration;
-    FColor: TColorMap;
+    FChartFactory:        IChartFactory;
+    FExecutor:            TExecutor;
+    FOutputCreator:       TOutputCreator;
+    FColor:               TColorMap;
     FValueLabelOutput:    TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
     FXVarTitle,
-    FWVarTitle: UTF8String;
-    FXDate: Boolean;
+    FWVarTitle:           UTF8String;
+    FXDate:               Boolean;
   protected
-    procedure DoOneChart(TableData: TTwoWayTable; StratumLabel: UTF8String);
+    procedure DoOneChart(TableData: TTwoWayTable; StratumLabel: UTF8String;
+          ChartResult: IChartCommandResult);
   public
-    RightAxisTransform,
-    LeftAxisTransform:   TChartAxisTransformations;
-    RightAxisAuto,
-    LeftAxisAuto:        TAutoScaleAxisTransform;
     procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator);
     function Execute(Command: TCustomGraphCommand): IChartCommandResult;
   end;
@@ -50,14 +45,14 @@ uses
 procedure TParetoChart.Init(ChartFactory: IChartFactory; Executor: TExecutor;
   OutputCreator: TOutputCreator);
 begin
-  FChartFactory := ChartFactory;
-  FExecutor := Executor;
+  FChartFactory  := ChartFactory;
+  FExecutor      := Executor;
   FOutputCreator := OutputCreator;
 end;
 
 function TParetoChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 const
-  dummyVarName = '_dummy4barchart';
+  dummyVarName = '_dummy4chart';
 var
   {Frequencies}
   DataFile:            TEpiDataFile;
@@ -76,42 +71,43 @@ var
   XVar:                TEpiField;
   XVarTitle:           UTF8String;
   Opt:                 TOption;
-  byOpt:               Boolean;
+  byVar:               Boolean;
   i:                   Integer;
 begin
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  FColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
-  VarNames            := Command.VariableList.GetIdentsAsList;
-  DFVars              := Command.VariableList.GetIdentsAsList;
+  FColor               := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
+  VarNames             := Command.VariableList.GetIdentsAsList;
+  DFVars               := Command.VariableList.GetIdentsAsList;
 
-  byOpt := false;
+  byVar := false;
   StratifyVarnames := TStringList.Create;
   for Opt in Command.Options do
     begin
       if (Opt.Ident <> 'by') then
         Continue;
-      if (byOpt) then
+      if (byVar) then
         FExecutor.Error('Multiple !by options are not allowed. ' + Opt.Expr.AsIdent + ' ignored.')
       else
         begin
           DFVars.Add(Opt.Expr.AsIdent);
           StratifyVarnames.Add(Opt.Expr.AsIdent);
-          byOpt := true;
+          byVar := true;
         end;
     end;
 
-  WeightVarName       := '';
   if (Command.HasOption(['w'],Opt)) then
     begin
       WeightVarName := Opt.Expr.AsIdent;
       DFVars.Add(WeightVarName);
-    end;
+    end
+  else
+    WeightVarName := '';
 
-  DataFile      := FExecutor.PrepareDatafile(DFVars, DFVars);
+  DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
   if (WeightVarName <> '') then
     begin
-      WeightVar := Datafile.Fields.FieldByName[WeightVarName];
+      WeightVar  := Datafile.Fields.FieldByName[WeightVarName];
       FWVarTitle += ' weighted (' + WeightVar.GetVariableLabel(FVariableLabelOutput)+ ')';
       WeightVar.Free;
     end
@@ -130,20 +126,18 @@ begin
 
   Result := FChartFactory.NewGraphCommandResult();
 
-  if (Command.HasOption('by')) then
+  if (byVar) then
     for i := 0 to TablesAll.Count - 1 do
       begin
         TableData := TablesAll.Tables[i];
         TableData.SortByColTotal(true);
-        DoOneChart(TableData, TablesAll.StratifyVariables[0].GetValueLabel(i, FValueLabelOutput));
-        Result.AddChart(Chart, ChartConfiguration);
+        DoOneChart(TableData, TablesAll.StratifyVariables[0].GetValueLabel(i, FValueLabelOutput), Result);
       end
   else
-    begin;
+    begin
       TableData := TablesAll.UnstratifiedTable;
       TableData.SortByColTotal(true);
-      DoOneChart(TableData, '');
-      Result.AddChart(Chart, ChartConfiguration);
+      DoOneChart(TableData, '', Result);
     end;
 
   VarNames.Free;
@@ -151,18 +145,20 @@ begin
   T.Free;
   TablesAll.Free;
   XVar.Free;
+  dummyVar.Free;
   Datafile.Free;
 end;
 
-procedure TParetoChart.DoOneChart(TableData: TTwoWayTable; StratumLabel: UTF8String);
+procedure TParetoChart.DoOneChart(TableData: TTwoWayTable; StratumLabel: UTF8String;
+          ChartResult: IChartCommandResult);
 const
   barTitle     = 'Count';
   lineTitle    = 'Cumulative %';
 var
   i:                   Integer;
   {Chart}
- // Chart:               TChart;
- // ChartConfiguration:  IChartConfiguration;
+  Chart:               TChart;
+  ChartConfiguration:  IChartConfiguration;
   BarSource:           TParetoBarSource;
   LabelSeries:         TListChartSource;
   BarSeries:           TBarSeries;
@@ -175,6 +171,10 @@ var
   lStyle:              TChartStyle;
   sColor:              TColorMap;
   sTitle:              UTF8String;
+  RightAxisTransform,
+  LeftAxisTransform:   TChartAxisTransformations;
+  RightAxisAuto,
+  LeftAxisAuto:        TAutoScaleAxisTransform;
 begin
   Chart         := FChartFactory.NewChart();
   BarSource     := TParetoBarSource.Create(Chart);
@@ -182,6 +182,7 @@ begin
   LabelSeries   := TListChartSource.Create(Chart);
   BarSource.SetSource(TableData);
   LineSource.SetSource(TableData);
+
   for i := 0 to TableData.ColCount - 1 do
     LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, FValueLabelOutput));
 
@@ -293,7 +294,8 @@ begin
       Range.Min                   := 0;
       Range.UseMin                := true;
     end;
-//  ChartResult.AddChart(Chart, ChartConfiguration);
+
+  ChartResult.AddChart(Chart, ChartConfiguration);
 end;
 
 initialization
