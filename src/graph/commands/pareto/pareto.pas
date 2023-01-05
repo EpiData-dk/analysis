@@ -76,7 +76,7 @@ var
   XVar:                TEpiField;
   XVarTitle:           UTF8String;
   Opt:                 TOption;
-
+  byOpt:               Boolean;
   i:                   Integer;
 begin
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
@@ -85,13 +85,20 @@ begin
   VarNames            := Command.VariableList.GetIdentsAsList;
   DFVars              := Command.VariableList.GetIdentsAsList;
 
+  byOpt := false;
   StratifyVarnames := TStringList.Create;
   for Opt in Command.Options do
     begin
       if (Opt.Ident <> 'by') then
         Continue;
-      DFVars.Add(Opt.Expr.AsIdent);
-      StratifyVarnames.Add(Opt.Expr.AsIdent);
+      if (byOpt) then
+        FExecutor.Error('Multiple !by options are not allowed. ' + Opt.Expr.AsIdent + ' ignored.')
+      else
+        begin
+          DFVars.Add(Opt.Expr.AsIdent);
+          StratifyVarnames.Add(Opt.Expr.AsIdent);
+          byOpt := true;
+        end;
     end;
 
   WeightVarName       := '';
@@ -100,6 +107,7 @@ begin
       WeightVarName := Opt.Expr.AsIdent;
       DFVars.Add(WeightVarName);
     end;
+
   DataFile      := FExecutor.PrepareDatafile(DFVars, DFVars);
   if (WeightVarName <> '') then
     begin
