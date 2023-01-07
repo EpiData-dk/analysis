@@ -69,7 +69,6 @@ var
   WeightVarName:       UTF8String;
   wTitle:              UTF8String;
   XVar:                TEpiField;
-  XVarTitle:           UTF8String;
   Opt:                 TOption;
   byVar:               Boolean;
   i:                   Integer;
@@ -127,12 +126,15 @@ begin
   Result := FChartFactory.NewGraphCommandResult();
 
   if (byVar) then
-    for i := 0 to TablesAll.Count - 1 do
-      begin
-        TableData := TablesAll.Tables[i];
-        TableData.SortByColTotal(true);
-        DoOneChart(TableData, TablesAll.StratifyVariables[0].GetValueLabel(i, FValueLabelOutput), Result);
-      end
+    begin
+      for i := 0 to TablesAll.Count - 1 do
+        begin
+          TableData := TablesAll.Tables[i];
+          TableData.SortByColTotal(true);
+          DoOneChart(TableData, TablesAll.StratifyVariables[0].GetVariableLabel(FVariableLabelOutput)
+            + '=' + TablesAll.StratifyVariables[0].GetValueLabel(i, FValueLabelOutput), Result);
+        end
+    end
   else
     begin
       TableData := TablesAll.UnstratifiedTable;
@@ -145,6 +147,7 @@ begin
   T.Free;
   TablesAll.Free;
   XVar.Free;
+  StratifyVarNames.Free;
   dummyVar.Free;
   Datafile.Free;
 end;
