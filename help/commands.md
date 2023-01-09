@@ -1706,9 +1706,12 @@ Draw a pareto chart for a variable. The chart has two components: a bar chart sh
 - `Variable` may be of any type
 
 ### options
-- `!w:=wvariable`
+- `!by:=sVariable`
 
-   weight the counts using `wvariable`
+  `sVariable` may be of any type
+- `!w:=wVariable`
+
+   weight the counts using `wVariable`
    
 - graph options
 
