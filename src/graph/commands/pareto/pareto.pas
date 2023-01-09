@@ -67,7 +67,6 @@ var
   dummyVar:            TEpiField;
   WeightVar:           TEpiField;
   WeightVarName:       UTF8String;
-  wTitle:              UTF8String;
   XVar:                TEpiField;
   Opt:                 TOption;
   byVar:               Boolean;
