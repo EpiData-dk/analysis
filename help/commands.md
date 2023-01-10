@@ -1705,15 +1705,15 @@ Any of the graph commands may use the following options.
 
 - `!yt|ytitle := "Custom y-axis title"`
 
-- `!xmin := <real number>`
+- `!xmin := <real number|date>`
 
-- `!xmax := <real number>`
+- `!xmax := <real number|date>`
 
-- `!ymin := <real number>`
+- `!ymin := <real number|date>`
 
-- `!ymax := <real number>`
+- `!ymax := <real number|date>`
 
-	- axis minumum and maximum values may be expressed as numbers with or without a decimal place
+	- axis minumum and maximum values may be expressed as numbers with or without a decimal place or as date values. 
 	- if a given value will excluded data from the graph, then it is ignored
 	- for some graphs, specifing xmin or ymin := 0 may be required to force the axis to begin at zero
 
@@ -1734,6 +1734,8 @@ Any of the graph commands may use the following options.
    barchart var stratifyvar !c:="231"
    // use custom colors (dark blue, purple) for the survival curve strata
    survival outcome time !by:=group !c:="#00008B#C517FF"
+   // extend an epicurve beyond the highest date in the data
+   epicurve onset !xmax:=createdate(31,10,2022)
 ```
 
 # Consistency and Validity Check of data
