@@ -2677,8 +2677,6 @@ end;
 function TParetoCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  AddVariableLabelOptions(Result);
-  AddValueLabelOptions(Result);
   Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('w', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
 end;
