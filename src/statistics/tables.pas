@@ -188,7 +188,8 @@ begin
   if (StratifyVariables.Count > 0) then
     begin
       SetLength(Runners, StratifyVariables.Count);
-      FillDWord(Runners[0], Length(Runners), 0);
+      for i := Low(Runners) to High(Runners) do
+        Runners[i] := 0;
 
       PackRecord.Variables := StratifyVariables;
       PackRecord.Runners   := @Runners;
