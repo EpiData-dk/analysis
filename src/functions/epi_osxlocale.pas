@@ -26,18 +26,15 @@ unit epi_osxlocale;
 {$mode objfpc}{$H+}
 
 interface
+{$IFDEF DARWIN}
 
 uses
-  {$IFDEF DARWIN}
-  MacOSAll,
-  {$ENDIF}
-  SysUtils;
-
-{$IFDEF DARWIN}
+  SysUtils, MacOSAll;
 procedure GetMacFormatSettings(var ASettings: TFormatSettings);
 {$ENDIF}
 
 implementation
+{$IFDEF DARWIN}
 
 {------------------------------------------------------------------------------
   Name:    CFStringToStr
@@ -47,7 +44,6 @@ implementation
 
   Converts Core Foundation string to string
  ------------------------------------------------------------------------------}
-{$IFDEF DARWIN}
 function CFStringToStr(AString: CFStringRef): UTF8String;
   var
     Str: Pointer;
@@ -311,5 +307,4 @@ initialization
   GetMacFormatSettings(DefaultFormatSettings);
 
 {$ENDIF}
-
 end.

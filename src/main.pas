@@ -17,6 +17,9 @@ uses
   {$IFDEF DARWIN}
   CFPreferences, CFString, CocoaAll, epi_osxlocale,
   {$ENDIF}
+  {$IFDEF LINUX}
+  clocale,
+  {$ENDIF}
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
