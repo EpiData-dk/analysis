@@ -33,7 +33,9 @@ uses
   {$ENDIF}
   SysUtils;
 
+{$IFDEF DARWIN}
 procedure GetMacFormatSettings(var ASettings: TFormatSettings);
+{$ENDIF}
 
 implementation
 
@@ -45,6 +47,7 @@ implementation
 
   Converts Core Foundation string to string
  ------------------------------------------------------------------------------}
+{$IFDEF DARWIN}
 function CFStringToStr(AString: CFStringRef): UTF8String;
   var
     Str: Pointer;
@@ -304,9 +307,9 @@ procedure GetMacFormatSettings(var ASettings: TFormatSettings);
   end;
 
 initialization
-  // This is only for MacOS
-  {$IFDEF DARWIN}
+
   GetMacFormatSettings(DefaultFormatSettings);
-  {$ENDIF}
+
+{$ENDIF}
 
 end.
