@@ -99,7 +99,7 @@ end;
 procedure TGraphCommandExecutor.ShowMarksAsDates(var AText: String;
   AMark: Double);
 begin
-  AText := FormatDateTime('dd/mm/yyyy', AMark);
+  AText := DateToStr(AMark);
 end;
 
 procedure TGraphCommandExecutor.UpdateChartTitles(ST: TCustomGraphCommand;
