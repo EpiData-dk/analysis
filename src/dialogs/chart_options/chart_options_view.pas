@@ -152,9 +152,8 @@ begin
 
   LabelText := TLabel.Create(TheOwner);
   LabelText.Parent := self;
-  LabelText.Caption := 'for date variables, specify min/max as dd' +
-                    DefaultFormatSettings.DateSeparator + 'mm' +
-                    DefaultFormatSettings.DateSeparator + 'yyyy';
+  LabelText.Caption :=  'for date variables, specify min/max as ' +
+                        DefaultFormatSettings.ShortDateFormat;
   LabelText.AnchorParallel(akLeft,  2 * entrybox, Self);
   LabelText.AnchorToNeighbour(akTop, 10, PrevEditText);
 
