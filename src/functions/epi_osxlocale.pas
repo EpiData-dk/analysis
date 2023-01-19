@@ -28,7 +28,10 @@ unit epi_osxlocale;
 interface
 
 uses
-  SysUtils, MacOSAll;
+  SysUtils,
+  {$IFDEF DARWIN}
+  MacOSAll
+  {$ENDIF};
 
 procedure GetMacFormatSettings(var ASettings: TFormatSettings);
 
@@ -301,6 +304,9 @@ procedure GetMacFormatSettings(var ASettings: TFormatSettings);
   end;
 
 initialization
+  // This is only for MacOS
+  {$IFDEF DARWIN}
   GetMacFormatSettings(DefaultFormatSettings);
+  {$ENDIF}
 
 end.
