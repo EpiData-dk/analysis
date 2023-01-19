@@ -17,9 +17,6 @@ uses
   {$IFDEF DARWIN}
   CFPreferences, CFString, CocoaAll, epi_osxlocale,
   {$ENDIF}
-  {$IFDEF LINUX}
-  locale,
-  {$ENDIF}
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
   {$ENDIF}
