@@ -15,7 +15,10 @@ uses
   projecttree_form, commandtree_form, stat_dialog_contribution, stat_dialog_action,
   script_runner, stat_dialog,
   {$IFDEF DARWIN}
-  CFPreferences, CFString, CocoaAll,
+  CFPreferences, CFString, CocoaAll, epi_osxlocale,
+  {$ENDIF}
+  {$IFDEF LINUX}
+  clocale,
   {$ENDIF}
   {$IFDEF EPI_CHROMIUM_HTML}
   htmlviewer, htmlviewer_osr,
