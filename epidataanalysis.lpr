@@ -12,7 +12,8 @@ uses
   Interfaces, sysutils, Forms,
 
   // Required EpiData units
-  ana_procs, wizard_form, datamodule, main, epi_osxlocale,
+  ana_procs, wizard_form, datamodule, main, chart_options, chart_options_model,
+  chart_options_view,
 
   // ONLY ADD Stat Dialogs HERE
   freq_contribution, tables_contribution, ctable_contribution,

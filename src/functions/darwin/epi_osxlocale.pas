@@ -30,6 +30,7 @@ interface
 
 uses
   SysUtils, MacOSAll;
+
 procedure GetMacFormatSettings(var ASettings: TFormatSettings);
 {$ENDIF}
 
