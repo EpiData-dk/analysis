@@ -2659,12 +2659,6 @@ begin
     1: Result.ResultTypes := [rtDate];
     2: Result.ResultTypes := [rtDate];
   end;
-  if (VariableList.Count = 3) then
-  case Index of
-    0: Result.ResultTypes := [rtString, rtInteger];
-    1: Result.ResultTypes := [rtDate];
-    2: Result.ResultTypes := [rtDate];
-  end;
 end;
 
 constructor TSurvivalCommand.Create(AVariableList: TVariableList;
