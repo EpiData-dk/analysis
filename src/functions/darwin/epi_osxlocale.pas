@@ -1,7 +1,6 @@
 {
-    unit renamed and modified to correctly identify 'y' in a date format as meaning 'yyyy' (MacOS 12.6)
+    unit renamed and modified to correctly identify 'y' in a date format as meaning 'yyyy' (MacOS 11 or greater?)
 
-    TODO: this might actually be dependent on MacOS version; should we check version first?
     -----------
     This file is part of the Free Pascal packages library.
     Copyright (c) 2013 by Yury Sidorov, member of the
@@ -26,16 +25,13 @@ unit epi_osxlocale;
 {$mode objfpc}{$H+}
 
 interface
-{$IFDEF DARWIN}
 
 uses
   SysUtils, MacOSAll;
 
 procedure GetMacFormatSettings(var ASettings: TFormatSettings);
-{$ENDIF}
 
 implementation
-{$IFDEF DARWIN}
 
 {------------------------------------------------------------------------------
   Name:    CFStringToStr
@@ -307,5 +303,4 @@ initialization
 
   GetMacFormatSettings(DefaultFormatSettings);
 
-{$ENDIF}
 end.

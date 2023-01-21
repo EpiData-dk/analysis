@@ -1568,9 +1568,10 @@ By default, confidence intervals are shown as error bars
 
 - `!cil` Show the confidence intervals as dotted lines.
 
-- `See graph options`
+### Graph options
 
- `survival` is a graph command and any [graph option](#graphoptions) may be specified
+ `survival` is a graph command and any other [graph option](#graphoptions) may be specified except for axis min and max
+ 
 
 ### result variables
 Estimates are saved as result variables. Use  `list results` for details
@@ -1638,7 +1639,7 @@ Draw a barchart for Variable. A barchart shows frequencies at each indiviual val
 
 - graph options
 
- `histogram` is a graph command and any [graph option](#graphoptions) may be specified
+ `histogram` is a graph command and any [graph option](#graphoptions) may be specified except for !ymin
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -1666,7 +1667,7 @@ A histogram is a bar chart where every integer value within range is represented
 
  stack bars for stratified data.
 - graph options
- `histogram` is a graph command and any [graph option](#graphoptions) may be specified
+ `histogram` is a graph command and any [graph option](#graphoptions) may be specified except for !ymin
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -1690,7 +1691,7 @@ An epicurve is a stacked histogram, where individual boxes are shown for each su
  
 - graph options 
 
- `epicurve` is a graph command and any [graph option](#graphoptions) may be specified
+ `epicurve` is a graph command and any [graph option](#graphoptions) may be specified except for !ymin
 
 <a name="graphoptions" id="graphoptions"></a> 
 ## graph options
@@ -1713,7 +1714,7 @@ Any of the graph commands may use the following options.
 
 - `!ymax := <real number|date>`
 
-	- axis minumum and maximum values may be expressed as numbers with or without a decimal place or as date values. 
+	- axis minumum and maximum values may be expressed for some graphs as numbers with or without a decimal place or as date values, depending on the variable type 
 	- if a given value will excluded data from the graph, then it is ignored
 	- for some graphs, specifing xmin or ymin := 0 may be required to force the axis to begin at zero
 

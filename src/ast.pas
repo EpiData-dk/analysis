@@ -1582,7 +1582,7 @@ type
 implementation
 
 uses
-  LazUTF8Classes, epiconvertutils, typinfo, options_utils, parser,
+  LazUTF8Classes, epiconvertutils, typinfo, options_utils, parser, chart_options,
 
   // SCRIPT FUNCTIONS (placed ind ./functions/epi_script_function_<name>.pas
   epi_script_function_mathfunctions,
@@ -1601,18 +1601,14 @@ function TCustomGraphCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  result.Insert('title',  ['ti'],      [rtString]);
-  result.Insert('footer', ['fn'],      [rtString]);
+  result.Insert('title',  ['ti'],     [rtString]);
+  result.Insert('footer', ['fn'],     [rtString]);
   result.Insert('xtitle', ['xt'],     [rtString]);
   result.Insert('ytitle', ['yt'],     [rtString]);
   result.Insert('export', ['s', 'e'], [rtString]);
   result.Insert('sizex',  ['sx'],     [rtInteger]);
   result.Insert('sizey',  ['sy'],     [rtInteger]);
   result.Insert('colors', ['c'],      [rtString]);
-{  result.Insert('xmin',               [rtFloat, rtInteger, rtDate]);
-  result.Insert('xmax',               [rtFloat, rtInteger, rtDate]);
-  result.Insert('ymin',               [rtFloat, rtInteger, rtDate]);
-  result.Insert('ymax',               [rtFloat, rtInteger, rtDate]);  }
   result.Insert('replace',            [rtUndefined]);
 end;
 
@@ -2481,10 +2477,15 @@ end;
 { TScatterCommand }
 
 function TScatterCommand.GetAcceptedOptions: TStatementOptionsMap;
+
 begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('l', [rtUndefined]);
   Result.Insert('p', [rtUndefined]);
+  Result.Insert('xmin', AxisTypeFromVariableType(VariableList[0].ResultType));
+  Result.Insert('xmax', AxisTypeFromVariableType(VariableList[0].ResultType));
+  Result.Insert('ymin', AxisTypeFromVariableType(VariableList[1].ResultType));
+  Result.Insert('ymax', AxisTypeFromVariableType(VariableList[1].ResultType));
 end;
 
 function TScatterCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2514,6 +2515,7 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('stack', [rtUndefined]);
   Result.Insert('pct', [rtUndefined]);
+  Result.Insert('ymax', [rtInteger]);
 end;
 
 function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2542,6 +2544,9 @@ begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('interval', [rtInteger]);
+  Result.Insert('xmin', AxisTypeFromVariableType(VariableList[0].ResultType));
+  Result.Insert('xmax', AxisTypeFromVariableType(VariableList[0].ResultType));
+  Result.Insert('ymax', [rtInteger]);
 end;
 
 function TEpicurveCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2576,6 +2581,9 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('interval', [rtInteger, rtFloat]);
   Result.Insert('stack', [rtUndefined]);
+  Result.Insert('xmin', AxisTypeFromVariableType(VariableList[0].ResultType));
+  Result.Insert('xmax', AxisTypeFromVariableType(VariableList[0].ResultType));
+  Result.Insert('ymax', [rtInteger]);
 end;
 
 function THistogramCommand.GetAcceptedVariableCount: TBoundArray;

@@ -18,7 +18,7 @@ type
   function ToColors(AValue: String; out Msg: UTF8String): TColorMap;
   function ToColors(AHexValues: Array of String; out Msg: UTF8String): TColorMap;
   function ChartColorsFromOptions(OptionList: TOptionList; Executor: TExecutor): TColorMap;
-
+  function AxisTypeFromVariableType(aType: TASTResultType): TASTResultTypes;
 implementation
 
 uses
@@ -86,6 +86,14 @@ begin
       else
         result[i-1] := RGBToBGR(StrToInt('$'+s));
     end;
+end;
+
+function AxisTypeFromVariableType(aType: TASTResultType): TASTResultTypes;
+begin
+  if (aType = rtDate) then
+    result := [rtDate]
+  else
+    result := [rtInteger, rtFloat];
 end;
 
 end.
