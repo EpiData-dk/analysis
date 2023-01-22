@@ -63,7 +63,7 @@ function THistogramStatDialogContribution.CreateChartOptionsView(Owner: TCompone
 var
   View: TChartOptionsView;
 begin
-  FChartOptionsModel := TChartOptionsModel.Create(Executor);
+  FChartOptionsModel := TChartOptionsModel.Create(Executor, %1000);
   View := TChartOptionsView.Create(Owner);
   View.SetModel(FChartOptionsModel);
   Result := View;

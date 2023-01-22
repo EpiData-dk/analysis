@@ -13,14 +13,17 @@ interface
  !colors
 }
 uses
-  Classes, SysUtils, stat_dialog_contribution, chart_options, executor;
+  Classes, SysUtils, stat_dialog_contribution, chart_options, executor,
+  scatter_variables_model,
+  epidatafiles;
 
 type
 
-  TChartOptionsBox = (cbT, cbF, cbXT, cbYT, cbC, cbXmin, cbXmax, cbYmin, cbYmax);
-  
-  { TChartOptionsModel }
+  TChartOptionBox = (cbT, cbF, cbXT, cbYT, cbC, cbnXMin, cbnXMax, cbnYMin, cbnYMax);
+  TChartMinMaxBox = (cbdXMin, cbdXMax, cbdYMin, cbdYMax);
+  TModelTypes = (mtScatter, mtEpicurve, mtHistogram, mtBarChart);
 
+  { TChartOptionsModel }
   TChartOptionsModel = class(IStatDialogModel)
   private
     FExecutor: TExecutor;
@@ -29,7 +32,12 @@ type
     FXTitle:   UTF8String;
     FYTitle:   UTF8String;
     FColors:   UTF8String;
+    FVarModelType: Integer;
     FXMin, FXMax, FYMin, FYMax: UTF8String;
+    FXVariable: TEpiField;
+    FYVariable: TEpiField;
+    FScatterModel: TScatterStatVariableModel;
+    FMinMax: Integer;   // lower bytes refer to ymax, ymin, xmax, xmin
     procedure SetTitle(AValue: UTF8String);
     procedure SetFootnote(AValue: UTF8String);
     procedure SetXTitle(AValue: UTF8String);
@@ -37,9 +45,11 @@ type
     procedure SetColors(AValue: UTF8String);
 
   public
-    constructor Create(Executor: TExecutor);
+    constructor Create(Executor: TExecutor; Flags: Integer = 0);
     function GenerateScript(): UTF8String;
     function IsDefined(): boolean;
+    procedure GetVars;
+    procedure SetVariableModel(AValue: TScatterStatVariableModel);
   public
     property Title: UTF8String read FTitle write SetTitle;
     property Footnote: UTF8String read FFootnote write SetFootnote;
@@ -50,6 +60,9 @@ type
     property XMax: UTF8String read FXMax write FXMax;
     property YMin: UTF8String read FYMin write FYMin;
     property YMax: UTF8String read FYMax write FYMax;
+    property XVariable: TEpiField read FXVariable;
+    property YVariable: TEpiField read FYVariable;
+    property MinMax: Integer read FMinMax write FMinMax;
   end;
 
 
@@ -58,10 +71,36 @@ implementation
 uses
   LazUTF8;
 
-constructor TChartOptionsModel.Create(Executor: TExecutor);
+const
+  GScatter = Ord(mtScatter);
+
+{ TChartOptionsModel }
+
+constructor TChartOptionsModel.Create(Executor: TExecutor; Flags: Integer = 0);
 begin
-  FExecutor := Executor;
+  FExecutor  := Executor;
+  FMinMax    := Flags;
 // get colors from set option
+end;
+
+procedure TChartOptionsModel.SetVariableModel(AValue: TScatterStatVariableModel);
+begin
+  if (FScatterModel = AValue) then
+    exit;
+  FScatterModel := AValue;
+  FVarModelType := GScatter;
+end;
+
+procedure TChartOptionsModel.GetVars;
+begin
+  case FVarModelType of
+    GScatter:
+      begin
+        FXVariable := FScatterModel.XVariable;
+        FYVariable := FSCatterModel.YVariable;
+      end;
+
+  end;
 end;
 
 procedure TChartOptionsModel.SetTitle(AValue: UTF8String);

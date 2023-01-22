@@ -65,7 +65,8 @@ function TScatterStatDialogContribution.CreateChartOptionsView(Owner: TComponent
 var
   View: TChartOptionsView;
 begin
-  FChartOptionsModel := TChartOptionsModel.Create(Executor);
+  FChartOptionsModel := TChartOptionsModel.Create(Executor, %1111);
+  FChartOptionsModel.SetVariableModel(FVariablesModel);
   View := TChartOptionsView.Create(Owner);
   View.SetModel(FChartOptionsModel);
   Result := View;
