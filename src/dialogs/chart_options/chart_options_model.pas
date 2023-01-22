@@ -14,14 +14,14 @@ interface
 }
 uses
   Classes, SysUtils, stat_dialog_contribution, chart_options, executor,
-  scatter_variables_model,
+  scatter_variables_model, barchart_model, epicurve_model, histogram_model,
   epidatafiles;
 
 type
 
   TChartOptionBox = (cbT, cbF, cbXT, cbYT, cbC, cbnXMin, cbnXMax, cbnYMin, cbnYMax);
   TChartMinMaxBox = (cbdXMin, cbdXMax, cbdYMin, cbdYMax);
-  TModelTypes = (mtScatter, mtEpicurve, mtHistogram, mtBarChart);
+  TModelTypes = (mtScatter, mtBarChart, mtEpicurve, mtHistogram);
 
   { TChartOptionsModel }
   TChartOptionsModel = class(IStatDialogModel)
@@ -37,6 +37,9 @@ type
     FXVariable: TEpiField;
     FYVariable: TEpiField;
     FScatterModel: TScatterStatVariableModel;
+    FBarchartModel: TBarchartStatDialogVariableModel;
+    FEpicurveModel: TEpicurveStatDialogVariableModel;
+    FHistogramModel: THistogramStatDialogVariableModel;
     FMinMax: Integer;   // lower bytes refer to ymax, ymin, xmax, xmin
     procedure SetTitle(AValue: UTF8String);
     procedure SetFootnote(AValue: UTF8String);
@@ -50,6 +53,9 @@ type
     function IsDefined(): boolean;
     procedure GetVars;
     procedure SetVariableModel(AValue: TScatterStatVariableModel);
+    procedure SetVariableModel(AValue: TBarchartStatDialogVariableModel);
+    procedure SetVariableModel(AValue: TEpicurveStatDialogVariableModel);
+    procedure SetVariableModel(AValue: THistogramStatDialogVariableModel);
   public
     property Title: UTF8String read FTitle write SetTitle;
     property Footnote: UTF8String read FFootnote write SetFootnote;
@@ -73,6 +79,9 @@ uses
 
 const
   GScatter = Ord(mtScatter);
+  GBarchart = Ord(mtBarchart);
+  GEpicurve = Ord(mtEpicurve);
+  GHistogram = Ord(mtHistogram);
 
 { TChartOptionsModel }
 
@@ -91,6 +100,30 @@ begin
   FVarModelType := GScatter;
 end;
 
+procedure TChartOptionsModel.SetVariableModel(AValue: TBarchartStatDialogVariableModel);
+begin
+  if (FBarchartModel = AValue) then
+    exit;
+  FBarchartModel := AValue;
+  FVarModelType := GBarchart;
+end;
+
+procedure TChartOptionsModel.SetVariableModel(AValue: TEpicurveStatDialogVariableModel);
+begin
+  if (FEpicurveModel = AValue) then
+    exit;
+  FEpicurveModel := AValue;
+  FVarModelType := GEpicurve;
+end;
+
+procedure TChartOptionsModel.SetVariableModel(AValue: THistogramStatDialogVariableModel);
+begin
+  if (FHistogramModel = AValue) then
+    exit;
+  FHistogramModel := AValue;
+  FVarModelType := GHistogram;
+end;
+
 procedure TChartOptionsModel.GetVars;
 begin
   case FVarModelType of
@@ -99,7 +132,18 @@ begin
         FXVariable := FScatterModel.XVariable;
         FYVariable := FSCatterModel.YVariable;
       end;
-
+    GBarchart:
+      begin
+        FXVariable := FBarchartModel.XVariable;
+      end;
+    GEpicurve:
+      begin
+        FXVariable := FEpicurveModel.XVariable;
+      end;
+    GHistogram:
+      begin
+        FXVariable := FHistogramModel.XVariable;
+      end;
   end;
 end;
 

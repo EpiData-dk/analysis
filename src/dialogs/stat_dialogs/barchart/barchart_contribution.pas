@@ -64,6 +64,7 @@ var
   View: TChartOptionsView;
 begin
   FChartOptionsModel := TChartOptionsModel.Create(Executor);
+  FChartOptionsModel.SetVariableModel(FVariablesModel);
   View := TChartOptionsView.Create(Owner);
   View.SetModel(FChartOptionsModel);
   Result := View;

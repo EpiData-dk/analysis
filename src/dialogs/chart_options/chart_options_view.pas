@@ -62,12 +62,14 @@ const
   entryBox = 150;
   dateSize = 120;
 var
-  EditText: TCustomEdit;
-  DateText: TDateEdit;
-//  PrevEditText: TCustomEdit;
-//  PrevDateText: TDateEdit;
+  EditText:  TCustomEdit;
+  DateText:  TDateEdit;
   LabelText: TLabel;
   PrevLabel: TLabel;
+  Labels:    array of UTF8String = ('Main Title', 'Footnote',
+             'X-Axis Title', 'Y-Axis Title', 'Colour Selection',
+             'X-Axis Minumum', 'X-Axis Maximum', 'Y-Axis Minumum', 'Y-Axis Maximum');
+  i:         Integer;
 begin
   inherited Create(TheOwner);
 
@@ -75,204 +77,55 @@ begin
   SetLength(FDate,  Ord(High(TChartMinMaxBox)) + 1);
   SetLength(FLabel, Ord(High(TChartOptionBox)) + 1);
 
-  LabelText := TLabel.Create(TheOwner);
-  LabelText.Caption := 'Main Title';
-  LabelText.AnchorParallel(akLeft,  10, Self);
-  LabelText.AnchorParallel(akTop,   10, Self);
-  LabelText.Parent := self;
+  // create labels
 
-  EditText := TCustomEdit.Create(TheOwner);
-  EditText.AnchorParallel(akTop,  10, Self);
-  EditText.AnchorParallel(akLeft, entryBox, Self);
-  EditText.AnchorParallel(akRight, 10, Self);
-  EditText.Tag := TITLE_TAG;
-  EditText.OnChange := @SetText;
-  EditText.Parent := self;
-  FText[TITLE_TAG] := EditText;
-  FLabel[TITLE_TAG] := LabelText;
-  PrevLabel := LabelText;
+  for i:= Low(FLabel) to High(FLabel) do
+    begin
+      LabelText := TLabel.Create(TheOwner);
+      LabelText.Caption := Labels[i];
+      LabelText.AnchorParallel(akLeft, 10, Self);
+      if (i = 0) then
+        LabelText.AnchorParallel(akTop, 10, Self)
+      else
+        LabelText.AnchorToNeighbour(akTop, 10, FLabel[i-1]);
+      LabelText.Parent := self;
+      FLabel[i] := LabelText;
+    end;
 
-  LabelText := TLabel.Create(TheOwner);
-  LabelText.Parent := self;
-  LabelText.Caption := 'Footnote';
-  LabelText.AnchorParallel(akLeft,  10, Self);
-  LabelText.AnchorToNeighbour(akTop, 10, PrevLabel);
+  // create CustomEdit controls
 
-  EditText := TCustomEdit.Create(TheOwner);
-  EditText.Parent := self;
-  EditText.AnchorParallel(akLeft, entryBox, Self);
-  EditText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  EditText.AnchorParallel(akRight, 10, Self);
-  EditText.Tag := FOOTNOTE_TAG;
-  EditText.OnChange := @SetText;
-  FText[FOOTNOTE_TAG] := EditText;
-  FLabel[FOOTNOTE_TAG] := LabelText;
-  PrevLabel := LabelText;
+  for i := Low(FText) to High(FText) do
+    begin
+      EditText := TCustomEdit.Create(TheOwner);
+      if (i = 0) then
+        EditText.AnchorParallel(akTop, 10, Self)
+      else
+        EditText.AnchorToNeighbour(akTop, 10, FLabel[i-1]);
+      EditText.AnchorParallel(akLeft, entryBox, Self);
+      EditText.OnChange := @SetText;
+      if (i < XMIN_TAG) then
+        EditText.AnchorParallel(akRight, 10, Self)
+      else
+        EditText.Visible := false;
+      EditText.Tag := i;
+      EditText.Parent := self;
+      FText[i] := EditText;
+     end;
 
-  LabelText := TLabel.Create(TheOwner);
-  LabelText.Parent := self;
-  LabelText.Caption := 'X-axis Title';
-  LabelText.AnchorParallel(akLeft,  10, Self);
-  LabelText.AnchorToNeighbour(akTop, 10, PrevLabel);
+  // create DateEdit controls in same position as corresponding CustomEdit controls
 
-  EditText := TCustomEdit.Create(TheOwner);
-  EditText.Parent := self;
-  EditText.AnchorParallel(akLeft, entryBox, Self);
-  EditText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  EditText.AnchorParallel(akRight, 10, Self);
-  EditText.Tag := XTITLE_TAG;
-  EditText.OnChange := @SetText;
-  FText[XTITLE_TAG] := EditText;
-  FLabel[XTITLE_TAG] := LabelText;
-  PrevLabel := LabelText;
-
-  LabelText := TLabel.Create(TheOwner);
-  LabelText.Parent := self;
-  LabelText.Caption := 'Y-axis Title';
-  LabelText.AnchorParallel(akLeft,  10, Self);
-  LabelText.AnchorToNeighbour(akTop, 10, PrevLabel);
-
-  EditText := TCustomEdit.Create(TheOwner);
-  EditText.Parent := self;
-  EditText.AnchorParallel(akLeft, entryBox, Self);
-  EditText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  EditText.AnchorParallel(akRight, 10, Self);
-  EditText.Tag := YTITLE_TAG;
-  EditText.OnChange := @SetText;
-  FText[YTITLE_TAG] := EditText;
-  FLabel[YTITLE_TAG] := LabelText;
-  PrevLabel := LabelText;
-
-  LabelText := TLabel.Create(TheOwner);
-  LabelText.Parent := self;
-  LabelText.Caption := 'Color selection';
-  LabelText.AnchorParallel(akLeft,  10, Self);
-  LabelText.AnchorToNeighbour(akTop, 10, PrevLabel);
-
-  EditText := TCustomEdit.Create(TheOwner);
-  EditText.Parent := self;
-  EditText.AnchorParallel(akLeft, entryBox, Self);
-  EditText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  EditText.AnchorParallel(akRight, 10, Self);
-  EditText.Tag := COLOR_TAG;
-  EditText.OnChange := @SetText;
-  FText[COLOR_TAG] := EditText;
-  FLabel[COLOR_TAG] := LabelText;
-  PrevLabel := LabelText;
-
-  // TODO:  Show 10 color button controls with the standard colors. User can click
-  //        on a button to change it? Maybe a bit too complicated
-  //        Problem is: once a color is set, you have to use the hex colours for all 10
-  //        For this Dialog, just show the colors; don't make them clickable
-
-  LabelText := TLabel.Create(TheOwner);
-  LabelText.Parent := self;
-  LabelText.Caption := 'X-axis minumum';
-  LabelText.AnchorParallel(akLeft,  10, Self);
-  LabelText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  LabelText.Visible := false;
-  FLabel[XMIN_TAG] := LabelText;
-
-  EditText := TCustomEdit.Create(TheOwner);
-  EditText.Parent := self;
-  EditText.AnchorParallel(akLeft, entryBox, Self);
-  EditText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  EditText.Tag := XMIN_TAG;
-  EditText.OnChange := @SetText;
-  EditText.Visible := false;
-  FText[XMIN_TAG] := EditText;
-
-  DateText := TDateEdit.Create(TheOwner);
-  DateText.Parent := self;
-  DateText.AnchorParallel(akLeft, entryBox, Self);
-  DateText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  DateText.Width := DateSize;
-  DateText.Tag := XDMIN_TAG;
-  DateText.OnChange := @SetDate;
-  DateText.Visible := false;
-  FDate[XDMIN_TAG] := DateText;
-  PrevLabel := LabelText;
-
-  LabelText := TLabel.Create(TheOwner);
-  LabelText.Parent := self;
-  LabelText.Caption := 'X-axis maximum';
-  LabelText.AnchorParallel(akLeft,  10, Self);
-  LabelText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  LabelText.Visible := false;
-  FLabel[XMAX_TAG] := LabelText;
-
-  EditText := TCustomEdit.Create(TheOwner);
-  EditText.Parent := self;
-  EditText.AnchorParallel(akLeft, entryBox, Self);
-  EditText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  EditText.Tag := XMAX_TAG;
-  EditText.OnChange := @SetText;
-  FText[XMAX_TAG] := EditText;
-
-  DateText := TDateEdit.Create(TheOwner);
-  DateText.Parent := self;
-  DateText.AnchorParallel(akLeft, entryBox, Self);
-  DateText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  DateText.Width := DateSize;
-  DateText.Tag := XDMAX_TAG;
-  DateText.OnChange := @SetDate;
-  DateText.Visible := false;
-  FDate[XDMAX_TAG] := DateText;
-  PrevLabel := LabelText;
-
-  LabelText := TLabel.Create(TheOwner);
-  LabelText.Parent := self;
-  LabelText.Caption := 'Y-axis minumum';
-  LabelText.AnchorParallel(akLeft,  10, Self);
-  LabelText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  LabelText.Visible := false;
-  FLabel[YMIN_TAG] := LabelText;
-
-  EditText := TCustomEdit.Create(TheOwner);
-  EditText.Parent := self;
-  EditText.AnchorParallel(akLeft, entryBox, Self);
-  EditText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  EditText.Tag := YMIN_TAG;
-  EditText.OnChange := @SetText;
-  FText[YMIN_TAG] := EditText;
-
-  DateText := TDateEdit.Create(TheOwner);
-  DateText.Parent := self;
-  DateText.AnchorParallel(akLeft, entryBox, Self);
-  DateText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  DateText.Width := DateSize;
-  DateText.Tag := YDMIN_TAG;
-  DateText.OnChange := @SetDate;
-  DateText.Visible := false;
-  FDate[YDMIN_TAG] := DateText;
-  PrevLabel := LabelText;
-
-  LabelText := TLabel.Create(TheOwner);
-  LabelText.Parent := self;
-  LabelText.Caption := 'Y-axis maximum';
-  LabelText.AnchorParallel(akLeft,  10, Self);
-  LabelText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  LabelText.Visible := false;
-  FLabel[YMAX_TAG] := LabelText;
-
-  EditText := TCustomEdit.Create(TheOwner);
-  EditText.Parent := self;
-  EditText.AnchorParallel(akLeft, entryBox, Self);
-  EditText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  EditText.Tag := YMAX_TAG;
-  EditText.OnChange := @SetText;
-  FText[YMAX_TAG] := EditText;
-
-  DateText := TDateEdit.Create(TheOwner);
-  DateText.Parent := self;
-  DateText.AnchorParallel(akLeft, entryBox, Self);
-  DateText.AnchorToNeighbour(akTop, 10, PrevLabel);
-  DateText.Width := DateSize;
-  DateText.Tag := YDMAX_TAG;
-  DateText.OnChange := @SetDate;
-  DateText.Visible := false;
-  FDate[YDMAX_TAG] := DateText;
-
+  for i := Low(FDate) to High(FDate) do
+    begin
+      DateText := TDateEdit.Create(TheOwner);
+      DateText.Parent := self;
+      DateText.AnchorParallel(akLeft, entryBox, Self);
+      DateText.AnchorToNeighbour(akTop, 10, FLabel[i + COLOR_TAG]);
+      DateText.Width := DateSize;
+      DateText.Tag := i;
+      DateText.OnChange := @SetDate;
+      DateText.Visible := false;
+      FDate[i] := DateText;
+    end;
 end;
 
 procedure TChartOptionsView.SetText(Sender: TObject);
@@ -335,45 +188,47 @@ begin
     FDate[i].Visible := false;
   FDataModel.GetVars;
 
-  if (Assigned(FDataModel.XVariable)) then
+  // TODO: flip this around (check MinMax bit first, then match to existing variable type)
+  if ((FDataModel.MinMax and 1) = 1) then
     begin
-      if ((FDataModel.MinMax and 1) = 1) then
-        begin
-          if (FDataModel.XVariable.FieldType in DateFieldTypes) then
-            FDate[XDMIN_TAG].Visible := true
-          else
-            FText[XMIN_TAG].Visible := true;
-          FLabel[XMIN_TAG].Visible := true;
-        end;
-      if ((FDataModel.MinMax and 2) = 2) then
-        begin
-          if (FDataModel.XVariable.FieldType in DateFieldTypes) then
-            FDate[XDMAX_TAG].Visible := true
-          else
-            FText[XMAX_TAG].Visible := true;
-          FLabel[XMAX_TAG].Visible := true;
-        end;
+      if (Assigned(FDataModel.XVariable)) and
+         (FDataModel.XVariable.FieldType in DateFieldTypes) then
+        FDate[XDMIN_TAG].Visible := true
+      else
+        FText[XMIN_TAG].Visible := true;
+      FLabel[XMIN_TAG].Visible := true;
     end;
 
-  if (Assigned(FDataModel.YVariable)) then
+  if ((FDataModel.MinMax and 2) = 2) then
     begin
-      if ((FDataModel.MinMax and 4) = 4) then
-        begin
-          if (FDataModel.YVariable.FieldType in DateFieldTypes) then
-            FDate[YDMIN_TAG].Visible := true
-          else
-            FText[YMIN_TAG].Visible := true;
-          FLabel[YMIN_TAG].Visible := true;
-        end;
-      if ((FDataModel.MinMax and 8) = 8) then
-        begin
-          if (FDataModel.YVariable.FieldType in DateFieldTypes) then
-            FDate[YDMAX_TAG].Visible := true
-          else
-            FText[YMAX_TAG].Visible := true;
-          FLabel[YMAX_TAG].Visible := true;
-        end;
+      if (Assigned(FDataModel.XVariable)) and
+         (FDataModel.XVariable.FieldType in DateFieldTypes) then
+        FDate[XDMAX_TAG].Visible := true
+      else
+        FText[XMAX_TAG].Visible := true;
+      FLabel[XMAX_TAG].Visible := true;
+     end;
+
+  if ((FDataModel.MinMax and 4) = 4) then
+    begin
+      if (Assigned(FDataModel.YVariable)) and
+         (FDataModel.YVariable.FieldType in DateFieldTypes) then
+        FDate[YDMIN_TAG].Visible := true
+      else
+        FText[YMIN_TAG].Visible := true;
+      FLabel[YMIN_TAG].Visible := true;
     end;
+
+  if ((FDataModel.MinMax and 8) = 8) then
+    begin
+      if (Assigned(FDataModel.YVariable)) and
+         (FDataModel.YVariable.FieldType in DateFieldTypes) then
+        FDate[YDMAX_TAG].Visible := true
+      else
+        FText[YMAX_TAG].Visible := true;
+      FLabel[YMAX_TAG].Visible := true;
+     end;
+
 end;
 
 function TChartOptionsView.ExitView(): boolean;

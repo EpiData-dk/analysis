@@ -63,7 +63,8 @@ function TEpicurveStatDialogContribution.CreateChartOptionsView(Owner: TComponen
 var
   View: TChartOptionsView;
 begin
-  FChartOptionsModel := TChartOptionsModel.Create(Executor,%1000);
+  FChartOptionsModel := TChartOptionsModel.Create(Executor,%1011);
+  FChartOptionsModel.SetVariableModel(FVariablesModel);
   View := TChartOptionsView.Create(Owner);
   View.SetModel(FChartOptionsModel);
   Result := View;
