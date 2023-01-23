@@ -78,6 +78,7 @@ var
   View: TChartOptionsView;
 begin
   FChartOptionsModel := TChartOptionsModel.Create(Executor);
+ // TODO: need to do something with FChartOptionsModel
   View := TChartOptionsView.Create(Owner);
   View.SetModel(FChartOptionsModel);
   Result := View;

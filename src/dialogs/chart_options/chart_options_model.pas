@@ -3,15 +3,7 @@ unit chart_options_model;
 {$mode objfpc}{$H+}
 
 interface
-{
- Valid options for all charts
 
- !title
- !footnote
- !xtitle
- !ytitle
- !colors
-}
 uses
   Classes, SysUtils, stat_dialog_contribution, chart_options, executor,
   scatter_variables_model, barchart_model, epicurve_model, histogram_model,
@@ -19,9 +11,9 @@ uses
 
 type
 
-  TChartOptionBox = (cbT, cbF, cbXT, cbYT, cbC, cbnXMin, cbnXMax, cbnYMin, cbnYMax);
-  TChartMinMaxBox = (cbdXMin, cbdXMax, cbdYMin, cbdYMax);
-  TModelTypes = (mtScatter, mtBarChart, mtEpicurve, mtHistogram);
+  TChartOptionEdit = (cbT, cbF, cbXT, cbYT, cbC, cbnXMin, cbnXMax, cbnYMin, cbnYMax);
+  TChartMinMaxDate = (cbdXMin, cbdXMax, cbdYMin, cbdYMax);
+  TVarModelTypes   = (mtNoVars, mtScatter, mtBarChart, mtEpicurve, mtHistogram, mtOther);
 
   { TChartOptionsModel }
   TChartOptionsModel = class(IStatDialogModel)
@@ -78,10 +70,11 @@ uses
   LazUTF8;
 
 const
-  GScatter = Ord(mtScatter);
-  GBarchart = Ord(mtBarchart);
-  GEpicurve = Ord(mtEpicurve);
+  GScatter   = Ord(mtScatter);
+  GBarchart  = Ord(mtBarchart);
+  GEpicurve  = Ord(mtEpicurve);
   GHistogram = Ord(mtHistogram);
+  GNoVars    = Ord(mtNoVars);
 
 { TChartOptionsModel }
 
@@ -89,7 +82,7 @@ constructor TChartOptionsModel.Create(Executor: TExecutor; Flags: Integer = 0);
 begin
   FExecutor  := Executor;
   FMinMax    := Flags;
-// get colors from set option
+  FVarModelType := GNoVars;
 end;
 
 procedure TChartOptionsModel.SetVariableModel(AValue: TScatterStatVariableModel);
@@ -127,6 +120,8 @@ end;
 procedure TChartOptionsModel.GetVars;
 begin
   case FVarModelType of
+    GNoVars:
+      exit;
     GScatter:
       begin
         FXVariable := FScatterModel.XVariable;
