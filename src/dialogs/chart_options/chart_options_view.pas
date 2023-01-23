@@ -36,6 +36,7 @@ type
     function IsDefined(): boolean; override;
     procedure ResetView(); override;
     procedure SetModel(DataModel: TChartOptionsModel);
+    procedure ResetMinMax;
   end;
 
 implementation
@@ -182,17 +183,8 @@ begin
 end;
 
 procedure TChartOptionsView.EnterView();
-var
-  i: integer;
 begin
   // reset all min/max fields
-  for i := XMIN_TAG to YMAX_TAG do
-    begin
-      FText[i].Visible := false;
-      FLabel[i].Visible := false;
-    end;
-  for i := XDMIN_TAG to YDMAX_TAG do
-    FDate[i].Visible := false;
 
     FDataModel.GetVars;
 
@@ -264,6 +256,7 @@ end;
 procedure TChartOptionsView.ResetView();
 var 
   EditText: TCustomEdit;
+  DateText: TDateEdit;
 begin
   FDataModel.Title := '';
   FDataModel.Footnote := '';
@@ -278,7 +271,10 @@ begin
 
   for EditText in FText do
     EditText.Text := '';
+  for DateText in FDate do
+    DateText.Text := '';
 
+  ResetMinMax;
   DoModified;
 end;
 
@@ -286,6 +282,19 @@ procedure TChartOptionsView.SetModel(
   DataModel: TChartOptionsModel);
 begin
   FDataModel := DataModel;
+end;
+
+procedure TChartOptionsView.ResetMinMax;
+var
+  i: Integer;
+begin
+  for i := XMIN_TAG to YMAX_TAG do
+    begin
+      FText[i].Visible := false;
+      FLabel[i].Visible := false;
+    end;
+  for i := XDMIN_TAG to YDMAX_TAG do
+    FDate[i].Visible := false;
 end;
 
 end.
