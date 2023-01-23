@@ -18,7 +18,7 @@ type
   function ToColors(AValue: String; out Msg: UTF8String): TColorMap;
   function ToColors(AHexValues: Array of String; out Msg: UTF8String): TColorMap;
   function ChartColorsFromOptions(OptionList: TOptionList; Executor: TExecutor): TColorMap;
-  function AxisTypeFromVariableType(aType: TASTResultType): TASTResultTypes;
+  function AxisTypeFromVariableType(AVar: TVariableList; AIndex: Integer): TASTResultTypes;
 implementation
 
 uses
@@ -88,12 +88,13 @@ begin
     end;
 end;
 
-function AxisTypeFromVariableType(aType: TASTResultType): TASTResultTypes;
+function AxisTypeFromVariableType(AVar: TVariableList; AIndex: Integer): TASTResultTypes;
 begin
-  if (aType = rtDate) then
+  result := [rtInteger, rtFloat];
+  if (AIndex < 0) or (AIndex >= AVar.Count) then
+    exit;
+  if (AVar[AIndex].ResultType = rtDate) then
     result := [rtDate]
-  else
-    result := [rtInteger, rtFloat];
 end;
 
 end.

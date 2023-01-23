@@ -2482,10 +2482,10 @@ begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('l', [rtUndefined]);
   Result.Insert('p', [rtUndefined]);
-  Result.Insert('xmin', AxisTypeFromVariableType(VariableList[0].ResultType));
-  Result.Insert('xmax', AxisTypeFromVariableType(VariableList[0].ResultType));
-  Result.Insert('ymin', AxisTypeFromVariableType(VariableList[1].ResultType));
-  Result.Insert('ymax', AxisTypeFromVariableType(VariableList[1].ResultType));
+  Result.Insert('xmin', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('xmax', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('ymin', AxisTypeFromVariableType(VariableList, 1));
+  Result.Insert('ymax', AxisTypeFromVariableType(VariableList, 1));
 end;
 
 function TScatterCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2544,8 +2544,8 @@ begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('interval', [rtInteger]);
-  Result.Insert('xmin', AxisTypeFromVariableType(VariableList[0].ResultType));
-  Result.Insert('xmax', AxisTypeFromVariableType(VariableList[0].ResultType));
+  Result.Insert('xmin', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('xmax', AxisTypeFromVariableType(VariableList, 0));
   Result.Insert('ymax', [rtInteger]);
 end;
 
@@ -2581,8 +2581,8 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('interval', [rtInteger, rtFloat]);
   Result.Insert('stack', [rtUndefined]);
-  Result.Insert('xmin', AxisTypeFromVariableType(VariableList[0].ResultType));
-  Result.Insert('xmax', AxisTypeFromVariableType(VariableList[0].ResultType));
+  Result.Insert('xmin', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('xmax', AxisTypeFromVariableType(VariableList, 0));
   Result.Insert('ymax', [rtInteger]);
 end;
 
