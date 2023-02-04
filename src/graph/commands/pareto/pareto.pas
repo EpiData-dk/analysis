@@ -124,7 +124,6 @@ begin
       T := TTables.Create(FExecutor, FOutputCreator);
       TablesAll := T.CalcTables(Datafile, VarNames,
                     StratifyVarnames, WeightVarName, Command.Options, nilTablesRefMap);
-
       XVar := Datafile.Fields.FieldByName[Varnames[0]];
       FXVarTitle := XVar.GetVariableLabel(FVariableLabelOutput);
       FXDate := XVar.FieldType in DateFieldTypes;

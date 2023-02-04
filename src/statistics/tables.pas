@@ -816,11 +816,11 @@ function TTables.CalcTables(InputDF: TEpiDataFile; VariableNames: TStrings;
 var
   AllTables: TTwoWayTables;
 begin
-  AllTables := DoCalcTables(InputDF, VariableNames, StratifyNames, WeightName);
-  if (not DoSortTables(AllTables, ST)) then
+  if (InputDF.Size = 0) then exit;
+  Result := DoCalcTables(InputDF, VariableNames, StratifyNames, WeightName);
+  if (not DoSortTables(Result, ST)) then
     Exit;
-  DoTableStatistics(AllTables, Statistics);
-  Result := AllTables;
+  DoTableStatistics(Result, Statistics);
 end;
 
 finalization
