@@ -813,10 +813,8 @@ end;
 function TTables.CalcTables(InputDF: TEpiDataFile; VariableNames: TStrings;
   StratifyNames: TStringList; const WeightName: UTF8String; ST: TOptionList;
   out RefMap: TEpiReferenceMap; Statistics: TTableStatistics): TTwoWayTables;
-var
-  AllTables: TTwoWayTables;
 begin
-  if (InputDF.Size = 0) then exit;
+  if (InputDF.Size = 0) then exit;  // calling routine should catch this!
   Result := DoCalcTables(InputDF, VariableNames, StratifyNames, WeightName);
   if (not DoSortTables(Result, ST)) then
     Exit;
