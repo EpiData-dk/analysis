@@ -103,52 +103,59 @@ begin
   else
     WeightVarName := '';
 
-  DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
-  if (WeightVarName <> '') then
-    begin
-      WeightVar  := Datafile.Fields.FieldByName[WeightVarName];
-      FWVarTitle += ' weighted (' + WeightVar.GetVariableLabel(FVariableLabelOutput)+ ')';
-      WeightVar.Free;
-    end
-  else
-    FWVarTitle := '';
-  dummyVar      := DataFile.NewField(ftInteger);
-  dummyVar.Name := dummyVarName;
-  Varnames.Add(dummyVarName);
-  T := TTables.Create(FExecutor, FOutputCreator);
-  TablesAll := T.CalcTables(Datafile, VarNames,
-                StratifyVarnames, WeightVarName, Command.Options, nilTablesRefMap);
-
-  XVar := Datafile.Fields.FieldByName[Varnames[0]];
-  FXVarTitle := XVar.GetVariableLabel(FVariableLabelOutput);
-  FXDate := XVar.FieldType in DateFieldTypes;
-
   Result := FChartFactory.NewGraphCommandResult();
 
-  if (byVar) then
-    begin
-      for i := 0 to TablesAll.Count - 1 do
-        begin
-          TableData := TablesAll.Tables[i];
-          TableData.SortByColTotal(true);
-          DoOneChart(TableData, TablesAll.StratifyVariables[0].GetVariableLabel(FVariableLabelOutput)
-            + '=' + TablesAll.StratifyVariables[0].GetValueLabel(i, FValueLabelOutput), Result);
-        end
-    end
+  DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
+  if (DataFile.Size < 1) then
+    FExecutor.Error('No data')
   else
-    begin
-      TableData := TablesAll.UnstratifiedTable;
-      TableData.SortByColTotal(true);
-      DoOneChart(TableData, '', Result);
-    end;
+    begin // create charts
+      if (WeightVarName <> '') then
+        begin
+          WeightVar  := Datafile.Fields.FieldByName[WeightVarName];
+          FWVarTitle += ' weighted (' + WeightVar.GetVariableLabel(FVariableLabelOutput)+ ')';
+          WeightVar.Free;
+        end
+      else
+        FWVarTitle := '';
+      dummyVar      := DataFile.NewField(ftInteger);
+      dummyVar.Name := dummyVarName;
+      Varnames.Add(dummyVarName);
+      T := TTables.Create(FExecutor, FOutputCreator);
+      TablesAll := T.CalcTables(Datafile, VarNames,
+                    StratifyVarnames, WeightVarName, Command.Options, nilTablesRefMap);
 
+      XVar := Datafile.Fields.FieldByName[Varnames[0]];
+      FXVarTitle := XVar.GetVariableLabel(FVariableLabelOutput);
+      FXDate := XVar.FieldType in DateFieldTypes;
+
+      if (byVar) then
+        begin
+          for i := 0 to TablesAll.Count - 1 do
+            begin
+              TableData := TablesAll.Tables[i];
+              TableData.SortByColTotal(true);
+              if (TableData.Total > 0) then
+                DoOneChart(TableData, TablesAll.StratifyVariables[0].GetVariableLabel(FVariableLabelOutput)
+                  + '=' + TablesAll.StratifyVariables[0].GetValueLabel(i, FValueLabelOutput), Result);
+            end
+        end
+      else
+        begin
+          TableData := TablesAll.UnstratifiedTable;
+          TableData.SortByColTotal(true);
+          DoOneChart(TableData, '', Result);
+        end;
+
+      T.Free;
+      TablesAll.Free;
+      XVar.Free;
+      dummyVar.Free;
+    end;  // create charts
+
+  StratifyVarNames.Free;
   VarNames.Free;
   DFVars.Free;
-  T.Free;
-  TablesAll.Free;
-  XVar.Free;
-  StratifyVarNames.Free;
-  dummyVar.Free;
   Datafile.Free;
 end;
 
@@ -178,6 +185,8 @@ var
   LeftAxisTransform:   TChartAxisTransformations;
   RightAxisAuto,
   LeftAxisAuto:        TAutoScaleAxisTransform;
+  xisDate:             Boolean;
+  xLabelStr:           String;
 begin
   Chart         := FChartFactory.NewChart();
   BarSource     := TParetoBarSource.Create(Chart);
@@ -186,8 +195,15 @@ begin
   BarSource.SetSource(TableData);
   LineSource.SetSource(TableData);
 
+  xisDate := TableData.ColVariable.FieldType in DateFieldTypes;
   for i := 0 to TableData.ColCount - 1 do
-    LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, FValueLabelOutput));
+    begin
+      if (xisDate) then
+        xLabelStr := DateToStr(TableData.ColVariable.AsDateTime[i])
+      else
+        xLabelStr := TableData.ColVariable.GetValueLabelFormatted(i, FValueLabelOutput);
+      LabelSeries.Add(i.ToDouble, 0, xLabelStr);
+    end;
 
   BarStyles := TChartStyles.Create(Chart);
   bStyle    := BarStyles.Add;
