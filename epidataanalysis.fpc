@@ -24,7 +24,7 @@
 -Fu./src/dialogs/graph
 -Fu./src/dialogs/stat_dialogs
 -Fu./src/dialogs/chart_options
--Fu./src/dialogs/stat_dialogs/barchart
+-Fu./src/dialogs/stat_dialogs/fbarchart
 -Fu./src/dialogs/stat_dialogs/ctable
 -Fu./src/dialogs/stat_dialogs/describe
 -Fu./src/dialogs/stat_dialogs/epicurve
@@ -47,7 +47,7 @@
 -Fu./src/graph/chartconfiguration
 -Fu./src/graph/charttitles
 -Fu./src/graph/commands
--Fu./src/graph/commands/barchart
+-Fu./src/graph/commands/fbarchart
 -Fu./src/graph/commands/epicurve
 -Fu./src/graph/commands/histogram
 -Fu./src/graph/commands/pareto
