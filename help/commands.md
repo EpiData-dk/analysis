@@ -8,7 +8,7 @@ ___
 
 | Manage data | Analyze data | Graph data | Write programs
 :---|:---|:---|:---
-[read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [describe](#describe) variables<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis | [scatter](#scatter) plot <br/>[line](#line) plot <br/>[bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve)<br/>[Kaplan-Meier plot](#survival)<br/>*SPC Charts*<br/>[pareto chart](#pareto) | [select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#type)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
+[read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [describe](#describe) variables<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis | [scatter](#scatter) plot <br/>[line](#line) plot <br/>frequency [bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve)<br/>[Kaplan-Meier plot](#survival)<br/>*SPC Charts*<br/>[pareto chart](#pareto) | [select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#type)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
 
@@ -1615,12 +1615,14 @@ Simple scatter plot for two variables.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="barchart" id="barchart"></a>
+<a name="fbarchart" id="fbarchart"></a>
 ## barchart
 ```
 barchart Variable [StratifyVariable] [options]
 ```
-Draw a barchart for Variable. A barchart shows frequencies at each indiviual value of Variable.
+Will change to `fbarchart` in a future release
+
+Draw a frequency barchart for `Variable`, showing frequencies or percentages at each indiviual value of the variable.
 
 ### parameters
 - Variable may be of any type
@@ -1639,7 +1641,7 @@ Draw a barchart for Variable. A barchart shows frequencies at each indiviual val
 
 - graph options
 
- `barchart` is a graph command and any graph option may be specified
+ `barchart` is a graph command and any graph option may be specified except for `!xmin !xmax !ymin`
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -1648,9 +1650,9 @@ See [variables](#referencedvars) on using referenced variables for this command
 ```
 histogram Variable [StratifyVariable] [options]
 ```
-Draw a histogram for a variable, based on consecutive integer or day intervals. The user is responsible for recoding variables so that consecutive intervals make sense.
+Draw a histogram for `Variable`, based on consecutive integer or day intervals. The user is responsible for recoding variables so that consecutive intervals make sense.
 
-A histogram is a bar chart where every integer value within range is represented on the X-axis.
+A histogram is a frequency bar chart where every integer value within range is represented on the X-axis.
 
 ### parameters
 - Variable may be integer or date
