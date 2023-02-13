@@ -6,14 +6,14 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, chart_options, executor,
-  scatter_variables_model, barchart_model, epicurve_model, histogram_model,
+  scatter_variables_model, fbarchart_model, epicurve_model, histogram_model,
   epidatafiles;
 
 type
 
   TChartOptionEdit = (cbT, cbF, cbXT, cbYT, cbC, cbnXMin, cbnXMax, cbnYMin, cbnYMax);
   TChartMinMaxDate = (cbdXMin, cbdXMax, cbdYMin, cbdYMax);
-  TVarModelTypes   = (mtNoVars, mtScatter, mtBarChart, mtEpicurve, mtHistogram, mtOther);
+  TVarModelTypes   = (mtNoVars, mtScatter, mtFBarChart, mtEpicurve, mtHistogram, mtOther);
 
   { TChartOptionsModel }
   TChartOptionsModel = class(IStatDialogModel)
@@ -29,7 +29,7 @@ type
     FXVariable: TEpiField;
     FYVariable: TEpiField;
     FScatterModel: TScatterStatVariableModel;
-    FBarchartModel: TBarchartStatDialogVariableModel;
+    FFBarchartModel: TFBarchartStatDialogVariableModel;
     FEpicurveModel: TEpicurveStatDialogVariableModel;
     FHistogramModel: THistogramStatDialogVariableModel;
     FMinMax: Integer;   // lower bytes refer to ymax, ymin, xmax, xmin
@@ -45,7 +45,7 @@ type
     function IsDefined(): boolean;
     procedure GetVars;
     procedure SetVariableModel(AValue: TScatterStatVariableModel);
-    procedure SetVariableModel(AValue: TBarchartStatDialogVariableModel);
+    procedure SetVariableModel(AValue: TFBarchartStatDialogVariableModel);
     procedure SetVariableModel(AValue: TEpicurveStatDialogVariableModel);
     procedure SetVariableModel(AValue: THistogramStatDialogVariableModel);
   public
@@ -71,7 +71,7 @@ uses
 
 const
   GScatter   = Ord(mtScatter);
-  GBarchart  = Ord(mtBarchart);
+  GFBarchart = Ord(mtFBarchart);
   GEpicurve  = Ord(mtEpicurve);
   GHistogram = Ord(mtHistogram);
   GNoVars    = Ord(mtNoVars);
@@ -93,12 +93,12 @@ begin
   FVarModelType := GScatter;
 end;
 
-procedure TChartOptionsModel.SetVariableModel(AValue: TBarchartStatDialogVariableModel);
+procedure TChartOptionsModel.SetVariableModel(AValue: TFBarchartStatDialogVariableModel);
 begin
-  if (FBarchartModel = AValue) then
+  if (FFBarchartModel = AValue) then
     exit;
-  FBarchartModel := AValue;
-  FVarModelType := GBarchart;
+  FFBarchartModel := AValue;
+  FVarModelType := GFBarchart;
 end;
 
 procedure TChartOptionsModel.SetVariableModel(AValue: TEpicurveStatDialogVariableModel);
@@ -127,9 +127,9 @@ begin
         FXVariable := FScatterModel.XVariable;
         FYVariable := FSCatterModel.YVariable;
       end;
-    GBarchart:
+    GFBarchart:
       begin
-        FXVariable := FBarchartModel.XVariable;
+        FXVariable := FFBarchartModel.XVariable;
       end;
     GEpicurve:
       begin

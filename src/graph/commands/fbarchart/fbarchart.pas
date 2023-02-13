@@ -1,4 +1,6 @@
-unit barchart;
+unit fbarchart;
+
+// This is a Frequency Bar Chart, similar to Histogram, but with bars only at existing x-values
 
 {$mode objfpc}{$H+}
 
@@ -11,9 +13,9 @@ uses
 
 type
 
-  { TBarChart }
+  { TFBarChart }
 
-  TBarChart = class(TInterfacedObject, IChartCommand)
+  TFBarChart = class(TInterfacedObject, IChartCommand)
   private
     FChartFactory: IChartFactory;
     FExecutor: TExecutor;
@@ -29,11 +31,11 @@ uses
   TASeries, TASources, TATypes, TAStyles, TAChartUtils, TALegend,
   Graphics, charttitles, ast_types, epidatafilestypes,
   epicustombase, epifields_helper, options_utils, chart_options,
-  barchartsource;
+  fbarchartsource;
 
-{ TBarChart }
+{ TFBarChart }
 
-procedure TBarChart.Init(ChartFactory: IChartFactory; Executor: TExecutor;
+procedure TFBarChart.Init(ChartFactory: IChartFactory; Executor: TExecutor;
   OutputCreator: TOutputCreator);
 begin
   FChartFactory := ChartFactory;
@@ -41,14 +43,14 @@ begin
   FOutputCreator := OutputCreator;
 end;
 
-function TBarChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
+function TFBarChart.Execute(Command: TCustomGraphCommand): IChartCommandResult;
 const
   dummyVarName = '_dummy4barchart';
 var
   {Chart}
   Chart:               TChart;
   ChartConfiguration:  IChartConfiguration;
-  BarSource:           TBarSource;
+  BarSource:           TFBarSource;
   LabelSeries:         TListChartSource;
   BarSeries:           TBarSeries;
   SeriesStyles:        TChartStyles;
@@ -114,7 +116,7 @@ begin
     begin   //create chart
       Chart := FChartFactory.NewChart();
       XVar := Datafile.Fields.FieldByName[VarNames[0]];
-      BarSource := TBarSource.Create(Chart);
+      BarSource := TFBarSource.Create(Chart);
       BarSource.Pct := yPct;
       LabelSeries := TListChartSource.Create(Chart);
       if (Varnames.Count = 1) then
@@ -206,6 +208,8 @@ begin
           BottomAxis.Margin       := 0;
           LeftAxis.Grid.Style     := psClear;
           LeftAxis.Margin         := 0;
+          LeftAxis.Intervals.MinLength := 20;
+          LeftAxis.Intervals.MaxLength := 100; // no interpolation of ticks at reasonable scale
           Frame.Visible           := false;
         end;
 
@@ -222,6 +226,6 @@ begin
 end;
 
 initialization
-  RegisterChartCommand(stBarchart, TBarChart);
+  RegisterChartCommand(stFBarChart, TFBarChart);
 
 end.

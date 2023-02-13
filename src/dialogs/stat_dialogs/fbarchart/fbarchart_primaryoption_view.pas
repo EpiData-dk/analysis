@@ -1,4 +1,4 @@
-unit barchart_primaryoption_view;
+unit fbarchart_primaryoption_view;
 
 {$mode objfpc}{$H+}
 
@@ -6,15 +6,15 @@ interface
 
 uses
   Classes, SysUtils, ExtCtrls, Controls,
-  barchart_primaryoption_model, stat_dialog_custom_view;
+  fbarchart_primaryoption_model, stat_dialog_custom_view;
 
 type
 
-  { TBarchartStatPrimaryOptionsView }
+  { TFBarChartStatPrimaryOptionsView }
 
-  TBarchartStatPrimaryOptionsView = class(TCustomStatDialogView)
+  TFBarChartStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
-    FDataModel: TBarchartStatDialogPrimaryOptionModel;
+    FDataModel: TFBarChartStatDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FValueLabelsGroup: TRadioGroup;
     FVariableLabelsGroup: TRadioGroup;
@@ -32,7 +32,7 @@ type
     function GetViewCaption(): UTF8String; override;
     function IsDefined(): boolean; override;
     procedure ResetView(); override;
-    procedure SetModel(DataModel: TBarchartStatDialogPrimaryOptionModel);
+    procedure SetModel(DataModel: TFBarChartStatDialogPrimaryOptionModel);
   end;
 
 implementation
@@ -40,9 +40,9 @@ implementation
 uses
   StdCtrls, epifields_helper;
 
-{ TBarchartStatPrimaryOptionsView }
+{ TFBarChartStatPrimaryOptionsView }
 
-procedure TBarchartStatPrimaryOptionsView.CreateValueLabelsRadios(
+procedure TFBarChartStatPrimaryOptionsView.CreateValueLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Value');
@@ -52,7 +52,7 @@ begin
   RadioGroup.OnSelectionChanged := @ValueLabelSelectionChanged;
 end;
 
-procedure TBarchartStatPrimaryOptionsView.CreateVariableLabelsRadios(
+procedure TFBarChartStatPrimaryOptionsView.CreateVariableLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Variable Name');
@@ -62,7 +62,7 @@ begin
   RadioGroup.OnSelectionChanged := @VariableLabelSelectionChanged;
 end;
 
-procedure TBarchartStatPrimaryOptionsView.VariableLabelSelectionChanged(
+procedure TFBarChartStatPrimaryOptionsView.VariableLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -74,7 +74,7 @@ begin
   DoModified();
 end;
 
-procedure TBarchartStatPrimaryOptionsView.ValueLabelSelectionChanged(
+procedure TFBarChartStatPrimaryOptionsView.ValueLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -86,7 +86,7 @@ begin
   DoModified();
 end;
 
-procedure TBarchartStatPrimaryOptionsView.OptionGroupCheck(Sender: TObject; Index: integer);
+procedure TFBarChartStatPrimaryOptionsView.OptionGroupCheck(Sender: TObject; Index: integer);
 var
   Value: Boolean;
 begin
@@ -97,7 +97,7 @@ begin
   end;
 end;
 
-constructor TBarchartStatPrimaryOptionsView.Create(TheOwner: TComponent);
+constructor TFBarChartStatPrimaryOptionsView.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
@@ -154,28 +154,28 @@ begin
   CreateVariableLabelsRadios(FVariableLabelsGroup);
 end;
 
-procedure TBarchartStatPrimaryOptionsView.EnterView();
+procedure TFBarChartStatPrimaryOptionsView.EnterView();
 begin
   FHorizontalDivider.Top := ((Self.Height - FHorizontalDivider.Height) div 2);
   FVerticalDivider.Left := ((Self.Width - FVerticalDivider.Width) div 2);
 end;
 
-function TBarchartStatPrimaryOptionsView.ExitView(): boolean;
+function TFBarChartStatPrimaryOptionsView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function TBarchartStatPrimaryOptionsView.GetViewCaption(): UTF8String;
+function TFBarChartStatPrimaryOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Output';
 end;
 
-function TBarchartStatPrimaryOptionsView.IsDefined(): boolean;
+function TFBarChartStatPrimaryOptionsView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure TBarchartStatPrimaryOptionsView.ResetView();
+procedure TFBarChartStatPrimaryOptionsView.ResetView();
 begin
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
@@ -187,8 +187,8 @@ begin
   FDataModel.SortD := false;
 end;
 
-procedure TBarchartStatPrimaryOptionsView.SetModel(
-  DataModel: TBarchartStatDialogPrimaryOptionModel);
+procedure TFBarChartStatPrimaryOptionsView.SetModel(
+  DataModel: TFBarChartStatDialogPrimaryOptionModel);
 begin
   FDataModel := DataModel;
   FValueLabelsGroup.ItemIndex := FDataModel.ValueLabelsDefault;

@@ -1,4 +1,4 @@
-unit barchartsource;
+unit fbarchartsource;
 
 {$mode objfpc}{$H+}
 
@@ -10,9 +10,9 @@ uses
 
 type
 
-  { TBarSource }
+  { TFBarSource }
 
-  TBarSource = class(TUserDefinedChartSource)
+  TFBarSource = class(TUserDefinedChartSource)
   private
     FPct:    Boolean;
     FTable: TTwoWayTable;
@@ -28,9 +28,9 @@ type
 
 implementation
 
-{ TBarSource }
+{ TFBarSource }
 
-procedure TBarSource.GetDataItem(ASource: TUserDefinedChartSource;
+procedure TFBarSource.GetDataItem(ASource: TUserDefinedChartSource;
   AIndex: Integer; var AItem: TChartDataItem);
 var
   i: Integer;
@@ -44,7 +44,7 @@ begin
       AItem.SetY(i, FTable.Cell[AIndex, i].N.ToDouble);
 end;
 
-procedure TBarSource.SetSource(T: TTwoWayTable; V: TEpiGetValueLabelType);
+procedure TFBarSource.SetSource(T: TTwoWayTable; V: TEpiGetValueLabelType);
 begin
   FValueLabelOutput := V;
   FTable  := T;
@@ -52,13 +52,13 @@ begin
   PointsNumber := T.ColCount;
 end;
 
-constructor TBarSource.Create(AOwner: TComponent);
+constructor TFBarSource.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   OnGetChartDataItem := @GetDataItem;
 end;
 
-destructor TBarSource.Destroy;
+destructor TFBarSource.Destroy;
 begin
   FreeAndNil(FTable);
   inherited Destroy;

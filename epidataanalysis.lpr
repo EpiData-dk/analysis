@@ -52,14 +52,14 @@ uses
   histogram_variables_view, survival_contribution, survival_model,
   survival_primaryoption_model, survival_primaryoption_view,
   survival_statisticoptions_model, survival_statisticoptions_view,
-  survival_variables_view, barchart_contribution, barchart_model,
-  barchart_primaryoption_model, barchart_primaryoption_view,
-  barchart_variables_view, pareto_contribution, scatter_contribution,
+  survival_variables_view, fbarchart_contribution, fbarchart_model,
+  fbarchart_primaryoption_model, fbarchart_primaryoption_view,
+  fbarchart_variables_view, pareto_contribution, scatter_contribution,
   scatter_main_view, scatter_primaryoption_model, scatter_primaryoption_view,
   scatter_variables_model,
 
   // ONLY ADD GRAPH COMMANDS HERE (delete all other automatically added units).
-   scatter, barchart, survival, epicurve, histogram, pareto;
+   scatter, fbarchart, survival, epicurve, histogram, pareto;
 
 {$R *.res}
 

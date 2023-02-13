@@ -26,7 +26,7 @@ type
 implementation
 
 uses
-  TASeries, TATypes, TAStyles, Graphics, charttitles, ast_types,
+  TASeries, TATypes, TAStyles, TAChartUtils, TACustomSource, Graphics, charttitles, ast_types,
   options_utils, chart_options;
 
 { TEpicurveChart }
@@ -205,11 +205,16 @@ begin
 
       with Chart do
         begin
-          BottomAxis.Marks.Source := HistogramSource.AddAxisScales(Chart);
+          BottomAxis.Marks.Source := HistogramSource.AddXAxisScales(Chart);
+          BottomAxis.Marks.Style  := smsValue;
           BottomAxis.Grid.Style   := psClear;
           BottomAxis.Margin       := 0;
+          BottomAxis.Intervals.MinLength := 20;
+          LeftAxis.Marks.Source   := HistogramSource.AddYAxisScales(Chart);
           LeftAxis.Grid.Style     := psClear;
           LeftAxis.Margin         := 0;
+          LeftAxis.Intervals.MinLength := 20;
+          LeftAxis.Intervals.MaxLength := 1000; // no interpolation of ticks
           Frame.Visible           := false;
         end;
 

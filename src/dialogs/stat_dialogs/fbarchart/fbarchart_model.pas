@@ -1,4 +1,4 @@
-unit barchart_model;
+unit fbarchart_model;
 
 {$mode objfpc}{$H+}
 
@@ -10,11 +10,11 @@ uses
 
 type
 
-  TBarchartStatDialogVariable = (tvX, tvY, tvW);
+  TFBarChartStatDialogVariable = (tvX, tvY, tvW);
 
-  { TBarchartStatDialogVariableModel }
+  { TFBarChartStatDialogVariableModel }
 
-  TBarchartStatDialogVariableModel = class(IStatDialogModel)
+  TFBarChartStatDialogVariableModel = class(IStatDialogModel)
   private
     FExecutor: TExecutor;
     FXVariable: TEpiField;
@@ -23,13 +23,13 @@ type
     procedure SetXVariable(AValue: TEpiField);
     procedure SetYVariable(AValue: TEpiField);
     procedure SetWVariable(AValue: TEpiField);
-    function IsUsed(Field: TEpiField; barchartVariable: TBarchartStatDialogVariable): boolean;
+    function IsUsed(Field: TEpiField; barchartVariable: TFBarChartStatDialogVariable): boolean;
   public
     function GenerateScript(): UTF8String;
     function IsDefined(): boolean;
   public
     constructor Create(Executor: TExecutor);
-    function GetComboFields(barchartVariable: TBarchartStatDialogVariable): TEpiFields;
+    function GetComboFields(barchartVariable: TFBarChartStatDialogVariable): TEpiFields;
     property XVariable: TEpiField read FXVariable write SetXVariable;
     property YVariable: TEpiField read FYVariable write SetYVariable;
     property WVariable: TEpiField read FWVariable write SetWVariable;
@@ -37,35 +37,35 @@ type
 
 implementation
 
-{ TBarchartStatDialgoModel }
+{ TFBarChartStatDialgoModel }
 
-procedure TBarchartStatDialogVariableModel.SetXVariable(AValue: TEpiField);
+procedure TFBarChartStatDialogVariableModel.SetXVariable(AValue: TEpiField);
 begin
   if FXVariable = AValue then Exit;
   FXVariable := AValue;
 end;
 
-procedure TBarchartStatDialogVariableModel.SetYVariable(AValue: TEpiField);
+procedure TFBarChartStatDialogVariableModel.SetYVariable(AValue: TEpiField);
 begin
   if FYVariable = AValue then Exit;
   FYVariable := AValue;
 end;
 
-procedure TBarchartStatDialogVariableModel.SetWVariable(AValue: TEpiField);
+procedure TFBarChartStatDialogVariableModel.SetWVariable(AValue: TEpiField);
 begin
   if FWVariable = AValue then Exit;
   FWVariable := AValue;
 end;
 
-function TBarchartStatDialogVariableModel.IsUsed(Field: TEpiField;
-  barchartVariable: TBarchartStatDialogVariable): boolean;
+function TFBarChartStatDialogVariableModel.IsUsed(Field: TEpiField;
+  barchartVariable: TFBarChartStatDialogVariable): boolean;
 begin
   result := (not (barchartVariable = tvX)) and (Field = FXVariable);
   result := result or ((not (barchartVariable = tvY)) and (Field = FYVariable));
   result := result or ((not (barchartVariable = tvW)) and (Field = FWVariable));
 end;
 
-function TBarchartStatDialogVariableModel.GenerateScript(): UTF8String;
+function TFBarChartStatDialogVariableModel.GenerateScript(): UTF8String;
 begin
   result := FXVariable.Name;
 
@@ -77,19 +77,19 @@ begin
 
 end;
 
-function TBarchartStatDialogVariableModel.IsDefined(): boolean;
+function TFBarChartStatDialogVariableModel.IsDefined(): boolean;
 begin
   result :=
     Assigned(FXVariable);
 end;
 
-constructor TBarchartStatDialogVariableModel.Create(Executor: TExecutor);
+constructor TFBarChartStatDialogVariableModel.Create(Executor: TExecutor);
 begin
   FExecutor := Executor;
 end;
 
-function TBarchartStatDialogVariableModel.GetComboFields(
-  barchartVariable: TBarchartStatDialogVariable): TEpiFields;
+function TFBarChartStatDialogVariableModel.GetComboFields(
+  barchartVariable: TFBarChartStatDialogVariable): TEpiFields;
 var
   Field: TEpiField;
 begin

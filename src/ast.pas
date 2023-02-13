@@ -1300,9 +1300,9 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
-  { TBarchartCommand }
+  { TFBarChartCommand }
 
-  TBarchartCommand = class(TCustomGraphCommand)
+  TFBarChartCommand = class(TCustomGraphCommand)
   protected
     function GetAcceptedOptions: TStatementOptionsMap; override;
     function GetAcceptedVariableCount: TBoundArray; override;
@@ -2518,8 +2518,8 @@ begin
   inherited Create(AVariableList, AOptionList, stScatter);
 end;
 
-{ TBarchartCommand }
-function TBarchartCommand.GetAcceptedOptions: TStatementOptionsMap;
+{ TFBarChartCommand }
+function TFBarChartCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
@@ -2529,7 +2529,7 @@ begin
   Result.Insert('ymax', [rtInteger]);
 end;
 
-function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
+function TFBarChartCommand.GetAcceptedVariableCount: TBoundArray;
 begin
   Result := inherited GetAcceptedVariableCount;
   SetLength(Result,2);
@@ -2537,16 +2537,16 @@ begin
   Result[1] := 2;
 end;
 
-function TBarchartCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+function TFBarChartCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
   ): TTypesAndFlagsRec;
 begin
   Result := inherited GetAcceptedVariableTypesAndFlags(Index);
 end;
 
-constructor TBarchartCommand.Create(AVariableList: TVariableList;
+constructor TFBarChartCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
-  inherited Create(AVariableList, AOptionList, stBarchart);
+  inherited Create(AVariableList, AOptionList, stFBarChart);
 end;
 
 { TEpicurveCommand }
@@ -4141,7 +4141,7 @@ begin
     stCTable:    Result := TCTableCommand.Create(AVariableList, AOptionList);
     stDescribe:  Result := TDescribeCommand.Create(AVariablelist, AOptionList);
     stScatter:   Result := TScatterCommand.Create(AVariableList, AOptionList);
-    stBarchart:  Result := TBarchartCommand.Create(AVariableList, AOptionList);
+    stFBarChart: Result := TFBarChartCommand.Create(AVariableList, AOptionList);
     stEpicurve:  Result := TEpicurveCommand.Create(AVariableList, AOptionList);
     stHistogram: Result := THistogramCommand.Create(AVariableList, AOptionList);
     stSurvival:  Result := TSurvivalCommand.Create(AVariableList, AOptionList);
@@ -7260,7 +7260,7 @@ begin
     'use': Result := stUse;
     'ver': Result := stVersion;
     'sca': Result := stScatter;
-    'bar': Result := stBarchart;
+    'bar': Result := stFBarChart;
     'epi': Result := stEpicurve;
     'his': Result := stHistogram;
     'sur': Result := stSurvival;

@@ -1,4 +1,4 @@
-unit barchart_contribution;
+unit fbarchart_contribution;
 
 {$mode objfpc}{$H+}
 
@@ -6,16 +6,16 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
-  barchart_model, barchart_primaryoption_model, chart_options_model;
+  fbarchart_model, fbarchart_primaryoption_model, chart_options_model;
 
 type
 
-  { TBarchartStatDialogContribution }
+  { TFBarChartStatDialogContribution }
 
-  TBarchartStatDialogContribution = class(IStatDialogContribution)
+  TFBarChartStatDialogContribution = class(IStatDialogContribution)
   private
-    FPrimaryOptionsModel: TBarchartStatDialogPrimaryOptionModel;
-    FVariablesModel: TBarchartStatDialogVariableModel;
+    FPrimaryOptionsModel: TFBarChartStatDialogPrimaryOptionModel;
+    FVariablesModel: TFBarChartStatDialogVariableModel;
     FChartOptionsModel: TChartOptionsModel;
     function CreateMainView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
     function CreatePrimaryOptionView(Owner: TComponent;  Executor: TExecutor): IStatDialogView;
@@ -30,35 +30,35 @@ type
 implementation
 
 uses
-  barchart_variables_view,
-  barchart_primaryoption_view,
+  fbarchart_variables_view,
+  fbarchart_primaryoption_view,
   chart_options_view;
 
-{ TBarchartStatDialogContribution }
+{ TFBarChartStatDialogContribution }
 
-function TBarchartStatDialogContribution.CreateMainView(Owner: TComponent;
+function TFBarChartStatDialogContribution.CreateMainView(Owner: TComponent;
   Executor: TExecutor): IStatDialogView;
 var
-  View: TBarchartStatDialogVariablesView;
+  View: TFBarChartStatDialogVariablesView;
 begin
-  FVariablesModel := TBarchartStatDialogVariableModel.Create(Executor);
-  View := TBarchartStatDialogVariablesView.Create(Owner);
+  FVariablesModel := TFBarChartStatDialogVariableModel.Create(Executor);
+  View := TFBarChartStatDialogVariablesView.Create(Owner);
   View.SetModel(FVariablesModel);
   Result := View;
 end;
 
-function TBarchartStatDialogContribution.CreatePrimaryOptionView(Owner: TComponent;
+function TFBarChartStatDialogContribution.CreatePrimaryOptionView(Owner: TComponent;
   Executor: TExecutor ): IStatDialogView;
 var
-  View: TBarchartStatPrimaryOptionsView;
+  View: TFBarChartStatPrimaryOptionsView;
 begin
-  FPrimaryOptionsModel := TBarchartStatDialogPrimaryOptionModel.Create(Executor);
-  View := TBarchartStatPrimaryOptionsView.Create(Owner);
+  FPrimaryOptionsModel := TFBarChartStatDialogPrimaryOptionModel.Create(Executor);
+  View := TFBarChartStatPrimaryOptionsView.Create(Owner);
   View.SetModel(FPrimaryOptionsModel);
   Result := View;
 end;
 
-function TBarchartStatDialogContribution.CreateChartOptionsView(Owner: TComponent;
+function TFBarChartStatDialogContribution.CreateChartOptionsView(Owner: TComponent;
   Executor: TExecutor ): IStatDialogView;
 var
   View: TChartOptionsView;
@@ -70,7 +70,7 @@ begin
   Result := View;
 end;
 
-function TBarchartStatDialogContribution.GenerateScript(): UTF8String;
+function TFBarChartStatDialogContribution.GenerateScript(): UTF8String;
 begin
   result := 'barchart ' +
     FVariablesModel.GenerateScript() +
@@ -79,12 +79,12 @@ begin
     ';';
 end;
 
-function TBarchartStatDialogContribution.GetCaption(): UTF8String;
+function TFBarChartStatDialogContribution.GetCaption(): UTF8String;
 begin
-  result := 'Barchart';
+  result := 'FBarchart';
 end;
 
-function TBarchartStatDialogContribution.GetHelpText(): UTF8String;
+function TFBarChartStatDialogContribution.GetHelpText(): UTF8String;
 begin
   result :=
     '1: Select Variables' + LineEnding +
@@ -92,7 +92,7 @@ begin
     '3: Run, Execute or Paste command';
 end;
 
-function TBarchartStatDialogContribution.GetViews(Owner: TComponent;
+function TFBarChartStatDialogContribution.GetViews(Owner: TComponent;
   Executor: TExecutor): TStatDialogContributionViewList;
 begin
   result := TStatDialogContributionViewList.Create;
@@ -102,6 +102,6 @@ begin
 end;
 
 initialization
-  RegisterStatDialogContribution(TBarchartStatDialogContribution.Create, cdGraphs);
+  RegisterStatDialogContribution(TFBarChartStatDialogContribution.Create, cdGraphs);
 
 end.

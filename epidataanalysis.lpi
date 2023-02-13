@@ -64,7 +64,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/chart_options;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/barchart;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/pareto;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/barchart;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/pareto;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/graph/options;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/functions/darwin"/>
+            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/chart_options;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/pareto;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/pareto;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/graph/options;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/functions/darwin;src/dialogs/stat_dialogs/fbarchart;src/graph/commands/fbarchart"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -128,7 +128,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/chart_options;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/barchart;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/pareto;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/barchart;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/pareto;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/graph/options;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/functions/darwin"/>
+            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/chart_options;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/pareto;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/pareto;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/graph/options;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/functions/darwin;src/dialogs/stat_dialogs/fbarchart;src/graph/commands/fbarchart"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -184,7 +184,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/chart_options;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/barchart;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/pareto;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/functions/darwin;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/barchart;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/pareto;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/graph/options;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils"/>
+            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/chart_options;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/pareto;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/functions/darwin;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/pareto;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/graph/options;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/dialogs/stat_dialogs/fbarchart;src/graph/commands/fbarchart"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -1057,31 +1057,31 @@
         <IsPartOfProject Value="True"/>
       </Unit181>
       <Unit182>
-        <Filename Value="src/graph/commands/barchart/barchart.pas"/>
+        <Filename Value="src/graph/commands/fbarchart/fbarchart.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit182>
       <Unit183>
-        <Filename Value="src/graph/commands/barchart/barchartsource.pas"/>
+        <Filename Value="src/graph/commands/fbarchart/fbarchartsource.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit183>
       <Unit184>
-        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_contribution.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/fbarchart/fbarchart_contribution.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit184>
       <Unit185>
-        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_model.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/fbarchart/fbarchart_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit185>
       <Unit186>
-        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_primaryoption_model.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/fbarchart/fbarchart_primaryoption_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit186>
       <Unit187>
-        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_primaryoption_view.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/fbarchart/fbarchart_primaryoption_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit187>
       <Unit188>
-        <Filename Value="src/dialogs/stat_dialogs/barchart/barchart_variables_view.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/fbarchart/fbarchart_variables_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit188>
       <Unit189>
@@ -1156,7 +1156,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph;src/graph/commands;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/graph/utils;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/graph/commands/epicurve;src/graph/commands/histogram;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/epicurve;src/graph/commands/barchart;src/dialogs/stat_dialogs/barchart;src/graph/commands/pareto;src/dialogs/stat_dialogs/pareto;src/graph/options;src/functions/darwin;src/dialogs/chart_options"/>
+      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph;src/graph/commands;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/graph/utils;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/graph/commands/epicurve;src/graph/commands/histogram;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/epicurve;src/graph/commands/pareto;src/dialogs/stat_dialogs/pareto;src/graph/options;src/functions/darwin;src/dialogs/chart_options;src/dialogs/stat_dialogs/fbarchart;src/graph/commands/fbarchart"/>
       <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

@@ -1,4 +1,4 @@
-unit barchart_primaryoption_model;
+unit fbarchart_primaryoption_model;
 
 {$mode objfpc}{$H+}
 
@@ -10,9 +10,9 @@ uses
 type
 
 
-   { TBarchartStatDialogPrimaryOptionModel }
+   { TFBarChartStatDialogPrimaryOptionModel }
 
-   TBarchartStatDialogPrimaryOptionModel = class(IStatDialogModel)
+   TFBarChartStatDialogPrimaryOptionModel = class(IStatDialogModel)
    private
      FExecutor: TExecutor;
      FValueLabelType: TEpiGetValueLabelType;
@@ -42,23 +42,23 @@ implementation
 uses
   LazUTF8;
 
-{ TBarchartStatDialogPrimaryOptionModel }
+{ TFBarChartStatDialogPrimaryOptionModel }
 
-procedure TBarchartStatDialogPrimaryOptionModel.SetValueLabelType(
+procedure TFBarChartStatDialogPrimaryOptionModel.SetValueLabelType(
   AValue: TEpiGetValueLabelType);
 begin
   if FValueLabelType = AValue then Exit;
   FValueLabelType := AValue;
 end;
 
-procedure TBarchartStatDialogPrimaryOptionModel.SetVariableLabelType(
+procedure TFBarChartStatDialogPrimaryOptionModel.SetVariableLabelType(
   AValue: TEpiGetVariableLabelType);
 begin
   if FVariableLabelType = AValue then Exit;
   FVariableLabelType := AValue;
 end;
 
-constructor TBarchartStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
+constructor TFBarChartStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
 var
     defaults: TStringList;
 begin
@@ -73,7 +73,7 @@ begin
   defaults.Free;
 end;
 
-function TBarchartStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
+function TFBarChartStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
 var
   compareOption: UTF8String;
 begin
@@ -103,7 +103,7 @@ begin
     Result += ' !sd';
 end;
 
-function TBarchartStatDialogPrimaryOptionModel.IsDefined(): boolean;
+function TFBarChartStatDialogPrimaryOptionModel.IsDefined(): boolean;
 begin
   result := true;
 end;

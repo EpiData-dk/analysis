@@ -104,7 +104,7 @@ type
     stSurvival,
     stEpicurve,
     stHistogram,
-    stBarchart,
+    stFBarchart,
     stPareto,
 
   // String Commands
@@ -130,9 +130,9 @@ type
   TASTStatementTypes = set of TASTStatementType;
 
 const
-  ASTGraphCommands: TASTStatementTypes = [stScatter, stSurvival, stEpiCurve, stHistogram, stBarchart, stPareto];
+  ASTGraphCommands: TASTStatementTypes = [stScatter, stSurvival, stEpiCurve, stHistogram, stFBarchart, stPareto];
   ASTVLabelCommands: TASTStatementTypes = [stTables, stCTable, stBrowse, stAggregate, stFreq, stDescribe,
-                                           stScatter, stSurvival, stEpiCurve, stHistogram, stBarchart,
+                                           stScatter, stSurvival, stEpiCurve, stHistogram, stFBarchart,
                                            stPareto];
 
 type
