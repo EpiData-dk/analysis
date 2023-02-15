@@ -51,7 +51,7 @@
 -Fu./src/graph/commands/histogram
 -Fu./src/graph/commands/epicurve
 -Fu./src/graph/graphform
--Fu./src/graph/utils
+-Fu./src/graph/options
 -Fu./src/output
 -Fu./src/parser
 -Fu./src/sidewindows
