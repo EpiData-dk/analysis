@@ -1056,6 +1056,7 @@ type
     procedure   Remove(Option: TOption);
     function    HasOption(Const Ident: UTF8String; out AOption: TOption): boolean; overload;
     function    HasOption(Const Ident: UTF8String): boolean; overload;
+    function    HasOption(Idents: array of UTF8String; out AOption: TOption): boolean; overload;
     function    GetEnumerator: TOptionListEnumerator;
     property    Options[Const Index: Integer]: TOption read GetOptions; default;
     property    Option[Const Ident: UTF8String]: TOption read GetOption;
@@ -1582,7 +1583,7 @@ implementation
 
 uses
   LazUTF8Classes, epiconvertutils, typinfo, options_utils, parser,
-
+  chart_options,
   // SCRIPT FUNCTIONS (placed ind ./functions/epi_script_function_<name>.pas
   epi_script_function_mathfunctions,
   epi_script_function_createdate,
@@ -1600,15 +1601,15 @@ function TCustomGraphCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
 
-  result.Insert('title',  ['ti'],      [rtString]);
-  result.Insert('footer', ['fn'],      [rtString]);
+  result.Insert('title',  ['ti'],     [rtString]);
+  result.Insert('footer', ['fn'],     [rtString]);
   result.Insert('xtitle', ['xt'],     [rtString]);
   result.Insert('ytitle', ['yt'],     [rtString]);
   result.Insert('export', ['s', 'e'], [rtString]);
   result.Insert('sizex',  ['sx'],     [rtInteger]);
   result.Insert('sizey',  ['sy'],     [rtInteger]);
-
-  result.Insert('replace', [rtUndefined]);
+  result.Insert('colors', ['c'],      [rtString]);
+  result.Insert('replace',            [rtUndefined]);
 end;
 
 { TRecodeInterval }
@@ -2482,7 +2483,10 @@ begin
   AddValueLabelOptions(Result);
   Result.Insert('l', [rtUndefined]);
   Result.Insert('p', [rtUndefined]);
-  Result.Insert('colors', [rtString]);
+  Result.Insert('xmin', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('xmax', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('ymin', AxisTypeFromVariableType(VariableList, 1));
+  Result.Insert('ymax', AxisTypeFromVariableType(VariableList, 1));
 end;
 
 function TScatterCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2512,7 +2516,7 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('stack', [rtUndefined]);
   Result.Insert('pct', [rtUndefined]);
-  Result.Insert('colors', [rtString]);
+  Result.Insert('ymax', AxisTypeFromVariableType(VariableList, 1));
 end;
 
 function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2541,7 +2545,9 @@ begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('interval', [rtInteger]);
-  Result.Insert('colors', [rtString]);
+  Result.Insert('xmin', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('xmax', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('ymax', AxisTypeFromVariableType(VariableList, 1));
 end;
 
 function TEpicurveCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2576,7 +2582,9 @@ begin
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('interval', [rtInteger, rtFloat]);
   Result.Insert('stack', [rtUndefined]);
-  Result.Insert('colors', [rtString]);
+  Result.Insert('xmin', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('xmax', AxisTypeFromVariableType(VariableList, 0));
+  Result.Insert('ymax', AxisTypeFromVariableType(VariableList, 1));
 end;
 
 function THistogramCommand.GetAcceptedVariableCount: TBoundArray;
@@ -2620,7 +2628,6 @@ begin
   Result.Insert('cin',['cinone'], [rtUndefined]);     // no confidence intervals on plots
   Result.Insert('cib',['ciband'], [rtUndefined]);     // show CI as bands
   Result.Insert('cil', ['ciline'], [rtUndefined]);      // show CI uppper and lower lines
-  Result.Insert('colors', [rtString]);    // color map (9 digits)
   Result.Insert('q',   [rtUndefined]);
   Result.Insert('mt',  [rtUndefined]);                  // missing values of time2 become max(time2)
   Result.Insert('exit',[rtDate]);                       // date to assign when time2 is missing
@@ -4584,6 +4591,18 @@ end;
 function TOptionList.GetEnumerator: TOptionListEnumerator;
 begin
   result := TOptionListEnumerator.Create(Self);
+end;
+
+function TOptionList.HasOption(Idents: array of UTF8String; out
+  AOption: TOption): boolean;
+var
+  Ident: UTF8String;
+begin
+  for Ident in Idents do
+    if HasOption(Ident, AOption) then
+      Exit(true);
+
+  Result := false;
 end;
 
 { TOption }

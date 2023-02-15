@@ -16,7 +16,7 @@ uses
   Classes, SysUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
   tables_types, tables,
   executor, result_variables, epifields_helper, ana_globals,
-  outputcreator, options_utils, graph_utils,
+  outputcreator, options_utils, chart_options,
   TAGraph, TASeries, TATypes, TASources, Graphics, FPCanvas,
   chartcommandresult, chartcommand, chartfactory, chartconfiguration, charttitles;
 
@@ -1048,7 +1048,7 @@ begin
   FintFlag             := false;
   FAdjFlag             := false;
   showKMPlot           := true;
-  FColors              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
+  FColors              := ChartColorsFromOptions(Command.Options, FExecutor);
   // time variables specified?
   vCount := VarNames.Count;
   if (vCount = 3) then

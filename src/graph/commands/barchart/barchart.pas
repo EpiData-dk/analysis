@@ -28,7 +28,7 @@ implementation
 uses
   TASeries, TASources, TATypes, TAStyles, TAChartUtils, TALegend,
   Graphics, charttitles, ast_types, epidatafilestypes,
-  epicustombase, epifields_helper, options_utils, graph_utils, barchartsource;
+  epicustombase, epifields_helper, options_utils, chart_options, barchartsource;
 
 { TBarChart }
 
@@ -80,7 +80,7 @@ var
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
+  sColor              := ChartColorsFromOptions(Command.Options, FExecutor);
   VarNames            := Command.VariableList.GetIdentsAsList;
   DFVars              := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
   StratVariable       := TStringList.Create;

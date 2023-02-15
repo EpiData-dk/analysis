@@ -12,7 +12,7 @@ uses
   Interfaces, sysutils, Forms,
 
   // Required EpiData units
-  ana_procs, wizard_form, datamodule, main,
+  ana_procs, wizard_form, datamodule, main, chart_options,
 
   // ONLY ADD Stat Dialogs HERE
   freq_contribution, tables_contribution, ctable_contribution,

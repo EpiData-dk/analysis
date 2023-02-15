@@ -26,7 +26,7 @@ implementation
 
 uses
   TASeries, TATypes, Graphics, charttitles, ast_types, scattersource, epidatafilestypes,
-  epifields_helper, options_utils, graph_utils;
+  epifields_helper, options_utils, chart_options;
 
 { TScatterChart }
 
@@ -74,7 +74,7 @@ begin
   ScatterSource.Sorted := true;
 
   // Get options
-  sColor := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
+  sColor := ChartColorsFromOptions(Command.Options, FExecutor);
   sLine := Command.HasOption('l');
   sPoints := (not Command.HasOption('l')) or Command.HasOption('p');
 
