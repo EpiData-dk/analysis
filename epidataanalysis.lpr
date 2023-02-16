@@ -9,10 +9,13 @@ uses
     cthreads,
     clocale,
   {$ENDIF}
+  {$IFDEF DARWIN}
+    epi_osxlocale,
+  {$ENDIF}
   Interfaces, sysutils, Forms,
 
   // Required EpiData units
-  ana_procs, wizard_form, datamodule, main, chart_options,
+  ana_procs, wizard_form, datamodule, main,
 
   // ONLY ADD Stat Dialogs HERE
   freq_contribution, tables_contribution, ctable_contribution,
