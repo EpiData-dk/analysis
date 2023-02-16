@@ -17,27 +17,24 @@ type
 
   function ToColors(AValue: String; out Msg: UTF8String): TColorMap;
   function ToColors(AHexValues: Array of String; out Msg: UTF8String): TColorMap;
-  function ChartColorsFromOptions(OptionList: TOptionList; Executor: TExecutor): TColorMap;
+  function ChartColorsFromOptions(OptionList: TOptionList; SetOptions: TSetOptionsMap; out Msg: UTF8String): TColorMap;
   function AxisTypeFromVariableType(AVar: TVariableList; AIndex: Integer): TASTResultTypes;
 implementation
 
 uses
   LazUTF8, ana_globals, typinfo, math, strutils, options_utils;
 
-function ChartColorsFromOptions(OptionList: TOptionList; Executor: TExecutor): TColorMap;
+function ChartColorsFromOptions(OptionList: TOptionList; SetOptions: TSetOptionsMap; out Msg: UTF8String): TColorMap;
 var
   Opt:  TOption;
-  Msg: UTF8String;
   aColorOption: String;
 begin
   result := anaColors;
-  if (Assigned(Executor.SetOptions)) then
-    aColorOption := Executor.SetOptions.GetValue(ANA_SO_CHART_COLORS).Value;
+  if (Assigned(SetOptions)) then
+    aColorOption := SetOptions.GetValue(ANA_SO_CHART_COLORS).Value;
   if (OptionList.HasOption(['c','colors'], Opt)) then
     aColorOption := Opt.Expr.AsString;
   result := ToColors(aColorOption, Msg);
-  if (Msg<>'') then
-    Executor.Error(Msg);
 end;
 
 function ToColors(AValue: String; out Msg: UTF8String): TColorMap;
@@ -59,7 +56,10 @@ begin
         d := aValue.Chars[i];
         ix := ord(d) - ord('0');
         if (ix < 0) or (ix > 9) then
-          Msg += 'Invalid color option ' + d + ' in "' + AValue + '". Color[0] used.'
+          if (Msg = '') then
+            Msg := 'Invalid color option ' + d
+          else
+            Msg += ',' + d
         else
           result[i] := anaColors[ix];
         end;

@@ -196,6 +196,7 @@ begin
   Command.Init(TheChartFactory, FExecutor, FOutputCreator);
   CommandResult := Command.Execute(ST);
 
+  if (CommandResult = nil) then exit;
   if (CommandResult.GetChartPairs().Count = 0) then exit;
 
   UpdateChartTitles(ST, CommandResult);

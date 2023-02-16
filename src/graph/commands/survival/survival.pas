@@ -1036,8 +1036,16 @@ var
   vCount:           Integer;
   showKMPlot:       Boolean;
   intervalArray: array of integer;
-
+  msg:                 UTF8String;
 begin
+  FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  FColors              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, msg);
+  if (msg <> '') then
+    begin
+      FExecutor.Error(msg);
+      exit;
+    end;
   FExecutor.ClearResults('$survival');
 
   VarNames             := Command.VariableList.GetIdentsAsList;
@@ -1048,7 +1056,6 @@ begin
   FintFlag             := false;
   FAdjFlag             := false;
   showKMPlot           := true;
-  FColors              := ChartColorsFromOptions(Command.Options, FExecutor);
   // time variables specified?
   vCount := VarNames.Count;
   if (vCount = 3) then
