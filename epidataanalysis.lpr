@@ -9,6 +9,9 @@ uses
     cthreads,
     clocale,
   {$ENDIF}
+  {$IFDEF DARWIN}
+    epi_osxlocale,
+  {$ENDIF}
   Interfaces, sysutils, Forms,
 
   // Required EpiData units

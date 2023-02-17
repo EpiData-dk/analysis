@@ -16,7 +16,7 @@ uses
   Classes, SysUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
   tables_types, tables,
   executor, result_variables, epifields_helper, ana_globals,
-  outputcreator, options_utils, graph_utils,
+  outputcreator, options_utils, chart_options,
   TAGraph, TASeries, TATypes, TASources, Graphics, FPCanvas,
   chartcommandresult, chartcommand, chartfactory, chartconfiguration, charttitles;
 
@@ -1036,8 +1036,16 @@ var
   vCount:           Integer;
   showKMPlot:       Boolean;
   intervalArray: array of integer;
-
+  msg:                 UTF8String;
 begin
+  FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  FColors              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, msg);
+  if (msg <> '') then
+    begin
+      FExecutor.Error(msg);
+      exit;
+    end;
   FExecutor.ClearResults('$survival');
 
   VarNames             := Command.VariableList.GetIdentsAsList;
@@ -1048,7 +1056,6 @@ begin
   FintFlag             := false;
   FAdjFlag             := false;
   showKMPlot           := true;
-  FColors              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions);
   // time variables specified?
   vCount := VarNames.Count;
   if (vCount = 3) then
