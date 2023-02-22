@@ -10,9 +10,9 @@ uses
 type
 
 
-   { TBarchartStatDialogPrimaryOptionModel }
+   { TBarchartDialogPrimaryOptionModel }
 
-   TBarchartStatDialogPrimaryOptionModel = class(IStatDialogModel)
+   TBarchartDialogPrimaryOptionModel = class(IStatDialogModel)
    private
      FExecutor: TExecutor;
      FValueLabelType: TEpiGetValueLabelType;
@@ -42,23 +42,23 @@ implementation
 uses
   LazUTF8;
 
-{ TBarchartStatDialogPrimaryOptionModel }
+{ TBarchartDialogPrimaryOptionModel }
 
-procedure TBarchartStatDialogPrimaryOptionModel.SetValueLabelType(
+procedure TBarchartDialogPrimaryOptionModel.SetValueLabelType(
   AValue: TEpiGetValueLabelType);
 begin
   if FValueLabelType = AValue then Exit;
   FValueLabelType := AValue;
 end;
 
-procedure TBarchartStatDialogPrimaryOptionModel.SetVariableLabelType(
+procedure TBarchartDialogPrimaryOptionModel.SetVariableLabelType(
   AValue: TEpiGetVariableLabelType);
 begin
   if FVariableLabelType = AValue then Exit;
   FVariableLabelType := AValue;
 end;
 
-constructor TBarchartStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
+constructor TBarchartDialogPrimaryOptionModel.Create(Executor: TExecutor);
 var
     defaults: TStringList;
 begin
@@ -73,7 +73,7 @@ begin
   defaults.Free;
 end;
 
-function TBarchartStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
+function TBarchartDialogPrimaryOptionModel.GenerateScript(): UTF8String;
 var
   compareOption: UTF8String;
 begin
@@ -103,7 +103,7 @@ begin
     Result += ' !sd';
 end;
 
-function TBarchartStatDialogPrimaryOptionModel.IsDefined(): boolean;
+function TBarchartDialogPrimaryOptionModel.IsDefined(): boolean;
 begin
   result := true;
 end;

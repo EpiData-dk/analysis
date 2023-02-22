@@ -9,7 +9,11 @@ uses
   epidatafiles;
 
 const
-  ScatterMinMax = %1111;
+  ScatterMinMax   = %1111;
+  BarchartMinMax  = %1000;
+  EpicurveMinMax  = %1011;
+  HistogramMinMax = %1011;
+  SurvivalMinMax  = 0;
 
 type
 

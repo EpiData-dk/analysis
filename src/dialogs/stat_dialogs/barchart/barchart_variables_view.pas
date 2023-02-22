@@ -10,11 +10,11 @@ uses
 
 type
 
-  { TBarchartStatDialogVariablesView }
+  { TBarchartDialogVariablesView }
 
-  TBarchartStatDialogVariablesView = class(TCustomStatDialogView)
+  TBarchartDialogVariablesView = class(TCustomStatDialogView)
   private
-    FDataModel: TBarchartStatDialogVariableModel;
+    FDataModel: TBarchartDialogVariableModel;
     FComboBoxes: Array of TEpiFieldsComboBox;
     procedure VariableSelect(Sender: TObject);
     procedure UpdateCombos();
@@ -25,7 +25,7 @@ type
     function GetViewCaption(): UTF8String; override;
     procedure ResetView(); override;
     function IsDefined(): boolean; override;
-    procedure SetModel(DataModel: TBarchartStatDialogVariableModel);
+    procedure SetModel(DataModel: TBarchartDialogVariableModel);
   end;
 
 implementation
@@ -38,9 +38,9 @@ const
   YVARIABLE_TAG   = Ord(tvY);
   WVARIABLE_TAG   = Ord(tvW);
 
-{ TBarchartStatDialogVariablesView }
+{ TBarchartDialogVariablesView }
 
-procedure TBarchartStatDialogVariablesView.VariableSelect(Sender: TObject);
+procedure TBarchartDialogVariablesView.VariableSelect(Sender: TObject);
 var
   Field: TEpiField;
   ComboBox: TCustomComboBox;
@@ -64,7 +64,7 @@ begin
   DoModified();
 end;
 
-procedure TBarchartStatDialogVariablesView.UpdateCombos();
+procedure TBarchartDialogVariablesView.UpdateCombos();
 var
   Field: TEpiField;
   ComboBox: TEpiFieldsComboBox;
@@ -77,19 +77,19 @@ begin
       Field := ComboBox.SelectedField;
       ComboBox.Fields.Free;
       ComboBox.Fields := nil;
-      ComboBox.Fields := FDataModel.GetComboFields(TBarchartStatDialogVariable(i));
+      ComboBox.Fields := FDataModel.GetComboFields(TBarchartDialogVariable(i));
       ComboBox.ItemIndex := ComboBox.Items.IndexOfObject(Field);
     end;
 end;
 
-constructor TBarchartStatDialogVariablesView.Create(TheOwner: TComponent);
+constructor TBarchartDialogVariablesView.Create(TheOwner: TComponent);
 var
   ComboBox: TEpiFieldsComboBox;
   PrevCombo: TEpiFieldsComboBox;
 begin
   inherited Create(TheOwner);
 
-  SetLength(FComboBoxes, Ord(High(TBarchartStatDialogVariable)) + 1);
+  SetLength(FComboBoxes, Ord(High(TBarchartDialogVariable)) + 1);
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
   ComboBox.Parent := self;
@@ -126,22 +126,22 @@ begin
   EnterView(); // Must do this to get combo boxes aligned and visible
 end;
 
-procedure TBarchartStatDialogVariablesView.EnterView();
+procedure TBarchartDialogVariablesView.EnterView();
 begin
 
 end;
 
-function TBarchartStatDialogVariablesView.ExitView(): boolean;
+function TBarchartDialogVariablesView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function TBarchartStatDialogVariablesView.GetViewCaption(): UTF8String;
+function TBarchartDialogVariablesView.GetViewCaption(): UTF8String;
 begin
   result := 'Variables';
 end;
 
-procedure TBarchartStatDialogVariablesView.ResetView();
+procedure TBarchartDialogVariablesView.ResetView();
 var
   Combobox: TCustomComboBox;
 begin
@@ -156,13 +156,13 @@ begin
   DoModified();
 end;
 
-function TBarchartStatDialogVariablesView.IsDefined(): boolean;
+function TBarchartDialogVariablesView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure TBarchartStatDialogVariablesView.SetModel(
-  DataModel: TBarchartStatDialogVariableModel);
+procedure TBarchartDialogVariablesView.SetModel(
+  DataModel: TBarchartDialogVariableModel);
 begin
   FDataModel := DataModel;
 

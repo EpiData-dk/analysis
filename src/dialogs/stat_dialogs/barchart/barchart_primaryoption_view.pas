@@ -10,11 +10,11 @@ uses
 
 type
 
-  { TBarchartStatPrimaryOptionsView }
+  { TBarchartPrimaryOptionsView }
 
-  TBarchartStatPrimaryOptionsView = class(TCustomStatDialogView)
+  TBarchartPrimaryOptionsView = class(TCustomStatDialogView)
   private
-    FDataModel: TBarchartStatDialogPrimaryOptionModel;
+    FDataModel: TBarchartDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FValueLabelsGroup: TRadioGroup;
     FVariableLabelsGroup: TRadioGroup;
@@ -32,7 +32,7 @@ type
     function GetViewCaption(): UTF8String; override;
     function IsDefined(): boolean; override;
     procedure ResetView(); override;
-    procedure SetModel(DataModel: TBarchartStatDialogPrimaryOptionModel);
+    procedure SetModel(DataModel: TBarchartDialogPrimaryOptionModel);
   end;
 
 implementation
@@ -40,9 +40,9 @@ implementation
 uses
   StdCtrls, epifields_helper;
 
-{ TBarchartStatPrimaryOptionsView }
+{ TBarchartPrimaryOptionsView }
 
-procedure TBarchartStatPrimaryOptionsView.CreateValueLabelsRadios(
+procedure TBarchartPrimaryOptionsView.CreateValueLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Value');
@@ -52,7 +52,7 @@ begin
   RadioGroup.OnSelectionChanged := @ValueLabelSelectionChanged;
 end;
 
-procedure TBarchartStatPrimaryOptionsView.CreateVariableLabelsRadios(
+procedure TBarchartPrimaryOptionsView.CreateVariableLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Variable Name');
@@ -62,7 +62,7 @@ begin
   RadioGroup.OnSelectionChanged := @VariableLabelSelectionChanged;
 end;
 
-procedure TBarchartStatPrimaryOptionsView.VariableLabelSelectionChanged(
+procedure TBarchartPrimaryOptionsView.VariableLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -74,7 +74,7 @@ begin
   DoModified();
 end;
 
-procedure TBarchartStatPrimaryOptionsView.ValueLabelSelectionChanged(
+procedure TBarchartPrimaryOptionsView.ValueLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -86,7 +86,7 @@ begin
   DoModified();
 end;
 
-procedure TBarchartStatPrimaryOptionsView.OptionGroupCheck(Sender: TObject; Index: integer);
+procedure TBarchartPrimaryOptionsView.OptionGroupCheck(Sender: TObject; Index: integer);
 var
   Value: Boolean;
 begin
@@ -97,7 +97,7 @@ begin
   end;
 end;
 
-constructor TBarchartStatPrimaryOptionsView.Create(TheOwner: TComponent);
+constructor TBarchartPrimaryOptionsView.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
@@ -154,28 +154,28 @@ begin
   CreateVariableLabelsRadios(FVariableLabelsGroup);
 end;
 
-procedure TBarchartStatPrimaryOptionsView.EnterView();
+procedure TBarchartPrimaryOptionsView.EnterView();
 begin
   FHorizontalDivider.Top := ((Self.Height - FHorizontalDivider.Height) div 2);
   FVerticalDivider.Left := ((Self.Width - FVerticalDivider.Width) div 2);
 end;
 
-function TBarchartStatPrimaryOptionsView.ExitView(): boolean;
+function TBarchartPrimaryOptionsView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function TBarchartStatPrimaryOptionsView.GetViewCaption(): UTF8String;
+function TBarchartPrimaryOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Output';
 end;
 
-function TBarchartStatPrimaryOptionsView.IsDefined(): boolean;
+function TBarchartPrimaryOptionsView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure TBarchartStatPrimaryOptionsView.ResetView();
+procedure TBarchartPrimaryOptionsView.ResetView();
 begin
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
@@ -187,8 +187,8 @@ begin
   FDataModel.SortD := false;
 end;
 
-procedure TBarchartStatPrimaryOptionsView.SetModel(
-  DataModel: TBarchartStatDialogPrimaryOptionModel);
+procedure TBarchartPrimaryOptionsView.SetModel(
+  DataModel: TBarchartDialogPrimaryOptionModel);
 begin
   FDataModel := DataModel;
   FValueLabelsGroup.ItemIndex := FDataModel.ValueLabelsDefault;
