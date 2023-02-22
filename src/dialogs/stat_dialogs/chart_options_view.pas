@@ -186,53 +186,41 @@ procedure TChartOptionsView.EnterView();
 begin
   // reset all min/max fields before checking variable types
   ResetMinMax;
-  if ((FDataModel.MinMax and 1) = 1) then
+  if (FDataModel.UseX) and ((FDataModel.MinMax and 1) > 0) then
     begin
-      if (Assigned(FDataModel.XVariable)) then
-      begin
-        if (FDataModel.XVariable.FieldType in DateFieldTypes) then
-          FDate[XDMIN_TAG].Visible := true
-        else
-          FText[XMIN_TAG].Visible := true;
-        FLabel[XMIN_TAG].Visible := true;
-      end;
+      if (FDataModel.XDate) then
+        FDate[XDMIN_TAG].Visible := true
+      else
+        FText[XMIN_TAG].Visible := true;
+      FLabel[XMIN_TAG].Visible := true;
     end;
 
-  if ((FDataModel.MinMax and 2) = 2) then
+  if (FDataModel.UseX) and ((FDataModel.MinMax and 2) > 0) then
     begin
-      if (Assigned(FDataModel.XVariable)) then
-      begin
-        if (FDataModel.XVariable.FieldType in DateFieldTypes) then
-          FDate[XDMAX_TAG].Visible := true
-        else
-          FText[XMAX_TAG].Visible := true;
-        FLabel[XMAX_TAG].Visible := true;
-      end;
-     end;
-
-  if ((FDataModel.MinMax and 4) = 4) then
-    begin
-      if (Assigned(FDataModel.YVariable)) then
-      begin
-        if (FDataModel.YVariable.FieldType in DateFieldTypes) then
-          FDate[YDMIN_TAG].Visible := true
-        else
-          FText[YMIN_TAG].Visible := true;
-        FLabel[YMIN_TAG].Visible := true;
-        end;
+      if (FDataModel.XDate) then
+        FDate[XDMAX_TAG].Visible := true
+      else
+        FText[XMAX_TAG].Visible := true;
+      FLabel[XMAX_TAG].Visible := true;
     end;
 
-  if ((FDataModel.MinMax and 8) = 8) then
+  if (FDataModel.UseY) and ((FDataModel.MinMax and 4) > 0) then
     begin
-      if (Assigned(FDataModel.YVariable)) then
-      begin
-        if (FDataModel.YVariable.FieldType in DateFieldTypes) then
-          FDate[YDMAX_TAG].Visible := true
-        else
-          FText[YMAX_TAG].Visible := true;
-        FLabel[YMAX_TAG].Visible := true;
-        end;
-     end;
+      if (FDataModel.YDate) then
+        FDate[YDMIN_TAG].Visible := true
+      else
+        FText[YMIN_TAG].Visible := true;
+      FLabel[YMIN_TAG].Visible := true;
+    end;
+
+  if (FDataModel.UseY) and ((FDataModel.MinMax and 8) > 0) then
+    begin
+      if (FDataModel.YDate) then
+        FDate[YDMAX_TAG].Visible := true
+      else
+        FText[YMAX_TAG].Visible := true;
+      FLabel[YMAX_TAG].Visible := true;
+    end;
 
 end;
 

@@ -36,20 +36,27 @@ type
 
 implementation
 
+uses
+  epidatafilestypes;
+
 { TScatterStatVariableModel }
 
 procedure TScatterStatVariableModel.SetXVariable(AValue: TEpiField);
 begin
   if FXVariable = AValue then Exit;
   FXVariable := AValue;
-  FChartOptionsModel.XVariable := AValue;
+  FChartOptionsModel.UseX := (AValue <> nil);
+  if (AValue <> nil) then
+    FChartOptionsModel.XDate := AValue.FieldType in DateFieldTypes;
 end;
 
 procedure TScatterStatVariableModel.SetYVariable(AValue: TEpiField);
 begin
   if FYVariable = AValue then Exit;
   FYVariable := AValue;
-  FChartOptionsModel.YVariable := AValue;
+  FChartOptionsModel.UseY := (AValue <> nil);
+  if (AValue <> nil) then
+    FChartOptionsModel.YDate := AValue.FieldType in DateFieldTypes;
 end;
 
 function TScatterStatVariableModel.IsUsed(Field: TEpiField;

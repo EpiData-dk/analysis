@@ -8,6 +8,9 @@ uses
   Classes, SysUtils, stat_dialog_contribution, chart_options, executor,
   epidatafiles;
 
+const
+  ScatterMinMax = %1111;
+
 type
 
   TChartOptionEdit = (cbT, cbF, cbXT, cbYT, cbC, cbnXMin, cbnXMax, cbnYMin, cbnYMax);
@@ -24,16 +27,14 @@ type
     FYTitle:   UTF8String;
     FColors:   UTF8String;
     FXMin, FXMax, FYMin, FYMax: UTF8String;
-    FXVariable: TEpiField;
-    FYVariable: TEpiField;
+    FUseX, FUseY,
+    FXDate,FYDate: Boolean;
     FMinMax: Integer;   // lower bytes refer to ymax, ymin, xmax, xmin
     procedure SetTitle(AValue: UTF8String);
     procedure SetFootnote(AValue: UTF8String);
     procedure SetXTitle(AValue: UTF8String);
     procedure SetYTitle(AValue: UTF8String);
     procedure SetColors(AValue: UTF8String);
-    procedure SetXVar(AValue: TEpiField);
-    procedure SetYVar(AValue: TEpiField);
   public
     constructor Create();
     function GenerateScript(): UTF8String;
@@ -48,8 +49,10 @@ type
     property XMax: UTF8String read FXMax write FXMax;
     property YMin: UTF8String read FYMin write FYMin;
     property YMax: UTF8String read FYMax write FYMax;
-    property XVariable: TEpiField read FXVariable write SetXVar;
-    property YVariable: TEpiField read FYVariable write SetYVar;
+    property XDate: Boolean read FXDate write FXDate;
+    property YDate: Boolean read FYDate write FYDate;
+    property UseX: Boolean read FUseX write FUseX;
+    property UseY: Boolean read FUseY write FUseY;
     property MinMax: Integer read FMinMax write FMinMax;
   end;
 
@@ -63,9 +66,11 @@ uses
 
 constructor TChartOptionsModel.Create();
 begin
-  FXVariable := nil;
-  FYVariable := nil;
-  FMinMax    := 0;
+  XDate  := false;
+  YDate  := false;
+  UseX   := false;
+  UseY   := false;
+  MinMax := 0;
 end;
 
 procedure TChartOptionsModel.SetTitle(AValue: UTF8String);
@@ -96,18 +101,6 @@ procedure TChartOptionsModel.SetColors(AValue: UTF8String);
 begin
   if (AValue = FColors) then exit;
   FColors := Avalue
-end;
-
-procedure TChartOptionsModel.SetXVar(AValue: TEpiField);
-begin
-  if (AValue = FXVariable) then exit;
-  FXVariable := AValue;
-end;
-
-procedure TChartOptionsModel.SetYVar(AValue: TEpiField);
-begin
-  if (AValue = FYVariable) then exit;
-  FYVariable := AValue;
 end;
 
 function TChartOptionsModel.GenerateScript(): UTF8String;
