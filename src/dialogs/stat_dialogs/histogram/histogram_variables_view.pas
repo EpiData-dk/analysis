@@ -10,11 +10,11 @@ uses
 
 type
 
-  { THistogramStatDialogVariablesView }
+  { THistogramDialogVariablesView }
 
-  THistogramStatDialogVariablesView = class(TCustomStatDialogView)
+  THistogramDialogVariablesView = class(TCustomStatDialogView)
   private
-    FDataModel: THistogramStatDialogVariableModel;
+    FDataModel: THistogramDialogVariableModel;
     FComboBoxes: Array of TEpiFieldsComboBox;
     procedure VariableSelect(Sender: TObject);
     procedure UpdateCombos();
@@ -25,7 +25,7 @@ type
     function GetViewCaption(): UTF8String; override;
     procedure ResetView(); override;
     function IsDefined(): boolean; override;
-    procedure SetModel(DataModel: THistogramStatDialogVariableModel);
+    procedure SetModel(DataModel: THistogramDialogVariableModel);
   end;
 
 implementation
@@ -38,9 +38,9 @@ const
   YVARIABLE_TAG   = Ord(tvY);
   WVARIABLE_TAG   = Ord(tvW);
 
-{ THistogramStatDialogVariablesView }
+{ THistogramDialogVariablesView }
 
-procedure THistogramStatDialogVariablesView.VariableSelect(Sender: TObject);
+procedure THistogramDialogVariablesView.VariableSelect(Sender: TObject);
 var
   Field: TEpiField;
   ComboBox: TCustomComboBox;
@@ -64,7 +64,7 @@ begin
   DoModified();
 end;
 
-procedure THistogramStatDialogVariablesView.UpdateCombos();
+procedure THistogramDialogVariablesView.UpdateCombos();
 var
   Field: TEpiField;
   ComboBox: TEpiFieldsComboBox;
@@ -77,19 +77,19 @@ begin
       Field := ComboBox.SelectedField;
       ComboBox.Fields.Free;
       ComboBox.Fields := nil;
-      ComboBox.Fields := FDataModel.GetComboFields(THistogramStatDialogVariable(i));
+      ComboBox.Fields := FDataModel.GetComboFields(THistogramDialogVariable(i));
       ComboBox.ItemIndex := ComboBox.Items.IndexOfObject(Field);
     end;
 end;
 
-constructor THistogramStatDialogVariablesView.Create(TheOwner: TComponent);
+constructor THistogramDialogVariablesView.Create(TheOwner: TComponent);
 var
   ComboBox: TEpiFieldsComboBox;
   PrevCombo: TEpiFieldsComboBox;
 begin
   inherited Create(TheOwner);
 
-  SetLength(FComboBoxes, Ord(High(THistogramStatDialogVariable)) + 1);
+  SetLength(FComboBoxes, Ord(High(THistogramDialogVariable)) + 1);
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
   ComboBox.Filter := DateFieldTypes + [ftInteger, ftFloat];
@@ -127,22 +127,22 @@ begin
   EnterView(); // Must do this to get combo boxes aligned and visible
 end;
 
-procedure THistogramStatDialogVariablesView.EnterView();
+procedure THistogramDialogVariablesView.EnterView();
 begin
 
 end;
 
-function THistogramStatDialogVariablesView.ExitView(): boolean;
+function THistogramDialogVariablesView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function THistogramStatDialogVariablesView.GetViewCaption(): UTF8String;
+function THistogramDialogVariablesView.GetViewCaption(): UTF8String;
 begin
   result := 'Variables';
 end;
 
-procedure THistogramStatDialogVariablesView.ResetView();
+procedure THistogramDialogVariablesView.ResetView();
 var
   Combobox: TCustomComboBox;
 begin
@@ -157,13 +157,13 @@ begin
   DoModified();
 end;
 
-function THistogramStatDialogVariablesView.IsDefined(): boolean;
+function THistogramDialogVariablesView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure THistogramStatDialogVariablesView.SetModel(
-  DataModel: THistogramStatDialogVariableModel);
+procedure THistogramDialogVariablesView.SetModel(
+  DataModel: THistogramDialogVariableModel);
 begin
   FDataModel := DataModel;
 

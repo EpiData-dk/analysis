@@ -10,9 +10,9 @@ uses
 type
 
 
-   { ThistogramStatDialogPrimaryOptionModel }
+   { THistogramDialogPrimaryOptionModel }
 
-   THistogramStatDialogPrimaryOptionModel = class(IStatDialogModel)
+   THistogramDialogPrimaryOptionModel = class(IStatDialogModel)
    private
      FExecutor: TExecutor;
      FValueLabelType: TEpiGetValueLabelType;
@@ -42,23 +42,23 @@ implementation
 uses
   LazUTF8;
 
-{ THistogramStatDialogPrimaryOptionModel }
+{ THistogramDialogPrimaryOptionModel }
 
-procedure THistogramStatDialogPrimaryOptionModel.SetValueLabelType(
+procedure THistogramDialogPrimaryOptionModel.SetValueLabelType(
   AValue: TEpiGetValueLabelType);
 begin
   if FValueLabelType = AValue then Exit;
   FValueLabelType := AValue;
 end;
 
-procedure THistogramStatDialogPrimaryOptionModel.SetVariableLabelType(
+procedure THistogramDialogPrimaryOptionModel.SetVariableLabelType(
   AValue: TEpiGetVariableLabelType);
 begin
   if FVariableLabelType = AValue then Exit;
   FVariableLabelType := AValue;
 end;
 
-constructor THistogramStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
+constructor THistogramDialogPrimaryOptionModel.Create(Executor: TExecutor);
 var
     defaults: TStringList;
 begin
@@ -73,7 +73,7 @@ begin
   defaults.Free;
 end;
 
-function THistogramStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
+function THistogramDialogPrimaryOptionModel.GenerateScript(): UTF8String;
 var
   compareOption: UTF8String;
 begin
@@ -103,7 +103,7 @@ begin
     Result += ' !sd';
 end;
 
-function THistogramStatDialogPrimaryOptionModel.IsDefined(): boolean;
+function THistogramDialogPrimaryOptionModel.IsDefined(): boolean;
 begin
   result := true;
 end;

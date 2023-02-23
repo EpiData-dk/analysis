@@ -10,11 +10,11 @@ uses
 
 type
 
-  { ThistogramStatPrimaryOptionsView }
+  { THistogramPrimaryOptionsView }
 
-  ThistogramStatPrimaryOptionsView = class(TCustomStatDialogView)
+  THistogramPrimaryOptionsView = class(TCustomStatDialogView)
   private
-    FDataModel: ThistogramStatDialogPrimaryOptionModel;
+    FDataModel: THistogramDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FValueLabelsGroup: TRadioGroup;
     FVariableLabelsGroup: TRadioGroup;
@@ -32,7 +32,7 @@ type
     function GetViewCaption(): UTF8String; override;
     function IsDefined(): boolean; override;
     procedure ResetView(); override;
-    procedure SetModel(DataModel: ThistogramStatDialogPrimaryOptionModel);
+    procedure SetModel(DataModel: THistogramDialogPrimaryOptionModel);
   end;
 
 implementation
@@ -40,9 +40,9 @@ implementation
 uses
   StdCtrls, epifields_helper;
 
-{ ThistogramStatPrimaryOptionsView }
+{ THistogramPrimaryOptionsView }
 
-procedure ThistogramStatPrimaryOptionsView.CreateValueLabelsRadios(
+procedure THistogramPrimaryOptionsView.CreateValueLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Value');
@@ -52,7 +52,7 @@ begin
   RadioGroup.OnSelectionChanged := @ValueLabelSelectionChanged;
 end;
 
-procedure ThistogramStatPrimaryOptionsView.CreateVariableLabelsRadios(
+procedure THistogramPrimaryOptionsView.CreateVariableLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Variable Name');
@@ -62,7 +62,7 @@ begin
   RadioGroup.OnSelectionChanged := @VariableLabelSelectionChanged;
 end;
 
-procedure ThistogramStatPrimaryOptionsView.VariableLabelSelectionChanged(
+procedure THistogramPrimaryOptionsView.VariableLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -74,7 +74,7 @@ begin
   DoModified();
 end;
 
-procedure ThistogramStatPrimaryOptionsView.ValueLabelSelectionChanged(
+procedure THistogramPrimaryOptionsView.ValueLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -86,7 +86,7 @@ begin
   DoModified();
 end;
 
-procedure ThistogramStatPrimaryOptionsView.OptionGroupCheck(Sender: TObject; Index: integer);
+procedure THistogramPrimaryOptionsView.OptionGroupCheck(Sender: TObject; Index: integer);
 var
   Value: Boolean;
 begin
@@ -97,7 +97,7 @@ begin
   end;
 end;
 
-constructor ThistogramStatPrimaryOptionsView.Create(TheOwner: TComponent);
+constructor THistogramPrimaryOptionsView.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
@@ -154,28 +154,28 @@ begin
   CreateVariableLabelsRadios(FVariableLabelsGroup);
 end;
 
-procedure ThistogramStatPrimaryOptionsView.EnterView();
+procedure THistogramPrimaryOptionsView.EnterView();
 begin
   FHorizontalDivider.Top := ((Self.Height - FHorizontalDivider.Height) div 2);
   FVerticalDivider.Left := ((Self.Width - FVerticalDivider.Width) div 2);
 end;
 
-function ThistogramStatPrimaryOptionsView.ExitView(): boolean;
+function THistogramPrimaryOptionsView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function ThistogramStatPrimaryOptionsView.GetViewCaption(): UTF8String;
+function THistogramPrimaryOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Output';
 end;
 
-function ThistogramStatPrimaryOptionsView.IsDefined(): boolean;
+function THistogramPrimaryOptionsView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure ThistogramStatPrimaryOptionsView.ResetView();
+procedure THistogramPrimaryOptionsView.ResetView();
 begin
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
@@ -187,8 +187,8 @@ begin
 
 end;
 
-procedure ThistogramStatPrimaryOptionsView.SetModel(
-  DataModel: ThistogramStatDialogPrimaryOptionModel);
+procedure THistogramPrimaryOptionsView.SetModel(
+  DataModel: THistogramDialogPrimaryOptionModel);
 begin
   FDataModel := DataModel;
   FValueLabelsGroup.ItemIndex := FDataModel.ValueLabelsDefault;
