@@ -6,65 +6,73 @@ interface
 
 uses
   Classes, SysUtils, executor, epidatafiles, stat_dialog_contribution,
-  epicustombase;
+  epicustombase, chart_options_model;
 
 type
 
-  TEpicurveStatDialogVariable = (tvX, tvY);
+  TEpicurveDialogVariable = (tvX, tvY);
 
-  { TEpicurveStatDialogVariableModel }
+  { TEpicurveDialogVariableModel }
 
-  TEpicurveStatDialogVariableModel = class(IStatDialogModel)
+  TEpicurveDialogVariableModel = class(IStatDialogModel)
   private
     FExecutor: TExecutor;
     FXVariable: TEpiField;
     FYVariable: TEpiField;
     FWVariable: TEpiField;
+    FChartOptionsModel: TChartOptionsModel;
     procedure SetXVariable(AValue: TEpiField);
     procedure SetYVariable(AValue: TEpiField);
     procedure SetWVariable(AValue: TEpiField);
-    function IsUsed(Field: TEpiField; EpicurveVariable: TEpicurveStatDialogVariable): boolean;
+    function IsUsed(Field: TEpiField; EpicurveVariable: TEpicurveDialogVariable): boolean;
   public
     function GenerateScript(): UTF8String;
     function IsDefined(): boolean;
   public
     constructor Create(Executor: TExecutor);
-    function GetComboFields(EpicurveVariable: TEpicurveStatDialogVariable): TEpiFields;
+    function GetComboFields(EpicurveVariable: TEpicurveDialogVariable): TEpiFields;
     property XVariable: TEpiField read FXVariable write SetXVariable;
     property YVariable: TEpiField read FYVariable write SetYVariable;
     property WVariable: TEpiField read FWVariable write SetWVariable;
+    property ChartOptions: TChartOptionsModel read FChartOptionsModel write FChartOptionsModel;
   end;
 
 implementation
 
-{ TEpicurveStatDialgoModel }
+uses
+  epidatafilestypes;
 
-procedure TEpicurveStatDialogVariableModel.SetXVariable(AValue: TEpiField);
+{ TEpicurveDialgoModel }
+
+procedure TEpicurveDialogVariableModel.SetXVariable(AValue: TEpiField);
 begin
   if FXVariable = AValue then Exit;
   FXVariable := AValue;
+  FChartOptionsModel.UseX := (AValue <> nil);
+  if (AValue <> nil) then
+    FChartOptionsModel.XDate := AValue.FieldType in DateFieldTypes;
 end;
 
-procedure TEpicurveStatDialogVariableModel.SetYVariable(AValue: TEpiField);
+procedure TEpicurveDialogVariableModel.SetYVariable(AValue: TEpiField);
 begin
   if FYVariable = AValue then Exit;
   FYVariable := AValue;
 end;
 
-procedure TEpicurveStatDialogVariableModel.SetWVariable(AValue: TEpiField);
+procedure TEpicurveDialogVariableModel.SetWVariable(AValue: TEpiField);
 begin
   if FWVariable = AValue then Exit;
   FWVariable := AValue;
 end;
 
-function TEpicurveStatDialogVariableModel.IsUsed(Field: TEpiField;
-  EpicurveVariable: TEpicurveStatDialogVariable): boolean;
+function TEpicurveDialogVariableModel.IsUsed(Field: TEpiField;
+  EpicurveVariable: TEpicurveDialogVariable): boolean;
 begin
   result := (not (EpicurveVariable = tvX)) and (Field = FXVariable);
   result := result or ((not (EpicurveVariable = tvY)) and (Field = FYVariable));
 end;
 
-function TEpicurveStatDialogVariableModel.GenerateScript(): UTF8String;
+function TEpicurveDialogVariableModel.GenerateScript(): UTF8String;
 begin
   result := FXVariable.Name;
 
@@ -73,18 +81,18 @@ begin
 
 end;
 
-function TEpicurveStatDialogVariableModel.IsDefined(): boolean;
+function TEpicurveDialogVariableModel.IsDefined(): boolean;
 begin
   result := Assigned(FXVariable);
 end;
 
-constructor TEpicurveStatDialogVariableModel.Create(Executor: TExecutor);
+constructor TEpicurveDialogVariableModel.Create(Executor: TExecutor);
 begin
   FExecutor := Executor;
 end;
 
-function TEpicurveStatDialogVariableModel.GetComboFields(
-  EpicurveVariable: TEpicurveStatDialogVariable): TEpiFields;
+function TEpicurveDialogVariableModel.GetComboFields(
+  EpicurveVariable: TEpicurveDialogVariable): TEpiFields;
 var
   Field: TEpiField;
 begin
