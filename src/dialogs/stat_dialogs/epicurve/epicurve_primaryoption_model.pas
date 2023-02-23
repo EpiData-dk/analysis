@@ -10,9 +10,9 @@ uses
 type
 
 
-   { TEpicurveStatDialogPrimaryOptionModel }
+   { TEpicurveDialogPrimaryOptionModel }
 
-   TEpicurveStatDialogPrimaryOptionModel = class(IStatDialogModel)
+   TEpicurveDialogPrimaryOptionModel = class(IStatDialogModel)
    private
      FExecutor: TExecutor;
      FValueLabelType: TEpiGetValueLabelType;
@@ -38,23 +38,23 @@ implementation
 uses
   LazUTF8;
 
-{ TEpicurveStatDialogPrimaryOptionModel }
+{ TEpicurveDialogPrimaryOptionModel }
 
-procedure TEpicurveStatDialogPrimaryOptionModel.SetValueLabelType(
+procedure TEpicurveDialogPrimaryOptionModel.SetValueLabelType(
   AValue: TEpiGetValueLabelType);
 begin
   if FValueLabelType = AValue then Exit;
   FValueLabelType := AValue;
 end;
 
-procedure TEpicurveStatDialogPrimaryOptionModel.SetVariableLabelType(
+procedure TEpicurveDialogPrimaryOptionModel.SetVariableLabelType(
   AValue: TEpiGetVariableLabelType);
 begin
   if FVariableLabelType = AValue then Exit;
   FVariableLabelType := AValue;
 end;
 
-constructor TEpicurveStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
+constructor TEpicurveDialogPrimaryOptionModel.Create(Executor: TExecutor);
 var
     defaults: TStringList;
 begin
@@ -69,7 +69,7 @@ begin
   defaults.Free;
 end;
 
-function TEpicurveStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
+function TEpicurveDialogPrimaryOptionModel.GenerateScript(): UTF8String;
 var
   compareOption: UTF8String;
 begin
@@ -95,7 +95,7 @@ begin
 
 end;
 
-function TEpicurveStatDialogPrimaryOptionModel.IsDefined(): boolean;
+function TEpicurveDialogPrimaryOptionModel.IsDefined(): boolean;
 begin
   result := true;
 end;
