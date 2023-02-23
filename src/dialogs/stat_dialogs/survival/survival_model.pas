@@ -10,11 +10,11 @@ uses
 
 type
 
-  TSurvivalStatDialogVariable = (svOutcome, svTime1, svTime2, svBy, svW);
+  TSurvivalDialogVariable = (svOutcome, svTime1, svTime2, svBy, svW);
 
-  { TSurvivalStatDialogVariableModel }
+  { TSurvivalDialogVariableModel }
 
-  TSurvivalStatDialogVariableModel = class(IStatDialogModel)
+  TSurvivalDialogVariableModel = class(IStatDialogModel)
   private
     FExecutor: TExecutor;
     FOutcomeVariable: TEpiField;
@@ -35,13 +35,13 @@ type
     procedure SetOutcomeValues(Field: TEpiField);
     procedure SetStrataValues(Field: TEpiField);
     procedure SetRefStratum(AValue: UTF8String);
-    function IsUsed(Field: TEpiField; SurvivalVariable: TSurvivalStatDialogVariable): boolean;
+    function IsUsed(Field: TEpiField; SurvivalVariable: TSurvivalDialogVariable): boolean;
   public
     function GenerateScript(): UTF8String;
     function IsDefined(): boolean;
   public
     constructor Create(Executor: TExecutor);
-    function GetComboFields(SurvivalVariable: TSurvivalStatDialogVariable): TEpiFields;
+    function GetComboFields(SurvivalVariable: TSurvivalDialogVariable): TEpiFields;
     property OutcomeVariable: TEpiField read FOutcomeVariable write SetOutcomeVariable;
     property Time1Variable: TEpiField read FTime1Variable write SetTime1Variable;
     property Time2Variable: TEpiField read FTime2Variable write SetTime2Variable;
@@ -57,39 +57,39 @@ implementation
 
 { TSurvivalStatDialgoModel }
 
-procedure TSurvivalStatDialogVariableModel.SetOutcomeVariable(AValue: TEpiField);
+procedure TSurvivalDialogVariableModel.SetOutcomeVariable(AValue: TEpiField);
 begin
   if FOutcomeVariable = AValue then Exit;
   FOutcomeVariable := AValue;
   SetOutcomeValues(FOutcomeVariable);
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetTime1Variable(AValue: TEpiField);
+procedure TSurvivalDialogVariableModel.SetTime1Variable(AValue: TEpiField);
 begin
   if FTime1Variable = AValue then Exit;
   FTime1Variable := AValue;
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetTime2Variable(AValue: TEpiField);
+procedure TSurvivalDialogVariableModel.SetTime2Variable(AValue: TEpiField);
 begin
   if FTime2Variable = AValue then Exit;
   FTime2Variable := AValue;
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetWVariable(AValue: TEpiField);
+procedure TSurvivalDialogVariableModel.SetWVariable(AValue: TEpiField);
 begin
   if FWVariable = AValue then Exit;
   FWVariable := AValue;
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetByVariable(AValue: TEpiField);
+procedure TSurvivalDialogVariableModel.SetByVariable(AValue: TEpiField);
 begin
   if FByVariable = AValue then Exit;
   FByVariable := AValue;
   SetStrataValues(FByVariable);
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetOutcomeValues(Field: TEpiField);
+procedure TSurvivalDialogVariableModel.SetOutcomeValues(Field: TEpiField);
 begin
   FOutcomeValues.Clear;
   if (Field = nil) then
@@ -97,13 +97,13 @@ begin
   FOutcomeValues := GetFieldValues(Field);
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetFailure(AValue: UTF8String);
+procedure TSurvivalDialogVariableModel.SetFailure(AValue: UTF8String);
 begin
   if FFailure = AValue then Exit;
   FFailure := AValue;
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetStrataValues(Field: TEpiField);
+procedure TSurvivalDialogVariableModel.SetStrataValues(Field: TEpiField);
 begin
   FStrataValues.Clear;
   if (Field = nil) then
@@ -111,14 +111,14 @@ begin
   FStrataValues := GetFieldValues(Field);
 end;
 
-procedure TSurvivalStatDialogVariableModel.SetRefStratum(AValue: UTF8String);
+procedure TSurvivalDialogVariableModel.SetRefStratum(AValue: UTF8String);
 begin
   if FRefStratum = AValue then Exit;
   FRefStratum := AValue;
 end;
 
-function TSurvivalStatDialogVariableModel.IsUsed(Field: TEpiField;
-  SurvivalVariable: TSurvivalStatDialogVariable): boolean;
+function TSurvivalDialogVariableModel.IsUsed(Field: TEpiField;
+  SurvivalVariable: TSurvivalDialogVariable): boolean;
 begin
   result := (not (SurvivalVariable = svOutcome)) and (Field = FOutcomeVariable);
   result := result or ((not (SurvivalVariable = svTime1)) and (Field = FTime1Variable));
@@ -127,7 +127,7 @@ begin
   result := result or ((not (SurvivalVariable = svW)) and (Field = FWVariable));
 end;
 
-function TSurvivalStatDialogVariableModel.GenerateScript(): UTF8String;
+function TSurvivalDialogVariableModel.GenerateScript(): UTF8String;
 var
 p:   Integer;
 begin
@@ -170,7 +170,7 @@ begin
 
 end;
 
-function TSurvivalStatDialogVariableModel.IsDefined(): boolean;
+function TSurvivalDialogVariableModel.IsDefined(): boolean;
 begin
   result :=
     (Assigned(FOutcomeVariable) and (FFailure <> '')) and
@@ -182,15 +182,15 @@ begin
     ));
 end;
 
-constructor TSurvivalStatDialogVariableModel.Create(Executor: TExecutor);
+constructor TSurvivalDialogVariableModel.Create(Executor: TExecutor);
 begin
   FExecutor := Executor;
   FOutcomeValues := TStringList.Create;
   FStrataValues  := TStringList.Create;
 end;
 
-function TSurvivalStatDialogVariableModel.GetComboFields(
-  SurvivalVariable: TSurvivalStatDialogVariable): TEpiFields;
+function TSurvivalDialogVariableModel.GetComboFields(
+  SurvivalVariable: TSurvivalDialogVariable): TEpiFields;
 var
   Field: TEpiField;
 begin

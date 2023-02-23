@@ -5,20 +5,23 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
-  survival_model, survival_primaryoption_model,survival_statisticoptions_model;
+  survival_model, survival_primaryoption_model,survival_statisticoptions_model,
+  chart_options_model;
 
 type
 
-  { TSurvivalStatDialogContribution }
+  { TSurvivalDialogContribution }
 
-  TSurvivalStatDialogContribution = class(IStatDialogContribution)
+  TSurvivalDialogContribution = class(IStatDialogContribution)
   private
-    FPrimaryOptionsModel: TSurvivalStatDialogPrimaryOptionModel;
-    FStatisticsOptionsModel: TSurvivalStatDialogStatisticOptionsModel;
-    FVariablesModel: TSurvivalStatDialogVariableModel;
+    FPrimaryOptionsModel: TSurvivalDialogPrimaryOptionModel;
+    FStatisticsOptionsModel: TSurvivalDialogStatisticOptionsModel;
+    FVariablesModel: TSurvivalDialogVariableModel;
+    FChartOptionsModel: TChartOptionsModel;
     function CreateMainView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
     function CreatePrimaryOptionView(Owner: TComponent;  Executor: TExecutor): IStatDialogView;
     function CreateStatisticOptionView(Owner: TComponent): IStatDialogView;
+    function CreateChartOptionsView(Owner: TComponent): IStatDialogView;
   public
     function GenerateScript(): UTF8String;
     function GetCaption(): UTF8String;
@@ -29,60 +32,70 @@ type
 implementation
 
 uses
-  survival_variables_view,
-  survival_primaryoption_view,
-  survival_statisticoptions_view;
+  survival_variables_view, survival_primaryoption_view,
+  survival_statisticoptions_view, chart_options_view;
 
-{ TSurvivalStatDialogContribution }
+{ TSurvivalDialogContribution }
 
-function TSurvivalStatDialogContribution.CreateMainView(Owner: TComponent;
+function TSurvivalDialogContribution.CreateMainView(Owner: TComponent;
   Executor: TExecutor): IStatDialogView;
 var
-  View: TSurvivalStatDialogVariablesView;
+  View: TSurvivalDialogVariablesView;
 begin
-  FVariablesModel := TSurvivalStatDialogVariableModel.Create(Executor);
-  View := TSurvivalStatDialogVariablesView.Create(Owner);
+  FVariablesModel := TSurvivalDialogVariableModel.Create(Executor);
+  View := TSurvivalDialogVariablesView.Create(Owner);
   View.SetModel(FVariablesModel);
   Result := View;
 end;
 
-function TSurvivalStatDialogContribution.CreatePrimaryOptionView(Owner: TComponent;
+function TSurvivalDialogContribution.CreatePrimaryOptionView(Owner: TComponent;
   Executor: TExecutor ): IStatDialogView;
 var
   View: TSurvivalStatPrimaryOptionsView;
 begin
-  FPrimaryOptionsModel := TSurvivalStatDialogPrimaryOptionModel.Create(Executor);
+  FPrimaryOptionsModel := TSurvivalDialogPrimaryOptionModel.Create(Executor);
   View := TSurvivalStatPrimaryOptionsView.Create(Owner);
   View.SetModel(FPrimaryOptionsModel);
   Result := View;
 end;
 
-function TSurvivalStatDialogContribution.CreateStatisticOptionView(
+function TSurvivalDialogContribution.CreateStatisticOptionView(
   Owner: TComponent): IStatDialogView;
 var
-  View: TSurvivalStatDialogStatisticOptionsView;
+  View: TSurvivalDialogStatisticOptionsView;
 begin
-  View := TSurvivalStatDialogStatisticOptionsView.Create(Owner);
-  FStatisticsOptionsModel := TSurvivalStatDialogStatisticOptionsModel.Create();
+  View := TSurvivalDialogStatisticOptionsView.Create(Owner);
+  FStatisticsOptionsModel := TSurvivalDialogStatisticOptionsModel.Create();
   View.SetModel(FStatisticsOptionsModel);
   Result := View;
 end;
 
-function TSurvivalStatDialogContribution.GenerateScript(): UTF8String;
+function TSurvivalDialogContribution.CreateChartOptionsView(Owner: TComponent): IStatDialogView;
+var
+  View: TChartOptionsView;
+begin
+  FChartOptionsModel := TChartOptionsModel.Create();
+  FChartOptionsModel.MinMax := SurvivalMinMax;
+  View := TChartOptionsView.Create(Owner);
+  View.SetModel(FChartOptionsModel);
+  Result := View;
+end;
+function TSurvivalDialogContribution.GenerateScript(): UTF8String;
 begin
   result := 'survival ' +
     FVariablesModel.GenerateScript() +
     FPrimaryOptionsModel.GenerateScript() +
     FStatisticsOptionsModel.GenerateScript() +
+    FChartOptionsModel.GenerateScript() +
     ';';
 end;
 
-function TSurvivalStatDialogContribution.GetCaption(): UTF8String;
+function TSurvivalDialogContribution.GetCaption(): UTF8String;
 begin
   result := 'Survival';
 end;
 
-function TSurvivalStatDialogContribution.GetHelpText(): UTF8String;
+function TSurvivalDialogContribution.GetHelpText(): UTF8String;
 begin
   result :=
     '1: Select Variables' + LineEnding +
@@ -90,16 +103,17 @@ begin
     '3: Run, Execute or Paste command';
 end;
 
-function TSurvivalStatDialogContribution.GetViews(Owner: TComponent;
+function TSurvivalDialogContribution.GetViews(Owner: TComponent;
   Executor: TExecutor): TStatDialogContributionViewList;
 begin
   result := TStatDialogContributionViewList.Create;
   result.Add(CreateMainView(Owner, Executor));
   result.Add(CreatePrimaryOptionView(Owner, Executor));
   result.Add(CreateStatisticOptionView(Owner));
+  result.Add(CreateChartOptionsView(Owner));
 end;
 
 initialization
-  RegisterStatDialogContribution(TSurvivalStatDialogContribution.Create, cdGraphs);
+  RegisterStatDialogContribution(TSurvivalDialogContribution.Create, cdGraphs);
 
 end.
