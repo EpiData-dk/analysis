@@ -123,6 +123,16 @@ begin
     .GetYAxisConfiguration()
     .SetShowAxisMarksAsDates(YVar.FieldType in DateFieldTypes);
 
+    with Chart do
+    begin
+      BottomAxis.Grid.Style   := psClear;
+      BottomAxis.Margin       := 0;
+      LeftAxis.Grid.Style     := psDot;
+      LeftAxis.Grid.Color     := clSilver;
+      LeftAxis.Margin         := 0;
+      Frame.Visible           := false;
+    end;
+
   // Create the command result
   Result := FChartFactory.NewGraphCommandResult();
   Result.AddChart(Chart, ChartConfiguration);

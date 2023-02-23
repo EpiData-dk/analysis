@@ -881,7 +881,9 @@ begin
     end
   else
   begin
-    aText  := '';
+    aText  := sSurCommand;
+    if (FCIType = 0) then
+      aText := '| ' + aText + LineEnding + '| ' + IntToStr(FConf) + '% ' + sConfIntervalAbbr;
     aColor   := FColors[0];
     aPattern := sPattern[0];
   end;
