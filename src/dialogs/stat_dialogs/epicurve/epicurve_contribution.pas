@@ -6,19 +6,21 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
-  epicurve_model, epicurve_primaryoption_model;
+  epicurve_model, epicurve_primaryoption_model, chart_options_model;
 
 type
 
-  { TEpicurveStatDialogContribution }
+  { TEpicurveDialogContribution }
 
-  TEpicurveStatDialogContribution = class(IStatDialogContribution)
+  TEpicurveDialogContribution = class(IStatDialogContribution)
   private
-    FPrimaryOptionsModel: TEpicurveStatDialogPrimaryOptionModel;
-    FVariablesModel: TEpicurveStatDialogVariableModel;
+    FPrimaryOptionsModel: TEpicurveDialogPrimaryOptionModel;
+    FVariablesModel: TEpicurveDialogVariableModel;
+    FChartOptionsModel: TChartOptionsModel;
     function CreateMainView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
     function CreatePrimaryOptionView(Owner: TComponent;  Executor: TExecutor): IStatDialogView;
-  public
+    function CreateChartOptionsView(Owner: TComponent): IStatDialogView;
+ public
     function GenerateScript(): UTF8String;
     function GetCaption(): UTF8String;
     function GetHelpText(): UTF8String;
@@ -28,47 +30,60 @@ type
 implementation
 
 uses
-  Epicurve_variables_view,
-  Epicurve_primaryoption_view;
+  Epicurve_variables_view, Epicurve_primaryoption_view, chart_options_view;
 
-{ TEpicurveStatDialogContribution }
+{ TEpicurveDialogContribution }
 
-function TEpicurveStatDialogContribution.CreateMainView(Owner: TComponent;
+function TEpicurveDialogContribution.CreateMainView(Owner: TComponent;
   Executor: TExecutor): IStatDialogView;
 var
-  View: TEpicurveStatDialogVariablesView;
+  View: TEpicurveDialogVariablesView;
 begin
-  FVariablesModel := TEpicurveStatDialogVariableModel.Create(Executor);
-  View := TEpicurveStatDialogVariablesView.Create(Owner);
+  FVariablesModel := TEpicurveDialogVariableModel.Create(Executor);
+  View := TEpicurveDialogVariablesView.Create(Owner);
   View.SetModel(FVariablesModel);
   Result := View;
 end;
 
-function TEpicurveStatDialogContribution.CreatePrimaryOptionView(Owner: TComponent;
+function TEpicurveDialogContribution.CreatePrimaryOptionView(Owner: TComponent;
   Executor: TExecutor ): IStatDialogView;
 var
-  View: TEpicurveStatPrimaryOptionsView;
+  View: TEpicurvePrimaryOptionsView;
 begin
-  FPrimaryOptionsModel := TEpicurveStatDialogPrimaryOptionModel.Create(Executor);
-  View := TEpicurveStatPrimaryOptionsView.Create(Owner);
+  FPrimaryOptionsModel := TEpicurveDialogPrimaryOptionModel.Create(Executor);
+  View := TEpicurvePrimaryOptionsView.Create(Owner);
   View.SetModel(FPrimaryOptionsModel);
   Result := View;
 end;
 
-function TEpicurveStatDialogContribution.GenerateScript(): UTF8String;
+function TEpicurveDialogContribution.CreateChartOptionsView(Owner: TComponent): IStatDialogView;
+var
+  View: TChartOptionsView;
+begin
+  FChartOptionsModel := TChartOptionsModel.Create();
+  FChartOptionsModel.MinMax := EpicurveMinMax;
+  FChartOptionsModel.UseY := true;
+  FVariablesModel.ChartOptions := FChartOptionsModel;
+  View := TChartOptionsView.Create(Owner);
+  View.SetModel(FChartOptionsModel);
+  Result := View;
+end;
+
+function TEpicurveDialogContribution.GenerateScript(): UTF8String;
 begin
   result := 'epicurve ' +
     FVariablesModel.GenerateScript() +
     FPrimaryOptionsModel.GenerateScript() +
+    FChartOptionsModel.GenerateScript() +
     ';';
 end;
 
-function TEpicurveStatDialogContribution.GetCaption(): UTF8String;
+function TEpicurveDialogContribution.GetCaption(): UTF8String;
 begin
   result := 'Epicurve';
 end;
 
-function TEpicurveStatDialogContribution.GetHelpText(): UTF8String;
+function TEpicurveDialogContribution.GetHelpText(): UTF8String;
 begin
   result :=
     '1: Select Variables' + LineEnding +
@@ -76,15 +91,16 @@ begin
     '3: Run, Execute or Paste command';
 end;
 
-function TEpicurveStatDialogContribution.GetViews(Owner: TComponent;
+function TEpicurveDialogContribution.GetViews(Owner: TComponent;
   Executor: TExecutor): TStatDialogContributionViewList;
 begin
   result := TStatDialogContributionViewList.Create;
   result.Add(CreateMainView(Owner, Executor));
   result.Add(CreatePrimaryOptionView(Owner, Executor));
+  Result.Add(CreateChartOptionsView(Owner));
 end;
 
 initialization
-  RegisterStatDialogContribution(TEpicurveStatDialogContribution.Create, cdGraphs);
+  RegisterStatDialogContribution(TEpicurveDialogContribution.Create, cdGraphs);
 
 end.

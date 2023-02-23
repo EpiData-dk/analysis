@@ -10,11 +10,11 @@ uses
 
 type
 
-  { TEpicurveStatPrimaryOptionsView }
+  { TEpicurvePrimaryOptionsView }
 
-  TEpicurveStatPrimaryOptionsView = class(TCustomStatDialogView)
+  TEpicurvePrimaryOptionsView = class(TCustomStatDialogView)
   private
-    FDataModel: TEpicurveStatDialogPrimaryOptionModel;
+    FDataModel: TEpicurveDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FVerticalDivider: TBevel;
     FValueLabelsGroup: TRadioGroup;
@@ -30,7 +30,7 @@ type
     function GetViewCaption(): UTF8String; override;
     function IsDefined(): boolean; override;
     procedure ResetView(); override;
-    procedure SetModel(DataModel: TEpicurveStatDialogPrimaryOptionModel);
+    procedure SetModel(DataModel: TEpicurveDialogPrimaryOptionModel);
   end;
 
 implementation
@@ -38,9 +38,9 @@ implementation
 uses
   StdCtrls, epifields_helper;
 
-{ TEpicurveStatPrimaryOptionsView }
+{ TEpicurvePrimaryOptionsView }
 
-procedure TEpicurveStatPrimaryOptionsView.CreateValueLabelsRadios(
+procedure TEpicurvePrimaryOptionsView.CreateValueLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Value');
@@ -50,7 +50,7 @@ begin
   RadioGroup.OnSelectionChanged := @ValueLabelSelectionChanged;
 end;
 
-procedure TEpicurveStatPrimaryOptionsView.CreateVariableLabelsRadios(
+procedure TEpicurvePrimaryOptionsView.CreateVariableLabelsRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Variable Name');
@@ -60,7 +60,7 @@ begin
   RadioGroup.OnSelectionChanged := @VariableLabelSelectionChanged;
 end;
 
-procedure TEpicurveStatPrimaryOptionsView.VariableLabelSelectionChanged(
+procedure TEpicurvePrimaryOptionsView.VariableLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -72,7 +72,7 @@ begin
   DoModified();
 end;
 
-procedure TEpicurveStatPrimaryOptionsView.ValueLabelSelectionChanged(
+procedure TEpicurvePrimaryOptionsView.ValueLabelSelectionChanged(
   Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
@@ -84,7 +84,7 @@ begin
   DoModified();
 end;
 
-constructor TEpicurveStatPrimaryOptionsView.Create(TheOwner: TComponent);
+constructor TEpicurvePrimaryOptionsView.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
@@ -129,28 +129,28 @@ begin
   CreateVariableLabelsRadios(FVariableLabelsGroup);
 end;
 
-procedure TEpicurveStatPrimaryOptionsView.EnterView();
+procedure TEpicurvePrimaryOptionsView.EnterView();
 begin
   FHorizontalDivider.Top := ((Self.Height - FHorizontalDivider.Height) div 2);
   FVerticalDivider.Left := ((Self.Width - FVerticalDivider.Width) div 2);
 end;
 
-function TEpicurveStatPrimaryOptionsView.ExitView(): boolean;
+function TEpicurvePrimaryOptionsView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function TEpicurveStatPrimaryOptionsView.GetViewCaption(): UTF8String;
+function TEpicurvePrimaryOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Output';
 end;
 
-function TEpicurveStatPrimaryOptionsView.IsDefined(): boolean;
+function TEpicurvePrimaryOptionsView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure TEpicurveStatPrimaryOptionsView.ResetView();
+procedure TEpicurvePrimaryOptionsView.ResetView();
 begin
   FDataModel.ValueLabelType := gvtLabel;
   FDataModel.VariableLabelType := gvtVarLabel;
@@ -160,8 +160,8 @@ begin
 
 end;
 
-procedure TEpicurveStatPrimaryOptionsView.SetModel(
-  DataModel: TEpicurveStatDialogPrimaryOptionModel);
+procedure TEpicurvePrimaryOptionsView.SetModel(
+  DataModel: TEpicurveDialogPrimaryOptionModel);
 begin
   FDataModel := DataModel;
   FValueLabelsGroup.ItemIndex := FDataModel.ValueLabelsDefault;
