@@ -10,9 +10,9 @@ uses
 type
 
 
-   { TSurvivalStatDialogPrimaryOptionModel }
+   { TSurvivalDialogPrimaryOptionModel }
 
-   TSurvivalStatDialogPrimaryOptionModel = class(IStatDialogModel)
+   TSurvivalDialogPrimaryOptionModel = class(IStatDialogModel)
    private
      FExecutor: TExecutor;
      FValueLabelType: TEpiGetValueLabelType;
@@ -47,30 +47,30 @@ implementation
 uses
   LazUTF8;
 
-{ TSurvivalStatDialogPrimaryOptionModel }
+{ TSurvivalDialogPrimaryOptionModel }
 
-procedure TSurvivalStatDialogPrimaryOptionModel.SetValueLabelType(
+procedure TSurvivalDialogPrimaryOptionModel.SetValueLabelType(
   AValue: TEpiGetValueLabelType);
 begin
   if FValueLabelType = AValue then Exit;
   FValueLabelType := AValue;
 end;
 
-procedure TSurvivalStatDialogPrimaryOptionModel.SetVariableLabelType(
+procedure TSurvivalDialogPrimaryOptionModel.SetVariableLabelType(
   AValue: TEpiGetVariableLabelType);
 begin
   if FVariableLabelType = AValue then Exit;
   FVariableLabelType := AValue;
 end;
 
-procedure TSurvivalStatDialogPrimaryOptionModel.SetDecimals(
+procedure TSurvivalDialogPrimaryOptionModel.SetDecimals(
   AValue: UTF8String);
 begin
   if FDecimals = AValue then Exit;
   FDecimals := AValue;
 end;
 
-constructor TSurvivalStatDialogPrimaryOptionModel.Create(Executor: TExecutor);
+constructor TSurvivalDialogPrimaryOptionModel.Create(Executor: TExecutor);
 var
     defaults: TStringList;
 begin
@@ -85,7 +85,7 @@ begin
   defaults.Free;
 end;
 
-function TSurvivalStatDialogPrimaryOptionModel.GenerateScript(): UTF8String;
+function TSurvivalDialogPrimaryOptionModel.GenerateScript(): UTF8String;
 var
   compareOption: UTF8String;
 begin
@@ -120,7 +120,7 @@ begin
     Result += ' !cb';
 end;
 
-function TSurvivalStatDialogPrimaryOptionModel.IsDefined(): boolean;
+function TSurvivalDialogPrimaryOptionModel.IsDefined(): boolean;
 begin
   result := true;
 end;
