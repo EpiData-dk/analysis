@@ -14,7 +14,6 @@ type
   TSaveGraphDialogAction = class(TCustomSaveGraphAction)
   private
     FSaveDialog: TSaveDialog;
-    procedure FilterChange(Sender: TObject);
   protected
     procedure UpdateReadyState(); override;
     procedure SaveGraphExecute(Sender: TObject); override;
@@ -30,16 +29,6 @@ uses
 
 { TSaveGraphDialogAction }
 
-procedure TSaveGraphDialogAction.FilterChange(Sender: TObject);
-begin
-  case FSaveDialog.FilterIndex of
-    1: GraphExportType := etSVG;
-    2: GraphExportType := etPNG;
-    3: GraphExportType := etJPG;
-  end;
-  FSaveDialog.DefaultExt := ExportExt[GraphExportType];
-end;
-
 procedure TSaveGraphDialogAction.UpdateReadyState();
 begin
   Enabled := Assigned(Chart);
@@ -49,23 +38,28 @@ procedure TSaveGraphDialogAction.SaveGraphExecute(Sender: TObject);
 begin
   if (not FSaveDialog.Execute) then
     Exit;
-
   Filename := FSaveDialog.FileName;
-
+  if (not ExtensionOK) then
+  begin
+    ShowMessage('"' + Filename + '"' + LineEnding +
+      'does not have a valid file extension.' + LineEnding +
+      '(jpg, jpeg, png, svg)' + LineEnding +
+      'Nothing saved.');
+    FSaveDialog.FileName := '';
+    exit;
+  end;
   inherited SaveGraphExecute(Sender);
+  FSaveDialog.FileName := '';
 end;
 
 constructor TSaveGraphDialogAction.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-
   FSaveDialog := TSaveDialog.Create(Self);
-  FSaveDialog.Filter := ' |*.*|SVG File|*.svg|PNG File|*.png|JPEG File|*.jpg;*.jpeg';
-  FSaveDialog.FilterIndex := 0;
-  FSaveDialog.OnTypeChange := @FilterChange;
+  FSaveDialog.Filter := '';
   FSaveDialog.InitialDir := GetCurrentDirUTF8;
   FSaveDialog.Options := [ofOverwritePrompt, ofPathMustExist, ofEnableSizing];
-  FSaveDialog.Title := 'Add file extension or choose a format below';
+  FSaveDialog.Title := 'File name MUST use a valid type: .jpg, .png or .svg';
 end;
 
 end.
