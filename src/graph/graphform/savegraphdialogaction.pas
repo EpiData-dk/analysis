@@ -43,9 +43,8 @@ begin
   begin
     ShowMessage('"' + Filename + '"' + LineEnding +
       'does not have a valid file extension.' + LineEnding +
-      '(jpg, jpeg, png, svg)' + LineEnding +
+      '(jpg, jpeg, png, svg)' + LineEnding + LineEnding +
       'Nothing saved.');
-    FSaveDialog.FileName := '';
     exit;
   end;
   inherited SaveGraphExecute(Sender);
@@ -59,7 +58,7 @@ begin
   FSaveDialog.Filter := '';
   FSaveDialog.InitialDir := GetCurrentDirUTF8;
   FSaveDialog.Options := [ofOverwritePrompt, ofPathMustExist, ofEnableSizing];
-  FSaveDialog.Title := 'File name MUST use a valid type: .jpg, .png or .svg';
+  FSaveDialog.Title := 'File name MUST have a valid type: .jpg, .png or .svg';
 end;
 
 end.
