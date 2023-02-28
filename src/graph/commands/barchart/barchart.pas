@@ -206,7 +206,7 @@ begin
       BottomAxis.Margin       := 0;
       LeftAxis.Grid.Style     := psClear;
       LeftAxis.Margin         := 0;
-      LeftAxis.Intervals.NiceSteps:='2|5|1';
+      LeftAxis.Intervals.NiceSteps:='.2|.5|.1';
       LeftAxis.Intervals.MinLength := 5;
       LeftAxis.Intervals.MaxLength := 200; // no interpolation of ticks at reasonable scale
       Frame.Visible           := false;

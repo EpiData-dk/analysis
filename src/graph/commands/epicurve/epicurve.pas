@@ -209,7 +209,7 @@ begin
       BottomAxis.Grid.Style   := psClear;
       BottomAxis.Margin       := 0;
       LeftAxis.Grid.Style     := psClear;
-      LeftAxis.Intervals.NiceSteps:='2|5|1'; // see barchart
+      LeftAxis.Intervals.NiceSteps:='.2|.5|.1';
       LeftAxis.Intervals.MinLength := 5;
       LeftAxis.Intervals.MaxLength := 200;
       LeftAxis.Margin         := 0;
