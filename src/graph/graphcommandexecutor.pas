@@ -33,7 +33,7 @@ implementation
 
 uses
   chartcommand, chartfactory, graphformfactory, savegraphaction, TAGraph, chartpair,
-  LazFileUtils, ana_globals, ast_types, chart_options, Graphics, options_utils;
+  LazFileUtils, ana_globals, ast_types, chart_options, options_utils, Graphics;
 
 { TGraphCommandExecutor }
 
@@ -155,6 +155,7 @@ begin
            ANA_SO_CHART_FONT_STYLE,
            FExecutor.SetOptions
          );
+
   ChartTitle.Font.Assign(AFont);
 end;
 
@@ -290,7 +291,6 @@ begin
   Command.Init(TheChartFactory, FExecutor, FOutputCreator);
   CommandResult := Command.Execute(ST);
 
-  if (CommandResult = nil) then exit;
   if (CommandResult.GetChartPairs().Count = 0) then exit;
 
   UpdateChartTitles(ST, CommandResult);

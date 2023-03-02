@@ -1344,6 +1344,17 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+  { TParetoCommand }
+
+  TParetoCommand = class(TCustomGraphCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TCustomMergeCommand }
 
   TCustomMergeCommand = class(TCustomVariableCommand)
@@ -2672,6 +2683,34 @@ constructor TSurvivalCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
   inherited Create(AVariableList, AOptionList, stSurvival);
+end;
+
+{ TParetoCommand }
+function TParetoCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+  Result.Insert('w', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
+end;
+
+function TParetoCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  SetLength(Result, 1);
+  Result[0] := 1;
+end;
+
+function TParetoCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  Result.ResultTypes := AllResultDataTypes;
+end;
+
+constructor TParetoCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stPareto);
 end;
 
 { TAppendCommand }
@@ -4114,6 +4153,7 @@ begin
     stEpicurve:  Result := TEpicurveCommand.Create(AVariableList, AOptionList);
     stHistogram: Result := THistogramCommand.Create(AVariableList, AOptionList);
     stSurvival:  Result := TSurvivalCommand.Create(AVariableList, AOptionList);
+    stPareto:    Result := TParetoCommand.Create(AvariableList, AOptionList);
   else
     DoError();
   end;
@@ -7232,6 +7272,7 @@ begin
     'epi': Result := stEpicurve;
     'his': Result := stHistogram;
     'sur': Result := stSurvival;
+    'par': Result := stPareto;
   else
     DoError();
   end;

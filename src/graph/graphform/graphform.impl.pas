@@ -56,11 +56,14 @@ var
   Sheet: TTabSheet;
   Titles: IChartTitles;
   Chart: TChart;
+  i, count: Integer;
+  s: UTF8String;
 begin
   ChartPairs := ACommandResult.GetChartPairs();
-
+  count := 0;
   for Pair in ChartPairs do
     begin
+      Inc(count);
       Chart := Pair.Chart;
 
       Sheet := FPageControl.AddTabSheet;
@@ -68,8 +71,13 @@ begin
       Chart.Parent := Sheet;
       Chart.Align := alClient;
       Sheet.InsertComponent(Chart);
+// if graph command adds a second title line, line 2 is the tab caption
+      s := Pair.Configuration.GetTitleConfiguration().GetTitle();
+      i := Pos(LineEnding, s);
+      if (i > 0) then
+        Sheet.Caption := copy(s, i+1);
     end;
-
+  if (count > 1) then FPageControl.ShowTabs := (Pair.InstanceSize > 1);
   FSaveGraphAction.Chart := ChartPairs.First.Chart;
 end;
 
