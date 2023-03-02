@@ -100,124 +100,128 @@ begin
       if (Varnames.Count = 1) then
         FOutputCreator.DoInfoShort('!sd ignored with a single variable');
     end;
-
   WeightVarName := '';
   if (cOptions.HasOption('w',Opt)) then
     begin
       WeightVarName := Opt.Expr.AsIdent;
       DFVars.Add(WeightVarName);
     end;
-
   yPct := Command.HasOption('pct');
 
-  DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
-  XVar := Datafile.Fields.FieldByName[VarNames[0]];
-  Chart := FChartFactory.NewChart();
-  BarSource := TBarSource.Create(Chart);
-  BarSource.Pct := yPct;
-  LabelSeries := TListChartSource.Create(Chart);
-  if (Varnames.Count = 1) then
-// add dummy variable to use Tables with one variable plus weight variable
-    begin
-      dummyVar := DataFile.NewField(ftInteger);
-      dummyVar.Name := dummyVarName;
-      Varnames.Add(dummyVarName);
-    end;
-// Note: this does NOT call CalcTables with stratification
-  T := TTables.Create(FExecutor, FOutputCreator);
-  TablesAll  := T.CalcTables(Datafile, VarNames,
-                StratVariable, WeightVarName, cOptions, nilTablesRefMap);
-  TableData := TablesAll.UnstratifiedTable;
-  if (ReverseStrata) then
-    TableData.SortByRowLabel(true);
-  BarSource.SetSource(TableData, ValueLabelOutput);
-
-  ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
-  for i := 0 to TableData.ColCount - 1 do
-    LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, ValueLabelOutput));
-
-  if (Varnames.IndexOf(dummyVarName) > -1) then
-    Varnames.Delete(Varnames.IndexOf(dummyVarName));
-
-  BarSeries := TBarSeries.Create(Chart);
-  BarSeries.Source := BarSource;
-  BarSeries.Stacked := cOptions.HasOption('stack');
-  BarSeries.BarWidthPercent := 80;
-  SeriesStyles := TChartStyles.Create(Chart);
-  if (Varnames.Count > 1) then
-    begin
-      colourNum := 0;
-      for i := 0 to TableData.RowCount - 1 do
-        begin
-          if (colourNum = length(sColor)) then
-            colourNum := 0;
-          aStyle := SeriesStyles.Add;
-          aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
-          aStyle.Brush.Color:=sColor[colourNum];
-          aStyle.Pen.Color := clSilver;
-          colourNum += 1;
-        end;
-      BarSeries.Legend.Multiplicity:=lmStyle;
-      BarSeries.Legend.GroupIndex  := 0;
-
-      Chart.Legend.Visible        := true;
-      Chart.Legend.UseSidebar     := true;
-      Chart.Legend.Frame.Visible  := false;
-      Chart.Legend.GroupTitles.Add(ByVarName);
-    end  // stratified
-  else
-    begin
-      aStyle := SeriesStyles.Add;
-      aStyle.Brush.Color := sColor[0];
-      aStyle.Pen.Color := clSilver;
-    end;
-    BarSeries.Styles := SeriesStyles;
-
-  // Add series to the chart
-  Chart.AddSeries(BarSeries);
-
-  if (yPct) then
-    yType := 'Percent'
-  else
-    yType := 'Count';
-  sTitle := yType + ' by ' + XVar.GetVariableLabel(VariableLabelOutput);
-  if (Varnames.Count > 1) then
-    sTitle += ' by ' + ByVarName;
-  if (WeightVarName <> '') then
-    sTitle += ' weighted (' + WeightVarName + ')';
-
-  VariableLabelOutput := VariableLabelTypeFromOptionList(cOptions, FExecutor.SetOptions, sovStatistics);
-  ChartConfiguration := FChartFactory.NewChartConfiguration();
-  ChartConfiguration.GetTitleConfiguration()
-    .SetTitle(sTitle)
-    .SetFootnote('')
-    .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
-    .SetYAxisTitle(yType);
-
-  ChartConfiguration.GetAxesConfiguration()
-    .GetXAxisConfiguration()
-    .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
-
-  with Chart do
-    begin
-      BottomAxis.Marks.Source := LabelSeries;
-      BottomAxis.Marks.Style  := smsLabel;
-      BottomAxis.Grid.Style   := psClear;
-      BottomAxis.Margin       := 0;
-      LeftAxis.Grid.Style     := psClear;
-      LeftAxis.Margin         := 0;
-      LeftAxis.Intervals.NiceSteps:='2|5|1';
-      LeftAxis.Intervals.MinLength := 5;
-      LeftAxis.Intervals.MaxLength := 200; // no interpolation of ticks at reasonable scale
-      Frame.Visible           := false;
-    end;
-
-  // Create the command result
   Result := FChartFactory.NewGraphCommandResult();
-  Result.AddChart(Chart, ChartConfiguration);
+
+  DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
+  if (DataFile.Size < 1) then
+    FExecutor.Error('No Data')
+  else
+  begin   // create chart
+    XVar := Datafile.Fields.FieldByName[VarNames[0]];
+    Chart := FChartFactory.NewChart();
+    BarSource := TBarSource.Create(Chart);
+    BarSource.Pct := yPct;
+    LabelSeries := TListChartSource.Create(Chart);
+    if (Varnames.Count = 1) then
+  // add dummy variable to use Tables with one variable plus weight variable
+      begin
+        dummyVar := DataFile.NewField(ftInteger);
+        dummyVar.Name := dummyVarName;
+        Varnames.Add(dummyVarName);
+      end;
+  // Note: this does NOT call CalcTables with stratification
+    T := TTables.Create(FExecutor, FOutputCreator);
+    TablesAll  := T.CalcTables(Datafile, VarNames,
+                  StratVariable, WeightVarName, cOptions, nilTablesRefMap);
+    TableData := TablesAll.UnstratifiedTable;
+    if (ReverseStrata) then
+      TableData.SortByRowLabel(true);
+    BarSource.SetSource(TableData, ValueLabelOutput);
+
+    ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
+    for i := 0 to TableData.ColCount - 1 do
+      LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, ValueLabelOutput));
+
+    if (Varnames.IndexOf(dummyVarName) > -1) then
+      Varnames.Delete(Varnames.IndexOf(dummyVarName));
+
+    BarSeries := TBarSeries.Create(Chart);
+    BarSeries.Source := BarSource;
+    BarSeries.Stacked := cOptions.HasOption('stack');
+    BarSeries.BarWidthPercent := 80;
+    SeriesStyles := TChartStyles.Create(Chart);
+    if (Varnames.Count > 1) then
+      begin
+        colourNum := 0;
+        for i := 0 to TableData.RowCount - 1 do
+          begin
+            if (colourNum = length(sColor)) then
+              colourNum := 0;
+            aStyle := SeriesStyles.Add;
+            aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
+            aStyle.Brush.Color:=sColor[colourNum];
+            aStyle.Pen.Color := clSilver;
+            colourNum += 1;
+          end;
+        BarSeries.Legend.Multiplicity:=lmStyle;
+        BarSeries.Legend.GroupIndex  := 0;
+
+        Chart.Legend.Visible        := true;
+        Chart.Legend.UseSidebar     := true;
+        Chart.Legend.Frame.Visible  := false;
+        Chart.Legend.GroupTitles.Add(ByVarName);
+      end  // stratified
+    else
+      begin
+        aStyle := SeriesStyles.Add;
+        aStyle.Brush.Color := sColor[0];
+        aStyle.Pen.Color := clSilver;
+      end;
+      BarSeries.Styles := SeriesStyles;
+
+    // Add series to the chart
+    Chart.AddSeries(BarSeries);
+
+    if (yPct) then
+      yType := 'Percent'
+    else
+      yType := 'Count';
+    sTitle := yType + ' by ' + XVar.GetVariableLabel(VariableLabelOutput);
+    if (Varnames.Count > 1) then
+      sTitle += ' by ' + ByVarName;
+    if (WeightVarName <> '') then
+      sTitle += ' weighted (' + WeightVarName + ')';
+
+    VariableLabelOutput := VariableLabelTypeFromOptionList(cOptions, FExecutor.SetOptions, sovStatistics);
+    ChartConfiguration := FChartFactory.NewChartConfiguration();
+    ChartConfiguration.GetTitleConfiguration()
+      .SetTitle(sTitle)
+      .SetFootnote('')
+      .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
+      .SetYAxisTitle(yType);
+
+    ChartConfiguration.GetAxesConfiguration()
+      .GetXAxisConfiguration()
+      .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
+
+    with Chart do
+      begin
+        BottomAxis.Marks.Source := LabelSeries;
+        BottomAxis.Marks.Style  := smsLabel;
+        BottomAxis.Grid.Style   := psClear;
+        BottomAxis.Margin       := 0;
+        LeftAxis.Grid.Style     := psClear;
+        LeftAxis.Margin         := 0;
+        LeftAxis.Intervals.NiceSteps:='.2|.5|.1';
+        LeftAxis.Intervals.MinLength := 5;
+        LeftAxis.Intervals.MaxLength := 200; // no interpolation of ticks at reasonable scale
+        Frame.Visible           := false;
+      end;
+    Result.AddChart(Chart, ChartConfiguration);
+    XVar := nil;
+    TablesAll.Free;
+    T.Free;
+  end;   // create chart
+
   VarNames.Free;
-  TablesAll.Free;
-  T.Free;
   DataFile.Free;
   cOptions.Free;
   StratVariable.Free;
