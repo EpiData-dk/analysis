@@ -221,7 +221,6 @@ begin
         LeftAxis.Margin         := 0;
         Frame.Visible           := false;
       end;
-
     Result.AddChart(Chart, ChartConfiguration);
     XVar := nil;
     TablesAll.Free;
