@@ -43,13 +43,20 @@ var
   SaveAction: TSaveGraphAction;
   Opt: TOption;
   Chart: TChart;
+  Pair: TChartPair;
+  fn, ext: UTF8String;
+  i, n: Integer;
 begin
+  SaveAction := TSaveGraphAction.Create(nil);
   // TODO: Jamie/Torsten - save multiple charts from one graph command
   //       perhaps as Filename.1.extension, etc.
-  SaveAction := TSaveGraphAction.Create(nil);
+  n := CommandResult.GetChartPairs().Count;
+  i := 1;
+  for Pair in CommandResult.GetChartPairs do
+  begin
 
   try
-    Chart := CommandResult.GetChartPairs().First.Chart;
+    Chart := Pair.Chart;
     SaveAction.Chart := Chart;
 
     // This forces the SaveAction to free the chart, chartsource and objects
@@ -57,7 +64,14 @@ begin
     SaveAction.InsertComponent(Chart);
 
     ST.HasOption(['export', 'S', 'E'], Opt);
-    SaveAction.Filename := Opt.Expr.AsString;
+    if (n = 1) then
+      SaveAction.Filename := Opt.Expr.AsString
+    else begin
+      fn := Opt.Expr.AsString;
+      ext := ExtractFileExt(fn);
+      fn := copy(fn,1,length(fn)-length(ext)) + '.' + intToStr(i) + ext;
+      SaveAction.Filename := fn;
+    end;
     if (FileExistsUTF8(SaveAction.Filename)) and
        (not ST.HasOption('replace'))
     then
@@ -82,8 +96,13 @@ begin
     on E: Exception do
       FOutputCreator.DoError('Graph not saved! ' + E.Message);
   end;
+  // SaveAction.Free will fail unless we remove the component
+  // but this won't free the previous charts (or even this one?)
+  SaveAction.RemoveComponent(Chart);
+  inc(i);
+  end;
 
-  SaveAction.Free;
+  SaveAction.Free;  // fails if more than one component; do we need our own saveaction.destroy?
 end;
 
 procedure TGraphCommandExecutor.ShowDialog(ST: TCustomGraphCommand;
