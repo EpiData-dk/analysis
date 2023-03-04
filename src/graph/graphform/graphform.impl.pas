@@ -56,14 +56,12 @@ var
   Sheet: TTabSheet;
   Titles: IChartTitles;
   Chart: TChart;
-  i, count: Integer;
+  i: Integer;
   s: UTF8String;
 begin
   ChartPairs := ACommandResult.GetChartPairs();
-  count := 0;
   for Pair in ChartPairs do
     begin
-      Inc(count);
       Chart := Pair.Chart;
 
       Sheet := FPageControl.AddTabSheet;
@@ -77,7 +75,7 @@ begin
       if (i > 0) then
         Sheet.Caption := copy(s, i+1);
     end;
-  if (count > 1) then FPageControl.ShowTabs := (Pair.InstanceSize > 1);
+  FPageControl.ShowTabs := (Pair.InstanceSize > 1);
   FSaveGraphAction.Chart := ChartPairs.First.Chart;
 end;
 
