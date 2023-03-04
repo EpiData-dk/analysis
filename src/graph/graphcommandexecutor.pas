@@ -44,6 +44,8 @@ var
   Opt: TOption;
   Chart: TChart;
 begin
+  // TODO: Jamie/Torsten - save multiple charts from one graph command
+  //       perhaps as Filename.1.extension, etc.
   SaveAction := TSaveGraphAction.Create(nil);
 
   try

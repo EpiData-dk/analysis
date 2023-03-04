@@ -76,6 +76,8 @@ begin
         Sheet.Caption := copy(s, i+1);
     end;
   FPageControl.ShowTabs := (ChartPairs.Count > 1);
+  // TODO: Jamie/Torsten - accomodate multiple charts from one graph command
+  //       saving just the one the user clicked on
   FSaveGraphAction.Chart := ChartPairs.First.Chart;
 end;
 
