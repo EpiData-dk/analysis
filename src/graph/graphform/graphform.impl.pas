@@ -75,7 +75,7 @@ begin
       if (i > 0) then
         Sheet.Caption := copy(s, i+1);
     end;
-  FPageControl.ShowTabs := (Pair.InstanceSize > 1);
+  FPageControl.ShowTabs := (ChartPairs.Count > 1);
   FSaveGraphAction.Chart := ChartPairs.First.Chart;
 end;
 
