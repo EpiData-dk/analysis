@@ -1621,15 +1621,21 @@ end;
 
 procedure TMainForm.MainExceptionHandler(Sender: TObject; E: Exception);
 begin
-  ShowMessage(
-    'An unhandled error occurred in the program!' + LineEnding +
-    LineEnding +
-    'Please verify that the error can be reproduced.' + LineEnding +
-    'Report to the: EpiData-list (mail.....)' + LineEnding +
-    '               and mail to info@epidata.dk' + LineEnding +
-    LineEnding +
-    'Include most recent 5-10 lines of history in your report.'
-  );
+  // trap known exceptions to avoid notifying the user
+  case LowerCase(E.Message) of
+    'drawdata leak':
+      ;
+    else
+      ShowMessage(
+        'An unhandled error occurred in the program!' + LineEnding +
+        LineEnding +
+        'Please verify that the error can be reproduced.' + LineEnding +
+        'Report to the: EpiData-list (epidata-list@lists.umanitoba.ca)' + LineEnding +
+        '               and mail to info@epidata.dk' + LineEnding +
+        LineEnding +
+        'Include most recent 5-10 lines of history in your report.'
+      );
+  end;
 
   Screen.Cursor := crDefault;
 end;
