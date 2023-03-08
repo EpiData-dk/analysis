@@ -2494,6 +2494,7 @@ begin
   AddValueLabelOptions(Result);
   Result.Insert('l', [rtUndefined]);
   Result.Insert('p', [rtUndefined]);
+  Result.Insert('by',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('xmin', AxisTypeFromVariableType(VariableList, 0));
   Result.Insert('xmax', AxisTypeFromVariableType(VariableList, 0));
   Result.Insert('ymin', AxisTypeFromVariableType(VariableList, 1));
