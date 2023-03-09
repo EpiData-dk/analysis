@@ -9,7 +9,7 @@ uses
 
 type
 
-  TScatterStatDiaglogVariable = (tvX, tvY);
+  TScatterStatDiaglogVariable = (tvX, tvY, tVBy);
 
   { TScatterStatVariableModel }
 
@@ -18,9 +18,11 @@ type
     FExecutor: TExecutor;
     FXVariable: TEpiField;
     FYVariable: TEpiField;
+    FByVariable: TEpiField;
     FChartOptionsModel: TChartOptionsModel;
     procedure SetXVariable(AValue: TEpiField);
     procedure SetYVariable(AValue: TEpiField);
+    procedure SetByVariable(AValue: TEpiField);
     function IsUsed(Field: TEpiField; TableVariable: TScatterStatDiaglogVariable): boolean;
   public
     function GenerateScript(): UTF8String;
@@ -30,6 +32,7 @@ type
     function GetComboFields(TableVariable: TScatterStatDiaglogVariable): TEpiFields;
     property XVariable: TEpiField read FXVariable write SetXVariable;
     property YVariable: TEpiField read FYVariable write SetYVariable;
+    property ByVariable: TEpiField read FByVariable write SetByVariable;
     property ChartOptions: TChartOptionsModel read FChartOptionsModel write FChartOptionsModel;
   end;
 
@@ -59,16 +62,25 @@ begin
     FChartOptionsModel.YDate := AValue.FieldType in DateFieldTypes;
 end;
 
+procedure TScatterStatVariableModel.SetByVariable(AValue: TEpiField);
+begin
+  if FByVariable = AValue then Exit;
+  FByVariable := AValue;
+end;
+
 function TScatterStatVariableModel.IsUsed(Field: TEpiField;
   TableVariable: TScatterStatDiaglogVariable): boolean;
 begin
   result := (not (TableVariable = tvX)) and (Field = FXVariable);
   result := result or ((not (TableVariable = tvY)) and (Field = FYVariable));
+  result := result or ((not (TableVariable = tvBy)) and (Field = FByVariable));
 end;
 
 function TScatterStatVariableModel.GenerateScript(): UTF8String;
 begin
   Result := FXVariable.Name + ' ' + FYVariable.Name;
+  if Assigned(FByVariable) then
+    result += ' !by := ' + FByVariable.Name;
 end;
 
 function TScatterStatVariableModel.IsDefined(): boolean;
