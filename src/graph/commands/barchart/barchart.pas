@@ -80,6 +80,43 @@ var
   yPct:                Boolean;
   yType:               UTF8String;
   msg:                 UTF8String;
+
+  procedure setUpValues;
+  var ix: Integer;
+  begin
+    BarSource.Datafile := Datafile;
+    BarSource.SetYVariableName(YVarName);
+    DataFile.SortRecords(XVar);
+    for ix := 0 to Datafile.Size - 1 do
+      LabelSeries.Add(ix.ToDouble, 0, XVar.GetValueLabelFormatted(ix, ValueLabelOutput));
+  end;
+
+  procedure setUpFrequencies;
+  var ix: Integer;
+  begin
+    if (Varnames.Count = 1) then
+      begin
+        dummyVar := DataFile.NewField(ftInteger);
+        dummyVar.Name := dummyVarName;
+        Varnames.Add(dummyVarName);
+      end;
+    T := TTables.Create(FExecutor, FOutputCreator);
+    TablesAll  := T.CalcTables(Datafile, VarNames,
+                  StratVariable, WeightVarName, cOptions, nilTablesRefMap);
+    TableData := TablesAll.UnstratifiedTable;
+    if (ReverseStrata) then
+      TableData.SortByRowLabel(true);
+    BarSource.SetSource(TableData, ValueLabelOutput);
+    BarSource.Pct := yPct;
+
+    ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
+    for ix := 0 to TableData.ColCount - 1 do
+      LabelSeries.Add(ix.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(ix, ValueLabelOutput));
+
+    if (Varnames.IndexOf(dummyVarName) > -1) then
+      Varnames.Delete(Varnames.IndexOf(dummyVarName));
+  end;
+
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
@@ -134,40 +171,10 @@ begin
     BarSource := TBarSource.Create(Chart);
     LabelSeries := TListChartSource.Create(Chart);
     if (plotValue) then
-      begin
-        BarSource.Datafile := Datafile;
-        BarSource.SetYVariableName(YVarName);
-        DataFile.SortRecords(XVar);
-        for i := 0 to Datafile.Size - 1 do
-          LabelSeries.Add(i.ToDouble, 0, XVar.GetValueLabelFormatted(i, ValueLabelOutput));
-        BarSource.Sorted := true;
-      end
+      setUpValues
     else
-      begin
-        if (Varnames.Count = 1) then
-      // add dummy variable to use Tables with one variable plus weight variable
-          begin
-            dummyVar := DataFile.NewField(ftInteger);
-            dummyVar.Name := dummyVarName;
-            Varnames.Add(dummyVarName);
-          end;
-      // Note: this does NOT call CalcTables with stratification
-        T := TTables.Create(FExecutor, FOutputCreator);
-        TablesAll  := T.CalcTables(Datafile, VarNames,
-                      StratVariable, WeightVarName, cOptions, nilTablesRefMap);
-        TableData := TablesAll.UnstratifiedTable;
-        if (ReverseStrata) then
-          TableData.SortByRowLabel(true);
-        BarSource.SetSource(TableData, ValueLabelOutput);
-        BarSource.Pct := yPct;
-
-        ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
-        for i := 0 to TableData.ColCount - 1 do
-          LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, ValueLabelOutput));
-
-        if (Varnames.IndexOf(dummyVarName) > -1) then
-          Varnames.Delete(Varnames.IndexOf(dummyVarName));
-      end;
+      setUpFrequencies;
+    BarSource.Sorted := true;
 
     BarSeries := TBarSeries.Create(Chart);
     BarSeries.Source := BarSource;
@@ -207,7 +214,7 @@ begin
     Chart.AddSeries(BarSeries);
 
     if (plotValue) then
-      yType := 'YVarName'
+      yType := YVarName
     else if (yPct) then
       yType := 'Percent'
     else

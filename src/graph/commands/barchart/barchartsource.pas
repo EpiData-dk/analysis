@@ -42,12 +42,10 @@ procedure TBarSource.GetDataItem(ASource: TUserDefinedChartSource;
   AIndex: Integer; var AItem: TChartDataItem);
 var
   i: Integer;
-  t: double;
 begin
   AItem.X := AIndex.ToDouble;
   if (FValue) then
     begin
-      t := FYVar.AsFloat[AIndex];
       AItem.Y := FYVar.AsFloat[AIndex];
       exit;
     end;
