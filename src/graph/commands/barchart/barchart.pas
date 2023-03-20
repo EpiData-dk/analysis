@@ -63,7 +63,7 @@ var
   {command}
   VarNames:            TStrings;
   DFVars:              TStrings;
-  XVar:                TEpiField;
+  XVar,
   dummyVar:            TEpiField;
   WeightVarName:       UTF8String;
   cOptions:            TOptionList;
@@ -72,9 +72,11 @@ var
   ValueLabelOutput:    TEpiGetValueLabelType;
   VariableLabelOutput: TEpiGetVariableLabelType;
   ReverseStrata:       Boolean;
+  YVarName,
   ByVarName:           UTF8String;
-  i, colourNum:           Integer;
+  i, colourNum:        Integer;
   sTitle:              UTF8String;
+  plotValue,
   yPct:                Boolean;
   yType:               UTF8String;
   msg:                 UTF8String;
@@ -107,6 +109,18 @@ begin
       DFVars.Add(WeightVarName);
     end;
   yPct := Command.HasOption('pct');
+  YVarName := '';
+  plotValue := cOptions.HasOption('value',Opt);
+  if (plotValue) then
+    begin
+      YVarName := Opt.Expr.AsIdent;
+      DFVars.Add(YVarName);
+      if (yPct) then
+        begin
+          FExecutor.Error('Cannot use !pct with !value');
+          exit;
+        end;
+    end;
 
   Result := FChartFactory.NewGraphCommandResult();
 
@@ -118,30 +132,42 @@ begin
     XVar := Datafile.Fields.FieldByName[VarNames[0]];
     Chart := FChartFactory.NewChart();
     BarSource := TBarSource.Create(Chart);
-    BarSource.Pct := yPct;
     LabelSeries := TListChartSource.Create(Chart);
-    if (Varnames.Count = 1) then
-  // add dummy variable to use Tables with one variable plus weight variable
+    if (plotValue) then
       begin
-        dummyVar := DataFile.NewField(ftInteger);
-        dummyVar.Name := dummyVarName;
-        Varnames.Add(dummyVarName);
+        BarSource.Datafile := Datafile;
+        BarSource.SetYVariableName(YVarName);
+        DataFile.SortRecords(XVar);
+        for i := 0 to Datafile.Size - 1 do
+          LabelSeries.Add(i.ToDouble, 0, XVar.GetValueLabelFormatted(i, ValueLabelOutput));
+        BarSource.Sorted := true;
+      end
+    else
+      begin
+        if (Varnames.Count = 1) then
+      // add dummy variable to use Tables with one variable plus weight variable
+          begin
+            dummyVar := DataFile.NewField(ftInteger);
+            dummyVar.Name := dummyVarName;
+            Varnames.Add(dummyVarName);
+          end;
+      // Note: this does NOT call CalcTables with stratification
+        T := TTables.Create(FExecutor, FOutputCreator);
+        TablesAll  := T.CalcTables(Datafile, VarNames,
+                      StratVariable, WeightVarName, cOptions, nilTablesRefMap);
+        TableData := TablesAll.UnstratifiedTable;
+        if (ReverseStrata) then
+          TableData.SortByRowLabel(true);
+        BarSource.SetSource(TableData, ValueLabelOutput);
+        BarSource.Pct := yPct;
+
+        ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
+        for i := 0 to TableData.ColCount - 1 do
+          LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, ValueLabelOutput));
+
+        if (Varnames.IndexOf(dummyVarName) > -1) then
+          Varnames.Delete(Varnames.IndexOf(dummyVarName));
       end;
-  // Note: this does NOT call CalcTables with stratification
-    T := TTables.Create(FExecutor, FOutputCreator);
-    TablesAll  := T.CalcTables(Datafile, VarNames,
-                  StratVariable, WeightVarName, cOptions, nilTablesRefMap);
-    TableData := TablesAll.UnstratifiedTable;
-    if (ReverseStrata) then
-      TableData.SortByRowLabel(true);
-    BarSource.SetSource(TableData, ValueLabelOutput);
-
-    ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
-    for i := 0 to TableData.ColCount - 1 do
-      LabelSeries.Add(i.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(i, ValueLabelOutput));
-
-    if (Varnames.IndexOf(dummyVarName) > -1) then
-      Varnames.Delete(Varnames.IndexOf(dummyVarName));
 
     BarSeries := TBarSeries.Create(Chart);
     BarSeries.Source := BarSource;
@@ -180,7 +206,9 @@ begin
     // Add series to the chart
     Chart.AddSeries(BarSeries);
 
-    if (yPct) then
+    if (plotValue) then
+      yType := 'YVarName'
+    else if (yPct) then
       yType := 'Percent'
     else
       yType := 'Count';
@@ -217,12 +245,15 @@ begin
       end;
     Result.AddChart(Chart, ChartConfiguration);
     XVar := nil;
-    TablesAll.Free;
-    T.Free;
+    if (not plotValue) then
+    begin
+      TablesAll.Free;
+      T.Free;
+      DataFile.Free;
+    end;
   end;   // create chart
 
   VarNames.Free;
-  DataFile.Free;
   cOptions.Free;
   StratVariable.Free;
 end;

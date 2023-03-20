@@ -2517,6 +2517,7 @@ begin
   Result.Insert('stack', [rtUndefined]);
   Result.Insert('pct', [rtUndefined]);
   Result.Insert('ymax', AxisTypeFromVariableType(VariableList, 1));
+  Result.Insert('value', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
 end;
 
 function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
