@@ -64,6 +64,8 @@ var
   VarNames:            TStrings;
   DFVars:              TStrings;
   XVar,
+  YVar,
+  ByVar,
   dummyVar:            TEpiField;
   WeightVarName:       UTF8String;
   cOptions:            TOptionList;
@@ -72,12 +74,12 @@ var
   ValueLabelOutput:    TEpiGetValueLabelType;
   VariableLabelOutput: TEpiGetVariableLabelType;
   ReverseStrata:       Boolean;
-  YVarName,
   ByVarName:           UTF8String;
   i, colourNum:        Integer;
   sTitle:              UTF8String;
   plotValue,
-  yPct:                Boolean;
+  yPct,
+  yCount:              Boolean;
   yType:               UTF8String;
   msg:                 UTF8String;
 
@@ -127,11 +129,16 @@ begin
       exit;
     end;
   VarNames            := Command.VariableList.GetIdentsAsList;
-  DFVars              := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
+  DFVars := TStrings.Create;
+  DFVars.Add(VarNames[0]);
   StratVariable       := TStringList.Create;
   cOptions            := TOptionList.Create;
   for Opt in Command.Options do
-    cOptions.Add(Opt);
+    if (Opt.Ident <> 'by') then
+      cOptions.Add(Opt);
+  yPct := Command.HasOption('pct');
+  yCount := Command.HasOption('count') or
+            ((not yPct) and VarNames.Count = 1));
   ReverseStrata       := cOptions.HasOption('sd', Opt);
   if (ReverseStrata) then
     begin
@@ -142,25 +149,36 @@ begin
   WeightVarName := '';
   if (cOptions.HasOption('w',Opt)) then
     begin
+      if (Varnames.Count) > 1) then
+        begin
+          FExecutor.Error('Cannot use !w with more than one variable');
+          exit;
+        end;
       WeightVarName := Opt.Expr.AsIdent;
       DFVars.Add(WeightVarName);
     end;
-  yPct := Command.HasOption('pct');
-  YVarName := '';
-  plotValue := cOptions.HasOption('value',Opt);
-  if (plotValue) then
+  ByVarName := '';
+  hasBy := cOptions.HasOption('by',Opt);
+  if (hasBy) then
     begin
-      YVarName := Opt.Expr.AsIdent;
-      DFVars.Add(YVarName);
-      if (yPct) then
+      if (Varnames.Count) > 1) then
         begin
-          FExecutor.Error('Cannot use !pct with !value');
+          FExecutor.Error('Cannot use !by with more than one variable');
           exit;
         end;
+      ByVarName := Opt.Expr.AsIdent;
+      DFVars.Add(ByVarName);
     end;
 
-  Result := FChartFactory.NewGraphCommandResult();
-
+    Result := FChartFactory.NewGraphCommandResult();
+{
+ TODO: manage multiple variables
+ NOT!! DFVars := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
+ create DataFile for each pair of (XVar, YVar)
+ if only one variable and by, DataFile has XVar and ByVar)
+   DO NOT pass !by to Tables!!
+ if only one variable and no by, DataFile has only XVar
+}
   DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
   if (DataFile.Size < 1) then
     FExecutor.Error('No Data')

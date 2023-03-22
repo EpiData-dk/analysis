@@ -2512,26 +2512,30 @@ end;
 function TBarchartCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
+  Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('stack', [rtUndefined]);
   Result.Insert('pct', [rtUndefined]);
+  Result.Insert('count', [rtUndefined]);
   Result.Insert('ymax', AxisTypeFromVariableType(VariableList, 1));
-  Result.Insert('value', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
 end;
 
 function TBarchartCommand.GetAcceptedVariableCount: TBoundArray;
 begin
   Result := inherited GetAcceptedVariableCount;
-  SetLength(Result,2);
-  Result[0] := 1;
-  Result[1] := 2;
+  SetLength(Result,1);
+  Result[0] := -1;
 end;
 
 function TBarchartCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
   ): TTypesAndFlagsRec;
 begin
   Result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  if (Index := 0) then
+    Result.ResultTypes := AllResultDataTypes
+  else
+    Result.ResultTypes := [rtInteger, rtFloat];
 end;
 
 constructor TBarchartCommand.Create(AVariableList: TVariableList;
