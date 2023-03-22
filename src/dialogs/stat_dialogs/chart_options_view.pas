@@ -81,11 +81,18 @@ begin
 
   for i := Low(FText) to High(FText) do
     begin
-      EditText := TCustomEdit.Create(TheOwner);
+      LabelText := TLabel.Create(TheOwner);
+      LabelText.Caption := Labels[i];
       if (i=0) then
-        EditText.AnchorParallel(akTop, 0, Self)
+        LabelText.AnchorParallel(akTop, 0, Self)
       else
-        EditText.AnchorToNeighbour(akTop, 10, FText[i - 1]);
+        LabelText.AnchorToNeighbour(akTop, 10, FLabel[i - 1]);
+      LabelText.AnchorParallel(akLeft, 0, Self);
+      LabelText.Parent := self;
+      FLabel[i] := LabelText;
+
+      EditText := TCustomEdit.Create(TheOwner);
+      EditText.AnchorParallel(akTop, 0, LabelText);
       EditText.AnchorParallel(akLeft, EntryBox, Self);
       EditText.OnChange := @SetText;
       EditText.Tag := i;
@@ -96,12 +103,6 @@ begin
       EditText.Parent := self;
       FText[i] := EditText;
 
-      LabelText := TLabel.Create(TheOwner);
-      LabelText.Caption := Labels[i];
-      LabelText.AnchorParallel(akLeft, 0, Self);
-      LabelText.AnchorParallel(akTop, 0, EditText);
-      LabelText.Parent := self;
-      FLabel[i] := LabelText;
     end;
 
   // create DateEdit controls in same position as corresponding CustomEdit controls
@@ -109,8 +110,8 @@ begin
   for i := Low(FDate) to High(FDate) do
     begin
       DateText := TDateEdit.Create(TheOwner);
-      DateText.AnchorToNeighbour(akTop, 0, FText[i + XMIN_TAG]);
-      DateText.AnchorToNeighbour(akLeft, 0, FText[i + XMIN_TAG]);
+      DateText.AnchorParallel(akTop, 0, FLabel[i + XMIN_TAG]);
+      DateText.AnchorParallel(akLeft, entryBox, Self);
       DateText.Width := DateSize;
       DateText.Tag := i;
       DateText.OnChange := @SetDate;
