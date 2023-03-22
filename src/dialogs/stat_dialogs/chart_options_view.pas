@@ -61,13 +61,13 @@ const
 
 constructor TChartOptionsView.Create(TheOwner: TComponent);
 const
-  entryBox = 150;
+  entryBox = 120;
   dateSize = 120;
 var
   EditText:  TCustomEdit;
   DateText:  TDateEdit;
   LabelText: TLabel;
-  PrevLabel: TLabel;
+  PrevText:  TCustomEdit;
   Labels:    array of UTF8String = ('Main Title', 'Footnote',
              'X-Axis Title', 'Y-Axis Title', 'Colour Selection',
              'X-Axis Minumum', 'X-Axis Maximum', 'Y-Axis Minumum', 'Y-Axis Maximum');
@@ -79,61 +79,46 @@ begin
   SetLength(FDate,  Ord(High(TChartMinMaxDate)) + 1);
   SetLength(FLabel, Ord(High(TChartOptionEdit)) + 1);
 
-  // create labels
-
-  for i:= Low(FLabel) to High(FLabel) do
-    begin
-      LabelText := TLabel.Create(TheOwner);
-      with LabelText do
-        begin
-          Caption := Labels[i];
-          AnchorParallel(akLeft, 10, Self);
-          if (i = 0) then
-            AnchorParallel(akTop, 20, Self)
-          else
-            AnchorToNeighbour(akTop, 10, FLabel[i-1]);
-          Parent := self;
-        end;
-      FLabel[i] := LabelText;
-    end;
-
-  // create CustomEdit controls
-
   for i := Low(FText) to High(FText) do
     begin
       EditText := TCustomEdit.Create(TheOwner);
-      with EditText do
-        begin
-          AnchorParallel(akTop, 0, FLabel[i]);
-          AnchorParallel(akLeft, entryBox, Self);
-          OnChange := @SetText;
-          Tag := i;
-          if (i < XMIN_TAG) then
-            AnchorParallel(akRight, 10, Self)
-          else
-            Visible := false;
-          Parent := self;
-        end;
+      if (i=0) then
+        EditText.AnchorParallel(akTop, 0, Self)
+      else
+        EditText.AnchorToNeighbour(akTop, 10, FText[i - 1]);
+      EditText.AnchorParallel(akLeft, EntryBox, Self);
+      EditText.OnChange := @SetText;
+      EditText.Tag := i;
+      if (i < XMIN_TAG) then
+        EditText.AnchorParallel(akRight, 10, Self)
+      else
+        EditText.Visible := false;
+      EditText.Parent := self;
       FText[i] := EditText;
-     end;
+
+      LabelText := TLabel.Create(TheOwner);
+      LabelText.Caption := Labels[i];
+      LabelText.AnchorParallel(akLeft, 0, Self);
+      LabelText.AnchorParallel(akTop, 0, EditText);
+      LabelText.Parent := self;
+      FLabel[i] := LabelText;
+    end;
 
   // create DateEdit controls in same position as corresponding CustomEdit controls
 
   for i := Low(FDate) to High(FDate) do
     begin
       DateText := TDateEdit.Create(TheOwner);
-      with DateText do
-        begin
-          AnchorParallel(akLeft, entryBox, Self);
-          AnchorParallel(akTop, 0, FLabel[i + XMIN_TAG]);
-          Width := DateSize;
-          Tag := i;
-          OnChange := @SetDate;
-          Visible := false;
-          Parent := self;
-        end;
+      DateText.AnchorToNeighbour(akTop, 0, FText[i + XMIN_TAG]);
+      DateText.AnchorToNeighbour(akLeft, 0, FText[i + XMIN_TAG]);
+      DateText.Width := DateSize;
+      DateText.Tag := i;
+      DateText.OnChange := @SetDate;
+      DateText.Visible := false;
+      DateText.Parent := self;
       FDate[i] := DateText;
     end;
+
 end;
 
 procedure TChartOptionsView.SetText(Sender: TObject);
