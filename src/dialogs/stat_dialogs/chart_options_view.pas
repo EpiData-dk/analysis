@@ -61,13 +61,14 @@ const
 
 constructor TChartOptionsView.Create(TheOwner: TComponent);
 const
-  entryBox = 120;
-  dateSize = 120;
+  // not guaranteed to fit every language, but calculating it from the labels
+  // is not simple (LabelText.Width does not work)
+  labelWidth = 120;
+  dateSize   = 120;
 var
   EditText:  TCustomEdit;
   DateText:  TDateEdit;
   LabelText: TLabel;
-  PrevText:  TCustomEdit;
   Labels:    array of UTF8String = ('Main Title', 'Footnote',
              'X-Axis Title', 'Y-Axis Title', 'Colour Selection',
              'X-Axis Minumum', 'X-Axis Maximum', 'Y-Axis Minumum', 'Y-Axis Maximum');
@@ -83,6 +84,9 @@ begin
     begin
       LabelText := TLabel.Create(TheOwner);
       LabelText.Caption := Labels[i];
+      LabelText.AutoSize := false;
+      LabelText.Width := labelWidth;
+      LabelText.Alignment := taRightJustify;
       if (i=0) then
         LabelText.AnchorParallel(akTop, 0, Self)
       else
@@ -93,7 +97,7 @@ begin
 
       EditText := TCustomEdit.Create(TheOwner);
       EditText.AnchorParallel(akTop, 0, LabelText);
-      EditText.AnchorParallel(akLeft, EntryBox, Self);
+      EditText.AnchorToNeighbour(akLeft, 10, LabelText);
       EditText.OnChange := @SetText;
       EditText.Tag := i;
       if (i < XMIN_TAG) then
@@ -102,7 +106,6 @@ begin
         EditText.Visible := false;
       EditText.Parent := self;
       FText[i] := EditText;
-
     end;
 
   // create DateEdit controls in same position as corresponding CustomEdit controls
@@ -111,7 +114,7 @@ begin
     begin
       DateText := TDateEdit.Create(TheOwner);
       DateText.AnchorParallel(akTop, 0, FLabel[i + XMIN_TAG]);
-      DateText.AnchorParallel(akLeft, entryBox, Self);
+      DateText.AnchorToNeighbour(akLeft, 10, FLabel[i + XMIN_TAG]);
       DateText.Width := DateSize;
       DateText.Tag := i;
       DateText.OnChange := @SetDate;
