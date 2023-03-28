@@ -46,7 +46,10 @@ begin
   AItem.X := AIndex.ToDouble;
   if (FValue) then
     begin
-      AItem.Y := FYVar.AsFloat[AIndex];
+      if (FYVar.IsMissing) then
+        AItem.Y := 0
+      else
+        AItem.Y := FYVar.AsFloat[AIndex];
       exit;
     end;
   if (FPct) then

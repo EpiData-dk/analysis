@@ -68,7 +68,7 @@ var
   ByVar,
   dummyVar:            TEpiField;
   WeightVarName:       UTF8String;
-  cOptions:            TOptionList;
+  tabOptions:          TOptionList;
   Opt:                 TOption;
 
   ValueLabelOutput:    TEpiGetValueLabelType;
@@ -104,7 +104,7 @@ var
       end;
     T := TTables.Create(FExecutor, FOutputCreator);
     TablesAll  := T.CalcTables(Datafile, VarNames,
-                  StratVariable, WeightVarName, cOptions, nilTablesRefMap);
+                  StratVariable, WeightVarName, tabOptions, nilTablesRefMap);
     TableData := TablesAll.UnstratifiedTable;
     if (ReverseStrata) then
       TableData.SortByRowLabel(true);
@@ -122,6 +122,7 @@ var
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
+  Result := FChartFactory.NewGraphCommandResult();
   sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, msg);
   if (msg <> '') then
     begin
@@ -132,22 +133,22 @@ begin
   DFVars := TStrings.Create;
   DFVars.Add(VarNames[0]);
   StratVariable       := TStringList.Create;
-  cOptions            := TOptionList.Create;
+  tabOptions            := TOptionList.Create;
   for Opt in Command.Options do
     if (Opt.Ident <> 'by') then
-      cOptions.Add(Opt);
+      tabOptions.Add(Opt);
   yPct := Command.HasOption('pct');
   yCount := Command.HasOption('count') or
             ((not yPct) and VarNames.Count = 1));
-  ReverseStrata       := cOptions.HasOption('sd', Opt);
+  ReverseStrata       := tabOptions.HasOption('sd', Opt);
   if (ReverseStrata) then
     begin
-      cOptions.Remove(Opt);
+      tabOptions.Remove(Opt);
       if (Varnames.Count = 1) then
         FOutputCreator.DoInfoShort('!sd ignored with a single variable');
     end;
   WeightVarName := '';
-  if (cOptions.HasOption('w',Opt)) then
+  if (tabOptions.HasOption('w',Opt)) then
     begin
       if (Varnames.Count) > 1) then
         begin
@@ -158,7 +159,7 @@ begin
       DFVars.Add(WeightVarName);
     end;
   ByVarName := '';
-  hasBy := cOptions.HasOption('by',Opt);
+  hasBy := tabOptions.HasOption('by',Opt);
   if (hasBy) then
     begin
       if (Varnames.Count) > 1) then
@@ -170,7 +171,6 @@ begin
       DFVars.Add(ByVarName);
     end;
 
-    Result := FChartFactory.NewGraphCommandResult();
 {
  TODO: manage multiple variables
  NOT!! DFVars := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
@@ -196,7 +196,7 @@ begin
 
     BarSeries := TBarSeries.Create(Chart);
     BarSeries.Source := BarSource;
-    BarSeries.Stacked := cOptions.HasOption('stack');
+    BarSeries.Stacked := tabOptions.HasOption('stack');
     BarSeries.BarWidthPercent := 80;
     SeriesStyles := TChartStyles.Create(Chart);
     if (Varnames.Count > 1) then
@@ -243,7 +243,7 @@ begin
     if (WeightVarName <> '') then
       sTitle += ' weighted (' + WeightVarName + ')';
 
-    VariableLabelOutput := VariableLabelTypeFromOptionList(cOptions, FExecutor.SetOptions, sovStatistics);
+    VariableLabelOutput := VariableLabelTypeFromOptionList(tabOptions, FExecutor.SetOptions, sovStatistics);
     ChartConfiguration := FChartFactory.NewChartConfiguration();
     ChartConfiguration.GetTitleConfiguration()
       .SetTitle(sTitle)
@@ -279,7 +279,7 @@ begin
   end;   // create chart
 
   VarNames.Free;
-  cOptions.Free;
+  tabOptions.Free;
   StratVariable.Free;
 end;
 
