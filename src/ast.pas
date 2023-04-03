@@ -2532,7 +2532,7 @@ function TBarchartCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
   ): TTypesAndFlagsRec;
 begin
   Result := inherited GetAcceptedVariableTypesAndFlags(Index);
-  if (Index := 0) then
+  if (Index = 0) then
     Result.ResultTypes := AllResultDataTypes
   else
     Result.ResultTypes := [rtInteger, rtFloat];

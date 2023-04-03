@@ -74,12 +74,14 @@ var
   ValueLabelOutput:    TEpiGetValueLabelType;
   VariableLabelOutput: TEpiGetVariableLabelType;
   ReverseStrata:       Boolean;
-  ByVarName:           UTF8String;
+  ByVarName,
+  yVarName:            UTF8String;
   i, colourNum:        Integer;
   sTitle:              UTF8String;
   plotValue,
   yPct,
-  yCount:              Boolean;
+  yCount,
+  hasBy:               Boolean;
   yType:               UTF8String;
   msg:                 UTF8String;
 
@@ -139,7 +141,7 @@ begin
       tabOptions.Add(Opt);
   yPct := Command.HasOption('pct');
   yCount := Command.HasOption('count') or
-            ((not yPct) and VarNames.Count = 1));
+            ((not yPct) and (VarNames.Count = 1));
   ReverseStrata       := tabOptions.HasOption('sd', Opt);
   if (ReverseStrata) then
     begin
@@ -150,7 +152,7 @@ begin
   WeightVarName := '';
   if (tabOptions.HasOption('w',Opt)) then
     begin
-      if (Varnames.Count) > 1) then
+      if (Varnames.Count > 1) then
         begin
           FExecutor.Error('Cannot use !w with more than one variable');
           exit;
@@ -162,7 +164,7 @@ begin
   hasBy := tabOptions.HasOption('by',Opt);
   if (hasBy) then
     begin
-      if (Varnames.Count) > 1) then
+      if (Varnames.Count > 1) then
         begin
           FExecutor.Error('Cannot use !by with more than one variable');
           exit;
@@ -189,7 +191,10 @@ begin
     BarSource := TBarSource.Create(Chart);
     LabelSeries := TListChartSource.Create(Chart);
     if (plotValue) then
-      setUpValues
+      begin
+        YVarName := VarNames[1];
+        setUpValues
+      end
     else
       setUpFrequencies;
     BarSource.Sorted := true;
