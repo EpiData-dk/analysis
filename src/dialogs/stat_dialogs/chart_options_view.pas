@@ -40,7 +40,8 @@ type
   end;
 
 implementation
-
+uses
+  graphics, math;
 const
   TITLE_TAG    = Ord(cbT);
   FOOTNOTE_TAG = Ord(cbF);
@@ -60,11 +61,6 @@ const
 { TChartOptionsView }
 
 constructor TChartOptionsView.Create(TheOwner: TComponent);
-const
-  // not guaranteed to fit every language, but calculating it from the labels
-  // is not simple (LabelText.Width does not work)
-  labelWidth = 120;
-  dateSize   = 120;
 var
   EditText:  TCustomEdit;
   DateText:  TDateEdit;
@@ -73,12 +69,35 @@ var
              'X-Axis Title', 'Y-Axis Title', 'Colour Selection',
              'X-Axis Minumum', 'X-Axis Maximum', 'Y-Axis Minumum', 'Y-Axis Maximum');
   i:         Integer;
+  labelWidth,
+  dateWidth: Integer;
+
+  function GetTextWidth(AText: String): Integer;
+  // see https://forum.lazarus.freepascal.org/index.php?topic=36579.0
+  var
+    bmp: TBitmap;
+  begin
+    Result := 0;
+    bmp := TBitmap.Create;
+    try
+      // assume default font
+      Result := bmp.Canvas.TextWidth(AText);
+    finally
+      bmp.Free;
+    end;
+  end;
+
 begin
   inherited Create(TheOwner);
 
   SetLength(FText,  Ord(High(TChartOptionEdit)) + 1);
   SetLength(FDate,  Ord(High(TChartMinMaxDate)) + 1);
   SetLength(FLabel, Ord(High(TChartOptionEdit)) + 1);
+
+  // get maximum width of labels
+  labelWidth := 0;
+  for i := Low(Labels) to High(Labels) do
+    labelWidth := max(labelWidth, GetTextWidth(Labels[i]));
 
   for i := Low(FText) to High(FText) do
     begin
@@ -109,13 +128,15 @@ begin
     end;
 
   // create DateEdit controls in same position as corresponding CustomEdit controls
-
+  // GetTextWidth does not do well with numbers in the string (width too small)
+  dateWidth := GetTextWidth('WWSWWSWWWW');
   for i := Low(FDate) to High(FDate) do
     begin
       DateText := TDateEdit.Create(TheOwner);
       DateText.AnchorParallel(akTop, 0, FLabel[i + XMIN_TAG]);
       DateText.AnchorToNeighbour(akLeft, 10, FLabel[i + XMIN_TAG]);
-      DateText.Width := DateSize;
+      DateText.AutoSize := true;
+      DateText.Width := dateWidth;
       DateText.Tag := i;
       DateText.OnChange := @SetDate;
       DateText.Visible := false;
