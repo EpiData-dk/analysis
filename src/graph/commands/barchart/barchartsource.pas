@@ -53,8 +53,15 @@ begin
       exit;
     end;
   if (FPct) then
-    for i := 0 to YCount - 1 do
-      AItem.SetY(i, 100 * FTable.Cell[AIndex, i].RowPct)
+    begin
+      if (Ycount > 1) then
+        // % with strata is column % (proportion of x-var that is in each stratum)
+        for i := 0 to YCount - 1 do
+          AItem.SetY(i, 100 * FTable.Cell[AIndex, i].ColPct)
+      else
+        // % with no strata is row % (proportion of each x value count overall)
+        AItem.Y := 100 * FTable.Cell[AIndex, 0].RowPct;
+    end
   else
     for i := 0 to YCount - 1 do
       AItem.SetY(i, FTable.Cell[AIndex, i].N.ToDouble);

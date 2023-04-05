@@ -109,8 +109,6 @@ var
         dummyVar.Name := dummyVarName;
         tableVarNames.Add(dummyVarName);
       end;
-    ix := tableVarnames.Count;
-    ix := Datafile.Fields.Count;
     T := TTables.Create(FExecutor, FOutputCreator);
     TablesAll  := T.CalcTables(Datafile, tableVarNames,
                   StratVariable, WeightVarName, tabOptions, nilTablesRefMap);
@@ -199,7 +197,7 @@ begin
     Chart := FChartFactory.NewChart();
     BarSource := TBarSource.Create(Chart);
     LabelSeries := TListChartSource.Create(Chart);
-    if (hasBy) then
+    if (Varnames.Count > 1) then
       setUpValues
     else
       setUpFrequencies;
