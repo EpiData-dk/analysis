@@ -26,7 +26,7 @@ type
     procedure SetDatafile(AValue: TEpiDataFile);
   public
     constructor Create(AOwner: TComponent); override;
-    procedure SetSource(T: TTwoWayTable; V: TEpiGetValueLabelType);
+    procedure SetSource(T: TTwoWayTable);
     procedure SetYVariableName(AValue: UTF8String);
     destructor Destroy; override;
     property Pct: Boolean read FPct write FPct;
@@ -67,7 +67,7 @@ begin
       AItem.SetY(i, FTable.Cell[AIndex, i].N.ToDouble);
 end;
 
-procedure TBarSource.SetSource(T: TTwoWayTable; V: TEpiGetValueLabelType);
+procedure TBarSource.SetSource(T: TTwoWayTable);
 begin
   FValueLabelOutput := V;
   FTable  := T;
