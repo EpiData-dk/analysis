@@ -78,7 +78,6 @@ var
   yVarName:            UTF8String;
   i, colourNum:        Integer;
   sTitle:              UTF8String;
-  plotValue,
   yPct,
   yCount,
   hasBy:               Boolean;
@@ -96,16 +95,24 @@ var
   end;
 
   procedure setUpFrequencies;
-  var ix: Integer;
+  var
+    tableVarNames: TStrings;
+    ix: Integer;
   begin
-    if (Varnames.Count = 1) then
+    tableVarNames := TStringList.Create;
+    tableVarNames.AddStrings(VarNames);
+    if (hasBy) then
+      tableVarNames.Add(ByVarName)
+    else
       begin
         dummyVar := DataFile.NewField(ftInteger);
         dummyVar.Name := dummyVarName;
-        Varnames.Add(dummyVarName);
+        tableVarNames.Add(dummyVarName);
       end;
+    ix := tableVarnames.Count;
+    ix := Datafile.Fields.Count;
     T := TTables.Create(FExecutor, FOutputCreator);
-    TablesAll  := T.CalcTables(Datafile, VarNames,
+    TablesAll  := T.CalcTables(Datafile, tableVarNames,
                   StratVariable, WeightVarName, tabOptions, nilTablesRefMap);
     TableData := TablesAll.UnstratifiedTable;
     if (ReverseStrata) then
@@ -113,12 +120,10 @@ var
     BarSource.SetSource(TableData, ValueLabelOutput);
     BarSource.Pct := yPct;
 
-    ByVarName := Datafile.Fields.FieldByName[VarNames[1]].GetVariableLabel(VariableLabelOutput);
     for ix := 0 to TableData.ColCount - 1 do
       LabelSeries.Add(ix.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(ix, ValueLabelOutput));
 
-    if (Varnames.IndexOf(dummyVarName) > -1) then
-      Varnames.Delete(Varnames.IndexOf(dummyVarName));
+    tableVarNames.Free;
   end;
 
 begin
@@ -131,17 +136,16 @@ begin
       FExecutor.Error(msg);
       exit;
     end;
-  VarNames            := Command.VariableList.GetIdentsAsList;
-  DFVars := TStrings.Create;
+  VarNames := Command.VariableList.GetIdentsAsList;
+  DFVars := TStringList.Create;
   DFVars.Add(VarNames[0]);
   StratVariable       := TStringList.Create;
-  tabOptions            := TOptionList.Create;
+  tabOptions          := TOptionList.Create;
   for Opt in Command.Options do
     if (Opt.Ident <> 'by') then
       tabOptions.Add(Opt);
-  yPct := Command.HasOption('pct');
-  yCount := Command.HasOption('count') or
-            ((not yPct) and (VarNames.Count = 1));
+  yPct := tabOptions.HasOption('pct');
+  yCount := (VarNames.Count = 1) and (not yPct);
   ReverseStrata       := tabOptions.HasOption('sd', Opt);
   if (ReverseStrata) then
     begin
@@ -161,7 +165,7 @@ begin
       DFVars.Add(WeightVarName);
     end;
   ByVarName := '';
-  hasBy := tabOptions.HasOption('by',Opt);
+  hasBy := Command.HasOption('by',Opt);
   if (hasBy) then
     begin
       if (Varnames.Count > 1) then
@@ -181,6 +185,11 @@ begin
    DO NOT pass !by to Tables!!
  if only one variable and no by, DataFile has only XVar
 }
+  if (VarNames.Count > 1) then
+  begin
+    YVarName := VarNames[1];
+    DFVars.Add(YVarName);
+  end;
   DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
   if (DataFile.Size < 1) then
     FExecutor.Error('No Data')
@@ -190,11 +199,8 @@ begin
     Chart := FChartFactory.NewChart();
     BarSource := TBarSource.Create(Chart);
     LabelSeries := TListChartSource.Create(Chart);
-    if (plotValue) then
-      begin
-        YVarName := VarNames[1];
-        setUpValues
-      end
+    if (hasBy) then
+      setUpValues
     else
       setUpFrequencies;
     BarSource.Sorted := true;
@@ -204,7 +210,7 @@ begin
     BarSeries.Stacked := tabOptions.HasOption('stack');
     BarSeries.BarWidthPercent := 80;
     SeriesStyles := TChartStyles.Create(Chart);
-    if (Varnames.Count > 1) then
+    if (hasBy) then
       begin
         colourNum := 0;
         for i := 0 to TableData.RowCount - 1 do
@@ -236,14 +242,14 @@ begin
     // Add series to the chart
     Chart.AddSeries(BarSeries);
 
-    if (plotValue) then
-      yType := YVarName
+    if (yCount) then
+      yType := 'Count'
     else if (yPct) then
       yType := 'Percent'
     else
-      yType := 'Count';
+      yType := YVarName;
     sTitle := yType + ' by ' + XVar.GetVariableLabel(VariableLabelOutput);
-    if (Varnames.Count > 1) then
+    if (hasBy) then
       sTitle += ' by ' + ByVarName;
     if (WeightVarName <> '') then
       sTitle += ' weighted (' + WeightVarName + ')';
@@ -275,7 +281,7 @@ begin
       end;
     Result.AddChart(Chart, ChartConfiguration);
     XVar := nil;
-    if (not plotValue) then
+    if (yCount) then
     begin
       TablesAll.Free;
       T.Free;

@@ -54,7 +54,7 @@ begin
     end;
   if (FPct) then
     for i := 0 to YCount - 1 do
-      AItem.SetY(i, 100 * FTable.Cell[AIndex, i].ColPct)
+      AItem.SetY(i, 100 * FTable.Cell[AIndex, i].RowPct)
   else
     for i := 0 to YCount - 1 do
       AItem.SetY(i, FTable.Cell[AIndex, i].N.ToDouble);
@@ -67,6 +67,7 @@ begin
   YCount := T.RowCount;
   PointsNumber := T.ColCount;
   FValue := false;
+  FPct := false;
   FDataFile := nil;
   FYVar := nil;
 end;
