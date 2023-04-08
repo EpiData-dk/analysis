@@ -109,11 +109,11 @@ var
     tableVarNames: TStrings;
     ix: Integer;
   begin
-    tableVarNames := TStringList.Create;
-    tableVarNames.AddStrings(VarNames);
-    if (hasBy) then
-      tableVarNames.Add(ByVarName)
-    else
+//    tableVarNames := TStringList.Create;
+//    tableVarNames.AddStrings(VarNames);
+    if (not hasBy) then
+//      tableVarNames.Add(ByVarName)
+//    else
       begin
         dummyVar := DataFile.NewField(ftInteger);
         dummyVar.Name := dummyVarName;
@@ -122,7 +122,7 @@ var
     T := TTables.Create(FExecutor, FOutputCreator);
     TablesAll  := T.CalcTables(Datafile, tableVarNames,
                   StratVariable, WeightVarName, tabOptions, nilTablesRefMap);
-    TableData := TablesAll.UnstratifiedTable;
+    TableData  := TablesAll.UnstratifiedTable;
     if (ReverseStrata) then
       TableData.SortByRowLabel(true);
     aBarSource.SetSource(TableData);
@@ -166,55 +166,74 @@ var
 begin
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
-  Result := FChartFactory.NewGraphCommandResult();
+  Result              := FChartFactory.NewGraphCommandResult();
   sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, msg);
   if (msg <> '') then
     begin
       FExecutor.Error(msg);
       exit;
     end;
-  VarNames := Command.VariableList.GetIdentsAsList;
-  nVariables  := VarNames.Count;
-  multiSeries := nVariables > 1;
-  DFVars := TStringList.Create;
-  DFVars.Add(VarNames[0]);
-  StratVariable       := TStringList.Create;
-  tabOptions          := TOptionList.Create;
-  for Opt in Command.Options do
-    if (Opt.Ident <> 'by') then
-      tabOptions.Add(Opt);
-  yPct := tabOptions.HasOption('pct');
-  yCount := (multiSeries) and (not yPct);
-  ReverseStrata       := tabOptions.HasOption('sd', Opt);
-  if (ReverseStrata) then
+  chartOK := false;
+  VarNames            := Command.VariableList.GetIdentsAsList;
+  xVarName            := VarNames[0];
+  nVariables          := VarNames.Count;
+  multiSeries         := nVariables > 1;
+  hasBy               := Command.HasOption('by',Opt);
+  DFVars              := TStringList.Create;
+  DFVars.Add(xVarName);
+  if (nVariables = 1) then
+    // one variable - display count or percent
     begin
-      tabOptions.Remove(Opt);
-      if (nSeries = 1) then
-        FOutputCreator.DoInfoShort('!sd ignored with a single variable');
-    end;
-  WeightVarName := '';
-  if (tabOptions.HasOption('w',Opt)) then
-    begin
-      if (multiSeries) then
+      StratVariable       := TStringList.Create;
+      tabOptions          := TOptionList.Create;
+      for Opt in Command.Options do
+        if (Opt.Ident <> 'by') then
+          tabOptions.Add(Opt);
+      yPct                := tabOptions.HasOption('pct');
+      yCount              := (not multiSeries) and (not yPct);
+      ReverseStrata       := tabOptions.HasOption('sd', Opt);
+      if (ReverseStrata) then
         begin
-          FExecutor.Error('Cannot use !w with more than one variable');
+          tabOptions.Remove(Opt);
+          if (nSeries = 1) then
+            FOutputCreator.DoInfoShort('!sd ignored with a single variable');
+        end;
+      WeightVarName := '';
+      if (tabOptions.HasOption('w',Opt)) then
+        begin
+          if (multiSeries) then
+            begin
+              FExecutor.Error('Cannot use !w with more than one variable');
+              exit;
+            end;
+          WeightVarName := Opt.Expr.AsIdent;
+          DFVars.Add(WeightVarName);
+        end;
+      ByVarName := '';
+      if (hasBy) then
+        begin
+          ByVarName := Opt.Expr.AsIdent;
+          DFVars.Add(ByVarName);
+        end;
+      DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
+      if (DataFile.Size < 1) then
+        begin
+          FExecutor.Error('No Data.';
           exit;
         end;
-      WeightVarName := Opt.Expr.AsIdent;
-      DFVars.Add(WeightVarName);
-    end;
-  ByVarName := '';
-  hasBy := Command.HasOption('by',Opt);
-  if (hasBy) then
+
+    end  // one variable
+  else
+    // multiple variables - display y values at each x
     begin
-      if (multiSeries) then
+      if (hasBy) then
         begin
           FExecutor.Error('Cannot use !by with more than one variable');
           exit;
         end;
-      ByVarName := Opt.Expr.AsIdent;
-      DFVars.Add(ByVarName);
+
     end;
+
 
 {
  TODO: manage multiple variables, which will always be values and yield additional series on the same chart
@@ -229,8 +248,6 @@ if (multiSeries) then
 setLength(Datafile, nVariables);
 setLength(BarSource, nVariables);
 setLength(BarSeries, nVariables);
-chartOK := false;
-xVarName := VarNames[0];
 XVar := Datafile.Fields.FieldByName[xVarName];
 nSeries := 0;
 colourNum := 0;

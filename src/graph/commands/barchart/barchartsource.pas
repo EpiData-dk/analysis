@@ -14,24 +14,26 @@ type
 
   TBarSource = class(TUserDefinedChartSource)
   private
-    FValue,
-    FPct:    Boolean;
-    FDatafile: TEpiDataFile;
-    FYVariableName: UTF8String;
-    FYVar: TEpiField;
-    FTable: TTwoWayTable;
-    FValueLabelOutput: TEpiGetValueLabelType;
+//    FValue,
+//    FPct:    Boolean;
+//    FDatafile: TEpiDataFile;
+//    FYVariableName: UTF8String;
+//    FYVar: TEpiField;
+    FData: array of array of double;
+//    FTable: TTwoWayTable;
+//    FValueLabelOutput: TEpiGetValueLabelType;
     procedure GetDataItem(ASource: TUserDefinedChartSource; AIndex: Integer;
       var AItem: TChartDataItem);
-    procedure SetDatafile(AValue: TEpiDataFile);
+//    procedure SetDatafile(AValue: TEpiDataFile);
   public
     constructor Create(AOwner: TComponent); override;
-    procedure SetSource(T: TTwoWayTable);
-    procedure SetYVariableName(AValue: UTF8String);
+    procedure SetSource(T: TTwoWayTable; Pct: Boolean);
+    procedure SetSource(DF: TEpiDataFile; XVarName: UTF8String; YVarNames: array of UTF8String);
+//    procedure SetYVariableName(AValue: UTF8String);
     destructor Destroy; override;
-    property Pct: Boolean read FPct write FPct;
-    property YVariableName: UTF8String read FYVariableName write SetYVariableName;
-    property Datafile: TEpiDataFile read FDatafile write SetDatafile;
+//    property Pct: Boolean read FPct write FPct;
+//    property YVariableName: UTF8String read FYVariableName write SetYVariableName;
+//    property Datafile: TEpiDataFile read FDatafile write SetDatafile;
   end;
 
 implementation
@@ -44,7 +46,7 @@ var
   i: Integer;
 begin
   AItem.X := AIndex.ToDouble;
-  if (FValue) then
+ { if (FValue) then
     begin
       if (FYVar.IsMissing[AIndex]) then
         AItem.Y := 0
@@ -52,7 +54,8 @@ begin
         AItem.Y := FYVar.AsFloat[AIndex];
       exit;
     end;
-  if (FPct) then
+}
+{  if (FPct) then
     begin
       if (Ycount > 1) then
         // % with strata is column % (proportion of x-var that is in each stratum)
@@ -62,24 +65,60 @@ begin
         // % with no strata is row % (proportion of each x value count overall)
         AItem.Y := 100 * FTable.Cell[AIndex, 0].RowPct;
     end
-  else
+  else  }
     for i := 0 to YCount - 1 do
-      AItem.SetY(i, FTable.Cell[AIndex, i].N.ToDouble);
+      AItem.SetY(i, FData[AIndex, i]);
 end;
 
-procedure TBarSource.SetSource(T: TTwoWayTable);
+procedure TBarSource.SetSource(T: TTwoWayTable; Pct: Boolean);
+var
+  x, y: Integer;
 begin
-  FValueLabelOutput := V;
-  FTable  := T;
+//  FValueLabelOutput := V;
+//  FTable  := T;
   YCount := T.RowCount;
   PointsNumber := T.ColCount;
-  FValue := false;
-  FPct := false;
-  FDataFile := nil;
-  FYVar := nil;
+  setlength(FCount, YCount, PointsNumber);
+  for y := 0 to YCount - 1 do
+    for x := 0 to PointsNumber - 1 do
+      if (Pct) then
+        if (YCount = 1) then
+          FData[y, x] := 100 * FTable.Cell[x, 0].RowPct
+        else
+          FData[y, x] := 100 * FTable.Cell[x, y].ColPct
+      else
+        FData[y, x] := FTable.Cell[x, y].N.ToDouble;
+
 end;
 
-procedure TBarSource.SetYVariableName(AValue: UTF8String);
+procedure TBarSource.SetSource(DF: TEpiDataFile; XVarName: UTF8String; YVarNames: array of UTF8String);
+var
+  x, y: Integer;
+  yVar: TEpiField;
+  yValues: array of TEpiFloat;
+  xVar: TEpiField;
+begin
+  // X variable should not be missing, but will be ignored if it is
+  // Each value of X should be have unique value for each Y; otherwise only the first will be used
+  YCount := length(YVarNames);
+  PointsNumber := DF.Size;
+  setlength(FCount, YCount);
+  setLength(yValues, PointsNumber);
+  xVar := DF.Fields.FieldByName[XVarName];
+  for x := 0 to PointsNumber - 1 do
+    begin
+      for y := 0 to YCount - 1 do
+        begin
+          yVar := DF.Fields.FieldByName[YVarNames[y]];
+          if yVar.IsMissing[x] then
+            FData[y, x] := 0
+          else
+            FData[y, x] := yVar.AsFloat[x];
+        end;
+    end;
+end;
+
+{procedure TBarSource.SetYVariableName(AValue: UTF8String);
 begin
   if FYVariableName=AValue then Exit;
   FYVariableName:=AValue;
@@ -88,14 +127,14 @@ begin
   YCount := 1;
   FValue := true;
 end;
-
-procedure TBarSource.SetDatafile(AValue: TEpiDataFile);
+}
+{procedure TBarSource.SetDatafile(AValue: TEpiDataFile);
 begin
   if FDatafile = AValue then Exit;
   FDatafile := AValue;
   PointsNumber := FDatafile.Size;
 end;
-
+}
 constructor TBarSource.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -104,7 +143,7 @@ end;
 
 destructor TBarSource.Destroy;
 begin
-  FreeAndNil(FTable);
+  FreeAndNil(FData);
   inherited Destroy;
 end;
 
