@@ -44,7 +44,7 @@ procedure TBarSource.GetValueData(ASource: TUserDefinedChartSource; AIndex: Inte
   var AItem: TChartDataItem);
 begin
   AItem.X := AIndex.ToDouble;
-  AItem.Y := FData[0, AIndex];
+  AItem.Y := FData[AIndex, 0];
 end;
 
 procedure TBarSource.SetCountSource(T: TTwoWayTable; Pct: Boolean);
@@ -75,17 +75,15 @@ begin
   // Each value of X should be unique, but the source doesn't care; just takes the x values as they come
   YCount := 1;
   PointsNumber := DF.Size;
-  setLength(FData, 1, PointsNumber);
+  setLength(FData, PointsNumber, 1);
   xVar := DF.Fields.FieldByName[XVarName];
   yVar := DF.Fields.FieldByName[YVarName];
   for ix := 0 to PointsNumber - 1 do
     if yVar.IsMissing[ix] then
-      FData[0, ix] := 0       // this should be manageable by user... (e.g. XMin)
+      FData[ix, 0] := 0       // this should be manageable by user... (e.g. XMin)
     else
-      FData[0, ix] := yVar.AsFloat[ix];
+      FData[ix, 0] := yVar.AsFloat[ix];
   OnGetChartDataItem := @GetValueData;
-  xVar.Free;
-  yVar.Free;
 end;
 
 constructor TBarSource.Create(AOwner: TComponent);
