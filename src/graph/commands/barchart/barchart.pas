@@ -56,7 +56,7 @@ var
   aStyle:              TChartStyle;
   sColor:              TColorMap;
   {Frequencies}
-  DataFile:            array of TEpiDataFile;
+  DataFile:            TEpiDataFile;
   T:                   TTables;
   StratVariable:       TStringList;
   nilTablesRefMap:     TEpiReferenceMap;
@@ -65,6 +65,7 @@ var
   {command}
   VarNames:            TStrings;
   DFVars:              TStrings;
+  XVarOnly:            TStrings;
   XVar,
   YVar,
   ByVar,
@@ -88,7 +89,7 @@ var
   yPct,
   yCount,
   multiSeries,
-  hasBy
+  hasBy,
   chartOK:             Boolean;
   yType:               UTF8String;
   msg:                 UTF8String;
@@ -97,41 +98,32 @@ var
   var
     ix: Integer;
   begin
-    aBarSource.Datafile := Datafile;
-    aBarSource.SetYVariableName(YVarName);
-    DataFile.SortRecords(XVar);
-    for ix := 0 to Datafile.Size - 1 do
-      LabelSeries.Add(ix.ToDouble, 0, XVar.GetValueLabelFormatted(ix, ValueLabelOutput));
+    aBarSource.SetValueSource(DataFile, XVarName, YVarName);
+    if (ixSeries = 0) then
+      for ix := 0 to Datafile.Size - 1 do
+        LabelSeries.Add(ix.ToDouble, 0, XVar.GetValueLabelFormatted(ix, ValueLabelOutput));
   end;
 
   procedure setUpFrequencies(aBarSource: TBarSource);
   var
-    tableVarNames: TStrings;
     ix: Integer;
   begin
-//    tableVarNames := TStringList.Create;
-//    tableVarNames.AddStrings(VarNames);
     if (not hasBy) then
-//      tableVarNames.Add(ByVarName)
-//    else
       begin
         dummyVar := DataFile.NewField(ftInteger);
         dummyVar.Name := dummyVarName;
-        tableVarNames.Add(dummyVarName);
+        DFVars.Add(dummyVarName);
       end;
     T := TTables.Create(FExecutor, FOutputCreator);
-    TablesAll  := T.CalcTables(Datafile, tableVarNames,
+    TablesAll  := T.CalcTables(Datafile, DFVars,
                   StratVariable, WeightVarName, tabOptions, nilTablesRefMap);
     TableData  := TablesAll.UnstratifiedTable;
     if (ReverseStrata) then
       TableData.SortByRowLabel(true);
-    aBarSource.SetSource(TableData);
-    aBarSource.Pct := yPct;
+    aBarSource.SetCountSource(TableData, yPct);
 
     for ix := 0 to TableData.ColCount - 1 do
       LabelSeries.Add(ix.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(ix, ValueLabelOutput));
-
-    tableVarNames.Free;
   end;
   {
   big refactor is needed
@@ -173,25 +165,39 @@ begin
       FExecutor.Error(msg);
       exit;
     end;
-  chartOK := false;
+  chartOK             := false;
   VarNames            := Command.VariableList.GetIdentsAsList;
   xVarName            := VarNames[0];
-  nVariables          := VarNames.Count;
-  multiSeries         := nVariables > 1;
+  xVarOnly            := TStringList.Create;
+  xVarOnly.Add(xVarName);
+  nSeries             := VarNames.Count;
+  multiSeries         := nSeries > 1;
   hasBy               := Command.HasOption('by',Opt);
   DFVars              := TStringList.Create;
-  DFVars.Add(xVarName);
-  if (nVariables = 1) then
+  if (multiSeries) then
+    // multiple variables - display y values at each x
+    begin
+      if (hasBy) then
+        begin
+          FExecutor.Error('Cannot use !by with more than one variable');
+          exit;
+        end;
+      DFVars.AddStrings(VarNames);
+      DataFile := FExecutor.PrepareDatafile(DFVars, xVarOnly);
+      nSeries := nSeries - 1;
+    end
+  else
     // one variable - display count or percent
     begin
-      StratVariable       := TStringList.Create;
-      tabOptions          := TOptionList.Create;
+      DFVars.Add(xVarName);
+      StratVariable    := TStringList.Create;
+      tabOptions       := TOptionList.Create;
       for Opt in Command.Options do
         if (Opt.Ident <> 'by') then
           tabOptions.Add(Opt);
-      yPct                := tabOptions.HasOption('pct');
-      yCount              := (not multiSeries) and (not yPct);
-      ReverseStrata       := tabOptions.HasOption('sd', Opt);
+      yPct             := tabOptions.HasOption('pct');
+      yCount           := (not multiSeries) and (not yPct);
+      ReverseStrata    := tabOptions.HasOption('sd', Opt);
       if (ReverseStrata) then
         begin
           tabOptions.Remove(Opt);
@@ -216,63 +222,33 @@ begin
           DFVars.Add(ByVarName);
         end;
       DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
-      if (DataFile.Size < 1) then
-        begin
-          FExecutor.Error('No Data.';
-          exit;
-        end;
-
-    end  // one variable
-  else
-    // multiple variables - display y values at each x
+    end;  // one variable
+// is there any data?
+  if (DataFile.Size < 1) then
     begin
-      if (hasBy) then
-        begin
-          FExecutor.Error('Cannot use !by with more than one variable');
-          exit;
-        end;
-
+      FExecutor.Error('No Data.');
+      exit;
     end;
 
+// set up source(s) and series
+setLength(BarSource, nSeries);
+setLength(BarSeries, nSeries);
 
-{
- TODO: manage multiple variables, which will always be values and yield additional series on the same chart
- NOT!! DFVars := Command.VariableList.GetIdentsAsList; // variable order may change when adding weight var
- create DataFile for each pair of (XVar, YVar)
- if only one variable and by, DataFile has XVar and ByVar)
-   DO NOT pass !by to Tables!!
- if only one variable and no by, DataFile has only XVar
-}
-if (multiSeries) then
-  nVariables := nVariables - 1;
-setLength(Datafile, nVariables);
-setLength(BarSource, nVariables);
-setLength(BarSeries, nVariables);
 XVar := Datafile.Fields.FieldByName[xVarName];
-nSeries := 0;
 colourNum := 0;
 Chart := FChartFactory.NewChart();
-for ixVariable := 0 to nVariables do
-  begin
-  if (multiSeries) then
-  begin
-    YVarName := VarNames[1];
-    DFVars.Add(YVarName);
-  end;
-  DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
-  if (DataFile.Size < 1) then
-    FExecutor.Error('No Data for ' + xVarName + ' and ' + yVarName)
-  else
+for ixSeries := 0 to nSeries - 1 do
   begin   // create chart series
     chartOK := true;
     BarSource[nSeries] := TBarSource.Create(Chart);
     LabelSeries := TListChartSource.Create(Chart);
     if (multiSeries) then
-      setUpValues(BarSource[nSeries])
+      begin
+        setUpValues(BarSource[nSeries])
+      end
     else
       setUpFrequencies(BarSource[nSeries]);
     BarSource[nSeries].Sorted := true;
-
     BarSeries[nSeries] := TBarSeries.Create(Chart);
     with BarSeries[nSeries] do
       begin
@@ -314,11 +290,9 @@ for ixVariable := 0 to nVariables do
 
     // Add series to the chart
     Chart.AddSeries(BarSeries[nSeries]);
-    nSeries += 1;
-    end;
-    end;
+  end;
 
-if (nSeries > 0) then
+if (chartOK) then
   begin
     if (yCount) then
       yType := 'Count'
@@ -359,14 +333,15 @@ if (nSeries > 0) then
       end;
     Result.AddChart(Chart, ChartConfiguration);
     XVar := nil;
-    if (yCount) then
+    if (not MultiSeries) then
     begin
       TablesAll.Free;
       T.Free;
-      DataFile.Free;
     end;
   end;   // create chart
 
+  XVar.Free;
+  DataFile.Free;            // why do we die here??
   VarNames.Free;
   tabOptions.Free;
   StratVariable.Free;
