@@ -18,7 +18,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     procedure SetCountSource(T: TTwoWayTable; Pct: Boolean);
-    procedure SetValueSource(DF: TEpiDataFile; XVarName: UTF8String; YVarName: UTF8String);
+    procedure SetValueSource(DF: TEpiDataFile; VarNames: TStrings); //; XVarName: UTF8String; YVarName: UTF8String);
     procedure GetCountData(ASource: TUserDefinedChartSource; AIndex: Integer;
       var AItem: TChartDataItem);
     procedure GetValueData(ASource: TUserDefinedChartSource; AIndex: Integer;
@@ -66,24 +66,28 @@ begin
   OnGetChartDataItem := @GetCountData;
 end;
 
-procedure TBarSource.SetValueSource(DF: TEpiDataFile; XVarName, YVarName: UTF8String);
+procedure TBarSource.SetValueSource(DF: TEpiDataFile; VarNames: TStrings); //, YVarName: UTF8String);
 var
-  ix: Integer;
+  ix, iy: Integer;
   yVar: TEpiField;
   xVar: TEpiField;
 begin
   // Each value of X should be unique, but the source doesn't care; just takes the x values as they come
-  YCount := 1;
+  YCount := VarNames.Count - 1;
   PointsNumber := DF.Size;
-  setLength(FData, PointsNumber, 1);
-  xVar := DF.Fields.FieldByName[XVarName];
-  yVar := DF.Fields.FieldByName[YVarName];
-  for ix := 0 to PointsNumber - 1 do
-    if yVar.IsMissing[ix] then
-      FData[ix, 0] := 0       // this should be manageable by user... (e.g. XMin)
-    else
-      FData[ix, 0] := yVar.AsFloat[ix];
-  OnGetChartDataItem := @GetValueData;
+  setLength(FData, PointsNumber, YCount);
+  xVar := DF.Fields.FieldByName[VarNames[0]];
+  for iy := 0 to YCount - 1 do
+    begin
+    yVar := DF.Fields.FieldByName[VarNames[iy + 1]];
+    for ix := 0 to PointsNumber - 1 do
+      if yVar.IsMissing[ix] then
+        FData[ix, iy] := 0       // this should be manageable by user... (e.g. XMin)
+      else
+        FData[ix, iy] := yVar.AsFloat[ix];
+    end;
+  OnGetChartDataItem := @GetCountData;
+
 end;
 
 constructor TBarSource.Create(AOwner: TComponent);

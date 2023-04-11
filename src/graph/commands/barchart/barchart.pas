@@ -47,12 +47,12 @@ var
   {Chart}
   Chart:               TChart;
   ChartConfiguration:  IChartConfiguration;
-  BarSource:           array of TBarSource;
+  BarSource:           TBarSource; //array of TBarSource;
 
-  BarSeries:           array of TBarSeries;
+  BarSeries:           TBarSeries; //array of TBarSeries;
 //  aBarSeries:          TBarSeries;
   LabelSeries:         TListChartSource;
-  SeriesStyles:        array of TChartStyles;
+  SeriesStyles:        TChartStyles; //array of TChartStyles;
   aStyle:              TChartStyle;
   sColor:              TColorMap;
   {Frequencies}
@@ -87,11 +87,11 @@ var
   yType:               UTF8String;
   msg:                 UTF8String;
 
-  procedure setUpValues(aBarSource: TBarSource; aVarName: UTF8String);
+  procedure setUpValues(aBarSource: TBarSource); //; aVarName: UTF8String);
   var
     ix: Integer;
   begin
-    aBarSource.SetValueSource(DataFile, XVarName, aVarName);
+    aBarSource.SetValueSource(DataFile, VarNames); //, aVarName);
     if (LabelSeries.Count = 0) then
       for ix := 0 to Datafile.Size - 1 do
         LabelSeries.Add(ix.ToDouble, 0, XVar.GetValueLabelFormatted(ix, ValueLabelOutput));
@@ -138,8 +138,6 @@ begin
   hasBy               := false;
   VarNames            := Command.VariableList.GetIdentsAsList;
   xVarName            := VarNames[0];
-  xVarOnly            := TStringList.Create;
-  xVarOnly.Add(xVarName);
   nSeries             := VarNames.Count;
   multiSeries         := nSeries > 1;
   DFVars              := TStringList.Create;
@@ -157,8 +155,11 @@ begin
           exit;
         end;
       DFVars.AddStrings(VarNames);
+      xVarOnly := TStringList.Create;
+      xVarOnly.Add(xVarName);
       DataFile := FExecutor.PrepareDatafile(DFVars, xVarOnly);
       nSeries := nSeries - 1;
+      xVarOnly.Free;
     end
   else
     // one variable - display count or percent
@@ -200,48 +201,49 @@ begin
       exit;
     end;
 
-// set up source(s) and series
-setLength(BarSource, nSeries);
-setLength(BarSeries, nSeries);
-setLength(SeriesStyles, nSeries);
-
 Chart := FChartFactory.NewChart();
 chartOK := true;
 XVar := Datafile.Fields.FieldByName[xVarName];
 LabelSeries := TListChartSource.Create(Chart);
 colourNum := 0;
 DataFile.SortRecords(XVar);
-for ixSeries := 0 to nSeries - 1 do
+for ixSeries := 0 to 0 do //nSeries - 1 do
   begin   // create chart series
-    BarSource[ixSeries] := TBarSource.Create(Chart);
+    BarSource := TBarSource.Create(Chart);
     if (multiSeries) then
-      setUpValues(BarSource[ixSeries], VarNames[ixSeries + 1])
+      setUpValues(BarSource)
     else
-      setUpFrequencies(BarSource[ixSeries]);
-    BarSeries[ixSeries] := TBarSeries.Create(Chart);
-    BarSource[ixSeries].Sorted := true;
-    with BarSeries[ixSeries] do
       begin
-        Source := BarSource[ixSeries];
+        setUpFrequencies(BarSource);
+        nSeries := TableData.RowCount;
+      end;
+    BarSeries := TBarSeries.Create(Chart);
+    BarSource.Sorted := true;
+    with BarSeries do
+      begin
+        Source := BarSource;
         Stacked := Command.HasOption('stack');
         BarWidthPercent := 80;
         BarWidthStyle := bwPercentMin;
       end;
-    SeriesStyles[ixSeries] := TChartStyles.Create(Chart);
-    if (hasBy) then
+    SeriesStyles := TChartStyles.Create(Chart);
+    if (nSeries > 1) then
       begin
-        for i := 0 to TableData.RowCount - 1 do
+        for i := 0 to nSeries - 1 do
           begin
             if (colourNum = length(sColor)) then
               colourNum := 0;
-            aStyle := SeriesStyles[ixSeries].Add;
-            aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
+            aStyle := SeriesStyles.Add;
+            if (multiseries) then
+              aStyle.Text := Datafile.Field[i].Name
+            else
+              aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
             aStyle.Brush.Color:=sColor[colourNum];
             aStyle.Pen.Color := clSilver;
             colourNum += 1;
           end;
-        BarSeries[ixSeries].Legend.Multiplicity:=lmStyle;
-        BarSeries[ixSeries].Legend.GroupIndex  := 0;
+        BarSeries.Legend.Multiplicity:=lmStyle;
+        BarSeries.Legend.GroupIndex  := 0;
 
         Chart.Legend.Visible        := true;
         Chart.Legend.UseSidebar     := true;
@@ -252,14 +254,14 @@ for ixSeries := 0 to nSeries - 1 do
       begin
         if (colourNum = length(sColor)) then
           colourNum := 0;
-        aStyle := SeriesStyles[ixSeries].Add;
+        aStyle := SeriesStyles.Add;
         aStyle.Brush.Color := sColor[colourNum];
         aStyle.Pen.Color := clSilver;
         colourNum += 1;
       end;
 
-    BarSeries[ixSeries].Styles := SeriesStyles[ixSeries];
-    Chart.AddSeries(BarSeries[ixSeries]);
+    BarSeries.Styles := SeriesStyles;
+    Chart.AddSeries(BarSeries);
   end;
 
 if (chartOK) then
@@ -302,7 +304,6 @@ if (chartOK) then
         Frame.Visible           := false;
       end;
     Result.AddChart(Chart, ChartConfiguration);
-    XVar := nil;
   end;   // create chart
 
   if (not MultiSeries) then
@@ -310,6 +311,7 @@ if (chartOK) then
     TablesAll.Free;
     T.Free;
   end;
+  XVar := nil;
   DataFile.Free;
   VarNames.Free;
   tabOptions.Free;
