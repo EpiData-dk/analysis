@@ -47,12 +47,10 @@ var
   {Chart}
   Chart:               TChart;
   ChartConfiguration:  IChartConfiguration;
-  BarSource:           TBarSource; //array of TBarSource;
-
-  BarSeries:           TBarSeries; //array of TBarSeries;
-//  aBarSeries:          TBarSeries;
+  BarSource:           TBarSource;
+  BarSeries:           TBarSeries;
   LabelSeries:         TListChartSource;
-  SeriesStyles:        TChartStyles; //array of TChartStyles;
+  SeriesStyles:        TChartStyles;
   aStyle:              TChartStyle;
   sColor:              TColorMap;
   {Frequencies}
@@ -69,7 +67,6 @@ var
   WeightVarName:       UTF8String;
   tabOptions:          TOptionList;
   Opt:                 TOption;
-
   ValueLabelOutput:    TEpiGetValueLabelType;
   VariableLabelOutput: TEpiGetVariableLabelType;
   ReverseStrata:       Boolean;
@@ -81,7 +78,7 @@ var
   sTitle:              UTF8String;
   yPct,
   yCount,
-  multiSeries,
+  valueSeries,
   hasBy,
   chartOK:             Boolean;
   yType:               UTF8String;
@@ -139,9 +136,9 @@ begin
   VarNames            := Command.VariableList.GetIdentsAsList;
   xVarName            := VarNames[0];
   nSeries             := VarNames.Count;
-  multiSeries         := nSeries > 1;
+  valueSeries         := nSeries > 1;
   DFVars              := TStringList.Create;
-  if (multiSeries) then
+  if (valueSeries) then
     // multiple variables - display y values at each x
     begin
       if (Command.HasOption('by')) then
@@ -167,15 +164,15 @@ begin
       DFVars.Add(xVarName);
       tabOptions       := TOptionList.Create;
       for Opt in Command.Options do
-        if (Opt.Ident <> 'by') then
+//        if (Opt.Ident <> 'by') then
           tabOptions.Add(Opt);
       yPct             := tabOptions.HasOption('pct');
-      yCount           := (not multiSeries) and (not yPct);
+      yCount           := (not valueSeries) and (not yPct);
       ReverseStrata    := tabOptions.HasOption('sd', Opt);
       if (ReverseStrata) then
         begin
           tabOptions.Remove(Opt);
-          if (nSeries = 1) then
+          if (not tabOptions.HasOption('by')) then
             FOutputCreator.DoInfoShort('!sd ignored with no !by variable');
         end;
       WeightVarName := '';
@@ -200,7 +197,6 @@ begin
       DataFile.Free;
       exit;
     end;
-
 Chart := FChartFactory.NewChart();
 chartOK := true;
 XVar := Datafile.Fields.FieldByName[xVarName];
@@ -210,7 +206,7 @@ DataFile.SortRecords(XVar);
 for ixSeries := 0 to 0 do //nSeries - 1 do
   begin   // create chart series
     BarSource := TBarSource.Create(Chart);
-    if (multiSeries) then
+    if (valueSeries) then
       setUpValues(BarSource)
     else
       begin
@@ -234,7 +230,7 @@ for ixSeries := 0 to 0 do //nSeries - 1 do
             if (colourNum = length(sColor)) then
               colourNum := 0;
             aStyle := SeriesStyles.Add;
-            if (multiseries) then
+            if (valueSeries) then
               aStyle.Text := Datafile.Field[i].Name
             else
               aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
@@ -259,11 +255,9 @@ for ixSeries := 0 to 0 do //nSeries - 1 do
         aStyle.Pen.Color := clSilver;
         colourNum += 1;
       end;
-
-    BarSeries.Styles := SeriesStyles;
+     BarSeries.Styles := SeriesStyles;
     Chart.AddSeries(BarSeries);
   end;
-
 if (chartOK) then
   begin
     if (yCount) then
@@ -282,7 +276,7 @@ if (chartOK) then
     ChartConfiguration := FChartFactory.NewChartConfiguration();
     ChartConfiguration.GetTitleConfiguration()
       .SetTitle(sTitle)
-      .SetFootnote('')
+      .SetFootnote('Chart by EpiData')
       .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
       .SetYAxisTitle(yType);
 
@@ -305,8 +299,7 @@ if (chartOK) then
       end;
     Result.AddChart(Chart, ChartConfiguration);
   end;   // create chart
-
-  if (not MultiSeries) then
+  if (not valueSeries) then
   begin
     TablesAll.Free;
     T.Free;
@@ -314,7 +307,6 @@ if (chartOK) then
   XVar := nil;
   DataFile.Free;
   VarNames.Free;
-  tabOptions.Free;
 end;
 
 initialization
