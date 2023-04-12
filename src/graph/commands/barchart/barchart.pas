@@ -64,31 +64,31 @@ var
   XVarOnly:            TStrings;
   XVar,
   dummyVar:            TEpiField;
+  SortFields:          TEpiFields;
   WeightVarName:       UTF8String;
-  tabOptions:          TOptionList;
+//  tabOptions:          TOptionList;
   Opt:                 TOption;
   ValueLabelOutput:    TEpiGetValueLabelType;
   VariableLabelOutput: TEpiGetVariableLabelType;
-  ReverseStrata:       Boolean;
   ByVarName,
   xVarName:            UTF8String;
   i, colourNum,
-  nSeries,
-  ixSeries:            Integer;
-  sTitle:              UTF8String;
+  nSeries:             Integer;
+  sTitle,
+  yTitle:              UTF8String;
   yPct,
-  yCount,
   valueSeries,
-  hasBy,
-  chartOK:             Boolean;
-  yType:               UTF8String;
+  hasBy:               Boolean;
   msg:                 UTF8String;
 
-  procedure setUpValues(aBarSource: TBarSource); //; aVarName: UTF8String);
+  procedure setUpValues(aBarSource: TBarSource);
   var
     ix: Integer;
   begin
-    aBarSource.SetValueSource(DataFile, VarNames); //, aVarName);
+    SortFields := TEpiFields.Create(nil);
+    SortFields.AddItem(XVar);
+    DataFile.SortRecords(SortFields, Command.HasOption('sxd'));
+    aBarSource.SetValueSource(DataFile, VarNames);
     if (LabelSeries.Count = 0) then
       for ix := 0 to Datafile.Size - 1 do
         LabelSeries.Add(ix.ToDouble, 0, XVar.GetValueLabelFormatted(ix, ValueLabelOutput));
@@ -109,13 +109,18 @@ var
     StratVariable := TStringList.Create;
     T := TTables.Create(FExecutor, FOutputCreator);
     TablesAll  := T.CalcTables(Datafile, DFVars,
-                  StratVariable, WeightVarName, tabOptions, nilTablesRefMap);
+                  StratVariable, WeightVarName, Command.Options, nilTablesRefMap);
     TableData  := TablesAll.UnstratifiedTable;
-    if (ReverseStrata) then
-      TableData.SortByRowLabel(true);
+
+    if (Command.HasOption('ssd')) then
+      TableData.SortByRowLabel(true)
+    else if (Command.HasOption('ssa')) then
+      TableData.SortByRowLabel(false);
     aBarSource.SetCountSource(TableData, yPct);
+
     if (DFVars.IndexOf(dummyVarName) > -1) then
       DFVars.Delete(DFVars.IndexOf(dummyVarName));
+
     for ix := 0 to TableData.ColCount - 1 do
       LabelSeries.Add(ix.ToDouble, 0, TableData.ColVariable.GetValueLabelFormatted(ix, ValueLabelOutput));
     StratVariable.Free;
@@ -131,11 +136,11 @@ begin
       FExecutor.Error(msg);
       exit;
     end;
-  chartOK             := false;
   hasBy               := false;
   VarNames            := Command.VariableList.GetIdentsAsList;
   xVarName            := VarNames[0];
   nSeries             := VarNames.Count;
+  yTitle              := '';
   valueSeries         := nSeries > 1;
   DFVars              := TStringList.Create;
   if (valueSeries) then
@@ -162,21 +167,15 @@ begin
     // one variable - display count or percent
     begin
       DFVars.Add(xVarName);
-      tabOptions       := TOptionList.Create;
-      for Opt in Command.Options do
-//        if (Opt.Ident <> 'by') then
-          tabOptions.Add(Opt);
-      yPct             := tabOptions.HasOption('pct');
-      yCount           := (not valueSeries) and (not yPct);
-      ReverseStrata    := tabOptions.HasOption('sd', Opt);
-      if (ReverseStrata) then
-        begin
-          tabOptions.Remove(Opt);
-          if (not tabOptions.HasOption('by')) then
-            FOutputCreator.DoInfoShort('!sd ignored with no !by variable');
-        end;
+      yPct := Command.HasOption('pct');
+      if (yPct) then
+        yTitle := 'Percent'
+      else
+        yTitle := 'Count';
+      if (Command.HasOption('ssd')) and (not Command.HasOption('by')) then
+        FOutputCreator.DoInfoShort('!sd ignored with no !by variable');
       WeightVarName := '';
-      if (tabOptions.HasOption('w',Opt)) then
+      if (Command.HasOption('w',Opt)) then
         begin
           WeightVarName := Opt.Expr.AsIdent;
           DFVars.Add(WeightVarName);
@@ -189,121 +188,115 @@ begin
           DFVars.Add(ByVarName);
         end;
       DataFile := FExecutor.PrepareDatafile(DFVars, DFVars);
-    end;  // one variable
-// is there any data?
+     end;
+
   if (DataFile.Size < 1) then
     begin
       FExecutor.Error('No Data.');
+      VarNames.Free;
       DataFile.Free;
       exit;
     end;
-Chart := FChartFactory.NewChart();
-chartOK := true;
-XVar := Datafile.Fields.FieldByName[xVarName];
-LabelSeries := TListChartSource.Create(Chart);
-colourNum := 0;
-DataFile.SortRecords(XVar);
-for ixSeries := 0 to 0 do //nSeries - 1 do
-  begin   // create chart series
-    BarSource := TBarSource.Create(Chart);
-    if (valueSeries) then
-      setUpValues(BarSource)
-    else
-      begin
-        setUpFrequencies(BarSource);
-        nSeries := TableData.RowCount;
-      end;
-    BarSeries := TBarSeries.Create(Chart);
-    BarSource.Sorted := true;
-    with BarSeries do
-      begin
-        Source := BarSource;
-        Stacked := Command.HasOption('stack');
-        BarWidthPercent := 80;
-        BarWidthStyle := bwPercentMin;
-      end;
-    SeriesStyles := TChartStyles.Create(Chart);
-    if (nSeries > 1) then
-      begin
-        for i := 0 to nSeries - 1 do
-          begin
-            if (colourNum = length(sColor)) then
-              colourNum := 0;
-            aStyle := SeriesStyles.Add;
-            if (valueSeries) then
-              aStyle.Text := Datafile.Field[i].Name
-            else
-              aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
-            aStyle.Brush.Color:=sColor[colourNum];
-            aStyle.Pen.Color := clSilver;
-            colourNum += 1;
-          end;
-        BarSeries.Legend.Multiplicity:=lmStyle;
-        BarSeries.Legend.GroupIndex  := 0;
+  Chart := FChartFactory.NewChart();
+  XVar := Datafile.Fields.FieldByName[xVarName];
+  LabelSeries := TListChartSource.Create(Chart);
+  colourNum := 0;
 
-        Chart.Legend.Visible        := true;
-        Chart.Legend.UseSidebar     := true;
-        Chart.Legend.Frame.Visible  := false;
-        Chart.Legend.GroupTitles.Add(ByVarName);
-      end
-    else
-      begin
-        if (colourNum = length(sColor)) then
-          colourNum := 0;
-        aStyle := SeriesStyles.Add;
-        aStyle.Brush.Color := sColor[colourNum];
-        aStyle.Pen.Color := clSilver;
-        colourNum += 1;
-      end;
-     BarSeries.Styles := SeriesStyles;
-    Chart.AddSeries(BarSeries);
-  end;
-if (chartOK) then
-  begin
-    if (yCount) then
-      yType := 'Count of '
-    else if (yPct) then
-      yType := 'Percent of '
-    else
-      yType := '';
-    sTitle := yType + XVar.GetVariableLabel(VariableLabelOutput);
-    if (hasBy) then
-      sTitle += ' by ' + ByVarName;
-    if (WeightVarName <> '') then
-      sTitle += LineEnding + 'weighted (' + WeightVarName + ')';
+  // create chart series
+  BarSource := TBarSource.Create(Chart);
+  if (valueSeries) then
+    setUpValues(BarSource)
+  else
+    begin
+      setUpFrequencies(BarSource);
+      nSeries := TableData.RowCount;
+    end;
+  BarSeries := TBarSeries.Create(Chart);
+  BarSource.Sorted := true;
+  with BarSeries do
+    begin
+      Source := BarSource;
+      Stacked := Command.HasOption('stack');
+      BarWidthPercent := 80;
+      BarWidthStyle := bwPercentMin;
+    end;
+  SeriesStyles := TChartStyles.Create(Chart);
+  if (nSeries > 1) then
+    begin
+      for i := 0 to nSeries - 1 do
+        begin
+          if (colourNum = length(sColor)) then
+            colourNum := 0;
+          aStyle := SeriesStyles.Add;
+          if (valueSeries) then
+            aStyle.Text := Datafile.Field[i + 1].Name
+          else
+            aStyle.Text := TableData.RowVariable.GetValueLabelFormatted(i, ValueLabelOutput);
+          aStyle.Brush.Color:=sColor[colourNum];
+          aStyle.Pen.Color := clSilver;
+          colourNum += 1;
+        end;
+      BarSeries.Legend.Multiplicity:=lmStyle;
+      BarSeries.Legend.GroupIndex  := 0;
 
-    VariableLabelOutput := VariableLabelTypeFromOptionList(tabOptions, FExecutor.SetOptions, sovStatistics);
-    ChartConfiguration := FChartFactory.NewChartConfiguration();
-    ChartConfiguration.GetTitleConfiguration()
-      .SetTitle(sTitle)
-      .SetFootnote('Chart by EpiData')
-      .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
-      .SetYAxisTitle(yType);
+      Chart.Legend.Visible        := true;
+      Chart.Legend.UseSidebar     := true;
+      Chart.Legend.Frame.Visible  := false;
+      Chart.Legend.GroupTitles.Add(ByVarName);
+    end
+  else
+    begin
+      if (colourNum = length(sColor)) then
+        colourNum := 0;
+      aStyle := SeriesStyles.Add;
+      aStyle.Brush.Color := sColor[colourNum];
+      aStyle.Pen.Color := clSilver;
+      colourNum += 1;
+    end;
+  BarSeries.Styles := SeriesStyles;
+  Chart.AddSeries(BarSeries);
 
-    ChartConfiguration.GetAxesConfiguration()
-      .GetXAxisConfiguration()
-      .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
+  sTitle := yTitle;
+  if (sTitle <> '') then
+    sTitle += ' of ';
+  sTitle += XVar.GetVariableLabel(VariableLabelOutput);
+  if (hasBy) then
+    sTitle += ' by ' + ByVarName;
+  if (WeightVarName <> '') then
+    sTitle += LineEnding + 'weighted (' + WeightVarName + ')';
 
-    with Chart do
-      begin
-        BottomAxis.Marks.Source := LabelSeries;
-        BottomAxis.Marks.Style  := smsLabel;
-        BottomAxis.Grid.Style   := psClear;
-        BottomAxis.Margin       := 0;
-        LeftAxis.Grid.Style     := psClear;
-        LeftAxis.Margin         := 0;
-        LeftAxis.Intervals.NiceSteps:='.2|.5|.1';
-        LeftAxis.Intervals.MinLength := 5;
-        LeftAxis.Intervals.MaxLength := 200; // no interpolation of ticks at reasonable scale
-        Frame.Visible           := false;
-      end;
-    Result.AddChart(Chart, ChartConfiguration);
-  end;   // create chart
+  VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions, sovStatistics);
+  ChartConfiguration := FChartFactory.NewChartConfiguration();
+  ChartConfiguration.GetTitleConfiguration()
+    .SetTitle(sTitle)
+    .SetFootnote('Chart by EpiData')
+    .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelOutput))
+    .SetYAxisTitle(yTitle);
+
+  ChartConfiguration.GetAxesConfiguration()
+    .GetXAxisConfiguration()
+    .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
+
+  with Chart do
+    begin
+      BottomAxis.Marks.Source := LabelSeries;
+      BottomAxis.Marks.Style  := smsLabel;
+      BottomAxis.Grid.Style   := psClear;
+      BottomAxis.Margin       := 0;
+      LeftAxis.Grid.Style     := psClear;
+      LeftAxis.Margin         := 0;
+      LeftAxis.Intervals.NiceSteps:='.2|.5|.1';
+      LeftAxis.Intervals.MinLength := 5;
+      LeftAxis.Intervals.MaxLength := 200; // no interpolation of ticks at reasonable scale
+      Frame.Visible           := false;
+    end;
+  Result.AddChart(Chart, ChartConfiguration);
+
   if (not valueSeries) then
-  begin
-    TablesAll.Free;
-    T.Free;
-  end;
+    begin
+      TablesAll.Free;
+      T.Free;
+    end;
   XVar := nil;
   DataFile.Free;
   VarNames.Free;

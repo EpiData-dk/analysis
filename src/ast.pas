@@ -2513,7 +2513,11 @@ function TBarchartCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('by', AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
-  Result.Insert('sd',  [rtUndefined]); // sort strata in descending order
+  Result.Insert('ssd',  [rtUndefined]); // sort strata in descending order
+  Result.Insert('ssa',  [rtUndefined]); // sort strata in ascending order
+  Result.Insert('sxd', [rtUndefined]); // sort x in descending order of value
+  Result.Insert('sld', [rtUndefined]); // sort x in descending order of label
+  Result.Insert('sla', [rtUndefined]); // sort x in ascending order of label
   Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('stack', [rtUndefined]);
   Result.Insert('pct', [rtUndefined]);
