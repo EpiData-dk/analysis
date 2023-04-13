@@ -1617,15 +1617,25 @@ See [variables](#referencedvars) on using referenced variables for this command
 <a name="barchart" id="barchart"></a>
 ## barchart
 ```
-barchart Variable [StratifyVariable] [options]
+barchart XVariable [Y variable list] [!by:=StratifyVariable] [options]
 ```
-Draw a barchart for Variable. A barchart shows frequencies at each indiviual value of Variable.
+Draw a barchart for XVariable. A barchart shows either 
+
+- frequencies at each indiviual value of XVariable or
+- the value of each of the Y variables at each individual value of XVariable
 
 ### parameters
-- Variable may be of any type
+- XVariable may be of any type
+- Y variables must be integer or float
 - Stratifyvariable may be of any type
 
 ### options
+
+The following options only apply when a single variable is specified.
+
+- `!by:=variable`
+
+   Will show bars for each value of the stratifying variable at each value of the XVariable
 - `!pct`
 
   Y-axis values are percentage of the total across strata
@@ -1636,7 +1646,15 @@ Draw a barchart for Variable. A barchart shows frequencies at each indiviual val
 
  stack bars for stratified data; !stack and !pct together will have stacked bars that sum to 100%
 
-- graph options
+#### sort options
+- `!ssd`
+
+  sort the stratifying variables in descending order
+- `!sd` | `!sla` | `!sld`
+
+  have the same meaning as in the `tables` command.
+  
+#### graph options
 
  `histogram` is a graph command and any graph option may be specified
 
