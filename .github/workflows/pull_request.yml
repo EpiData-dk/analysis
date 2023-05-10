@@ -7,6 +7,7 @@ on:
 
 env:
   ANALYSIS_VERSION: "3.1"
+  FPCDOCKER_VERSION: 3.2.0-16
 
 jobs:
   grammar:
@@ -42,7 +43,7 @@ jobs:
     name: Compile Code
     runs-on: ubuntu-latest
     container:
-      image: epidata/fpcbuild:3.2.0-14
+      image: epidata/fpcbuild:3.2.0-16
     needs: grammar
 
     strategy:
@@ -52,10 +53,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Generate Maven settings.xml
-        uses: whelk-io/maven-settings-xml-action@v20
+        uses: whelk-io/maven-settings-xml-action@v21
         with:
           output_file: "/etc/maven/settings.xml"
           servers:
@@ -82,16 +83,76 @@ jobs:
       - name: Compile ${{ matrix.profile }}
         run:  mvn compile -P${{ matrix.profile }}
 
+      - name: Upload Binary Artifact ${{ matrix.profile }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: binary-${{ matrix.profile }}
+          path: target/binary/*/*
+          retention-days: 1
+
   documentation:
     name: Create Help File
     runs-on: ubuntu-latest
     container:
-      image: epidata/fpcbuild:3.2.0-14
+      image: epidata/fpcbuild:3.2.0-16
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Convert markdown to html
         run:  grip --export help/commands.md
 
+      - name: Upload help file
+        uses: actions/upload-artifact@v3
+        with:
+          name: help
+          path: help/commands.html
+          retention-days: 1
+
+  assemble:
+    name: Assemble things
+    runs-on: ubuntu-latest
+    container:
+      image: epidata/fpcbuild:3.2.0-16
+    needs: [grammar, compile, documentation]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Generate Maven settings.xml
+        uses: whelk-io/maven-settings-xml-action@v21
+        with:
+          output_file: "/etc/maven/settings.xml"
+          servers:
+            '[{
+            "id": "github",
+            "username": "${{ secrets.CI_USER }}",
+            "password": "${{ secrets.CI_PASSWORD }}"
+            }]'
+          repositories:
+            '[
+              {
+                "id": "central",
+                "url": "https://repo1.maven.org/maven2"
+              },
+              {
+                "id": "github",
+                "url": "https://maven.pkg.github.com/epidata-dk/parent/",
+                "snapshots": {
+                  "enabled": "true"
+                }                
+              }
+            ]'
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: target/
+
+      - name: Move command.html to help folder
+        run: mv target/help/*.html help/
+
+      - name: Assemble the final artifact
+        run: mvn package -f deploy.pom.xml
