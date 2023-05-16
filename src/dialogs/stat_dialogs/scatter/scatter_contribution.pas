@@ -48,7 +48,7 @@ var
   View: TChartOptionsView;
 begin
   FChartOptionsModel := TChartOptionsModel.Create();
-  FChartOptionsModel.MinMax := ScatterMinMax;
+  FChartOptionsModel.MinMax := [mmtXMin, mmtXMax, mmtYMin, mmtYMax];
   // Variables model must be aware of chart options model, to set X and Y variables
   FVariablesModel.ChartOptions := FChartOptionsModel;
   View := TChartOptionsView.Create(Owner);

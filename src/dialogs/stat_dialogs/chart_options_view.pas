@@ -65,6 +65,11 @@ const
   // is not simple (LabelText.Width does not work)
   labelWidth = 120;
   dateSize   = 120;
+  {$IFDEF linux}
+  labelSpacing = 20;
+  {$ELSE}
+  labelSpacing = 10;
+  {$ENDIF}
 var
   EditText:  TCustomEdit;
   DateText:  TDateEdit;
@@ -90,7 +95,7 @@ begin
       if (i=0) then
         LabelText.AnchorParallel(akTop, 0, Self)
       else
-        LabelText.AnchorToNeighbour(akTop, 10, FLabel[i - 1]);
+        LabelText.AnchorToNeighbour(akTop, labelSpacing, FLabel[i - 1]);
       LabelText.AnchorParallel(akLeft, 0, Self);
       LabelText.Parent := self;
       FLabel[i] := LabelText;
@@ -175,7 +180,7 @@ procedure TChartOptionsView.EnterView();
 begin
   // reset all min/max fields before checking variable types
   ResetMinMax;
-  if (FDataModel.UseX) and ((FDataModel.MinMax and 1) > 0) then
+  if (FDataModel.UseX) and (mmtXMin in FDataModel.MinMax) then
     begin
       if (FDataModel.XDate) then
         FDate[XDMIN_TAG].Visible := true
@@ -184,7 +189,7 @@ begin
       FLabel[XMIN_TAG].Visible := true;
     end;
 
-  if (FDataModel.UseX) and ((FDataModel.MinMax and 2) > 0) then
+  if (FDataModel.UseX) and (mmtXMax in FDataModel.MinMax) then
     begin
       if (FDataModel.XDate) then
         FDate[XDMAX_TAG].Visible := true
@@ -193,7 +198,7 @@ begin
       FLabel[XMAX_TAG].Visible := true;
     end;
 
-  if (FDataModel.UseY) and ((FDataModel.MinMax and 4) > 0) then
+  if (FDataModel.UseY) and (mmtYMin in FDataModel.MinMax) then
     begin
       if (FDataModel.YDate) then
         FDate[YDMIN_TAG].Visible := true
@@ -202,7 +207,7 @@ begin
       FLabel[YMIN_TAG].Visible := true;
     end;
 
-  if (FDataModel.UseY) and ((FDataModel.MinMax and 8) > 0) then
+  if (FDataModel.UseY) and (mmtYMax in FDataModel.MinMax) then
     begin
       if (FDataModel.YDate) then
         FDate[YDMAX_TAG].Visible := true

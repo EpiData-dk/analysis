@@ -8,14 +8,13 @@ uses
   Classes, SysUtils, stat_dialog_contribution, chart_options, executor,
   epidatafiles;
 
-const
-  ScatterMinMax = %1111;
-
 type
 
   TChartOptionEdit = (cbT, cbF, cbXT, cbYT, cbC, cbnXMin, cbnXMax, cbnYMin, cbnYMax);
   TChartMinMaxDate = (cbdXMin, cbdXMax, cbdYMin, cbdYMax);
   TVarModelTypes   = (mtNoVars, mtScatter, mtFBarChart, mtEpicurve, mtHistogram, mtOther);
+  TMinMaxType      = (mmtXMin, mmtXMax, mmtYMin, mmtYMax);
+  TMinMaxTypes     = set of TMinMaxType;
 
   { TChartOptionsModel }
   TChartOptionsModel = class(IStatDialogModel)
@@ -29,7 +28,7 @@ type
     FXMin, FXMax, FYMin, FYMax: UTF8String;
     FUseX, FUseY,
     FXDate,FYDate: Boolean;
-    FMinMax: Integer;   // lower bytes refer to ymax, ymin, xmax, xmin
+    FMinMax: TMinMaxTypes;
     procedure SetTitle(AValue: UTF8String);
     procedure SetFootnote(AValue: UTF8String);
     procedure SetXTitle(AValue: UTF8String);
@@ -53,7 +52,7 @@ type
     property YDate: Boolean read FYDate write FYDate;
     property UseX: Boolean read FUseX write FUseX;
     property UseY: Boolean read FUseY write FUseY;
-    property MinMax: Integer read FMinMax write FMinMax;
+    property MinMax: TMinMaxTypes read FMinMax write FMinMax;
   end;
 
 
@@ -70,7 +69,7 @@ begin
   YDate  := false;
   UseX   := false;
   UseY   := false;
-  MinMax := 0;
+  MinMax := [];
 end;
 
 procedure TChartOptionsModel.SetTitle(AValue: UTF8String);
