@@ -10,11 +10,11 @@ uses
 
 type
 
-  TChartOptionEdit = (cbT, cbF, cbXT, cbYT, cbC, cbnXMin, cbnXMax, cbnYMin, cbnYMax);
-  TChartMinMaxDate = (cbdXMin, cbdXMax, cbdYMin, cbdYMax);
-  TVarModelTypes   = (mtNoVars, mtScatter, mtFBarChart, mtEpicurve, mtHistogram, mtOther);
-  TMinMaxType      = (mmtXMin, mmtXMax, mmtYMin, mmtYMax);
-  TMinMaxTypes     = set of TMinMaxType;
+  TChartOptionEdit  = (cbT, cbF, cbXT, cbYT, cbC);
+  TChartMinMax      = (cbnXMin, cbnXMax, cbnYMin, cbnYMax);
+  TVarModelTypes    = (mtNoVars, mtScatter, mtFBarChart, mtEpicurve, mtHistogram, mtOther);
+  TMinMaxType       = (mmtXMin, mmtXMax, mmtYMin, mmtYMax);
+  TMinMaxTypes      = set of TMinMaxType;
 
   { TChartOptionsModel }
   TChartOptionsModel = class(IStatDialogModel)
