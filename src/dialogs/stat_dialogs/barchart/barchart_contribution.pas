@@ -62,7 +62,7 @@ var
   View: TChartOptionsView;
 begin
   FChartOptionsModel := TChartOptionsModel.Create();
-  FChartOptionsModel.MinMax := BarchartMinMax;
+  FChartOptionsModel.MinMax := [mmtYMax];
   FChartOptionsModel.UseY := true;
   View := TChartOptionsView.Create(Owner);
   View.SetModel(FChartOptionsModel);

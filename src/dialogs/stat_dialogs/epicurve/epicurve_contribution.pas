@@ -61,7 +61,7 @@ var
   View: TChartOptionsView;
 begin
   FChartOptionsModel := TChartOptionsModel.Create();
-  FChartOptionsModel.MinMax := EpicurveMinMax;
+  FChartOptionsModel.MinMax := [mmtXMin, mmtXMax, mmtYMax];
   FChartOptionsModel.UseY := true;
   FVariablesModel.ChartOptions := FChartOptionsModel;
   View := TChartOptionsView.Create(Owner);
