@@ -75,7 +75,7 @@ var
   View: TChartOptionsView;
 begin
   FChartOptionsModel := TChartOptionsModel.Create();
-  FChartOptionsModel.MinMax := SurvivalMinMax;
+  FChartOptionsModel.MinMax := [];
   View := TChartOptionsView.Create(Owner);
   View.SetModel(FChartOptionsModel);
   Result := View;
