@@ -22,13 +22,8 @@ type
     FMinMaxValue: array of TCustomEdit;
     FMinMaxDate: array of TDateEdit;
     FOnModified: IStatDiaglogViewModified;
-{    FSetXmin,
-    FSetXmax,
-    FSetYmin,
-    FSetYmax:  Boolean;}
-  
     procedure SetText(Sender: TObject);
-    procedure SetMinMaxValue(Sender: TObject);
+    procedure SetMinMaxText(Sender: TObject);
     procedure SetMinMaxDate(Sender: TObject);
   public
     constructor Create(TheOwner: TComponent); override;
@@ -130,8 +125,7 @@ begin
 
       EditText.AnchorToNeighbour(akLeft, 10, LabelText);
       EditText.Tag := i;
-      EditText.OnChange := @SetMinMaxValue;
-      EditText.Visible := false;
+      EditText.OnChange := @SetMinMaxText;
       EditText.Parent := self;
       FMinMaxValue[i] := EditText;
 
@@ -139,7 +133,6 @@ begin
       DateText.Width := DateSize;
       DateText.Tag := i;
       DateText.OnChange := @SetMinMaxDate;
-      DateText.Visible := false;
       DateText.Parent := self;
       FMinMaxDate[i] := DateText;
     end;
@@ -166,7 +159,7 @@ begin
   DoModified;
 end;
 
-procedure TChartOptionsView.SetMinMaxValue(Sender: TObject);
+procedure TChartOptionsView.SetMinMaxText(Sender: TObject);
 var
   EditText: TCustomEdit;
 begin
@@ -227,14 +220,20 @@ var
 begin
   ResetMinMax;
   prevEntry := FOptText[high(FOptText)];
-  if (FDataModel.UseX) and (mmtXMin in FDataModel.MinMax) then
-    setMinMaxEntry(FDataModel.XDate, XMIN_TAG);
-  if (FDataModel.UseX) and (mmtXMax in FDataModel.MinMax) then
-    setMinMaxEntry(FDataModel.XDate, XMAX_TAG);
-  if (FDataModel.UseY) and (mmtYMin in FDataModel.MinMax) then
-    setMinMaxEntry(FDataModel.YDate, YMIN_TAG);
-  if (FDataModel.UseY) and (mmtYMax in FDataModel.MinMax) then
-    setMinMaxEntry(FDataModel.YDate, YMAX_TAG);
+  if (FDataModel.UseX) then
+    begin
+      if (mmtXMin in FDataModel.MinMax) then
+        setMinMaxEntry(FDataModel.XDate, XMIN_TAG);
+      if (mmtXMax in FDataModel.MinMax) then
+        setMinMaxEntry(FDataModel.XDate, XMAX_TAG);
+    end;
+  if (FDataModel.UseY) then
+    begin
+      if (mmtYMin in FDataModel.MinMax) then
+        setMinMaxEntry(FDataModel.YDate, YMIN_TAG);
+      if (mmtYMax in FDataModel.MinMax) then
+        setMinMaxEntry(FDataModel.YDate, YMAX_TAG);
+    end;
 end;
 
 function TChartOptionsView.ExitView(): boolean;
