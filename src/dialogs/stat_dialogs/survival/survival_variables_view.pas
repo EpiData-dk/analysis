@@ -56,44 +56,44 @@ var
 begin
   ComboBox := TCustomComboBox(Sender);
   Field := TEpiField(ComboBox.Items.Objects[ComboBox.ItemIndex]);
+  if assigned(Field) then
+    case ComboBox.Tag of
+      OUTCOMEV_TAG:
+        begin
+          FDataModel.OutcomeVariable := Field;
+          if not (Assigned(Field)) then
+            FDataModel.Failure := '';
+          CreateFailureRadios(FFailureGroup);
+        end;
 
-  case ComboBox.Tag of
-    OUTCOMEV_TAG:
-      begin
-        FDataModel.OutcomeVariable := Field;
-        if not (Assigned(Field)) then
-          FDataModel.Failure := '';
-        CreateFailureRadios(FFailureGroup);
-      end;
+      TIME1V_TAG:
+        begin
+          FDataModel.Time1Variable := Field;
+          if (Field.FieldType in DateFieldTypes) then
+            FComboBoxes[TIME2V_TAG].Visible := true
+          else
+            with (FComboBoxes[TIME2V_TAG]) do
+            begin
+              Visible := false;
+              Fields.Free;
+              Fields := nil;
+            end;
+        end;
 
-    TIME1V_TAG:
-      begin
-        FDataModel.Time1Variable := Field;
-        if (Field.FieldType in DateFieldTypes) then
-          FComboBoxes[TIME2V_TAG].Visible := true
-        else
-          with (FComboBoxes[TIME2V_TAG]) do
-          begin
-            Visible := false;
-            Fields.Free;
-            Fields := nil;
-          end;
-      end;
+      TIME2V_TAG:
+        FDataModel.Time2Variable := Field;
 
-    TIME2V_TAG:
-      FDataModel.Time2Variable := Field;
+      WEIGHTV_TAG:
+        FDataModel.WVariable := Field;
 
-    WEIGHTV_TAG:
-      FDataModel.WVariable := Field;
-
-    BYV_TAG:
-      begin
-        FDataModel.ByVariable := Field;
-        if (not Assigned(Field)) then
-          FDataModel.RefStratum := '';
-        CreateRefStratumRadios(FStrataGroup);
-      end;
-  end;
+      BYV_TAG:
+        begin
+          FDataModel.ByVariable := Field;
+          if (not Assigned(Field)) then
+            FDataModel.RefStratum := '';
+          CreateRefStratumRadios(FStrataGroup);
+        end;
+    end;
 
   UpdateCombos();
   DoModified();
