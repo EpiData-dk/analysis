@@ -5,7 +5,7 @@ unit scatter_variables_model;
 interface
 
 uses
-  Classes, SysUtils, stat_dialog_contribution, executor, epidatafiles;
+  Classes, SysUtils, stat_dialog_contribution, executor, epidatafiles, chart_options_model;
 
 type
 
@@ -18,6 +18,7 @@ type
     FExecutor: TExecutor;
     FXVariable: TEpiField;
     FYVariable: TEpiField;
+    FChartOptionsModel: TChartOptionsModel;
     procedure SetXVariable(AValue: TEpiField);
     procedure SetYVariable(AValue: TEpiField);
     function IsUsed(Field: TEpiField; TableVariable: TScatterStatDiaglogVariable): boolean;
@@ -29,10 +30,14 @@ type
     function GetComboFields(TableVariable: TScatterStatDiaglogVariable): TEpiFields;
     property XVariable: TEpiField read FXVariable write SetXVariable;
     property YVariable: TEpiField read FYVariable write SetYVariable;
+    property ChartOptions: TChartOptionsModel read FChartOptionsModel write FChartOptionsModel;
   end;
 
 
 implementation
+
+uses
+  epidatafilestypes;
 
 { TScatterStatVariableModel }
 
@@ -40,12 +45,18 @@ procedure TScatterStatVariableModel.SetXVariable(AValue: TEpiField);
 begin
   if FXVariable = AValue then Exit;
   FXVariable := AValue;
+  FChartOptionsModel.UseX := (AValue <> nil);
+  if (AValue <> nil) then
+    FChartOptionsModel.XDate := AValue.FieldType in DateFieldTypes;
 end;
 
 procedure TScatterStatVariableModel.SetYVariable(AValue: TEpiField);
 begin
   if FYVariable = AValue then Exit;
   FYVariable := AValue;
+  FChartOptionsModel.UseY := (AValue <> nil);
+  if (AValue <> nil) then
+    FChartOptionsModel.YDate := AValue.FieldType in DateFieldTypes;
 end;
 
 function TScatterStatVariableModel.IsUsed(Field: TEpiField;
