@@ -11,12 +11,12 @@ uses
 
 type
 
-  { TSurvivalStatDialogStatisticOptionsView }
+  { TSurvivalDialogStatisticOptionsView }
 
-  TSurvivalStatDialogStatisticOptionsView = class(TCustomStatDialogView)
+  TSurvivalDialogStatisticOptionsView = class(TCustomStatDialogView)
   private
     FOnModified: IStatDiaglogViewModified;
-    FDataModel: TSurvivalStatDialogStatisticOptionsModel;
+    FDataModel: TSurvivalDialogStatisticOptionsModel;
     FStatisticsGroup: TCheckGroup;
     FCIGroup: TRadioGroup;
     procedure CreateStatisticsCheckboxes(CheckGroup: TCheckGroup);
@@ -30,14 +30,14 @@ type
     function GetViewCaption(): UTF8String; override;
     function IsDefined(): boolean; override;
     procedure ResetView(); override;
-    procedure SetModel(DataModel: TSurvivalStatDialogStatisticOptionsModel);
+    procedure SetModel(DataModel: TSurvivalDialogStatisticOptionsModel);
   end;
 
 implementation
 
-{ TSurvivalStatDialogStatisticOptionsView }
+{ TSurvivalDialogStatisticOptionsView }
 
-constructor TSurvivalStatDialogStatisticOptionsView.Create(TheOwner: TComponent);
+constructor TSurvivalDialogStatisticOptionsView.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
@@ -61,7 +61,7 @@ begin
   CreateCIRadios(FCIGroup);
 end;
 
-procedure TSurvivalStatDialogStatisticOptionsView.CreateStatisticsCheckboxes(CheckGroup: TCheckGroup);
+procedure TSurvivalDialogStatisticOptionsView.CreateStatisticsCheckboxes(CheckGroup: TCheckGroup);
 begin
   CheckGroup.Items.Add('Log rank test');
   CheckGroup.Items.Add('Use time intervals' + LineEnding + '(set "survival intervals")');
@@ -69,7 +69,7 @@ begin
   CheckGroup.OnItemClick := @StatisticsItemChecked;
 end;
 
-procedure TSurvivalStatDialogStatisticOptionsView.CreateCIRadios(RadioGroup: TRadioGroup);
+procedure TSurvivalDialogStatisticOptionsView.CreateCIRadios(RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items.Add('Default (vertical bars)');
   RadioGroup.Items.Add('Upper and Lower lines');
@@ -78,7 +78,7 @@ begin
   RadioGroup.OnClick := @CISelectionChanged;
 end;
 
-procedure TSurvivalStatDialogStatisticOptionsView.StatisticsItemChecked(Sender: TObject; Index: integer);
+procedure TSurvivalDialogStatisticOptionsView.StatisticsItemChecked(Sender: TObject; Index: integer);
 var
   NewState: TStatisticTypes;
 begin
@@ -93,7 +93,7 @@ begin
   DoModified();
 end;
 
-procedure TSurvivalStatDialogStatisticOptionsView.CISelectionChanged(Sender: TObject);
+procedure TSurvivalDialogStatisticOptionsView.CISelectionChanged(Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
     0: FDataModel.CIType := ciDefault;
@@ -104,27 +104,27 @@ begin
   DoModified();
 end;
 
-procedure TSurvivalStatDialogStatisticOptionsView.EnterView();
+procedure TSurvivalDialogStatisticOptionsView.EnterView();
 begin
 
 end;
 
-function TSurvivalStatDialogStatisticOptionsView.ExitView(): boolean;
+function TSurvivalDialogStatisticOptionsView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function TSurvivalStatDialogStatisticOptionsView.GetViewCaption(): UTF8String;
+function TSurvivalDialogStatisticOptionsView.GetViewCaption(): UTF8String;
 begin
   result := 'Statistics'
 end;
 
-function TSurvivalStatDialogStatisticOptionsView.IsDefined(): boolean;
+function TSurvivalDialogStatisticOptionsView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure TSurvivalStatDialogStatisticOptionsView.ResetView();
+procedure TSurvivalDialogStatisticOptionsView.ResetView();
 var i: Integer;
 begin
   FDataModel.StatisticTypes := [];
@@ -135,8 +135,8 @@ begin
   FDataModel.CIType := ciDefault;
 end;
 
-procedure TSurvivalStatDialogStatisticOptionsView.SetModel(
-  DataModel: TSurvivalStatDialogStatisticOptionsModel);
+procedure TSurvivalDialogStatisticOptionsView.SetModel(
+  DataModel: TSurvivalDialogStatisticOptionsModel);
 begin
   FDataModel := DataModel;
 end;

@@ -13,9 +13,9 @@ type
   TStatisticTypes = set of TStatisticType ;
   TCIType = (ciDefault, ciLine, ciBand, ciNone);
 
-  { TSurvivalStatDialogStatisticOptionsModel }
+  { TSurvivalDialogStatisticOptionsModel }
 
-  TSurvivalStatDialogStatisticOptionsModel = class(IStatDialogModel)
+  TSurvivalDialogStatisticOptionsModel = class(IStatDialogModel)
   private
     FStatisticTypes: TStatisticTypes;
     FCIType: TCIType;
@@ -36,26 +36,26 @@ implementation
 uses
   LazUTF8;
 
-{ TSurvivalStatDialogStatisticOptionsModel }
+{ TSurvivalDialogStatisticOptionsModel }
 
-constructor TSurvivalStatDialogStatisticOptionsModel.Create();
+constructor TSurvivalDialogStatisticOptionsModel.Create();
 begin
   //
 end;
 
-procedure TSurvivalStatDialogStatisticOptionsModel.SetStatistics(AValue: TStatisticTypes);
+procedure TSurvivalDialogStatisticOptionsModel.SetStatistics(AValue: TStatisticTypes);
 begin
   if FStatisticTypes = AValue then Exit;
   FStatisticTypes := AValue;
 end;
 
-procedure TSurvivalStatDialogStatisticOptionsModel.SetCIType(AValue: TCIType);
+procedure TSurvivalDialogStatisticOptionsModel.SetCIType(AValue: TCIType);
 begin
   if (FCIType = AValue) then exit;
   FCIType := AValue;
 end;
 
-function TSurvivalStatDialogStatisticOptionsModel.GenerateScript(): UTF8String;
+function TSurvivalDialogStatisticOptionsModel.GenerateScript(): UTF8String;
 begin
   Result := '';
 
@@ -73,7 +73,7 @@ begin
   end;
 end;
 
-function TSurvivalStatDialogStatisticOptionsModel.IsDefined(): boolean;
+function TSurvivalDialogStatisticOptionsModel.IsDefined(): boolean;
 begin
   result := true;
 end;

@@ -10,11 +10,11 @@ uses
 
 type
 
-  { TEpicurveStatDialogVariablesView }
+  { TEpicurveDialogVariablesView }
 
-  TEpicurveStatDialogVariablesView = class(TCustomStatDialogView)
+  TEpicurveDialogVariablesView = class(TCustomStatDialogView)
   private
-    FDataModel: TEpicurveStatDialogVariableModel;
+    FDataModel: TEpicurveDialogVariableModel;
     FComboBoxes: Array of TEpiFieldsComboBox;
     procedure VariableSelect(Sender: TObject);
     procedure UpdateCombos();
@@ -25,7 +25,7 @@ type
     function GetViewCaption(): UTF8String; override;
     procedure ResetView(); override;
     function IsDefined(): boolean; override;
-    procedure SetModel(DataModel: TEpicurveStatDialogVariableModel);
+    procedure SetModel(DataModel: TEpicurveDialogVariableModel);
   end;
 
 implementation
@@ -37,9 +37,9 @@ const
   XVARIABLE_TAG   = Ord(tvX);
   YVARIABLE_TAG   = Ord(tvY);
 
-{ TEpicurveStatDialogVariablesView }
+{ TEpicurveDialogVariablesView }
 
-procedure TEpicurveStatDialogVariablesView.VariableSelect(Sender: TObject);
+procedure TEpicurveDialogVariablesView.VariableSelect(Sender: TObject);
 var
   Field: TEpiField;
   ComboBox: TCustomComboBox;
@@ -60,7 +60,7 @@ begin
   DoModified();
 end;
 
-procedure TEpicurveStatDialogVariablesView.UpdateCombos();
+procedure TEpicurveDialogVariablesView.UpdateCombos();
 var
   Field: TEpiField;
   ComboBox: TEpiFieldsComboBox;
@@ -73,19 +73,19 @@ begin
       Field := ComboBox.SelectedField;
       ComboBox.Fields.Free;
       ComboBox.Fields := nil;
-      ComboBox.Fields := FDataModel.GetComboFields(TEpicurveStatDialogVariable(i));
+      ComboBox.Fields := FDataModel.GetComboFields(TEpicurveDialogVariable(i));
       ComboBox.ItemIndex := ComboBox.Items.IndexOfObject(Field);
     end;
 end;
 
-constructor TEpicurveStatDialogVariablesView.Create(TheOwner: TComponent);
+constructor TEpicurveDialogVariablesView.Create(TheOwner: TComponent);
 var
   ComboBox: TEpiFieldsComboBox;
   PrevCombo: TEpiFieldsComboBox;
 begin
   inherited Create(TheOwner);
 
-  SetLength(FComboBoxes, Ord(High(TEpicurveStatDialogVariable)) + 1);
+  SetLength(FComboBoxes, Ord(High(TEpicurveDialogVariable)) + 1);
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
   ComboBox.Filter := DateFieldTypes + [ftInteger];
@@ -113,22 +113,22 @@ begin
   EnterView(); // Must do this to get combo boxes aligned and visible
 end;
 
-procedure TEpicurveStatDialogVariablesView.EnterView();
+procedure TEpicurveDialogVariablesView.EnterView();
 begin
 
 end;
 
-function TEpicurveStatDialogVariablesView.ExitView(): boolean;
+function TEpicurveDialogVariablesView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function TEpicurveStatDialogVariablesView.GetViewCaption(): UTF8String;
+function TEpicurveDialogVariablesView.GetViewCaption(): UTF8String;
 begin
   result := 'Variables';
 end;
 
-procedure TEpicurveStatDialogVariablesView.ResetView();
+procedure TEpicurveDialogVariablesView.ResetView();
 var
   Combobox: TCustomComboBox;
 begin
@@ -142,13 +142,13 @@ begin
   DoModified();
 end;
 
-function TEpicurveStatDialogVariablesView.IsDefined(): boolean;
+function TEpicurveDialogVariablesView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure TEpicurveStatDialogVariablesView.SetModel(
-  DataModel: TEpicurveStatDialogVariableModel);
+procedure TEpicurveDialogVariablesView.SetModel(
+  DataModel: TEpicurveDialogVariableModel);
 begin
   FDataModel := DataModel;
 

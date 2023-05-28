@@ -6,18 +6,20 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
-  barchart_model, barchart_primaryoption_model;
+  barchart_model, barchart_primaryoption_model, chart_options_model;
 
 type
 
-  { TBarchartStatDialogContribution }
+  { TBarchartDialogContribution }
 
-  TBarchartStatDialogContribution = class(IStatDialogContribution)
+  TBarchartDialogContribution = class(IStatDialogContribution)
   private
-    FPrimaryOptionsModel: TBarchartStatDialogPrimaryOptionModel;
-    FVariablesModel: TBarchartStatDialogVariableModel;
+    FVariablesModel: TBarchartDialogVariableModel;
+    FPrimaryOptionsModel: TBarchartDialogPrimaryOptionModel;
+    FChartOptionsModel: TChartOptionsModel;
     function CreateMainView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
-    function CreatePrimaryOptionView(Owner: TComponent;  Executor: TExecutor): IStatDialogView;
+    function CreatePrimaryOptionsView(Owner: TComponent;  Executor: TExecutor): IStatDialogView;
+    function CreateChartOptionsView(Owner: TComponent): IStatDialogView;
   public
     function GenerateScript(): UTF8String;
     function GetCaption(): UTF8String;
@@ -28,47 +30,60 @@ type
 implementation
 
 uses
-  barchart_variables_view,
-  barchart_primaryoption_view;
+  barchart_variables_view, barchart_primaryoption_view,
+  chart_options_view;
 
-{ TBarchartStatDialogContribution }
+{ TBarchartDialogContribution }
 
-function TBarchartStatDialogContribution.CreateMainView(Owner: TComponent;
+function TBarchartDialogContribution.CreateMainView(Owner: TComponent;
   Executor: TExecutor): IStatDialogView;
 var
-  View: TBarchartStatDialogVariablesView;
+  View: TBarchartDialogVariablesView;
 begin
-  FVariablesModel := TBarchartStatDialogVariableModel.Create(Executor);
-  View := TBarchartStatDialogVariablesView.Create(Owner);
+  FVariablesModel := TBarchartDialogVariableModel.Create(Executor);
+  View := TBarchartDialogVariablesView.Create(Owner);
   View.SetModel(FVariablesModel);
   Result := View;
 end;
 
-function TBarchartStatDialogContribution.CreatePrimaryOptionView(Owner: TComponent;
-  Executor: TExecutor ): IStatDialogView;
+function TBarchartDialogContribution.CreatePrimaryOptionsView(Owner: TComponent;
+  Executor: TExecutor): IStatDialogView;
 var
-  View: TBarchartStatPrimaryOptionsView;
+  View: TBarchartPrimaryOptionsView;
 begin
-  FPrimaryOptionsModel := TBarchartStatDialogPrimaryOptionModel.Create(Executor);
-  View := TBarchartStatPrimaryOptionsView.Create(Owner);
+  FPrimaryOptionsModel := TBarchartDialogPrimaryOptionModel.Create(Executor);
+  View := TBarchartPrimaryOptionsView.Create(Owner);
   View.SetModel(FPrimaryOptionsModel);
   Result := View;
 end;
 
-function TBarchartStatDialogContribution.GenerateScript(): UTF8String;
+function TBarchartDialogContribution.CreateChartOptionsView(Owner: TComponent): IStatDialogView;
+var
+  View: TChartOptionsView;
+begin
+  FChartOptionsModel := TChartOptionsModel.Create();
+  FChartOptionsModel.MinMax := [mmtYMax];
+  FChartOptionsModel.UseY := true;
+  View := TChartOptionsView.Create(Owner);
+  View.SetModel(FChartOptionsModel);
+  Result := View;
+end;
+
+function TBarchartDialogContribution.GenerateScript(): UTF8String;
 begin
   result := 'barchart ' +
     FVariablesModel.GenerateScript() +
     FPrimaryOptionsModel.GenerateScript() +
+    FChartOptionsModel.GenerateScript() +
     ';';
 end;
 
-function TBarchartStatDialogContribution.GetCaption(): UTF8String;
+function TBarchartDialogContribution.GetCaption(): UTF8String;
 begin
   result := 'Barchart';
 end;
 
-function TBarchartStatDialogContribution.GetHelpText(): UTF8String;
+function TBarchartDialogContribution.GetHelpText(): UTF8String;
 begin
   result :=
     '1: Select Variables' + LineEnding +
@@ -76,15 +91,16 @@ begin
     '3: Run, Execute or Paste command';
 end;
 
-function TBarchartStatDialogContribution.GetViews(Owner: TComponent;
+function TBarchartDialogContribution.GetViews(Owner: TComponent;
   Executor: TExecutor): TStatDialogContributionViewList;
 begin
   result := TStatDialogContributionViewList.Create;
   result.Add(CreateMainView(Owner, Executor));
-  result.Add(CreatePrimaryOptionView(Owner, Executor));
+  result.Add(CreatePrimaryOptionsView(Owner, Executor));
+  result.Add(CreateChartOptionsView(Owner));
 end;
 
 initialization
-  RegisterStatDialogContribution(TBarchartStatDialogContribution.Create, cdGraphs);
+  RegisterStatDialogContribution(TBarchartDialogContribution.Create, cdGraphs);
 
 end.

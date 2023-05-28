@@ -15,7 +15,7 @@ type
   TSurvivalStatPrimaryOptionsView = class(TCustomStatDialogView)
   private
     FOnModified: IStatDiaglogViewModified;
-    FDataModel: TSurvivalStatDialogPrimaryOptionModel;
+    FDataModel: TSurvivalDialogPrimaryOptionModel;
     FHorizontalDivider: TBevel;
     FDecimalGroup: TRadioGroup;
     FValueLabelsGroup: TRadioGroup;
@@ -36,7 +36,7 @@ type
     function GetViewCaption(): UTF8String; override;
     function IsDefined(): boolean; override;
     procedure ResetView(); override;
-    procedure SetModel(DataModel: TSurvivalStatDialogPrimaryOptionModel);
+    procedure SetModel(DataModel: TSurvivalDialogPrimaryOptionModel);
   end;
 
 implementation
@@ -226,7 +226,7 @@ begin
 end;
 
 procedure TSurvivalStatPrimaryOptionsView.SetModel(
-  DataModel: TSurvivalStatDialogPrimaryOptionModel);
+  DataModel: TSurvivalDialogPrimaryOptionModel);
 begin
   FDataModel := DataModel;
   FValueLabelsGroup.ItemIndex := FDataModel.ValueLabelsDefault;

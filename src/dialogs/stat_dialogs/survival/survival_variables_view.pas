@@ -10,11 +10,11 @@ uses
 
 type
 
-  { TSurvivalStatDialogVariablesView }
+  { TSurvivalDialogVariablesView }
 
-  TSurvivalStatDialogVariablesView = class(TCustomStatDialogView)
+  TSurvivalDialogVariablesView = class(TCustomStatDialogView)
   private
-    FDataModel: TSurvivalStatDialogVariableModel;
+    FDataModel: TSurvivalDialogVariableModel;
     FComboBoxes: Array of TEpiFieldsComboBox;
     FFailureGroup: TRadioGroup;
     FStrataGroup: TRadioGroup;
@@ -32,7 +32,7 @@ type
     function GetViewCaption(): UTF8String; override;
     procedure ResetView(); override;
     function IsDefined(): boolean; override;
-    procedure SetModel(DataModel: TSurvivalStatDialogVariableModel);
+    procedure SetModel(DataModel: TSurvivalDialogVariableModel);
   end;
 
 implementation
@@ -47,16 +47,15 @@ const
   WEIGHTV_TAG    = Ord(svW);
   BYV_TAG        = Ord(svBy);
 
-{ TSurvivalStatDialogVariablesView }
+{ TSurvivalDialogVariablesView }
 
-procedure TSurvivalStatDialogVariablesView.VariableSelect(Sender: TObject);
+procedure TSurvivalDialogVariablesView.VariableSelect(Sender: TObject);
 var
   Field: TEpiField;
   ComboBox: TCustomComboBox;
 begin
   ComboBox := TCustomComboBox(Sender);
   Field := TEpiField(ComboBox.Items.Objects[ComboBox.ItemIndex]);
-
   case ComboBox.Tag of
     OUTCOMEV_TAG:
       begin
@@ -69,15 +68,16 @@ begin
     TIME1V_TAG:
       begin
         FDataModel.Time1Variable := Field;
-        if (Field.FieldType in DateFieldTypes) then
-          FComboBoxes[TIME2V_TAG].Visible := true
-        else
-          with (FComboBoxes[TIME2V_TAG]) do
-          begin
-            Visible := false;
-            Fields.Free;
-            Fields := nil;
-          end;
+        if Assigned(Field) then
+          if (Field.FieldType in DateFieldTypes) then
+            FComboBoxes[TIME2V_TAG].Visible := true
+          else
+            with (FComboBoxes[TIME2V_TAG]) do
+            begin
+              Visible := false;
+              Fields.Free;
+              Fields := nil;
+            end;
       end;
 
     TIME2V_TAG:
@@ -99,7 +99,7 @@ begin
   DoModified();
 end;
 
-procedure TSurvivalStatDialogVariablesView.UpdateCombos();
+procedure TSurvivalDialogVariablesView.UpdateCombos();
 var
   Field: TEpiField;
   ComboBox: TEpiFieldsComboBox;
@@ -112,19 +112,19 @@ begin
       Field := ComboBox.SelectedField;
       ComboBox.Fields.Free;
       ComboBox.Fields := nil;
-      ComboBox.Fields := FDataModel.GetComboFields(TSurvivalStatDialogVariable(i));
+      ComboBox.Fields := FDataModel.GetComboFields(TSurvivalDialogVariable(i));
       ComboBox.ItemIndex := ComboBox.Items.IndexOfObject(Field);
     end;
 end;
 
-constructor TSurvivalStatDialogVariablesView.Create(TheOwner: TComponent);
+constructor TSurvivalDialogVariablesView.Create(TheOwner: TComponent);
 var
   ComboBox: TEpiFieldsComboBox;
   PrevCombo: TEpiFieldsComboBox;
 begin
   inherited Create(TheOwner);
 
-  SetLength(FComboBoxes, Ord(High(TSurvivalStatDialogVariable)) + 1);
+  SetLength(FComboBoxes, Ord(High(TSurvivalDialogVariable)) + 1);
 
   FVerticalDivider := TBevel.Create(self);
   FVerticalDivider.Parent := self;
@@ -213,7 +213,7 @@ begin
   EnterView(); // Must do this to get combo boxes aligned and visible
 end;
 
-procedure TSurvivalStatDialogVariablesView.CreateFailureRadios(
+procedure TSurvivalDialogVariablesView.CreateFailureRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items := FDatamodel.OutcomeValues;
@@ -221,14 +221,14 @@ begin
   RadioGroup.OnSelectionChanged := @FailureSelectionChanged;
 end;
 
-procedure TSurvivalStatDialogVariablesView.FailureSelectionChanged(
+procedure TSurvivalDialogVariablesView.FailureSelectionChanged(
   Sender: TObject);
 begin
   FDataModel.Failure := TRadioGroup(Sender).Items[TRadioGroup(Sender).ItemIndex];
   DoModified();
 end;
 
-procedure TSurvivalStatDialogVariablesView.CreateRefStratumRadios(
+procedure TSurvivalDialogVariablesView.CreateRefStratumRadios(
   RadioGroup: TRadioGroup);
 begin
   RadioGroup.Items := FDatamodel.StrataValues;
@@ -236,29 +236,29 @@ begin
   RadioGroup.OnSelectionChanged := @RefStratumSelectionChanged;
 end;
 
-procedure TSurvivalStatDialogVariablesView.RefStratumSelectionChanged(
+procedure TSurvivalDialogVariablesView.RefStratumSelectionChanged(
   Sender: TObject);
 begin
   FDataModel.RefStratum := TRadioGroup(Sender).Items[TRadioGroup(Sender).ItemIndex];
   DoModified();
 end;
 
-procedure TSurvivalStatDialogVariablesView.EnterView();
+procedure TSurvivalDialogVariablesView.EnterView();
 begin
   FVerticalDivider.Left := ((Self.Width - FVerticalDivider.Width) div 2);
 end;
 
-function TSurvivalStatDialogVariablesView.ExitView(): boolean;
+function TSurvivalDialogVariablesView.ExitView(): boolean;
 begin
   result := true;
 end;
 
-function TSurvivalStatDialogVariablesView.GetViewCaption(): UTF8String;
+function TSurvivalDialogVariablesView.GetViewCaption(): UTF8String;
 begin
   result := 'Variables';
 end;
 
-procedure TSurvivalStatDialogVariablesView.ResetView();
+procedure TSurvivalDialogVariablesView.ResetView();
 var
   Combobox: TCustomComboBox;
 begin
@@ -282,13 +282,13 @@ begin
   DoModified();
 end;
 
-function TSurvivalStatDialogVariablesView.IsDefined(): boolean;
+function TSurvivalDialogVariablesView.IsDefined(): boolean;
 begin
   result := FDataModel.IsDefined();
 end;
 
-procedure TSurvivalStatDialogVariablesView.SetModel(
-  DataModel: TSurvivalStatDialogVariableModel);
+procedure TSurvivalDialogVariablesView.SetModel(
+  DataModel: TSurvivalDialogVariableModel);
 begin
   FDataModel := DataModel;
 
