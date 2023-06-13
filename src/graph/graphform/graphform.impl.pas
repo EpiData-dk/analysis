@@ -39,7 +39,8 @@ begin
   FPageControl.Parent := Self;
   FPageControl.Align := alClient;
   // Remove this to support multiple charts on the form
-  // FPageControl.ShowTabs := false;
+  // No ... see below; ShowTabs true if more than one chart on the page
+  FPageControl.ShowTabs := false;
 
   FSaveGraphAction := TSaveGraphDialogAction.Create(Self);
 
@@ -80,6 +81,9 @@ begin
   if (count > 1) then
     FPageControl.ShowTabs := (Pair.InstanceSize > 1);
 
+  // TODO: Saving multiple charts from FPageControl
+  //       SaveGraphAction must work on the PageControl, not the Charts!
+  //       It can loop through the tabs
   FSaveGraphAction.Chart := ChartPairs.First.Chart;
 end;
 
