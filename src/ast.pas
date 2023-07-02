@@ -7232,6 +7232,12 @@ begin
     'epi': Result := stEpicurve;
     'his': Result := stHistogram;
     'sur': Result := stSurvival;
+
+    // use cde to point to a new command (used in development only)
+    // all references to the new command must be made in the usual way
+    // this is just a shortcut to avoid having to compile grammar before
+    // the command is ready; if no development command, just point to null command
+    'cde': Result := stNone;
   else
     DoError();
   end;

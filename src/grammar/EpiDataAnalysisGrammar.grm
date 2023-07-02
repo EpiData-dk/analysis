@@ -59,6 +59,9 @@ opAggregate   = 'agg'('regate')?
 opDescribe    = 'des'('cribe')?
 opRecode      = 'recode'
 
+! -- Development command for temporary use
+opCDev        = 'cdev'
+
 ! -- Graph commands
 opScatter     = 'scatter'
 opSurvival    = 'sur'('vival')?
