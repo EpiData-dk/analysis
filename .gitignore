@@ -12,3 +12,4 @@ src/grammar/*.cgt
 src/grammar/*.log
 *.sh
 ppas.sh
+src/grammar/buildgrammer.sh
