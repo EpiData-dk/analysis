@@ -84,6 +84,7 @@ begin
   // TODO: Saving multiple charts from FPageControl
   //       SaveGraphAction must work on the PageControl, not the Charts!
   //       It can loop through the tabs
+  //       or each Chart must have its own SaveGraphAction...
   FSaveGraphAction.Chart := ChartPairs.First.Chart;
 end;
 
