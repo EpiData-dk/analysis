@@ -64,12 +64,15 @@ type
 implementation
 
 uses
-  TADrawerSVG, LazFileUtils;
+  TADrawerSVG, LazFileUtils {$IFDEF DARWIN}, TAFonts{$ENDIF};
 
 { TSaveGraphAction }
 
 procedure TCustomSaveGraphAction.SaveGraphExecute(Sender: TObject);
 begin
+  {$IFDEF DARWIN}
+  InitFonts('/System/Library/Fonts');
+  {$ENDIF}
   case GraphExportType of
     etSVG: FChart.SaveToSVGFile(FileName);
     etPNG: SaveToRaster(TPortableNetworkGraphic, FileName);

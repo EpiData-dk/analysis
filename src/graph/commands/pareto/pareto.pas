@@ -268,7 +268,8 @@ begin
     .SetTitle(sTitle)
     .SetFootnote('')
     .SetXAxisTitle(FXVarTitle)
-    .SetYAxisTitle(barTitle);
+    .SetYAxisTitle(barTitle)
+    .SetY2AxisTitle(lineTitle);
 
   ChartConfiguration.GetAxesConfiguration()
     .GetXAxisConfiguration();

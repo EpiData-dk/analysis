@@ -27,11 +27,13 @@ type
   private
     FXAxisConfiguration: IChartAxisConfiguration;
     FYAxisConfiguration: IChartAxisConfiguration;
+    FY2AxisConfiguration: IChartAxisConfiguration;
   public
     constructor Create;
     destructor Destroy; override;
     function GetXAxisConfiguration(): IChartAxisConfiguration;
     function GetYAxisConfiguration(): IChartAxisConfiguration;
+    function GetY2AxisConfiguration(): IChartAxisConfiguration;
   end;
 
 implementation
@@ -66,12 +68,14 @@ constructor TChartAxesConfiguration.Create;
 begin
   FXAxisConfiguration := TChartAxisConfiguration.Create;
   FYAxisConfiguration := TChartAxisConfiguration.Create;
+  FY2AxisConfiguration := TChartAxisConfiguration.Create;
 end;
 
 destructor TChartAxesConfiguration.Destroy;
 begin
   FXAxisConfiguration := nil;
   FYAxisConfiguration := nil;
+  FY2AxisConfiguration := nil;
   inherited Destroy;
 end;
 
@@ -83,6 +87,11 @@ end;
 function TChartAxesConfiguration.GetYAxisConfiguration(): IChartAxisConfiguration;
 begin
   Result := FYAxisConfiguration;
+end;
+
+function TChartAxesConfiguration.GetY2AxisConfiguration(): IChartAxisConfiguration;
+begin
+  Result := FY2AxisConfiguration;
 end;
 
 end.
