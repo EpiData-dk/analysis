@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, fgl, Forms, ast, executor, chartcommandresult, graphform,
   charttitles, chartaxesconfiguration, outputcreator, TATextElements,
-  TAChartAxisUtils, TAChartAxis, TATypes;
+  TAChartAxisUtils, TAChartAxis, TATypes, Graphics;
 
 type
 
@@ -17,6 +17,7 @@ type
   private
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
+    FFont: TFont;
     procedure SaveGraph(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
     procedure ShowDialog(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
     procedure UpdateChartTitles(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
@@ -33,7 +34,7 @@ implementation
 
 uses
   chartcommand, chartfactory, graphformfactory, savegraphaction, TAGraph, chartpair,
-  LazFileUtils, ana_globals, ast_types, chart_options, Graphics, options_utils;
+  LazFileUtils, ana_globals, ast_types, chart_options, options_utils;
 
 { TGraphCommandExecutor }
 
@@ -110,7 +111,7 @@ var
   Chart: TChart;
   Titles: IChartTitles;
   Opt: TOption;
-  inc: Integer;
+  i, inc: Integer;
 begin
   ChartPairs := CommandResult.GetChartPairs();
 
@@ -134,13 +135,17 @@ begin
 
     ST.HasOption(['ytitle', 'yt'], Opt);
     ApplyAxisTitle(Chart.LeftAxis.Title, Titles.GetYAxisTitle(), Opt);
+
+    // set font for all axes and legen
+    for i := 0 to Chart.AxisList.Count - 1 do
+      Chart.AxisList.Axes[i].Title.LabelFont := FFont;
+
+    Chart.Legend.Font := FFont;
   end;
 end;
 
 procedure TGraphCommandExecutor.ApplyChartTitle(ChartTitle: TChartTitle;
   MainCaption: UTF8String; Option: TOption);
-var
-  AFont: TFont;
 begin
   if (Assigned(Option)) then
     MainCaption := Option.Expr.AsString;
@@ -148,14 +153,7 @@ begin
   ChartTitle.Visible := MainCaption <> '';
   ChartTitle.Text.Clear;
   ChartTitle.Text.Add(MainCaption);
-  AFont := FontFromSetOptions(
-           ANA_SO_CHART_FONT_NAME,
-           ANA_SO_CHART_FONT_SIZE,
-           ANA_SO_CHART_FONT_COLOR,
-           ANA_SO_CHART_FONT_STYLE,
-           FExecutor.SetOptions
-         );
-  ChartTitle.Font.Assign(AFont);
+  ChartTitle.Font.Assign(FFont);
 end;
 
 procedure TGraphCommandExecutor.ApplyAxisTitle(AxisTitle: TChartAxisTitle;
@@ -163,7 +161,7 @@ procedure TGraphCommandExecutor.ApplyAxisTitle(AxisTitle: TChartAxisTitle;
 begin
   if (Assigned(Option)) then
     MainCaption := Option.Expr.AsString;
-
+  AxisTitle.LabelFont.Assign(FFont);
   AxisTitle.Visible := MainCaption <> '';
   AxisTitle.Caption := MainCaption;
 end;
@@ -270,14 +268,33 @@ begin
               ErrorMsg += rangeMsg + LineEnding;
         end;
       end;
+
     if (errorMsg <> '') then
       FExecutor.Error(errorMsg);
+
 end;
 
 constructor TGraphCommandExecutor.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
+var
+  AFontName: UTF8String;
 begin
   FExecutor := AExecutor;
   FOutputCreator := AOutputCreator;
+  AFontName := ANA_SO_CHART_FONT_NAME;
+  if (AFontName = '') then
+    AFontName := ANA_SO_OUTPUT_FONT_NAME;
+  // MAC requires a font name if saving to .svg
+  {$IFDEF DARWIN}
+  if (AFontName = '') then
+    AFontName := 'Arial';
+  {$ENDIF}
+  FFont := FontFromSetOptions(
+           AFontName,
+           ANA_SO_CHART_FONT_SIZE,
+           ANA_SO_CHART_FONT_COLOR,
+           ANA_SO_CHART_FONT_STYLE,
+           FExecutor.SetOptions
+         );
 end;
 
 procedure TGraphCommandExecutor.Execute(ST: TCustomGraphCommand);

@@ -49,7 +49,13 @@ begin
 end;
 
 destructor TChartPair.Destroy;
+var
+  i: integer;
 begin
+  // must clear any axis transformations before destroying chart
+  for i := 0 to Chart.AxisList.Count - 1 do
+    if (Assigned(Chart.AxisList.Axes[i].Transformations)) then
+      Chart.AxisList.Axes[i].Transformations := nil;
   Chart := nil;
   Configuration := nil;
   inherited Destroy;

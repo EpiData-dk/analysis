@@ -16,6 +16,7 @@ type
   IChartAxesConfiguration = interface['{D061E5F7-4767-4FE0-9A56-45CB88128E36}']
     function GetXAxisConfiguration(): IChartAxisConfiguration;
     function GetYAxisConfiguration(): IChartAxisConfiguration;
+    function GetY2AxisConfiguration(): IChartAxisConfiguration;
   end;
 
 implementation

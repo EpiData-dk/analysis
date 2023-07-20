@@ -35,6 +35,7 @@ resourcestring
   sRatio = 'Ratio';
   sReferenceAbbr = 'Ref.';
   sStratify = 'Stratify';
+  sStratum = 'Stratum';
   sTime = 'Time';
   sTotal = 'Total';
   sUpperLimitAbbr = 'UL';
@@ -48,7 +49,7 @@ resourcestring
   sSurFailure = 'Failure';
   sSurFailures = 'Failures';
   sSurFollowup = 'Followup';
-  sSurGraphHead = 'KM Plot for outcome';
+  sSurGraphHead = 'KM Plot for';
   sSurHazard = 'Hazard';
   sSurHazardRatio = 'Hazard Ratio';
   sSurHeader = 'Kaplan-Meier Survival Analysis';
@@ -59,7 +60,6 @@ resourcestring
   sSurIntNotSort = 'Intervals must be in ascending order';
   sSurLogRankChi = 'Log-Rank Chi-square';
   sSurNoRec =  'No records with ';
-  sSurPlotHead = 'KM Plot for';
   sSurPlotInfo = 'Plot points for KM plots were saved to the clipboard';
   sSurTempVar = '_survivaldays';
   sSurTempVarQuestion = 'Days from ';
@@ -1004,11 +1004,11 @@ var
   d: UTF8String;
 begin
   d := FExecutor.SetOptions.GetValue(ANA_SO_CLIPBOARD_DELIMITER).Value;
-  FCBplot += sSurPlotHead + FOutcomeVarLabel + ' ' + sAt + ' ' + sBy + ' ' + FTimeVarLabel + lineending;
+  FCBplot += sSurGraphHead + ' ' + FOutcomeVarLabel + ' ' + FFailOutcomeText + ' ' + sAt + ' ' + FTimeVarLabel + lineending;
   if (Stratum = 0) then
     FCBPlot += sAllSubjects + lineending
   else
-    FCBPlot += FStratVarName + ' = ' + FStratLabels[Stratum - 1] + lineending;
+    FCBPlot += sStratum + ' ' + Stratum.ToString + ': ' + FStratVarName + ' = ' + FStratLabels[Stratum - 1] + lineending;
   FCBPlot +=  sTime + d + sSurCommand + d + sConfIntervalAbbr + sLowerLimitAbbr + d + sConfIntervalAbbr + sUpperLimitAbbr + lineending;
   for i := 0 to high(FPlotT) do
     FCBPlot += trim(Format('%6.0f', [FPlotT[i]]))  + d +

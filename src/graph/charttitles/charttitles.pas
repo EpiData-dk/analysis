@@ -13,6 +13,7 @@ type
     function GetFootnote(): UTF8String;
     function GetXAxisTitle(): UTF8String;
     function GetYAxisTitle(): UTF8String;
+    function GetY2AxisTitle(): UTF8String;
   end;
 
   IChartTitleConfiguration = interface(IChartTitles)['{4DCBD46E-C9EB-46A4-9313-7B3C943F7B82}']
@@ -20,6 +21,7 @@ type
     function SetFootnote(Text: UTF8String): IChartTitleConfiguration;
     function SetXAxisTitle(Text: UTF8String): IChartTitleConfiguration;
     function SetYAxisTitle(Text: UTF8String): IChartTitleConfiguration;
+    function SetY2AxisTitle(Text: UTF8String): IChartTitleConfiguration;
   end;
 
 implementation
