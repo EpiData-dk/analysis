@@ -22,8 +22,8 @@ uses
 
 resourcestring
   sAllSubjects = 'All subjects';
-  sAt = 'at';
   sBy = 'by';
+  sConfidenceInterval = 'Confidence' + lineEnding + 'Interval';
   sConfIntervalAbbr = 'CI';
   sLowerLimitAbbr = 'LL';
   sMax = 'Maximum';
@@ -35,6 +35,7 @@ resourcestring
   sRatio = 'Ratio';
   sReferenceAbbr = 'Ref.';
   sStratify = 'Stratify';
+  sStratum = 'Stratum';
   sTime = 'Time';
   sTotal = 'Total';
   sUpperLimitAbbr = 'UL';
@@ -48,22 +49,21 @@ resourcestring
   sSurFailure = 'Failure';
   sSurFailures = 'Failures';
   sSurFollowup = 'Followup';
-  sSurGraphHead = 'KM Plot for outcome';
+  sSurGraphTitle = 'KM Plot for %0:s at %1:s';
   sSurHazard = 'Hazard';
   sSurHazardRatio = 'Hazard Ratio';
-  sSurHeader = 'Kaplan-Meier Survival Analysis';
-  sSurHeader1 = 'Life Tables';
-  sSurHeader2 = 'Summary';
   sSurIgnoreAdj = '!adj ignored when !int is not specified';
   sSurIntErr = 'Invalid interval';
   sSurIntNotSort = 'Intervals must be in ascending order';
   sSurLogRankChi = 'Log-Rank Chi-square';
   sSurNoRec =  'No records with ';
-  sSurPlotHead = 'KM Plot for';
   sSurPlotInfo = 'Plot points for KM plots were saved to the clipboard';
+  sSurTabTitle = 'Kaplan-Meier Survival Analysis';
+  sSurTabType1 = 'Life Tables';
+  sSurTabType2 = 'Summary';
   sSurTempVar = '_survivaldays';
   sSurTempVarQuestion = 'Days from ';
-  sSurTimeVarNeg = 'The time variable, $1, has negative values';
+  sSurTimeVarNeg = 'The time variable, %0:s, has negative values';
 type
 
   { TSurvival }
@@ -77,6 +77,7 @@ type
     FDecimals,
     FConf:                Integer;
     FConfz:               EpiFloat;
+    FStatFormat:          UTF8String;
     FValueLabelOutput:    TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
   // table of outcome by time
@@ -317,7 +318,7 @@ begin
     // validate that time value has only positive integers
     if (RowVariable.AsInteger[0] < 0) then
       begin
-        FExecutor.Error(StringReplace(sSurTimeVarNeg, '$1', Variables[1], [rfIgnoreCase]));
+        FExecutor.Error(format(sSurTimeVarNeg, [Variables[1]]));
         exit;
       end;
   end;
@@ -681,7 +682,6 @@ end;
 procedure TSurvival.DoOutputSurvival(ST:TCustomVariableCommand);
 var
   T: TOutputTable;
-  StatFmt: String;
   Sz, i: Integer;
   Stratum, FirstStratum, LastStratum: Integer;
 
@@ -704,7 +704,6 @@ begin
   if (ST.HasOption('nos')) then
     LastStratum := 0;
 
-  StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
   // Column headers
   for Stratum := FirstStratum to LastStratum do
     begin
@@ -712,14 +711,14 @@ begin
       T.ColCount    := 5;
       T.RowCount    := 1;
       if (Stratum = 0) then
-        T.Header.Text := sSurHeader + ' - ' +sSurHeader1 + LineEnding + sAllSubjects
+        T.Header.Text := sSurTabTitle + ' - ' + sSurTabType1 + lineEnding + sAllSubjects
       else
-        T.Header.Text := sSurHeader + ' - ' +sSurHeader1 + LineEnding + FStratVarName + ' = ' + FStratLabels[Stratum-1];
+        T.Header.Text := sSurTabTitle + ' - ' + sSurTabType1 + LineEnding + FStratVarName + ' = ' + FStratLabels[Stratum-1];
       T.Cell[0, 0].Text := sSurFollowup      + LineEnding + FTimeVarLabel;
-      T.Cell[1, 0].Text := '#' + sSurAtRisk1 + LineEnding + sSurAtRisk2;
+      T.Cell[1, 0].Text := '# ' + sSurAtRisk1 + LineEnding + sSurAtRisk2;
       T.Cell[2, 0].Text := FOutcomeVarLabel  + LineEnding + FFailOutcomeText;
-      T.Cell[3, 0].Text :=                     LineEnding + sSurCommand;;
-      T.Cell[4, 0].Text :=                     LineEnding + '(' + IntToStr(FConf) + '% ' + sConfIntervalAbbr + ')';
+      T.Cell[3, 0].Text := sSurCommand;;
+      T.Cell[4, 0].Text := IntToStr(FConf) + '% ' + sConfidenceInterval;
 
   T.SetRowAlignment(0, taRightJustify);
   Sz := T.RowCount;
@@ -733,7 +732,7 @@ begin
           T.Cell[0, Sz].Text := FInterval[0, i];
           T.Cell[1, Sz].Text := IntToStr(FAtRisk[Stratum, i]);
           T.Cell[2, Sz].Text := IntToStr(FFail[Stratum, i]);
-          T.Cell[3, Sz].Text := Format(StatFmt, [FSurvival[Stratum, i]]);
+          T.Cell[3, Sz].Text := Format(FStatFormat, [FSurvival[Stratum, i]]);
           T.Cell[4, Sz].Text := FormatCI(FLowCI[Stratum, i], FHighCI[Stratum, i], 0, ST.Options);
           T.SetRowAlignment(Sz, taRightJustify);
           Sz +=1;
@@ -747,7 +746,6 @@ end;
 procedure TSurvival.DoOutputSummary(ST:TCustomVariableCommand);
 var
   T: TOutputTable;
-  StatFmt: String;
   i:  Integer;
   line1: array of UTF8String = ('',sTotal,sTotal,sMin,sMax,sTotal,sMedian,sSurHazard,'');
   line2: array of UTF8String = ('',sSurAtRisk,sSurFailures,sTime,sTime,sTime,sSurCommand,sRatio,'');
@@ -769,16 +767,15 @@ var
       T.Cell[7, r].Text := sReferenceAbbr
     else
       begin
-        T.Cell[7, r].Text := Format(StatFmt, [FHazRatio[s]]);
-        T.Cell[8, r].Text := '(' + Format(StatFmt, [FHRCILo[s]]) + ',' + Format(StatFmt, [FHRCIHi[s]]) + ')';
+        T.Cell[7, r].Text := Format(FStatFormat, [FHazRatio[s]]);
+        T.Cell[8, r].Text := '(' + Format(FStatFormat, [FHRCILo[s]]) + ',' + Format(FStatFormat, [FHRCIHi[s]]) + ')';
       end;
   end;
 
 begin
-  StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
   line2[high(line2)] :=  '(' + IntToStr(FConf) + '% ' + sConfIntervalAbbr + ')';
   T                 := FOutputCreator.AddTable;
-  T.Header.Text     := sSurHeader + ' - ' + sSurHeader2;
+  T.Header.Text     := sSurTabTitle + ' - ' + sSurTabType2;
   T.ColCount        := 9;
   T.RowCount        := FStrata + 2;
   // table headings
@@ -794,7 +791,7 @@ begin
   outputStratumResults(0, FStrata + 1);
 
   if ((FStrata > 0) and (ST.HasOption('t'))) then
-    T.Footer.Text := sSurLogRankChi + ' =' + Format(StatFmt, [FLRChi]) + ' ' + FormatP(FLRP, true);
+    T.Footer.Text := sSurLogRankChi + ' =' + Format(FStatFormat, [FLRChi]) + ' ' + FormatP(FLRP, true);
   T.SetRowBorders(0, [cbTop, cbBottom]);
 end;
 
@@ -835,7 +832,7 @@ var
   aTitle, aFoot: UTF8String;
 begin
 // create graph and set titles, etc
-  aTitle := sSurGraphHead + ' ' + FOutcomeVarLabel;
+  aTitle := format(sSurGraphTitle, [FOutcomeVarLabel, FTimeVarLabel]);
   if (FStrata > 0) then
     aTitle += ' ' + sBy + ' ' + FStratVarName;
   aFoot := sSurFailure + ': ' + FOutcomeVarLabel + ' = ' + FFailOutcomeText;
@@ -1004,11 +1001,11 @@ var
   d: UTF8String;
 begin
   d := FExecutor.SetOptions.GetValue(ANA_SO_CLIPBOARD_DELIMITER).Value;
-  FCBplot += sSurPlotHead + FOutcomeVarLabel + ' ' + sAt + ' ' + sBy + ' ' + FTimeVarLabel + lineending;
+  FCBplot += format(sSurGraphTitle, [FOutcomeVarLabel, FTimeVarLabel]) + lineending;
   if (Stratum = 0) then
     FCBPlot += sAllSubjects + lineending
   else
-    FCBPlot += FStratVarName + ' = ' + FStratLabels[Stratum - 1] + lineending;
+    FCBPlot += sStratum + Stratum.ToString + ': ' + FStratVarName + ' = ' + FStratLabels[Stratum - 1] + lineending;
   FCBPlot +=  sTime + d + sSurCommand + d + sConfIntervalAbbr + sLowerLimitAbbr + d + sConfIntervalAbbr + sUpperLimitAbbr + lineending;
   for i := 0 to high(FPlotT) do
     FCBPlot += trim(Format('%6.0f', [FPlotT[i]]))  + d +
@@ -1050,7 +1047,8 @@ begin
 
   VarNames             := Command.VariableList.GetIdentsAsList;
   StratVariable        := TStringList.Create;
-  FDecimals            := DecimalFromOption(Command.Options, 3);
+  FDecimals            := DecimalFromOption(Command.Options, 2);
+  FStatFormat           := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FintFlag             := false;
