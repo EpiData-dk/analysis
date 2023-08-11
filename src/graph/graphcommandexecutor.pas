@@ -69,18 +69,20 @@ begin
       begin
         FOutputCreator.DoError('File exists.' + LineEnding + 'Add !REPLACE or erase file:' + LineEnding + SaveAction.Filename);
         ST.ExecResult := csrFailed;
-      end;
-
-    if (ST.HasOption(['sizex', 'sx'], Opt)) then
-      SaveAction.GraphSize.Width := Opt.Expr.AsInteger;
-
-    if (ST.HasOption(['sizey', 'sy'], Opt)) then
-      SaveAction.GraphSize.Height := Opt.Expr.AsInteger;
-
-    if SaveAction.Execute then
-      FOutputCreator.DoInfoAll('Graph saved as: ' + SaveAction.Filename)
+      end
     else
-      FOutputCreator.DoError('Graph not saved!');
+      begin
+        if (ST.HasOption(['sizex', 'sx'], Opt)) then
+          SaveAction.GraphSize.Width := Opt.Expr.AsInteger;
+
+        if (ST.HasOption(['sizey', 'sy'], Opt)) then
+          SaveAction.GraphSize.Height := Opt.Expr.AsInteger;
+
+        if SaveAction.Execute then
+          FOutputCreator.DoInfoAll('Graph saved as: ' + SaveAction.Filename)
+        else
+          FOutputCreator.DoError('Graph not saved!');
+      end;
   except
     on E: EIncorrectGraphExtension do
       FOutputCreator.DoError('Graph not saved! ' + E.Message);
@@ -88,9 +90,6 @@ begin
       FOutputCreator.DoError('Graph not saved! ' + E.Message);
   end;
 
-  // remove charts before freeing
-  for Pair in ChartPairs do
-    SaveAction.RemoveComponent(Pair.Chart);
   SaveAction.Free;
 end;
 

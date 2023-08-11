@@ -53,7 +53,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     procedure AddChart(AValue: TChart);
-    procedure FreeCharts();
+    destructor Destroy; override;
   end;
 
   TSaveGraphAction = class(TCustomSaveGraphAction)
@@ -72,10 +72,6 @@ uses
 
 procedure TCustomSaveGraphAction.SaveGraphExecute(Sender: TObject);
 begin
-  {$IFDEF DARWIN}
-  // this seems to be necessary to save to SVG, but causes font exceptions
-  InitFonts('/System/Library/Fonts');
-  {$ENDIF}
   case GraphExportType of
     etSVG: SaveToSVG(FileName);
     etPNG: SaveToRaster(TPortableNetworkGraphic, FileName);
@@ -150,6 +146,10 @@ procedure TCustomSaveGraphAction.SaveToSVG(Filename: UTF8String);
 var
   i: Integer;
 begin
+  {$IFDEF DARWIN}
+  // this seems to be necessary to save to SVG, but causes font exceptions
+  InitFonts('/System/Library/Fonts');
+  {$ENDIF}
   for i := 0 to FCount do
     FCharts[i].SaveToSVGFile(GetFileName(Filename, i));
 end;
@@ -164,13 +164,17 @@ begin
   result := copy(AValue, 0, length(AValue) - length(ext)) + '-' + AIndex.ToString + ext;
 end;
 
-procedure TCustomSaveGraphAction.FreeCharts();
+destructor TCustomSaveGraphAction.Destroy;
 var
   i: integer;
 begin
+  // remove charts before freeing
   for i := 0 to FCount do
+  begin
+//    RemoveComponent(FCharts[i]);    // this works, but get error on exit
     FCharts[i] := nil;
-  FCharts := nil;
+  end;
+//  inherited Destroy;   // get error here no matter what happens above
 end;
 
 constructor TCustomSaveGraphAction.Create(AOwner: TComponent);
