@@ -44,16 +44,22 @@ var
   SaveAction: TSaveGraphAction;
   Opt: TOption;
   Chart: TChart;
+  ChartPairs: TChartPairList;
+  Pair: TChartPair;
 begin
   SaveAction := TSaveGraphAction.Create(nil);
 
   try
-    Chart := CommandResult.GetChartPairs().First.Chart;
-    SaveAction.Chart := Chart;
+    ChartPairs := CommandResult.GetChartPairs();
+    for Pair in Chartpairs do
+      begin
+        SaveAction.AddChart(Pair.Chart);
+        SaveAction.InsertComponent(Pair.Chart);
+      end;
 
     // This forces the SaveAction to free the chart, chartsource and objects
     // in the chartsource (see Scatter)
-    SaveAction.InsertComponent(Chart);
+//    SaveAction.InsertComponent(Chart);
 
     ST.HasOption(['export', 'S', 'E'], Opt);
     SaveAction.Filename := Opt.Expr.AsString;
@@ -82,6 +88,9 @@ begin
       FOutputCreator.DoError('Graph not saved! ' + E.Message);
   end;
 
+  // remove charts before freeing
+  for Pair in ChartPairs do
+    SaveAction.RemoveComponent(Pair.Chart);
   SaveAction.Free;
 end;
 

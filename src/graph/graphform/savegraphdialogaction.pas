@@ -19,7 +19,6 @@ type
     procedure SaveGraphExecute(Sender: TObject); override;
   public
     constructor Create(AOwner: TComponent); override;
-    property Chart;
   end;
 
 implementation
@@ -31,7 +30,7 @@ uses
 
 procedure TSaveGraphDialogAction.UpdateReadyState();
 begin
-  Enabled := Assigned(Chart);
+  Enabled := true; //Assigned(Chart); // maybe Count > 0?
 end;
 
 procedure TSaveGraphDialogAction.SaveGraphExecute(Sender: TObject);

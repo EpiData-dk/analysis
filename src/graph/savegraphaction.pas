@@ -5,7 +5,7 @@ unit savegraphaction;
 interface
 
 uses
-  Classes, SysUtils, ActnList, TAGraph, Graphics, Types;
+  Classes, SysUtils, ActnList, TAGraph, Graphics, Types, ChartPair;
 
 type
 
@@ -32,30 +32,32 @@ type
 
   TCustomSaveGraphAction = class(TCustomAction)
   private
-    FChart: TChart;
+    FCharts: array of TChart;
+    FCount: Integer;
     FFilename: UTF8String;
     FExtensionOK: Boolean;
     FGraphExportType: TGraphExportType;
     FGraphSize: TSize;
     procedure SaveToRaster(ImageClass: TRasterImageClass; Filename: UTF8String);
-    procedure SetChart(AValue: TChart);
+    procedure SaveToSVG(Filename: UTF8String);
     procedure SetFilename(AValue: UTF8String);
     procedure UpdateExportType();
+    function GetFileName(AValue: UTF8String; AIndex: Integer): UTF8String;
   protected
     procedure UpdateReadyState(); virtual;
     procedure SaveGraphExecute(Sender: TObject); virtual;
-    property Chart: TChart read FChart write SetChart;
     property GraphExportType: TGraphExportType read FGraphExportType write FGraphExportType;
     property GraphSize: TSize read FGraphSize write FGraphSize;
     property Filename: UTF8String read FFilename write SetFilename;
     property ExtensionOK: Boolean read FExtensionOK write FExtensionOK;
   public
     constructor Create(AOwner: TComponent); override;
+    procedure AddChart(AValue: TChart);
+    procedure FreeCharts();
   end;
 
   TSaveGraphAction = class(TCustomSaveGraphAction)
   public
-    property Chart;
     property GraphExportType;
     property Filename;
     property GraphSize;
@@ -71,19 +73,21 @@ uses
 procedure TCustomSaveGraphAction.SaveGraphExecute(Sender: TObject);
 begin
   {$IFDEF DARWIN}
+  // this seems to be necessary to save to SVG, but causes font exceptions
   InitFonts('/System/Library/Fonts');
   {$ENDIF}
   case GraphExportType of
-    etSVG: FChart.SaveToSVGFile(FileName);
+    etSVG: SaveToSVG(FileName);
     etPNG: SaveToRaster(TPortableNetworkGraphic, FileName);
     etJPG: SaveToRaster(TJPEGImage, FileName);
   end;
 end;
 
-procedure TCustomSaveGraphAction.SetChart(AValue: TChart);
+procedure TCustomSaveGraphAction.AddChart(AValue: TChart);
 begin
-  if FChart = AValue then Exit;
-  FChart := AValue;
+  inc(FCount);
+  setLength(FCharts, FCount);
+  FCharts[FCount - 1] := AValue;
 
   UpdateReadyState();
 end;
@@ -121,20 +125,52 @@ end;
 procedure TCustomSaveGraphAction.UpdateReadyState();
 begin
   Enabled := (FFilename <> '') and
-             (Assigned(FChart));
+             (FCount > 0);
 end;
 
 procedure TCustomSaveGraphAction.SaveToRaster(ImageClass: TRasterImageClass;
   Filename: UTF8String);
 var
   Image: TRasterImage;
+  aChart: TChart;
+  i: Integer;
 begin
-  Image := ImageClass.Create;
-  Image.Width := FGraphSize.Width;
-  Image.Height := FGraphSize.Height;
-  FChart.PaintOnCanvas(Image.Canvas, Rect(0, 0, Image.Width, Image.Height));
-  Image.SaveToFile(Filename);
-  Image.Free;
+  for i := 0 to FCount - 1 do
+  begin
+    Image := ImageClass.Create;
+    Image.Width := FGraphSize.Width;
+    Image.Height := FGraphSize.Height;
+    FCharts[i].PaintOnCanvas(Image.Canvas, Rect(0, 0, Image.Width, Image.Height));
+    Image.SaveToFile(GetFileName(Filename, i));
+    Image.Free;
+  end;
+end;
+
+procedure TCustomSaveGraphAction.SaveToSVG(Filename: UTF8String);
+var
+  i: Integer;
+begin
+  for i := 0 to FCount do
+    FCharts[i].SaveToSVGFile(GetFileName(Filename, i));
+end;
+
+function TCustomSaveGraphAction.GetFilename(AValue: UTF8String; AIndex: Integer): UTF8String;
+var
+  ext: UTF8String;
+begin
+  result := AValue;
+  if (AIndex = 0) then exit;
+  ext := ExtractFileExt(AValue);
+  result := copy(AValue, 0, length(AValue) - length(ext)) + '-' + AIndex.ToString + ext;
+end;
+
+procedure TCustomSaveGraphAction.FreeCharts();
+var
+  i: integer;
+begin
+  for i := 0 to FCount do
+    FCharts[i] := nil;
+  FCharts := nil;
 end;
 
 constructor TCustomSaveGraphAction.Create(AOwner: TComponent);
@@ -143,6 +179,7 @@ begin
   FGraphSize := TSize.Create(1024, 768);
   OnExecute := @SaveGraphExecute;
   Caption := 'Save as ...';
+  FCount := 0;
 end;
 
 end.

@@ -66,7 +66,7 @@ begin
     begin
       Inc(count);
       Chart := Pair.Chart;
-
+      FSaveGraphAction.AddChart(Chart);
       Sheet := FPageControl.AddTabSheet;
       Sheet.Caption := 'Chart: ' + IntToStr(FPageControl.PageCount);
       Chart.Parent := Sheet;
@@ -81,11 +81,6 @@ begin
   if (count > 1) then
     FPageControl.ShowTabs := (Pair.InstanceSize > 1);
 
-  // TODO: Saving multiple charts from FPageControl
-  //       SaveGraphAction must work on the PageControl, not the Charts!
-  //       It can loop through the tabs
-  //       or each Chart must have its own SaveGraphAction...
-  FSaveGraphAction.Chart := ChartPairs.First.Chart;
 end;
 
 function TGraphForm.GetForm: TCustomForm;
