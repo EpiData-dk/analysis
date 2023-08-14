@@ -131,7 +131,7 @@ var
   aChart: TChart;
   i: Integer;
 begin
-  for i := 0 to FCount - 1 do
+  for i := 0 to high(FCharts) do
   begin
     Image := ImageClass.Create;
     Image.Width := FGraphSize.Width;
@@ -147,11 +147,16 @@ var
   i: Integer;
 begin
   {$IFDEF DARWIN}
-  // this seems to be necessary to save to SVG, but causes font exceptions
+  // this is necessary to save to SVG, but causes font exceptions
+  // known problem with Mac font NISC18030.ttf
+  // No impact for users.
   InitFonts('/System/Library/Fonts');
   {$ENDIF}
-  for i := 0 to FCount do
+  for i := 0 to high(FCharts) do begin
+    FCharts[i].Width := FGraphSize.Width;
+    FCharts[i].Height:= FGraphSize.Height;
     FCharts[i].SaveToSVGFile(GetFileName(Filename, i));
+  end;
 end;
 
 function TCustomSaveGraphAction.GetFilename(AValue: UTF8String; AIndex: Integer): UTF8String;
@@ -169,12 +174,9 @@ var
   i: integer;
 begin
   // remove charts before freeing
-  for i := 0 to FCount do
-  begin
-//    RemoveComponent(FCharts[i]);    // this works, but get error on exit
-    FCharts[i] := nil;
-  end;
-//  inherited Destroy;   // get error here no matter what happens above
+  for i := 0 to high(FCharts) do
+    RemoveComponent(FCharts[i]);
+  inherited Destroy;
 end;
 
 constructor TCustomSaveGraphAction.Create(AOwner: TComponent);

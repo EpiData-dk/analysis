@@ -91,6 +91,8 @@ begin
   end;
 
   SaveAction.Free;
+//  for Pair in ChartPairs do
+//    Pair.Free;
 end;
 
 procedure TGraphCommandExecutor.ShowDialog(ST: TCustomGraphCommand;
