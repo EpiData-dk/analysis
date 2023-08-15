@@ -46,32 +46,41 @@ var
   Chart: TChart;
   ChartPairs: TChartPairList;
   Pair: TChartPair;
+  i,count: Integer;
+  aFileName: UTF8String;
+  checkName: UTF8String;
 begin
   SaveAction := TSaveGraphAction.Create(nil);
-
+  ST.HasOption(['export', 'S', 'E'], Opt);
+  aFileName := Opt.Expr.AsString;
+  count := -1;
   try
     ChartPairs := CommandResult.GetChartPairs();
     for Pair in Chartpairs do
       begin
+        inc(count);
         SaveAction.AddChart(Pair.Chart);
+        // This forces the SaveAction to free the chart, chartsource and objects
+        // in the chartsource (see Scatter)
         SaveAction.InsertComponent(Pair.Chart);
       end;
-
-    // This forces the SaveAction to free the chart, chartsource and objects
-    // in the chartsource (see Scatter)
-//    SaveAction.InsertComponent(Chart);
-
-    ST.HasOption(['export', 'S', 'E'], Opt);
-    SaveAction.Filename := Opt.Expr.AsString;
-    if (FileExistsUTF8(SaveAction.Filename)) and
-       (not ST.HasOption('replace'))
-    then
+    // check all filenames
+    for i := 0 to count do
       begin
-        FOutputCreator.DoError('File exists.' + LineEnding + 'Add !REPLACE or erase file:' + LineEnding + SaveAction.Filename);
-        ST.ExecResult := csrFailed;
-      end
+        checkName := GetSaveChartFileName(aFileName, i);
+        if (FileExistsUTF8(checkName)) and
+           (not ST.HasOption('replace'))
+        then
+          begin
+            FOutputCreator.DoError('File exists: ' + checkname);
+            ST.ExecResult := csrFailed;
+          end;
+      end;
+    if (ST.ExecResult = csrFailed) then
+      FOutputCreator.DoError('Add !REPLACE or erase file')
     else
       begin
+        SaveAction.Filename := aFileName;
         if (ST.HasOption(['sizex', 'sx'], Opt)) then
           SaveAction.GraphSize.Width := Opt.Expr.AsInteger;
 
@@ -91,8 +100,6 @@ begin
   end;
 
   SaveAction.Free;
-//  for Pair in ChartPairs do
-//    Pair.Free;
 end;
 
 procedure TGraphCommandExecutor.ShowDialog(ST: TCustomGraphCommand;

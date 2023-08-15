@@ -56,12 +56,17 @@ type
     destructor Destroy; override;
   end;
 
+  {TSaveGraphAction}
+
   TSaveGraphAction = class(TCustomSaveGraphAction)
   public
     property GraphExportType;
     property Filename;
     property GraphSize;
   end;
+
+  {helper function}
+  function GetSaveChartFilename(AValue: UTF8String; AIndex: Integer): UTF8String;
 
 implementation
 
@@ -137,7 +142,7 @@ begin
     Image.Width := FGraphSize.Width;
     Image.Height := FGraphSize.Height;
     FCharts[i].PaintOnCanvas(Image.Canvas, Rect(0, 0, Image.Width, Image.Height));
-    Image.SaveToFile(GetFileName(Filename, i));
+    Image.SaveToFile(GetSaveChartFilename(Filename, i));
     Image.Free;
   end;
 end;
@@ -155,7 +160,7 @@ begin
   for i := 0 to high(FCharts) do begin
     FCharts[i].Width := FGraphSize.Width;
     FCharts[i].Height:= FGraphSize.Height;
-    FCharts[i].SaveToSVGFile(GetFileName(Filename, i));
+    FCharts[i].SaveToSVGFile(GetSaveChartFilename(Filename, i));
   end;
 end;
 
@@ -171,11 +176,11 @@ end;
 
 destructor TCustomSaveGraphAction.Destroy;
 var
-  i: integer;
+  i,j: integer;
 begin
   // remove charts before freeing
   for i := 0 to high(FCharts) do
-    RemoveComponent(FCharts[i]);
+      RemoveComponent(FCharts[i]);
   inherited Destroy;
 end;
 
@@ -187,6 +192,18 @@ begin
   Caption := 'Save as ...';
   FCount := 0;
 end;
+
+// create a save file name from base name and file index
+function GetSaveChartFilename(AValue: UTF8String; AIndex: Integer): UTF8String;
+var
+  ext: UTF8String;
+begin
+  result := AValue;
+  if (AIndex = 0) then exit;
+  ext := ExtractFileExt(AValue);
+  result := copy(AValue, 0, length(AValue) - length(ext)) + '-' + AIndex.ToString + ext;
+end;
+
 
 end.
 
