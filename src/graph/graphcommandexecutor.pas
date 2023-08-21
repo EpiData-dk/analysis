@@ -49,25 +49,28 @@ var
   i,count: Integer;
   aFileName: UTF8String;
   checkName: UTF8String;
+  saveNames: UTF8String;
+  saveMultiple: UTF8String;
 begin
   SaveAction := TSaveGraphAction.Create(nil);
   ST.HasOption(['export', 'S', 'E'], Opt);
   aFileName := Opt.Expr.AsString;
-  count := -1;
+  saveNames := '';
+  saveMultiple := '';
   try
     ChartPairs := CommandResult.GetChartPairs();
+    count := ChartPairs.Count;
+    if (count > 1) then
+      saveMultiple := 's';
     for Pair in Chartpairs do
       begin
-        inc(count);
         SaveAction.AddChart(Pair.Chart);
         // This forces the SaveAction to free the chart, chartsource and objects
         // in the chartsource (see Scatter)
         SaveAction.InsertComponent(Pair.Chart);
-      end;
-    // check all filenames
-    for i := 0 to count do
-      begin
-        checkName := GetSaveChartFileName(aFileName, i);
+        // check the file name for this chart
+        checkName := GetSaveChartFileName(aFileName, i, Pair.Chart.Title.Text.Text);
+        saveNames += LineEnding + '    ' + checkName;
         if (FileExistsUTF8(checkName)) and
            (not ST.HasOption('replace'))
         then
@@ -76,6 +79,7 @@ begin
             ST.ExecResult := csrFailed;
           end;
       end;
+
     if (ST.ExecResult = csrFailed) then
       FOutputCreator.DoError('Add !REPLACE or erase file')
     else
@@ -88,7 +92,7 @@ begin
           SaveAction.GraphSize.Height := Opt.Expr.AsInteger;
 
         if SaveAction.Execute then
-          FOutputCreator.DoInfoAll('Graph saved as: ' + SaveAction.Filename)
+          FOutputCreator.DoInfoAll('Graph' + saveMultiple + ' saved as: ' + saveNames)
         else
           FOutputCreator.DoError('Graph not saved!');
       end;

@@ -24,6 +24,17 @@ const
     '.jpg'
   );
 
+  InvalidChars: TSysCharSet = [
+  {$IFDEF WINDOWS}
+  '<','>',':','"','/','\','|','?','*'
+  {$ENDIF}
+  {$IFDEF DARWIN}
+  ':','/'
+  {$ENDIF}
+  {$IFDEF LINUX}
+  '/'
+  {$ENDIF}
+  ];
 type
 
   EIncorrectGraphExtension = class(Exception);
@@ -66,7 +77,7 @@ type
   end;
 
   {helper function}
-  function GetSaveChartFilename(AValue: UTF8String; AIndex: Integer): UTF8String;
+  function GetSaveChartFilename(AValue: UTF8String; AIndex: Integer; AText: UTF8String): UTF8String;
 
 implementation
 
@@ -142,7 +153,7 @@ begin
     Image.Width := FGraphSize.Width;
     Image.Height := FGraphSize.Height;
     FCharts[i].PaintOnCanvas(Image.Canvas, Rect(0, 0, Image.Width, Image.Height));
-    Image.SaveToFile(GetSaveChartFilename(Filename, i));
+    Image.SaveToFile(GetSaveChartFilename(Filename, i, FCharts[i].Title.Text.Text));
     Image.Free;
   end;
 end;
@@ -160,7 +171,7 @@ begin
   for i := 0 to high(FCharts) do begin
     FCharts[i].Width := FGraphSize.Width;
     FCharts[i].Height:= FGraphSize.Height;
-    FCharts[i].SaveToSVGFile(GetSaveChartFilename(Filename, i));
+    FCharts[i].SaveToSVGFile(GetSaveChartFilename(Filename, i, FCharts[i].Title.Text.Text));
   end;
 end;
 
@@ -194,14 +205,31 @@ begin
 end;
 
 // create a save file name from base name and file index
-function GetSaveChartFilename(AValue: UTF8String; AIndex: Integer): UTF8String;
+function GetSaveChartFilename(AValue: UTF8String; AIndex: Integer; AText: UTF8String): UTF8String;
 var
-  ext: UTF8String;
+  ext,
+  qual: UTF8String;
+  validQual: UTF8String;
+  aChar: Char;
+  i: Integer;
 begin
   result := AValue;
-  if (AIndex = 0) then exit;
+  i := pos(LineEnding, AText);
+  if (i = 0) then exit;
+  qual := copy(AText, i + 1);
+  // remove illegal characters in file name
+  // based on OS (see InvalidChars def above)
+  validQual := '';
+  for aChar in qual do
+    if CharInSet(aChar, InvalidChars) then
+      validQual += '-'
+    else
+      validQual += aChar;
+  i := pos(LineEnding, validQual);
+  if (i > 0) then
+    qual := '-' + copy(validQual, 1, i - 1);
   ext := ExtractFileExt(AValue);
-  result := copy(AValue, 0, length(AValue) - length(ext)) + '-' + AIndex.ToString + ext;
+  result := copy(AValue, 0, length(AValue) - length(ext)) + qual + ext;
 end;
 
 
