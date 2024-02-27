@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  ANALYSIS_VERSION: "3.1"
+  ANALYSIS_VERSION: "1.0"
 
 jobs:
   compile:
@@ -22,10 +22,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Generate Maven settings.xml
-        uses: whelk-io/maven-settings-xml-action@v20
+        uses: whelk-io/maven-settings-xml-action@v22
         with:
           output_file: "/etc/maven/settings.xml"
           servers:
@@ -60,7 +60,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Convert markdown to html
         run:  grip --export help/commands.md
