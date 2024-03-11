@@ -67,8 +67,7 @@ implementation
 uses
   aggregate, aggregate_types, epimiscutils, epidatafileutils,
   options_utils, LazUTF8, ana_globals, epidatafilestypes, options_table,
-  tables_stat_rr, tables_stat_or, tables_stat_chi2, tables_stat_fexp,
-  LazUTF8Classes;
+  tables_stat_rr, tables_stat_or, tables_stat_chi2, tables_stat_fexp;
 // see note in tables_types.pas regarding order of statistics above
 
 type
@@ -531,7 +530,7 @@ var
   end;
 
 begin
-  CheckList := TStringListUTF8.Create;
+  CheckList := TStringList.Create;
   CheckList.Sorted := true;
 
   Result := CheckStrings(Varnames, 'Table command requires unique variable names: ');

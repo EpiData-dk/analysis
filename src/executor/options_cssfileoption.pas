@@ -23,19 +23,19 @@ type
 implementation
 
 uses
-  ast_types, LazFileUtils, LazUTF8Classes, outputgenerator_html;
+  ast_types, LazFileUtils, outputgenerator_html;
 
 { TCSSFileOption }
 
 procedure TCSSFileOption.SetValue(AValue: UTF8String);
 var
-  Strings: TStringListUTF8;
+  Strings: TStringList;
 begin
   inherited SetValue(AValue);
 
   if (AValue <> '') and (not FileExistsUTF8(AValue)) then
     begin
-      Strings := TStringListUTF8.Create;
+      Strings := TStringList.Create;
       Strings.Add(HTML_OUTPUT_CSS);
       Strings.SaveToFile(AValue);
       Strings.Free;

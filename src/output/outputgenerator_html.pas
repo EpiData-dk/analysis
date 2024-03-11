@@ -73,7 +73,7 @@ const
 implementation
 
 uses
-  strutils, LazFileUtils, LazUTF8Classes;
+  strutils, LazFileUtils;
 
 { TOutputGeneratorHTML }
 
@@ -218,7 +218,7 @@ end;
 procedure TOutputGeneratorHTML.GenerateReport;
 var
   i: Integer;
-  CSSStrings: TStringListUTF8;
+  CSSStrings: TStringList;
 begin
   WriteToStream(
     '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">' + LineEnding +
@@ -237,7 +237,7 @@ begin
     begin
       if (FEmbedCSSFile) then
         begin
-          CSSStrings := TStringListUTF8.Create;
+          CSSStrings := TStringList.Create;
           CSSStrings.LoadFromFile(FCSSFileName);
           WriteToStream(CSSStrings.Text);
         end

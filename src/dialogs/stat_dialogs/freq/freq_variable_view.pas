@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_custom_view, stat_dialog_contribution, ExtCtrls, freq_variable_model,
-  Controls, epidatafiles, VirtualTrees;
+  Controls, epidatafiles, laz.VirtualTrees;
 
 type
 
@@ -17,7 +17,7 @@ type
     FFirstView: boolean;
     FDataModel: TFreqVariableModel;
     FFields: TEpiFields;
-    FVarnamesList: TVirtualStringTree;
+    FVarnamesList: TLazVirtualStringTree;
     FOnModified: IStatDiaglogViewModified;
     procedure VarnamesHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
     procedure VarnameListChecked(Sender: TBaseVirtualTree; Node: PVirtualNode);
@@ -187,7 +187,7 @@ begin
   FFirstView := false;
   Caption := 'Variables';
 
-  FVarnamesList := TVirtualStringTree.Create(Self);
+  FVarnamesList := TLazVirtualStringTree.Create(Self);
   with FVarnamesList do
     begin
       Parent := Self;

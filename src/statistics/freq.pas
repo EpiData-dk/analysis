@@ -57,7 +57,7 @@ type
 implementation
 
 uses
-  epimiscutils, options_utils, statfunctions, aggregate, aggregate_types, LazUTF8Classes;
+  epimiscutils, options_utils, statfunctions, aggregate, aggregate_types;
 
 type
 
@@ -275,7 +275,7 @@ var
   Variables: TStrings;
   Variable: String;
   PrepDF: TEpiDataFile;
-  PrepareVariable: TStringListUTF8;
+  PrepareVariable: TStringList;
   HasMissing: Boolean;
 begin
   FExecutor.ClearResults('$freq');
@@ -285,7 +285,7 @@ begin
   FDecimals            := DecimalFromOption(ST.Options);
 
   Variables := ST.VariableList.GetIdentsAsList;
-  PrepareVariable := TStringListUTF8.Create;
+  PrepareVariable := TStringList.Create;
   HasMissing := ST.HasOption('m');
 
   for Variable in Variables do
