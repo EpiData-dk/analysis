@@ -105,7 +105,7 @@ type
 implementation
 
 uses
-  LazUTF8, LazUTF8Classes, epiconvertutils;
+  LazUTF8, epiconvertutils;
 
 function TypesAndFlags(AResultTypes: TASTResultTypes;
   AExecutorVariableTypes: TExecutorVariableTypes; AFlags: TExecutorVariableFlags
@@ -373,9 +373,9 @@ constructor TSetOption.Create(const AValue: UTF8String; AAstType: TASTResultType
 begin
   FChangeHandlers := TMethodList.Create;
 
-  FLegalValues := TStringListUTF8.Create;
-  TStringListUTF8(FLegalValues).CaseSensitive := false;
-  TStringListUTF8(FLegalValues).Sorted := true;
+  FLegalValues := TStringList.Create;
+  TStringList(FLegalValues).CaseSensitive := false;
+  TStringList(FLegalValues).Sorted := true;
 
   if AAstType = rtBoolean then
   begin

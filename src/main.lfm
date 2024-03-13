@@ -99,7 +99,7 @@ object MainForm: TMainForm
       ResizeAnchor = akBottom
       Visible = False
     end
-    object VarnamesList: TVirtualStringTree
+    object VarnamesList: TLazVirtualStringTree
       Cursor = 63
       Left = 1
       Height = 409

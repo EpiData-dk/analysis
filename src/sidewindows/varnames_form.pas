@@ -5,7 +5,7 @@ unit varnames_form;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, VirtualTrees, epidatafiles,
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, laz.VirtualTrees, epidatafiles,
   auto_position_form, epicustombase;
 
 type
@@ -17,7 +17,7 @@ type
 
   TVariablesForm = class(TCustomAutoPositionForm)
   private
-    FVarnamesList: TVirtualStringTree;
+    FVarnamesList: TLazVirtualStringTree;
     FOnGetFieldList: TVariablesFormGetFieldList;
     procedure DataFileChangeEvent(const Sender: TEpiCustomBase;
       const Initiator: TEpiCustomBase; EventGroup: TEpiEventGroup;
@@ -225,7 +225,7 @@ begin
 
   Caption := 'Variables';
 
-  FVarnamesList := TVirtualStringTree.Create(Self);
+  FVarnamesList := TLazVirtualStringTree.Create(Self);
   with FVarnamesList do
     begin
       Parent := Self;

@@ -27,7 +27,7 @@ type
 implementation
 
 uses
-  epidatafiles, epiconvertutils, scandate_from_fpc, ana_globals, LazUTF8Classes, LazUTF8;
+  epidatafiles, epiconvertutils, scandate_from_fpc, ana_globals, LazUTF8;
 
 { TEpiScriptFunction_CreateDate }
 
@@ -77,10 +77,10 @@ var
 
   function GetShortMonthNames(): TMonthNameArray;
   var
-    AList: TStringListUTF8;
+    AList: TStringList;
     i: Integer;
   begin
-    AList := TStringListUTF8.Create;
+    AList := TStringList.Create;
     AList.CommaText := FExecutor.GetSetOptionValue(ANA_SO_SHORT_MONTH_NAMES);
 
     for i := 0 to AList.Count -1 do

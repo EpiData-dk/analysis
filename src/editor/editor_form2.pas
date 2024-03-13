@@ -117,8 +117,8 @@ var
 implementation
 
 uses
-  Controls, SynEdit, ActnList, LCLType, epimiscutils, LazFileUtils, LazUTF8Classes,
-  ana_procs, VirtualTrees, ana_globals, parser, main, epistringutils, FileUtil;
+  Controls, SynEdit, ActnList, LCLType, epimiscutils, LazFileUtils,
+  ana_procs, laz.VirtualTrees, ana_globals, parser, main, epistringutils, FileUtil;
 
 { TEditorForm2 }
 
@@ -342,7 +342,7 @@ begin
   end;
 
   // Find all .pdf files in the directory set by TutorialsDirUTF8
-  FileList := TStringListUTF8.Create;
+  FileList := TStringList.Create;
   P := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER];
   FindAllFiles(FileList, P, '*.pdf', false);
   FindAllFiles(FileList, P, '*.html', false);
@@ -560,9 +560,9 @@ end;
 procedure TEditorForm2.DropFiles(Sender: TObject;
   const FileNames: array of String);
 var
-  Files: TStringListUTF8;
+  Files: TStringList;
 begin
-  Files := TStringListUTF8.Create;
+  Files := TStringList.Create;
   Files.AddStrings(FileNames);
 
   DoOpenFiles(Files);
@@ -621,7 +621,7 @@ end;
 
 function TEditorForm2.DoOpenDialog: TStrings;
 begin
-  Result := TStringListUTF8.Create;
+  Result := TStringList.Create;
 
   FOpenDialog.InitialDir := GetCurrentDirUTF8;
   if (FOpenDialog.Execute) then
@@ -630,12 +630,12 @@ end;
 
 procedure TEditorForm2.DoOpenFile(FileName: UTF8String);
 var
-  FileNames: TStringListUTF8;
+  FileNames: TStringList;
 begin
   if (FileName = '') then exit;
   if (not FileExistsUTF8(FileName)) then exit;
 
-  FileNames := TStringListUTF8.Create;
+  FileNames := TStringList.Create;
   FileNames.Add(FileName);
 
   DoOpenFiles(FileNames);

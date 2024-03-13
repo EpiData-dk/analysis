@@ -25,7 +25,7 @@ implementation
 
 uses
   datamodule, Dialogs, ana_globals, LazUTF8, outputgenerator_base,
-  outputgenerator_html, outputgenerator_txt, LazFileUtils, LazUTF8Classes;
+  outputgenerator_html, outputgenerator_txt, LazFileUtils;
 
 { TSaveOutput }
 
@@ -48,7 +48,7 @@ var
   Opt: TOption;
   OutputType: UTF8String;
   OutputGenerator: TOutputGeneratorBase;
-  FS: TFileStreamUTF8;
+  FS: TFileStream;
 begin
   FN := '';
 
@@ -121,7 +121,7 @@ begin
 
   FS := nil;
   try
-    FS := TFileStreamUTF8.Create(FN, fmCreate);
+    FS := TFileStream.Create(FN, fmCreate);
 
     if OutputType = 'html' then
       begin

@@ -324,7 +324,7 @@ implementation
 
 uses
   LazUTF8, LazFileUtils, datamodule, epidatafilerelations_helper,
-  Controls, runtest, Forms, parser, LazUTF8Classes, math,
+  Controls, runtest, Forms, parser, math,
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
   RegExpr, ana_globals, browse4, strutils, ana_documentfile, FileUtil,
@@ -769,7 +769,7 @@ begin
   if (not Assigned(SelectField)) or (SelectField.Count = 0) then
     begin
       if (not Assigned(SelectField)) then
-        SelectField := TStringListUTF8.Create;
+        SelectField := TStringList.Create;
 
       for F in SortedFields do
         SelectField.Add(F.Name);
@@ -1243,7 +1243,7 @@ function TExecutor.DoCrudValuelabelSanityCheck(ST: TCustomCrudCommand;
 var
   VLPairs: TValueLabelPairs;
   i, Idx: Integer;
-  Values: TStringListUTF8;
+  Values: TStringList;
   S: EpiString;
   Opt: TOption;
   VL: TEpiCustomValueLabel;
@@ -1256,7 +1256,7 @@ begin
 
   // Build a list of combined existing and new values - use it to check
   // if !d deletes all instances in the list.
-  Values := TStringListUTF8.Create;
+  Values := TStringList.Create;
   Values.Sorted := true;
   Values.Duplicates := dupIgnore;
   for VL in VLs do
@@ -3931,10 +3931,10 @@ end;
 procedure TExecutor.ExecRecode(ST: TRecodeCommand);
 var
   Recoder: TRecode;
-  FieldList: TStringListUTF8;
+  FieldList: TStringList;
   DF: TEpiDataFile;
 begin
-  FieldList := TStringListUTF8.Create;
+  FieldList := TStringList.Create;
   FieldList.Add(ST.FromVariable.Ident);
 
   DF := PrepareDatafile(FieldList, nil, [pdoAddOrgObsNo]);
