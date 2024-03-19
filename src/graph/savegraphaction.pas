@@ -45,7 +45,8 @@ type
   private
     FCharts: array of TChart;
     FCount: Integer;
-    FFilename: UTF8String;
+    FFilenames: array of UTF8String;
+    FFilename: UTF8String; // *** remove
     FExtensionOK: Boolean;
     FGraphExportType: TGraphExportType;
     FGraphSize: TSize;
@@ -63,7 +64,7 @@ type
     property ExtensionOK: Boolean read FExtensionOK write FExtensionOK;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure AddChart(AValue: TChart);
+    procedure AddChart(AValue: TChart; AFile: UTF8String);
     destructor Destroy; override;
   end;
 
@@ -77,7 +78,7 @@ type
   end;
 
   {helper function}
-  function GetSaveChartFilename(AValue: UTF8String; AIndex: Integer; AText: UTF8String): UTF8String;
+  function GetSaveChartFilename(AValue: UTF8String; AText: UTF8String): UTF8String;
 
 implementation
 
@@ -95,11 +96,13 @@ begin
   end;
 end;
 
-procedure TCustomSaveGraphAction.AddChart(AValue: TChart);
+procedure TCustomSaveGraphAction.AddChart(AValue: TChart; AFile: UTF8String);
 begin
   inc(FCount);
   setLength(FCharts, FCount);
   FCharts[FCount - 1] := AValue;
+  setLength(FFilenames, FCount);
+  FFilenames[FCount - 1] := AFile;
 
   UpdateReadyState();
 end;
@@ -145,22 +148,21 @@ procedure TCustomSaveGraphAction.SaveToRaster(ImageClass: TRasterImageClass;
 var
   Image: TRasterImage;
   aChart: TChart;
-  i: Integer;
 begin
-  for i := 0 to high(FCharts) do
+  for aChart in FCharts do
   begin
     Image := ImageClass.Create;
     Image.Width := FGraphSize.Width;
     Image.Height := FGraphSize.Height;
-    FCharts[i].PaintOnCanvas(Image.Canvas, Rect(0, 0, Image.Width, Image.Height));
-    Image.SaveToFile(GetSaveChartFilename(Filename, i, FCharts[i].Title.Text.Text));
+    aChart.PaintOnCanvas(Image.Canvas, Rect(0, 0, Image.Width, Image.Height));
+    Image.SaveToFile(GetSaveChartFilename(Filename, aChart.Title.Text.Text));
     Image.Free;
   end;
 end;
 
 procedure TCustomSaveGraphAction.SaveToSVG(Filename: UTF8String);
 var
-  i: Integer;
+  aChart: TChart;
 begin
   {$IFDEF DARWIN}
   // this is necessary to save to SVG, but causes font exceptions
@@ -168,11 +170,12 @@ begin
   // No impact for users.
   InitFonts('/System/Library/Fonts');
   {$ENDIF}
-  for i := 0 to high(FCharts) do begin
-    FCharts[i].Width := FGraphSize.Width;
-    FCharts[i].Height:= FGraphSize.Height;
-    FCharts[i].SaveToSVGFile(GetSaveChartFilename(Filename, i, FCharts[i].Title.Text.Text));
-  end;
+  for aChart in FCharts do
+    begin
+      aChart.Width := FGraphSize.Width;
+      aChart.Height:= FGraphSize.Height;
+      aChart.SaveToSVGFile(GetSaveChartFilename(Filename, aChart.Title.Text.Text));
+    end;
 end;
 
 function TCustomSaveGraphAction.GetFilename(AValue: UTF8String; AIndex: Integer): UTF8String;
@@ -187,11 +190,11 @@ end;
 
 destructor TCustomSaveGraphAction.Destroy;
 var
-  i,j: integer;
+  i: integer;
 begin
   // remove charts before freeing
   for i := 0 to high(FCharts) do
-      RemoveComponent(FCharts[i]);
+    RemoveComponent(FCharts[i]);
   inherited Destroy;
 end;
 
@@ -204,32 +207,28 @@ begin
   FCount := 0;
 end;
 
-// create a save file name from base name and file index
-function GetSaveChartFilename(AValue: UTF8String; AIndex: Integer; AText: UTF8String): UTF8String;
+// create a save file name from base name and optional text, which should be stratum value (not label)
+function GetSaveChartFilename(AValue: UTF8String; AText: UTF8String): UTF8String;
 var
   ext,
   qual: UTF8String;
-  validQual: UTF8String;
+  validText: UTF8String;
   aChar: Char;
   i: Integer;
 begin
   result := AValue;
-  i := pos(LineEnding, AText);
-  if (i = 0) then exit;
-  qual := copy(AText, i + 1);
-  // remove illegal characters in file name
+  if (AText = '') then
+    exit;
+  // remove illegal characters in AText
   // based on OS (see InvalidChars def above)
-  validQual := '';
-  for aChar in qual do
+  validText := '';
+  for aChar in AText do
     if CharInSet(aChar, InvalidChars) then
-      validQual += '-'
+      validText += '-'
     else
-      validQual += aChar;
-  i := pos(LineEnding, validQual);
-  if (i > 0) then
-    qual := '-' + copy(validQual, 1, i - 1);
+      validText += aChar;
   ext := ExtractFileExt(AValue);
-  result := copy(AValue, 0, length(AValue) - length(ext)) + qual + ext;
+  result := copy(AValue, 0, length(AValue) - length(ext)) + validText + ext;
 end;
 
 

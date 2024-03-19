@@ -35,6 +35,7 @@ end;
 
 procedure TSaveGraphDialogAction.SaveGraphExecute(Sender: TObject);
 begin
+  // TODO: consider bypassing save file dialog and use our own form
   if (not FSaveDialog.Execute) then
     Exit;
   Filename := FSaveDialog.FileName;
@@ -42,7 +43,7 @@ begin
   begin
     ShowMessage('"' + Filename + '"' + LineEnding +
       'does not have a valid file extension.' + LineEnding +
-      '(jpg, jpeg, png, svg)' + LineEnding + LineEnding +
+      '(jpg, jpeg, png, svg)' + LineEnding +
       'Nothing saved.');
     exit;
   end;
@@ -56,7 +57,7 @@ begin
   FSaveDialog := TSaveDialog.Create(Self);
   FSaveDialog.Filter := '';
   FSaveDialog.InitialDir := GetCurrentDirUTF8;
-  FSaveDialog.Options := [ofOverwritePrompt, ofPathMustExist, ofEnableSizing];
+  FSaveDialog.Options := [ofPathMustExist, ofEnableSizing];  // omit ofOverwritePrompt
   FSaveDialog.Title := 'File name MUST have a valid type: .jpg, .png or .svg';
 end;
 

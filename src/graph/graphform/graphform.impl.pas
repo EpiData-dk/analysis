@@ -27,7 +27,7 @@ type
 implementation
 
 uses
-  Controls, TAGraph, charttitles, chartpair;
+  Controls, TAGraph, charttitles, chartpair, savegraphaction;
 
 { TGraphForm }
 
@@ -57,6 +57,7 @@ var
   Sheet: TTabSheet;
 //  Titles: IChartTitles;
   Chart: TChart;
+  saveName: UTF8String;
   i, count: Integer;
   s: UTF8String;
 begin
@@ -66,7 +67,10 @@ begin
     begin
       Inc(count);
       Chart := Pair.Chart;
+      saveName := GetSaveChartFilename('EpiGraph.jpg', Pair.Configuration.GetTitleConfiguration().GetSaveName());
       FSaveGraphAction.AddChart(Chart);
+      FSaveGraphAction.AddSaveName(saveName);
+//      FSaveGraphAction.AddChart(Chart);
       Sheet := FPageControl.AddTabSheet;
       Sheet.Caption := 'Chart: ' + IntToStr(FPageControl.PageCount);
       Chart.Parent := Sheet;

@@ -8,7 +8,7 @@ ___
 
 | Manage data | Analyze data | Write programs
 :---|:---|:---
-[read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [describe](#describe) variables<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis<br/>[scatter](#scatter) plot <br/>[line](#line) plot <br/>[bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve) | [select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#type)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup) |
+[read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [describe](#describe) variables<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis<br/>[scatter](#scatter) plot <br/>[line](#line) plot <br/>[bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve)<br/>[pareto](#pareto) | [select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#type)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup) |
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
 
@@ -1666,7 +1666,8 @@ A histogram is a bar chart where every integer value within range is represented
 
  stack bars for stratified data.
 - graph options
- `histogram` is a graph command and any graph option may be specified
+
+  `histogram` is a graph command and any graph option may be specified
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -1688,7 +1689,27 @@ An epicurve is a stacked histogram, where individual boxes are shown for each su
 
  where i is an integer > 1, will group bars; the default is 1
 - graph options
- `epicurve` is a graph command and any graph option may be specified
+
+  `epicurve` is a graph command and any graph option may be specified
+
+<a name="pareto" id="pareto"></a>
+##pareto
+```
+pareto Variable [!by:=StratifyVariable] [optons] 
+```
+Draw a pareto chart for a variable.
+
+### parameters
+- Variable may be of any type
+
+### options
+- `!by:=StratifyVariable`
+
+produce one chart for each set of data defined by the stratifying variable
+
+- graph options
+
+  `pareto` is a graph command and any graph option may be specified
 
 # Consistency and Validity Check of data
 
