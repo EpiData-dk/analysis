@@ -66,7 +66,7 @@ type
 implementation
 
 uses
-  LazUTF8Classes, ast_builder, Symbol;
+  ast_builder, Symbol;
 
 {$I EpiDataAnalysisGrammar.inc}
 {$I EpiDataAnalysisOptionListGrammar.inc}
@@ -92,9 +92,9 @@ end;
 function TParser.ParseFile(const Fn: UTF8String; out TheProgram: TStatementList
   ): boolean;
 var
-  SL: TStringListUTF8;
+  SL: TStringList;
 begin
-  SL := TStringListUTF8.Create;
+  SL := TStringList.Create;
   SL.LoadFromFile(Fn);
   result := ParseText(SL.Text, TheProgram);
   SL.Free;

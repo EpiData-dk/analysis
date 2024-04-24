@@ -5,7 +5,7 @@ unit commandtree;
 interface
 
 uses
-  Classes, SysUtils, VirtualTrees, ast;
+  Classes, SysUtils, laz.VirtualTrees, ast;
 
 type
 
@@ -13,7 +13,7 @@ type
 
   { TCommandTree }
 
-  TCommandTree = class(TVirtualStringTree)
+  TCommandTree = class(TLazVirtualStringTree)
   private
     FOnCommandDoubleClick: TCommandClickEvent;
     FOnCommandPressEnterKey: TCommandClickEvent;

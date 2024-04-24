@@ -32,7 +32,7 @@ unit Variables;
 
 interface
 
-uses Classes, LazUTF8Classes;
+uses Classes;
 
 type
 
@@ -40,7 +40,7 @@ type
 
   TVariableList = class
   private
-    MemberList: TStringListUTF8;
+    MemberList: TStringList;
     function GetCount: Integer;
     function GetValue(Name: UTF8String): UTF8String;
     procedure SetValue(Name: UTF8String; Value: UTF8String);
@@ -61,7 +61,7 @@ implementation
 constructor TVariableList.Create;
 begin
   inherited Create;
-  MemberList := TStringListUTF8.Create;
+  MemberList := TStringList.Create;
 end;
 
 destructor TVariableList.Destroy;

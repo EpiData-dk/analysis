@@ -253,7 +253,7 @@ implementation
 
 uses
   parser, Symbol, LazUTF8, epimiscutils, LazFileUtils, main, ana_procs,
-  VirtualTrees, ana_globals, ast_types, epistringutils, LazUTF8Classes,
+  laz.VirtualTrees, ana_globals, ast_types, epistringutils,
   strutils, options_hashmap, math;
 
 const
@@ -900,7 +900,7 @@ begin
   end;
 
   // Find all .pdf files in the directory set by TutorialsDirUTF8
-  FileList := TStringListUTF8.Create;
+  FileList := TStringList.Create;
   P := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER];
   FindAllFiles(FileList, P, '*.pdf', false);
   FindAllFiles(FileList, P, '*.html', false);
@@ -1349,7 +1349,7 @@ begin
   inherited Create(TheOwner);
 
   TabControl1.Options := [nboDoChangeOnSetIndex];
-  FExecutingLines := TStringListUTF8.Create;
+  FExecutingLines := TStringList.Create;
 
   BuildRecentFilesActions;
   NewTab;

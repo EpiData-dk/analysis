@@ -65,7 +65,7 @@ type
 implementation
 
 uses
-  LazUTF8, LazUTF8Classes, LazFileUtils, epiversionutils, ana_globals;
+  LazUTF8, LazFileUtils, epiversionutils, ana_globals;
 
 { THistory }
 
@@ -300,10 +300,10 @@ begin
   FExecutor := AExecutor;
   FOutputCreator := AOutputCreator;
 
-  FStrings := TStringListUTF8.Create;
+  FStrings := TStringList.Create;
   FStrings.FPOAttachObserver(Self);
 
-  FCommandLogLines := TStringListUTF8.Create;
+  FCommandLogLines := TStringList.Create;
   FEnabled := true;
   FLoadingStartup := false;
 

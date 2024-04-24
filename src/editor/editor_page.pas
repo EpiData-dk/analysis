@@ -104,7 +104,7 @@ implementation
 
 uses
   Controls, LazFileUtils, editor_pgm_highlighter, Menus, ActnList,
-  VirtualTrees, ana_globals, parser, LazUTF8Classes, GOLDParser,
+  laz.VirtualTrees, ana_globals, parser, GOLDParser,
   Symbol, Forms, Math, options_hashmap, LazUTF8, ast_types, strutils,
   LCLProc;
 
@@ -618,7 +618,7 @@ var
 begin
   inherited Create(TheOwner);
 
-  FExecutingLines := TStringListUTF8.Create;
+  FExecutingLines := TStringList.Create;
 
   FEditor := TSynEdit.Create(self);
   FEditor.Parent := Self;

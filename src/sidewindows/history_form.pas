@@ -43,7 +43,7 @@ type
 implementation
 
 uses
-  Clipbrd, LCLType, VirtualTrees, ana_procs;
+  Clipbrd, LCLType, laz.VirtualTrees, ana_procs;
 
 { THistoryForm }
 
