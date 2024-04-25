@@ -12,7 +12,6 @@ type
   { TSaveGraphAction }
 
   TGraphExportType = (
-    etNone,
     etSVG,
     etPNG,
     etJPG
@@ -20,7 +19,6 @@ type
 
 const
   ExportExt: array[TGraphExportType] of string = (
-    '*',
     '.svg',
     '.png',
     '.jpg'
@@ -36,6 +34,7 @@ type
   private
     FChart: TChart;
     FFilename: UTF8String;
+    FExtensionOK: Boolean;
     FGraphExportType: TGraphExportType;
     FGraphSize: TSize;
     procedure SaveToRaster(ImageClass: TRasterImageClass; Filename: UTF8String);
@@ -49,6 +48,7 @@ type
     property GraphExportType: TGraphExportType read FGraphExportType write FGraphExportType;
     property GraphSize: TSize read FGraphSize write FGraphSize;
     property Filename: UTF8String read FFilename write SetFilename;
+    property ExtensionOK: Boolean read FExtensionOK write FExtensionOK;
   public
     constructor Create(AOwner: TComponent); override;
   end;
@@ -64,12 +64,15 @@ type
 implementation
 
 uses
-  TADrawerSVG, LazFileUtils;
+  TADrawerSVG, LazFileUtils {$IFDEF DARWIN}, TAFonts{$ENDIF};
 
 { TSaveGraphAction }
 
 procedure TCustomSaveGraphAction.SaveGraphExecute(Sender: TObject);
 begin
+  {$IFDEF DARWIN}
+  InitFonts('/System/Library/Fonts');
+  {$ENDIF}
   case GraphExportType of
     etSVG: FChart.SaveToSVGFile(FileName);
     etPNG: SaveToRaster(TPortableNetworkGraphic, FileName);
@@ -96,17 +99,13 @@ end;
 
 procedure TCustomSaveGraphAction.UpdateExportType();
 var
-  Ext: UTF8String;
+  ext: UTF8String;
 begin
   if (FFilename = '') then
     Exit;
-
-  if (FGraphExportType <> etNone) then
-    Exit;
-
-
-  Ext := ExtractFileExt(FFilename);
-  case Ext of
+  ext := ExtractFileExt(FFilename);
+  FExtensionOK := true;
+  case ext of
     '.svg':
       FGraphExportType := etSVG;
     '.png':
@@ -114,8 +113,8 @@ begin
     '.jpg',
     '.jpeg':
       FGraphExportType := etJPG;
-  else
-    raise EIncorrectGraphExtension.Create('"' + ext + '" is not a supported filetype!');
+    else
+      FExtensionOK := false;
   end;
 end;
 
@@ -141,10 +140,7 @@ end;
 constructor TCustomSaveGraphAction.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-
-  FGraphExportType := etNone;
   FGraphSize := TSize.Create(1024, 768);
-
   OnExecute := @SaveGraphExecute;
   Caption := 'Save as ...';
 end;
