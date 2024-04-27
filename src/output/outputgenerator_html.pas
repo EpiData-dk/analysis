@@ -33,7 +33,7 @@ type
   end;
 
 const
-  HTML_OUTPUT_CSS =
+  HTML_OUTPUT_CSS: UTF8String =
         '<STYLE type="text/css">' + LineEnding +
         '<!--' + LineEnding +
         '/* EpiData Reporting Minimalistic style sheet - white background' + LineEnding +

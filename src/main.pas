@@ -1539,6 +1539,10 @@ end;
 procedure TMainForm.OutputFontChange(Sender: TObject);
 begin
   FOutputViewer.UpdateFontAndSize(Executor);
+  // put cursor back into command line;
+    CmdEditFocusActionExecute(nil);
+//    EnableAutoSizing;
+    RedrawOutput;
 end;
 
 procedure TMainForm.OutputViewerChanges(Sender: TObject);
@@ -1602,7 +1606,6 @@ begin
   FOutputViewer.UpdateFontAndSize(Executor);
   FOutputViewer.GetContextMenu.OnSaveOutputClick := @SaveOutputActionExecute;
 // put cursor back into command line;
-// for some reason, this doesn't happen after automatically this command
   CmdEditFocusActionExecute(nil);
   EnableAutoSizing;
   RedrawOutput;

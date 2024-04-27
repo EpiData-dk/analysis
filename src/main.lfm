@@ -14,7 +14,7 @@ object MainForm: TMainForm
   OnDropFiles = FormDropFiles
   OnShow = FormShow
   Position = poDefault
-  LCLVersion = '2.0.11.0'
+  LCLVersion = '3.2.0.0'
   object PageControl1: TPageControl
     Left = 245
     Height = 613
@@ -43,9 +43,9 @@ object MainForm: TMainForm
       Top = 13
       Width = 75
       Caption = 'test'
-      OnClick = Button2Click
       ParentFont = False
       TabOrder = 0
+      OnClick = Button2Click
     end
     object Button3: TButton
       Left = 112
@@ -53,9 +53,9 @@ object MainForm: TMainForm
       Top = 13
       Width = 75
       Caption = 'SaveHtml'
-      OnClick = Button3Click
       ParentFont = False
       TabOrder = 1
+      OnClick = Button3Click
     end
     object Label1: TLabel
       Left = 307
@@ -146,14 +146,14 @@ object MainForm: TMainForm
       Align = alBottom
       ItemHeight = 0
       MultiSelect = True
-      OnDblClick = HistoryListBoxDblClick
-      OnDrawItem = HistoryListBoxDrawItem
-      OnKeyDown = HistoryListBoxKeyDown
       ParentFont = False
       PopupMenu = HistoryPopupMenu
       Style = lbOwnerDrawFixed
       TabOrder = 2
       Visible = False
+      OnDblClick = HistoryListBoxDblClick
+      OnDrawItem = HistoryListBoxDrawItem
+      OnKeyDown = HistoryListBoxKeyDown
     end
   end
   object RightSideSplitter: TSplitter

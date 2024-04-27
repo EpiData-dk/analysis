@@ -40,7 +40,8 @@ end;
 
 
 begin
-  Application.Title := 'Analysis';
+  Application.Scaled:=True;
+  Application.Title:='Analysis';
   OnGetApplicationName := @EpiDataApplicationName;
   OnGetVendorName := @EpiDataVendorName;
 

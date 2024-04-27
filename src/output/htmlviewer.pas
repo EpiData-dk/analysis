@@ -56,7 +56,7 @@ function IsHTMLSupported: boolean;
 
 Implementation
 
-Uses Main, cef3ref, cef3scp, outputgenerator_html;
+Uses Main, cef3ref, cef3scp, outputgenerator_html, regexpr, ana_globals;
 
 var
   fHtmlSupported: boolean;
@@ -203,8 +203,27 @@ begin
 end;
 
 procedure TWebPanel.UpdateFontAndSize(AExecutor: TExecutor);
+var
+  regex: TRegExpr;
+  regexPattern: string = '(\.body\s*\{font-family\:\s*")(.{1,30})(")';
 begin
-  //
+  // Add output font name to standard CSS
+  regex := TRegExpr.Create;
+  try
+     regex.ModifierI := True;
+     regex.Expression := regexPattern;
+     if (regex.Exec(HTML_OUTPUT_CSS)) then
+       HTML_OUTPUT_CSS := ReplaceRegExpr(regexPattern, HTML_OUTPUT_CSS,
+                         '$1' + AExecutor.GetSetOptionValue(ANA_SO_OUTPUT_FONT_NAME) +
+                         '$3', true)
+     else
+       HTML_OUTPUT_CSS := StringReplace(HTML_OUTPUT_CSS, '.body {',
+                         '.body {font-family: "' +
+                          AExecutor.GetSetOptionValue(ANA_SO_OUTPUT_FONT_NAME) +
+                         '"; ', []);
+  finally
+     regex.Destroy;
+  end;
 end;
 
 var
