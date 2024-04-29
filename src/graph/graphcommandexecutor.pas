@@ -53,7 +53,7 @@ begin
 
     // This forces the SaveAction to free the chart, chartsource and objects
     // in the chartsource (see Scatter)
-    SaveAction.InsertComponent(Chart);
+//    SaveAction.InsertComponent(Chart);
 
     ST.HasOption(['export', 'S', 'E'], Opt);
     SaveAction.Filename := Opt.Expr.AsString;
@@ -81,7 +81,8 @@ begin
     on E: Exception do
       FOutputCreator.DoError('Graph not saved! ' + E.Message);
   end;
-
+  // freeing SaveAction leads to an error, when we try to free the Chart pair
+  // avoid this by not putting chart in as a component
   SaveAction.Free;
 end;
 
