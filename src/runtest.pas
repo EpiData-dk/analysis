@@ -53,7 +53,7 @@ type
 implementation
 
 uses
-  ast_types, datamodule, LazFileUtils, LazUTF8Classes, strutils,
+  ast_types, datamodule, LazFileUtils, strutils,
   epi_script_function_mathfunctions, LazUTF8,  math;
 
 type
@@ -289,14 +289,14 @@ end;
 procedure TRunTest.InternalRunTest(const RunDir: UTF8String);
 var
   lCurrentDir, Fn: String;
-  Files: TStringListUTF8;
+  Files: TStringList;
   FS: TListFileSearcher;
 begin
   lCurrentDir := GetCurrentDirUTF8;
   SetCurrentDirUTF8(RunDir);
 
   try
-    Files := TStringListUTF8.Create;
+    Files := TStringList.Create;
     Files.CaseSensitive := true;
     FS := TListFileSearcher.Create(Files);
 

@@ -89,6 +89,9 @@ uses
 
 procedure TCustomSaveGraphAction.SaveGraphExecute(Sender: TObject);
 begin
+  {$IFDEF DARWIN}
+  InitFonts('/System/Library/Fonts');
+  {$ENDIF}
   case GraphExportType of
     etSVG: SaveToSVG(FileName);
     etPNG: SaveToRaster(TPortableNetworkGraphic, FileName);

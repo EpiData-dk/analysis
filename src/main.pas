@@ -7,7 +7,7 @@ interface
 
 uses
   Classes, SysUtils, Types, fgl, FileUtil, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ActnList, Menus, ExtCtrls, ComCtrls, HtmlView, VirtualTrees,
+  StdCtrls, ActnList, Menus, ExtCtrls, ComCtrls, HtmlView, laz.VirtualTrees,
   SynEdit, Token, GOLDParser, executor, ast, outputcreator, epiv_datamodule,
   epidatafiles, outputgenerator_base, history, cmdedit, options_hashmap,
   epiv_projecttreeview_frame, epicustombase, analysis_statusbar, epidocument,
@@ -103,7 +103,7 @@ type
       mnuWindowSep1:                   TMenuItem;
       mnuWindowVarnames:               TMenuItem;
         ToggleVarnamesListAction:      TAction;
-        VarnamesList:                  TVirtualStringTree;
+        VarnamesList:                  TLazVirtualStringTree;
     {Help menu}
       mnuHelp:                         TMenuItem;
       mnuHelpAbout:                    TMenuItem;
@@ -368,7 +368,7 @@ uses
   LCLType, ast_builder, epiversionutils, parser, LazUTF8,
   outputgenerator_html, about, Clipbrd, epimiscutils, ast_types, epidatafilerelations,
   epiv_custom_statusbar, datamodule, editor_form, LCLIntf, Symbol,
-  ana_procs, ana_documentfile, LazFileUtils, LazUTF8Classes, epistringutils, ana_globals,
+  ana_procs, ana_documentfile, LazFileUtils, epistringutils, ana_globals,
   browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform,
   wizard_form, editor_form2, outputgenerator_txt, graphformfactory;
 
@@ -1449,7 +1449,7 @@ begin
   end;
 
   // Find all .pdf files in the directory set by TutorialsDirUTF8
-  FileList := TStringListUTF8.Create;
+  FileList := TStringList.Create;
   P := Executor.SetOptionValue[ANA_SO_TUTORIAL_FOLDER];
 
   FindAllFiles(FileList, P, '*.pdf', false);
@@ -1973,7 +1973,7 @@ begin
   if (FOutputCreator.Count <> FLastCreatorCount)
   then
     begin
-      ST := TMemoryStreamUTF8.Create;
+      ST := TMemoryStream.Create;
 
       FOutputGenerator := CreateOutputGenerator(ST);
       FOutputGenerator.GenerateReport;
@@ -2028,7 +2028,7 @@ end;
 
 procedure TMainForm.ASyncRunStartup(Data: PtrInt);
 var
-  Lst: TStringListUTF8;
+  Lst: TStringList;
   {$IFDEF DARWIN}
   PrefIsValid: Boolean;
   Pref: Boolean;
@@ -2038,7 +2038,7 @@ begin
   if FileExistsUTF8(FStartupFile) then
     begin
       FHistory.LoadingStartup := true;
-      Lst := TStringListUTF8.Create;
+      Lst := TStringList.Create;
       Lst.LoadFromFile(FStartupFile);
       FHistory.AddLines(Lst);
       DoParseContent(Lst.Text);

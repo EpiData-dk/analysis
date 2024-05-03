@@ -1593,7 +1593,7 @@ type
 implementation
 
 uses
-  LazUTF8Classes, epiconvertutils, typinfo, options_utils, parser,
+  epiconvertutils, typinfo, options_utils, parser,
   chart_options,
   // SCRIPT FUNCTIONS (placed ind ./functions/epi_script_function_<name>.pas
   epi_script_function_mathfunctions,
@@ -7128,7 +7128,7 @@ function TVariableList.GetIdentsAsList: TStrings;
 var
   i: Integer;
 begin
-  Result := TStringListUTF8.Create;
+  Result := TStringList.Create;
 
   for i := 0 to Count - 1 do
     result.Add(Variable[i].Ident);

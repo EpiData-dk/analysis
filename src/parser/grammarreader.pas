@@ -81,7 +81,7 @@ type
 implementation
 
 uses
-  Variants, LazUTF8Classes, LazUTF8, strutils;
+  Variants, LazUTF8, strutils;
   
 const
    GoldHeaderV1: UTF8String = 'GOLD Parser Tables/v1.0';
@@ -102,7 +102,7 @@ function TGrammarReader.OpenFile(const FileName: UTF8String): boolean;
 var FS : TFileStream;
 begin
   try
-    FS := TFileStreamUTF8.Create(Filename, fmOpenRead);
+    FS := TFileStream.Create(Filename, fmOpenRead);
     try
       SetLength(FBuffer, FS.Size);
       FS.ReadBuffer(FBuffer[1], FS.Size);

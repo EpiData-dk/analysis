@@ -5,7 +5,7 @@ unit systemcmd;
 interface
 
 uses
-  Classes, SysUtils, ast, executor, outputcreator, LazUTF8Classes, FileUtil,
+  Classes, SysUtils, ast, executor, outputcreator, FileUtil,
   Forms;
 
 type
@@ -18,7 +18,7 @@ type
     FOutputCreator: TOutputCreator;
   { LS }
   private
-    FLSList: TStringListUTF8;
+    FLSList: TStringList;
     procedure LSEntryFound(FileIterator: TFileIterator);
   protected
     procedure DoCD(ST: TCustomStringCommand); virtual;
@@ -110,7 +110,7 @@ begin
       Exit;
     end;
 
-  FLSList := TStringListUTF8.Create;
+  FLSList := TStringList.Create;
   FLSList.Sorted := true;
 
   FS := TFileSearcher.Create;

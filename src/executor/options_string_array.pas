@@ -24,15 +24,15 @@ type
 implementation
 
 uses
-  LazUTF8, LazUTF8Classes;
+  LazUTF8;
 
 { TStringArrayOption }
 
 procedure TStringArrayOption.SetValue(AValue: UTF8String);
 var
-  AList: TStringListUTF8;
+  AList: TStringList;
 begin
-  AList := TStringListUTF8.Create;
+  AList := TStringList.Create;
   AList.CommaText := AValue;
 
   try

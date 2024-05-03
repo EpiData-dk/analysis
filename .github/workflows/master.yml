@@ -6,21 +6,21 @@ on:
       - master
 
 env:
-  ANALYSIS_VERSION: "3.1"
+  ANALYSIS_VERSION: "2.0"
 
 jobs:
   setup:
     name: Compile Code
     runs-on: ubuntu-latest
     container:
-      image: epidata/fpcbuild:3.2.0-14
+      image: epidata/fpcbuild:3.2.2
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Generate Maven settings.xml
-        uses: whelk-io/maven-settings-xml-action@v20
+        uses: whelk-io/maven-settings-xml-action@v22
         with:
           output_file: "/etc/maven/settings.xml"
           servers:
