@@ -291,7 +291,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="197">
+    <Units Count="196">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1113,10 +1113,6 @@
         <Filename Value="src/dialogs/stat_dialogs/pareto/pareto_main_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit195>
-      <Unit196>
-        <Filename Value="src/dialogs/stat_dialogs/pareto/pareto_variables_model.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit196>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

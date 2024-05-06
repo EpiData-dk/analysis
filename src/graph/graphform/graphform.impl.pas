@@ -67,10 +67,7 @@ begin
     begin
       Inc(count);
       Chart := Pair.Chart;
-      saveName := GetSaveChartFilename('EpiGraph.jpg', Pair.Configuration.GetTitleConfiguration().GetSaveName());
-      FSaveGraphAction.AddChart(Chart);
-      FSaveGraphAction.AddSaveName(saveName);
-//      FSaveGraphAction.AddChart(Chart);
+      FSaveGraphAction.AddChart(Chart, Pair.Configuration.GetTitleConfiguration().GetStratumValue);
       Sheet := FPageControl.AddTabSheet;
       Sheet.Caption := 'Chart: ' + IntToStr(FPageControl.PageCount);
       Chart.Parent := Sheet;

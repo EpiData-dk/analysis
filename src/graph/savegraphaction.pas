@@ -45,8 +45,8 @@ type
   private
     FCharts: array of TChart;
     FCount: Integer;
-    FFilenames: array of UTF8String;
-    FFilename: UTF8String; // *** remove
+    FStratumValues: array of UTF8String;
+    FFileName: UTF8String;
     FExtensionOK: Boolean;
     FGraphExportType: TGraphExportType;
     FGraphSize: TSize;
@@ -54,18 +54,18 @@ type
     procedure SaveToSVG(Filename: UTF8String);
     procedure SetFilename(AValue: UTF8String);
     procedure UpdateExportType();
-    function GetFileName(AValue: UTF8String; AIndex: Integer): UTF8String;
   protected
     procedure UpdateReadyState(); virtual;
     procedure SaveGraphExecute(Sender: TObject); virtual;
     property GraphExportType: TGraphExportType read FGraphExportType write FGraphExportType;
     property GraphSize: TSize read FGraphSize write FGraphSize;
-    property Filename: UTF8String read FFilename write SetFilename;
     property ExtensionOK: Boolean read FExtensionOK write FExtensionOK;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure AddChart(AValue: TChart; AFile: UTF8String);
+    procedure AddChart(AChart: TChart; AText: UTF8String);
+    function SaveGraphs(): Boolean;
     destructor Destroy; override;
+    property Filename: UTF8String read FFilename write setFilename;
   end;
 
   {TSaveGraphAction}
@@ -73,12 +73,11 @@ type
   TSaveGraphAction = class(TCustomSaveGraphAction)
   public
     property GraphExportType;
-    property Filename;
     property GraphSize;
   end;
 
   {helper function}
-  function GetSaveChartFilename(AValue: UTF8String; AText: UTF8String): UTF8String;
+  function GetSaveChartFilename(AFileName: UTF8String; AValue: UTF8String): UTF8String;
 
 implementation
 
@@ -87,25 +86,35 @@ uses
 
 { TSaveGraphAction }
 
-procedure TCustomSaveGraphAction.SaveGraphExecute(Sender: TObject);
+// when invoked here by graphCommandExecutor
+// must have set Filename for the set of charts before calling
+function TCustomSaveGraphAction.SaveGraphs(): Boolean;
 begin
-  {$IFDEF DARWIN}
-  InitFonts('/System/Library/Fonts');
-  {$ENDIF}
+  result := FExtensionOK;
+  if (not FExtensionOK) then
+    exit;
   case GraphExportType of
-    etSVG: SaveToSVG(FileName);
-    etPNG: SaveToRaster(TPortableNetworkGraphic, FileName);
-    etJPG: SaveToRaster(TJPEGImage, FileName);
+    etSVG: SaveToSVG(FFileName);
+    etPNG: SaveToRaster(TPortableNetworkGraphic, FFileName);
+    etJPG: SaveToRaster(TJPEGImage, FFileName);
+    else
+      result := false;
   end;
 end;
 
-procedure TCustomSaveGraphAction.AddChart(AValue: TChart; AFile: UTF8String);
+// invoked here by graph save dialog
+procedure TCustomSaveGraphAction.SaveGraphExecute(Sender: TObject);
+begin
+  SaveGraphs();
+end;
+
+procedure TCustomSaveGraphAction.AddChart(AChart: TChart; AText: UTF8String);
 begin
   inc(FCount);
   setLength(FCharts, FCount);
-  FCharts[FCount - 1] := AValue;
-  setLength(FFilenames, FCount);
-  FFilenames[FCount - 1] := AFile;
+  FCharts[FCount - 1] := AChart;
+  setLength(FStratumValues, FCount);
+  FStratumValues[FCount - 1] := AText;
 
   UpdateReadyState();
 end;
@@ -114,7 +123,6 @@ procedure TCustomSaveGraphAction.SetFilename(AValue: UTF8String);
 begin
   if FFilename = AValue then Exit;
   FFilename := ExpandFileNameUTF8(AValue);
-
   UpdateExportType();
   UpdateReadyState();
 end;
@@ -151,14 +159,16 @@ procedure TCustomSaveGraphAction.SaveToRaster(ImageClass: TRasterImageClass;
 var
   Image: TRasterImage;
   aChart: TChart;
+  i: integer;
 begin
-  for aChart in FCharts do
+  for i := 0 to FCount - 1 do
   begin
+    achart := FCharts[i];
     Image := ImageClass.Create;
     Image.Width := FGraphSize.Width;
     Image.Height := FGraphSize.Height;
     aChart.PaintOnCanvas(Image.Canvas, Rect(0, 0, Image.Width, Image.Height));
-    Image.SaveToFile(GetSaveChartFilename(Filename, aChart.Title.Text.Text));
+    Image.SaveToFile(GetSaveChartFilename(FFilename, FStratumValues[i]));
     Image.Free;
   end;
 end;
@@ -166,6 +176,7 @@ end;
 procedure TCustomSaveGraphAction.SaveToSVG(Filename: UTF8String);
 var
   aChart: TChart;
+  i: integer;
 begin
   {$IFDEF DARWIN}
   // this is necessary to save to SVG, but causes font exceptions
@@ -173,22 +184,13 @@ begin
   // No impact for users.
   InitFonts('/System/Library/Fonts');
   {$ENDIF}
-  for aChart in FCharts do
+  for i := 0 to FCount - 1 do
     begin
+      aChart := FCharts[i];
       aChart.Width := FGraphSize.Width;
       aChart.Height:= FGraphSize.Height;
-      aChart.SaveToSVGFile(GetSaveChartFilename(Filename, aChart.Title.Text.Text));
+      aChart.SaveToSVGFile(GetSaveChartFilename(FFilename, FStratumValues[i]));
     end;
-end;
-
-function TCustomSaveGraphAction.GetFilename(AValue: UTF8String; AIndex: Integer): UTF8String;
-var
-  ext: UTF8String;
-begin
-  result := AValue;
-  if (AIndex = 0) then exit;
-  ext := ExtractFileExt(AValue);
-  result := copy(AValue, 0, length(AValue) - length(ext)) + '-' + AIndex.ToString + ext;
 end;
 
 destructor TCustomSaveGraphAction.Destroy;
@@ -211,27 +213,28 @@ begin
 end;
 
 // create a save file name from base name and optional text, which should be stratum value (not label)
-function GetSaveChartFilename(AValue: UTF8String; AText: UTF8String): UTF8String;
+function GetSaveChartFilename(AFileName: UTF8String; AValue: UTF8String): UTF8String;
 var
   ext,
   qual: UTF8String;
-  validText: UTF8String;
   aChar: Char;
   i: Integer;
 begin
-  result := AValue;
-  if (AText = '') then
+  result := AFileName;
+  if (AValue = '') then
     exit;
-  // remove illegal characters in AText
-  // based on OS (see InvalidChars def above)
-  validText := '';
-  for aChar in AText do
+  ext := ExtractFileExt(AFileName);
+  // remove illegal characters in AValue based on OS (see InvalidChars def above)
+  qual := '';
+  for aChar in AValue do
     if CharInSet(aChar, InvalidChars) then
-      validText += '-'
+      qual += '-'
     else
-      validText += aChar;
-  ext := ExtractFileExt(AValue);
-  result := copy(AValue, 0, length(AValue) - length(ext)) + validText + ext;
+      qual += aChar;
+  // insert stratum value before extension
+  qual := '-' + qual;
+  insert(qual, AFileName, pos(ext, AFileName));
+  result := AFileName;
 end;
 
 

@@ -25,7 +25,6 @@ type
     procedure ApplyAxisTitle(AxisTitle: TChartAxisTitle; MainCaption: UTF8String; Option: TOption);
     procedure UpdateChartAxes(ST: TCustomGraphCommand; CommandResult: IChartCommandResult);
     procedure ShowMarksAsDates(var AText: String; AMark: Double);
-    function ApplyChartSaveName(Command: UTF8String; Option: TOption): UTF8String;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
     procedure Execute(ST: TCustomGraphCommand);
@@ -47,6 +46,7 @@ var
   Chart: TChart;
   ChartPairs: TChartPairList;
   Pair: TChartPair;
+  stratumValue: UTF8String;
   aFileName: UTF8String;
   allNames: UTF8String;
   saveName: UTF8String;
@@ -55,6 +55,7 @@ begin
   SaveAction := TSaveGraphAction.Create(nil);
   ST.HasOption(['export', 'S', 'E'], Opt);
   aFileName := Opt.Expr.AsString;
+  SaveAction.Filename := aFileName;
   allNames := '';
   saveMultiple := 'Graph';
   try
@@ -63,13 +64,13 @@ begin
       saveMultiple := 'Graphs';
     for Pair in Chartpairs do
       begin
-        saveName := GetSaveChartFilename(aFileName, Pair.Configuration.GetTitleConfiguration().GetSaveName());
-        SaveAction.AddChart(Pair.Chart, saveName);
+        stratumValue := Pair.Configuration.GetTitleConfiguration().GetStratumValue;
+        saveName := GetSaveChartFilename(aFileName, stratumValue);
+        SaveAction.AddChart(Pair.Chart, stratumValue);
         // This forces the SaveAction to free the chart, chartsource and objects
         // in the chartsource (see Scatter)
         SaveAction.InsertComponent(Pair.Chart);
-        allNames += LineEnding + '    ' + checkName;
-//        SaveAction.AddFilename(aFileName);
+        allNames += LineEnding + '    ' + saveName;
         if (FileExistsUTF8(saveName)) and
            (not ST.HasOption('replace')) then
           begin
@@ -87,10 +88,10 @@ begin
         if (ST.HasOption(['sizey', 'sy'], Opt)) then
           SaveAction.GraphSize.Height := Opt.Expr.AsInteger;
 
-        if SaveAction.Execute then
+        if SaveAction.SaveGraphs then
           FOutputCreator.DoInfoAll(saveMultiple + ' saved as: ' + allNames)
         else
-          FOutputCreator.DoError(saveMultiple + 'not saved!');
+          FOutputCreator.DoError(saveMultiple + ' not saved!');
       end;
   except
     on E: EIncorrectGraphExtension do
@@ -145,7 +146,6 @@ begin
       Chart.Title.Font.Size := Chart.Title.Font.Size + inc;
 
     ST.HasOption(['s', 'save', 'e', 'export'], Opt);
-    Pair.Configuration.GetTitleConfiguration().SetSaveName(ApplyChartSaveName(ST.Command, Opt));
 
     ST.HasOption(['footer', 'fn'], Opt);
     ApplyChartTitle(Chart.Foot, Titles.GetFootnote(), Opt);
@@ -292,16 +292,6 @@ begin
     if (errorMsg <> '') then
       FExecutor.Error(errorMsg);
 
-end;
-
-function TGraphCommandExecutor.ApplyChartSaveName(Command: UTF8String; Option: TOption): UTF8String;
-var
-  saveName: UTF8String;
-begin
-  if (assigned(Option)) then
-    Result := Option.Expr.AsString
-  else
-    Result := Command;
 end;
 
 constructor TGraphCommandExecutor.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator);
