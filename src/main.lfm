@@ -43,19 +43,19 @@ object MainForm: TMainForm
       Top = 13
       Width = 75
       Caption = 'test'
+      OnClick = Button2Click
       ParentFont = False
       TabOrder = 0
-      OnClick = Button2Click
     end
     object Button3: TButton
       Left = 112
       Height = 25
       Top = 13
       Width = 75
+      OnClick = Button3Click
       Caption = 'SaveHtml'
       ParentFont = False
       TabOrder = 1
-      OnClick = Button3Click
     end
     object Label1: TLabel
       Left = 307
@@ -146,14 +146,14 @@ object MainForm: TMainForm
       Align = alBottom
       ItemHeight = 0
       MultiSelect = True
+      OnDblClick = HistoryListBoxDblClick
+      OnDrawItem = HistoryListBoxDrawItem
+      OnKeyDown = HistoryListBoxKeyDown
       ParentFont = False
       PopupMenu = HistoryPopupMenu
       Style = lbOwnerDrawFixed
       TabOrder = 2
       Visible = False
-      OnDblClick = HistoryListBoxDblClick
-      OnDrawItem = HistoryListBoxDrawItem
-      OnKeyDown = HistoryListBoxKeyDown
     end
   end
   object RightSideSplitter: TSplitter
