@@ -1540,9 +1540,8 @@ procedure TMainForm.OutputFontChange(Sender: TObject);
 begin
   FOutputViewer.UpdateFontAndSize(Executor);
   // put cursor back into command line;
-    CmdEditFocusActionExecute(nil);
-//    EnableAutoSizing;
-    RedrawOutput;
+  CmdEditFocusActionExecute(nil);
+  RedrawOutput;
 end;
 
 procedure TMainForm.OutputViewerChanges(Sender: TObject);
