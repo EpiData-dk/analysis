@@ -37,7 +37,8 @@ type
     FExtensionOK: Boolean;
     FGraphExportType: TGraphExportType;
     FGraphSize: TSize;
-    procedure SaveToRaster(ImageClass: TRasterImageClass; Filename: UTF8String);
+    procedure SaveToRaster(ImageClass: TRasterImageClass);
+    procedure SaveToVector();
     procedure SetChart(AValue: TChart);
     procedure SetFilename(AValue: UTF8String);
     procedure UpdateExportType();
@@ -74,9 +75,9 @@ begin
   InitFonts('/System/Library/Fonts');
   {$ENDIF}
   case GraphExportType of
-    etSVG: FChart.SaveToSVGFile(FileName);
-    etPNG: SaveToRaster(TPortableNetworkGraphic, FileName);
-    etJPG: SaveToRaster(TJPEGImage, FileName);
+    etSVG: SaveToVector();
+    etPNG: SaveToRaster(TPortableNetworkGraphic);
+    etJPG: SaveToRaster(TJPEGImage);
   end;
 end;
 
@@ -124,8 +125,7 @@ begin
              (Assigned(FChart));
 end;
 
-procedure TCustomSaveGraphAction.SaveToRaster(ImageClass: TRasterImageClass;
-  Filename: UTF8String);
+procedure TCustomSaveGraphAction.SaveToRaster(ImageClass: TRasterImageClass);
 var
   Image: TRasterImage;
 begin
@@ -135,6 +135,13 @@ begin
   FChart.PaintOnCanvas(Image.Canvas, Rect(0, 0, Image.Width, Image.Height));
   Image.SaveToFile(Filename);
   Image.Free;
+end;
+
+procedure TCustomSaveGraphAction.SaveToVector();
+begin
+  FChart.Width  := FGraphSize.Width;
+  FChart.Height := FGraphSize.Height;
+  FChart.SaveToSVGFile(FileName);
 end;
 
 constructor TCustomSaveGraphAction.Create(AOwner: TComponent);
