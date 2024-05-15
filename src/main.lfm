@@ -14,7 +14,7 @@ object MainForm: TMainForm
   OnDropFiles = FormDropFiles
   OnShow = FormShow
   Position = poDefault
-  LCLVersion = '2.0.11.0'
+  LCLVersion = '3.2.0.0'
   object PageControl1: TPageControl
     Left = 245
     Height = 613
@@ -52,8 +52,8 @@ object MainForm: TMainForm
       Height = 25
       Top = 13
       Width = 75
-      Caption = 'SaveHtml'
       OnClick = Button3Click
+      Caption = 'SaveHtml'
       ParentFont = False
       TabOrder = 1
     end

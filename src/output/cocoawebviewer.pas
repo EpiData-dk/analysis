@@ -36,7 +36,7 @@ end;
 implementation
 
 uses
-  Controls, Graphics, outputgenerator_html, Clipbrd, LCLType, LMessages;
+  Controls, Graphics, outputgenerator_html, Clipbrd, LCLType, LMessages, regexpr, ana_globals;
 
 { TCocoaWebSheet }
 
@@ -77,8 +77,28 @@ begin
 end;
 
 procedure TCocoaWebSheet.UpdateFontAndSize(AExecutor: TExecutor);
+var
+  regex: TRegExpr;
+  // match font name already added to HTML_OUTPUT_CSS
+  regexPattern: string = '(\.body\s*\{font-family\:\s*")(.{1,30})(")';
 begin
-  //
+  // Add output font name to standard CSS
+  regex := TRegExpr.Create;
+  try
+     regex.ModifierI := True;
+     regex.Expression := regexPattern;
+     if (regex.Exec(HTML_OUTPUT_CSS)) then
+       HTML_OUTPUT_CSS := ReplaceRegExpr(regexPattern, HTML_OUTPUT_CSS,
+                         '$1' + AExecutor.GetSetOptionValue(ANA_SO_OUTPUT_FONT_NAME) +
+                         '$3', true)
+     else
+       HTML_OUTPUT_CSS := StringReplace(HTML_OUTPUT_CSS, '.body {',
+                         '.body {font-family: "' +
+                          AExecutor.GetSetOptionValue(ANA_SO_OUTPUT_FONT_NAME) +
+                         '"; ', []);
+  finally
+     regex.Destroy;
+  end;
 end;
 
 function TCocoaWebSheet.GetLineAtCaret: String;
