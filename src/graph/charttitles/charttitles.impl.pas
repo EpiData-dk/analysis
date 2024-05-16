@@ -18,17 +18,21 @@ type
     FXAxisTitle: UTF8String;
     FYAxisTitle: UTF8String;
     FY2AxisTitle: UTF8String;
+    FStratumValue: UTF8String;
   public
+    constructor Create;
     function GetTitle(): UTF8String;
     function GetFootnote(): UTF8String;
     function GetXAxisTitle(): UTF8String;
     function GetYAxisTitle(): UTF8String;
     function GetY2AxisTitle(): UTF8String;
+    function GetStratumValue(): UTF8String;
     function SetTitle(Text: UTF8String): IChartTitleConfiguration;
     function SetFootnote(Text: UTF8String): IChartTitleConfiguration;
     function SetXAxisTitle(Text: UTF8String): IChartTitleConfiguration;
     function SetYAxisTitle(Text: UTF8String): IChartTitleConfiguration;
     function SetY2AxisTitle(Text: UTF8String): IChartTitleConfiguration;
+    function SetStratumValue(Value: UTF8String): IChartTitleConfiguration;
   end;
 
 implementation
@@ -61,6 +65,11 @@ begin
   Result := FY2AxisTitle;
 end;
 
+function TChartTitlesConfiguration.GetStratumValue(): UTF8String;
+begin
+    Result := FStratumValue
+end;
+
 function TChartTitlesConfiguration.SetTitle(Text: UTF8String): IChartTitleConfiguration;
 begin
   FTitle := Text;
@@ -89,6 +98,17 @@ function TChartTitlesConfiguration.SetY2AxisTitle(Text: UTF8String): IChartTitle
 begin
   FY2AxisTitle := Text;
   Result := Self;
+end;
+
+function TChartTitlesConfiguration.SetStratumValue(Value: UTF8String): IChartTitleConfiguration;
+begin
+  FStratumValue := Value;
+  Result := Self;
+end;
+
+constructor TChartTitlesConfiguration.Create;
+begin
+  FStratumValue := '';
 end;
 
 end.
