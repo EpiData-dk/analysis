@@ -44,37 +44,55 @@ var
   SaveAction: TSaveGraphAction;
   Opt: TOption;
   Chart: TChart;
+  ChartPairs: TChartPairList;
+  Pair: TChartPair;
+  stratumValue: UTF8String;
+  aFileName: UTF8String;
+  allNames: UTF8String;
+  saveName: UTF8String;
+  saveMultiple: UTF8String;
 begin
   SaveAction := TSaveGraphAction.Create(nil);
-
+  ST.HasOption(['export', 'S', 'E'], Opt);
+  aFileName := Opt.Expr.AsString;
+  SaveAction.Filename := aFileName;
+  allNames := '';
+  saveMultiple := 'Graph';
   try
-    Chart := CommandResult.GetChartPairs().First.Chart;
-    SaveAction.Chart := Chart;
-
-    // This forces the SaveAction to free the chart, chartsource and objects
-    // in the chartsource (see Scatter)
-    SaveAction.InsertComponent(Chart);
-
-    ST.HasOption(['export', 'S', 'E'], Opt);
-    SaveAction.Filename := Opt.Expr.AsString;
-    if (FileExistsUTF8(SaveAction.Filename)) and
-       (not ST.HasOption('replace'))
-    then
+    ChartPairs := CommandResult.GetChartPairs();
+    if (ChartPairs.Count > 1) then
+      saveMultiple := 'Graphs';
+    for Pair in Chartpairs do
       begin
-        FOutputCreator.DoError('File exists.' + LineEnding + 'Add !REPLACE or erase file:' + LineEnding + SaveAction.Filename);
-        ST.ExecResult := csrFailed;
+        stratumValue := Pair.Configuration.GetTitleConfiguration().GetStratumValue;
+        saveName := GetSaveChartFilename(aFileName, stratumValue);
+        SaveAction.AddChart(Pair.Chart, stratumValue);
+        // This forces the SaveAction to free the chart, chartsource and objects
+        // in the chartsource (see Scatter)
+        SaveAction.InsertComponent(Pair.Chart);
+        allNames += LineEnding + '    ' + saveName;
+        if (FileExistsUTF8(saveName)) and
+           (not ST.HasOption('replace')) then
+          begin
+            FOutputCreator.DoError('File exists: ' + saveName);
+            ST.ExecResult := csrFailed;
+          end;
       end;
-
-    if (ST.HasOption(['sizex', 'sx'], Opt)) then
-      SaveAction.GraphSize.Width := Opt.Expr.AsInteger;
-
-    if (ST.HasOption(['sizey', 'sy'], Opt)) then
-      SaveAction.GraphSize.Height := Opt.Expr.AsInteger;
-
-    if SaveAction.SaveGraphs() then
-      FOutputCreator.DoInfoAll('Graph saved as: ' + SaveAction.Filename)
+    if (ST.ExecResult = csrFailed) then
+      FOutputCreator.DoError('Add !REPLACE or erase file' + saveMultiple)
     else
-      FOutputCreator.DoError('Graph not saved!');
+      begin
+        if (ST.HasOption(['sizex', 'sx'], Opt)) then
+          SaveAction.GraphSize.Width := Opt.Expr.AsInteger;
+
+        if (ST.HasOption(['sizey', 'sy'], Opt)) then
+          SaveAction.GraphSize.Height := Opt.Expr.AsInteger;
+
+        if SaveAction.SaveGraphs then
+          FOutputCreator.DoInfoAll(saveMultiple + ' saved as: ' + allNames)
+        else
+          FOutputCreator.DoError(saveMultiple + ' not saved!');
+      end;
   except
     on E: EIncorrectGraphExtension do
       FOutputCreator.DoError('Graph not saved! ' + E.Message);
@@ -126,6 +144,8 @@ begin
     inc := StrToInt(FExecutor.SetOptions.GetValue(ANA_SO_CHART_TITLE_SIZE_INCREMENT).Value);
     if (inc > 0) then
       Chart.Title.Font.Size := Chart.Title.Font.Size + inc;
+
+    ST.HasOption(['s', 'save', 'e', 'export'], Opt);
 
     ST.HasOption(['footer', 'fn'], Opt);
     ApplyChartTitle(Chart.Foot, Titles.GetFootnote(), Opt);
