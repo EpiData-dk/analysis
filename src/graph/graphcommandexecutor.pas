@@ -71,7 +71,7 @@ begin
     if (ST.HasOption(['sizey', 'sy'], Opt)) then
       SaveAction.GraphSize.Height := Opt.Expr.AsInteger;
 
-    if SaveAction.Execute then
+    if SaveAction.SaveGraphs() then
       FOutputCreator.DoInfoAll('Graph saved as: ' + SaveAction.Filename)
     else
       FOutputCreator.DoError('Graph not saved!');

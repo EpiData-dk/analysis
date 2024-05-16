@@ -46,12 +46,14 @@ type
     procedure UpdateReadyState(); virtual;
     procedure SaveGraphExecute(Sender: TObject); virtual;
     property Chart: TChart read FChart write SetChart;
+    property Filename: UTF8String read FFilename write SetFilename;
     property GraphExportType: TGraphExportType read FGraphExportType write FGraphExportType;
     property GraphSize: TSize read FGraphSize write FGraphSize;
-    property Filename: UTF8String read FFilename write SetFilename;
     property ExtensionOK: Boolean read FExtensionOK write FExtensionOK;
   public
     constructor Create(AOwner: TComponent); override;
+    function SaveGraphs(): Boolean;
+    destructor Destroy; override;
   end;
 
   TSaveGraphAction = class(TCustomSaveGraphAction)
@@ -69,16 +71,26 @@ uses
 
 { TSaveGraphAction }
 
-procedure TCustomSaveGraphAction.SaveGraphExecute(Sender: TObject);
+// when invoked here by graphCommandExecutor
+// must have set Filename for every chart before calling
+function TCustomSaveGraphAction.SaveGraphs(): Boolean;
 begin
-  {$IFDEF DARWIN}
-  InitFonts('/System/Library/Fonts');
-  {$ENDIF}
+  result := FExtensionOK;
+  if (not FExtensionOK) then
+    exit;
   case GraphExportType of
     etSVG: SaveToVector();
     etPNG: SaveToRaster(TPortableNetworkGraphic);
     etJPG: SaveToRaster(TJPEGImage);
+    else
+      result := false;
   end;
+end;
+
+// invoked here by graph save dialog
+procedure TCustomSaveGraphAction.SaveGraphExecute(Sender: TObject);
+begin
+  SaveGraphs();
 end;
 
 procedure TCustomSaveGraphAction.SetChart(AValue: TChart);
@@ -139,6 +151,12 @@ end;
 
 procedure TCustomSaveGraphAction.SaveToVector();
 begin
+  {$IFDEF DARWIN}
+  // this is necessary to save to SVG, but causes font exceptions
+  // known problem with Mac font NISC18030.ttf
+  // No impact for users.
+  InitFonts('/System/Library/Fonts');
+  {$ENDIF}
   FChart.Width  := FGraphSize.Width;
   FChart.Height := FGraphSize.Height;
   FChart.SaveToSVGFile(FileName);
@@ -150,6 +168,13 @@ begin
   FGraphSize := TSize.Create(1024, 768);
   OnExecute := @SaveGraphExecute;
   Caption := 'Save as ...';
+end;
+
+destructor TCustomSaveGraphAction.Destroy;
+begin
+  // remove chart before freeing
+  RemoveComponent(FChart);
+  inherited Destroy;
 end;
 
 end.
