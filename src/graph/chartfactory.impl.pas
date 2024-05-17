@@ -12,7 +12,7 @@ type
 
   { TChartFactory }
 
-  TChartFactory = class(TObject, IChartFactory)
+  TChartFactory = class(TInterfacedObject, IChartFactory)
   private
     FChartList: TList;
     procedure BeforeChartDestruction(Sender: TObject);
@@ -28,7 +28,7 @@ type
 implementation
 
 uses
-  chartcommandresult.impl, chartconfiguration.impl, charttitles.impl, Graphics;
+  chartcommandresult.impl, chartconfiguration.impl, charttitles.impl, Graphics, Contnrs;
 
 { TChartFactory }
 
@@ -39,7 +39,7 @@ end;
 
 constructor TChartFactory.Create();
 begin
-  FChartList := TList.Create;
+  FChartList := TObjectList.Create(true);
 end;
 
 destructor TChartFactory.Destroy;
@@ -50,7 +50,6 @@ begin
 
   while (ListEnumerator.MoveNext) do
     TChart(ListEnumerator.Current).RemoveHandlerOnBeforeDestruction(@BeforeChartDestruction);
-  FChartList.Clear;
   FChartList.Free;
 
   inherited Destroy;

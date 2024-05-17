@@ -1,12 +1,11 @@
 unit chartfactory;
 
 {$mode objfpc}{$H+}
-{$INTERFACES CORBA}
 
 interface
 
 uses
-  Classes, SysUtils, TAGraph, charttitles, chartcommandresult, chartconfiguration;
+  Classes, SysUtils, TAGraph, chartcommandresult, chartconfiguration;
 
 type
   IChartFactory = interface['{1701243D-0E60-427B-9142-35D22A4467E0}']
