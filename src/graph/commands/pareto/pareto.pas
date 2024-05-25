@@ -73,6 +73,7 @@ var
   XVar:                TEpiField;
   Opt:                 TOption;
   byVar:               Boolean;
+  StratChartIndex:     UTF8String;
   i:                   Integer;
 begin
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
@@ -142,9 +143,13 @@ begin
               TableData := TablesAll.Tables[i];
               TableData.SortByColTotal(true);
               StratVar := TablesAll.StratifyVariables[0];
+              if (i = 0) then
+                StratChartIndex := ''
+              else
+                StratChartIndex := i.ToString;
               if (TableData.Total > 0) then
                 DoOneChart(TableData,
-                  StratVar.GetValueLabel(i, gvtValue),
+                  StratChartIndex,
                   StratVar.GetVariableLabel(FVariableLabelOutput)
                     + '=' + StratVar.GetValueLabel(i, FValueLabelOutput),
                   Result);

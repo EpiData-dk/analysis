@@ -108,7 +108,7 @@ end;
 
 constructor TChartTitlesConfiguration.Create;
 begin
-  FStratumValue := '';
+
 end;
 
 end.

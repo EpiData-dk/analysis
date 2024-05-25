@@ -23,18 +23,7 @@ const
     '.png',
     '.jpg'
   );
-  // invalid characters in filenames for each OS
-  InvalidChars: TSysCharSet = [
-  {$IFDEF WINDOWS}
-  '<','>',':','"','/','\','|','?','*'
-  {$ENDIF}
-  {$IFDEF DARWIN}
-  ':','/'
-  {$ENDIF}
-  {$IFDEF LINUX}
-  '/'
-  {$ENDIF}
-  ];
+
 type
 
   EIncorrectGraphExtension = class(Exception);
@@ -215,28 +204,11 @@ begin
   inherited Destroy;
 end;
 
-// create a save file name from base name and optional text, which should be stratum value (not label)
+// create a save file name from base name and optional text, which should be legal
+// consider omitting AValue if it = 0
 function GetSaveChartFilename(AFileName: UTF8String; AValue: UTF8String): UTF8String;
-var
-  ext,
-  qual: UTF8String;
-  aChar: Char;
-  i: Integer;
 begin
-  result := AFileName;
-  if (AValue = '') then
-    exit;
-  ext := ExtractFileExt(AFileName);
-  // remove illegal characters in AValue based on OS (see InvalidChars def above)
-  qual := '';
-  for aChar in AValue do
-    if CharInSet(aChar, InvalidChars) then
-      qual += '-'
-    else
-      qual += aChar;
-  // insert clean AValue before extension
-  qual := '-' + qual;
-  insert(qual, AFileName, pos(ext, AFileName));
+  insert(AValue, AFileName, pos(ExtractFileExt(AFileName), AFileName));
   result := AFileName;
 end;
 
