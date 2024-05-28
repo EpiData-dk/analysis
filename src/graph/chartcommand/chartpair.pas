@@ -49,8 +49,6 @@ begin
 end;
 
 destructor TChartPair.Destroy;
-var
-  i: integer;
 begin
   Chart := nil;
   Configuration := nil;

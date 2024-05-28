@@ -27,7 +27,7 @@ type
     FXDate:               Boolean;
     FColor:               TColorMap;
   protected
-    procedure DoOneChart(TableData: TTwoWayTable; StratumLabel: UTF8String;
+    procedure DoOneChart(TableData: TTwoWayTable; StratumValue, StratumLabel: UTF8String;
           ChartResult: IChartCommandResult);
   public
     procedure Init(ChartFactory: IChartFactory; Executor: TExecutor; OutputCreator: TOutputCreator);
@@ -66,12 +66,14 @@ var
   VarNames:            TStrings;
   DFVars:              TStrings;
   dummyVar:            TEpiField;
+  StratVar:            TEpiField;
   WeightVar:           TEpiField;
   WeightVarName:       UTF8String;
   msg:                 UTF8String;
   XVar:                TEpiField;
   Opt:                 TOption;
   byVar:               Boolean;
+  StratChartIndex:     UTF8String;
   i:                   Integer;
 begin
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
@@ -140,16 +142,24 @@ begin
             begin
               TableData := TablesAll.Tables[i];
               TableData.SortByColTotal(true);
+              StratVar := TablesAll.StratifyVariables[0];
+              if (i = 0) then
+                StratChartIndex := ''
+              else
+                StratChartIndex := i.ToString;
               if (TableData.Total > 0) then
-                DoOneChart(TableData, TablesAll.StratifyVariables[0].GetVariableLabel(FVariableLabelOutput)
-                  + '=' + TablesAll.StratifyVariables[0].GetValueLabel(i, FValueLabelOutput), Result);
+                DoOneChart(TableData,
+                  StratChartIndex,
+                  StratVar.GetVariableLabel(FVariableLabelOutput)
+                    + '=' + StratVar.GetValueLabel(i, FValueLabelOutput),
+                  Result);
             end
         end
       else
         begin
           TableData := TablesAll.UnstratifiedTable;
           TableData.SortByColTotal(true);
-          DoOneChart(TableData, '', Result);
+          DoOneChart(TableData, '', '', Result);
         end;
 
       T.Free;
@@ -164,8 +174,8 @@ begin
   Datafile.Free;
 end;
 
-procedure TParetoChart.DoOneChart(TableData: TTwoWayTable; StratumLabel: UTF8String;
-          ChartResult: IChartCommandResult);
+procedure TParetoChart.DoOneChart(TableData: TTwoWayTable;
+          StratumValue, StratumLabel: UTF8STring; ChartResult: IChartCommandResult);
 const
   barTitle     = 'Count';
   lineTitle    = 'Cumulative %';
@@ -269,7 +279,8 @@ begin
     .SetFootnote('')
     .SetXAxisTitle(FXVarTitle)
     .SetYAxisTitle(barTitle)
-    .SetY2AxisTitle(lineTitle);
+    .SetY2AxisTitle(lineTitle)
+    .SetStratumValue(StratumValue);
 
   ChartConfiguration.GetAxesConfiguration()
     .GetXAxisConfiguration();
@@ -277,12 +288,12 @@ begin
   // don't reformat dates via XAxisConfiguration
 
   // set up left and right axis transformations to make them independent
-  LeftAxisTransform     := TChartAxisTransformations.Create(Chart);
-  LeftAxisAuto          := TAutoScaleAxisTransform.Create(Chart);
+  LeftAxisTransform     := TChartAxisTransformations.Create(nil);
+  LeftAxisAuto          := TAutoScaleAxisTransform.Create(nil);
   LeftAxisAuto.Enabled  := true;
   LeftAxisTransform.List.Add(LeftAxisAuto);
-  RightAxisTransform    := TChartAxisTransformations.Create(Chart);
-  RightAxisAuto         := TAutoScaleAxisTransform.Create(Chart);
+  RightAxisTransform    := TChartAxisTransformations.Create(nil);
+  RightAxisAuto         := TAutoScaleAxisTransform.Create(nil);
   RightAxisAuto.Enabled := true;
   RightAxisTransform.List.Add(RightAxisAuto);
 
