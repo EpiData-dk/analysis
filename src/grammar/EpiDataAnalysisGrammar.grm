@@ -60,7 +60,7 @@ opDescribe    = 'des'('cribe')?
 opRecode      = 'recode'
 
 ! -- Graph commands
-opScatter     = 'sca'('tter')?
+opScatter     = 'scatter'
 opSurvival    = 'sur'('vival')?
 opEpicurve    = 'epi'('curve')?
 opHistogram   = 'his'('togram')?
