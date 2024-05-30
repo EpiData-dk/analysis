@@ -15,9 +15,8 @@ type
   TParetoMainDialogView = class(TCustomStatDialogView)
   private
     FDataModel: TParetoStatVariableModel;
-    FXVariableCombo: TEpiFieldsComboBox;
+    FComboBoxes: Array of TEpiFieldsComboBox;
     procedure VariableSelect(Sender: TObject);
-    procedure UpdateCombo(Combo: TEpiFieldsComboBox; Variable: TParetoStatDiaglogVariable);
     procedure UpdateCombos();
   public
     constructor Create(TheOwner: TComponent); override;
@@ -32,9 +31,13 @@ type
 implementation
 
 uses
-  epidatafilestypes, Controls;
+  epidatafilestypes, Controls, ExtCtrls, StdCtrls;
 
-{ TParetoMainDialogView }
+const
+  XVARIABLE_TAG  = Ord(tvX);
+  BYVARIABLE_TAG = Ord(tvBy);
+
+  { TParetoMainDialogView }
 
 procedure TParetoMainDialogView.VariableSelect(Sender: TObject);
 var
@@ -44,43 +47,68 @@ begin
   ComboBox := TEpiFieldsComboBox(Sender);
   Field := TEpiField(ComboBox.Items.Objects[ComboBox.ItemIndex]);
 
-  if ComboBox = FXVariableCombo then
-    FDataModel.XVariable := Field;
+  case ComboBox.Tag of
+    XVARIABLE_TAG:
+      FDataModel.XVariable := Field;
+
+    BYVARIABLE_TAG:
+      FDataModel.ByVariable := Field;
+  end;
 
   UpdateCombos();
   DoModified();
 end;
 
-procedure TParetoMainDialogView.UpdateCombo(Combo: TEpiFieldsComboBox;
-  Variable: TParetoStatDiaglogVariable);
+procedure TParetoMainDialogView.UpdateCombos();
 var
   Field: TEpiField;
+  ComboBox: TEpiFieldsComboBox;
+  i: Integer;
 begin
-  Field := Combo.SelectedField;
-  Combo.Fields.Free;
-  Combo.Fields := nil;
-  Combo.Fields := FDataModel.GetComboFields(Variable);
-  Combo.ItemIndex := Combo.Items.IndexOfObject(Field);
-end;
+  for i := Low(FComboBoxes) to High(FComboBoxes) do
+    begin
+      ComboBox := FComboBoxes[i];
 
-procedure TParetoMainDialogView.UpdateCombos();
-begin
-  UpdateCombo(FXVariableCombo, tvX);
+      Field := ComboBox.SelectedField;
+      ComboBox.Fields.Free;
+      ComboBox.Fields := nil;
+      ComboBox.Fields := FDataModel.GetComboFields(TParetoStatDiaglogVariable(i));
+      ComboBox.ItemIndex := ComboBox.Items.IndexOfObject(Field);
+    end;
 end;
 
 constructor TParetoMainDialogView.Create(TheOwner: TComponent);
+var
+  ComboBox: TEpiFieldsComboBox;
+  PrevCombo: TEpiFieldsComboBox;
 begin
   inherited Create(TheOwner);
 
-  FXVariableCombo := TEpiFieldsComboBox.Create(TheOwner);
-  FXVariableCombo.Parent := self;
-  FXVariableCombo.AnchorParallel(akLeft, 10, Self);
-  FXVariableCombo.AnchorParallel(akRight, 10, Self);
-  FXVariableCombo.AnchorParallel(akTop, 10, Self);
-  FXVariableCombo.OnSelect := @VariableSelect;
-  FXVariableCombo.NoItemText := 'X Variable';
-  FXVariableCombo.Filter := IntFieldTypes + FloatFieldTypes + DateFieldTypes;
+  SetLength(FComboBoxes, Ord(High(TParetoStatDiaglogVariable)) + 1);
 
+  ComboBox := TEpiFieldsComboBox.Create(TheOwner);
+  ComboBox.Filter := DateFieldTypes + [ftInteger];
+  ComboBox.Parent := self;
+  ComboBox.AnchorParallel(akTop, 10, Self);
+  ComboBox.AnchorParallel(akLeft, 10, Self);
+  ComboBox.AnchorParallel(akRight, 10, Self);
+  ComboBox.OnSelect := @VariableSelect;
+  ComboBox.Tag := XVARIABLE_TAG;
+  ComboBox.NoItemText := 'Variable';
+  FComboBoxes[XVARIABLE_TAG] := ComboBox;
+  PrevCombo := ComboBox;
+
+  ComboBox := TEpiFieldsComboBox.Create(TheOwner);
+  ComboBox.Parent := self;
+  ComboBox.AnchorToNeighbour(akTop, 10, PrevCombo);
+  ComboBox.AnchorParallel(akLeft, 10, Self);
+  ComboBox.AnchorParallel(akRight, 10, Self);
+  ComboBox.OnSelect := @VariableSelect;
+  ComboBox.Tag := BYVARIABLE_TAG;
+  ComboBox.NoItemText := 'Stratifying Variable';
+  FComboBoxes[BYVARIABLE_TAG] := ComboBox;
+
+  EnterView();
   end;
 
 procedure TParetoMainDialogView.EnterView();
@@ -99,10 +127,14 @@ begin
 end;
 
 procedure TParetoMainDialogView.ResetView();
+var
+  Combobox: TCustomComboBox;
 begin
-  FXVariableCombo.ItemIndex := 0;
+  for Combobox in FComboBoxes do
+    Combobox.ItemIndex := 0;
 
   FDataModel.XVariable := nil;
+  FDataModel.BYVariable := nil;
 
   UpdateCombos();
   DoModified();
