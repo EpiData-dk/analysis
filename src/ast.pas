@@ -2172,6 +2172,7 @@ begin
   result.Insert('login',  [rtString]);
   result.Insert('c',      [rtUndefined]);
   result.Insert('cb',     [rtUndefined]);
+  result.Insert('nouc',   [rtUndefined]);
   result.Insert('force',  [rtUndefined]);
 end;
 

@@ -286,6 +286,9 @@ begin
                     else
                       Setting.FirstLineIsHeader := eflFalse;
 
+                  if ST.HasOption('nouc') then
+                    Setting.StringFieldsCanBeUppercase := false;
+
                   I.ImportTxt(Setting);
                 finally
                   Str.Free;
