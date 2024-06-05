@@ -15,6 +15,8 @@ type
     procedure PasteScript(Script: UTF8String);
   end;
 
+var
+  ScriptMediator: IScriptMediator;
 
 implementation
 

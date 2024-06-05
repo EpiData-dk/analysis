@@ -31,7 +31,7 @@ type
     procedure DoOutputLine(Line: TOutputLine); virtual;
     procedure DoOutputTable(Table: TOutputTable); virtual;
   protected
-    procedure WriteToStream(Const S: UTF8String);
+    procedure WriteToStream(Const S: UTF8String); virtual;
     function GetDialogFilter: UTF8String; virtual; abstract;
     property Creator: TOutputCreator read FCreator;
   public

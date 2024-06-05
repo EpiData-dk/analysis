@@ -328,7 +328,11 @@ uses
   epiexport, epiexportsettings, epieximtypes, episervice_asynchandler,
   token, ana_procs, epitools_statusbarparser, epifields_helper, typinfo,
   RegExpr, ana_globals, browse4, strutils, ana_documentfile, FileUtil,
-  about, graphcommandexecutor,
+  about,
+
+  {$IFNDEF VALIDATOR}
+  graphcommandexecutor,
+  {$ENDIF}
 
   // Set options
   options_fontoptions, options_filesoptions, options_table, options_string_array,
@@ -2459,9 +2463,10 @@ begin
     end;
 
   RT := TRunTest.Create(Self, FOutputCreator);
-  RT.RunTest(ST, FN);
-  RT.Free;
   ST.ExecResult := csrSuccess;
+  if not RT.RunTest(ST, FN) then
+    ST.ExecResult := csrFailed;
+  RT.Free;
 end;
 
 procedure TExecutor.ExecSystemCmd(ST: TCustomStringCommand);
@@ -3889,6 +3894,7 @@ begin
 end;
 
 procedure TExecutor.ExecGraphCommand(ST: TCustomGraphCommand);
+{$IFNDEF VALIDATOR}
 var
   GraphExecutor: TGraphCommandExecutor;
 begin
@@ -3896,6 +3902,10 @@ begin
   GraphExecutor.Execute(ST);
   GraphExecutor.Free;
 end;
+{$ELSE}
+begin
+end;
+{$ENDIF}
 
 procedure TExecutor.ExecUse(ST: TUse);
 var

@@ -157,7 +157,6 @@ type
       Label2:                          TLabel;
       Label3:                          TLabel;
 
-    procedure Button2Click(Sender: TObject);
     procedure CancelExecActionExecute(Sender: TObject);
     procedure CloseAllWindowsActionExecute(Sender: TObject);
     procedure MainEditColourCMDBGClick(Sender: TObject);
@@ -367,7 +366,7 @@ implementation
 uses
   LCLType, ast_builder, epiversionutils, parser, LazUTF8,
   outputgenerator_html, about, Clipbrd, epimiscutils, ast_types, epidatafilerelations,
-  epiv_custom_statusbar, datamodule, editor_form, LCLIntf, Symbol,
+  epiv_custom_statusbar, datamodule, LCLIntf, Symbol,
   ana_procs, ana_documentfile, LazFileUtils, epistringutils, ana_globals,
   browse4, strutils, epifields_helper, options_utils, options_fontoptions, epiv_checkversionform,
   wizard_form, editor_form2, outputgenerator_txt, graphformfactory;
@@ -377,18 +376,6 @@ uses
 procedure TMainForm.CancelExecActionExecute(Sender: TObject);
 begin
   Executor.Cancelled := true;
-end;
-
-procedure TMainForm.Button2Click(Sender: TObject);
-var
-  Frm: TForm;
-  EditorForm: TEditorForm;
-begin
-  //EditorForm := TEditorForm.Create(self);
-  //EditorForm.Executor := Executor;
-  //EditorForm.History := FHistory;
-  //EditorForm.OutputCreator := FOutputCreator;
-  //EditorForm.Show;
 end;
 
 procedure TMainForm.CloseAllWindowsActionExecute(Sender: TObject);
@@ -1601,7 +1588,7 @@ begin
   PageControl1.ActivePage := Sheet;
   Supports(Sheet, IAnaOutputViewer, FOutputViewer);
 
-  FOutputViewer.Initialize;
+  FOutputViewer.Initialize();
   FOutputViewer.UpdateFontAndSize(Executor);
   FOutputViewer.GetContextMenu.OnSaveOutputClick := @SaveOutputActionExecute;
 // put cursor back into command line;

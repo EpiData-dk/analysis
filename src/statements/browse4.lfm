@@ -9,10 +9,10 @@ object BrowseForm4: TBrowseForm4
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   Position = poDefault
-  LCLVersion = '2.0.0.4'
+  LCLVersion = '3.2.0.0'
   object ActionList1: TActionList
-    left = 360
-    top = 189
+    Left = 360
+    Top = 189
     object ShowValueAction: TAction
       Category = 'Valuelabels'
       Caption = 'Value'
@@ -99,8 +99,8 @@ object BrowseForm4: TBrowseForm4
     end
   end
   object PopupMenu1: TPopupMenu
-    left = 252
-    top = 252
+    Left = 252
+    Top = 252
     object ToogleValueLabelsMenuItem: TMenuItem
       Caption = 'Value/Labels'
       object MenuItem2: TMenuItem
@@ -179,7 +179,7 @@ object BrowseForm4: TBrowseForm4
   object FontDialog1: TFontDialog
     MinFontSize = 0
     MaxFontSize = 0
-    left = 251
-    top = 189
+    Left = 251
+    Top = 189
   end
 end

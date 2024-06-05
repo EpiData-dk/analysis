@@ -40,7 +40,7 @@ function GetFieldValues(AField: TEpiField): TStringList;
 implementation
 
 uses
-  LazUTF8, ana_globals, typinfo, main;
+  LazUTF8, ana_globals, typinfo, script_runner;
 
 procedure AddValueLabelOptions(STOptionList: TStatementOptionsMap);
 begin
@@ -202,7 +202,7 @@ procedure FontToSetOptions(AFont: TFont; const FontName, SizeName, ColorName,
         else
           S := S + Value + ';';
 
-        MainForm.InterfaceRunCommand(S);
+        ScriptMediator.RunScript(S);
       end;
   end;
 

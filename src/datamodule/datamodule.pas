@@ -77,8 +77,7 @@ implementation
 
 uses
   LazFileUtils, LazUTF8, epiimport, epimiscutils, episervice_asynchandler,
-  epiimportsettings, epiadmin, main,
-  Clipbrd, LCLType;
+  epiimportsettings, epiadmin, Clipbrd, LCLType;
 
 {$R *.lfm}
 
@@ -187,7 +186,6 @@ var
   Str: TStream;
   ImpClipBrd: Boolean;
   OldWarning: TOpenEpiWarningEvent;
-  T1, T2: TDateTime;
 begin
   DocFile := nil;
   ImpClipBrd := ST.HasOption('cb');
@@ -306,15 +304,11 @@ begin
 
     dfEPZ, dfEPX:
       begin
-        T1 := Now;
         if (not DocFile.OpenFile(FN)) then
           begin
             result := dfrError;
             exit;
           end;
-        T2 := Now;
-        if IsConsole then
-          WriteLn('LoadProject: ', FormatDateTime('NN:SS:ZZZ', T2-T1));
 
         if DocFile.Document.Admin.Initialized and
            (not DocFile.AuthedUser.Groups.HasRights([earExport]))

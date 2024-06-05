@@ -20,6 +20,19 @@
         <fpc.config>epidataanalysis.fpc</fpc.config>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>validator</id>
+            <properties>
+                <fpc.arch>x86_64</fpc.arch>
+                <fpc.os>linux</fpc.os>
+                <lcl.platform>nogui</lcl.platform>
+                <main.source>validator.lpr</main.source>
+                <fpc.config>validator.fpc</fpc.config>
+            </properties>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -66,7 +79,6 @@
                     </execution>
                     <execution>
                         <id>compile-sources</id>
-                        <phase>compile</phase>
                         <configuration>
                             <arguments combine.children="append">
                                 <argument>@${project.build.directory}/lazarus/lazarus.cfg</argument>
