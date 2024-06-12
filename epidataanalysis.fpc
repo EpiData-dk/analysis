@@ -17,11 +17,13 @@
 # Units:
 ## (find ./src/ -type d -not -iname "*backup*" -not -iname "*tests*" | sort)
 -Fu./src/
+-Fu./src/about
 -Fu./src/auxunits
+-Fu./src/cmdedit
 -Fu./src/commandtree
 -Fu./src/controls
+-Fu./src/datamodule
 -Fu./src/dialogs
--Fu./src/dialogs/graph
 -Fu./src/dialogs/stat_dialogs
 -Fu./src/dialogs/stat_dialogs/barchart
 -Fu./src/dialogs/stat_dialogs/ctable
@@ -47,13 +49,13 @@
 -Fu./src/graph/commands/barchart
 -Fu./src/graph/commands/epicurve
 -Fu./src/graph/commands/histogram
+-Fu./src/graph/commands/pareto
 -Fu./src/graph/commands/scatter
 -Fu./src/graph/commands/survival
--Fu./src/graph/commands/histogram
--Fu./src/graph/commands/epicurve
--Fu./src/graph/commands/pareto
 -Fu./src/graph/graphform
 -Fu./src/graph/options
+-Fu./src/graph/utils
+-Fu./src/main
 -Fu./src/output
 -Fu./src/parser
 -Fu./src/sidewindows
