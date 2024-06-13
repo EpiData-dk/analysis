@@ -21,6 +21,7 @@ type
     FOptText: array of TCustomEdit;
     FMinMaxValue: array of TCustomEdit;
     FMinMaxDate: array of TDateEdit;
+    FReplace: TCheckBox;
     FOnModified: IStatDiaglogViewModified;
     procedure SetText(Sender: TObject);
     procedure SetMinMaxText(Sender: TObject);
@@ -34,6 +35,7 @@ type
     procedure ResetView(); override;
     procedure SetModel(DataModel: TChartOptionsModel);
     procedure ResetMinMax;
+    procedure ReplaceBoxClicked(Sender: TObject);
   end;
 
 implementation
@@ -44,6 +46,7 @@ const
   XTITLE_TAG   = Ord(cbXT);
   YTITLE_TAG   = Ord(cbYT);
   COLOR_TAG    = Ord(cbC);
+  EXPORT_TAG   = Ord(cbE);
 
   XMIN_TAG     = Ord(cbnXMin);
   XMAX_TAG     = Ord(cbnXMax);
@@ -65,7 +68,8 @@ var
   DateText:  TDateEdit;
   LabelText: TLabel;
   OptLabels:    array of UTF8String = ('Main Title', 'Footnote',
-                      'X-Axis Title', 'Y-Axis Title', 'Colour Selection');
+                      'X-Axis Title', 'Y-Axis Title', 'Colour Selection',
+                      'Export to file', 'Replace graph file');
   MinMaxLabels: array of UTF8String = ('X-Axis Minumum', 'X-Axis Maximum',
                       'Y-Axis Minumum', 'Y-Axis Maximum');
   i:         Integer;
@@ -73,7 +77,7 @@ begin
   inherited Create(TheOwner);
 
   SetLength(FOptText,  Ord(High(TChartOptionEdit)) + 1);
-  SetLength(FOptLabel, Ord(High(TChartOptionEdit)) + 1);
+  SetLength(FOptLabel, Ord(High(OptLabels)) + 1);
   SetLength(FMinMaxValue,  Ord(High(TChartMinMax)) + 1);
   SetLength(FMinMaxDate,   Ord(High(TChartMinMax)) + 1);
   SetLength(FMinMaxLabel,  Ord(High(TChartMinMax)) + 1);
@@ -104,6 +108,24 @@ begin
       EditText.AnchorParallel(akRight, 10, Self);
       EditText.Parent := self;
     end;
+
+  // create checkbox for replace export file
+    FReplace := TCheckBox.Create(TheOwner);
+    LabelText := TLabel.Create(TheOwner);
+    FOptLabel[High(OptLabels)] := LabelText;
+    FReplace.OnClick := @ReplaceBoxClicked;
+    FReplace.AnchorToNeighbour(akTop, inputSpacing, FOptText[High(FOptText)]);
+    FReplace.AnchorToNeighbour(akLeft, 10, LabelText);
+    FReplace.AnchorParallel(akRight, 10, Self);
+    FReplace.Parent := Self;
+
+    LabelText.Caption := OptLabels[High(OptLabels)];
+    LabelText.AutoSize := false;
+    LabelText.Width := labelWidth;
+    LabelText.Alignment := taRightJustify;
+    LabelText.AnchorParallel(akLeft, 0, Self);
+    LabelText.AnchorParallel(akTop, 0, FReplace);
+    LabelText.Parent := self;
 
   // create MinMax Date and Edit controls without top alignment
   // controls are aligned in EnterView
@@ -155,6 +177,8 @@ begin
     FDataModel.YTitle := EditText.Caption;
   COLOR_TAG:
     FDataModel.Colors := EditText.Caption;
+  EXPORT_TAG:
+    FDataModel.ExportName := EditText.Caption;
   end;
   DoModified;
 end;
@@ -193,6 +217,11 @@ begin
     FDataModel.YMax := DateText.Caption;
   end;
   DoModified;
+end;
+
+procedure TChartOptionsView.ReplaceBoxClicked(Sender: TObject);
+begin
+  FDataModel.ExportReplace := TCheckBox(Sender).Checked;
 end;
 
 procedure TChartOptionsView.EnterView();
@@ -261,6 +290,7 @@ begin
   FDataModel.XTitle := '';
   FDataModel.YTitle := '';
   FDataModel.Colors := '';
+  FDataModel.ExportName := '';
 
   FDataModel.XMin := '';
   FDataModel.XMax := '';
