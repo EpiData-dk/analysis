@@ -10,9 +10,8 @@ uses
 
 type
 
-  TChartOptionEdit  = (cbT, cbF, cbXT, cbYT, cbC, cbE);
-  TChartMinMax      = (cbnXMin, cbnXMax, cbnYMin, cbnYMax);
-  TVarModelTypes    = (mtNoVars, mtScatter, mtFBarChart, mtEpicurve, mtHistogram, mtOther);
+  TChartOptionEdit  = (cbT, cbF, cbXT, cbYT, cbC, cbE, cbR, cbnXMin, cbnXMax, cbnYMin, cbnYMax);
+//  TVarModelTypes    = (mtNoVars, mtScatter, mtFBarChart, mtEpicurve, mtHistogram, mtOther);
   TMinMaxType       = (mmtXMin, mmtXMax, mmtYMin, mmtYMax);
   TMinMaxTypes      = set of TMinMaxType;
 
