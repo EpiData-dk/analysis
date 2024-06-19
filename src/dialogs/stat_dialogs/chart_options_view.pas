@@ -70,20 +70,19 @@ var
 function MaxWidth(AStrings: array of UTF8String): integer;
 var
   bmp: Graphics.TBitmap;
-  i: integer;
+  aString: UTF8String;
 begin
   result := 0;
-  for i := 0 to High(AStrings) do
-    begin
-      bmp := Graphics.TBitmap.Create;
-      result := max(bmp.Canvas.TextWidth(AStrings[i]), result);
-      bmp.Free;
-    end;
+  bmp := Graphics.TBitmap.Create;
+  bmp.Canvas.Font.Assign(Self.Font);
+  for aString in AStrings do
+    result := max(bmp.Canvas.TextWidth(aString), result);
+  bmp.Free;
 end;
 
 begin
   inherited Create(TheOwner);
-
+  // add width as a margin
   LabelWidth := MaxWidth(OptLabels) + 5;
   // add width for the calendar icon
   DateWidth  := MaxWidth(['0000-00-00']) + 36;
