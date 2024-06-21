@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 1498
+  Left = 2378
   Height = 663
-  Top = 226
+  Top = 275
   Width = 1010
   AllowDropFiles = True
   Caption = 'AMainForm'
@@ -43,7 +43,6 @@ object MainForm: TMainForm
       Top = 13
       Width = 75
       Caption = 'test'
-      OnClick = Button2Click
       ParentFont = False
       TabOrder = 0
     end
@@ -52,16 +51,16 @@ object MainForm: TMainForm
       Height = 25
       Top = 13
       Width = 75
-      OnClick = Button3Click
       Caption = 'SaveHtml'
       ParentFont = False
       TabOrder = 1
+      OnClick = Button3Click
     end
     object Label1: TLabel
       Left = 307
       Height = 16
       Top = 18
-      Width = 82
+      Width = 81
       Caption = 'Redraw Time:'
       ParentColor = False
       ParentFont = False
@@ -115,13 +114,13 @@ object MainForm: TMainForm
           Options = [coAllowClick, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 0
           Text = 'Name'
-          Width = 308
+          Width = 310
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
           Position = 1
           Text = 'Type'
-          Width = 268
+          Width = 270
         end      
         item
           Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAutoSpring, coAllowFocus, coEditable]
@@ -146,14 +145,15 @@ object MainForm: TMainForm
       Align = alBottom
       ItemHeight = 0
       MultiSelect = True
-      OnDblClick = HistoryListBoxDblClick
-      OnDrawItem = HistoryListBoxDrawItem
-      OnKeyDown = HistoryListBoxKeyDown
       ParentFont = False
       PopupMenu = HistoryPopupMenu
       Style = lbOwnerDrawFixed
       TabOrder = 2
+      TopIndex = -1
       Visible = False
+      OnDblClick = HistoryListBoxDblClick
+      OnDrawItem = HistoryListBoxDrawItem
+      OnKeyDown = HistoryListBoxKeyDown
     end
   end
   object RightSideSplitter: TSplitter

@@ -5,9 +5,8 @@ unit editor_form2;
 interface
 
 uses
-  Classes, SysUtils, auto_position_form, ComCtrls, Dialogs, UITypes,
-  editor_page, Forms, Menus, Graphics, executor, history, outputcreator, ast,
-  Token;
+  Classes, SysUtils, auto_position_form, ComCtrls, Dialogs, System.UITypes,
+  editor_page, Forms, Menus, Graphics, executor, history, outputcreator;
 
 type
 

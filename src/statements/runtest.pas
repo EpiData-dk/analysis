@@ -45,7 +45,7 @@ type
   public
     constructor Create(Executor: TExecutor; Output: TOutputCreator);
     destructor Destroy; override;
-    procedure RunTest(ST: TCustomStringCommand; Const StartDir: UTF8String);
+    function RunTest(ST: TCustomStringCommand; Const StartDir: UTF8String): boolean;
     procedure SyntaxError(Sender: TObject; ErrorToken: TToken; TokenTable: TTokenStack);
     property  Halted: boolean read FHalted;
   end;
@@ -347,7 +347,8 @@ begin
   inherited Destroy;
 end;
 
-procedure TRunTest.RunTest(ST: TCustomStringCommand; const StartDir: UTF8String);
+function TRunTest.RunTest(ST: TCustomStringCommand; const StartDir: UTF8String
+  ): boolean;
 var
   i, SumPlanned, SumFound, SumError: Integer;
   T: TOutputTable;
@@ -416,6 +417,8 @@ begin
 
   if Halted then
     T.Footer.Text := '{\b Runtest was halted during execution: LineNo = ' + IntToStr(FHaltedLine) + '}';
+
+  Result := (SumError = 0) and (SumPlanned = SumFound) and (not Halted);
 end;
 
 procedure TRunTest.SyntaxError(Sender: TObject; ErrorToken: TToken;

@@ -63,7 +63,7 @@ type
 implementation
 
 uses
-  main;
+  script_runner;
 
 { TOutputViewerPopup }
 
@@ -96,7 +96,7 @@ begin
   if Assigned(OnClearClick) then
     OnClearClick(Sender)
   else
-    MainForm.InterfaceRunCommand('cls;');
+    ScriptMediator.RunScript('cls;');
 end;
 
 procedure TOutputViewerPopup.SetOnCopyAllClick(AValue: TNotifyEvent);

@@ -52,6 +52,49 @@ jobs:
       - name: Compile ${{ matrix.profile }}
         run:  mvn compile -P${{ matrix.profile }}
 
+  validate:
+    name: Validate the execution
+    runs-on: ubuntu-latest
+    container:
+      image: epidata/fpcbuild:3.2.2
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.CI_PASSWORD }}
+          submodules: recursive
+
+      - name: Generate Maven settings.xml
+        uses: whelk-io/maven-settings-xml-action@v22
+        with:
+          output_file: "/etc/maven/settings.xml"
+          servers:
+            '[{
+            "id": "github",
+            "username": "${{ secrets.CI_USER }}",
+            "password": "${{ secrets.CI_PASSWORD }}"
+            }]'
+          repositories:
+            '[
+              {
+                "id": "central",
+                "url": "https://repo1.maven.org/maven2"
+              },
+              {
+                "id": "github",
+                "url": "https://maven.pkg.github.com/epidata-dk/parent/",
+                "snapshots": {
+                  "enabled": "true"
+                }                
+              }
+            ]'
+            
+      - name: Build and run test
+        run: |
+          mvn compile -Pvalidator
+          ./target/binary/x86_64-linux/validator validate/
+          
   documentation:
     name: Create Help File
     runs-on: ubuntu-latest

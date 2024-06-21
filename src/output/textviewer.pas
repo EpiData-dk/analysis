@@ -34,8 +34,8 @@ type
 implementation
 
 uses
-  Controls, outputgenerator_txt, ana_globals, StdCtrls, LCLType, options_fontoptions, Graphics,
-  options_utils, Clipbrd, main, SynEditTypes;
+  Controls, ana_globals, StdCtrls, LCLType, options_fontoptions, Graphics,
+  options_utils, Clipbrd, SynEditTypes;
 
 type
 

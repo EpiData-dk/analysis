@@ -1,0 +1,3 @@
+[submodule "validate"]
+	path = validate
+	url = git@github.com:EpiData-dk/validate.git

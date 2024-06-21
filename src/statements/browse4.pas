@@ -124,8 +124,8 @@ implementation
 
 uses
   options_utils, LCLIntf, LCLType, math, Clipbrd, epidatafilestypes,
-  ana_globals, main, ana_procs, contnrs, strutils, StdCtrls, Buttons,
-  options_fontoptions;
+  ana_globals, ana_procs, contnrs, strutils, StdCtrls, Buttons,
+  options_fontoptions, script_runner;
 
 var
   FormList: TComponentList = nil;

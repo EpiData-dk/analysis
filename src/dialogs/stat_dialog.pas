@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, auto_position_form, stat_dialog_contribution,
-  ComCtrls, ExtCtrls, executor, stat_dialog_footer, StdCtrls, script_runner,
+  ComCtrls, ExtCtrls, executor, stat_dialog_footer, StdCtrls,
   Controls;
 
 type
@@ -26,10 +26,8 @@ type
     procedure PageControlChanging(Sender: TObject; var AllowChange: Boolean);
     procedure PageControlChange(Sender: TObject);
   private
-    FScriptRunner: IScriptMediator;
     FViews: TStatDialogContributionViewList;
     FContribution: IStatDialogContribution;
-    procedure SetScriptRunner(AValue: IScriptMediator);
     procedure SetupViews();
     procedure UpdateButtonPanel();
   private
@@ -43,7 +41,6 @@ type
   public
     constructor Create(TheOwner: TComponent; Contribution: IStatDialogContribution; Executor: TExecutor);
     procedure ResetViews();
-    property ScriptRunner: IScriptMediator read FScriptRunner write SetScriptRunner;
   end;
 
 var
@@ -52,7 +49,7 @@ var
 implementation
 
 uses
-  LCLType, LCLProc, Forms;
+  LCLType, LCLProc, Forms, script_runner;
 
 type
 
@@ -135,12 +132,6 @@ begin
   ResetViews();
 end;
 
-procedure TStatDialog.SetScriptRunner(AValue: IScriptMediator);
-begin
-  if FScriptRunner = AValue then Exit;
-  FScriptRunner := AValue;
-end;
-
 procedure TStatDialog.UpdateButtonPanel();
 var
   IsDefined: Boolean;
@@ -167,8 +158,7 @@ end;
 
 procedure TStatDialog.ExecuteScript(CloseAfterRun: Boolean);
 begin
-  if (Assigned(ScriptRunner)) then
-    ScriptRunner.RunScript(FContribution.GenerateScript());
+  ScriptMediator.RunScript(FContribution.GenerateScript());
 
   if (CloseAfterRun) then
     Close;
@@ -176,8 +166,7 @@ end;
 
 procedure TStatDialog.PasteScript();
 begin
-  if (Assigned(ScriptRunner)) then
-    ScriptRunner.PasteScript(FContribution.GenerateScript());
+  ScriptMediator.PasteScript(FContribution.GenerateScript());
 end;
 
 procedure TStatDialog.ShowHelp();

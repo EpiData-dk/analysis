@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, ComCtrls, outputviewer_types, HtmlView, outputgenerator_base,
-  executor, menus;
+  executor, menus, script_runner;
 
 type
 

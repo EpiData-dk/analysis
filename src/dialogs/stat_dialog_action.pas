@@ -32,7 +32,7 @@ type
 implementation
 
 uses
-  main;
+  script_runner;
 
 type
   { TStatDialogAction }
@@ -81,7 +81,7 @@ begin
 
   if (not Assigned(FExecutor.DataFile)) then
     begin
-      Mainform.InterfaceRunCommand('read;');
+      ScriptMediator.RunScript('read;');
 
       if (not Assigned(FExecutor.DataFile)) then
         Exit;
@@ -90,7 +90,6 @@ begin
   if (not FDialogMap.Find(Contribution.GetCaption(), Dialog)) then
     begin
       Dialog := TStatDialog.Create(Self, Contribution, FExecutor);
-      Dialog.ScriptRunner := MainForm;
       FDialogMap.Add(Contribution.GetCaption(), Dialog);
     end
   else
@@ -102,6 +101,7 @@ end;
 constructor TStatDialogFactory.Create(AOwner: TComponent; Executor: TExecutor);
 begin
   inherited Create(AOwner);
+
   FExecutor := Executor;
   FDialogMap := TStringHashMap.Create(1023, false);
 end;

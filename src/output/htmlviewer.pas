@@ -56,7 +56,7 @@ function IsHTMLSupported: boolean;
 
 Implementation
 
-Uses Main, cef3ref, cef3scp, outputgenerator_html, regexpr, ana_globals;
+Uses cef3ref, cef3scp, outputgenerator_html, regexpr, ana_globals;
 
 var
   fHtmlSupported: boolean;

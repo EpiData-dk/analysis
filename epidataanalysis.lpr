@@ -15,7 +15,7 @@ uses
   Interfaces, sysutils, Forms,
 
   // Required EpiData units
-  ana_procs, wizard_form, datamodule, main,
+  ana_procs, wizard_form, datamodule, main, script_runner,
 
   // ONLY ADD Stat Dialogs HERE
   freq_contribution, tables_contribution, ctable_contribution,
@@ -54,6 +54,7 @@ begin
 
   Application.CreateForm(TaDM, aDM);
   Application.CreateForm(TMainForm, MainForm);
+  ScriptMediator := MainForm;
   Application.Run;
 end.
 
