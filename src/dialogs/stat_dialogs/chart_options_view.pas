@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, stat_dialog_contribution, StdCtrls, ExtCtrls, EditBtn,
-  Controls, chart_options_model, executor, epidatafilestypes,
+  Controls, chart_options_model,
   stat_dialog_custom_view;
 
 type
@@ -17,13 +17,11 @@ type
   private
     FDataModel: TChartOptionsModel;
     FOptLabel: array of TLabel;
-    FMinMaxLabel: array of TLabel;
     FOptText: array of TCustomEdit;
-    FMinMaxValue: array of TCustomEdit;
     FMinMaxDate: array of TDateEdit;
+    FReplace: TCheckBox;
     FOnModified: IStatDiaglogViewModified;
     procedure SetText(Sender: TObject);
-    procedure SetMinMaxText(Sender: TObject);
     procedure SetMinMaxDate(Sender: TObject);
   public
     constructor Create(TheOwner: TComponent); override;
@@ -34,9 +32,12 @@ type
     procedure ResetView(); override;
     procedure SetModel(DataModel: TChartOptionsModel);
     procedure ResetMinMax;
+    procedure ReplaceBoxClicked(Sender: TObject);
   end;
 
 implementation
+
+uses Graphics, math;
 
 const
   TITLE_TAG    = Ord(cbT);
@@ -44,97 +45,119 @@ const
   XTITLE_TAG   = Ord(cbXT);
   YTITLE_TAG   = Ord(cbYT);
   COLOR_TAG    = Ord(cbC);
-
+  EXPORT_TAG   = Ord(cbE);
+  REPLACE_TAG  = Ord(cbR);
   XMIN_TAG     = Ord(cbnXMin);
   XMAX_TAG     = Ord(cbnXMax);
   YMIN_TAG     = Ord(cbnYMin);
   YMAX_TAG     = Ord(cbnYMax);
+  inputSpacing = 10;
 
 { TChartOptionsView }
 
 constructor TChartOptionsView.Create(TheOwner: TComponent);
-const
-  // not guaranteed to fit every language, but calculating it from the labels
-  // is not simple (LabelText.Width does not work)
-  labelWidth = 120;
-  dateSize   = 120;
-  inputSpacing = 10;
-
 var
-  EditText:  TCustomEdit;
-  DateText:  TDateEdit;
-  LabelText: TLabel;
+  prevControl: TWinControl;
+  LabelWidth,
+  DateWidth: Integer;
   OptLabels:    array of UTF8String = ('Main Title', 'Footnote',
-                      'X-Axis Title', 'Y-Axis Title', 'Colour Selection');
-  MinMaxLabels: array of UTF8String = ('X-Axis Minumum', 'X-Axis Maximum',
+                      'X-Axis Title', 'Y-Axis Title', 'Colour Selection',
+                      'Export to file', 'Replace graph file',
+                      'X-Axis Minumum', 'X-Axis Maximum',
                       'Y-Axis Minumum', 'Y-Axis Maximum');
   i:         Integer;
+
+function MaxWidth(AStrings: array of UTF8String): integer;
+var
+  bmp: Graphics.TBitmap;
+  aString: UTF8String;
+begin
+  result := 0;
+  bmp := Graphics.TBitmap.Create;
+  bmp.Canvas.Font.Assign(Self.Font);
+  for aString in AStrings do
+    result := max(bmp.Canvas.TextWidth(aString), result);
+  bmp.Free;
+end;
+
 begin
   inherited Create(TheOwner);
+  // add width as a margin
+  LabelWidth := MaxWidth(OptLabels) + 5;
+  // add width for the calendar icon
+  DateWidth  := MaxWidth(['0000-00-00']) + 36;
 
   SetLength(FOptText,  Ord(High(TChartOptionEdit)) + 1);
-  SetLength(FOptLabel, Ord(High(TChartOptionEdit)) + 1);
-  SetLength(FMinMaxValue,  Ord(High(TChartMinMax)) + 1);
-  SetLength(FMinMaxDate,   Ord(High(TChartMinMax)) + 1);
-  SetLength(FMinMaxLabel,  Ord(High(TChartMinMax)) + 1);
+  SetLength(FOptLabel, Length(FOptText));
+  SetLength(FMinMaxDate, Length(FOptText));
 
-  // create options
-  for i := Low(FOptText) to High(FOptText) do
+  // create option labels and edit fields
+  for i := TITLE_TAG to YMAX_TAG do
     begin
-      EditText  := TCustomEdit.Create(TheOwner);
-      FOptText[i] := EditText;
-      LabelText := TLabel.Create(TheOwner);
-      FOptLabel[i] := LabelText;
+      FOptLabel[i] := TLabel.Create(TheOwner);
 
-      LabelText.Caption := OptLabels[i];
-      LabelText.AutoSize := false;
-      LabelText.Width := labelWidth;
-      LabelText.Alignment := taRightJustify;
-      LabelText.AnchorParallel(akLeft, 0, Self);
-      LabelText.AnchorParallel(akTop, 0, EditText);
-      LabelText.Parent := self;
+      case i of
+        REPLACE_TAG:
+          begin
+          // create checkbox for replace export file
+            FReplace := TCheckBox.Create(TheOwner);
+            with FReplace do
+            begin
+              OnClick := @ReplaceBoxClicked;
+              AnchorToNeighbour(akTop, inputSpacing, prevControl);
+              AnchorToNeighbour(akLeft, 10, FOptLabel[i]);
+              AnchorParallel(akRight, 10, Self);
+              Parent := Self;
+              Tag := i;
+            end;
+            prevControl := FReplace;
+          end;
+        else
+          begin
+          // create a text box for all other options
+            FOptText[i] := TCustomEdit.Create(TheOwner);
+            with FOptText[i] do
+            begin
+              Parent := self;
+              OnChange := @SetText;
+              Tag := i;
+              if (i=TITLE_TAG) then
+                AnchorParallel(akTop, 0, Self)
+              else if (i<REPLACE_TAG) then
+                AnchorToNeighbour(akTop, inputSpacing, prevControl);
+              // MinMax entries do not have top alignment
+              AnchorToNeighbour(akLeft, 10, FOptLabel[i]);
+              AnchorParallel(akRight, 10, Self);
+            end;
+            prevControl := FOptText[i];
+          end;
+      end;
 
-      if (i=0) then
-        EditText.AnchorParallel(akTop, 0, Self)
-      else
-        EditText.AnchorToNeighbour(akTop, inputSpacing, FOptText[i - 1]);
-      EditText.AnchorToNeighbour(akLeft, 10, LabelText);
-      EditText.OnChange := @SetText;
-      EditText.Tag := i;
-      EditText.AnchorParallel(akRight, 10, Self);
-      EditText.Parent := self;
+      with FOptLabel[i] do
+      begin
+        Parent := self;
+        Caption := OptLabels[i];
+        AutoSize := false;
+        Width := LabelWidth;
+        Alignment := taRightJustify;
+        AnchorParallel(akTop,0, prevControl);
+        AnchorParallel(akLeft, 0, Self);
+      end;
     end;
 
-  // create MinMax Date and Edit controls without top alignment
+  // MinMax Date controls do not have top alignment
   // controls are aligned in EnterView
-  for i := Low(FMinMaxValue) to High(FMinMaxValue) do
+  for i := XMIN_TAG to YMAX_TAG do
     begin
-      EditText := TCustomEdit.Create(TheOwner);
-      FMinMaxValue[i] := EditText;
-      DateText := TDateEdit.Create(TheOwner);
-      FMinMaxDate[i] := DateText;
-      LabelText := TLabel.Create(TheOwner);
-      FMinMaxLabel[i] := LabelText;
-
-      LabelText.Caption := MinMaxLabels[i];
-      LabelText.AutoSize := false;
-      LabelText.Width := labelWidth;
-      LabelText.Alignment := taRightJustify;
-      LabelText.AnchorParallel(akLeft, 0, Self);
-      LabelText.Parent := self;
-
-      EditText.AnchorToNeighbour(akLeft, 10, LabelText);
-      EditText.Tag := i;
-      EditText.OnChange := @SetMinMaxText;
-      EditText.Parent := self;
-      FMinMaxValue[i] := EditText;
-
-      DateText.AnchorToNeighbour(akLeft, 10, LabelText);
-      DateText.Width := DateSize;
-      DateText.Tag := i;
-      DateText.OnChange := @SetMinMaxDate;
-      DateText.Parent := self;
-      FMinMaxDate[i] := DateText;
+      FMinMaxDate[i] := TDateEdit.Create(TheOwner);
+      with FMinMaxDate[i] do
+      begin
+        AnchorParallel(akLeft, 0, FOptLabel[i]);
+        Width := DateWidth;
+        Tag := i;
+        OnChange := @SetMinMaxDate;
+        Parent := self;
+      end;
     end;
 
 end;
@@ -155,16 +178,8 @@ begin
     FDataModel.YTitle := EditText.Caption;
   COLOR_TAG:
     FDataModel.Colors := EditText.Caption;
-  end;
-  DoModified;
-end;
-
-procedure TChartOptionsView.SetMinMaxText(Sender: TObject);
-var
-  EditText: TCustomEdit;
-begin
-  EditText := TCustomEdit(Sender);
-  case EditText.Tag of
+  EXPORT_TAG:
+    FDataModel.ExportName := EditText.Caption;
   XMIN_TAG:
     FDataModel.XMin := EditText.Caption;
   XMAX_TAG:
@@ -195,31 +210,37 @@ begin
   DoModified;
 end;
 
+procedure TChartOptionsView.ReplaceBoxClicked(Sender: TObject);
+begin
+  FDataModel.ExportReplace := TCheckBox(Sender).Checked;
+end;
+
 procedure TChartOptionsView.EnterView();
 var
-  prevEntry: TWinControl; // used to line up controls
+  prevLabel: TLabel; // used to line up controls
 
   procedure setMinMaxEntry(isDate: Boolean; ix: Integer);
   begin
+    FOptLabel[ix].AnchorToNeighbour(akTop, inputSpacing, prevLabel);
+    FOptLabel[ix].Visible := true;
+    prevLabel := FOptLabel[ix];
     if (isDate) then
       begin
         FMinMaxDate[ix].Visible := true;
-        FMinMaxDate[ix].AnchorToNeighbour(akTop, 10, prevEntry);
-        prevEntry := FMinMaxDate[ix];
+        FMinMaxDate[ix].AnchorParallel(akTop, 0, prevLabel);
+        FMinMaxDate[ix].AnchorToNeighbour(akLeft, 10, prevLabel);
       end
     else
       begin
-        FMinMaxValue[ix].Visible := true;
-        FMinMaxValue[ix].AnchorToNeighbour(akTop, 10, prevEntry);
-        prevEntry := FMinMaxValue[ix];
+        FOptText[ix].Visible := true;
+        FOptText[ix].AnchorParallel(akTop, 0, prevLabel);
+        FOptText[ix].AnchorToNeighbour(akLeft, 10, prevLabel);
       end;
-    FMinMaxLabel[ix].AnchorParallel(akTop, 0, prevEntry);
-    FminMaxLabel[ix].Visible := true;
   end;
 
 begin
   ResetMinMax;
-  prevEntry := FOptText[high(FOptText)];
+  prevLabel := FOptLabel[REPLACE_TAG];
   if (FDataModel.UseX) then
     begin
       if (mmtXMin in FDataModel.MinMax) then
@@ -253,27 +274,28 @@ end;
 
 procedure TChartOptionsView.ResetView();
 var 
-  EditText: TCustomEdit;
-  DateText: TDateEdit;
+  i: integer;
 begin
   FDataModel.Title := '';
   FDataModel.Footnote := '';
   FDataModel.XTitle := '';
   FDataModel.YTitle := '';
   FDataModel.Colors := '';
-
+  FDataModel.ExportName := '';
+  FDataModel.ExportReplace := false;
   FDataModel.XMin := '';
   FDataModel.XMax := '';
   FDataModel.YMin := '';
   FDataModel.YMax := '';
 
-  for EditText in FOptText do
-    EditText.Text := '';
-  for EditText in FMinMaxValue do
-    EditText.Text := '';
-  for DateText in FMinMaxDate do
-    DateText.Text := '';
-
+  for i := TITLE_TAG to EXPORT_TAG do
+    FOptText[i].Text := '';
+  FReplace.Checked := false;
+  for i := XMIN_TAG to YMAX_TAG do
+    begin
+      FOptText[i].Text := '';
+      FMinMaxDate[i].Text := '';
+    end;
   ResetMinMax;
   DoModified;
 end;
@@ -290,8 +312,8 @@ var
 begin
   for i := XMIN_TAG to YMAX_TAG do
     begin
-      FMinMaxValue[i].Visible := false;
-      FMinMaxLabel[i].Visible := false;
+      FOptText[i].Visible := false;
+      FOptLabel[i].Visible := false;
       FMinMaxDate[i].Visible := false;
     end;
 end;
