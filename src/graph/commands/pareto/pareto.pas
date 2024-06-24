@@ -76,6 +76,7 @@ var
   StratChartIndex:     UTF8String;
   i:                   Integer;
 begin
+  Command.ExecResult := csrFailed;
   FVariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   FColor               := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, msg);
@@ -167,7 +168,7 @@ begin
       XVar.Free;
       dummyVar.Free;
     end;  // create charts
-
+  Command.ExecResult := csrSuccess;
   StratifyVarNames.Free;
   VarNames.Free;
   DFVars.Free;

@@ -52,6 +52,7 @@ var
   sPoints, sLine: Boolean;
   msg: UTF8String;
 begin
+  Command.ExecResult := csrFailed;
   sColor := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, msg);
   if (msg <> '') then
   begin
@@ -128,6 +129,7 @@ begin
       .SetShowAxisMarksAsDates(YVar.FieldType in DateFieldTypes);
 
     Result.AddChart(Chart, ChartConfiguration);
+    Command.ExecResult := csrSuccess;
   end;
 end;
 
