@@ -33,7 +33,9 @@ type
   end;
 
   { TFreqCommand }
-
+// TODO: Jamie - add !w:=weightVar
+// This should be as simple as using the AggrSum function on w instead of AggrCount on var
+// be sure to restrict the dataset to records where w is not missing, even when !m is not specified
   TFreqCommand = class
   private
     FExecutor: TExecutor;
