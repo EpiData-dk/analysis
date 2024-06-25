@@ -229,23 +229,20 @@ begin
 
   if Assigned(ST.StringExpr) then
     S := ExpandFileNameUTF8(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
-//    S := ST.StringExpr.AsString;
 
+  ST.ExecResult := csrFailed;;
   if FileExistsUTF8(S) then
     begin
       if (not DeleteFileUTF8(S)) then
         begin
           FExecutor.Error('Unable to delete "' + S + '"');
-          ST.ExecResult := csrFailed;
           Exit;
         end;
-
       FOutputCreator.DoInfoAll(S + ' deleted');
       ST.ExecResult := csrSuccess;
     end
   else
     FOutputCreator.DoWarning('"' + S + '"' + ' does not exist');
-    ST.ExecResult := csrSuccess;
 end;
 
 constructor TSystemCmd.Create(AExecutor: TExecutor;
