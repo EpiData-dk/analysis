@@ -27,6 +27,8 @@ type
     function FieldsFromStrings(S: TStrings; DF: TEpiDataFile): TEpiFields;
     procedure TransferData(DestField, SrcField: TEpiField; DestIdx, SrcIdx: Integer; MergeOption: TMergeOption = moReplace);
     procedure CopyStructure(DstDatafile, SrcDatafile: TEpiDataFile);
+    function MergableFieldsAreCompatible(MainField, MergeField: TEpiField;
+      Options: TOptionList; out ErrorMessage: UTF8String): boolean;
   protected
     function InternalCheckAndOpenFile(ST: TCustomMergeCommand; out
       Docfile: TEpiDocumentFile): boolean;
@@ -213,6 +215,24 @@ begin
 
   RefMap.FixupReferences;
   RefMap.Free;
+end;
+
+function TMerge.MergableFieldsAreCompatible(MainField, MergeField: TEpiField;
+  Options: TOptionList; out ErrorMessage: UTF8String): boolean;
+begin
+  ErrorMessage := '';
+
+  if (Options.HasOption('ignorecase')) and
+     (MainField.FieldType in StringFieldTypes) and
+     (MergeField.FieldType in StringFieldTypes)
+  then
+    Result := not (MainField.FieldType = ftMemo) xor (MergeField.FieldType = ftMemo)
+  else
+    Result := MainField.FieldType = MergeField.FieldType;
+
+  if (not Result) then
+    ErrorMessage := Format('Type conflict for variable "%s": External dataset: (%s). Internal dataset (%s)',
+           [MainField.Name, EpiTypeNames[MergeField.FieldType], EpiTypeNames[MainField.FieldType]]);
 end;
 
 function TMerge.InternalCheckAndOpenFile(ST: TCustomMergeCommand; out Docfile: TEpiDocumentFile): boolean;
@@ -454,7 +474,7 @@ var
   TmpRecsA, TmpRecsB: TBoundArray;
   MergeOpt: TMergeOption;
   PrevCompare: TValueRelationship;
-  TableLookup: Boolean;
+  TableLookup, CaseSensitive: Boolean;
   Opts: TOptionList;
   NewST: TCustomNew;
   VLList: TValueLabelPairs;
@@ -463,7 +483,7 @@ var
   S: UTF8String;
   NewCaption: String;
 
-  function CompareKeys(MainIdx, MergeIdx: Integer): TValueRelationship;
+  function CompareKeys(MainIdx, MergeIdx: Integer; CaseSensitive: Boolean): TValueRelationship;
   var
     MainField, MergeField: TEpiField;
     I: Integer;
@@ -475,7 +495,7 @@ var
         MainField := MainKeyFields[i];
         MergeField := MergeKeyFields[i];
 
-        CompareFieldRecords(Result, MainField, MergeField, MainIdx, MergeIdx);
+        CompareFieldRecords(Result, MainField, MergeField, MainIdx, MergeIdx, CaseSensitive);
         if (Result <> 0) then
           Exit;
       end;
@@ -523,10 +543,12 @@ begin
   MainKeyFields  := FieldsFromStrings(Varnames, MainDF);
   MergeKeyFields := FieldsFromStrings(Varnames, MergeDF);
 
+  CaseSensitive := not ST.HasOption('ignorecase');
+
   KeyChecker := TEpiIntegrityChecker.Create;
   // If we are performing a table lookup, then check that the "table" passes the index integrity check.
   if (ST.HasOption('table')) then
-    if (not KeyChecker.IndexIntegrity(MergeDF, TmpRecsA, TmpRecsB, true, MergeKeyFields)) then
+    if (not KeyChecker.IndexIntegrity(MergeDF, TmpRecsA, TmpRecsB, true, MergeKeyFields, CaseSensitive)) then
       begin
         FExecutor.Error(
           Format('External lookup table dataset "%s" has a non-unique key combination', [MergeDF.Name]) + LineEnding +
@@ -537,7 +559,7 @@ begin
       end;
 
   if (not ST.HasOption('table')) and
-     (not KeyChecker.IndexIntegrity(MainDF, TmpRecsA, TmpRecsB, true, MainKeyFields))
+     (not KeyChecker.IndexIntegrity(MainDF, TmpRecsA, TmpRecsB, true, MainKeyFields, CaseSensitive))
   then
     begin
       FExecutor.Error(
@@ -614,7 +636,7 @@ begin
         (MergeRunner < MergeDF.Size)
   do
     begin
-      case CompareKeys(MainRunner, MergeRunner) of
+      case CompareKeys(MainRunner, MergeRunner, CaseSensitive) of
         LessThanValue:
           begin
             Inc(MainRunner);
@@ -757,7 +779,7 @@ var
   i: Integer;
   LastModified: TDateTime;
   TmpDoc: TEpiDocument;
-  S: UTF8String;
+  S, ErrorMessage: UTF8String;
   VariableCheck: Boolean;
 
   function DoDatafilesCheck(Datafiles: TEpiDataFiles): boolean;
@@ -858,9 +880,9 @@ begin
           end;
 
           MainF := FExecutor.DataFile.Fields.FieldByName[V.Ident];
-          if (MainF.FieldType <> MergeF.FieldType) then
+          if not MergableFieldsAreCompatible(MainF, MergeF, ST.Options, ErrorMessage) then
           begin
-            FExecutor.Error(Format('Type conflict for variable "%s": External dataset: (%s). Internal dataset (%s)', [V.Ident, EpiTypeNames[MergeF.FieldType], EpiTypeNames[MainF.FieldType]]));
+            FExecutor.Error(ErrorMessage);
             VariableCheck := False;
           end;
         end;

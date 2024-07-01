@@ -2255,6 +2255,7 @@ begin
   result.Insert('replace', [rtUndefined]);
   result.Insert('table',   [rtUndefined]);
   result.Insert('nu',      [rtUndefined]);
+  result.Insert('ignorecase', [rtUndefined]);
   result.Insert('label',   AllResultDataTypes);
   result.Insert('r',       [rtUndefined, rtObject], [], [evfAsObject, evfExternal]);
 end;
