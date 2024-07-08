@@ -483,7 +483,6 @@ var
   S: UTF8String;
   NewCaption: String;
 
-  mainFT, mergeFT: TEpiFieldType; // debug
   function CompareKeys(MainIdx, MergeIdx: Integer; CaseSensitive: Boolean): TValueRelationship;
   var
     MainField, MergeField: TEpiField;
