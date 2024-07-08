@@ -483,6 +483,7 @@ var
   S: UTF8String;
   NewCaption: String;
 
+  mainFT, mergeFT: TEpiFieldType; // debug
   function CompareKeys(MainIdx, MergeIdx: Integer; CaseSensitive: Boolean): TValueRelationship;
   var
     MainField, MergeField: TEpiField;
@@ -494,7 +495,6 @@ var
       begin
         MainField := MainKeyFields[i];
         MergeField := MergeKeyFields[i];
-
         CompareFieldRecords(Result, MainField, MergeField, MainIdx, MergeIdx, CaseSensitive);
         if (Result <> 0) then
           Exit;
@@ -544,6 +544,20 @@ begin
   MergeKeyFields := FieldsFromStrings(Varnames, MergeDF);
 
   CaseSensitive := not ST.HasOption('ignorecase');
+
+  if (not CaseSensitive) then
+    begin
+      FOutputCreator.DoInfoAll('Warning: !ignorecase specified' + LineEnding +
+          'All string keyfields will have uppercase values. This may lead to duplicate keys.');
+      for MainF in MainKeyFields do
+        if (MainF.FieldType in StringFieldTypes) then
+          for i:=0 to MainF.Size - 1 do
+            MainF.AsString[i] := UTF8UpperCase(MainF.AsString[i]);
+      for MergeF in MergeKeyFields do
+        if (MergeF.FieldType in StringFieldTypes) then
+          for i:=0 to MergeF.Size - 1 do
+            MergeF.AsString[i] := UTF8UpperCase(MergeF.AsString[i]);
+    end;
 
   KeyChecker := TEpiIntegrityChecker.Create;
   // If we are performing a table lookup, then check that the "table" passes the index integrity check.
