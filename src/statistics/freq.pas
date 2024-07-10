@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, ast, epidatafiles, epidatafilestypes, epicustombase,
-  executor, result_variables, epifields_helper, outputcreator;
+  executor, result_variables, epifields_helper, outputcreator, math;
 
 
 type
@@ -41,6 +41,8 @@ type
     FValuelabelOutput: TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
     FDecimals: Integer;
+    FHasWeights: Boolean;
+    FWeightVarName: String;
     function  DoCalcFreqTable(InputDF: TEpiDataFile; VariableName: String; Out RefMap: TEpiReferenceMap): TFreqDatafile;
     procedure PrepareResultVariables(Variables: TStrings);
     procedure DoResultVariables(ResultDF: TFreqDatafile; VariableName: String; ValueLabelType: TEpiGetValueLabelType);
@@ -65,43 +67,72 @@ type
 
   TFreqAggrFunc = class(TAggrFunc)
   private
-    FTotalCount: EpiInteger;
-    FCount: EpiInteger;
-    FCumCount: EpiInteger;
+    FTotalCount: EpiFloat;
+    FCount: EpiFloat;
+    FCumCount: EpiFloat;
     FCountV: TEpiField;
     FPercV: TEpiField;
     FCumV: TEpiField;
     FLowCIV: TEpiField;
     FHighCIV: TEpiField;
+    FWeights: Boolean;
   public
     constructor Create(AResultVarName: UTF8String; AAggregateVector: TEpiField);
     procedure Execute(Idx: integer); override;
     procedure SetOutput(Idx: integer); override;
     procedure Reset(); override;
     procedure CreateResultVector(DataFile: TEpiDataFile); override;
+    property Weights: Boolean read FWeights write FWeights;
+    property TotalCount: EpiFloat read FTotalCount;
   end;
 
 constructor TFreqAggrFunc.Create(AResultVarName: UTF8String;
   AAggregateVector: TEpiField);
+var
+  i: integer;
 begin
-  inherited Create(AResultVarName, AAggregateVector, afCount);
+  FWeights := AResultVarName <> '';
+  if (FWeights) then
+    begin
+      inherited Create(AResultVarName, AAggregateVector, afSum);
+      FTotalCount := 0;
+      for i := 0 to AAggregateVector.Size - 1 do
+        if not AAggregateVector.IsMissing[i] then
+          FTotalCount += AAggregateVector.AsFloat[i];
+    end
+  else
+    begin
+      inherited Create(AResultVarName, AAggregateVector, afCount);
+      FTotalCount := AAggregateVector.Size;
+    end;
 end;
 
 procedure TFreqAggrFunc.Execute(Idx: integer);
 begin
-  Inc(FCount);
-  Inc(FCumCount);
+  if (FWeights) then
+    begin
+      if AggregateVector.IsMissing[idx] then exit;
+      FCount := FCount + AggregateVector.AsFloat[idx];
+      FCumCount := FCumCount + AggregateVector.AsFloat[idx];
+    end
+  else
+    begin
+      FCount += 1;
+      FCumCount += 1;
+    end;
 end;
 
 procedure TFreqAggrFunc.SetOutput(Idx: integer);
 var
+  ACount: EpiInteger;
   CIHigh, CILow: EpiFloat;
 begin
-  FCountV.AsInteger[Idx] := FCount;
+  ACount := math.floor(FCount);
+  FCountV.AsInteger[Idx] := ACount;
   FPercV.AsFloat[Idx]    := (FCount / FTotalCount) * 100;
   FCumV.AsFloat[Idx]        := (FCumCount / FTotalCount) * 100;
 
-  EpiProportionCI(FCount, FTotalCount, CIHigh, CILow);
+  EpiProportionCI(ACount, floor(FTotalCount), CIHigh, CILow);
   FLowCIV.AsFloat[Idx]      := CILow * 100;
   FHighCIV.AsFloat[Idx]     := CIHigh * 100;
 end;
@@ -120,7 +151,7 @@ begin
   FPercV        := DataFile.NewField(ftFloat);     // TFreqDatafile(DataFile).Percent;
   FPercV.Name   := 'freq_percent';
   FCumV         := DataFile.NewField(ftFloat);     // TFreqDatafile(DataFile).CumPercent;
-  FCumV.Name    := 'freq_cummilative';
+  FCumV.Name    := 'freq_cumulative';
   FLowCIV       := DataFile.NewField(ftFloat);     // TFreqDatafile(DataFile).LowCI;
   FLowCIV.Name  := 'freq_lowci';
   FHighCIV      := DataFile.NewField(ftFloat);     // TFreqDatafile(DataFile).HighCI;
@@ -152,14 +183,16 @@ begin
   VarNames.Add(VariableName);
 
   FunctionList := TAggrFuncList.Create(true);
-  Func := TFreqAggrFunc.Create('', InputDF.Field[0]);
-  Func.FTotalCount := InputDF.Size;
+  if (FHasWeights) then
+    Func := TFreqAggrFunc.Create('w', InputDF.Field[0])
+  else
+    Func := TFreqAggrFunc.Create('', InputDF.Field[0]);
   FunctionList.Add(Func);
 
   Aggregator := TAggregate.Create(FExecutor, FOutputCreator);
   Aggregator.ResultDataFileClass := TFreqDatafile;
   Result := TFreqDatafile(Aggregator.CalcAggregate(InputDF, Varnames, FunctionList, False, Dummy, RefMap));
-  Result.FSum := InputDF.Size;
+  Result.FSum := floor(Func.TotalCount); //InputDF.Size;
 
   // Dummy MUST be freed - otherwise we may get a memory leak.
   //  if Dummy = nil, then nothing will happen since .Free also work with nil pointer
@@ -277,6 +310,7 @@ var
   PrepDF: TEpiDataFile;
   PrepareVariable: TStringList;
   HasMissing: Boolean;
+  Opt: TOption;
 begin
   FExecutor.ClearResults('$freq');
 
@@ -288,10 +322,25 @@ begin
   PrepareVariable := TStringList.Create;
   HasMissing := ST.HasOption('m');
 
+  FWeightVarName := '';
+  FHasWeights := ST.HasOption('w',Opt);
+  if (FHasWeights) then
+    begin
+      FWeightVarName := Opt.Expr.AsIdent;
+      if (Variables.IndexOf(FWeightVarName) <> -1) then
+        begin
+          FExecutor.Error('Cannot get frequencies for ' + FWeightVarName + ' and use it as weights.');
+          exit;
+        end;
+    end;
+
   for Variable in Variables do
     begin
       PrepareVariable.Clear;
       PrepareVariable.Add(Variable);
+
+      if (FHasWeights) then
+        PrepareVariable.Add(FWeightVarName);
 
       if (HasMissing) then
         PrepDF := FExecutor.PrepareDatafile(PrepareVariable, nil)
