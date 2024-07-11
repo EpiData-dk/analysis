@@ -238,6 +238,7 @@ var
   i, CCount, Col: Integer;
   VariableLabelType: TEpiGetVariableLabelType;
   ValueLabelType: TEpiGetValueLabelType;
+  ShowCI: Boolean;
 begin
   CategV := ResultDF.Categ;
   CountV := ResultDF.Count;
@@ -247,9 +248,10 @@ begin
   T.Header.Text := CategV.GetVariableLabel(VariableLabelType);
 
   CCount := 2;
+  ShowCI := ST.HasOption('ci') and not ST.HasOption('w');
   if ST.HasOption('pr') then  inc(CCount);
-  if ST.HasOption('ci') then  inc(CCount);
   if ST.HasOption('cum') then inc(CCount);
+  if ShowCI then  inc(CCount);
 
 
   T.ColCount := CCount;
@@ -258,7 +260,7 @@ begin
   Col := 1;
   T.Cell[PostInc(Col), 0].Text := 'N';
   if ST.HasOption('pr') then  T.Cell[PostInc(Col), 0].Text := '%';
-  if ST.HasOption('ci') then  T.Cell[PostInc(Col), 0].Text := '(95% CI)';
+  if ShowCI then  T.Cell[PostInc(Col), 0].Text := '(95% CI)';
   if ST.HasOption('cum') then T.Cell[PostInc(Col), 0].Text := 'Cum %';
   T.SetRowBorders(0, [cbTop, cbBottom]);
 
@@ -272,7 +274,7 @@ begin
       if ST.HasOption('pr') then
         T.Cell[PostInc(Col), i + 1].Text := Format('%8.' + IntToStr(FDecimals) + 'F', [ResultDF.Percent.AsFloat[i]]);
 
-      if ST.HasOption('ci') then
+      if ShowCI then
         T.Cell[PostInc(Col), i + 1].Text := Format('(%.' + IntToStr(FDecimals) + 'F - %.' + IntToStr(FDecimals) + 'F)',
                                                    [ResultDF.LowCI.AsFloat[i], ResultDF.HighCI.AsFloat[i]]);
 
@@ -332,6 +334,8 @@ begin
           FExecutor.Error('Cannot get frequencies for ' + FWeightVarName + ' and use it as weights.');
           exit;
         end;
+      if (ST.HasOption('ci')) then
+        FOutputCreator.DoWarning('!ci is not yet available with weights.');
     end;
 
   for Variable in Variables do
