@@ -1171,9 +1171,19 @@ Frequency distribution for *variable1*
 
  Add cumulative percentage
 
-- `!r`
+- `!pr`
 
  Add row percentage
+
+- `!ci`
+
+ Calculate confidence intervals for row percentage
+
+- `!w:=weightVariable`
+
+ weightVariable contains survey weights, which will be used to estimate population percentages.
+
+> Note: Currently, confidence intervals cannot be estimated if weights are use. 
 
 See [labeling](#labeling) for options on changing between labels/values
 
