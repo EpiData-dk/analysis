@@ -2499,6 +2499,7 @@ begin
   Result.Insert('xmax', AxisTypeFromVariableType(VariableList, 0));
   Result.Insert('ymin', AxisTypeFromVariableType(VariableList, 1));
   Result.Insert('ymax', AxisTypeFromVariableType(VariableList, 1));
+  Result.Insert('by',  AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
 end;
 
 function TScatterCommand.GetAcceptedVariableCount: TBoundArray;
