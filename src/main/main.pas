@@ -528,8 +528,9 @@ begin
   FStatusbar.Parent := Self;
   FStatusbar.Align := alBottom;
   FStatusbar.Update(sucDocFile);
+  // Why do we do this for Darwin here?
   {$IFDEF DARWIN}
-  SetCurrentDirUTF8(ResolveDots(ProgramDirectory + '../../..'));
+  SetCurrentDirUTF8(ProgramDirectoryWithBundle);
   {$ENDIF}
 
   {$IFNDEF LINUX}
