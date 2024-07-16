@@ -49,7 +49,7 @@ Read a copy of the data file into memory.
 > Note: The file name, including the file extension must be contained in " ".    
 If you use a case sensitive operating system (Linux) then the case of filename and extension is important.  
 
-<h3> parameters</h3>
+### parameters
 
 - `filename`
 
@@ -63,7 +63,7 @@ If you use a case sensitive operating system (Linux) then the case of filename a
 
  An optional _expression_ (instead of <_filename_>) that resolves to a string specifying the filename. (see examples)
 
-<h3>options</h3>
+### options
 
 - `!force`
 
@@ -96,17 +96,15 @@ If no quote characters is set, the default " (double quote) is used to identify 
 
 > Note: In files with all string data and where first line is known to be variable names, the program has a high probability of guessing incorrectly whether first line is headers or not. In such cases please use this option to ensure correct reading of data.
 
-- `!pw := "<_string>_"`
+- `!pw := "<string>"`
 
  If you use this option with a password protected file (.epx | .epz | .rec), reading will occur directly, otherwise you will be prompted for a password.
 
-- `!login := "<_string_>"`
-
  When an EpiData project (.epx or .epz) has Extended Access enabled, you will be prompted to log in with a password and a username. With this option, the file is opened with the supplied login. A password for that user may be supplied with option
 
-- `!pw := "<_string_>"`
+- `!login := "<string>"`
 
-<h3>examples</h3>
+### examples
 
 ```
 read "bromar.rec";      // complete filename provided
@@ -125,7 +123,7 @@ save [{"<filename>" | <expression>}] [!replace] [!force] [!output [:="{html | te
 ```
 Save a copy of all variables in memory to a file, to use the data again
 
-<h3>parameters</h3>
+### parameters
 
 *   `filename`
 
@@ -135,7 +133,7 @@ Save a copy of all variables in memory to a file, to use the data again
 
  An optional expression (instead of *filename*) that resolves to a string with the filename. This can be e.g. a concatenation of strings, a global variable or something else. See [read](read) for examples.
 
-<h3>options</h3>
+### options
 
 *   `!replace`
 
@@ -150,7 +148,7 @@ Save a copy of all variables in memory to a file, to use the data again
 
  Instead of saving to the project, this options saves the output to a file. If no format is specified (text/html) then the current output format is used.
 
-*   `!format := "{stata|epidata|csv}`
+*   `!format := "{stata|epidata|csv}"`
 
  Save the project as a specific type.
  > This will ONLY change the content. The user must make sure the file has the correct extension.
@@ -158,6 +156,7 @@ Save a copy of all variables in memory to a file, to use the data again
 *   `!d := "<single character>"`
 
  Will force the delimiter of values/names used when writing .txt/.csv files. This option is only valid when saving delimited files. The default value is "," (comma)
+
 *   `!q := "<single character>"`
 
  Will force the character used for writing quoted strings. This option is only valid when saving delimited files. The default value is " (double quotation mark)
@@ -206,14 +205,14 @@ Save a copy of all variables in memory to a file, to use the data again
 ## append  
 
 ```
-append [<var1> <var2>...] [!ds := <dataset>] [!fn := lt;filename>]
+append [<var1> <var2>...] [!ds := <dataset>] [!fn := "<filename>"]
 ```
 
 Add observations after all observations in current file
 
 ### options
 
-- `!fn := <filename>`
+- `!fn := "<filename>"`
 
   Append this file. Without !fn the file open dialog is shown. All known file types may be used and all options from [read](#read) associated with reading of data may be used. e.g. !d or !h options for reading csv files.
 
@@ -229,8 +228,8 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 ## merge  
 ```
-merge [<key<sub>1</sub>> <key<sub>2</sub>> ...]
-      [!fn [:= "<filename>":]] [!ds := <dataset>]
+merge [<key1> <key2> ...]
+      [!fn [:= "<filename>"]] [!ds := <dataset>]
       [!table] [!combine> !update> !replace]
 ```
 
@@ -238,7 +237,7 @@ Merge the current data file with another dataset file based on *key* variable(s)
 
 ### options
 
-- `!fn [:= <filename>]`
+- `!fn [:= "<filename>"]`
 
   Merge with a dataset in this file. Without !fn it is assumed that current used dataset should be merge with a related dataset. If no <filename> is provided then a dialog is shown to open the external file. All known file types may be used and all options from [read](#read) associated with reading of data can be used too. e.g. !d or !h options for reading csv files.
 
@@ -272,7 +271,7 @@ Merge the current data file with another dataset file based on *key* variable(s)
 
   By default the resulting data is automatically used. By using this option the program will stay on the current dataset after the command has completed.
 
-- `!r`
+- `!r := "new dataset name"`
 
  Specify a different name for the resulting dataset. Default naming is a concatenation of the two used datasets
 
@@ -289,13 +288,13 @@ etc ....
 
   After  `merge` the variable **mergevar** indicates source of information for each observation (records). **mergevar** is defined with variable labels for these values:
   
-  ```
+```
 1 = In main dataset only
 2 = In merged dataset only
 3 = In both datasets
-  ```
+```
 
-> Note: if **mergevar already exists in the dataset, an error will occur and the merge will be stopped. Drop the **mergevar variable first.
+> Note: if *mergevar* already exists in the dataset, an error will occur and the merge will be stopped. Drop the *mergevar* variable first.
 
 ### example
 
@@ -386,7 +385,7 @@ See [formatting](#formatting) for options on formatting percentages
 
 ### Summary statistic options
 
-Each of these options must be followed by  class="cmd">:= variable. Only one variable can be given, but each option can be used multiple times with different variables.
+Each of these options must be followed by `:= variable`. Only one variable can be given, but each option can be used multiple times with different variables.
 
 - `!mv` Count of missing values (system and user defined)
 
@@ -456,12 +455,13 @@ use datafile_id_2;
 ## sort
 
 ```
-sort *variable<sub>1</sub> [*variable<sub>2</sub> ...] [!<u>d</u>escending]
+sort variable1 [variable2 ...] [!descending]
 ```
 
 Sort the current dataset based on the given variables. Sort respects current select!
 
-- `!descending`<br/>`!d`
+- `!descending`<br/>
+  `!d`
 
  Sorts the dataset in decending order
 
@@ -494,7 +494,7 @@ Creates a new empty project, e.g. for simulation or testing.
 
 - `!c`
 
- Closes and open project if modified
+ Closes any open project if modified
 
 - `!pw := <string>`
 
@@ -579,7 +579,7 @@ Create a new variable of a given [type](#types) and optionally assign the value 
 
 ### options            
 
-- `!label := "<text>" class="option">`<br/>
+- `!label := "<text>"`<br/>
    `!l := "<text>"`
 
   Assign the descriptive text as a label for the variable.   An existing variable label will be replaced with the new one.
@@ -589,12 +589,12 @@ Create a new variable of a given [type](#types) and optionally assign the value 
 
   Assign an existing valuelabel set to the variable.   An existing assignment will be replaced but not deleted. To delete the existing valuelabel   set see [deleting content](#deletegrp)
 
-- `!length := <integer> class="option">`<br/>
+- `!length := <integer> `<br/>
    `!le := <integer>`
 
   Changes the entry length of a variable
 
-- `!decimal := <integer> class="option">`<br/>
+- `!decimal := <integer>`<br/>
    `!dec := <integer>`
 
   Change the decimal entry length for floating point variables. Changing the decimal length for other variable types have no impact
@@ -629,7 +629,7 @@ Create a new variable of a given [type](#types) and optionally assign the value 
 
 Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between the new variable and the assigned variable
 
-- `!u> !memo`
+- `!u`<br/>`!memo`
 
 When creating a string variable it is possible to specify the sub type using one of the above options. !u specifies this is an uppercase string variable. !memo specifies this a memo variable
 
@@ -795,7 +795,7 @@ See [labeling](#labeling) for options on changing between labels/values
 
 > Note: browse is much faster than list.
 
-> Note: When list follows  class="cmd">select: the sequence number is within the current select, not for the whole dataset.
+> Note: When list follows `select` the sequence number is within the current select, not for the whole dataset.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -897,7 +897,7 @@ Perform a backup when closing the project. The name for the backup is based on t
 <a name="editdataset" id="editdataset"></a>
 ## edit dataset / edit ds
 ```
-edit dataset *dataset<sub>1</sub> [!options...]
+edit dataset *dataset1 [!options...]
 ```
 Edit an existing dataset in the project.
 
@@ -945,10 +945,10 @@ See [variables](#referencedvars) on using referenced variables for this command
 <a name="editvariable" id="editvariable"></a>
 ## edit variable / edit var / edit v
 ```
-edit variable *variable<sub>1</sub> [!<options>...]
+edit variable *variable1 [!<options>...]
 ```
 
-Edit the metadata of *variable<sub>1</sub>. The options specify which metadata are changed, multiple options may be used at once
+Edit the metadata of *variable1. The options specify which metadata are changed, multiple options may be used at once
 
 ### options         
 
@@ -1025,7 +1025,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 <a name="editvaluelabel" id="editvaluelabel"></a>
 ## edit valuelabel / edit vl
 ```
-edit valuelabel *valuelabel<sub>1</sub> [(<value> , <text>) ...] [!m := <value>] [!delete := <value>] [!nomissing := <value>]
+edit valuelabel *valuelabel1 [(<value> , <text>) ...] [!m := <value>] [!delete := <value>] [!nomissing := <value>]
 ```
 
 Edit an existing value label set and optionally assign any number of (value, label) pairs.
@@ -1123,7 +1123,9 @@ Drop all data within current select from memory. Save the data first if you wish
 
 ### options       
 
-- `!del` Drops all observations marked for deletion.
+- `!del` 
+
+  Drops all observations marked for deletion.
 
 > Note: Make sure to test whether this creates a problem in a related dataset with the check command		
 
@@ -1141,7 +1143,7 @@ drop data !del ; // drop all observations "marked for deletion"
 <a name="dropvariable" id="dropvariable"></a>
 ## drop variable / drop var / drop v
 ```
-drop variable *variable<sub>1</sub> [*variable<sub>2</sub> ...]
+drop variable *variable1 [*variable2 ...]
 ```
 
 Remove the listed variables from memory
@@ -1157,10 +1159,10 @@ See [variables](#referencedvars) on using referenced variables for this command
 ```
 freq variable1 [!<option> ...]
 ```
-Frequency distribution for *variable1*
+Frequency distribution for `variable1`
 
 ### parameters
-- variable1 may be any [type](#type)
+- `variable1` may be any [type](#type)
 
 ### options
 - `!m`
@@ -1188,9 +1190,9 @@ See [variables](#referencedvars) on using referenced variables for this command
 ##  means
 
 ```
-means variable1 [!by=*variable2] [!t]
+means variable1 [!by:=variable2] [!t]
 ```
-Basic descriptive statistics for variable1, optionally stratified by variable2 with analysis of variance.
+Basic descriptive statistics for `variable1`, optionally stratified by `variable2` with analysis of variance.
 
 - Statistics: count, total, mean, variance, standard deviation, 95% confidence interval for the mean, standard error, skewness, excess kurtosis.
 - Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.
@@ -1198,7 +1200,7 @@ Basic descriptive statistics for variable1, optionally stratified by variable2 w
 See [variables](#referencedvars) on using referenced variables for this command
 
 ### parameters
-- variable1 must be numeric
+- `variable1` must be numeric
 
 ### options
 - `!by:`
@@ -1209,13 +1211,13 @@ See [variables](#referencedvars) on using referenced variables for this command
 
  Analysis of Variance to test for homogeneity of the mean across strata, including Bartletts test for homogeneity of variance.
 
- With class="cmd">!by (stratified), F-test is given.
+ With `!by` (stratified), F-test is given.
 
- Without  class="cmd">!by (one stratum), T-test that mean=0 (e.g. as a paired T-test for the difference in before and after measures)
+ Without `!by` (one stratum), T-test that mean=0 (e.g. as a paired T-test for the difference in before and after measures)
 
 > Warning:  Check results carefully if !by variable has only one observation in a stratum
 
-Estimates are saved as result variables. Use  class="cmd">list results for details
+Estimates are saved as result variables. Use the command `list results` for details
 
 See [labeling](#labeling) for options on changing between labels/values
 
@@ -1229,7 +1231,7 @@ See [labeling](#labeling) for options on changing between labels/values
 <a name="describe" id="describe"></a>
 ## describe
 ```
-describe *variable list [option list]
+describe variable list [option list]
 ```
 Basic descriptive statistics and frequencies for a group of variables
 
@@ -1256,7 +1258,7 @@ Use any combination of options to customize the output
 
 - `!fb:` 5 most frequent and 5 least frequent values
 
-- `!ct:` force one row per variable when the above options are specified. This will be ignored if one of  class="cmd">!fh !fl !fb is specified.
+- `!ct:` force one row per variable when the above options are specified. This will be ignored if one of `!fh` `!fl` `!fb` is specified.
 
 - `!m:`number of missing values
 
@@ -2050,9 +2052,9 @@ set "echo" := "off";
 set "COMMANDLINE FONT COLOUR" := "#FFF000";
 ```
 <!-- NOT IMPLEMENTED
-For any command:  class="cmd">set option [cmd] := [options]
+For any command:  `set option [cmd] := [options]`
 e.g.  
-set option means := "!t!
+`set option means := "!t"`
 When the specified command is executed the options mentioned will be added to the command.
 -->
 
@@ -2385,7 +2387,7 @@ function | takes | result | example
 <a name="trim"></a>trim(str) | s | s | trim("Abcde ") => "Abcde"<br/>`trim(" Abcde")` => "Abcde"
 <a name="lower"></a>lower(str) | s | s | `lower("Abcde")` => "abcde"
 <a name="upper"></a>upper(str) | s | s | `upper("Abcde")` => "ABCDE"
-<a name="concat"></a>concat(X, s1, s2, ..., sn) | s, any, ... | s | Concat(...) concatenates values s1 -> sn into a string. If any of the s<sub>x</sub> parameters returns system missing it will be replaced by the value of X<br/>`concat("X", "a", v1)` => "aX" if v1 is missing, otherwise a + the value of v1<br/>For user defined missing values, the actual value is added to the string.
+<a name="concat"></a>concat(X, s1, s2, ..., sn) | s, any, ... | s | Concat(...) concatenates values s1 -> sn into a string. If any of the sx parameters returns system missing it will be replaced by the value of X<br/>`concat("X", "a", v1)` => "aX" if v1 is missing, otherwise a + the value of v1<br/>For user defined missing values, the actual value is added to the string.
 
 ## Arithmetic functions (including Random numbers)
 function | takes | result | example
