@@ -1993,15 +1993,15 @@ Change the working directory (folder) to the specified path.
 <a name="dir" id="dir"></a><a name="ls"></a>
 ## ls / dir
 ```
-ls ["<directory path>"]
-dir ["<directory path"]
+ls ["<directory path>" | "file name"]
+dir ["<directory path" | "file name"]
 ```
 
 List files in a directory
 
 ### parameters
-- *directory* name may include wild cards (* or ?)
-        If no path is given a dialog is shown to select the working directory
+- *directory path* or *file name* may include wild cards (* or ?)
+        If no path is given, the working directory is assumed
 
 <a name="erase" id="erase"></a>
 ## erase
