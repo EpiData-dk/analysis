@@ -145,14 +145,14 @@ begin
     if (inc > 0) then
       Chart.Title.Font.Size := Chart.Title.Font.Size + inc;
 
-    if (ST.HasOption(['footer', 'fn'], Opt)) then
-       ApplyChartTitle(Chart.Foot, Titles.GetFootnote(), Opt);
+    ST.HasOption(['footer', 'fn'], Opt);
+    ApplyChartTitle(Chart.Foot, Titles.GetFootnote(), Opt);
 
-    if (ST.HasOption(['xtitle', 'xt'], Opt)) then
-       ApplyAxisTitle(Chart.BottomAxis.Title, Titles.GetXAxisTitle(), Opt);
+    ST.HasOption(['xtitle', 'xt'], Opt);
+    ApplyAxisTitle(Chart.BottomAxis.Title, Titles.GetXAxisTitle(), Opt);
 
-    if (ST.HasOption(['ytitle', 'yt'], Opt)) then
-       ApplyAxisTitle(Chart.LeftAxis.Title, Titles.GetYAxisTitle(), Opt);
+    ST.HasOption(['ytitle', 'yt'], Opt);
+    ApplyAxisTitle(Chart.LeftAxis.Title, Titles.GetYAxisTitle(), Opt);
 
     // set font for all axes and legen
     for i := 0 to Chart.AxisList.Count - 1 do
