@@ -3009,7 +3009,8 @@ begin
   ST.ExecResult := csrFailed;
   try
     DoStatement(ST.Statement);
-    ST.ExecResult := csrSuccess;
+//  ExecResult for the select will be that of the statement executed
+//    ST.ExecResult := csrSuccess;
   finally
     F := FSelectStack.Pop;
     F.RemoveCustomData(SELECTION_EXPR);
