@@ -231,7 +231,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 ```
 merge [<key<sub>1</sub>> <key<sub>2</sub>> ...]
       [!fn [:= "<filename>":]] [!ds := <dataset>]
-      [!table] [!combine> !update> !replace]
+      [!table] [!combine> !update> !replace] [!ignorecase]
 ```
 
 Merge the current data file with another dataset file based on *key* variable(s). The result is a **NEW** dataset which is added to the top level of the project.
@@ -275,6 +275,10 @@ Merge the current data file with another dataset file based on *key* variable(s)
 - `!r`
 
  Specify a different name for the resulting dataset. Default naming is a concatenation of the two used datasets
+
+- `!ignorecase`
+
+ When comparing the key fields ignore the case of the text (case insensitive comparison). This option also allows one key field to be string and the other to be uppercase string field. 
 
  To keep information in variables with an identical name (e.g. mergevar or name) from all files [rename](#edit) the variables **before** you merge the next file. e.g.
 
