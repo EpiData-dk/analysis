@@ -2025,20 +2025,6 @@ var
   PrefState: String;
   {$ENDIF}
 begin
-  if FileExistsUTF8(FStartupFile) then
-    begin
-      FHistory.LoadingStartup := true;
-      Lst := TStringList.Create;
-      Lst.LoadFromFile(FStartupFile);
-      FHistory.AddLines(Lst);
-      DoParseContent(Lst.Text);
-      Lst.Free;
-      FHistory.LoadingStartup := false;
-      FStartupFile := '';
-    end
-  else
-    InterfaceRunCommand('cls;');
-
   FOutputCreator.DoInfoAll(GetProgramInfo);
 
   {$IFDEF DARWIN}
@@ -2052,10 +2038,24 @@ begin
   else
     PrefState := '[fn] key preference setting is unknown';
   FOutputCreator.DoWarning('MacOS keyboard: ' + PrefState);
-  RedrawOutput;
+//  RedrawOutput;
   {$ENDIF}
 
   FOutputCreator.DoNormal('');
+
+  if FileExistsUTF8(FStartupFile) then
+    begin
+      FHistory.LoadingStartup := true;
+      Lst := TStringList.Create;
+      Lst.LoadFromFile(FStartupFile);
+      FHistory.AddLines(Lst);
+      DoParseContent(Lst.Text);
+      Lst.Free;
+      FHistory.LoadingStartup := false;
+      FStartupFile := '';
+    end
+  else
+    InterfaceRunCommand('cls;');
 end;
 
 procedure TMainForm.ChangeColour(const SetOptionName: UTF8String);
