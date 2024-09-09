@@ -79,6 +79,7 @@ var
   yType:               UTF8String;
   msg:                 UTF8String;
 begin
+  Command.ExecResult := csrFailed;
   VariableLabelOutput := VariableLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   ValueLabelOutput    := ValueLabelTypeFromOptionList(Command.Options, FExecutor.SetOptions);
   sColor              := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, msg);
@@ -217,6 +218,7 @@ begin
     VarNames.Free;
     TablesAll.Free;
     T.Free;
+    Command.ExecResult := csrSuccess;
   end;
   DataFile.Free;
   StratVariable.Free;
