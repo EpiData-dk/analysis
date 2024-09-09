@@ -10,9 +10,8 @@ uses
 
 type
 
-  TChartOptionEdit  = (cbT, cbF, cbXT, cbYT, cbC);
-  TChartMinMax      = (cbnXMin, cbnXMax, cbnYMin, cbnYMax);
-  TVarModelTypes    = (mtNoVars, mtScatter, mtFBarChart, mtEpicurve, mtHistogram, mtOther);
+  TChartOptionEdit  = (cbT, cbF, cbXT, cbYT, cbC, cbE, cbR, cbnXMin, cbnXMax, cbnYMin, cbnYMax);
+//  TVarModelTypes    = (mtNoVars, mtScatter, mtFBarChart, mtEpicurve, mtHistogram, mtOther);
   TMinMaxType       = (mmtXMin, mmtXMax, mmtYMin, mmtYMax);
   TMinMaxTypes      = set of TMinMaxType;
 
@@ -25,6 +24,8 @@ type
     FXTitle:   UTF8String;
     FYTitle:   UTF8String;
     FColors:   UTF8String;
+    FExportName: UTF8String;
+    FExportReplace: Boolean;
     FXMin, FXMax, FYMin, FYMax: UTF8String;
     FUseX, FUseY,
     FXDate,FYDate: Boolean;
@@ -34,6 +35,8 @@ type
     procedure SetXTitle(AValue: UTF8String);
     procedure SetYTitle(AValue: UTF8String);
     procedure SetColors(AValue: UTF8String);
+    procedure SetExportName(AValue: UTF8String);
+    procedure SetExportReplace(AValue: Boolean);
   public
     constructor Create();
     function GenerateScript(): UTF8String;
@@ -53,6 +56,8 @@ type
     property UseX: Boolean read FUseX write FUseX;
     property UseY: Boolean read FUseY write FUseY;
     property MinMax: TMinMaxTypes read FMinMax write FMinMax;
+    property ExportName: UTF8String read FExportName write SetExportName;
+    property ExportReplace: Boolean read FExportReplace write SetExportReplace;
   end;
 
 
@@ -70,6 +75,8 @@ begin
   UseX   := false;
   UseY   := false;
   MinMax := [];
+  ExportName := 'graph.jpg';
+  ExportReplace := false;
 end;
 
 procedure TChartOptionsModel.SetTitle(AValue: UTF8String);
@@ -100,6 +107,18 @@ procedure TChartOptionsModel.SetColors(AValue: UTF8String);
 begin
   if (AValue = FColors) then exit;
   FColors := Avalue
+end;
+
+procedure TChartOptionsModel.SetExportName(AValue: UTF8String);
+begin
+  if (AValue = FExportName) then exit;
+  FExportName := Avalue
+end;
+
+procedure TChartOptionsModel.SetExportReplace(AValue: Boolean);
+begin
+  if (AValue = FExportReplace) then exit;
+  FExportReplace := Avalue
 end;
 
 function TChartOptionsModel.GenerateScript(): UTF8String;
@@ -133,6 +152,10 @@ begin
     result += ' !ymin:=' + rangeFmt(FYMin);
   if (FYMax <> '') then
     result += ' !ymax:=' + rangeFmt(FYMax);
+  if (FExportName <> '') then
+      result += ' !e:="' + FExportName + '"';
+  if (FExportReplace) then
+      result += ' !replace'
 end;
 
 function TChartOptionsModel.IsDefined(): boolean;
