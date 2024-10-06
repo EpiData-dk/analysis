@@ -575,7 +575,7 @@ begin
       CIdx := pos(';',S);
       if (CIdx > 0)  then
         S := copy(S,0,CIdx);
-      if (S <> 'begin;') then
+      if (AnsiCompareText(S,'begin;')<>0) then
         FOutputCreator.DoCommand('.' + S);
     end;
 end;
