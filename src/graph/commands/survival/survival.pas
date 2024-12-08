@@ -595,6 +595,8 @@ begin
               x  := float(d) / float(r);
               e1 += float(FAtRisk[FRefStratum, i]) * x;
               e2 += float(FAtRisk[Stratum, i]) * x;
+// TODO:  Jamie
+//        what do we do when r=1? v becomes 0/0
               v  += float(FAtRisk[FRefStratum, i] * FAtRisk[Stratum, i] * d * (r - d)) /
                     float(r * r * (r - 1));
             end;
