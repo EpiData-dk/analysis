@@ -588,6 +588,10 @@ begin
         for i := 0 to FIntervals - 1 do
           if (FFail[0, i] > 0) then
             begin
+// TODO:  Jamie
+//        no need to calculate o1 and e1 here
+//        no need for x here
+//        e2 += float(FAtRisk[FRefStratum,i]*FAtRisk[Stratum,i] * d) / float(r);
               o1 += FFail[FRefStratum, i];
               o2 += FFail[Stratum, i];
               d  := FFail[0, i];
@@ -596,8 +600,10 @@ begin
               e1 += float(FAtRisk[FRefStratum, i]) * x;
               e2 += float(FAtRisk[Stratum, i]) * x;
 // TODO:  Jamie
-//        what do we do when r=1? v becomes 0/0
-              v  += float(FAtRisk[FRefStratum, i] * FAtRisk[Stratum, i] * d * (r - d)) /
+//        what do we do when r=1? We add 0/0 to v!
+// temporary FailI
+              if (r > 1) then
+                v  += float(FAtRisk[FRefStratum, i] * FAtRisk[Stratum, i] * d * (r - d)) /
                     float(r * r * (r - 1));
             end;
         FHazRatio[Stratum] := exp((float(o2) - e2)/v);
@@ -796,7 +802,7 @@ begin
   outputStratumResults(0, FStrata + 1);
 
   if ((FStrata > 0) and (ST.HasOption('t'))) then
-    T.Footer.Text := sSurLogRankChi + ' =' + Format(StatFmt, [FLRChi]) + ' ' + FormatP(FLRP, true);
+    T.Footer.Text := sSurLogRankChi + ' =' + Format(StatFmt, [FLRChi]) + ' on ' + IntToStr(FStrata - 1) + ' df ' + FormatP(FLRP, true);
   T.SetRowBorders(0, [cbTop, cbBottom]);
 end;
 
