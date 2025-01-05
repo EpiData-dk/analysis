@@ -46,6 +46,7 @@ resourcestring
   sSurAtRisk1 = 'at';
   sSurAtRisk2 = 'risk';
   sSurCommand = 'Survival';
+  sSurDegreesOfFreedom = 'df';
   sSurFailure = 'Failure';
   sSurFailures = 'Failures';
   sSurFollowup = 'Followup';
@@ -802,7 +803,7 @@ begin
   outputStratumResults(0, FStrata + 1);
 
   if ((FStrata > 0) and (ST.HasOption('t'))) then
-    T.Footer.Text := sSurLogRankChi + ' =' + Format(StatFmt, [FLRChi]) + ' on ' + IntToStr(FStrata - 1) + ' df ' + FormatP(FLRP, true);
+    T.Footer.Text := sSurLogRankChi + ' (' + IntToStr(FStrata - 1) + ' ' + sSurDegreesOfFreedom + ') = ' + Format(StatFmt, [FLRChi]) + ' ' + FormatP(FLRP, true);
   T.SetRowBorders(0, [cbTop, cbBottom]);
 end;
 
