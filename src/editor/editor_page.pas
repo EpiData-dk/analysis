@@ -557,6 +557,8 @@ end;
 procedure TEditorPage.BeforeStatementHandler(Statement: TCustomStatement);
 var
   Idx: Integer;
+  S: UTF8String;
+  CIdx: Integer;
 begin
   if (not FExecuting) then exit;
   if Assigned(Statement.FindCustomData(EDITOR_COMMAND_OUTPUT)) then exit;
@@ -566,7 +568,16 @@ begin
 
   Idx := Statement.LineNo - 1;
   if (Idx >= 0) then
-    FOutputCreator.DoCommand('.' + OutputCreatorNormalizeText(FExecutingLines[Idx]));
+    // parse out the actual command being run
+    // no output for begin; or end;
+    begin
+      S := OutputCreatorNormalizeText(copy(FExecutingLines[Idx],Statement.ColNo,1000));
+      CIdx := pos(';',S);
+      if (CIdx > 0)  then
+        S := copy(S,0,CIdx);
+      if (AnsiCompareText(S,'begin;')<>0) then
+        FOutputCreator.DoCommand('.' + S);
+    end;
 end;
 
 procedure TEditorPage.FontChangeEvent(Sender: TObject);
