@@ -1790,6 +1790,46 @@ Draw a pareto chart for a variable. The chart has two components: a bar chart sh
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+# Select records
+<a name="select" id="select"></a>
+
+```
+select (<condition>) do <command>
+select (<condition>) do begin <command block> end;
+```
+Select a subset of records for the subsequent command or command block. The selection only has effect for this commands or commands. Unlike in classic EpiData, the selection is not retained.
+
+### parameters
+- `condition` can be any logical condition that compares individual data values
+- `command` may be any command that operates on data except for `save`
+- `command block` is a group of commands, each of which must end with a semicolon, as in any program
+
+### example
+
+```
+// get the epicurve for children under 18
+select (age < 18) do epicurve onsetdate;
+// get mean age and a food-specific attack rate table for men only
+// select (gender="M") do begin
+means age;
+ctable ill food1-food5 !ar;
+end;
+```
+
+# If ... then
+<a name="if-then" id="if-then"></a>
+
+```
+if (<condition>) then do <command> [else do <command>]
+if (<condition>) then do begin <command block> end;
+if (<condition>) then do begin <command block> end else <command block> end;
+```
+
+### parameters
+- `condition` can be any logical condition that uses constants, global variables, a single result variable, or a single data value
+- `command` may be any command that operates on data except for `save`
+- `command block` is a group of commands, each of which must end with a semicolon, as in any program
+
 # Consistency and Validity Check of data
 
 <a name="checkdata" id="checkdata"></a><a name="check"></a>
