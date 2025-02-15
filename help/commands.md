@@ -555,12 +555,10 @@ Create a new dataset for the project. Use the options to specify relations betwe
 
   Used only in combination with !parent. Tells EntryClient what happens after entry of one complete observation   
 
-```  
-0 = new observation
-1 = return to parent
-2 = return on max number of observataions
-3 = stay on the current observation
-```
+  - 0 = new observation
+  - 1 = return to parent
+  - 2 = return on max number of observataions
+  - 3 = stay on the current observation
 
 - `!statusbar := "<text>"`
 
@@ -577,16 +575,16 @@ See [variables](#referencedvars) on using referenced variables for this command
 ## new variable / new var / new v
 
 ```
-new <variable> <type> [:= expression] [!options...]
+new variable <variablename> <type> [:= expression] [!options...]
 ```
 
 Create a new variable of a given type and optionally assign the value in expression. The variable type and expressions type must be compatible. Variables contain a value for each observation. If no expression is given, all values will be missing.
 
 ### parameters
-- `variable` 
+- `variablename` 
 
   The new variable name, <b>not enclosed in quotes</b>
-<a name="type" id="type">
+<a name="type" id="type"></a>
 - `type`
 
   The type of variable, which must be one of the following, either a single letter or the whole word
@@ -739,7 +737,7 @@ new valuelabel <name> <type> (<value> , <label>) (...) [!m := <value>]
 
 Create a new value label set with a given [type](#types) (boolean not supported) and assign at least one (value, label) pair.
 ### parameters
-- `valuelabel`
+- `name`
 
  The valuelabel name, which must be unique; it cannot be the same as any variable. A useful practice is to start the valuelabel name with an underscore: _
 
@@ -815,13 +813,13 @@ See [variables](#referencedvars) on using referenced variables for this command
 <a name="list"></a><a name="listdata" id="listdata"></a>
 ## list data / list d
 ```
-list data [variable1 [variable2 ...]]
+list data [variablelist]
 ```
 
 Show values on the screen for all variables mentioned, with one observation per line (not limited by the width of the display)
 
 ## parameters
-- `variable list`
+- `variablelist`
 
   A single variable name or list of names; without variables, list all variables.
 
@@ -949,12 +947,10 @@ Edit an existing dataset in the project.
 
   Used only if the dataset is related to a parent. Tells EntryClient what happens after entering the whole observation
   
-```
-0 = new observation,
-1 = return to parent
-2 = return on max observation
-3 = stay on current observation
-```
+  - 0 = new observation,
+  - 1 = return to parent
+  - 2 = return on max observation
+  - 3 = stay on current observation
   
 - `!statusbar := "<text>"`
 
@@ -1021,12 +1017,10 @@ Edit the metadata of *variable1. The options specify which metadata are changed,
 - `!entry := <integer>`
 
    Changes the entry mode used in EpiData EntryClient
-   
-```
-0 = default
-1 = must enter
-2 = no enter
-```
+
+  - 0 = default
+  - 1 = must enter
+  - 2 = no enter
    
 - `!cmpX := *variable`
 
@@ -1059,12 +1053,20 @@ See [variables](#referencedvars) on using referenced variables for this command
 <a name="editvaluelabel" id="editvaluelabel"></a>
 ## edit valuelabel / edit vl
 ```
-edit valuelabel *valuelabel1 [(<value> , <text>) ...] [!m := <value>] [!delete := <value>] [!nomissing := <value>]
+edit valuelabel <name> [(<value> , <text>) ...] [!m := <value>] [!delete := <value>] [!nomissing := <value>]
 ```
 
 Edit an existing value label set and optionally assign any number of (value, label) pairs.
 
-If a (value, label) pair already exist, the new label will replace the old label. Otherwise the (value, label) pair will be added to the set. The datatype of the value MUST match the datatype for the value label set itself.
+### parameters
+
+- `name`
+
+  Name of the valuelable, <b>not in quotes</b>
+  
+- `(value, label)`
+
+  The value and its label. If a (value, label) pair already exist, the new label will replace the old label. Otherwise the (value, label) pair will be added to the set. The datatype of the value MUST match the datatype for the value label set itself.
 
 ### options        
 
@@ -1140,10 +1142,16 @@ Edit the status of observations
 ## drop dataset / drop ds
 
 ```
-drop dataset *dataset1* [*dataset2* ...]
+drop dataset <name> [name2 ...]
 ```
-
+ 
 Remove the listed datasets (and related datasets) from memory
+
+### parameters
+
+ - `name`, `name2`, etc
+
+ The name(s) of the datasets to drop
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -1273,7 +1281,7 @@ See [labeling](#labeling) for options on changing between labels/values
 <a name="describe" id="describe"></a>
 ## describe
 ```
-describe variable list [option list]
+describe <variable list> [option list]
 ```
 Basic descriptive statistics and frequencies for a group of variables
 
@@ -1281,6 +1289,12 @@ With no options specified, a single table will be provided, with one row per var
 
 For numerical variables, the output will also include mean, standard deviation, minimum, median, maximum
 
+### parameters
+
+- `variable list`
+
+  The list of variables to provide statistics for
+  
 ### statistic options
 Use any combination of options to customize the output
 
@@ -1324,10 +1338,20 @@ Counts number of observations. Count may be used with select to count within a s
 <a name="tables" id="tables"></a><a name="tab" id="tab"></a>
 ## tables / tab
 ```
-tab *<column variable> <row variable> [!<option> ...]
+tab <column variable> <row variable> [!<option> ...]
 ```
 Crosstabulate the variables chosen.
 
+### parameters
+
+- `column variable`
+
+  This variable's values will be the column labels in the table
+  
+- `row variable`
+
+  The variable's values will be the row labels in the table
+  
 ###  Data and output options
 
 - `!m`
@@ -1433,7 +1457,14 @@ cta <column variable> <row variables> [!<option> ...]
 The ctable command summarizes a series of cross tables for the first variable against each of the following variables.
 
 ### parameters
-- column variable will usually have only two values, as with an outcome
+- `column variable`
+
+  This variable should only have two values, as with an outcome
+- `row variables`
+
+  A list of variables that will form the rows ot the compact table
+  
+### options
 
 The ctable options have the same meaning as in the tables command.
 
@@ -1544,24 +1575,33 @@ id="ttest"></a><a name="ftest" id="ftest"></a>
 <a name="survival" id="survival"></a><a name="sur"></a>
 ## survival / sur
 ```
-survival outcomevariable timevariable [!by:=stratifyvariable] [options]
-survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]
+survival <outcomevariable> <timevariable> [!by:=stratifyvariable] [options]
+survival <outcomevariable> <date1> <date2> [!by:=stratifyvariable] [options]
 ```
 Kaplan-Meier plots and lifetables for time-to-failure data with censoring. Tabulations of survival at each time when there were deaths (failures), plus confidence intervals. A summary table shows the median survival by stratum. The KM plot is always provided in a separate window unless !q is specified as an option.
 
 ### parameters
-- `outcome variable` must have discrete values, one of which indicates failure or death
-- `date variable` must be an integer. The outcome variable may be numeric or string
-- `date1` and `date2` must be date variables. Elapsed time is calculated as `date2 - date1`
+- `outcomevariable` 
+
+  The outcome usually has values that indicate 'died' and 'lost to followup'. It must have discrete values, one of which indicates failure or death. The outcome variable may be of type numeric or string.
+
+  
+- `timevariable` 
+
+  A time, usually in days, which must be an integer
+  
+- `date1` and `date2` 
+
+ both must be date variables. Elapsed time, effectively the time variable, is calculated as `date2 - date1`
 
 ### options
 - `!o`
 
  Specify the value of outcome indicating death (failure), which may be numeric or text; the default is zero
 
-- `!by`
+- `!by:=stratifyvariable`
 
- Stratify by this variable
+ Stratify by this variable, which should have a small number of unique values
 
 - `!t`
 
@@ -1591,26 +1631,44 @@ Kaplan-Meier plots and lifetables for time-to-failure data with censoring. Tabul
 
 ### output options
 
-- `!nt` Omit the lifetables
+- `!nt` 
 
-- `!nou` Omit the unstratified lifetable
+  Omit the lifetables
 
-- `!nos` Omit the stratified lifetables
+- `!nou` 
 
-- `!ns` Omit the summary table
-- `!ng` Do not show the KM plot
+  Omit the unstratified lifetable
+
+- `!nos` 
+
+  Omit the stratified lifetables
+
+- `!ns` 
+
+  Omit the summary table
+- `!ng` 
+
+  Do not show the KM plot
 
 ### Kaplan-Meier plot options
 
-- `!cb` Copy the KM plot points to the clipboard for use in other software
+- `!cb` 
 
-By default, confidence intervals are shown as error bars
+  Copy the KM plot points to the clipboard for use in other software
 
-- `!cin` Omit the confidence intervals from the KM plot
+By default, confidence intervals are shown as error bars. Change this with these options:
 
-- `!cib` Show the confidence intervals as shaded bands. The default KM plot shows the upper and lower confidence intervals as dotted lines.
+- `!cin` 
 
-- `!cil` Show the confidence intervals as dotted lines.
+  Omit the confidence intervals from the KM plot
+
+- `!cib` 
+
+  Show the confidence intervals as shaded bands.
+  
+- `!cil` 
+
+  Show the confidence intervals as dotted lines.
 
 ### Graph options
 
@@ -1621,7 +1679,7 @@ By default, confidence intervals are shown as error bars
 Estimates are saved as result variables. Use  `list results` for details
 
 ### methodology
-- confidence intervals calculated using the method in Statistics with Confidence, referenced elsewhere.
+Confidence intervals are calculated using the method in <b>Statistics with Confidence</b>, referenced elsewhere.
 
 See [labeling](#labeling) for options on changing between labels/values
 
@@ -1632,14 +1690,18 @@ See [variables](#referencedvars) on using referenced variables for this command
 <a name="scatter" id="scatter"></a>
 ## scatter
 ```
-scatter Xvariable Yvariable [graphoptionlist]
+scatter <Xvariable> <Yvariable> [graphoptionlist]
 ```
 
 Simple scatter plot for two variables.
 
 ### parameters
-- Xvariable may also be integer, float or date/time
-- Yvariable may be integers or float
+- `Xvariable`
+
+  may also be integer, float or date/time
+- `Yvariable`
+
+  may be integers or float
 
 ### options
 - `!l`
@@ -1653,6 +1715,7 @@ Simple scatter plot for two variables.
 - `!colors:="colorMap"`
 
 	colorMap is a string of up to 10 digits mapping the Analysis colours to the chart series. For `scatter`, a single digit may be specified:
+	
 	`scatter xvar yvar !colors:="4"`
 	
 - `scatter` is a graph command and any [graph option](#graphoptions) may be specified
@@ -1662,15 +1725,19 @@ See [variables](#referencedvars) on using referenced variables for this command
 <a name="fbarchart" id="fbarchart"></a>
 ## barchart
 ```
-barchart Variable [StratifyVariable] [options]
+barchart <variable> [StratifyVariable] [options]
 ```
 Will change to `fbarchart` in a future release
 
 Draw a frequency barchart for `Variable`, showing frequencies or percentages at each indiviual value of the variable.
 
 ### parameters
-- Variable may be of any type
-- Stratifyvariable may be of any type
+- `variable`
+
+  may be of any type
+- `Stratifyvariable`
+
+  may be of any type
 
 ### options
 - `!pct`
@@ -1692,15 +1759,19 @@ See [variables](#referencedvars) on using referenced variables for this command
 <a name="histogram" id="histogram"></a>
 ## histogram
 ```
-histogram Variable [StratifyVariable] [options]
+histogram <variable> [StratifyVariable] [options]
 ```
-Draw a histogram for `Variable`, based on consecutive integer or day intervals. The user is responsible for recoding variables so that consecutive intervals make sense.
+Draw a histogram for `variable`, based on consecutive integer or day intervals. The user is responsible for recoding variables so that consecutive intervals make sense.
 
 A histogram is a frequency bar chart where every integer value within range is represented on the X-axis.
 
 ### parameters
-- Variable may be integer or date
-- Stratifyvariable may be of any type
+- `variable`
+
+  may be integer or date
+- `Stratifyvariable
+
+  may be of any type
 
 ### options
 - `!interval:=i`
@@ -1727,8 +1798,12 @@ Draw an epidemic curve for a variable, based on consecutive integer or day inter
 An epicurve is a stacked histogram, where individual boxes are shown for each subject
 
 ### parameters
-- Variable may be integer or date
-- StratifyVariable may be of any type
+- `Variable`
+
+  may be integer or date
+- `StratifyVariable`
+
+  may be of any type
 
 ### options
 - `!interval:=i`
@@ -1765,9 +1840,9 @@ Any of the graph commands may use the following options.
 	- if a given value will excluded data from the graph, then it is ignored
 	- for some graphs, specifing xmin or ymin := 0 may be required to force the axis to begin at zero
 
-- `!c|colors := "color specification string"`
+- `!c|colors := "color map"`
 
-   `color specification string` can take two forms
+   `color map` can take two forms
    
    - up to ten digits (0-9) representing the order that the standard colors will be used. The standard colors (0-9) are Black, Blue, Red, Green, Yellow, White, SkyBlue, Fuchsia, Gray, Aqua. The default order is 1234567890. That means the first color for a graph is blue, then red, green, etc.
 
@@ -1805,7 +1880,9 @@ pareto <Variable> [options]
 Draw a pareto chart for a variable. The chart has two components: a bar chart showing counts for the variable in descending order by count and a line chart showing cumulative percentages.
 
 ### parameters
-- `Variable` may be of any type
+- `Variable`
+
+  may be of any type
 
 ### options
 - `!by:=sVariable`
