@@ -1,6 +1,6 @@
 # EpiData Analysis
 
-### Command and Function Reference Guide (version 2.8)
+### Command and Function Reference Guide (version 3.3)
 
 ___
 
@@ -477,7 +477,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 ## new project / new p
 
 ```
-new project
+new project [options]
 ```
 
 Creates a new empty project, e.g. for simulation or testing.
@@ -523,10 +523,15 @@ Creates a new empty project, e.g. for simulation or testing.
 <a name="newdataset" id="newdataset"></a>
 ## new dataset / new
 ```
-new dataset <dataset> [!options...]
+new dataset <datasetname> [!options...]
 ```
 
 Create a new dataset for the project. Use the options to specify relations between datasets.  If the command completes successfully, the newly created dataset is automatically [used](#use)
+
+### parameters
+- `datasetname`
+
+  The name of the dataset <b>not enclosed in quotes</b>
 
 ### options            
 
@@ -572,10 +577,27 @@ See [variables](#referencedvars) on using referenced variables for this command
 ## new variable / new var / new v
 
 ```
-new variable *variable <type> [:= expression] [!options...]
+new <variable> <type> [:= expression] [!options...]
 ```
 
-Create a new variable of a given [type](#types) and optionally assign the value in expression. The variable type and expressions type must be compatible. Variables contain a value for each observation. If no expression is given, all values will be missing.
+Create a new variable of a given type and optionally assign the value in expression. The variable type and expressions type must be compatible. Variables contain a value for each observation. If no expression is given, all values will be missing.
+
+### parameters
+- `variable` 
+
+  The new variable name, <b>not enclosed in quotes</b>
+<a name="type" id="type">
+- `type`
+
+  The type of variable, which must be one of the following, either a single letter or the whole word
+  
+  - i / integer
+  - f / float
+  - s / string
+  - t / time
+  - d / date
+  - b / boolean
+
 
 ### options            
 
@@ -611,11 +633,9 @@ Create a new variable of a given [type](#types) and optionally assign the value 
 
   Change the entry mode used in EpiData EntryClient
   
-```
-0 = default
-1 = must enter
-2 = no enter
-```
+  - 0 = default
+  - 1 = must enter
+  - 2 = no enter
 
 - `!confirm`
 
@@ -627,28 +647,23 @@ Create a new variable of a given [type](#types) and optionally assign the value 
 
 - `!cmpX := *variable`
 
-Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between the new variable and the assigned variable
+  Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between the new variable and the assigned variable
 
 - `!u`<br/>`!memo`
 
-When creating a string variable it is possible to specify the sub type using one of the above options. !u specifies this is an uppercase string variable. !memo specifies this a memo variable
+  When creating a string variable it is possible to specify the sub type using one of the above options. !u specifies this is an uppercase string variable. !memo specifies this a memo variable
 
-- `!dmy> !mdy> !ymd`
+- `!dmy`<br/>`!mdy`<br/>`!ymd`
 
-When creating a date variable it is possible to specify the sub type using one of the above options. !dmy is the default type if no option is used else the specified sub type is used
+  When creating a date variable it is possible to specify the sub type using one of the above options. !dmy is the default type if no option is used else the specified sub type is used
 
 - `!auto [{0|1|2}]`
 
-When creating a variable that supports automatic content (date, time or integer), using this option changes the default type to the automatic type.         
-Integer become AutoIncrement, DMY becomes AutoDMY, etc.
+  When creating a variable that supports automatic content (date, time or integer), using this option changes the default type to the automatic type. Integer become AutoIncrement, DMY becomes AutoDMY, etc. For time and date variables the number specifies when the variable is updated:
 
-  For time and date variables the number specifies when the variable is updated:
-  
-``` 
- 0 = When obervation is created (default)
- 1 = When observation is first saved
- 2 = Each time the record is saved after being edited
-```
+  - 0 = When obervation is created (default)
+  - 1 = When observation is first saved
+  - 2 = Each time the record is saved after being edited
   
 ### examples
 
@@ -666,10 +681,10 @@ new variable v6 date    := today();
 Examples where a value depends on other variables:
 
 ```
-new variable v1 integer := v14 + v17;
 // v1 is equal to sum of v14 and v17
-new variable age date   := integer((today() - dateborn)/365.25)
+new variable v1 integer := v14 + v17;
 // calculated age in whole years
+new variable age date   := integer((today() - dateborn)/365.25)
 ```
 
 See [variables](#referencedvars) on using referenced variables for this command
@@ -678,17 +693,24 @@ See [variables](#referencedvars) on using referenced variables for this command
 ## new global / new g
 
 ```
-new global Variable <type> [:= expression]
-new global Variable <integer expression> <type> [:= expression]
+new global <variable> <type> [:= expression]
 ```          
 
 Create a new global variable
 
 ### parameters
 
-- Variable must be unique. If the variable name is followed by square brackets [...], then a global *vector* is created, where each entry can be individually accessed using
-- *type* is a valid EpiData [type](#type)
-- expression is a value assigned to the global variable. The global variable type and expressions type must be compatible
+- `variable`
+
+  Variable must be unique. If the variable name is followed by square brackets [...], then a global *vector* is created, where each entry can be individually accessed using
+
+- `type`
+
+  a valid EpiData [type](#type)
+  
+- `expression`
+
+  a value assigned to the global variable. The global variable type and expressions type must be compatible
 
 A global variable or parameter has only one value, whereas a standard variable has one value for each observation.  Global variables can for most parts be used like as a regular variable.
 
@@ -717,9 +739,17 @@ new valuelabel <name> <type> (<value> , <label>) (...) [!m := <value>]
 
 Create a new value label set with a given [type](#types) (boolean not supported) and assign at least one (value, label) pair.
 ### parameters
-- Each `(value, label)` pair will be added to the newly created set. The datatype of the value MUST match the defined datatype for the value label set itself. It is not possible to create an empty valuelabel set.
+- `valuelabel`
 
-- The valuelabel name must be unique; it cannot be the same as any variable. A useful practice is to start the valuelabel name with an underscore: _
+ The valuelabel name, which must be unique; it cannot be the same as any variable. A useful practice is to start the valuelabel name with an underscore: _
+
+- `type` 
+
+  a valid EpiData [type](#type)
+  
+- `(value, label)`
+
+  Each pair will be added to the newly created set. The datatype of the value MUST match the defined datatype for the value label set itself. It is not possible to create an empty valuelabel set.
 
 > Note: An empty set will restrict data entry to system missing only!
 
@@ -747,13 +777,15 @@ See [variables](#referencedvars) on using referenced variables for this command
 ## browse
 
 ```
-browse [variable1 [variable2 ...] ] [options]
+browse [variablel list] ] [options]
 ```
 
 Show the variables mentioned in a spreadsheet grid
 
 ### parameters
-- without variable names, browse all variables
+- `variable list`
+
+  A single variable name or list of names; without variable names, browse all variables
 
 After browse has started you may Right Click and see how to close or adapt columns. Browse will, by default, follow the show formats setting.
 
@@ -789,7 +821,9 @@ list data [variable1 [variable2 ...]]
 Show values on the screen for all variables mentioned, with one observation per line (not limited by the width of the display)
 
 ## parameters
-- without variable names, list all variables.
+- `variable list`
+
+  A single variable name or list of names; without variables, list all variables.
 
 See [labeling](#labeling) for options on changing between labels/values
 
@@ -848,7 +882,7 @@ list results
 
 List all current result variables and their values.
 
-`means`, `describe`, `tables` and other estimation commands create result variables, e.g. $mean[1] or $count. All result variables for a commandn are cleared when running the same command again.
+`means`, `describe`, `tables` and other estimation commands create result variables, e.g. $mean[1] or $count. All result variables for a command are cleared when running the same command again.
 
 <a name="listglobal" id="listglobal"></a>
 ## list global / list g
