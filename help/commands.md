@@ -8,7 +8,7 @@ ___
 
 | Manage data | Analyze data | Graph data | Write programs
 :---|:---|:---|:---
-[read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [describe](#describe) variables<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis | [scatter](#scatter) plot <br/>[line](#line) plot <br/>frequency [bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve)<br/>[Kaplan-Meier plot](#survival)<br/>*SPC Charts*<br/>[pareto chart](#pareto) | [select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#variabletype)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
+Disk and file commands<br/>[read](#read)&nbsp;&nbsp;[save](#save)<br/>[append](#append)&nbsp;&nbsp;[merge](#merge)<br/>[aggregate](#aggregate) data<br/>[use](#use) datasets<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [sort](#sort) records<br/>[select](#select) records<br/>[count](#count) records<br/>[describe](#describe) variables<br/>[frequencies](#freq)<br/>[tables](#tables)<br/>[ctable](#ctable) with many variables<br/>[means](#means)<br/>[survival](#survival) analysis | [scatter](#scatter) plot <br/>[line](#scatter) plot <br/>frequency [bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve)<br/>[Kaplan-Meier plot](#survival)<br/>*SPC Charts*<br/>[pareto chart](#pareto)<br/>[Options](graphoptions) used in all graphs| [if-then](#if-then)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#commonoptions)<br/>[Types of Variables](#variabletype)<br/>[Variable lists](#variablelist)<br/>[Referenced variables](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
 
@@ -34,8 +34,47 @@ If you are in doubt of when to use double quotes "" and when not, the rule is:
 * Use "..." for all external references (e.g. "file names.ext") or assignments of text values ( e.g. set "COMMANDLOG" := "ON")  
 * Double quotes are NOT needed for variables, defined value labels, or dataset names
 
-# Read and Save Data
+# Disk commands
 
+<a name="cd">
+## cd
+</a>
+
+```
+cd ["<directory path>"]
+```
+Change the working directory (folder) to the specified path.
+        If no path is given a dialog is shown to select the working directory.
+
+<a name="dir"></a><a name="ls">
+## ls / dir
+</a>
+```
+ls ["<directory path>" | "file name"]
+dir ["<directory path" | "file name"]
+```
+
+List files in a directory
+
+### parameters
+- *directory path* or *file name* may include wild cards (* or ?)
+        If no path is given, the working directory is assumed
+
+<a name="erase">
+## erase
+</a>
+```
+erase "<file name>"
+```
+Delete the file from disk.
+
+### parameters
+- <file name> may use wildcards (* or ?), but the directory name should not as this may or may not be allowed by the operating system
+- If no path is given, the current working directory is used.
+
+> Warning: The file is deleted (if the file exist) with no confirmatory question
+
+# Read and Save Data
 <a name=read>
 ## read
 </a>
@@ -199,7 +238,7 @@ Save a copy of all variables in memory to a file, to use the data again
 
  This options adds the [UTF-8 Byte Order Mark](https://en.wikipedia.org/wiki/Byte_order_mark) to the .csv/.txt file.
 
-# Merge, Append & Aggregate      
+# Combine and create data      
 
 <a name="append">
 ## append  
@@ -427,8 +466,6 @@ columntxt[5] := .;
 agg sex age family !hd:=columntxt  !mci:=economy !mci:=children ;
  ```       
 
-# Using datasets & Sorting
-
 <a name="use">
 ## use
 </a>
@@ -437,6 +474,11 @@ use <dataset>
 ```
 
 Change the active dataset of a project.
+### parameters
+
+- `dataset`
+
+  The name of a dataset within the current project, without quotes
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -447,24 +489,6 @@ read "Clinical Example.epx";
 list dataset;
 use datafile_id_2;
 ```      
-
-<a name="sort">
-## sort
-</a>
-```
-sort variable1 [variable2 ...] [!descending]
-```
-
-Sort the current dataset based on the given variables. Sort respects current select!
-
-- `!descending`<br/>
-  `!d`
-
- Sorts the dataset in decending order
-
-See [variables](#referencedvars) on using referenced variables for this command
-
-# Creating content
 
 <a name="new">
 ## new project / new p
@@ -1199,91 +1223,262 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 > Note: The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the [set command](#set) to choose a different interval.
 
-# Descriptive statistics
+# Consistency and Validity Check of data
 
-<a name="freq"></a><a name="fre">
-## freq / fre
+<a name="checkdata"></a><a name="check">
+## check data
 </a>
 ```
-freq variable1 [!<option> ...]
+check data [var1 ...]
 ```
-Frequency distribution for `variable1`
+Use this command to perform a check of the data in selected variables (if no variable are specified, then ALL variable are checked).
 
-### parameters
-- `variable1` may be any [type](#variabletype)
+The data is checked for:
 
-### options
-- `!m`
+- Data length: Is the number of characters used in data within the length specified for the variable
+- Range/Valuelabel: Is the data within the specified range and/or is it a legal value label
+- Must Enter: Does the variable have data for all observations if it is marked as Must Enter
+- Jumps: If a variable has jumps assigned, do the skipped fields have the correct values
+- Comparison: If a variable is compared to another variable, is the comparison uphold.
 
- Include observations with missing data (.)
+### example
 
-- `!cum`
-
- Add cumulative percentage
-
-- `!pr`
-
- Add row percentage
-
-- `!ci`
-
- Calculate confidence intervals for row percentage
-
-- `!w:=weightVariable`
-
- weightVariable contains survey weights, which will be used to estimate population percentages.
-
-See [labeling](#labeling) for options on changing between labels/values
-
-See [formatting](#formatting) for options on formatting percentages
+```
+read "bromar.epx"
+check data                   // checks all variable
+check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age
+```
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="t-test"></a>
-<a name="ttest"></a>
-<a name="ftest"></a>
-<a name="means">
-##  means
-<a name="means" id="means"></a>
+<a name="checkkey">
+## check key
+</a>
+```
+check key [var1 ...]
+```
+Check that the data in specified variables are unique and represent a key.
+
+If no variables are specified and a key is already present in the current dataset, this key is checked.
+
+### example
 
 ```
-means variable1 [!by:=variable2] [!t]
+read "bromar.epx"
+check key id                 // checks if the variable ID represents a unique key
 ```
-Basic descriptive statistics for `variable1`, optionally stratified by `variable2` with analysis of variance.
-
-- Statistics: count, total, mean, variance, standard deviation, 95% confidence interval for the mean, standard error, skewness, excess kurtosis.
-- Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+<a name="checkrelate">
+## check relate
+</a>
+```
+check relate
+```
+Check that all observations have a valid parent observation
+
+### example
+
+```
+read "related_data.epx";  // Load the project
+use child_dataset;        // Change dataset to a related dataset
+check relate;             // Perform the check from the child dataset "upwards" to the parent.
+                          // Must be repeated if you have more levels
+```
+<a name="checkstudy">
+## check study
+</a>
+```
+check study
+```
+Check that the study information of is specified or not.
+
+### example
+
+```
+read "samplev3.epx";  // Load the project
+check study;          // Perform the check
+```
+
+<a name="report">
+# REPORTS
+</a>
+
+## report users
+```
+report users
+```
+If a project is using Extended Access control, this command will show a condensed report of the log entries and a list of failed login attempts.
+
+If the project is not using Extended Access control, an error will be displayed.
+
+## report validate / report val
+```
+report validate [var1 var2 ...] [!options]
+```
+Compares two dataset / projects against each other, validating the data content and outputs a report of differences based on the comparison.
+
 ### parameters
-- `variable1` must be numeric
+The variables var1 .. var2 denotes the sorting variables. This is required if not comparing whole projects OR if the datasets does not contain and key variables.
 
 ### options
-- `!by:`
 
- Stratify by this variable		    
+- `!fn := "<string>"`
 
-- `!t:`
+ Opens an external file to compare with.
 
- Analysis of Variance to test for homogeneity of the mean across strata, including Bartletts test for homogeneity of variance.
+- `!ds := <dataset id>`
 
- With `!by` (stratified), F-test is given.
+ Specifies a single dataset (internal/external) to compare with.
 
- Without `!by` (one stratum), T-test that mean=0 (e.g. as a paired T-test for the difference in before and after measures)
+- `!nos`
 
-> Warning:  Check results carefully if !by variable has only one observation in a stratum
+ Excludes all string types from comparison
 
-Estimates are saved as result variables. Use the command `list results` for details
+- `!nodt`
 
-See [labeling](#labeling) for options on changing between labels/values
+ Excludes all date and time types from comparison
 
-### methodology notes:
+- `!noauto`
 
-- confidence intervals given are based on the t-distribution with N-1 degrees of freedom.
-- adjusted Fisher-Pearson coefficient of skewness: see [NIST handbook 1.3.5.11](https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm)
-- excess kurtosis: see [Wikipedia - Kurtosis (accessed 2020/02/08)](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis)
-- Bartlett's Test: see [NIST handbook 1.3.5.7](https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm)
+ Excludes all auto types from comparison
+
+- `!noc`
+
+ All text comparisons are done case in-sensitive
+
+- `!nol`
+
+ Only show the condensed report - do not show the list of observations
+
+- `!val`
+
+ All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!
+
+### example
+```
+read "bromar.epx";               // Load the project
+
+// Run a report based on the two internal datasets
+// (1st is currently used, 2nd is the one marked with !ds :=...)
+report val id !ds := ds2;
+
+// Run a report based on the two datasets, one internal and one external
+// (1st is currently used, 2nd is the one marked with !ds :=...)
+report val id !fn := "double_entry.epx" !ds := ds1
+
+// If you have two projects there are two ways compare there.
+// If you wish to compare individual dataset, use the options above.
+// If you have two project you wish to make a complete validation on, use following:
+
+// Run a report based on the two complete projects, one internal and one external
+report val !fn := "double_entry.epx"
+
+// The last example is a special case where both the internal and external project only contains
+// a single dataset each. In this case you only need to specify the sorting variable(s)
+// and the external file. The dataset option is not needed since the external project only has a single dataset.
+report val id !fn := "double_entry.epx"
+```
+
+## report countby / report cby
+```
+report cby [var1 var2 ...] [!options]
+```
+Compares the combination of variables across several datasets. The variables var1 .. varn is considere a "key" and each unique combination of this key is counted across all the specified datasets.
+
+The output is a report with a condensed table of the found keys and a complete table with the found unique key values and the count of these in each dataset.
+
+### options
+
+- `!fn := <global string vector>` 
+
+   This option accepts a global vector with the filenames that are included in the report. The files can be in different formats, but the variable names MUST be the same in each file.
+   
+   If a file name is sys.missing (.), the dataset in the currently opened project is used.
+
+- `!ds := <global string vector>` 
+
+   This option accepts a global vector with the dataset name that is included in the report. The number of entries in the dataset variable MUST be the same as the filenames.
+
+- `!nol` 
+
+   Only show the condensed report - do not show the list of observations
+
+### example
+```
+// Setup the input for the report:
+new global filenames[5] string;
+filenames[1] := "count_file_1.epx";
+filenames[2] := "count_file_2.rec";
+filenames[3] := "count_file_3.dta";
+filenames[4] := "count_file_4.csv";
+filenames[5] := .;   // use the current file
+// Setup the dataset names
+new global datasets[5] string;
+datasets[1] := "ds1";
+datasets[2] := "ds1";
+datasets[3] := "ds1";
+datasets[4] := "ds1";
+datasets[5] := "ds1";
+// Run the report:
+report cby id !fn := filenames !ds := datasets
+```
+
+# Descriptive statistics
+
+<a name="count">
+## count
+</a>
+```
+count
+```
+Counts number of observations. Count may be used with select to count within a subgroup. No parameters or options apply.
+
+### result variables:  
+- $count
+
+<a name="sort">
+## sort
+</a>
+```
+sort variable1 [variable2 ...] [!descending]
+```
+
+Sort the current dataset based on the given variables. Sort respects current select!
+
+- `!descending`<br/>
+  `!d`
+
+ Sorts the dataset in decending order
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+<a name="select"">
+# Select records
+</a>
+```
+select (<condition>) do <command>
+select (<condition>) do begin <command block> end;
+```
+Select a subset of records for the subsequent command or command block. The selection only has effect for this commands or commands. Unlike in classic EpiData, the selection is not retained.
+
+### parameters
+- `condition` can be any logical condition that compares individual data values
+- `command` may be any command that operates on data except for `save`
+- `command block` is a group of commands, each of which must end with a semicolon, as in any program
+
+### example
+
+```
+// get the epicurve for children under 18
+select (age < 18) do epicurve onsetdate;
+// get mean age and a food-specific attack rate table for men only
+// select (gender="M") do begin
+means age;
+ctable ill food1-food5 !ar;
+end;
+```
 
 <a name="describe">
 ## describe
@@ -1333,16 +1528,43 @@ See [labeling](#labeling) for options on changing between labels/values
 ### methodology notes
 - All statistics are based on the `means` command and all frequencies are based on the `freq` command, so results from `describe` will be exactly the same as those from `means` or `freq`.
 
-<a name="count">
-## count
+<a name="freq"></a><a name="fre">
+## freq / fre
 </a>
 ```
-count
+freq variable1 [!<option> ...]
 ```
-Counts number of observations. Count may be used with select to count within a subgroup. No parameters or options apply.
+Frequency distribution for `variable1`
 
-### result variables:  
-- $count
+### parameters
+- `variable1` may be any [type](#variabletype)
+
+### options
+- `!m`
+
+ Include observations with missing data (.)
+
+- `!cum`
+
+ Add cumulative percentage
+
+- `!pr`
+
+ Add row percentage
+
+- `!ci`
+
+ Calculate confidence intervals for row percentage
+
+- `!w:=weightVariable`
+
+ weightVariable contains survey weights, which will be used to estimate population percentages.
+
+See [labeling](#labeling) for options on changing between labels/values
+
+See [formatting](#formatting) for options on formatting percentages
+
+See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="tables"></a><a name="tab">
 ## tables / tab
@@ -1578,6 +1800,52 @@ See [formatting](#formatting) for options on formatting percentages
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+<a name="t-test"></a>
+<a name="ttest"></a>
+<a name="ftest"></a>
+<a name="means">
+##  means
+<a name="means" id="means"></a>
+
+```
+means variable1 [!by:=variable2] [!t]
+```
+Basic descriptive statistics for `variable1`, optionally stratified by `variable2` with analysis of variance.
+
+- Statistics: count, total, mean, variance, standard deviation, 95% confidence interval for the mean, standard error, skewness, excess kurtosis.
+- Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+### parameters
+- `variable1` must be numeric
+
+### options
+- `!by:`
+
+ Stratify by this variable		    
+
+- `!t:`
+
+ Analysis of Variance to test for homogeneity of the mean across strata, including Bartletts test for homogeneity of variance.
+
+ With `!by` (stratified), F-test is given.
+
+ Without `!by` (one stratum), T-test that mean=0 (e.g. as a paired T-test for the difference in before and after measures)
+
+> Warning:  Check results carefully if !by variable has only one observation in a stratum
+
+Estimates are saved as result variables. Use the command `list results` for details
+
+See [labeling](#labeling) for options on changing between labels/values
+
+### methodology notes:
+
+- confidence intervals given are based on the t-distribution with N-1 degrees of freedom.
+- adjusted Fisher-Pearson coefficient of skewness: see [NIST handbook 1.3.5.11](https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm)
+- excess kurtosis: see [Wikipedia - Kurtosis (accessed 2020/02/08)](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis)
+- Bartlett's Test: see [NIST handbook 1.3.5.7](https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm)
+
 # Graphs and charts
 
 <a name="survival"></a><a name="sur">
@@ -1696,6 +1964,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+<a name="line"></a>
 <a name="scatter">
 ## scatter
 </a>
@@ -1703,7 +1972,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 scatter <Xvariable> <Yvariable> [graphoptionlist]
 ```
 
-Simple scatter plot for two variables.
+Simple scatter or line plot for two variables.
 
 ### parameters
 - `Xvariable`
@@ -1827,6 +2096,38 @@ An epicurve is a stacked histogram, where individual boxes are shown for each su
 
  `epicurve` is a graph command and any [graph option](#graphoptions) may be specified except for `!ymin`
 
+# SPC Charts
+<a name="pareto">
+## pareto
+</a>
+```
+pareto <Variable> [options]
+```
+Draw a pareto chart for a variable. The chart has two components: a bar chart showing counts for the variable in descending order by count and a line chart showing cumulative percentages.
+
+### parameters
+- `Variable`
+
+  may be of any type
+
+### options
+- `!by:=sVariable`
+
+  `sVariable` may be of any type
+  
+  There will be a chart for each value of `sVariable`. The charts will appear as tabs within a window.
+  
+- `!w:=wVariable`
+
+   weight the counts using `wVariable`
+   
+- graph options
+
+   `pareto` is a graph command and any graph option may be specified
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+
 <a name="graphoptions"> 
 ## graph options
 </a>
@@ -1885,63 +2186,6 @@ Any of the graph commands may use the following options.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-# SPC Charts
-<a name="pareto">
-## pareto
-</a>
-```
-pareto <Variable> [options]
-```
-Draw a pareto chart for a variable. The chart has two components: a bar chart showing counts for the variable in descending order by count and a line chart showing cumulative percentages.
-
-### parameters
-- `Variable`
-
-  may be of any type
-
-### options
-- `!by:=sVariable`
-
-  `sVariable` may be of any type
-  
-  There will be a chart for each value of `sVariable`. The charts will appear as tabs within a window.
-  
-- `!w:=wVariable`
-
-   weight the counts using `wVariable`
-   
-- graph options
-
-   `pareto` is a graph command and any graph option may be specified
-
-See [variables](#referencedvars) on using referenced variables for this command
-
-<a name="select"">
-# Select records
-</a>
-```
-select (<condition>) do <command>
-select (<condition>) do begin <command block> end;
-```
-Select a subset of records for the subsequent command or command block. The selection only has effect for this commands or commands. Unlike in classic EpiData, the selection is not retained.
-
-### parameters
-- `condition` can be any logical condition that compares individual data values
-- `command` may be any command that operates on data except for `save`
-- `command block` is a group of commands, each of which must end with a semicolon, as in any program
-
-### example
-
-```
-// get the epicurve for children under 18
-select (age < 18) do epicurve onsetdate;
-// get mean age and a food-specific attack rate table for men only
-// select (gender="M") do begin
-means age;
-ctable ill food1-food5 !ar;
-end;
-```
-
 <a name="if-then" id="if-then">
 # If ... then
 </a>
@@ -1956,247 +2200,6 @@ if (<condition>) then do begin <command block> end else <command block> end;
 - `command` may be any command that operates on data except for `save`
 - `command block` is a group of commands, each of which must end with a semicolon, as in any program
 
-# Consistency and Validity Check of data
-
-<a name="checkdata"></a><a name="check">
-## check data
-</a>
-```
-check data [var1 ...]
-```
-Use this command to perform a check of the data in selected variables (if no variable are specified, then ALL variable are checked).
-
-The data is checked for:
-
-- Data length: Is the number of characters used in data within the length specified for the variable
-- Range/Valuelabel: Is the data within the specified range and/or is it a legal value label
-- Must Enter: Does the variable have data for all observations if it is marked as Must Enter
-- Jumps: If a variable has jumps assigned, do the skipped fields have the correct values
-- Comparison: If a variable is compared to another variable, is the comparison uphold.
-
-### example
-
-```
-read "bromar.epx"
-check data                   // checks all variable
-check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age
-```
-
-See [variables](#referencedvars) on using referenced variables for this command
-
-<a name="checkkey">
-## check key
-</a>
-```
-check key [var1 ...]
-```
-Check that the data in specified variables are unique and represent a key.
-
-If no variables are specified and a key is already present in the current dataset, this key is checked.
-
-### example
-
-```
-read "bromar.epx"
-check key id                 // checks if the variable ID represents a unique key
-```
-
-See [variables](#referencedvars) on using referenced variables for this command
-
-<a name="checkrelate">
-## check relate
-</a>
-```
-check relate
-```
-Check that all observations have a valid parent observation
-
-### example
-
-```
-read "related_data.epx";  // Load the project
-use child_dataset;        // Change dataset to a related dataset
-check relate;             // Perform the check from the child dataset "upwards" to the parent.
-                          // Must be repeated if you have more levels
-```
-<a name="checkstudy">
-## check study
-</a>
-```
-check study
-```
-Check that the study information of is specified or not.
-
-### example
-
-```
-read "samplev3.epx";  // Load the project
-check study;          // Perform the check
-```
-
-<a name="report">
-# REPORTS
-</a>
-
-## report users
-```
-report users
-```
-If a project is using Extended Access control, this command will show a condensed report of the log entries and a list of failed login attempts.
-
-If the project is not using Extended Access control, an error will be displayed.
-
-## report validate / report val
-```
-report validate [var1 var2 ...] [!options]
-```
-Compares two dataset / projects against each other, validating the data content and outputs a report of differences based on the comparison.
-
-### parameters
-The variables var1 .. var2 denotes the sorting variables. This is required if not comparing whole projects OR if the datasets does not contain and key variables.
-
-### options
-
-- `!fn := "<string>"`
-
- Opens an external file to compare with.
-
-- `!ds := <dataset id>`
-
- Specifies a single dataset (internal/external) to compare with.
-
-- `!nos`
-
- Excludes all string types from comparison
-
-- `!nodt`
-
- Excludes all date and time types from comparison
-
-- `!noauto`
-
- Excludes all auto types from comparison
-
-- `!noc`
-
- All text comparisons are done case in-sensitive
-
-- `!nol`
-
- Only show the condensed report - do not show the list of observations
-
-- `!val`
-
- All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!
-
-### example
-```
-read "bromar.epx";               // Load the project
-
-// Run a report based on the two internal datasets
-// (1st is currently used, 2nd is the one marked with !ds :=...)
-report val id !ds := ds2;
-
-// Run a report based on the two datasets, one internal and one external
-// (1st is currently used, 2nd is the one marked with !ds :=...)
-report val id !fn := "double_entry.epx" !ds := ds1
-
-// If you have two projects there are two ways compare there.
-// If you wish to compare individual dataset, use the options above.
-// If you have two project you wish to make a complete validation on, use following:
-
-// Run a report based on the two complete projects, one internal and one external
-report val !fn := "double_entry.epx"
-
-// The last example is a special case where both the internal and external project only contains
-// a single dataset each. In this case you only need to specify the sorting variable(s)
-// and the external file. The dataset option is not needed since the external project only has a single dataset.
-report val id !fn := "double_entry.epx"
-```
-
-## report countby / report cby
-```
-report cby [var1 var2 ...] [!options]
-```
-Compares the combination of variables across several datasets. The variables var1 .. varn is considere a "key" and each unique combination of this key is counted across all the specified datasets.
-
-The output is a report with a condensed table of the found keys and a complete table with the found unique key values and the count of these in each dataset.
-
-### options
-
-- `!fn := <global string vector>` 
-
-   This option accepts a global vector with the filenames that are included in the report. The files can be in different formats, but the variable names MUST be the same in each file.
-   
-   If a file name is sys.missing (.), the dataset in the currently opened project is used.
-
-- `!ds := <global string vector>` 
-
-   This option accepts a global vector with the dataset name that is included in the report. The number of entries in the dataset variable MUST be the same as the filenames.
-
-- `!nol` 
-
-   Only show the condensed report - do not show the list of observations
-
-### example
-```
-// Setup the input for the report:
-new global filenames[5] string;
-filenames[1] := "count_file_1.epx";
-filenames[2] := "count_file_2.rec";
-filenames[3] := "count_file_3.dta";
-filenames[4] := "count_file_4.csv";
-filenames[5] := .;   // use the current file
-// Setup the dataset names
-new global datasets[5] string;
-datasets[1] := "ds1";
-datasets[2] := "ds1";
-datasets[3] := "ds1";
-datasets[4] := "ds1";
-datasets[5] := "ds1";
-// Run the report:
-report cby id !fn := filenames !ds := datasets
-```
-
-# Disk commands
-
-<a name="cd">
-## cd
-</a>
-
-```
-cd ["<directory path>"]
-```
-Change the working directory (folder) to the specified path.
-        If no path is given a dialog is shown to select the working directory.
-
-<a name="dir"></a><a name="ls">
-## ls / dir
-</a>
-```
-ls ["<directory path>" | "file name"]
-dir ["<directory path" | "file name"]
-```
-
-List files in a directory
-
-### parameters
-- *directory path* or *file name* may include wild cards (* or ?)
-        If no path is given, the working directory is assumed
-
-<a name="erase">
-## erase
-</a>
-```
-erase "<file name>"
-```
-Delete the file from disk.
-
-### parameters
-- <file name> may use wildcards (* or ?), but the directory name should not as this may or may not be allowed by the operating system
-- If no path is given, the current working directory is used.
-
-> Warning: The file is deleted (if the file exist) with no confirmatory question
 
 # Program-wide options
 
@@ -2290,6 +2293,7 @@ SHOW WARNING | ON/OFF | ON | If "ON" then lines containing warning information i
 STATISTICS VALUE LABEL | L/V/LV/VL | L | Default option for output of variable data (value and/or label). See [Valuelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
 STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for displaying variable name and/or label. See [Variablelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
 
+<a name="commonoptions"></a>
 # Common options
 
 <a name="valuelabels">
@@ -2473,7 +2477,18 @@ for i:= 2 to 5 do
 
 #Programming aids
 
-These are not normally used in interactive mode
+<a name="run"></a>
+## run
+```
+run ["<filename.pgm>"]
+```
+Execute the commands saved in a .pgm file
+### parameters
+- `filename.pgm`
+
+  may include a path
+
+- without parameters, the open file dialogue is started
 
 <a name="runtest">
 ## runtest
@@ -2492,19 +2507,6 @@ This is provided for testing of correct estimation etc.
 
 - without parameters, the open file dialogue is started
 
-
-<a name="run"></a>
-## run
-```
-run ["<filename.pgm>"]
-```
-Execute the commands saved in a .pgm file
-### parameters
-- `filename.pgm`
-
-  may include a path
-
-- without parameters, the open file dialogue is started
 
 <a name="stop" id="stop"></a>
 # Clean up - stop
