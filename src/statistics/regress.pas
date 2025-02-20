@@ -248,22 +248,6 @@ begin
         Exit;
       end;
 
-    if (ST.HasOption('est',Opt)) then
-      begin
-        if (nil = FExecutor.DataFile.Fields.FieldByName[Opt.Ident]) then
-          begin
-            FExecutor.Error('Field ' + Opt.Ident + ' does not exist. Estimates will not be saved.');
-          end;
-      end;
-
-    if (ST.HasOption('res',Opt)) then
-      begin
-        if (nil = FExecutor.DataFile.Fields.FieldByName[Opt.Ident]) then
-          begin
-            FExecutor.Error('Field ' + Opt.Ident + ' does not exist. Residuals will not be saved.');
-          end;
-      end;
-
     FNVar := FVariables.Count;
     FConstant := not (ST.HasOption('nocon'));
     SetLength(FB,FNVar);
@@ -286,20 +270,14 @@ begin
     if (DoCalcRegress()) then begin
       if (ST.HasOption('est',Opt)) then
         begin
-          saveField := FExecutor.DataFile.Fields.FieldByName[Opt.Ident];
-          if (saveField = nil) then
-            FExecutor.Error('Field ' + Opt.Ident + ' does not exist. Estimates will not be saved.')
-          else
-            SaveVar(saveField, FFitted);
+          saveField := FExecutor.DataFile.Fields.FieldByName[Opt.Expr.AsIdent];
+          SaveVar(saveField, FFitted);
         end;
 
       if (ST.HasOption('res',Opt)) then
         begin
-          saveField := FExecutor.DataFile.Fields.FieldByName[Opt.Ident];
-          if (saveField = nil) then
-            FExecutor.Error('Field ' + Opt.Ident + ' does not exist. Residuals will not be saved.')
-          else
-            SaveVar(saveField, FResidual);
+          saveField := FExecutor.DataFile.Fields.FieldByName[Opt.Expr.AsIdent];
+          SaveVar(saveField, FResidual);
         end;
 
       DoResultVariables();

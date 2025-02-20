@@ -2348,8 +2348,8 @@ function TRegressCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
   Result.Insert('nocon',  [rtUndefined]); // no constant term
-  Result.Insert('est',  [rtString]);      // variable for estimates
-  Result.Insert('res',  [rtString]);      // variable for residuals
+  Result.Insert('est',  [rtObject], [evtField], [evfInternal, evfAsObject]);      // variable for estimates
+  Result.Insert('res',  [rtObject], [evtField], [evfInternal, evfAsObject]);      // variable for residuals
   Result.Insert('q',  [rtUndefined]);
   AddDecimalOptions(Result);
 end;
