@@ -8,7 +8,7 @@ ___
 
 | Manage data | Analyze data | Graph data | Write programs
 :---|:---|:---|:---
-[read](#read) or [save](#save) a project<br/>[append](#append) or [merge](#merge) data<br/>[aggregate](#aggregate) data<br/>[use](#use) datasets<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [sort](#sort) records<br/>[select](#select) records<br/>[count](#count) records<br/>[describe](#describe) variables<br/>[frequencies](#freq)<br/>[tables](#tables)<br/>[ctable](#ctable) with many variables<br/>[means](#means)<br/>[survival](#survival) analysis | [scatter](#scatter) plot <br/>[line](#scatter) plot <br/>frequency [bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve)<br/>[Kaplan-Meier plot](#survival)<br/>*SPC Charts*<br/>[pareto chart](#pareto)<br/>[Options](graphoptions) used in all graphs| [if-then](#if-then)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#commonoptions)<br/>[Types of Variables](#variabletype)<br/>[Variable lists](#variablelist)<br/>[Referenced variables](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
+[read](#read) or [save](#save) a project<br/>[append](#append) or [merge](#merge) data<br/>[aggregate](#aggregate) data<br/>[use](#use) datasets<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [sort](#sort) records<br/>[select](#select) records<br/>[count](#count) records<br/>[describe](#describe) variables<br/>[frequencies](#freq)<br/>[tables](#tables)<br/>[ctable](#ctable) with many variables<br/>[means](#means)<br/>[regress](#regress)ion analysis<br/>[survival](#survival) analysis | [scatter](#scatter) plot <br/>[line](#scatter) plot <br/>frequency [bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve)<br/>[Kaplan-Meier plot](#survival)<br/>*SPC Charts*<br/>[pareto chart](#pareto)<br/>[Options](graphoptions) used in all graphs| [if-then](#if-then)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#commonoptions)<br/>[Types of Variables](#variabletype)<br/>[Variable lists](#variablelist)<br/>[Referenced variables](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
 
@@ -417,7 +417,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 
  Expands the resulting dataset with ALL possible value-combinations from <var1> <var2>... All entries with no data will contain system missing.
 
-See [labeling](#labeling) for options on changing between labels/values
+See [Common options](#commonoptions) for options for labels and formats.
 
 See [formatting](#formatting) for options on formatting percentages
 
@@ -829,7 +829,7 @@ Show values on the screen for all variables mentioned, with one observation per 
 
   A single variable name or [list of names](#variablelist); without variables, list all variables.
 
-See [labeling](#labeling) for options on changing between labels/values
+See [Common options](#commonoptions) for options for labels and formats.
 
 > Note: browse is much faster than list.
 
@@ -1523,7 +1523,7 @@ Use any combination of options to customize the output
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-See [labeling](#labeling) for options on changing between labels/values
+See [Common options](#commonoptions) for options for labels and formats.
 
 ### methodology notes
 - All statistics are based on the `means` command and all frequencies are based on the `freq` command, so results from `describe` will be exactly the same as those from `means` or `freq`.
@@ -1560,9 +1560,7 @@ Frequency distribution for `variable1`
 
  weightVariable contains survey weights, which will be used to estimate population percentages.
 
-See [labeling](#labeling) for options on changing between labels/values
-
-See [formatting](#formatting) for options on formatting percentages
+See [Common options](#commonoptions) for options for labels and formats.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -1677,7 +1675,7 @@ Indicate by !sxxx where the x may include<br/>
 
 > Note:The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the [set command](#set) to choose a different interval.
 
-See [labeling](#labeling) for options on changing between labels/values
+See [Common options](#commonoptions) for options for labels and formats.
 
 See [formatting](#formatting) for options on formatting percentages
 
@@ -1794,9 +1792,7 @@ Only one may be given
  Sort the table rows by key statistic, depending on the estimation options<br/>
  priority is given to RR then OR then Fisher Exact P then Chi<sup>2</sup> P
 
-See [labeling](#labeling) for options on changing between labels/values
-
-See [formatting](#formatting) for options on formatting percentages
+See [Common options](#commonoptions) for options for labels and formats.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -1837,7 +1833,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 Estimates are saved as result variables. Use the command `list results` for details
 
-See [labeling](#labeling) for options on changing between labels/values
+See [Common options](#commonoptions) for options for labels and formats.
 
 ### methodology notes:
 
@@ -1846,6 +1842,45 @@ See [labeling](#labeling) for options on changing between labels/values
 - excess kurtosis: see [Wikipedia - Kurtosis (accessed 2020/02/08)](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis)
 - Bartlett's Test: see [NIST handbook 1.3.5.7](https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm)
 
+<a name="regress">
+## regress / reg
+</a>
+``` regress <dependent variable> <independent variable list> [options]
+```
+
+Linear regression analysis with one or more independent variables, which provides estimates for the model<br/>
+y = b0 + b1 x var1 + b2 x var2 ...<br/>
+
+### parameters
+- `dependent variable`
+
+  Must be numeric
+  
+- `independent variable list`
+
+  One or more numeric variables
+  
+### options
+- `nocon`
+
+  Do not include the intercept in the model
+- `est := <variable for estimates>`
+
+  Save the estimated values in an existing variable of type `Float`
+  
+- `res := <variable for residuals>`
+
+  Save the residuals in an existing variable of type `Float`
+
+Estimates are saved as result variables. Use the command `list results` for details
+
+See [Common options](#commonoptions) for other options, for labels and formats
+
+See [variables](#referencedvars) on using referenced variables for this command
+### methodology notes:
+- estimates are calcualted using the standard least-squares method provided by the [LMATH library](https://wiki.freepascal.org/LMath)
+
+  
 # Graphs and charts
 
 <a name="survival"></a><a name="sur">
@@ -1958,7 +1993,7 @@ Estimates are saved as result variables. Use  `list results` for details
 ### methodology
 Confidence intervals are calculated using the method in <b>Statistics with Confidence</b>, referenced elsewhere.
 
-See [labeling](#labeling) for options on changing between labels/values
+See [Common options](#commonoptions) for other options, for labels and formats
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -2254,8 +2289,8 @@ BROWSER FONT STYLE | <fsBold/fsItalic/fsUnderline> | " " | Adjust the style of t
 BROWSER OBS DEFAULT COLOUR | hex colour code | "#F0F0F0" | Adjust the colour of "obs" column for normal/default observations |
 BROWSER OBS DELETED COLOUR | hex colour code | "#FF0000" | Adjust the colour of "obs" column for observations marked for deletion |
 BROWSER OBS VERIFIED COLOUR | hex colour code | "#008080" | Adjust the colour of "obs" column for verified observations |
-BROWSER VALUE LABEL | L/V/LV/VL | V | Default option for output of variable data (value and/or label). See [Valuelabels](#labeling) for options. This options applies to "list data" and "browse" only |
-BROWSER VARIABLE LABEL | VLA / VLN / VN / VNL | VN | Default option for displaying variable name and/or label. See [Variable labels](#variablelabels) for options. This options applies to "list data" and "browse" only |
+BROWSER VALUE LABEL | L/V/LV/VL | V | Default option for output of variable data (value and/or label). See [Common options](#commonoptions) for options. This options applies to "list data" and "browse" only |
+BROWSER VARIABLE LABEL | VLA / VLN / VN / VNL | VN | Default option for displaying variable name and/or label. See [Common options](#commonoptions) for options. This options applies to "list data" and "browse" only |
 COMMANDLINE BG COLOUR | hex colour code | "#FFFFFF" | Adjust the colour of the background. e.g. #000000 is black.  |
 COMMANDLINE FONT COLOUR | hex colour code | "#000000" | Adjust the colour of the font. e.g. #FFF000 is yellow.  |
 COMMANDLINE FONT NAME | string | (depends on the operating system) | Name of the font used in the commandline edit.  |
@@ -2290,8 +2325,8 @@ SHOW DEBUG | ON/OFF | ON | If "ON" then lines containing debug information is sh
 SHOW ERROR | ON/OFF | ON | If "ON" then lines containing error information is shown. "OFF" = no output
 SHOW INFO | ON/OFF | ON | If "ON" then lines containing informational output is shown. "OFF" = no output
 SHOW WARNING | ON/OFF | ON | If "ON" then lines containing warning information is shown. "OFF" = no output
-STATISTICS VALUE LABEL | L/V/LV/VL | L | Default option for output of variable data (value and/or label). See [Valuelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
-STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for displaying variable name and/or label. See [Variablelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
+STATISTICS VALUE LABEL | L/V/LV/VL | L | Default option for output of variable data (value and/or label). See [Common options](#commonoptions) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
+STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for displaying variable name and/or label. See [Common options](#commonoptions) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
 
 <a name="commonoptions"></a>
 # Common options
