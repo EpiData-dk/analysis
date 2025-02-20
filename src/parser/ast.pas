@@ -1192,6 +1192,17 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+ { TRegressCommand }
+
+  TRegressCommand = class(TCustomVariableCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TAggregateCommand }
 
   TAggregateCommand = class(TCustomVariableCommand)
@@ -2329,6 +2340,37 @@ constructor TMeansCommand.Create(AVariableList: TVariableList;
   AOptionList: TOptionList);
 begin
   inherited Create(AVariableList, AOptionList, stMeans);
+end;
+
+ { TRegressCommand }
+
+function TRegressCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  Result.Insert('nocon',  [rtUndefined]); // no constant term
+  Result.Insert('est',  [rtString]);      // variable for estimates
+  Result.Insert('res',  [rtString]);      // variable for residuals
+  Result.Insert('q',  [rtUndefined]);
+  AddDecimalOptions(Result);
+end;
+
+function TRegressCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  Result[0] := -1;
+end;
+
+function TRegressCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  result.ResultTypes := [rtFloat, rtInteger];
+end;
+
+constructor TRegressCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stRegress);
 end;
 
 { TBrowseCommand }
@@ -4129,6 +4171,7 @@ class function TCustomVariableCommand.CreateCustomVariableCommand(
 begin
   case ST of
     stMeans:     Result := TMeansCommand.Create(AVariableList, AOptionList);
+    stRegress:   Result := TRegressCommand.Create(AVariableList, AOptionList);
     stBrowse:    Result := TBrowseCommand.Create(AVariableList, AOptionList);
     stFreq:      Result := TFreqCommand.Create(AVariableList, AOptionList);
     stSort:      Result := TSortCommand.Create(AVariableList, AOptionList);
@@ -7243,6 +7286,7 @@ begin
     'fre': Result := stFreq;
     'ls':  Result := stLS;
     'mea': Result := stMeans;
+    'reg': Result := stRegress;
     'mer': Result := stMerge;
     'qui': Result := stQuit;
     'rea': Result := stRead;
