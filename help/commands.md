@@ -1,10 +1,10 @@
 # EpiData Analysis
-
+<a name="top"></a>
 ### Command and Function Reference Guide (version 3.3)
 
-___
+###[Go to the index of commands](#index)
 
-###Commands
+## Commands by function
 
 | Manage data | Analyze data | Graph data | Write programs
 :---|:---|:---|:---
@@ -74,6 +74,7 @@ Delete the file from disk.
 
 > Warning: The file is deleted (if the file exist) with no confirmatory question
 
+[Return to the top](#top) or [Go to the index](#index)
 # Read and Save Data
 <a name=read></a>
 ## read
@@ -235,6 +236,8 @@ Save a copy of all variables in memory to a file, to use the data again
 *   `!bom`  
 
  This options adds the [UTF-8 Byte Order Mark](https://en.wikipedia.org/wiki/Byte_order_mark) to the .csv/.txt file.
+
+[Return to the top](#top) or [Go to the index](#index)
 
 # Combine and create data      
 
@@ -495,7 +498,11 @@ list dataset;
 use datafile_id_2;
 ```      
 
+[Return to the top](#top) or [Go to the index](#index)
 <a name="new"></a>
+## new
+
+The `new` command takes several forms, depending on what you want to create.
 ## new project
 </a>
 ```
@@ -783,6 +790,8 @@ See [edit valuelabels](#editvaluelabel)"> for more advanced use of variables and
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+[Return to the top](#top) or [Go to the index](#index)
+
 # Listing content
 
 <a name="brow"></a>
@@ -936,6 +945,7 @@ Show result of an expression. It is posible to use all types of variables (stand
 ? (23 > 19);
 ? "a " + "b " + "c";
 ```
+[Return to the top](#top) or [Go to the index](#index)
 
 # Editing variable and label definitions
 
@@ -1280,6 +1290,7 @@ recode age to ag (0, 10, "Label A") (10, 25) (30, 50, "Label B", 2)
 
 
 See [variables](#referencedvars) on using referenced variables for this command
+[Return to the top](#top) or [Go to the index](#index)
 
 <a name="assignment"></a>
 ## assignment
@@ -1365,6 +1376,7 @@ reorder kmgrp agegrp decgrp;
 // Move the variables age and km in front of agegrp
 reorder age km !before := agegrp 
 ```
+[Return to the top](#top) or [Go to the index](#index)
 
 <a name="dro"></a>
 # Deleting content
@@ -1440,6 +1452,8 @@ Sometimes it will be simpler to list the variables to keep in memory. With `keep
   The [list of variables](#variablelist) to keep
 
 See [variables](#referencedvars) on using referenced variables for this command
+
+[Return to the top](#top) or [Go to the index](#index)
 
 # Consistency and Validity Check of data
 
@@ -1518,6 +1532,7 @@ Check that the study information of is specified or not.
 read "samplev3.epx";  // Load the project
 check study;          // Perform the check
 ```
+[Return to the top](#top) or [Go to the index](#index)
 
 <a name="rep"></a>
 # REPORTS
@@ -1659,19 +1674,6 @@ datasets[5] := "ds1";
 report cby id !fn := filenames !ds := datasets
 ```
 
-# Descriptive statistics
-
-<a name="cou"></a>
-## count
-
-```
-count
-```
-Counts number of observations. Count may be used with select to count within a subgroup. No parameters or options apply.
-
-### result variables:  
-- $count
-
 <a name="sor"></a>
 ## sort
 
@@ -1697,7 +1699,7 @@ Sort the current dataset based on the given variables. Sort respects current sel
 See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="sel""></a>
-# Select records
+## select records
 
 ```
 select (<condition>) do <command>
@@ -1721,6 +1723,21 @@ means age;
 ctable ill food1-food5 !ar;
 end;
 ```
+
+[Return to the top](#top) or [Go to the index](#index)
+
+# Descriptive statistics
+
+<a name="cou"></a>
+## count
+
+```
+count
+```
+Counts number of observations. Count may be used with select to count within a subgroup. No parameters or options apply.
+
+### result variables:  
+- $count
 
 <a name="des"></a>
 ## describe
@@ -1770,6 +1787,8 @@ See [Common options](#commonoptions) for options for labels and formats.
 ### methodology notes
 - All statistics are based on the `means` command and all frequencies are based on the `freq` command, so results from `describe` will be exactly the same as those from `means` or `freq`.
 
+[Return to the top](#top) or [Go to the index](#index)
+
 <a name="fre"></a>
 ## freq
 
@@ -1808,6 +1827,9 @@ Frequency distribution for `variable1`
 See [Common options](#commonoptions) for options for labels and formats.
 
 See [variables](#referencedvars) on using referenced variables for this command
+
+
+[Return to the top](#top) or [Go to the index](#index)
 
 <a name="tab"></a>
 ## tables
@@ -1924,6 +1946,9 @@ Indicate by !sxxx where the x may include<br/>
 See [Common options](#commonoptions) for options for labels and formats.
 
 See [formatting](#formatting) for options on formatting percentages
+
+
+[Return to the top](#top) or [Go to the index](#index)
 
 <a name="cta"></a>
 ## ctable
@@ -2042,6 +2067,9 @@ See [Common options](#commonoptions) for options for labels and formats.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+
+[Return to the top](#top) or [Go to the index](#index)
+
 <a name="mea"></a>
 ## means
 
@@ -2086,6 +2114,9 @@ See [variables](#referencedvars) on using referenced variables for this command
 - excess kurtosis: see [Wikipedia - Kurtosis (accessed 2020/02/08)](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis)
 - Bartlett's Test: see [NIST handbook 1.3.5.7](https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm)
 
+
+[Return to the top](#top) or [Go to the index](#index)
+
 <a name="reg"></a>
 ## regress
 
@@ -2126,6 +2157,9 @@ See [variables](#referencedvars) on using referenced variables for this command
 - estimates are calcualted using the standard least-squares method provided by the [LMATH library](https://wiki.freepascal.org/LMath)
 
   
+
+[Return to the top](#top) or [Go to the index](#index)
+
 # Graphs and charts
 
 <a name="sur"></a>
@@ -2245,6 +2279,9 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+
+[Return to the top](#top) or [Go to the index](#index)
+
 <a name="sca"></a>
 ## scatter
 
@@ -2281,6 +2318,9 @@ Simple scatter or line plot for two variables.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+
+[Return to the top](#top) or [Go to the index](#index)
+
 <a name="bar"></a>
 ## barchart
 
@@ -2316,6 +2356,9 @@ Draw a frequency barchart for `Variable`, showing frequencies or percentages at 
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+
+[Return to the top](#top) or [Go to the index](#index)
+
 <a name="his"></a>
 ## histogram
 
@@ -2349,6 +2392,9 @@ A histogram is a frequency bar chart where every integer value within range is r
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+
+[Return to the top](#top) or [Go to the index](#index)
+
 <a name="epi"></a>
 ## epicurve
 
@@ -2375,6 +2421,9 @@ An epicurve is a stacked histogram, where individual boxes are shown for each su
 - graph options 
 
  `epicurve` is a graph command and any [graph option](#graphoptions) may be specified except for `!ymin`
+
+
+[Return to the top](#top) or [Go to the index](#index)
 
 # SPC Charts
 <a name="par"></a>
@@ -2407,6 +2456,8 @@ Draw a pareto chart for a variable. The chart has two components: a bar chart sh
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+
+[Return to the top](#top) or [Go to the index](#index)
 
 <a name="graphoptions"> </a>
 ## graph options
@@ -2466,6 +2517,9 @@ Any of the graph commands may use the following options.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+
+[Return to the top](#top) or [Go to the index](#index)
+
 # Programming
 
 <a name="if"></a>
@@ -2520,6 +2574,9 @@ ID := i;
 new variable ID integer := _n;
 // _n is shorthand for the current record number
 ```
+
+
+[Return to the top](#top) or [Go to the index](#index)
 
 # Program-wide options
 
@@ -2612,6 +2669,9 @@ SHOW INFO | ON/OFF | ON | If "ON" then lines containing informational output is 
 SHOW WARNING | ON/OFF | ON | If "ON" then lines containing warning information is shown. "OFF" = no output
 STATISTICS VALUE LABEL | L/V/LV/VL | L | Default option for output of variable data (value and/or label). See [Common options](#commonoptions) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
 STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for displaying variable name and/or label. See [Common options](#commonoptions) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
+
+
+[Return to the top](#top) or [Go to the index](#index)
 
 <a name="commonoptions"></a>
 # Common options
@@ -2720,6 +2780,9 @@ list data V1??;          // V1?? is expanded to V100 only!
 
 A `referenced` variable may also be used in the expansion. These will be evaluated before the expansion! See below.
 
+
+[Return to the top](#top) or [Go to the index](#index)
+
 <a name="referencedvariable"></a>
 ## Referenced Variable
 
@@ -2795,6 +2858,9 @@ for i:= 2 to 5 do
    end;
 ```
 
+
+[Return to the top](#top) or [Go to the index](#index)
+
 #Programming aids
 
 <a name="run"></a>
@@ -2853,6 +2919,9 @@ version
 
 Display the Epidata Analysis software information. This is important to include if you are requesting help. It is the same information available from the Analysis menu.
  
+
+[Return to the top](#top) or [Go to the index](#index)
+
 # Clean up - stop
 <a name="quit"></a>
 ## quit
@@ -2907,6 +2976,9 @@ cls;
 clh;
 ```
 > Note:  `reset` also clears all result variables!
+
+
+[Return to the top](#top) or [Go to the index](#index)
 
 <a name="functions"></a>
 # Functions available in EpiData Analysis
@@ -3050,6 +3122,9 @@ div | n div n | i | integer result of division | `5 div 2` => 2<br/>`5 div 0` =>
 <> | n <> n | b | not equal to | `1<>2` => TRUE<br/>`1<>1` => FALSE
 $ | $resultvar  | | result value | `? $count` => 4027
 
+
+[Return to the top](#top) or [Go to the index](#index)
+
 <a name="startup"></a>
 ## Startup options for EpiData Analysis
 
@@ -3079,6 +3154,9 @@ With Linux:
 ./epidataanalysis -i /path/to/startup.pgm
 ```
 
+[Return to the top](#top)
+
+<a name="index"></a>
 # Command index
 
 |   |   |   |
