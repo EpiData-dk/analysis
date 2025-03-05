@@ -8,7 +8,7 @@ ___
 
 | Manage data | Analyze data | Graph data | Write programs
 :---|:---|:---|:---
-[read](#read) or [save](#save) a project<br/>[append](#append) or [merge](#merge) data<br/>[aggregate](#aggregate) data<br/>[use](#use) datasets<br/>create [new](#new) content<br/>[list](#list) or [browse](#browse) content<br/>[edit](#edit) content<br/>[:=](#assign) to assign values to a variable<br/>[recode](#recode) a variable<br/>[reorder](#reorder) variables<br/>[delete](#drop) content<br/>Consistency and validity [check](#check)<br/>[report](#report)<br/> | [sort](#sort) records<br/>[select](#select) records<br/>[count](#count) records<br/>[describe](#describe) variables<br/>[freq](#freq)uencies<br/>[tables](#tables)<br/>[ctable](#ctable) with many variables<br/>[means](#means)<br/>[regress](#regress)ion analysis<br/>[survival](#survival) analysis | [scatter](#scatter) plot <br/>[line](#scatter) plot <br/>frequency [bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve)<br/>[Kaplan-Meier plot](#survival)<br/>*SPC Charts*<br/>[pareto chart](#pareto)<br/>[Options](#graphoptions) used in all graphs| [if-then](#if-then)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#commonoptions)<br/>[Types of Variables](#variabletype)<br/>[Variable lists](#variablelist)<br/>[Referenced variables](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
+[read](#rea) or [save](#sav) a project<br/>[append](#app) or [merge](#mer) data<br/>[aggregate](#agg) data<br/>[use](#use) datasets<br/>create [new](#new) content<br/>[list](#lis) or [browse](#bro) content<br/>[edit](#edi) content<br/>[:=](#assign) to assign values to a variable<br/>[rece](#rec) a variable<br/>[reorder](#reorder) variables<br/>[delete](#drop) content<br/>Consistency and validity [check](#check)<br/>[report](#rep)<br/> | [sort](#sor) records<br/>[select](#sel) records<br/>[count](#cou) records<br/>[describe](#des) variables<br/>[freq](#fre)uencies<br/>[tables](#tab)<br/>[ctable](#cta) with many variables<br/>[means](#mea)<br/>[regress](#reg)ion analysis<br/>[survival](#sur) analysis | [scatter](#sca) or line plot <br/>frequency [bar](#bar) chart <br/>[histogram](#his)<br/>[epicurve](#epi)<br/>[Kaplan-Meier plot](#sur)<br/>*SPC Charts*<br/>[pareto chart](#par)<br/>[Options](#graphoptions) used in all graphs| [if-then](#if)<br>[for](#for) loop<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#commonoptions)<br/>[Types of Variables](#variabletype)<br/>[Variable lists](#variablelist)<br/>[Referenced variables](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
 
@@ -27,6 +27,8 @@ In command descriptions, the following notation is used
   {a|b|...} : indicates alternative choices  
   <...> : indicates a user specified name, identifier or expression  
 ```
+
+Almost all commands can be shortened to the first three letters of the command name. The exceptions are `check` and `runtest`. which cannot be shortened.
 
 If you are in doubt of when to use double quotes "" and when not, the rule is:  
 
@@ -58,7 +60,7 @@ List files in a directory
 - *directory path* or *file name* may include wild cards (* or ?)
         If no path is given, the working directory is assumed
 
-<a name="erase"></a>
+<a name="era"></a>
 ## erase
 
 ```
@@ -236,7 +238,7 @@ Save a copy of all variables in memory to a file, to use the data again
 
 # Combine and create data      
 
-<a name="append"></a>
+<a name="app"></a>
 ## append  
 
 ```
@@ -266,7 +268,7 @@ One of the following must be provided
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="merge"></a>
+<a name="mer"></a>
 ## merge  
 
 ```
@@ -367,7 +369,7 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
 ```       
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="aggregate"></a><a name="agg"></a>
+<a name="agg"></a>
 ## aggregate
 
 ```
@@ -699,7 +701,6 @@ new variable age date   := integer((today() - dateborn)/365.25)
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="newglobal"></a>
 ## new global
 
 ```
@@ -742,7 +743,6 @@ g7[3]                     := 20;
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="newvaluelabel"></a>
 ## new valuelabel
 
 ```
@@ -785,7 +785,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 # Listing content
 
-<a name="browse"></a>
+<a name="brow"></a>
 ## browse
 
 ```
@@ -824,7 +824,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 > Note: browse is much faster than list
 
-<a name="list"></a>
+<a name="lis"></a>
 
 ## list
 
@@ -851,7 +851,6 @@ See [Common options](#commonoptions) for options for labels and formats.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="listproject"></a>
 ## list project
 
 ```
@@ -866,7 +865,6 @@ Shows a brief overview of the project
 
   Also shows the study information
 
-<a name="listdataset"></a>
 ## list dataset
 
 ```
@@ -879,7 +877,6 @@ Shows a list of datasets for the project
 
   Outputs additional information about the listed datasets
 
-<a name="listvariable"></a>
 ## list variable
 
 ```
@@ -888,7 +885,6 @@ list {variable | var | v}
 
 List all currently defined variable names, types, formats and labels
 
-<a name="listvaluelabel"></a>
 ## list valuelabel
 
 ```
@@ -896,7 +892,6 @@ list {valuelabel | vl}
 ```
 Show the full list of all valuelabel sets. Each set is listed individually as value/label pair and marked whether a value is considered missing or not.
 
-<a name="listresults"></a>
 ## list results
 
 ```
@@ -907,7 +902,6 @@ List all current result variables and their values.
 
 `means`, `describe`, `tables` and other estimation commands create result variables, e.g. $mean[1] or $count. All result variables for a command are cleared when running the same command again.
 
-<a name="listglobal"></a>
 ## list global
 
 ```
@@ -945,7 +939,7 @@ Show result of an expression. It is posible to use all types of variables (stand
 
 # Editing variable and label definitions
 
-<a name="edit"></a>
+<a name="edi"></a>
 
 The `edit` command has several forms, allowing you to edit projects, datasets or variable definitions.
 
@@ -983,7 +977,6 @@ Interval at witch Manager and EntryClient automatically saved the project
 
 Perform a backup when closing the project. The name for the backup is based on the current date/time.
 
-<a name="editdataset"></a>
 ## edit dataset
 
 ```
@@ -1036,7 +1029,6 @@ Edit an existing dataset in the project.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="editvariable"></a>
 ## edit variable
 
 ```
@@ -1121,7 +1113,6 @@ Edit the metadata of a variable. Multiple options may be used at once.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="editvaluelabel"></a>
 ## edit valuelabel
 
 ```
@@ -1190,7 +1181,6 @@ for i := 2 to 5 do
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="editdata"></a>
 ## edit data
 
 ```
@@ -1209,7 +1199,7 @@ Edit the status of observations
 
   Marks / Unmarks the current select observations as verified
 
-<a name="recode"></a>
+<a name="rec"></a>
 ## recode
 
 The `recode` command has two forms
@@ -1338,7 +1328,7 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;
 select (age = .) do age := integer((today() - dateborn)/365.25)
 
 ```
-<a name="reorder"></a>
+<a name="reo"></a>
 ## reorder
 
 ```
@@ -1376,7 +1366,7 @@ reorder kmgrp agegrp decgrp;
 reorder age km !before := agegrp 
 ```
 
-<a name="drop"></a>
+<a name="dro"></a>
 # Deleting content
 
 The `drop` command takes several forms, to allow you to remove parts of the current project from computer memory.
@@ -1482,7 +1472,6 @@ check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="checkkey"></a>
 ## check key
 
 ```
@@ -1501,7 +1490,6 @@ check key id                 // checks if the variable ID represents a unique ke
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="checkrelate"></a>
 ## check relate
 
 ```
@@ -1517,8 +1505,6 @@ use child_dataset;        // Change dataset to a related dataset
 check relate;             // Perform the check from the child dataset "upwards" to the parent.
                           // Must be repeated if you have more levels
 ```
-
-<a name="checkstudy"></a>
 ## check study
 
 ```
@@ -1533,7 +1519,7 @@ read "samplev3.epx";  // Load the project
 check study;          // Perform the check
 ```
 
-<a name="report"></a>
+<a name="rep"></a>
 # REPORTS
 
 
@@ -1675,7 +1661,7 @@ report cby id !fn := filenames !ds := datasets
 
 # Descriptive statistics
 
-<a name="count"></a>
+<a name="cou"></a>
 ## count
 
 ```
@@ -1686,7 +1672,7 @@ Counts number of observations. Count may be used with select to count within a s
 ### result variables:  
 - $count
 
-<a name="sort"></a>
+<a name="sor"></a>
 ## sort
 
 ```
@@ -1710,7 +1696,7 @@ Sort the current dataset based on the given variables. Sort respects current sel
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="select""></a>
+<a name="sel""></a>
 # Select records
 
 ```
@@ -1736,7 +1722,7 @@ ctable ill food1-food5 !ar;
 end;
 ```
 
-<a name="describe"></a>
+<a name="des"></a>
 ## describe
 
 ```
@@ -1784,7 +1770,7 @@ See [Common options](#commonoptions) for options for labels and formats.
 ### methodology notes
 - All statistics are based on the `means` command and all frequencies are based on the `freq` command, so results from `describe` will be exactly the same as those from `means` or `freq`.
 
-<a name="freq"></a>
+<a name="fre"></a>
 ## freq
 
 ```
@@ -1823,7 +1809,7 @@ See [Common options](#commonoptions) for options for labels and formats.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="tables"></a>
+<a name="tab"></a>
 ## tables
 
 ```
@@ -1939,7 +1925,7 @@ See [Common options](#commonoptions) for options for labels and formats.
 
 See [formatting](#formatting) for options on formatting percentages
 
-<a name="ctable"></a><a name="cta"></a>
+<a name="cta"></a>
 ## ctable
 
 ```
@@ -2056,10 +2042,7 @@ See [Common options](#commonoptions) for options for labels and formats.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="t-test"></a>
-<a name="ttest"></a>
-<a name="ftest"></a>
-<a name="means"></a>
+<a name="mea"></a>
 ## means
 
 ```
@@ -2103,7 +2086,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 - excess kurtosis: see [Wikipedia - Kurtosis (accessed 2020/02/08)](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis)
 - Bartlett's Test: see [NIST handbook 1.3.5.7](https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm)
 
-<a name="regress"></a>
+<a name="reg"></a>
 ## regress
 
 ``` 
@@ -2145,7 +2128,7 @@ See [variables](#referencedvars) on using referenced variables for this command
   
 # Graphs and charts
 
-<a name="survival"></a><a name="sur"></a>
+<a name="sur"></a>
 ## survival
 
 ```
@@ -2262,8 +2245,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="line"></a>
-<a name="scatter"></a>
+<a name="sca"></a>
 ## scatter
 
 ```
@@ -2299,7 +2281,7 @@ Simple scatter or line plot for two variables.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="barchart"></a>
+<a name="bar"></a>
 ## barchart
 
 ```
@@ -2334,7 +2316,7 @@ Draw a frequency barchart for `Variable`, showing frequencies or percentages at 
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="histogram"></a>
+<a name="his"></a>
 ## histogram
 
 ```
@@ -2367,7 +2349,7 @@ A histogram is a frequency bar chart where every integer value within range is r
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="epicurve"></a>
+<a name="epi"></a>
 ## epicurve
 
 ```
@@ -2395,7 +2377,7 @@ An epicurve is a stacked histogram, where individual boxes are shown for each su
  `epicurve` is a graph command and any [graph option](#graphoptions) may be specified except for `!ymin`
 
 # SPC Charts
-<a name="pareto"></a>
+<a name="par"></a>
 ## pareto
 
 ```
@@ -2486,7 +2468,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 # Programming
 
-<a name="if-then"></a>
+<a name="if"></a>
 ## If ... then
 
 ```
@@ -2862,7 +2844,7 @@ This is provided for testing of correct estimation etc.
 
 - without parameters, the open file dialogue is started
 
-<a name="version"></a>
+<a name="ver"></a>
 ## version
 
 ```
@@ -2880,7 +2862,7 @@ quit
 ```
 
 Close the current project and exit. Any unsaved changes will be lost.
-<a name="close"></a>
+<a name="clo"></a>
 ## close
 
 ```
@@ -2909,7 +2891,7 @@ clh
 
 Clear the history of commands
 
-<a name="reset"></a>
+<a name="res"></a>
 ## reset
 
 ```
@@ -2947,7 +2929,7 @@ Parameters may be variables read from fields, created variables, or any expressi
 function | takes | result | example
 :---|:---|:---|:---
 <a name="length"></a>length(str) | s | i | `length("Abcde")` => 5
-<a name="post"></a>pos(instr, findstr) | s, s | i | `pos("Abcde", "cd")` => 3<br/>`pos("Abcde", "z")` => 0
+<a name="pos"></a>pos(instr, findstr) | s, s | i | `pos("Abcde", "cd")` => 3<br/>`pos("Abcde", "z")` => 0
 <a name="substring"></a><a name="substr"></a>substring(str, start, len) | s, i, i | s | `substring("Abcde", 2, 3)` => "bcd"
 <a name="trim"></a>trim(str) | s | s | trim("Abcde ") => "Abcde"<br/>`trim(" Abcde")` => "Abcde"
 <a name="lower"></a>lower(str) | s | s | `lower("Abcde")` => "abcde"
@@ -3099,3 +3081,6 @@ With Linux:
 
 # Command index
 
+|   |   |   |
+:---|:---|:---|
+aggregate [agg](#agg)<br/>append [app](#app)<br/>barchart [bar](#bar)<br/>begin [](#)<br/>browse [bro](#bro)<br/>cd [cd](#cd)<br/>check [check](#check)<br/>clh [clh](#clh)<br/>close [clo](#clo)<br/>cls [cls](#cls)<br>count [cou](#cou)<br/>ctable [cta](#cta)<br/>delete [del](#del)<br/>describe [des](#des)<br/>dir [dir](#dir)<br/>drop [dro](#dro)<br/> | edit [edi](#edi)<br/>epicurve [epi](#epi)<br/>erase [era](#era)<br/>for [](#)<br/>freq [fre](#fre)<br/>histogram [his](#his)<br/>if [if](#if)<br/>keep [kee](#kee)<br/>list [lis](#lis)<br/>ls [ls](#ls)<br/>means [mea](#mea)<br/>merge [mer](#mer)<br/>new [new](#new)<br/>pareto [par](#par)<br/>quit [qui](#qui)<br/>read [rea](#rea)<br/> | recode [rec](#rec)<br/>regress [reg](#reg)<br/>reorder [reo](#reo)<br/>report [rep](#rep)<br/>reset [res](#res)<br/>run [run](#run)<br/>runtest [runtest](#runtest)<br/>save [sav](#sav)<br/>scatter [sca](#sca)<br/>select [sel](#sel)<br/>set [set](#set)<br/>sort [sor](#sor)<br/>survival [sur](#sur)<br/>tables [tab](#tab)<br/>use [use](#use)<br/>version [ver](#ver)
