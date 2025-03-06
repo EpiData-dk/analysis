@@ -8,7 +8,7 @@
 
 | Manage data | Analyze data | Graph data | Write programs
 :---|:---|:---|:---
-[read](#rea) or [save](#sav) a project<br/>[append](#app) or [merge](#mer) data<br/>[aggregate](#agg) data<br/>[use](#use) datasets<br/>create [new](#new) content<br/>[list](#lis) or [browse](#bro) content<br/>[edit](#edi) content<br/>[:=](#assign) to assign values to a variable<br/>[recode](#rec) a variable<br/>[reorder](#reorder) variables<br/>[delete](#drop) content<br/>Consistency and validity [check](#check)<br/>[report](#rep)<br/> | [sort](#sor) records<br/>[select](#sel) records<br/>[count](#cou) records<br/>[describe](#des) variables<br/>[freq](#fre)uencies<br/>[tables](#tab)<br/>[ctable](#cta) with many variables<br/>[means](#mea)<br/>[regress](#reg)ion analysis<br/>[survival](#sur) analysis | [scatter](#sca) or line plot <br/>frequency [bar](#bar) chart <br/>[histogram](#his)<br/>[epicurve](#epi)<br/>[Kaplan-Meier plot](#sur)<br/>*SPC Charts*<br/>[pareto chart](#par)<br/>[Options](#graphoptions) used in all graphs| [if-then](#if)<br>[for](#for) loop<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#commonoptions)<br/>[Types of Variables](#variabletype)<br/>[Variable lists](#variablelist)<br/>[Referenced variables](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#quit)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
+[read](#rea) or [save](#sav) a project<br/>[append](#app) or [merge](#mer) data<br/>[aggregate](#agg) data<br/>[use](#use) datasets<br/>create [new](#new) content<br/>[list](#lis) or [browse](#bro) content<br/>[edit](#edi) content<br/>[:=](#assignment) to assign values to a variable<br/>[recode](#rec) a variable<br/>[reorder](#reo) variables<br/>[delete](#dro) content<br/>Consistency and validity [check](#check)<br/>[report](#rep)<br/> | [sort](#sor) records<br/>[select](#sel) records<br/>[count](#cou) records<br/>[describe](#des) variables<br/>[freq](#fre)uencies<br/>[tables](#tab)<br/>[ctable](#cta) with many variables<br/>[means](#mea)<br/>[regress](#reg)ion analysis<br/>[survival](#sur) analysis | [scatter](#sca) or line plot <br/>frequency [bar](#bar) chart <br/>[histogram](#his)<br/>[epicurve](#epi)<br/>[Kaplan-Meier plot](#sur)<br/>*SPC Charts*<br/>[pareto chart](#par)<br/><br/>[Options](#graphoptions) used in all graphs| [if-then](#if)<br>[for](#for) loop<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#commonoptions)<br/>[Types of Variables](#variabletype)<br/>[Variable lists](#variablelist)<br/>[Referenced variables](#referencedvariable)<br/>[run](#run) scripts <br/>[Clean up & stop](#quit)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
 
@@ -2719,33 +2719,35 @@ STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for disp
 <a name="variabletype"></a>
 ## Variable types
 
+The follow types are defined for standard, result and global variables. All variable types may be missing.
 
 - integer / int / i
 
-  A variable (standard, result or global) that contains an integer value.
+  a positive or negative integer value
 
 - float / f
-  A variable (standard, result or global) that contains an floating point value.
+  
+  a positive or negativefloating point value
 
-> Note: all floating points shown on screen appear in the current national setting (locale),
-        but input (from editor or command line) must always use "." (period) as the decimal separator.
-         The saved data in a given project can be used in different national settings without giving problems or need for conversions.
+  > Note: all floating points shown on screen appear in the current national setting (locale), but input (from editor or command line) must always use "." (period) as the decimal separator. The saved data in a given project can be used in different national settings without giving problems or need for conversions.
 
 - string / str / s
 
-  A variable (standard, result or global) that may contain any string
+  a string containing any characters
 
 - boolean / bool / b
 
-  A variable (standard, result or global) that contains only true or false
+  true or false
 
 - time / t
 
-  A variable (standard, result or global) that contains a time value.
+  a time value
 
 - date / d
 
-  A variable (standard, result or global) that contains a date value. All new date variables created will be a DMY type, but this may change in the future.
+  a date value
+  
+  > Note: all new date variables created in Analysis will be a DMY type, but this may change in the future.
 
 <a name="variablelist"></a>
 ## Variable lists
@@ -3103,6 +3105,7 @@ verified([index]) | [i] | b | Returns true/false whether the record is marked as
 
 operator | syntax | result | meaning | example
 :---|:---|:---|:---|:---
+:= | any := any | | assignment | types must be compatible
 + | n+n | n | addition | `1+2` => 3
 + | s+any<br/>any+s | s | concatenation | `"A"+"B"` => "AB"<br/>`"A"+1` => "A1"
 + | d+n | d | date addition | `"30/11/2004"+31` => "31/12/2004"
@@ -3114,7 +3117,7 @@ operator | syntax | result | meaning | example
 div | n div n | i | integer result of division | `5 div 2` => 2<br/>`5 div 0` => missing
 ^ | n^n | f | exponentiation | `5^2` => 25 <br/> `4^0.`5 => 2
 ( ) | | | group expressions | `(5\*(2+4))/2` => 15<br/>`5\*2+4/2` == (5\*2)+(4/2) => 12
-= | n = n | b | equal |`1 = 2` => FALSE
+= | n = n | b | is equal to |`1 = 2` => FALSE
 < | n < n | b | less than | `1<2` => TRUE
 > | n > n | b | greater than | `1>2` => FALSE
 <= | n <= n | b | less than or equal | `1<=2` => TRUE<br/>`2<=2` => TRUE
@@ -3159,6 +3162,8 @@ With Linux:
 <a name="index"></a>
 # Command index
 
+> Note: Where there is an abbreviated form of the command, it is also shown.
+
 |   |   |   |
 :---|:---|:---|
-aggregate [agg](#agg)<br/>append [app](#app)<br/>barchart [bar](#bar)<br/>begin [](#)<br/>browse [bro](#bro)<br/>cd [cd](#cd)<br/>check [check](#check)<br/>clh [clh](#clh)<br/>close [clo](#clo)<br/>cls [cls](#cls)<br>count [cou](#cou)<br/>ctable [cta](#cta)<br/>delete [del](#del)<br/>describe [des](#des)<br/>dir [dir](#dir)<br/>drop [dro](#dro)<br/> | edit [edi](#edi)<br/>epicurve [epi](#epi)<br/>erase [era](#era)<br/>for [](#)<br/>freq [fre](#fre)<br/>histogram [his](#his)<br/>if [if](#if)<br/>keep [kee](#kee)<br/>list [lis](#lis)<br/>ls [ls](#ls)<br/>means [mea](#mea)<br/>merge [mer](#mer)<br/>new [new](#new)<br/>pareto [par](#par)<br/>quit [qui](#qui)<br/>read [rea](#rea)<br/> | recode [rec](#rec)<br/>regress [reg](#reg)<br/>reorder [reo](#reo)<br/>report [rep](#rep)<br/>reset [res](#res)<br/>run [run](#run)<br/>runtest [runtest](#runtest)<br/>save [sav](#sav)<br/>scatter [sca](#sca)<br/>select [sel](#sel)<br/>set [set](#set)<br/>sort [sor](#sor)<br/>survival [sur](#sur)<br/>tables [tab](#tab)<br/>use [use](#use)<br/>version [ver](#ver)
+[aggregate / agg](#agg)<br/>[append / app](#app)<br/>[barchart / bar](#bar)<br/>[begin](#)<br/>[browse / bro](#bro)<br/>[cd](#cd)<br/>[check](#check)<br/>[clh](#clh)<br/>[cls](#cls)<br/>[count / cou](#cou)<br/>[ctable / cta](#cta)<br/>[delete / del](#del)<br/>[edit / edi](#edi)<br/> | [epicurve / epi](#epi)<br/>[erase / era](#era)<br/>[for](#)<br/>[freq / fre](#fre)<br/>[histogram / his](#his)<br/>[if](#if)<br/>[keep / kee](#kee)<br/>[ls](#ls)<br/>[means / mea](#mea)<br/>[merge / mer](#mer)<br/>[new / new](#new)<br/>[recode / rec](#rec)<br/>[regress / reg](#reg)<br/> | [reorder / reo](#reo)<br/>[report / rep](#rep)<br/>[reset / res](#res)<br/>[run](#run)<br/>[runtest](#runtest)<br/>[save / sav](#sav)<br/>[select / sel](#sel)<br/>[set / set](#set)<br/>[sort / sor](#sor)<br/>[survival / sur](#sur)<br/>[tables / tab](#tab)<br/>[use / use](#use)<br/>[version / ver](#ver)<br/>
