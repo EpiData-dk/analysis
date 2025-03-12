@@ -1,4 +1,5 @@
 # EpiData Analysis
+
 <a name="top"></a>
 ### Command and Function Reference Guide (version 3.3)
 
@@ -76,6 +77,7 @@ Delete the file from disk.
 
 [Return to the top](#top) or [Go to the index](#index)
 # Read and Save Data
+
 <a name=read></a>
 ## read
 
@@ -499,6 +501,7 @@ use datafile_id_2;
 ```      
 
 [Return to the top](#top) or [Go to the index](#index)
+
 <a name="new"></a>
 ## new
 
@@ -1339,6 +1342,7 @@ select ((v1 = 0) and (v2 = .)) do v17 := 27;
 select (age = .) do age := integer((today() - dateborn)/365.25)
 
 ```
+
 <a name="reo"></a>
 ## reorder
 
@@ -2153,6 +2157,7 @@ Estimates are saved as result variables. Use the command `list results` for deta
 See [Common options](#commonoptions) for other options, for labels and formats
 
 See [variables](#referencedvars) on using referenced variables for this command
+
 ### methodology notes:
 - estimates are calcualted using the standard least-squares method provided by the [LMATH library](https://wiki.freepascal.org/LMath)
 
@@ -2426,6 +2431,7 @@ An epicurve is a stacked histogram, where individual boxes are shown for each su
 [Return to the top](#top) or [Go to the index](#index)
 
 # SPC Charts
+
 <a name="par"></a>
 ## pareto
 
@@ -2925,6 +2931,7 @@ Display the Epidata Analysis software information. This is important to include 
 [Return to the top](#top) or [Go to the index](#index)
 
 # Clean up - stop
+
 <a name="quit"></a>
 ## quit
 
