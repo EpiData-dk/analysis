@@ -108,46 +108,118 @@ sup {
 
 <h1 id="toc_0">Epidata Analysis 3.x</h1>
 
-<h2 id="toc_1">How to</h2>
-
 <p>Hints and solutions for accomplishing certain tasks. Additions are welcome on the <a href="mailto:epidata-list@lists.umanitoba.ca">Epidata list</a></p>
+
+<blockquote>
+<p>Hint: it is better to copy the commands in the examples to the editor and execute them from there.</p>
+</blockquote>
 
 <p><a name="toc"></a></p>
 
-<h2 id="toc_2">Table of contents</h2>
+<h2 id="toc_1">Table of contents</h2>
 
-<h3 id="toc_3">Groups available</h3>
+<ul class="toc">
+<li>
+<a href="#toc_0">Epidata Analysis 3.x</a>
+<ul>
+<li>
+<a href="#toc_1">Table of contents</a>
+</li>
+<li>
+<a href="#toc_2">Read data, folders, files</a>
+<ul>
+<li>
+<a href="#toc_3">Control set parameters</a>
+</li>
+<li>
+<a href="#toc_4">Navigate folders</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_5">Basic analysis</a>
+<ul>
+<li>
+<a href="#toc_6">Select by date - existing variable</a>
+</li>
+<li>
+<a href="#toc_7">Select by date - create date variable</a>
+</li>
+<li>
+<a href="#toc_8">Test if a string variable contains legal dates</a>
+</li>
+<li>
+<a href="#toc_9">Check for missing data in several variables</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_10">Basic graphs</a>
+<ul>
+<li>
+<a href="#toc_11">Multiple categories on a graph</a>
+</li>
+<li>
+<a href="#toc_12">Label graph axes</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_13">Manage output</a>
+</li>
+<li>
+<a href="#toc_14">View data</a>
+</li>
+<li>
+<a href="#toc_15">Work with dates</a>
+<ul>
+<li>
+<a href="#toc_16">Date variables</a>
+</li>
+<li>
+<a href="#toc_17">Exclude some dates from an analysis command</a>
+</li>
+<li>
+<a href="#toc_18">Calculate age on day of visit</a>
+</li>
+<li>
+<a href="#toc_19">Calculate age on day of visit - simulation example</a>
+</li>
+<li>
+<a href="#toc_20">Test if a string variable contains legal dates</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_21">Further analysis</a>
+</li>
+</ul>
+</li>
+</ul>
 
-<p><a href="#start">Read data, folders and files</a><br><a href="#basic">Basic variables</a><br><a href="#graphs">Basic graphs</a><br><a href="#output">Manage output</a><br><a href="#view">View data</a><br><a href="#dates">Work with dates</a><br><a href="#analyze">Further analysis</a>
-<hr></p>
 
-<p><a name="start"></a></p>
+<h2 id="toc_2">Read data, folders, files</h2>
 
-<h2 id="toc_4">Read data, folders, files</h2>
-
-<h3 id="toc_5">Control set parameters</h3>
-
-<p><code>Set &lt; parameter &gt;</code></p>
+<h3 id="toc_3">Control set parameters</h3>
 
 <p>Set parameters control how much information you get in the output window (e.g. set statistics), how commands are executed (e.g. set replacedatafile) and other aspects</p>
 
-<p>Use the command <code>set</code> with no words after to see which parameters are defined.</p>
+<p>Use the command <code>set</code> alone to see which options are defined. Note the use of double quotes around both the option and its value.</p>
 
-<h3 id="toc_6">Navigate folders</h3>
+<div><pre><code class="language-none">set; // see all settings
+set &quot;output fontname&quot; := &quot;Arial&quot;; // change font to Arial</code></pre></div>
 
-<p><code>cd &quot;/path/to/folder&quot;</code></p>
+<h3 id="toc_4">Navigate folders</h3>
 
-<p>To make a particular folder the working folder for your projects, add a <code>cd ...</code> command to the configuration file. In Windows or Linux, use the Edit / settings menu. On a Mac, use the Preferences menu.
-<hr></p>
+<p>To make a particular folder the working folder for your projects, add a <code>cd ...</code> command to the configuration file. In Windows or Linux, use the Edit / settings menu. On a Mac, use the Preferences menu.</p>
 
-<p><a href=#toc>Table of Contents</a>
-<a name="basic"></a></p>
+<div><pre><code class="language-none">cd &quot;/path/to/folder&quot;</code></pre></div>
 
-<h2 id="toc_7">Basic analysis</h2>
+<p><a href=#toc>Back to contents</a></p>
 
-<h3 id="toc_8">Select by date - existing variable</h3>
+<h2 id="toc_5">Basic analysis</h2>
 
-<p><code>Select &lt;logical criteria&gt; do ...</code></p>
+<h3 id="toc_6">Select by date - existing variable</h3>
 
 <p>Use the built in date function, with your date format (dmy/mdy/ymd)
 To select all subjects born before 12th of February 1988</p>
@@ -156,7 +228,7 @@ To select all subjects born before 12th of February 1988</p>
 select birthday &lt; createdate(&quot;02/12/1988&quot;, &quot;mdy&quot;); // using createdate function with &quot;mdy&quot;
 select birthday &lt; createdate(&quot;12/02/1988&quot;, &quot;dmy&quot;); // using createdate function with &quot;dmy&quot;</code></pre></div>
 
-<h3 id="toc_9">Select by date - create date variable</h3>
+<h3 id="toc_7">Select by date - create date variable</h3>
 
 <p>Assume you have age in 1996 in field <code>age</code></p>
 
@@ -170,7 +242,7 @@ select born &lt; createdate(12, 2, 1988);
    ...
   end;</code></pre></div>
 
-<h3 id="toc_10">Test if a string variable contains legal dates</h3>
+<h3 id="toc_8">Test if a string variable contains legal dates</h3>
 
 <p>You have read a text (delimited) file, and wish to convert a string variable to a date
 Assumed variable names: The string variable with dates is <q>txtdate</q>, ID is id number.</p>
@@ -184,40 +256,38 @@ new var mydateok int := (mydate = mydateok); // 0 if they are the same, 1 if dif
 freq mydateok; // to see the count
 select (mydateok = 1) do list id txtdate mydate mydate1; // to see the values</code></pre></div>
 
-<h3 id="toc_11">Check for missing data in several variables</h3>
+<h3 id="toc_9">Check for missing data in several variables</h3>
 
-<p>Create an indicator variable <code>m</code> which takes on values <code>N</code> or <code>V</code> for each of 5 variables (<code>V1</code> to <code>V5</code>)</p>
+<p>Create an indicator variable <code>m</code> which takes on values <code>N</code> or <code>V</code> for each of 5 variables (<code>V1</code> to <code>V5</code>). <code>m</code> will have values like <q>NVVVV</q>.</p>
 
 <div><pre><code class="language-none">new var s m !length:= 5;
 m := trim(m) + iif(V1=.,&quot;N&quot;,&quot;V&quot;);
 m := trim(m) + iif(V2=.,&quot;N&quot;,&quot;V&quot;);
 // etc. for all variables
-// an easier way with few variables
+// an easier way with a small number of variables
 m := iif(V1=.,&quot;N&quot;,&quot;V&quot;) + iif(V2=.,&quot;N&quot;,&quot;V&quot;) ...</code></pre></div>
 
-<p><a href=#toc>Table of Contents</a>
-<a name="graphs"></a></p>
+<p><a href=#toc>Back to contents</a></p>
 
-<h2 id="toc_12">Basic graphs</h2>
+<h2 id="toc_10">Basic graphs</h2>
 
-<h3 id="toc_13">Multiple categories on a graph</h3>
+<h3 id="toc_11">Multiple categories on a graph</h3>
 
 <p>Many graphs allow for &#39;stratification&#39; by a variable, such as age group or gender.</p>
 
 <div><pre><code class="language-none">epicurve onsetdate !by:=gender;</code></pre></div>
 
-<h3 id="toc_14">Label graph axes</h3>
+<h3 id="toc_12">Label graph axes</h3>
 
 <p>All graphs have options to change the titles, including axis titles.</p>
 
-<div><pre><code class="language-none">scatter y x !title:=&quot;Income by age group&quot; !xtitle:=&quot;Age group&quot; !ytitle:=&quot;Househole Income&quot;;</code></pre></div>
+<div><pre><code class="language-none">scatter y x !title:=&quot;Income by age group&quot; !xtitle:=&quot;Age group&quot; !ytitle:=&quot;Household Income&quot;;</code></pre></div>
 
 <hr>
 
-<p><a href=#toc>Table of Contents</a>
-<a name="output"></a></p>
+<p><a href=#toc>Back to contents</a></p>
 
-<h2 id="toc_15">Manage output</h2>
+<h2 id="toc_13">Manage output</h2>
 
 <p>There are a number of settings that can be used to change the appearance of Analysis, including output, the command line, data browser and graphs. It is also possible to create a style sheet that will be used in the output window. You can also display the output window as plain text (works best with a fixed-width font) or as html (works well with all fonts). If you change output styles, the full output window contents are displayed in the new format.</p>
 
@@ -225,10 +295,9 @@ m := iif(V1=.,&quot;N&quot;,&quot;V&quot;) + iif(V2=.,&quot;N&quot;,&quot;V&quot
 set &quot;output font name&quot; := &quot;Arial&quot;;
 set &quot;output font size&quot; := 12;</code></pre></div>
 
-<p><a href=#toc>Table of Contents</a>
-<a name="view"></a></p>
+<p><a href=#toc>Back to contents</a></p>
 
-<h2 id="toc_16">View data</h2>
+<h2 id="toc_14">View data</h2>
 
 <p><code>browse</code> is best for looking at your data. You can choose to browse only selected variables by including them on the command. The browse menu will always display all data.</p>
 
@@ -238,12 +307,11 @@ set &quot;output font size&quot; := 12;</code></pre></div>
 
 <hr>
 
-<p><a href=#toc>Table of Contents</a>
-<a name="dates"></a></p>
+<p><a href=#toc>Back to contents</a></p>
 
-<h2 id="toc_17">Work with dates</h2>
+<h2 id="toc_15">Work with dates</h2>
 
-<h3 id="toc_18">Date variables</h3>
+<h3 id="toc_16">Date variables</h3>
 
 <p>In EpiData Analysis dates are used internally as the number of days since 1899/12/30 but they are shown in a known date format, such as</p>
 
@@ -253,18 +321,18 @@ set &quot;output font size&quot; := 12;</code></pre></div>
 <li>ymd: <q>2000/01/25</q></li>
 </ul>
 
-<h3 id="toc_19">Exclude some dates from an analysis command</h3>
+<h3 id="toc_17">Exclude some dates from an analysis command</h3>
 
 <div><pre><code class="language-none">select born &lt; createdate(1,1,2024) do tab agegroup gender;</code></pre></div>
 
-<h3 id="toc_20">Calculate age on day of visit</h3>
+<h3 id="toc_18">Calculate age on day of visit</h3>
 
 <p>Assume you have date of birth in variable <code>dob</code> and date of visit in <code>visit</code></p>
 
 <div><pre><code class="language-none">new var int agedays := visit - dob; // days
 new var int ageyear := integer(agedays / 365.25); // years</code></pre></div>
 
-<h3 id="toc_21">Calculate age on day of visit - simulation example</h3>
+<h3 id="toc_19">Calculate age on day of visit - simulation example</h3>
 
 <p>To see the example you can copy this code</p>
 
@@ -280,11 +348,7 @@ list d;    </code></pre></div>
 
 <p>Notice that by rounding (<code>age1</code>), you get incorrect age, whereas truncating (<code>age</code>) always gives the correct value.</p>
 
-<blockquote>
-<p>Hint: it is better to copy these commands to the editor and execute them from there.</p>
-</blockquote>
-
-<h3 id="toc_22">Test if a string variable contains legal dates</h3>
+<h3 id="toc_20">Test if a string variable contains legal dates</h3>
 
 <p>You have read a text (delimited) file, and wish to convert a string variable to a date.
 In this example, the <code>txtdate</code> is the string variable with dates as YYYY/MM/DD, <code>id</code> is id number.</p>
@@ -296,10 +360,9 @@ new v mydate d := createdate(txtdate,&#39;ymd&#39;); // Incorrect date values wi
 count;
 select (mydate=.) do count;</code></pre></div>
 
-<p><a href=#toc>Table of Contents</a>
-<a name="dates"></a></p>
+<p><a href=#toc>Back to contents</a></p>
 
-<h2 id="toc_23">Further analysis</h2>
+<h2 id="toc_21">Further analysis</h2>
 
 <p>Epidata Analysis is meant to provide quick analyses that are typical of epidemiological studies, especially in the field. Some commands are easier to use and simpler than those in typical statistical programs. For example, for an outbreak investigation you can quickly produce an epidemic curve and even a food-specific attack rate table.</p>
 
