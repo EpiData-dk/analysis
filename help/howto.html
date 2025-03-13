@@ -1,378 +1,354 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
-  <head>
-    <meta name="copyright" content="EpiData Association" />
-    <meta name="author" content="Jens Lauritsen" />
 
-    <title>EpiData Analysis - How to solutions.</title>
-    <style type="text/css">
-	<!--
-      P {
-        color : #000000;
-        font-family : serif, sanserif, monospace;
-        font-size : 1.0em;
-        ALIGN =JUSTIFY}
-      H1 {
-        font-size : 1.1em;
-        margin-top : 1cm;
-        color : #000000;
-        widows : 2;
-        orphans : 2;
-        color : Blue
-      }
-      H2 {
-        font-size : 1.05em;
-        margin-top : 0.5cm;
-        direction : ltr;
-        color : #000000;
-        text-align : left;
-        ;
-        color : Blue
-      }
-      H3 {
-        font-size : 1.025em;
-        margin-top : 0.5cm;
-        direction : ltr;
-        color : #000000;
-        text-align : left;
-        ;
-        color : Blue
-      }
-      H4 {
-        font-size : 1.0em;
-        margin-top : 0.5cm;
-        direction : ltr;
-        color : #000000;
-        text-align : left;
-        ;
-        color : Blue
-      }
-      .heading {
-        color : blue;
-        font-weight : bold;
-        font-size : 1.05em;
-        ALIGN =JUSTIFY}
-      .cmdgroup {
-        color : blue;
-        font-weight : normal;
-        background-color : yellow
-      }
-      .bodywhite {
-        color : black;
-        background-color : white;
-      }
-      .body {
-        color : white;
-        background-color : white;
-        font-size : 1.0em;
-        font-weight : normal
-      }
-      .cmd {
-        font-family : monospace;
-        color : green;
-        font-weight : normal;
-      }
-      .cmdcomment {
-        font-style: italic;
-        color: blue;
-      }
-      .cmdgroup {
-        color : blue;
-        font-weight : normal;
-        background-color : yellow
-      }
-      .limit {
-        font-weight : bold;
-        color : red;
-      }
-      .indent {
-        margin-left : 30px;
-      }
-      
-      table {
-        empty-cells : show;
-        vertical-align : baseline;
-        border-spacing : 0;
-        font-family : serif, sanserif, monospace;
-        font-size : 1.0em;
-      }
-      table {
-        color : #000000;
-        background-color : white;
-        empty-cells : show;
-      }
-      table tr,
-      td {
-        border : solid blue 1px;
-        background-color : white;
-        Text-align : left;
-        padding-left : .3em;
-        padding-right : .3em;
-        font-size : 1.0em
-      }
-      table .firstcol {
-        Text-align : left;
-        font-weight : bold;
-        color : red
-      }-->
-	</style>
-  </head>
-  <body class="bodywhite">
-    <a name="top">&nbsp;</a>
-    <font face="Verdana" size="-1">
-      <a href="commands.htm">Overview of commands</a>&nbsp;&nbsp;&nbsp; <a href="scguide.htm">Keyboard ShortCuts</a>&nbsp;&nbsp;&nbsp;</font>
-    <h3>How to ..<font size="-1"> with EpiData Analysis</font>. <font size="-2">Document version Dec 2016.</font></h3> Hints and solutions on how to accomplish various tasks. - suggest additions <a href="mailto:epidata-list@lists.umanitoba.ca">on the EpiData list</a> or <a href="mailto:info@epidata.dk">e-mail info@epidata.dk</a>
-    <table cellpadding="4" cellspacing="0">
-      <tr>
-        <td colspan="3">Groups available:</td>
-      </tr>
-      <tr>
-        <td>
-          <ul>
-            <li><a href="#read">Start, Folders and files</a></li>
-            <li><a href="#analysis">Basic analysis</a></li>
-            <li><a href="#graph">Basic graphs</a></li>
-            <li><a href="#save">Save &amp; clear output</a></li>
-          </ul>
-        </td>
-        <td>
-          <ul>
-            <li><a href="#view">View data</a></li>
-            <li><a href="#gen">Generate/Change variables</a></li>
-            <li><a href="#dates">Working with dates and date variables</a></li>
-            <li><a href="#stop">Clean up &amp; stop</a></li>
-            <li><a href="#info">Information</a></li>
-          </ul>
-        </td>
-        <td>
-          <ul>
-            <li><a href="#moreanalysis">Further analysis</a></li>
-            <li><a href="#moregraph">Special graphs</a></li>
-            <li><a href="#data">Special data handling</a></li>
-            <li><a href="#disk">Disk commands</a></li>
-          </ul>
-        </td>
-      </tr>
-    </table>
-    <hr />
-    <table border="1" cellspacing="0" cellpadding="4" frame="void" rules="rows">
+<head>
 
-      <!--.............................       group here .............................................        -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a name="read"></a><a href="#top">Top</a> Read &amp; Start - Folders and Files</td>
-      </tr>
-
-      <tr valign="top">
-        <td>Control set parameters</td>
-        <td><font class="cmd">Set &lt; parameter &gt; </font><br />
-          <p>Set parameters control how much information you get in the output window (e.g. set statistics), how commands are executed (e.g. set replacedatafile) and other aspects</p>
-          <font class="cmd">Set</font> just issue "set" with no words after to see which ones are defined. </td>
-      </tr>
-
-      <tr valign="top">
-        <td>Folder changes</td>
-        <td><font class="cmd">cd "name/folder"</font>
-          <p>To make a particular folder the working folder either use a "cd ......." command in the epidatastat.ini file or define this in the lnk where you start epidata analysis.</p>
-          <!--<font class="cmd">cd "name/folder"</font> during a run is not save to next run of the programme.-->
-        </td>
-      </tr>
-
-      <!--.............................       group here .............................................        -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a name="analysis"></a><a href="#top">Top</a> Basic analysis</td>
-      </tr>
-      <tr valign="top">
-        <td>Select by date - existing variable</td>
-        <td><font class="cmd">Select &lt;logical criteria&gt;</font>
-          <p>
-            Solution: use the built in formulae. Adapt according to your date format (dmy/mdy/ymd) <br />
-            E.g. to select all born before 12th of february 1988 <br />
-            <br />
-            <font class="cmd">Select birthday &lt; createdate(12,2,1988)</font> using function createdate(day,month,year) <br />
-            <font class="cmd">Select birthday &lt; createdate("02/12/1988", "mdy")</font> using createdate function with "mdy" <br />
-            <font class="cmd">Select birthday &lt; createdate("12/02/1988", "dmy")</font> using createdate function with "dmy"
-          </p>
-        </td>
-      </tr>
-
-      <tr valign="top">
-        <td>Select by date - create date variable</td>
-        <td>Assume you have age in 1996 in field: age<br />
-          <font class="cmd">
-            new var date born;<br />
-            new var int yearborn := 1996 - age;<br />
-            born = createdate(1, 7, yearborn);<br />
-            select born &lt; createdate(12, 2, 1988);  <font class="cmdcomment">//select all born before 12th of february 1988</font><br/>
-            &nbsp;begin<br/>
-            &nbsp;&nbsp; ...<br/>
-            &nbsp;end<br/>
-          </font> 
-        </td>
-      </tr>
-
-      <!--<tr valign="top">
-        <td>Exclude date from table</td>
-        <td>Assume you have assigned Jan. 1st 1800 as the missing value in a date variable "born" <font class="cmd">freq born if born &lt;&gt; date("1,1,1800")</font>
-        </td>
-      </tr>-->
-
-      <tr valign="top">
-        <td>Test if a string variable contains legal dates</td>
-        <td>You have read a text (delimited) file, and wish to convert a string variable to a date <br />Assumed variable names: The string variable with dates is "txtdate", ID is id number. <font class="cmd">
-            <br />read myfile.csv <br />var </font>// to see the variables<br />* Now convert to date:<font class="cmd">
-            <br />gen d mydate = date(txtdate) </font>// Incorrect date values will be "." <font class="cmd">
-            <br />gen d mydate1 = date(txtdate,"V") </font>// Incorrect date values will be "01/01/1980" <font class="cmd">
-            <br />gen i mydateok = (mydate = mydateok) </font>// 0 if they are the same, 1 if different<font class="cmd">
-            <br />tables mydateok </font>// to see the count<font class="cmd">
-            <br />select if mydateok = 1 <br />list id txtdate mydate mydate1</font>// to see the values<font class="cmd">
-            <br />select <br />list id txtdate mydate mydate1 if mydateok = 1 </font>// alternative to select </td>
-      </tr>
-
-      <tr valign="top">
-        <td>Check for missing data <br />in several variables</td>
-        <td>Generate an indicator variable: m <font class="cmd">
-            <br />define m _____________________________ <br />if v1 = . then m = trim(m) + "N" else mv = mv + "V" <br />if v2 = . then m = trim(m) + "N" else mv = mv + "V" <br />etc. for all other variables, <br />freq m <br />* alternative solution: <br />m = "" <br />m = trim(m)+string(mv(sex)) // function mv = 0 for actual value <br />m = trim(m)+string(mv(age)) // function mv = 1 if variable=. <br />m = trim(m)+string(mv(km)) // function mv = 2 if variable=defined missing value <br />tab m </font>
-        </td>
-      </tr>
-
-      <!--.............................       group here .............................................        -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a name="graph"></a><a href="#top">Top</a> Basic graphs</td>
-      </tr>
-
-      <tr valign="top">
-        <td>Split Y variable</td>
-        <td>Assume you wish to make a scatter plot of Haemoglobin Values by age where males are circles and females filled circles. <br /><font class="cmd">Scatter age Hb by sex</font> would be convenient, but You cannot do that since "by sex" is not allowed.<br /> Solution: Assume sex is 1 for males and 2 for females, Hb is Haemoglobin<br />
-          <font class="cmd">
-            <br />gen male = Hb if sex = 1 <br />gen female = Hb if sex = 2 <br />Scatter age male female /ti="My nice graph of variable Y by sex" /sub="With this subtitle"</font>
-        </td>
-      </tr>
-
-      <tr valign="top">
-        <td>Add text for Y-axis</td>
-        <td>Solutions. E.g. for scatter plot to add "y=log(age)" <ul>
-            <li>Add a textbox at top of Y-axis: <font class="cmd">scatter x-var y-var /text="15,50,Y=log(age),0"</font><br /> Experiment a little with the numbers 15 and 50 (pixels from top left) </li>
-            <li>Use "/edit" and in "edit all" add title to left axis. With this you can change direction of text.</li>
-            <li>Or use a combination of /text and /edit</li>
-          </ul>Same for other graph types. </td>
-      </tr>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>howto</title>
 
 
-      <!--.............................       group here .............................................        -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a name="save"></a><a href="#top">Top</a> Output</td>
-      </tr>
+<style type="text/css">
+*{margin:0;padding:0;}
+body {
+	font:13.34px helvetica,arial,freesans,clean,sans-serif;
+	color:black;
+	line-height:1.4em;
+	background-color: #F8F8F8;
+	padding: 0.7em;
+}
+p {
+	margin:1em 0;
+	line-height:1.5em;
+}
+table {
+	font-size:inherit;
+	font:100%;
+	margin:1em;
+}
+table th{border-bottom:1px solid #bbb;padding:.2em 1em;}
+table td{border-bottom:1px solid #ddd;padding:.2em 1em;}
+input[type=text],input[type=password],input[type=image],textarea{font:99% helvetica,arial,freesans,sans-serif;}
+select,option{padding:0 .25em;}
+optgroup{margin-top:.5em;}
+pre,code{font:12px Monaco,"Courier New","DejaVu Sans Mono","Bitstream Vera Sans Mono",monospace;}
+pre {
+	margin:1em 0;
+	font-size:12px;
+	background-color:#eee;
+	border:1px solid #ddd;
+	padding:5px;
+	line-height:1.5em;
+	color:#444;
+	overflow:auto;
+	-webkit-box-shadow:rgba(0,0,0,0.07) 0 1px 2px inset;
+	-webkit-border-radius:3px;
+	-moz-border-radius:3px;border-radius:3px;
+}
+pre code {
+	padding:0;
+	font-size:12px;
+	background-color:#eee;
+	border:none;
+}
+code {
+	font-size:12px;
+	background-color:#f8f8ff;
+	color:#444;
+	padding:0 .2em;
+	border:1px solid #dedede;
+}
+img{border:0;max-width:100%;}
+abbr{border-bottom:none;}
+a{color:#4183c4;text-decoration:none;}
+a:hover{text-decoration:underline;}
+a code,a:link code,a:visited code{color:#4183c4;}
+h2,h3{margin:1em 0;}
+h1,h2,h3,h4,h5,h6{border:0;}
+h1{font-size:170%;border-top:4px solid #aaa;padding-top:.5em;margin-top:1.5em;}
+h1:first-child{margin-top:0;padding-top:.25em;border-top:none;}
+h2{font-size:150%;margin-top:1.5em;border-top:4px solid #e0e0e0;padding-top:.5em;}
+h3{margin-top:1em;}
+hr{border:1px solid #ddd;}
+ul{margin:1em 0 1em 2em;}
+ol{margin:1em 0 1em 2em;}
+ul li,ol li{margin-top:.5em;margin-bottom:.5em;}
+ul ul,ul ol,ol ol,ol ul{margin-top:0;margin-bottom:0;}
+blockquote{margin:1em 0;border-left:5px solid #ddd;padding-left:.6em;color:#555;}
+dt{font-weight:bold;margin-left:1em;}
+dd{margin-left:2em;margin-bottom:1em;}
+sup {
+    font-size: 0.83em;
+    vertical-align: super;
+    line-height: 0;
+}
+* {
+	-webkit-print-color-adjust: exact;
+}
+@media screen and (min-width: 914px) {
+    body {
+        width: 854px;
+        margin:0 auto;
+    }
+}
+@media print {
+	table, pre {
+		page-break-inside: avoid;
+	}
+	pre {
+		word-wrap: break-word;
+	}
+}
+</style>
 
-      <tr valign="top">
-        <td>Change Output Colour and design</td>
-        <td>Desing of output is controlled by a "stylesheet" contained in epiout.css which you can edit. <br />Several web sites and books explain more on how to use stylesheets. <br />To change background for tables to white: <br />&nbsp;&nbsp;&nbsp;1. Open the epiout.css file in the editor found where EpiData Analysis is installed <br />&nbsp;&nbsp;&nbsp;2. Change this line: <br />&nbsp;&nbsp;&nbsp;&nbsp;<font size="-1">table {background-color:black; border: solid #000 3px; width: 500px; } <br />&nbsp;&nbsp;&nbsp;<b>to</b>
-            <br />&nbsp;&nbsp;&nbsp;&nbsp;table {background-color:white; border: solid #000 3px; width: 800px; } <br />&nbsp;&nbsp;&nbsp;</font>and for the cellcontents change color to black or other color or contents are invisible. E.g.: <br />&nbsp;&nbsp;&nbsp;&nbsp;<font size="-1"> .firstcol {color: black;font-size: 10pt;font-family: verdana; font-weight: normal; text-align: right; padding-right:10px; } </font>
-          <br />&nbsp;&nbsp;&nbsp;3. Save the css file as Whitetable.css and use by <font class="cmd">set stylesheet="whitetable.css"</font>
-          <br />Submit examples to info@epidata.dk for dissemination to other users. <br />See further explanation in document: <a href="epidata analysis output.htm">Formatting output</a>&nbsp;&nbsp;&nbsp; </td>
-      </tr>
 
+</head>
 
-      <!--.............................       group here .............................................        -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a name="gen"></a><a href="#top">Top</a> Generate/change variables</td>
-      </tr>
-      <tr valign="top">
-        <td>Boolean Variables</td>
-        <td><font class="cmd">define lonely &lt;Y&gt;</font>
-          <br />This would define a Boolean variable. To add values use: <br />lonely = True <br />lonely = False </td>
-      </tr>
-      <tr>
-        <td colspan="2" class="cmdgroup"><a name="stop"></a><a href="#top">Top</a> Clean up &amp; stop </td>
-      </tr>
+<body>
 
-      <!--.............................       group here .............................................        -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a name="dates"></a><a href="#top">Top</a> Dates and date variables</td>
-      </tr>
+<h1 id="toc_0">Epidata Analysis 3.x</h1>
 
-      <tr valign="top">
-        <td>What are dates</td>
-        <td>In EpiData Analysis dates are used internally as the number of days since 1899/12/30 but shown in a known date format, such as <ul>
-            <li>dmy: "01/01/2000" </li>
-            <li>mdy: "12/25/2000"</li>
-            <li>ymd: "2000/01/25"</li>
-          </ul> Below you can find examples of how to handle date variables <font class="cmd">freq born if born &lt;&gt; date("1,1,1800")</font>
-        </td>
-      </tr>
+<h2 id="toc_1">How to</h2>
 
-      <tr valign="top">
-        <td>Exclude date from table</td>
-        <td>Assume you have assigned Jan. 1st 1800 as the missing value in a date variable "born"<br/>
-          <font class="cmd">select born &lt;&gt; createdate(1,1,1800) freq born </font>
-        </td>
-      </tr>
+<p>Hints and solutions for accomplishing certain tasks. Additions are welcome on the <a href="mailto:epidata-list@lists.umanitoba.ca">Epidata list</a></p>
 
-      <tr valign="top">
-        <td>Calculate age on day of visit</td>
-        <td>Assume you have date of birth in variable DOB and date of visit in VISIT<br/>
-          <font class="cmd">
-            new var int agedays := visit - dob <font class="cmdcomment">// days</font><br/>
-            new var int ageyear := integer(agedays / 365.25) <font class="cmdcomment">// years</font><br/>
-          </font>
-        </td>
-      </tr>
+<p><a name="toc"></a></p>
 
-      <tr valign="top">
-        <td>Calculate age on day of visit - simulation example</td>
-        <td>To see the example you can use this code: <font class="cmd">close generate 10 gen d dob = dmy(15,1,(1930+5*_n)) gen d visit = dmy(15,_n,2007) gen i age = trunc((visit-dob)/365.25) gen i age1 = round((visit-dob)/365.25) gen age2 = (visit-dob)/365.25 list</font>
-          <br />Notice that by rounding you get incorrect age, whereas truncating gives the correct one. </td>
-      </tr>
+<h2 id="toc_2">Table of contents</h2>
 
-      <tr valign="top">
-        <td>Select by date - create date variable</td>
-        <td>Assume you have age in 1996 in field: age <font class="cmd">
-            <br />define born &lt;dd/mm/yyyy&gt; <br />gen yearborn = 1996-age <br />born = dmy(1,7,yearborn) <br />Select born &lt; dmy(12,2,1988)</font> //select all born before 12th of february 1988 </td>
-      </tr>
+<h3 id="toc_3">Groups available</h3>
 
+<p><a href="#start">Read data, folders and files</a><br><a href="#basic">Basic variables</a><br><a href="#graphs">Basic graphs</a><br><a href="#output">Manage output</a><br><a href="#view">View data</a><br><a href="#dates">Work with dates</a><br><a href="#analyze">Further analysis</a>
+<hr></p>
 
-      <tr valign="top">
-        <td>Test if a string variable contains legal dates</td>
-        <td>You have read a text (delimited) file, and wish to convert a string variable to a date <br />Assumed variable names: The string variable with dates is "txtdate", ID is id number. <font class="cmd">
-            <br />read myfile.csv <br />var </font>// to see the variables<br />* Now convert to date:<font class="cmd">
-            <br />gen d mydate = date(txtdate) </font>// Incorrect date values will be "." <font class="cmd">
-            <br />gen d mydate1 = date(txtdate,"V") </font>// Incorrect date values will be "01/01/1980" <font class="cmd">
-            <br />gen i mydateok = (mydate = mydateok) </font>// 0 if they are the same, 1 if different<font class="cmd">
-            <br />tables mydateok </font>// to see the count<font class="cmd">
-            <br />select if mydateok = 1 <br />list id txtdate mydate mydate1</font>// to see the values<font class="cmd">
-            <br />select <br />list id txtdate mydate mydate1 if mydateok = 1 </font>// alternative to select </td>
-      </tr>
+<p><a name="start"></a></p>
 
+<h2 id="toc_4">Read data, folders, files</h2>
 
-      <!--.............................       group here .............................................        -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a name="info"></a><a href="#top">Top</a> Information</td>
-      </tr>
+<h3 id="toc_5">Control set parameters</h3>
 
-      <!--.............................       group here .............................................        -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a name="moreanalysis"></a><a href="#top">Top</a> Further analysis</td>
-      </tr>
-      <tr valign="top">
-        <td>Regression</td>
-        <td><font class="cmd">Logistic Outcome Indicator Confounder ......</font><br />
-          <br />You cannot do Logistic Regression or other advanced statistics. Use other software. <br />Data can be exported with labels to Stata (www.stata.com), SAS, SPSS and as delimited files to other software. </td>
-      </tr>
+<p><code>Set &lt; parameter &gt;</code></p>
+
+<p>Set parameters control how much information you get in the output window (e.g. set statistics), how commands are executed (e.g. set replacedatafile) and other aspects</p>
+
+<p>Use the command <code>set</code> with no words after to see which parameters are defined.</p>
+
+<h3 id="toc_6">Navigate folders</h3>
+
+<p><code>cd &quot;/path/to/folder&quot;</code></p>
+
+<p>To make a particular folder the working folder for your projects, add a <code>cd ...</code> command to the configuration file. In Windows or Linux, use the Edit / settings menu. On a Mac, use the Preferences menu.
+<hr></p>
+
+<p><a href=#toc>Table of Contents</a>
+<a name="basic"></a></p>
+
+<h2 id="toc_7">Basic analysis</h2>
+
+<h3 id="toc_8">Select by date - existing variable</h3>
+
+<p><code>Select &lt;logical criteria&gt; do ...</code></p>
+
+<p>Use the built in date function, with your date format (dmy/mdy/ymd)
+To select all subjects born before 12th of February 1988</p>
+
+<div><pre><code class="language-none">select birthday &lt; createdate(12,2,1988); // using function createdate(day,month,year)
+select birthday &lt; createdate(&quot;02/12/1988&quot;, &quot;mdy&quot;); // using createdate function with &quot;mdy&quot;
+select birthday &lt; createdate(&quot;12/02/1988&quot;, &quot;dmy&quot;); // using createdate function with &quot;dmy&quot;</code></pre></div>
+
+<h3 id="toc_9">Select by date - create date variable</h3>
+
+<p>Assume you have age in 1996 in field <code>age</code></p>
+
+<div><pre><code class="language-none">new var born date;
+new var yearborn int := 1996 - age;
+// abitrarily give them a birthdate at mid year
+born = createdate(1, 7, yearborn);
+//select all born before 12th of february 1988
+select born &lt; createdate(12, 2, 1988);
+  begin
+   ...
+  end;</code></pre></div>
+
+<h3 id="toc_10">Test if a string variable contains legal dates</h3>
+
+<p>You have read a text (delimited) file, and wish to convert a string variable to a date
+Assumed variable names: The string variable with dates is <q>txtdate</q>, ID is id number.</p>
+
+<div><pre><code class="language-none">read myfile.csv;
+var ;// to see the variables
+// Now convert to date:
+new var mydate date := date(txtdate); // Incorrect date values will be &quot;.&quot;
+new var mydate1 date := date(txtdate,&quot;V&quot;); // Incorrect date values will be &quot;01/01/1980&quot;
+new var mydateok int := (mydate = mydateok); // 0 if they are the same, 1 if different
+freq mydateok; // to see the count
+select (mydateok = 1) do list id txtdate mydate mydate1; // to see the values</code></pre></div>
+
+<h3 id="toc_11">Check for missing data in several variables</h3>
+
+<p>Create an indicator variable <code>m</code> which takes on values <code>N</code> or <code>V</code> for each of 5 variables (<code>V1</code> to <code>V5</code>)</p>
+
+<div><pre><code class="language-none">new var s m !length:= 5;
+m := trim(m) + iif(V1=.,&quot;N&quot;,&quot;V&quot;);
+m := trim(m) + iif(V2=.,&quot;N&quot;,&quot;V&quot;);
+// etc. for all variables
+// an easier way with few variables
+m := iif(V1=.,&quot;N&quot;,&quot;V&quot;) + iif(V2=.,&quot;N&quot;,&quot;V&quot;) ...</code></pre></div>
+
+<p><a href=#toc>Table of Contents</a>
+<a name="graphs"></a></p>
+
+<h2 id="toc_12">Basic graphs</h2>
+
+<h3 id="toc_13">Multiple categories on a graph</h3>
+
+<p>Many graphs allow for &#39;stratification&#39; by a variable, such as age group or gender.</p>
+
+<div><pre><code class="language-none">epicurve onsetdate !by:=gender;</code></pre></div>
+
+<h3 id="toc_14">Label graph axes</h3>
+
+<p>All graphs have options to change the titles, including axis titles.</p>
+
+<div><pre><code class="language-none">scatter y x !title:=&quot;Income by age group&quot; !xtitle:=&quot;Age group&quot; !ytitle:=&quot;Househole Income&quot;;</code></pre></div>
+
+<hr>
+
+<p><a href=#toc>Table of Contents</a>
+<a name="output"></a></p>
+
+<h2 id="toc_15">Manage output</h2>
+
+<p>There are a number of settings that can be used to change the appearance of Analysis, including output, the command line, data browser and graphs. It is also possible to create a style sheet that will be used in the output window. You can also display the output window as plain text (works best with a fixed-width font) or as html (works well with all fonts). If you change output styles, the full output window contents are displayed in the new format.</p>
+
+<div><pre><code class="language-none">set &quot;output format&quot; := &quot;html&quot;;
+set &quot;output font name&quot; := &quot;Arial&quot;;
+set &quot;output font size&quot; := 12;</code></pre></div>
+
+<p><a href=#toc>Table of Contents</a>
+<a name="view"></a></p>
+
+<h2 id="toc_16">View data</h2>
+
+<p><code>browse</code> is best for looking at your data. You can choose to browse only selected variables by including them on the command. The browse menu will always display all data.</p>
+
+<p>Right-click in the browser window to see various options. Most important is the ability to view values or value labels. These options are also available on the <code>browse</code> command.</p>
+
+<div><pre><code class="language-none">browse age sex ill outcome !vl&#39; // to view valuelabels</code></pre></div>
+
+<hr>
+
+<p><a href=#toc>Table of Contents</a>
+<a name="dates"></a></p>
+
+<h2 id="toc_17">Work with dates</h2>
+
+<h3 id="toc_18">Date variables</h3>
+
+<p>In EpiData Analysis dates are used internally as the number of days since 1899/12/30 but they are shown in a known date format, such as</p>
+
+<ul>
+<li>dmy: <q>01/01/2000</q></li>
+<li>mdy: <q>12/25/2000</q></li>
+<li>ymd: <q>2000/01/25</q></li>
+</ul>
+
+<h3 id="toc_19">Exclude some dates from an analysis command</h3>
+
+<div><pre><code class="language-none">select born &lt; createdate(1,1,2024) do tab agegroup gender;</code></pre></div>
+
+<h3 id="toc_20">Calculate age on day of visit</h3>
+
+<p>Assume you have date of birth in variable <code>dob</code> and date of visit in <code>visit</code></p>
+
+<div><pre><code class="language-none">new var int agedays := visit - dob; // days
+new var int ageyear := integer(agedays / 365.25); // years</code></pre></div>
+
+<h3 id="toc_21">Calculate age on day of visit - simulation example</h3>
+
+<p>To see the example you can copy this code</p>
+
+<div><pre><code class="language-none">close;
+new project;
+new dataset sim !size := 10;
+new v dob d := createdate(15,1,(1930+5*_n));
+new v visit d := createdate(15,_n,2007);
+new v age i := integer((visit-dob) / 365.25);
+new v age1 i := integer(round((visit-dob)/365.25,0));
+new v age2 f := (visit-dob)/365.25;
+list d;    </code></pre></div>
+
+<p>Notice that by rounding (<code>age1</code>), you get incorrect age, whereas truncating (<code>age</code>) always gives the correct value.</p>
+
+<blockquote>
+<p>Hint: it is better to copy these commands to the editor and execute them from there.</p>
+</blockquote>
+
+<h3 id="toc_22">Test if a string variable contains legal dates</h3>
+
+<p>You have read a text (delimited) file, and wish to convert a string variable to a date.
+In this example, the <code>txtdate</code> is the string variable with dates as YYYY/MM/DD, <code>id</code> is id number.</p>
+
+<div><pre><code class="language-none">read &quot;myfile.csv&quot;;
+list v; // to see the variables
+// Now convert to date:
+new v mydate d := createdate(txtdate,&#39;ymd&#39;); // Incorrect date values will be &quot;.&quot;
+count;
+select (mydate=.) do count;</code></pre></div>
+
+<p><a href=#toc>Table of Contents</a>
+<a name="dates"></a></p>
+
+<h2 id="toc_23">Further analysis</h2>
+
+<p>Epidata Analysis is meant to provide quick analyses that are typical of epidemiological studies, especially in the field. Some commands are easier to use and simpler than those in typical statistical programs. For example, for an outbreak investigation you can quickly produce an epidemic curve and even a food-specific attack rate table.</p>
+
+<div><pre><code class="language-none">read &quot;samples/oswego.epx&quot;;
+epicurve onsethr gender;
+// compact table 
+// !ar requests attack rates
+// !sd sorts the exposure and outcome values in descending order to get O+ and E+ correct
+// !ss sorts the table by the key statistic, which is RR in this table
+ctable Ill Chicken-Peppers !sd !ss !ar;
+                                    Ill                                    
+                          O+ = Ill / O- = Not ill                          
+────────────────────────────────────────────────────────────────────────────
+ by                       E+      E+ E+      E- E-                         
+ Var               N    value     O+ O-   AR O+ O-   AR    RR    95% CI    
+────────────────────────────────────────────────────────────────────────────
+ Meatballs        37 Ate the food 17  3 0.85  1 16 0.06 14.45 (2.14, 97.61)
+ Chicken          37 Ate the food 17 12 0.59  1  7 0.13  4.69 (0.73, 30.09)
+ CabbageRolls     37 Ate the food 12  3 0.80  6 16 0.27  2.93  (1.42, 6.07)
+ Potatoes         37 Ate the food 14  8 0.64  4 11 0.27  2.39  (0.97, 5.85)
+ Strawberries     37 Ate the food  9  2 0.82  9 17 0.35  2.36  (1.30, 4.29)
+ Beverages        37 Ate the food 16 14 0.53  2  5 0.29  1.87  (0.55, 6.31)
+ Cheeses          37 Ate the food 11  6 0.65  7 13 0.35  1.85  (0.92, 3.70)
+ Sausage          37 Ate the food  7  4 0.64 11 15 0.42  1.50  (0.80, 2.83)
+ MarshmallowSalad 37 Ate the food  2  1 0.67 16 18 0.47  1.42  (0.59, 3.40)
+ BeanSalad        37 Ate the food  5  3 0.63 13 16 0.45  1.39  (0.71, 2.73)
+ GardenSalad      37 Ate the food 11  9 0.55  7 10 0.41  1.34  (0.67, 2.67)
+ Cake             37 Ate the food  7  5 0.58 11 14 0.44  1.33  (0.69, 2.54)
+ PotatoSalad      37 Ate the food  8  6 0.57 10 13 0.43  1.31  (0.69, 2.52)
+ PorkBeans        37 Ate the food  3  2 0.60 15 17 0.47  1.28  (0.57, 2.86)
+ Ham              37 Ate the food  9  9 0.50  9 10 0.47  1.06  (0.54, 2.05)
+ MacaroniSalad    37 Ate the food  1  1 0.50 17 18 0.49  1.03  (0.25, 4.29)
+ SalmonSalad      37 Ate the food  1  1 0.50 17 18 0.49  1.03  (0.25, 4.29)
+ Peppers          37 Ate the food  1  1 0.50 17 18 0.49  1.03  (0.25, 4.29)
+ Dip              37 Ate the food  9 10 0.47  9  9 0.50  0.95  (0.49, 1.84)
+ Mushrooms        37 Ate the food  2  3 0.40 16 16 0.50  0.80  (0.26, 2.47)
+ Rolls            37 Ate the food  8 13 0.38 10  6 0.63  0.61  (0.31, 1.18)
+ PastaSalad       37 Ate the food  4  8 0.33 14 11 0.56  0.60  (0.25, 1.42)
+ CaesarSalad      37 Ate the food  5 10 0.33 13  9 0.59  0.56  (0.25, 1.25)
+────────────────────────────────────────────────────────────────────────────</code></pre></div>
+
+<p>However, it is very easy to export your data for use in other software. The most common format to use is Stata and data can be easily exported.</p>
+
+<div><pre><code class="language-none">// save data in the most-compatible Stata format
+save &quot;oswego.dta&quot;;</code></pre></div>
 
 
 
-      <!--.............................       group here .............................................        -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a name="moregraph"></a><a href="#top">Top</a> Special graphs </td>
-      </tr>
-      <!--.............................       group here .............................................        -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a name="data"></a><a href="#top">Top</a> Special data handling </td>
-      </tr>
-      <!--.............................       group here .............................................        -->
-      <tr>
-        <td colspan="2" class="cmdgroup"><a name="disk"></a><a href="#top">Top</a> Disk commands </td>
-      </tr>
-    </table>
-  </body>
+
+</body>
+
 </html>
