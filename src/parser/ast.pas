@@ -2359,7 +2359,10 @@ end;
 function TRegressCommand.GetAcceptedVariableCount: TBoundArray;
 begin
   Result := inherited GetAcceptedVariableCount;
-  Result[0] := -1;
+  if (HasOption('poly')) then
+    Result[0] := 2
+  else
+    Result[0] := -2;
 end;
 
 function TRegressCommand.GetAcceptedVariableTypesAndFlags(Index: Integer

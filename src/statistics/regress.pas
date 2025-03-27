@@ -12,6 +12,7 @@ uses
 
 resourcestring
   sNoData              = 'No data';
+  sRegNoconWithPoly    = 'Polynomial model must have a constant';
   sRegTooManyTypes     = 'Too many regression types';
   sRegTypeNotFound     = 'Regression type not found';
 
@@ -20,12 +21,10 @@ type
   { TRegress }
 
   TRegress = class
-  private
-    FVariables: TStrings;
-    FNVar: Integer;
   protected
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
+    function CheckUniqueVariables(Varnames: TStrings): boolean;
     function GetRegressModelClass: TRegressClass; virtual; abstract;
     function GetRegressModel(ST: TRegressCommand; out Model: TRegressModel): Boolean;
   public
@@ -70,17 +69,20 @@ procedure TRegress.ExecRegress(ST: TRegressCommand);
 var
   DF: TEpiDataFile;
   Model: TRegressModel;
+  Variables: TStrings;
   Opt: TOption;
-  i, d: Integer;
+  i, d, nVar: Integer;
   saveField: TEpiField;
   msg: UTF8String;
 begin
   FExecutor.ClearResults('$r_');
-  FVariables := ST.VariableList.GetIdentsAsList;
+  Variables := ST.VariableList.GetIdentsAsList;
   ST.ExecResult := csrFailed;
+  if (not CheckUniqueVariables(Variables)) then
+    Exit;
 
   try
-    DF := FExecutor.PrepareDatafile(FVariables, FVariables);
+    DF := FExecutor.PrepareDatafile(Variables, Variables);
 
     if DF.Size = 0 then
       begin
@@ -89,23 +91,23 @@ begin
         Exit;
       end;
 
-    FNVar := FVariables.Count;
+    nVar := Variables.Count;
     if (not GetRegressModel(ST, Model)) then
       begin
         DF.Free;
         exit;
       end;
-    Model.SetFormula(FVariables);
-    Model.SetDepV(DF.Fields.FieldByName[FVariables[0]]);
-    for i := 1 to FNVar - 1 do
-      Model.SetIndepV(DF.Fields.FieldByName[FVariables[i]],i);
+    Model.SetFormula(Variables);
+    Model.SetDepV(DF.Fields.FieldByName[Variables[0]]);
+    for i := 1 to nVar - 1 do
+      Model.SetIndepV(DF.Fields.FieldByName[Variables[i]],i);
     msg := Model.Estimate();
     if (msg = '') then
       begin
         if (ST.HasOption('fit',opt)) then
           begin
             DF.Free;
-            DF := FExecutor.PrepareDatafile(FVariables, nil);
+            DF := FExecutor.PrepareDatafile(Variables, nil);
             saveField := FExecutor.DataFile.Fields.FieldByName[Opt.Expr.AsIdent];
             Model.GetFittedVar(DF,saveField);
           end;
@@ -136,6 +138,12 @@ begin
       rType := rtPolynomial;
       typeFound += ' ' + opt.Ident;
       inc(typesFound);
+      if (ST.HasOption('nocon')) then
+        begin
+          FExecutor.Error(sRegNoconWithPoly);
+          result := false;
+          exit;
+        end;
     end;
   if (ST.HasOption('logit', opt)) then
     begin
@@ -157,6 +165,32 @@ begin
       exit;
     end;
   Model := RegressMap.Data[Index].Create(FExecutor, FOutputCreator, ST);
+end;
+
+function TRegress.CheckUniqueVariables(Varnames: TStrings): boolean;
+var
+  CheckList: TStringList;
+  Name: UTF8String;
+  DummyIdx: Integer;
+
+  function CheckStrings(Strings: TStrings; ErrorMsg: UTF8String): boolean;
+  begin
+    for Name in Strings do
+      if (CheckList.Find(Name, DummyIdx)) then
+        begin
+          FExecutor.Error(ErrorMsg + Name);
+          Exit(false);
+        end
+    else
+      CheckList.Add(Name);
+
+    Result := true;
+  end;
+
+begin
+  CheckList := TStringList.Create;
+  CheckList.Sorted := true;
+  Result := CheckStrings(Varnames, 'Regress command requires unique variable names: ');
 end;
 
 end.
