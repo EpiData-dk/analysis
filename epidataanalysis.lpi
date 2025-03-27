@@ -248,50 +248,53 @@
         </Mode2>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="13">
+    <RequiredPackages Count="14">
       <Item1>
-        <PackageName Value="laz.virtualtreeview_package"/>
+        <PackageName Value="LMath"/>
       </Item1>
       <Item2>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="laz.virtualtreeview_package"/>
       </Item2>
       <Item3>
-        <PackageName Value="luicontrols"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item3>
       <Item4>
-        <PackageName Value="luicomponents"/>
+        <PackageName Value="luicontrols"/>
       </Item4>
       <Item5>
-        <PackageName Value="ChsDet"/>
+        <PackageName Value="luicomponents"/>
       </Item5>
       <Item6>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="ChsDet"/>
       </Item6>
       <Item7>
-        <PackageName Value="lclextensions_package"/>
+        <PackageName Value="lnetbase"/>
       </Item7>
       <Item8>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="lclextensions_package"/>
       </Item8>
       <Item9>
-        <PackageName Value="FrameViewer09"/>
+        <PackageName Value="dcpcrypt"/>
       </Item9>
       <Item10>
-        <PackageName Value="epidatacore_visuals"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="FrameViewer09"/>
       </Item10>
       <Item11>
-        <PackageName Value="epidatacore"/>
+        <PackageName Value="epidatacore_visuals"/>
         <MinVersion Major="2" Valid="True"/>
       </Item11>
       <Item12>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="epidatacore"/>
+        <MinVersion Major="2" Valid="True"/>
       </Item12>
       <Item13>
-        <PackageName Value="LCL"/>
+        <PackageName Value="SynEdit"/>
       </Item13>
+      <Item14>
+        <PackageName Value="LCL"/>
+      </Item14>
     </RequiredPackages>
-    <Units Count="195">
+    <Units Count="199">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1106,6 +1109,22 @@
         <Filename Value="src/executor/select_stack.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit194>
+      <Unit195>
+        <Filename Value="src/statistics/regress.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit195>
+      <Unit196>
+        <Filename Value="src/statistics/regress_types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit196>
+      <Unit197>
+        <Filename Value="src/statistics/regress_linear.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit197>
+      <Unit198>
+        <Filename Value="src/statistics/regress_polynomial.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit198>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
