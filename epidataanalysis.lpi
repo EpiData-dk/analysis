@@ -294,7 +294,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="199">
+    <Units Count="200">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1125,6 +1125,10 @@
         <Filename Value="src/statistics/regress_polynomial.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit198>
+      <Unit199>
+        <Filename Value="src/statistics/regress_logistic.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit199>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -39,7 +39,7 @@ type
 implementation
 
 uses
-  uerrors, options_utils, regress_linear, regress_polynomial;
+  uerrors, options_utils, regress_linear, regress_polynomial, regress_logistic;
 
 var
   RegressMap: TRegressMap;

@@ -2350,7 +2350,7 @@ begin
   Result.Insert('nocon',  [rtUndefined]); // no constant term
   Result.Insert('anova',  [rtUndefined]); // show anova
   Result.Insert('poly',   [rtInteger]);   // polynomial model !poly:=n
-//  Result.Insert('logit',  [rtUndefined]); // univariate logistic model
+  Result.Insert('logit',  [rtUndefined]); // univariate logistic model
   Result.Insert('fit',  [rtObject], [evtField], [evfInternal, evfAsObject]); // variable for estimates
   Result.Insert('q',  [rtUndefined]);
   AddDecimalOptions(Result);
