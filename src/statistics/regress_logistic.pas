@@ -89,13 +89,14 @@ implementation
 
 uses
   epifields_helper, ulogifit, uregtest, uibtdist, uerrors, umatrix, umeansd, umulfit,
-  umath, ulinfit, unlfit, ulineq, uvecfunc;
+  umath, ulinfit, unlfit, ulineq, uvecfunc, uigmdist;
 
 { TRegressLogistic}
 
 constructor TRegressLogistic.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand);
 begin
   inherited Create(AExecutor, AOutputCreator, ST);
+  FCoeffTableHead[3] := 'Wald Chi-square';
   Debug := false;
 end;
 
@@ -125,8 +126,8 @@ begin
   DimVector(FCoeff,l-1);
   setLength(FB, l);
 //  FParamCt := l;
-  FB[0].Name := 'Intercept';
-  FB[0].pLabel := 'Intercept';
+  FB[0].Name := 'Constant';
+  FB[0].pLabel := 'Constant';
   v := 'c';
   for i := 1 to l - 1 do
     begin
@@ -179,7 +180,7 @@ begin
   DimMatrix(Inv, FParamCt-1, FParamCt-1);
   // get betas
   dm('FIndepV',FIndepV);
-  epiLogiFit(FIndepV, FDepV, 60, 0.00001, FCoeff, InV);
+  epiLogiFit(FIndepV, FDepV, 60, 0.000000001, FCoeff, InV);
   dv('FCoeff',FCoeff);
   if (MathErr = MathOk) then
     Result := ''
@@ -196,9 +197,9 @@ begin
   epiLogiRegTest(FDepV, FFitted, InV, lrRegTest);
   for i:= 0 to FParamCt-1 do begin
     FB[i].Estimate := FCoeff[i];
-    FB[i].Se := 0; //sqrt(Inv[i,i]);
-    FB[i].t := 0; //FCoeff[i] / sqrt(Inv[i,i]);
-    FB[i].p := 0; //PStudent(FRegFit.Nu2,FB[i].t);
+    FB[i].Se := sqrt(Inv[i,i]);
+    FB[i].t := FCoeff[i] * FCoeff[i] / Inv[i,i];
+    FB[i].p := PKhi2(1, FB[i].t);
   end;
 // debug
 FExecutor.Error('Model Deviance=' + lrRegTest.Dm.ToString + ' Chi-square with ' + (FParamCt-1).ToString + ' df');
@@ -355,8 +356,8 @@ end;
         dv('M in logiFit 2',M);
         VecAbs(D, 0, l);
         T := max(D);
-        FExecutor.Error('Iteration ' + i.ToString + ' T=' + T.ToString);
-        FExecutor.Error('FCoeff: ' + B[0].ToString + ' ' + B[1].ToString + ' ' + B[2].ToString + ' ' + B[3].ToString);
+//        FExecutor.Error('Iteration ' + i.ToString + ' T=' + T.ToString);
+//        FExecutor.Error('FCoeff: ' + B[0].ToString + ' ' + B[1].ToString + ' ' + B[2].ToString + ' ' + B[3].ToString);
         if (T < Tol) then
           exit;
       end;

@@ -77,6 +77,7 @@ type
     FDecimals: Integer;
     FValuelabelOutput: TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
+    FCoeffTableHead: array of UTF8String;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand); virtual;
     procedure  SetFormula(VarNames: TStrings); virtual;
@@ -112,6 +113,12 @@ begin
   FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   FDoAnova := ST.HasOption('anova');
   FConstant := not ST.HasOption('nocon');
+  setLength(FCoeffTableHead, 5);
+  FCoeffTableHead[0] := sRegTerm;
+  FCoeffTableHead[1] := sRegCoefficient;
+  FCoeffTableHead[2] := sStErrorAbbr;
+  FCoeffTableHead[3] := 't';
+  FCoeffTableHead[4] := 'p';
 end;
 
 procedure TRegressModel.SetFormula(VarNames: TStrings);
@@ -180,11 +187,8 @@ begin
   Params := Length(FB) - 1;
   T.RowCount := Params + 2;
   // Header row
-  T.Cell[0,0].Text := sRegTerm;
-  T.Cell[1,0].Text := sRegCoefficient;
-  T.Cell[2,0].Text := sStErrorAbbr;
-  T.Cell[3,0].Text := 't';
-  T.Cell[4,0].Text := 'p';
+  for i := 0 to high(FCoeffTableHead) do
+  T.Cell[i,0].Text := FCoeffTableHead[i];
   Offset := 1;
   if (FConstant) then begin
     T.RowCount := T.RowCount + 1;
