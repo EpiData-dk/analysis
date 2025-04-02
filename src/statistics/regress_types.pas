@@ -116,7 +116,7 @@ end;
 
 procedure TRegressModel.SetFormula(VarNames: TStrings);
 begin
-  FParamCt := VarNames.Count - 1;
+  FParamCt := VarNames.Count;
   FDepVName := VarNames[0];
   FModel := FDepVName + ' ~ ';
 end;
@@ -141,7 +141,7 @@ begin
     FObs := F.Size;
   if (FIndepV = nil) then
     begin
-      DimMatrix(FIndepV, FObs - 1, FParamCt);
+      DimMatrix(FIndepV, FObs - 1, FParamCt - 1);
       // put constant (1) into first column?
       if (FConstant) then
         for i := 0 to FObs - 1 do
@@ -253,7 +253,7 @@ begin
   Prefix := '$r_';
   with FExecutor do begin
     AddResultConst(Prefix + 'model',    ftString).AsStringVector[0]   := FModel;
-    AddResultConst(Prefix + 'nIndVar',  ftInteger).AsIntegerVector[0] := FParamCt;
+    AddResultConst(Prefix + 'nIndVar',  ftInteger).AsIntegerVector[0] := FParamCt-1;
     AddResultConst(Prefix + 'Vr',       ftFloat).AsFloatVector[0]     := FRegFit.Vr;
     if (FConstant) then
       begin

@@ -2,15 +2,34 @@ unit regress_logistic;
 
 {$mode ObjFPC}{$H+}
 
-{
- This is not the logistic regression we want. It fits the model:
-            B - A
-y = A + -----------------
-        1 + exp(-a.x + b)
+{ ******************************************************************
+  This unit fits the logistic function :
 
-and expects x to have real values (not just 0,1)
-we can constrain A to be 0, but the model estimates B
-}
+                                     1
+                        y = ----------------------
+                            1 + exp(-∑(b[i]*x[i]))
+
+  ******************************************************************
+  Modern iteration solution
+  See https://en.wikipedia.org/wiki/Logistic_regression
+  Binary logistic regression (y=0 or y=1) can, for example, be calculated using
+  iteratively reweighted least squares (IRLS), which is equivalent to maximizing
+  the log-likelihood of a Bernoulli distributed process using Newton's method.
+  If the problem is written in vector matrix form, with
+  X the matrix of independent variables, with 1's in the first column)
+  y is the vector of responses (0,1)
+  parameters wT = [β0,β1,β2,…]  // T indicates transpose
+  explanatory variables x(i) = [1, x1(i), x2(i), …]T
+  and expected value of the Bernoulli distribution μ(i) = 1 / (1+e(−wT.x(i))) [i=1..n]
+
+  The parameters can be found using the following iterative algorithm:
+
+  w[k+1] = (XT.Sk.X)^(-1). XT.(S[k].X.w[k] + y - μ[k])
+
+  where S is diag(μ(i)(1-μ(i))) is a diagnonal weighting matrix, and
+  μ is the vector of expected values.
+
+  }
 
 interface
 
@@ -24,28 +43,58 @@ type
 { TRegressLogit }
 
 TRegressLogistic = class(TRegressModel)
-private
-  FLogiIndepV: TVector;
-
+  private
+    Debug: Boolean;
+protected
+  { fit of logistic function
+    Input parameters:  X, Y     = point coordinates
+                       Lb, Ub   = array bounds
+                       MaxIter  = max. number of iterations
+                       Tol      = tolerance on parameters
+    Output parameters: B        = regression parameters
+                       V        = inverse matrix }
+  procedure epiLogiFit(X        : TMatrix;
+                       Y        : TVector;
+                       MaxIter  : Integer;
+                       Tol      : Float;
+                 out   B        : TVector;
+                 out   V        : TMatrix);
+  function epiLogiFit_Func(X: TMatrix; B : TVector) : TVector;
+  function epiLogiIterate(X: TMatrix; Y: TVector; W: TVector; out V:TMatrix): TVector;
+  procedure dm(s: string; m: TMatrix);
+  procedure dv(s: string; m: TVector);
 public
   constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand); override;
   function GetRegressModelClass(): TRegressClass;
   procedure SetFormula(VarNames: TStrings); override;
-  procedure SetIndepV(F: TEpiField; Ix: Integer); override;
   function  Estimate(): UTF8String; override;
   procedure  GetFittedVar(DF: TEpiDatafile; EF: TEpiField); override;
 end;
 
+
 implementation
 
 uses
-   epifields_helper, ulogifit, uregtest, uibtdist, uerrors, umatrix, umeansd;
+  epifields_helper, ulogifit, uregtest, uibtdist, uerrors, umatrix, umeansd, umulfit,
+  umath, ulinfit, unlfit, ulineq, uvecfunc;
 
 { TRegressLogistic}
 
 constructor TRegressLogistic.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand);
 begin
   inherited Create(AExecutor, AOutputCreator, ST);
+  Debug := false;
+end;
+
+procedure TRegressLogistic.dm(s: string; m: TMatrix);
+begin
+  if (Debug) then
+    FExecutor.Error('Matrix ' + s + ' is ' + length(m).ToString + ' by ' + length(m[0]).toString);
+end;
+procedure TRegressLogistic.dv(s: string; m: TVector);
+begin
+  if (Debug) then
+    FExecutor.Error('Vector ' + s + ' is ' + length(m).ToString);
 end;
 
 function TRegressLogistic.GetRegressModelClass(): TRegressClass;
@@ -55,41 +104,23 @@ end;
 
 procedure TRegressLogistic.SetFormula(VarNames: TStrings);
 var
-  i: Integer;
-  plusSign: String;
+  i,l : Integer;
+  v: UTF8String;
 begin
   inherited SetFormula(Varnames);
-  DimVector(FCoeff,3);
-  setLength(FB, 4);
-  FParamCt := 4;
-  FConstant := false;
-  plusSign := '';
-  {if (FConstant) then begin
-    // add constant term to model
-    FB[0].pLabel := 'Intercept';
-    FModel += '';
-  end;  }
-  FB[2].Name := 'Intercept';
-  FB[2].pLabel := 'Intercept';
-  FB[3].Name := VarNames[1];
-  {for i := 1 to 2 do begin
-    FB[i].Name := VarNames[i];
-    FModel += plusSign + VarNames[i];
-    plusSign := ' + ';
-  end;  }
-  FModel := 'Logit(' + VarNames[1] + ')';
-end;
-
-procedure TRegressLogistic.SetIndepV(F: TEpiField; Ix: Integer);
-var
-  i: Integer;
-begin
-  if (FObs = 0) then
-    FObs := F.Size;
-  FB[3].pLabel := F.GetVariableLabel(FVariableLabelOutput);
-  DimVector(FLogiIndepV, FObs - 1);
-  for i := 0 to FObs - 1 do
-    FLogiIndepV[i] := F.AsFloat[i];
+  l := VarNames.Count;
+  DimVector(FCoeff,l-1);
+  setLength(FB, l);
+//  FParamCt := l;
+  FB[0].Name := 'Intercept';
+  FB[0].pLabel := 'Intercept';
+  v := 'c';
+  for i := 1 to l - 1 do
+    begin
+      FB[i].Name := VarNames[i];
+      v += ' + ' + VarNames[i];
+    end;
+  FModel += 'Logit(' + v + ')';
 end;
 
 function TRegressLogistic.Estimate(): UTF8String;
@@ -98,32 +129,27 @@ var
   i, i0: Integer;
   s, t: EpiFloat;
 begin
-  DimMatrix(Inv, 3, 3) ;//DimMatrix(Inv, FParamCt, FParamCt);
+  FConstant := true;
+  DimMatrix(Inv, FParamCt, FParamCt);
   // get betas
-  LogiFit(FLogiIndepV, FDepV, 0, FObs-1, false, false, 20, 0.00000001, FCoeff, InV);
+  dm('FIndepV',FIndepV);
+  epiLogiFit(FIndepV, FDepV, 60, 0.00001, FCoeff, InV);
+  dv('FCoeff',FCoeff);
   if (MathErr = MathOk) then
     Result := ''
   else
     begin
-      // debug diagnostics
-      Result := 'Logistic Regression ' + FModel + ' ' + 'failed with error' + ' : ' + MathErrMessage;
-      s := Min(FDepV); t := Max(FDepV);
-      Result += LineEnding + 'Dep var min max are ' + s.ToString() + ' ' + t.ToString();
-      s := Min(FLogiIndepV); t := Max(FLogiIndepV);
-      Result += LineEnding + 'Indep var min max are ' + s.ToString() + ' ' + t.ToString();
       FExecutor.Error(Result);
       exit;
     end;
   // get fitted values
   DimVector(FFitted, FObs - 1);
   DimVector(FResidual,FObs - 1);
-  for i := 0 to FObs - 1 do
-    begin
-      FFitted[i] := LogiFit_Func(FLogiIndepV[i], FCoeff);
-    end;
-  VecSubtr(FFitted, FDepV, FResidual);
-  RegTest(FDepV, FFitted, 0, FObs-1, InV, 1, 3, FRegFit);
-  for i:= 1 to 3 do begin
+  FFitted := epiLogiFit_Func(FIndepV, FCoeff);
+  FResidual := FFitted - FDepV;
+  // *** Fails with only one indep variable!
+  RegTest(FDepV, FFitted, 0, FObs-1, InV, 0, 3, FRegFit);
+  for i:= 0 to 3 do begin
     FB[i].Estimate := FCoeff[i];
     FB[i].Se := sqrt(Inv[i,i]);
     FB[i].t := FCoeff[i] / sqrt(Inv[i,i]);
@@ -152,12 +178,160 @@ var
   v: TEpiField;
 begin
   EF.ResetData;
-  v := DF.Fields.FieldByName[FB[j].Name];
-  for i := 0 to DF.Size -1 do
-    EF.AsFloat[i] := LogiFit_Func(v.AsFloat[i], FCoeff);
+  for i := 0 to DF.Size-1 do
+    begin
+      EF.AsFloat[i] := -FCoeff[0];
+    end;
+  for j := 1 to length(FB) -1 do
+    begin
+      v := DF.Fields.FieldByName[FB[j].Name];
+      b := -FCoeff[j];
+      for i := 0 to DF.Size -1 do
+        begin
+        if not (EF.IsMissing[i]) then
+          if (v.IsMissing[i]) then
+            EF.IsMissing[i] := true
+          else
+            EF.AsFloat[i] := EF.AsFloat[i] + v.AsFloat[i] * b;
+        end;
+      if not (EF.IsMissing[i]) then
+        EF.AsFloat[i] := 1 / (1 + Expo(EF.AsFloat[i]));
+    end;
 end;
 
-initialization
+  function TRegressLogistic.epiLogiFit_Func(X: TMatrix; B : TVector) : TVector;
+  { ------------------------------------------------------------------
+    Computes the regression function at point X.
+    B is the vector of parameters
+    ------------------------------------------------------------------ }
+  var
+    D : Float;
+    i: Integer;
+  begin
+    DimVector(result,FObs - 1);
+    dm('X in Fit_Func',X);
+    dv('B in Fit_Func',B);
+    result := MatVecMul(X, B, 0);
+    if (MathErr <> MathOK) then
+      begin
+        FExecutor.Error('Error in epiLogiFit_Func: ' + MathErrMessage);
+        result := nil;
+        exit;
+      end;
+    for i := 0 to FObs -1 do
+      result[i] := 1 / (1 + Expo(-result[i]));
+  end;
+
+  function TRegressLogistic.epiLogiIterate(X: TMatrix; Y: TVector; W: TVector; out V:TMatrix): TVector;
+  var
+    i, j, n, l: Integer;
+    Det: Float;
+    Dummy: TVector;
+    S: TMatrix;
+    Xt: TMatrix;
+    XtS: TMatrix;
+    XtSX: TMatrix;
+    T: TMatrix;
+    SX: TMatrix;
+    SXW: TVector;
+    MU: TVector;
+  begin
+    // create diagonal S
+    n := length(Y)-1;
+    l := length(W)-1;
+    DimVector(MU, n);
+    DimMatrix(S, n, n);
+    DimMatrix(V, l, l);
+    DimVector(result, l);
+    DimVector(Dummy, l);
+    for i := 0 to l do
+      Dummy[i] := 0;
+    dv('MU',MU);
+    dm('S',S);
+    dm('V',V);
+    dv('result',result);
+//    MU := epiLogiFit_Func(X, M);
+// MU = 1/(1 + e^(-wT.X))
+//    if (MU = nil) then
+//      exit;
+    MU := MatVecMul(X,W,0);
+    for i := 0 to n do
+      begin
+        MU[i] := 1/(1+Expo(-MU[i]));
+        for j := 0 to n do
+          S[i,j] := 0;
+      S[i,i] := MU[i] * (1 - MU[i]);
+    end;
+    // Transpose X
+    Xt := MatTranspose(X,0); // should move this out; it never changes
+    // one iteration
+    XtS := MatMul(Xt,S,0);    // X' S
+    XtSX := MatMul(XtS,X,0);  // X' S X
+    dm('XtSX',XtSX);
+    // Invert XtSX; // use linear equation solver for this; also get determinant
+    LinEq(XtSX,Dummy,0,l,Det);
+    V := XtSX;
+    if (MathErr <> MathOK) then
+      begin
+        FExecutor.Error('Error inverting matrix: ' + MathErrMessage);
+        exit;
+      end;
+    dm('XtSX',XtSX);
+    T := MatMul(XtSX,XT,0);     // (X' S X)^-1 XT
+    SX := MatMul(S,X,0);        // S X
+    SXW := MatVecMul(SX, W, 0);
+    if(MathErr<>MathOK) then
+      FExecutor.Error('Error in LogIterate: ' + MathErrMessage);
+//    dv('SXW in LogIterate after MatVecMul',SXW);
+    dv('Y',Y);
+    dv('MU',MU);
+    SXW := SXW + Y;
+    SXW := SXW - MU;
+    dm('T in LogIterate',T);
+    dm('SX in LogIterate',SX);
+    dm('XT in LogIterate',XT);
+    dv('W in LogIterate',W);
+    dv('SXW in LogIterate',SXW);
+    result := MatVecMul(T, SXW, 0);
+    dv('result at end of LogiIterate',result);
+  end;
+
+  procedure TRegressLogistic.epiLogiFit(X: TMatrix; Y: TVector;
+            MaxIter: Integer; Tol: Float; out B: TVector; out V: TMatrix);
+  var
+    i, l, iter: Integer;
+    M: TVector;
+    D: TVector;
+    T: Float;
+  begin
+    if MaxIter = 0 then Exit;
+    l := FParamCt-1;
+    DimVector(M,l);
+    DimVector(D,l);
+    dv('D in logiFit',D);
+    dv('B in logiFit',B);
+    dv('M in logiFit',M);
+    M[0] := 1;
+    for i := 1 to l do
+      M[i] := 0.01;
+    for i := 0 to MaxIter do
+      begin
+        B := epiLogiIterate(X, Y, M, V);
+        D := M - B;
+        M := B;
+        dv('D in logiFit 2',D);
+        dv('B in logiFit 2',B);
+        dv('M in logiFit 2',M);
+        VecAbs(D, 0, l);
+        T := max(D);
+        FExecutor.Error('Iteration ' + i.ToString + ' T=' + T.ToString);
+        FExecutor.Error('FCoeff: ' + B[0].ToString + ' ' + B[1].ToString + ' ' + B[2].ToString + ' ' + B[3].ToString);
+        if (T < Tol) then
+          exit;
+      end;
+  end;
+
+  initialization
   RegisterRegressModel(rtLogistic, TRegressLogistic);
 
 end.
