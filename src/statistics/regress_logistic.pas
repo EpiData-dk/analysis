@@ -40,11 +40,20 @@ uses
 
 type
 
+{ TlRegTest }
+
+TlRegTest = record
+  Dn : Float; // Null model deviance
+  Dm : Float; // Regression deviance
+  Dr : Float; // Residual deviance
+end;
+
 { TRegressLogit }
 
 TRegressLogistic = class(TRegressModel)
-  private
-    Debug: Boolean;
+private
+  Debug: Boolean;
+  lrRegTest: TlRegTest;
 protected
   { fit of logistic function
     Input parameters:  X, Y     = point coordinates
@@ -61,6 +70,10 @@ protected
                  out   V        : TMatrix);
   function epiLogiFit_Func(X: TMatrix; B : TVector) : TVector;
   function epiLogiIterate(X: TMatrix; Y: TVector; W: TVector; out V:TMatrix): TVector;
+  procedure epiLogiRegTest(Y: TVector;   // Y
+                           F: TVector;   // Fitted values
+                           InV: TMatrix; // do we need?
+                      out  lrF: TlRegTest); // output
   procedure dm(s: string; m: TMatrix);
   procedure dv(s: string; m: TVector);
 public
@@ -123,6 +136,39 @@ begin
   FModel += 'Logit(' + v + ')';
 end;
 
+procedure TRegressLogistic.epiLogiRegTest(Y: TVector; F: TVector;
+                                          InV: TMatrix; out lrF: TlRegTest);
+var
+  LLm, LLn: Float; // log-likelhood of model and null model
+  d: Float;
+  i, n, s: Integer;
+begin
+  LLm := 0;
+  s := 0;
+  n := length(Y);
+  for i := 1 to n - 1 do
+    begin
+      if (Y[i] = 1) then
+        begin
+          LLm += ln(1/F[i]);
+          inc(s);
+        end
+      else begin
+        LLm += ln(1/(1-F[i]));
+      end;
+    end;
+  { calculate null model deviance
+  b[0] = ln(Ym/(1-Ym), where Ym is mean of Y's  (Sum(Y) / n)
+  max log likelihood = n(Ym x ln(Ym) + (1-Ym) x ln(1-Ym))
+  model log likelihood = sum(Y x ln(MU) + (1-Y)ln(1-MU))
+  }
+  d := s.ToDouble / n.ToDouble;
+  LLn := n*(d*ln(d)+(1-d)*ln(1-d));
+  lrF.Dn := -2 * LLn;
+  lrF.Dr :=  2 * LLm;
+  lrF.Dm := lrF.Dn - lrF.Dr;
+end;
+
 function TRegressLogistic.Estimate(): UTF8String;
 var
   InV: TMatrix;
@@ -130,7 +176,7 @@ var
   s, t: EpiFloat;
 begin
   FConstant := true;
-  DimMatrix(Inv, FParamCt, FParamCt);
+  DimMatrix(Inv, FParamCt-1, FParamCt-1);
   // get betas
   dm('FIndepV',FIndepV);
   epiLogiFit(FIndepV, FDepV, 60, 0.00001, FCoeff, InV);
@@ -147,28 +193,17 @@ begin
   DimVector(FResidual,FObs - 1);
   FFitted := epiLogiFit_Func(FIndepV, FCoeff);
   FResidual := FFitted - FDepV;
-  // *** Fails with only one indep variable!
-  RegTest(FDepV, FFitted, 0, FObs-1, InV, 0, 3, FRegFit);
-  for i:= 0 to 3 do begin
+  epiLogiRegTest(FDepV, FFitted, InV, lrRegTest);
+  for i:= 0 to FParamCt-1 do begin
     FB[i].Estimate := FCoeff[i];
-    FB[i].Se := sqrt(Inv[i,i]);
-    FB[i].t := FCoeff[i] / sqrt(Inv[i,i]);
-    FB[i].p := PStudent(FRegFit.Nu2,FB[i].t);
+    FB[i].Se := 0; //sqrt(Inv[i,i]);
+    FB[i].t := 0; //FCoeff[i] / sqrt(Inv[i,i]);
+    FB[i].p := 0; //PStudent(FRegFit.Nu2,FB[i].t);
   end;
-  {// Anova
-  if (FDoAnova) then with FAnova do
-    begin
-      SST := getSS(FDepV, 0, FObs-1);
-      SSW := getSS(FResidual, 0, FObs-1);
-      SSB := SST - SSW;
-      DFW := FRegFit.Nu2;
-      DFB := FRegFit.Nu1;
-      MSW := SSW / DFW;
-      MSB := SSB / DFB;
-      DFT := DFW + DFB;
-      F   := MSB / MSW;
-    end;
-  }
+// debug
+FExecutor.Error('Model Deviance=' + lrRegTest.Dm.ToString + ' Chi-square with ' + (FParamCt-1).ToString + ' df');
+FExecutor.Error('Residual Deviance=' + lrRegTest.Dr.ToString);
+FExecutor.Error('Total Deviance=' + lrRegTest.Dn.ToString);
 end;
 
 procedure  TRegressLogistic.GetFittedVar(DF: TEpiDatafile; EF: TEpiField);
@@ -180,23 +215,24 @@ begin
   EF.ResetData;
   for i := 0 to DF.Size-1 do
     begin
-      EF.AsFloat[i] := -FCoeff[0];
+      EF.AsFloat[i] := FCoeff[0];
     end;
   for j := 1 to length(FB) -1 do
     begin
       v := DF.Fields.FieldByName[FB[j].Name];
-      b := -FCoeff[j];
+      b := FCoeff[j];
       for i := 0 to DF.Size -1 do
         begin
         if not (EF.IsMissing[i]) then
           if (v.IsMissing[i]) then
             EF.IsMissing[i] := true
           else
-            EF.AsFloat[i] := EF.AsFloat[i] + v.AsFloat[i] * b;
+            EF.AsFloat[i] := EF.AsFloat[i] + (v.AsFloat[i] * b);
         end;
-      if not (EF.IsMissing[i]) then
-        EF.AsFloat[i] := 1 / (1 + Expo(EF.AsFloat[i]));
     end;
+  for i := 0 to DF.Size-1 do
+    if not (EF.IsMissing[i]) then
+      EF.AsFloat[i] := 1 / (1 + Expo(-EF.AsFloat[i]));
 end;
 
   function TRegressLogistic.epiLogiFit_Func(X: TMatrix; B : TVector) : TVector;
@@ -250,14 +286,9 @@ end;
     dm('S',S);
     dm('V',V);
     dv('result',result);
-//    MU := epiLogiFit_Func(X, M);
-// MU = 1/(1 + e^(-wT.X))
-//    if (MU = nil) then
-//      exit;
-    MU := MatVecMul(X,W,0);
+    MU := epiLogiFit_Func(X, W);
     for i := 0 to n do
       begin
-        MU[i] := 1/(1+Expo(-MU[i]));
         for j := 0 to n do
           S[i,j] := 0;
       S[i,i] := MU[i] * (1 - MU[i]);
@@ -313,7 +344,7 @@ end;
     dv('M in logiFit',M);
     M[0] := 1;
     for i := 1 to l do
-      M[i] := 0.01;
+      M[i] := 0;
     for i := 0 to MaxIter do
       begin
         B := epiLogiIterate(X, Y, M, V);
