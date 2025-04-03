@@ -127,11 +127,10 @@ begin
   l := VarNames.Count;
   DimVector(FCoeff,l-1);
   setLength(FB, l);
-//  FParamCt := l;
   FB[0].Name := 'Constant';
   FB[0].pLabel := 'Constant';
   v := 'c';
-  for i := 1 to l - 1 do
+  for i := 1 to high(FB) do
     begin
       FB[i].Name := VarNames[i];
       v += ' + ' + VarNames[i];
@@ -196,7 +195,7 @@ begin
   LLm := 0;
   s := 0;
   n := length(Y);
-  for i := 1 to n - 1 do
+  for i := 0 to high(Y) do
     begin
       if (Y[i] = 1) then
         begin
@@ -309,7 +308,7 @@ end;
     i, j, k, n, l: Integer;
     c, Det: Float;
     Dummy: TVector;
-    S: TMatrix;
+    S: TVector;
     Xt: TMatrix;
     XtS: TMatrix;
     XtSX: TMatrix;
@@ -322,39 +321,38 @@ end;
     n := length(Y)-1;
     l := length(W)-1;
     DimVector(MU, n);
-    DimMatrix(S, n, n);
+    DimVector(S, n);
+    DimMatrix(SX, n, l);
     DimMatrix(V, l, l);
+    DimMatrix(XtSX, l, l);
     DimVector(result, l);
     DimVector(Dummy, l);
     for i := 0 to l do
       Dummy[i] := 0;
     dv('MU',MU);
-    dm('S',S);
+    dv('S',S);
     dm('V',V);
     dv('result',result);
     MU := epiLogiFit_Func(X, W);
+    if (MU = nil) then exit;
     for i := 0 to n do
-      begin
-        for j := 0 to n do
-          S[i,j] := 0;
-      S[i,i] := MU[i] * (1 - MU[i]);
-    end;
+      S[i] := MU[i] * (1 - MU[i]);
     // Transpose X
-    Xt := MatTranspose(X,0); // should move this out; it never changes
+//    Xt := MatTranspose(X,0); // should move this out; it never changes
     // one iteration
-    XtS := MatMul(Xt,S,0);    // X' S
-    XtSX := MatMul(XtS,X,0);  // X' S X
+//    XtS := MatMul(Xt,S,0);    // X' S
+//    XtSX := MatMul(XtS,X,0);  // X' S X
 
     // alternate method to get X'SX
-    for i := 0 to high(V) do
-      for j := i to high(V) do
+    for i := 0 to high(XtSX) do
+      for j := i to high(XtSX) do
         begin
           c := 0;
-          for k := 0 to high(X) do
-            c += X[k,i]*s[k,k]*x[k,j];
-          V[i,j] := c;
+          for k := 0 to high(y) do
+            c += X[k,i]*s[k]*X[k,j];
+          XtSX[i,j] := c;
           if (i <> j) then
-            V[j,i] := c;
+            XtSX[j,i] := c;
         end;
     dm('XtSX',XtSX);
     // Invert XtSX; // use linear equation solver for this; also get determinant
@@ -366,11 +364,14 @@ end;
         exit;
       end;
     dm('XtSX',XtSX);
-    T := MatMul(XtSX,XT,0);     // (X' S X)^-1 XT
-    SX := MatMul(S,X,0);        // S X
-    SXW := MatVecMul(SX, W, 0);
+    T := MatMul(XtSX,MatTranspose(X,0),0);     // (X' S X)^-1 XT
+    for i := 0 to High(X) do
+      for j := 0 to High(X[0]) do
+        SX[i,j] := X[i,j]*S[i];
+//    SX := MatVecMul(X, S,0);        // S X
+    SXW := MatVecMul(sX, W, 0);
     if(MathErr<>MathOK) then
-      FExecutor.Error('Error in LogIterate: ' + MathErrMessage);
+      FExecutor.Error('Error in SXW in LogIterate: ' + MathErrMessage);
 //    dv('SXW in LogIterate after MatVecMul',SXW);
     dv('Y',Y);
     dv('MU',MU);
@@ -378,10 +379,12 @@ end;
     SXW := SXW - MU;
     dm('T in LogIterate',T);
     dm('SX in LogIterate',SX);
-    dm('XT in LogIterate',XT);
+//    dm('XT in LogIterate',XT);
     dv('W in LogIterate',W);
     dv('SXW in LogIterate',SXW);
     result := MatVecMul(T, SXW, 0);
+    if(MathErr<>MathOK) then
+      FExecutor.Error('Error in result in LogIterate: ' + MathErrMessage);
     dv('result at end of LogiIterate',result);
   end;
 
