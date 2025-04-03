@@ -78,7 +78,8 @@ protected
   procedure dv(s: string; m: TVector);
 public
   constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand); override;
-  function GetRegressModelClass(): TRegressClass;
+  function  GetRegressModelClass(): TRegressClass;
+  procedure SetDepV(F: TEpiField); override;
   procedure SetFormula(VarNames: TStrings); override;
   function  Estimate(): UTF8String; override;
   procedure GetFittedVar(DF: TEpiDatafile; EF: TEpiField); override;
@@ -116,6 +117,25 @@ end;
 function TRegressLogistic.GetRegressModelClass(): TRegressClass;
 begin
   result := TRegressLogistic;
+end;
+
+procedure TRegressLogistic.SetDepV(F: TEpiField);
+var
+  i, n: Integer;
+begin
+  inherited SetDepV(F);
+  n := 0;
+  for i := 0 to high(FDepV) do
+    if (FDepV[i] = 1) then
+      inc(n)
+    else if (FDepV[i] <>0) then
+      begin
+        FExecutor.Error('Dependant variable must have values 0 and 1 only');
+        FDataError := true;
+        exit;
+      end;
+  if (n*10 < length(FDepV)) or (n > 0.9 * length(FDepv)) then
+    FExecutor.Error('Warning: dependant variable is unbalanced.');
 end;
 
 procedure TRegressLogistic.SetFormula(VarNames: TStrings);
@@ -297,6 +317,7 @@ end;
       begin
         FExecutor.Error('Error in epiLogiFit_Func: ' + MathErrMessage);
         result := nil;
+        FDataError := true;
         exit;
       end;
     for i := 0 to FObs -1 do
@@ -418,7 +439,7 @@ end;
         T := max(D);
 //        FExecutor.Error('Iteration ' + i.ToString + ' T=' + T.ToString);
 //        FExecutor.Error('FCoeff: ' + B[0].ToString + ' ' + B[1].ToString + ' ' + B[2].ToString + ' ' + B[3].ToString);
-        if (T < Tol) then
+        if (T < Tol) or (FDataError) then
           exit;
       end;
   end;

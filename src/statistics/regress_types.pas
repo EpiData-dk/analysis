@@ -58,6 +58,7 @@ type
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
     { Switches / Appearance }
+    FDataError: Boolean;
     FConstant: Boolean;
     FDoAnova: Boolean;
     FDoVariance: Boolean;
@@ -87,7 +88,7 @@ type
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand); virtual;
     procedure  SetFormula(VarNames: TStrings); virtual;
-    procedure  SetDepV(F: TEpiField);
+    procedure  SetDepV(F: TEpiField); virtual;
     procedure  SetIndepV(F: TEpiField; Ix: Integer); virtual;
     procedure  DoOutput(); virtual;
     procedure  DoResultVariables(); virtual;
@@ -99,6 +100,7 @@ type
     property   Constant: Boolean read FConstant write FConstant;
     property   Obs: Integer read FObs write FObs;
     property   StatFmt: String read FStatFmt write FStatFmt;
+    property   DataError: Boolean read FDataError;
   end;
   TRegressClass = class of TRegressModel;
 
@@ -122,6 +124,7 @@ begin
   FDoVariance := true;
   FDoAnova := ST.HasOption('anova');
   FConstant := not ST.HasOption('nocon');
+  FDataError := false;
 end;
 
 procedure TRegressModel.SetFormula(VarNames: TStrings);

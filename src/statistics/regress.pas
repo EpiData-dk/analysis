@@ -99,8 +99,18 @@ begin
       end;
     Model.SetFormula(Variables);
     Model.SetDepV(DF.Fields.FieldByName[Variables[0]]);
+    if (Model.DataError) then
+      begin
+        DF.Free;
+        Exit;
+      end;
     for i := 1 to nVar - 1 do
       Model.SetIndepV(DF.Fields.FieldByName[Variables[i]],i);
+    if (Model.DataError) then
+      begin
+        DF.Free;
+        Exit;
+      end;
     msg := Model.Estimate();
     if (msg = '') then
       begin
