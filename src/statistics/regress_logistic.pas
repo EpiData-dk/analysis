@@ -263,7 +263,7 @@ begin
   FFitted := epiLogiFit_Func(FIndepV, FCoeff);
   FResidual := FFitted - FDepV;
   epiLogiRegTest(FDepV, FFitted, InV, lrRegTest);
-  for i:= 0 to FParamCt-1 do begin
+  for i:= 0 to high(FB) do begin
     FB[i].Estimate := FCoeff[i];
     FB[i].Se := sqrt(Inv[i,i]);
     FB[i].t := FCoeff[i] * FCoeff[i] / Inv[i,i];
@@ -282,7 +282,7 @@ begin
     begin
       EF.AsFloat[i] := FCoeff[0];
     end;
-  for j := 1 to length(FB) -1 do
+  for j := 1 to high(FB) do
     begin
       v := DF.Fields.FieldByName[FB[j].Name];
       b := FCoeff[j];
@@ -320,7 +320,7 @@ end;
         FDataError := true;
         exit;
       end;
-    for i := 0 to FObs -1 do
+    for i := 0 to high(result) do
       result[i] := 1 / (1 + Expo(-result[i]));
   end;
 
@@ -348,7 +348,7 @@ end;
     DimMatrix(XtSX, l, l);
     DimVector(result, l);
     DimVector(Dummy, l);
-    for i := 0 to l do
+    for i := 0 to high(Dummy) do
       Dummy[i] := 0;
     dv('MU',MU);
     dv('S',S);
@@ -356,7 +356,7 @@ end;
     dv('result',result);
     MU := epiLogiFit_Func(X, W);
     if (MU = nil) then exit;
-    for i := 0 to n do
+    for i := 0 to high(S) do
       S[i] := MU[i] * (1 - MU[i]);
     // Transpose X
 //    Xt := MatTranspose(X,0); // should move this out; it never changes
@@ -425,7 +425,7 @@ end;
     dv('B in logiFit',B);
     dv('M in logiFit',M);
     M[0] := 1;
-    for i := 1 to l do
+    for i := 1 to high(M) do
       M[i] := 0;
     for i := 0 to MaxIter do
       begin
