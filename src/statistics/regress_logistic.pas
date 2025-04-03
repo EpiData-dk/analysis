@@ -81,7 +81,8 @@ public
   function GetRegressModelClass(): TRegressClass;
   procedure SetFormula(VarNames: TStrings); override;
   function  Estimate(): UTF8String; override;
-  procedure  GetFittedVar(DF: TEpiDatafile; EF: TEpiField); override;
+  procedure GetFittedVar(DF: TEpiDatafile; EF: TEpiField); override;
+  procedure DoOutputVariance(); override;
 end;
 
 
@@ -89,7 +90,7 @@ implementation
 
 uses
   epifields_helper, ulogifit, uregtest, uibtdist, uerrors, umatrix, umeansd, umulfit,
-  umath, ulinfit, unlfit, ulineq, uvecfunc, uigmdist;
+  umath, ulinfit, unlfit, ulineq, uvecfunc, uigmdist, generalutils;
 
 { TRegressLogistic}
 
@@ -135,6 +136,29 @@ begin
       v += ' + ' + VarNames[i];
     end;
   FModel += 'Logit(' + v + ')';
+end;
+
+procedure TRegressLogistic.DoOutputVariance();
+var
+  T: TOutputTable;
+begin
+  T := FOutputCreator.AddTable;
+  T.Header.Text := 'Analysis of Deviance';
+  T.ColCount := 4;
+  T.RowCount := 4;
+  T.Cell[0,0].Text := 'Source';
+  T.Cell[1,0].Text := 'df';
+  T.Cell[2,0].Text := 'Deviance';
+  T.Cell[3,0].Text := 'p';
+  T.Cell[0,1].Text := 'Regression';
+  T.Cell[1,1].Text := StatFloatDisplay(StatFmt, lrRegTest.Dm);
+  T.Cell[2,1].Text := (FParamCt-1).ToString;
+  T.Cell[0,2].Text := 'Residual';
+  T.Cell[1,2].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dr);
+  T.Cell[2,2].Text := (FObs - FParamCt).ToString;
+  T.Cell[0,3].Text := 'Total';
+  T.Cell[1,3].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dn);
+  T.Cell[2,3].Text := (FObs - 1).ToString;
 end;
 
 procedure TRegressLogistic.epiLogiRegTest(Y: TVector; F: TVector;

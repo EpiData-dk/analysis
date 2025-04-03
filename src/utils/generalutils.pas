@@ -13,6 +13,7 @@ function PercentileIndexNIST(const Size: integer; const Percentile: Double; out 
 function FormatP(Val: EpiFloat; ShowP: Boolean): UTF8String;
 function FormatCI(Val1: EpiFloat; Val2: EpiFLoat; Pct: Integer; Options:TOptionList): UTF8String;
 function FormatRatio(Val: EpiFloat; Options: TOptionList): UTF8String;
+function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;
 
 implementation
 
@@ -154,6 +155,15 @@ begin
   else
     Result := Format('%.' + IntToStr(DecimalFromOption(Options, 2)) + 'f', [Val]);
 end;
+
+function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;
+begin
+  if (val = TEpiFloatField.DefaultMissing) then
+    Result := '.'
+  else
+    Result := Format(fmt, [val]);
+end;
+
 
 end.
 

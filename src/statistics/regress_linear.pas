@@ -64,7 +64,7 @@ var
   plusSign: String;
 begin
   inherited SetFormula(Varnames);
-  DimVector(FCoeff,FParamCt);
+  DimVector(FCoeff,FParamCt-1);
   setLength(FB, 1 + FParamCt);
   plusSign := '';
   if (FConstant) then begin
@@ -72,7 +72,7 @@ begin
     FB[0].pLabel := 'Intercept';
     FModel += 'c + ';
   end;
-  for i := 1 to FParamCt do begin
+  for i := 1 to FParamCt-1 do begin
     FB[i].Name := VarNames[i];
     FModel += plusSign + VarNames[i];
     plusSign := ' + ';
