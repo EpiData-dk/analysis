@@ -53,40 +53,43 @@ type
   { TRegressModel }
 
   TRegressModel = class
+    { Exec methods }
   protected
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
-    FObs: Integer;
-    FParamCt: Integer;
-    FModel: UTF8String;
-    FPModel: Pointer;
+    { Switches / Appearance }
     FConstant: Boolean;
-    FDepVLabel,
-    FDepVName: UTF8String;
-    FB: array of TRegressParameter;
-    FDepV: TVector;
-    FIndepV: TMatrix;
-    FFitted: TVector;
-    FResidual: TVector;
-    FCoeff: TVector;
-    FRegFit: TRegTest;
-    FFp: EpiFloat;
     FDoAnova: Boolean;
-    FAnova: TAnovaRecord;
+    FDoVariance: Boolean;
     FConf: Integer;
     FDecimals: Integer;
     FValuelabelOutput: TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
-    FCoeffTableHead: array of UTF8String;
-    StatFmt: String;
+    FStatFmt: String;
+    { Data }
+    FDepV: TVector;
+    FIndepV: TMatrix;
+    FFitted: TVector;
+    FResidual: TVector;
+    FObs: Integer;
+    FDepVLabel,
+    FDepVName: UTF8String;
+    { Model }
+    FParamCt: Integer;
+    FModel: UTF8String;
+//    FPModel: Pointer;
+    FB: array of TRegressParameter;
+    FCoeff: TVector;
+    { Regression results }
+    FRegFit: TRegTest;
+    FFp: EpiFloat;
+    FAnova: TAnovaRecord;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand); virtual;
     procedure  SetFormula(VarNames: TStrings); virtual;
     procedure  SetDepV(F: TEpiField);
     procedure  SetIndepV(F: TEpiField; Ix: Integer); virtual;
-    procedure  DoOutput();
-    procedure  DoOutputVariance(); virtual;
-    procedure  DoOutputAnova(); virtual;
+    procedure  DoOutput(); virtual;
     procedure  DoResultVariables(); virtual;
     function   Estimate(): UTF8String; virtual; abstract;
     function   Fitted(Msg: UTF8String): TVector; virtual; abstract;
@@ -95,6 +98,7 @@ type
     property   Model: UTF8String read FModel;
     property   Constant: Boolean read FConstant write FConstant;
     property   Obs: Integer read FObs write FObs;
+    property   StatFmt: String read FStatFmt write FStatFmt;
   end;
   TRegressClass = class of TRegressModel;
 
@@ -112,17 +116,12 @@ begin
   FOutputCreator := AOutputCreator;
   FConf := StrToInt(FExecutor.SetOptionValue[ANA_SO_CONFIDENCE_INTERVAL]);
   FDecimals := DecimalFromOption(ST.Options, 4);
-  StatFmt := '%8.' + IntToStr(FDecimals) + 'F';
+  FStatFmt := '%8.' + IntToStr(FDecimals) + 'F';
   FVariableLabelOutput := VariableLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
+  FDoVariance := true;
   FDoAnova := ST.HasOption('anova');
   FConstant := not ST.HasOption('nocon');
-  setLength(FCoeffTableHead, 5);
-  FCoeffTableHead[0] := sRegTerm;
-  FCoeffTableHead[1] := sRegCoefficient;
-  FCoeffTableHead[2] := sStErrorAbbr;
-  FCoeffTableHead[3] := 't';
-  FCoeffTableHead[4] := 'p';
 end;
 
 procedure TRegressModel.SetFormula(VarNames: TStrings);
@@ -169,6 +168,7 @@ end;
 procedure TRegressModel.DoOutput();
 var
   T,
+  V,
   A: TOutputTable;
   Params,
   Offset, i, i0: Integer;
@@ -181,8 +181,11 @@ begin
   Params := Length(FB) - 1;
   T.RowCount := Params + 2;
   // Header row
-  for i := 0 to high(FCoeffTableHead) do
-  T.Cell[i,0].Text := FCoeffTableHead[i];
+  T.Cell[0,0].Text := sRegTerm;
+  T.Cell[1,0].Text := sRegCoefficient;
+  T.Cell[2,0].Text := sStErrorAbbr;
+  T.Cell[3,0].Text := 't';
+  T.Cell[4,0].Text := 'p';
   Offset := 1;
   if (FConstant) then begin
     T.RowCount := T.RowCount + 1;
@@ -191,64 +194,62 @@ begin
   else
       i0 := 1;
 
-    for i := i0 to Params do begin
-      T.Cell[0,Offset].Text := FB[i].pLabel;
-      T.Cell[1,Offset].Text := StatFloatDisplay(StatFmt, FB[i].Estimate);
-      T.Cell[2,Offset].Text := StatFloatDisplay(StatFmt, FB[i].se);
-      T.Cell[3,Offset].Text := StatFloatDisplay(StatFmt, FB[i].t);
-      T.Cell[4,Offset].Text := FormatP(FB[i].p, false);
-      Offset += 1;
-    end;
-end;
+  for i := i0 to High(FB) do begin
+    T.Cell[0,Offset].Text := FB[i].pLabel;
+    T.Cell[1,Offset].Text := StatFloatDisplay(StatFmt, FB[i].Estimate);
+    T.Cell[2,Offset].Text := StatFloatDisplay(StatFmt, FB[i].se);
+    T.Cell[3,Offset].Text := StatFloatDisplay(StatFmt, FB[i].t);
+    T.Cell[4,Offset].Text := FormatP(FB[i].p, false);
+    Offset += 1;
+  end;
 
-procedure TRegressModel.DoOutputVariance();
-var
-  T: TOutputTable;
-begin
-  T := FOutputCreator.AddTable;
-  T.ColCount := 1;
-  T.RowCount := 1;
-  if (FConstant) then
-     T.Cell[0,0].Text := sRegResidualVariance + ':' + StatFloatDisplay(StatFmt, FRegFit.Vr) +
-          LineEnding +
-          sRegR2 + ':' + StatFloatDisplay(StatFmt, FRegFit.R2) +
-          '  ' + sRegAdjustedR2 + ':' + StatFloatDisplay(StatFmt, FRegFit.R2a) +
-          LineEnding +
-          'F:' + StatFloatDisplay(StatFmt, FRegFit.F) +
-          sRegFdf1 + FRegFit.Nu1.ToString + sRegFdf2 +
-          FRegFit.Nu2.ToString + ' ' + sDegFreedomAbbr + ' (' +
-          FormatP(FFp, true) + ')'
-  else
-    T.Header.Text := sRegFNotSupported;
-end;
-
-procedure TRegressModel.DoOutputAnova();
-var
-  T: TOutputTable;
-begin
-  T := FOutputCreator.AddTable;
-  with FAnova do
+  if (FDoVariance) then
     begin
-      T.Header.Text := 'Analysis of Variance';
-      T.ColCount := 5;
-      T.RowCount := 4;
-      T.Cell[0,0].Text := 'Source';
-      T.Cell[1,0].Text := 'df';
-      T.Cell[2,0].Text := 'Sum of Squares';
-      T.Cell[3,0].Text := 'Mean Square';
-      T.Cell[4,0].Text := 'F';
-      T.Cell[0,1].Text := 'Regression';
-      T.Cell[1,1].Text := DFB.ToString;
-      T.Cell[2,1].Text := StatFloatDisplay(StatFmt, SSB);
-      T.Cell[3,1].Text := StatFloatDisplay(StatFmt, MSB);
-      T.Cell[4,1].Text := StatFloatDisplay(StatFmt, F);
-      T.Cell[0,2].Text := 'Residual';
-      T.Cell[1,2].Text := DFW.ToString;
-      T.Cell[2,2].Text := StatFloatDisplay(StatFmt, SSW);
-      T.Cell[3,2].Text := StatFloatDisplay(StatFmt, MSW);
-      T.Cell[0,3].Text := 'Total';
-      T.Cell[1,3].Text := DFT.ToString;
-      T.Cell[2,3].Text := StatFloatDisplay(StatFmt, SST);
+      V := FOutputCreator.AddTable;
+      V.ColCount := 1;
+      V.RowCount := 3;
+      if (FConstant) then
+        begin
+          V.Cell[0,0].Text := sRegResidualVariance + ':' + StatFloatDisplay(StatFmt, FRegFit.Vr);
+          V.Cell[0,1].Text :=      sRegR2 + ':' + StatFloatDisplay(StatFmt, FRegFit.R2) +
+              '  ' + sRegAdjustedR2 + ':' + StatFloatDisplay(StatFmt, FRegFit.R2a);
+          V.Cell[0,2].Text := 'F:' + StatFloatDisplay(StatFmt, FRegFit.F) +
+              sRegFdf1 + FRegFit.Nu1.ToString + sRegFdf2 +
+              FRegFit.Nu2.ToString + ' ' + sDegFreedomAbbr + ' (' +
+              FormatP(FFp, true) + ')';
+        end
+      else
+        V.Header.Text := sRegFNotSupported;
+    end;
+
+  if (FDoAnova) then
+    begin
+      A := FOutputCreator.AddTable;
+      A.ColCount := 5;
+      A.RowCount := 4;
+      with FAnova do
+        begin
+          A.Header.Text := 'Analysis of Variance';
+          A.ColCount := 5;
+          A.RowCount := 4;
+          A.Cell[0,0].Text := 'Source';
+          A.Cell[1,0].Text := 'df';
+          A.Cell[2,0].Text := 'Sum of Squares';
+          A.Cell[3,0].Text := 'Mean Square';
+          A.Cell[4,0].Text := 'F';
+          A.Cell[0,1].Text := 'Regression';
+          A.Cell[1,1].Text := DFB.ToString;
+          A.Cell[2,1].Text := StatFloatDisplay(StatFmt, SSB);
+          A.Cell[3,1].Text := StatFloatDisplay(StatFmt, MSB);
+          A.Cell[4,1].Text := StatFloatDisplay(StatFmt, F);
+          A.Cell[0,2].Text := 'Residual';
+          A.Cell[1,2].Text := DFW.ToString;
+          A.Cell[2,2].Text := StatFloatDisplay(StatFmt, SSW);
+          A.Cell[3,2].Text := StatFloatDisplay(StatFmt, MSW);
+          A.Cell[0,3].Text := 'Total';
+          A.Cell[1,3].Text := DFT.ToString;
+          A.Cell[2,3].Text := StatFloatDisplay(StatFmt, SST);
+        end;
     end;
 end;
 

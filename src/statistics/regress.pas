@@ -114,9 +114,6 @@ begin
         Model.DoResultVariables();
         if (not ST.HasOption('q')) then
           Model.DoOutput();
-          Model.DoOutputVariance();
-          if (ST.HasOption('anova')) then
-            Model.DoOutputAnova();
       end
   else
     FExecutor.Error(msg);

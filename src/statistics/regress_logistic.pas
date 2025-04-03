@@ -82,7 +82,7 @@ public
   procedure SetFormula(VarNames: TStrings); override;
   function  Estimate(): UTF8String; override;
   procedure GetFittedVar(DF: TEpiDatafile; EF: TEpiField); override;
-  procedure DoOutputVariance(); override;
+  procedure DoOutput(); override;
 end;
 
 
@@ -97,7 +97,8 @@ uses
 constructor TRegressLogistic.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand);
 begin
   inherited Create(AExecutor, AOutputCreator, ST);
-  FCoeffTableHead[3] := 'Wald Chi-square';
+  FDoAnova := false;
+  FDoVariance := false;
   Debug := false;
 end;
 
@@ -138,27 +139,51 @@ begin
   FModel += 'Logit(' + v + ')';
 end;
 
-procedure TRegressLogistic.DoOutputVariance();
+procedure TRegressLogistic.DoOutput();
 var
-  T: TOutputTable;
+  T, V: TOutputTable;
+  i,
+  offset: Integer;
 begin
   T := FOutputCreator.AddTable;
-  T.Header.Text := 'Analysis of Deviance';
-  T.ColCount := 4;
-  T.RowCount := 4;
-  T.Cell[0,0].Text := 'Source';
-  T.Cell[1,0].Text := 'df';
-  T.Cell[2,0].Text := 'Deviance';
-  T.Cell[3,0].Text := 'p';
-  T.Cell[0,1].Text := 'Regression';
-  T.Cell[1,1].Text := StatFloatDisplay(StatFmt, lrRegTest.Dm);
-  T.Cell[2,1].Text := (FParamCt-1).ToString;
-  T.Cell[0,2].Text := 'Residual';
-  T.Cell[1,2].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dr);
-  T.Cell[2,2].Text := (FObs - FParamCt).ToString;
-  T.Cell[0,3].Text := 'Total';
-  T.Cell[1,3].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dn);
-  T.Cell[2,3].Text := (FObs - 1).ToString;
+  T.Header.Text := LineEnding + sRegTitle + LineEnding + LineEnding +
+                   sRegModel + ' : ' + FModel + LineEnding + LineEnding ;
+  T.ColCount := 5;
+  T.RowCount := Length(FB) + 1;
+  // Header row
+  T.Cell[0,0].Text := sRegTerm;
+  T.Cell[1,0].Text := sRegCoefficient;
+  T.Cell[2,0].Text := 'Variance';
+  T.Cell[3,0].Text := 'Wald Chi^2';
+  T.Cell[4,0].Text := 'p';
+  offset := 1;
+
+  for i := 0 to High(FB) do begin
+    T.Cell[0,offset].Text := FB[i].pLabel;
+    T.Cell[1,offset].Text := StatFloatDisplay(StatFmt, FB[i].Estimate);
+    T.Cell[2,offset].Text := StatFloatDisplay(StatFmt, FB[i].se);
+    T.Cell[3,offset].Text := StatFloatDisplay(StatFmt, FB[i].t);
+    T.Cell[4,offset].Text := FormatP(FB[i].p, false);
+    offset += 1;
+  end;
+
+  V := FOutputCreator.AddTable;
+  V.Header.Text := 'Analysis of Deviance';
+  V.ColCount := 4;
+  V.RowCount := 4;
+  V.Cell[0,0].Text := 'Source';
+  V.Cell[1,0].Text := 'df';
+  V.Cell[2,0].Text := 'Deviance';
+  V.Cell[3,0].Text := 'p';
+  V.Cell[0,1].Text := 'Regression';
+  V.Cell[1,1].Text := (FParamCt-1).ToString;
+  V.Cell[2,1].Text := StatFloatDisplay(StatFmt, lrRegTest.Dm);
+  V.Cell[0,2].Text := 'Residual';
+  V.Cell[1,2].Text := (FObs - FParamCt).ToString;
+  V.Cell[2,2].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dr);
+  V.Cell[0,3].Text := 'Total';
+  V.Cell[1,3].Text := (FObs - 1).ToString;
+  V.Cell[2,3].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dn);
 end;
 
 procedure TRegressLogistic.epiLogiRegTest(Y: TVector; F: TVector;
@@ -225,10 +250,6 @@ begin
     FB[i].t := FCoeff[i] * FCoeff[i] / Inv[i,i];
     FB[i].p := PKhi2(1, FB[i].t);
   end;
-// debug
-FExecutor.Error('Model Deviance=' + lrRegTest.Dm.ToString + ' Chi-square with ' + (FParamCt-1).ToString + ' df');
-FExecutor.Error('Residual Deviance=' + lrRegTest.Dr.ToString);
-FExecutor.Error('Total Deviance=' + lrRegTest.Dn.ToString);
 end;
 
 procedure  TRegressLogistic.GetFittedVar(DF: TEpiDatafile; EF: TEpiField);
@@ -285,8 +306,8 @@ end;
 
   function TRegressLogistic.epiLogiIterate(X: TMatrix; Y: TVector; W: TVector; out V:TMatrix): TVector;
   var
-    i, j, n, l: Integer;
-    Det: Float;
+    i, j, k, n, l: Integer;
+    c, Det: Float;
     Dummy: TVector;
     S: TMatrix;
     Xt: TMatrix;
@@ -323,6 +344,18 @@ end;
     // one iteration
     XtS := MatMul(Xt,S,0);    // X' S
     XtSX := MatMul(XtS,X,0);  // X' S X
+
+    // alternate method to get X'SX
+    for i := 0 to high(V) do
+      for j := i to high(V) do
+        begin
+          c := 0;
+          for k := 0 to high(X) do
+            c += X[k,i]*s[k,k]*x[k,j];
+          V[i,j] := c;
+          if (i <> j) then
+            V[j,i] := c;
+        end;
     dm('XtSX',XtSX);
     // Invert XtSX; // use linear equation solver for this; also get determinant
     LinEq(XtSX,Dummy,0,l,Det);
