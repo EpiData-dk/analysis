@@ -89,13 +89,14 @@ public
   function  Estimate(): UTF8String; override;
   procedure GetFittedVar(DF: TEpiDatafile; EF: TEpiField); override;
   procedure DoOutput(); override;
+  procedure DoResultVariables(); override;
 end;
 
 
 implementation
 
 uses
-  generalutils, ana_globals, statfunctions, uerrors, umatrix, umeansd,
+  generalutils, ana_globals, statfunctions, result_variables, uerrors, umatrix, umeansd,
   umath, unlfit, ulineq, uvecfunc, uigmdist;
 
 { TRegressLogistic}
@@ -214,6 +215,50 @@ begin
   V.Cell[0,3].Text := 'Total';
   V.Cell[1,3].Text := (FObs - 1).ToString;
   V.Cell[2,3].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dn);
+end;
+
+procedure TRegressLogistic.DoResultVariables();
+var
+  lrBeta,
+  lrVar,
+  lrchi2,
+  lrchip,
+  lrOR,
+  lrLL,
+  lrUL : TCustomExecutorDataVariable;
+  i, Params: Integer;
+  Prefix: String;
+begin
+  Prefix := '$r_';
+  FExecutor.AddResultConst(Prefix + 'model',    ftString).AsStringVector[0]   := FModel;
+  FExecutor.AddResultConst(Prefix + 'nIndVar',  ftInteger).AsIntegerVector[0] := FParamCt-1;
+  FExecutor.AddResultConst(Prefix + 'Vr',       ftFloat).AsFloatVector[0]     := FRegFit.Vr;
+
+
+  FExecutor.AddResultConst(Prefix + 'devReg',   ftFloat).AsFloatVector[0]   := lrRegTest.Dm;
+  FExecutor.AddResultConst(Prefix + 'devRes',   ftFloat).AsFloatVector[0]   := lrRegTest.Dr;
+  FExecutor.AddResultConst(Prefix + 'devTot',   ftFloat).AsFloatVector[0]   := lrRegTest.Dn;
+  FExecutor.AddResultConst(Prefix + 'devProb',  ftInteger).AsFloatVector[0] := lrRegTest.p;
+
+  Params := length(FB);
+  lrBeta := FExecutor.AddResultVector(Prefix + 'beta', ftFloat, Params);
+  lrVar  := FExecutor.AddResultVector(Prefix + 'var',  ftFloat, Params);
+  lrchi2 := FExecutor.AddResultVector(Prefix + 'chi2', ftFloat, Params);
+  lrchip := FExecutor.AddResultVector(Prefix + 'chip', ftFloat, Params);
+  lrOR   := FExecutor.AddResultVector(Prefix + 'or',   ftFloat, Params);
+  lrLL   := FExecutor.AddResultVector(Prefix + 'llor', ftFloat, Params);
+  lrUL   := FExecutor.AddResultVector(Prefix + 'ulor', ftFloat, Params);
+  for i := 0 to high(FB) do begin
+    lrBeta.AsFloatVector[i] := FB[i].Estimate;
+    lrVar.AsFloatVector[i]  := FB[i].Se;
+    lrchi2.AsFloatVector[i] := FB[i].t;
+    lrchip.AsFloatVector[i] := FB[i].p;
+  end;
+  for i:= 2 to high(FB) do begin
+    lrOR.AsFloatVector[i] := F_OR[i-1].oddsRatio;
+    lrLL.AsFloatVector[i] := F_OR[i-1].llOR;
+    lrUL.AsFloatVector[i] := F_OR[i-1].ulOR;
+  end;
 end;
 
 procedure TRegressLogistic.epiLogiRegTest(Y: TVector; F: TVector;
