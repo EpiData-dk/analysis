@@ -46,6 +46,13 @@ TlRegTest = record
   Dn : Float; // Null model deviance
   Dm : Float; // Regression deviance
   Dr : Float; // Residual deviance
+  p  : Float; // Chi-square p (for Dm only)
+end;
+
+TlrOdds = record
+  oddsRatio : Float;
+  llOR      : Float;
+  ulOR      : Float;
 end;
 
 { TRegressLogit }
@@ -53,6 +60,7 @@ end;
 TRegressLogistic = class(TRegressModel)
 private
   lrRegTest: TlRegTest;
+  F_OR: array of TlrOdds;
 protected
   { fit of logistic function
     Input parameters:  X, Y     = point coordinates
@@ -87,7 +95,7 @@ end;
 implementation
 
 uses
-  generalutils, uerrors, umatrix, umeansd,
+  generalutils, ana_globals, statfunctions, uerrors, umatrix, umeansd,
   umath, unlfit, ulineq, uvecfunc, uigmdist;
 
 { TRegressLogistic}
@@ -131,6 +139,7 @@ begin
   inherited SetFormula(Varnames);
   l := VarNames.Count;
   DimVector(FCoeff,l-1);
+  setLength(F_OR, l);
   setLength(FB, l);
   FB[0].Name := 'Constant';
   FB[0].pLabel := 'Constant';
@@ -145,7 +154,7 @@ end;
 
 procedure TRegressLogistic.DoOutput();
 var
-  T, V: TOutputTable;
+  T, O, V: TOutputTable;
   i,
   offset: Integer;
 begin
@@ -171,6 +180,22 @@ begin
     offset += 1;
   end;
 
+  O := FOutputCreator.AddTable;
+  O.Header.Text := 'Odds ratios and ' + IntToStr(FConf) + '% CI';
+  O.ColCount := 4;
+  O.RowCount := Length(FB);
+  O.Cell[0,0].Text := sRegTerm;
+  O.Cell[1,0].Text := 'Odds ratio';
+  O.Cell[2,0].Text := 'Lower limit';
+  O.Cell[3,0].Text := 'Upper limit';
+
+  for i := 1 to High(F_OR) do begin
+    O.Cell[0,i].Text := FB[i].pLabel;
+    O.Cell[1,i].Text := StatFloatDisplay(StatFmt, F_OR[i].oddsRatio);
+    O.Cell[2,i].Text := StatFloatDisplay(StatFmt, F_OR[i].llOR);
+    O.Cell[3,i].Text := StatFloatDisplay(StatFmt, F_OR[i].ulOR);
+  end;
+
   V := FOutputCreator.AddTable;
   V.Header.Text := 'Analysis of Deviance';
   V.ColCount := 4;
@@ -182,6 +207,7 @@ begin
   V.Cell[0,1].Text := 'Regression';
   V.Cell[1,1].Text := (FParamCt-1).ToString;
   V.Cell[2,1].Text := StatFloatDisplay(StatFmt, lrRegTest.Dm);
+  V.Cell[3,1].Text := FormatP(lrRegTest.p, false);
   V.Cell[0,2].Text := 'Residual';
   V.Cell[1,2].Text := (FObs - FParamCt).ToString;
   V.Cell[2,2].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dr);
@@ -221,12 +247,14 @@ begin
   lrF.Dn := -2 * LLn;
   lrF.Dr :=  2 * LLm;
   lrF.Dm := lrF.Dn - lrF.Dr;
+  lrF.p  := pKhi2(1,lrF.Dr);
 end;
 
 function TRegressLogistic.Estimate(): UTF8String;
 var
   InV: TMatrix;
   i: Integer;
+  zConf: Float;
 begin
   FConstant := true;
   DimMatrix(Inv, FParamCt-1, FParamCt-1);
@@ -250,6 +278,13 @@ begin
     FB[i].Se := sqrt(Inv[i,i]);
     FB[i].t := FCoeff[i] * FCoeff[i] / Inv[i,i];
     FB[i].p := PKhi2(1, FB[i].t);
+  end;
+  FConf := StrToInt(FExecutor.SetOptionValue[ANA_SO_CONFIDENCE_INTERVAL]);
+  Zconf := PNormalInv((1 - (FConf / 100)) / 2);
+  for i:=1 to high(F_OR) do begin
+    F_OR[i].oddsRatio:=exp(FB[i].Estimate);
+    F_OR[i].llOR := exp(FB[i].Estimate - ZConf*FB[i].Se);
+    F_OR[i].ulOR := exp(FB[i].Estimate + ZConf*FB[i].Se);
   end;
 end;
 
@@ -319,6 +354,7 @@ end;
     DimMatrix(SX, n, l);
     DimMatrix(XtSX, l, l);
     DimVector(result, l);
+//    Dummy := Fill(0,l,0);
     DimVector(Dummy, l);
     for i := 0 to high(Dummy) do
       Dummy[i] := 0;
