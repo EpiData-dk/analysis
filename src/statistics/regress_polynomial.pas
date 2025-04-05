@@ -2,14 +2,8 @@ unit regress_polynomial;
 
 {$mode ObjFPC}{$H+}
 
-{ Note: with !nocon, RegTest results are OK for beta and se(beta),
-        but other results are meaningless (R2, aR2, F)
-  For now, make them missing in results
-  R will calculate R2 differently with no constant, so should we?
-  It's unclear what NIST has done, but something to explore
-
-  Also, if Vr is very, very small (arbitrarily less than MinVarianceResidual
-  set F = +Inf and p = zero
+{
+Note: polynomial model always has a constant
 }
 
 interface
@@ -51,6 +45,7 @@ begin
   inherited Create(AExecutor, AOutputCreator, ST);
   ST.HasOption('poly', opt);
   FDegree := opt.Expr.AsInteger;
+  FConstant := true;
 end;
 
 function TRegressPolynomial.GetRegressModelClass(): TRegressClass;

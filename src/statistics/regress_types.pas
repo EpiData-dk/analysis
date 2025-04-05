@@ -78,13 +78,13 @@ type
     { Model }
     FParamCt: Integer;
     FModel: UTF8String;
-//    FPModel: Pointer;
+    { Regression results }
     FB: array of TRegressParameter;
     FCoeff: TVector;
-    { Regression results }
     FRegFit: TRegTest;
     FFp: EpiFloat;
     FAnova: TAnovaRecord;
+    function   getSS(V: TVector; Lb,Ub: Integer): EpiFloat;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand); virtual;
     procedure  SetFormula(VarNames: TStrings); virtual;
@@ -95,7 +95,6 @@ type
     function   Estimate(): UTF8String; virtual; abstract;
     function   Fitted(Msg: UTF8String): TVector; virtual; abstract;
     procedure  GetFittedVar(DF: TEpiDatafile; EF: TEpiField); virtual; abstract;
-    function   getSS(V: TVector; Lb,Ub: Integer): EpiFloat;
     property   Model: UTF8String read FModel;
     property   Constant: Boolean read FConstant write FConstant;
     property   Obs: Integer read FObs write FObs;

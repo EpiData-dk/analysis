@@ -11,10 +11,11 @@ uses
   lmath, outputcreator, regress_types;
 
 resourcestring
-  sNoData              = 'No data';
-  sRegNoconWithPoly    = 'Polynomial model must have a constant';
-  sRegTooManyTypes     = 'Too many regression types';
-  sRegTypeNotFound     = 'Regression type not found';
+  sNoData               = 'No data';
+  sRegNoconWithLogistic = 'Logistic model must have a constant';
+  sRegNoconWithPoly     = 'Polynomial model must have a constant';
+  sRegTooManyTypes      = 'Too many regression types';
+  sRegTypeNotFound      = 'Regression type not found';
 
 type
 
@@ -162,6 +163,12 @@ begin
       rType := rtLogistic;
       typeFound += ' ' + opt.Ident;
       inc(typesFound);
+      if (ST.HasOption('nocon')) then
+        begin
+          FExecutor.Error(sRegNoconWithLogistic);
+          result := false;
+          exit;
+        end;
     end;
   if (typesFound > 1) then
     begin

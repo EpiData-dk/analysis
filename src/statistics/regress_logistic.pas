@@ -75,7 +75,7 @@ protected
                        Tol      : Float;
                  out   B        : TVector;
                  out   V        : TMatrix);
-  function epiLogiFit_Func(X: TMatrix; B : TVector) : TVector;
+  function epiLogiFunc(X: TMatrix; B : TVector) : TVector;
   function epiLogiIterate(X: TMatrix; Y: TVector; W: TVector; out XtSX:TMatrix): TVector;
   procedure epiLogiRegTest(Y: TVector;   // Y
                            F: TVector;   // Fitted values
@@ -106,6 +106,7 @@ begin
   inherited Create(AExecutor, AOutputCreator, ST);
   FDoAnova := false;
   FDoVariance := false;
+  FConstant := true;
 end;
 
 function TRegressLogistic.GetRegressModelClass(): TRegressClass;
@@ -315,7 +316,7 @@ begin
   // get fitted values
   DimVector(FFitted, FObs - 1);
   DimVector(FResidual,FObs - 1);
-  FFitted := epiLogiFit_Func(FIndepV, FCoeff);
+  FFitted := epiLogiFunc(FIndepV, FCoeff);
   FResidual := FFitted - FDepV;
   epiLogiRegTest(FDepV, FFitted, InV, lrRegTest);
   for i:= 0 to high(FB) do begin
@@ -362,11 +363,7 @@ begin
       EF.AsFloat[i] := 1 / (1 + Expo(-EF.AsFloat[i]));
 end;
 
-  function TRegressLogistic.epiLogiFit_Func(X: TMatrix; B : TVector) : TVector;
-  { ------------------------------------------------------------------
-    Computes the regression function at point X.
-    B is the vector of parameters
-    ------------------------------------------------------------------ }
+  function TRegressLogistic.epiLogiFunc(X: TMatrix; B : TVector) : TVector;
   var
     i: Integer;
   begin
@@ -374,7 +371,7 @@ end;
     result := MatVecMul(X, B, 0);
     if (MathErr <> MathOK) then
       begin
-        FExecutor.Error('Error in epiLogiFit_Func: ' + MathErrMessage);
+        FExecutor.Error('Error in epiLogiFit: ' + MathErrMessage);
         result := nil;
         FDataError := true;
         exit;
@@ -403,7 +400,7 @@ end;
     DimVector(Dummy, l);
     for i := 0 to high(Dummy) do
       Dummy[i] := 0;
-    MU := epiLogiFit_Func(X, W);
+    MU := epiLogiFunc(X, W);
     if (FDataError) then exit;
     // get S as vector, not diagonal matrix
     for i := 0 to high(S) do
@@ -423,7 +420,7 @@ end;
           if (i <> j) then
             XtSX[j,i] := c;
         end;
-    // Invert XtSX; // use linear equation solver for this; also get determinant
+    // Invert XtSX; // use linear equation solver for this
     LinEq(XtSX,Dummy,0,l,Det);
     if (MathErr <> MathOK) then
       begin
