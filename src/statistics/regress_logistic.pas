@@ -293,7 +293,7 @@ begin
   lrF.Dn := -2 * LLn;
   lrF.Dr :=  2 * LLm;
   lrF.Dm := lrF.Dn - lrF.Dr;
-  lrF.p  := pKhi2(1,lrF.Dr);
+  lrF.p  := pKhi2(FParamCt-1,lrF.Dr);
 end;
 
 function TRegressLogistic.Estimate(): UTF8String;
