@@ -2036,8 +2036,11 @@ See [Common options](#commonoptions) for options for labels and formats.
 ``` regress <dependent variable> <independent variable list> [options]
 ```
 
-Linear regression analysis with one or more independent variables, which provides estimates for the model<br/>
-y = b0 + b1 x var1 + b2 x var2 ...<br/>
+Regression analysis with one or more independent variables, which provides estimates for one of the models:<br/>
+
+- multivariable linear regression<br/>Y = b<sub>0</sub> + b<sub>1</sub>X<sub>1</sub> + b<sub>2</sub>X<sub>2</sub> ... + b<sub>n</sub>X<sub>n</sub>  (n&ge;1)<br/>
+- polynomial regression<br/>y = b<sub>0</sub> + b<sub>1</sub>X + b<sub>2</sub>X<sup>2</sup> + ... b<sub>n</sub>X<sup>n</sup>  (n&ge;2)
+- logistic regression<br/>_p_(X) = 1 / (1 + e<sup>-(b<sub>o</sub> + b<sub>1</sub>x<sub>1</sub> + b<sub>2</sub>x<sub>2</sub> ... + b<sub>n</sub>x<sub>n</sub>)</sup>)  (n&ge;1, y has values 0 or 1)
 
 ### parameters
 - `dependent variable`
@@ -2049,16 +2052,31 @@ y = b0 + b1 x var1 + b2 x var2 ...<br/>
   One or more numeric variables
   
 ### options
-- `nocon`
+- `!nocon`
 
   Do not include the intercept in the model
-- `est := <variable for estimates>`
-
-  Save the estimated values in an existing variable of type `Float`
   
-- `res := <variable for residuals>`
+- `!fit := <variable for estimates>`
 
-  Save the residuals in an existing variable of type `Float`
+  Save the estimated values in an existing variable of type `Float`. For example,
+  
+  ```
+  new var fitted float;
+  reg y x1-x4 !fit:=fitted;
+  scatter y fitted;
+  ```
+  
+- `!anova`
+
+  Include the analysis of variance table in the output (linear and polynomial regression only)  
+
+- `!logit`
+
+  Use the logistic regression model; `dependent variable` must be binary (0,1) `!nocon` and `!anova` are ignored
+  
+- `!poly := degree`
+
+  Use the polynomial regression model; there can be only a single `independent variable`. `degree` is an integer > 0.
 
 Estimates are saved as result variables. Use the command `list results` for details
 
@@ -2066,7 +2084,8 @@ See [Common options](#commonoptions) for other options, for labels and formats
 
 See [variables](#referencedvars) on using referenced variables for this command
 ### methodology notes:
-- estimates are calcualted using the standard least-squares method provided by the [LMATH library](https://wiki.freepascal.org/LMath)
+- linear and polynomial regression coefficients are estimated using the standard least-squares method provided by the [LMATH library](https://wiki.freepascal.org/LMath)
+- logistic regression coefficients are estimated using the [Iteratively reweighted least squares method](https://en.wikipedia.org/wiki/Logistic_regression#Iteratively_reweighted_least_squares_(IRLS)).
 
   
 # Graphs and charts
