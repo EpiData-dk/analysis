@@ -255,10 +255,10 @@ begin
     lrchi2.AsFloatVector[i] := FB[i].t;
     lrchip.AsFloatVector[i] := FB[i].p;
   end;
-  for i:= 2 to high(FB) do begin
-    lrOR.AsFloatVector[i] := F_OR[i-1].oddsRatio;
-    lrLL.AsFloatVector[i] := F_OR[i-1].llOR;
-    lrUL.AsFloatVector[i] := F_OR[i-1].ulOR;
+  for i:= 1 to high(FB) do begin
+    lrOR.AsFloatVector[i] := F_OR[i].oddsRatio;
+    lrLL.AsFloatVector[i] := F_OR[i].llOR;
+    lrUL.AsFloatVector[i] := F_OR[i].ulOR;
   end;
 end;
 
