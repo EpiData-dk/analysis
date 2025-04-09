@@ -5,7 +5,7 @@ unit regress_type_view;
 interface
 
 uses
-  Classes, SysUtils, stat_dialog_contribution, Controls, ExtCtrls,
+  Classes, SysUtils, stat_dialog_contribution, Controls, ExtCtrls, spin,
   StdCtrls, regress_type_model, fields_combobox, stat_dialog_custom_view;
 
 type
@@ -17,15 +17,17 @@ type
     FDataModel: TRegressTypeModel;
     FComboBoxes: Array of TEpiFieldsComboBox;
     FTypeRadios: TRadioGroup;
-    FDegreeRadios: TRadioGroup;
+    FDegreeBox: TGroupBox;
+    FDegreeLabel: TLabel;
+    FDegreeEdit: TSpinEdit;
     FMultiVarSelect: Boolean; 
     FOnModified: IStatDiaglogViewModified;
     procedure VariableSelect(Sender: TObject);
     procedure UpdateCombos();
     procedure CreateTypeRadios(RadioGroup: TRadioGroup);
     procedure TypeSelectionChanged(Sender: TObject);
-    procedure CreateDegreeRadios(RadioGroup: TRadioGroup);
-    procedure DegreeSelectionChanged(Sender: TObject);
+    procedure CreateDegreeEdit(Field: TSpinEdit);
+    procedure DegreeChanged(Sender: TObject);
   public
     constructor Create(TheOwner: TComponent);
     procedure EnterView(); override;
@@ -58,14 +60,11 @@ begin
   RadioGroup.OnSelectionChanged := @TypeSelectionChanged;
 end;
 
-procedure TRegressTypeView.CreateDegreeRadios(RadioGroup: TRadioGroup);
+procedure TRegressTypeView.CreateDegreeEdit(Field: TSpinEdit);
 var
   i: Integer;
 begin
-  for i := 2 to 10 do
-    RadioGroup.Items.Add(i.ToString);
-  RadioGroup.ItemIndex := 1;
-  RadioGroup.OnSelectionChanged := @DegreeSelectionChanged;
+  Field.OnChange := @DegreeChanged;
 end;
 
 procedure TRegressTypeView.VariableSelect(Sender: TObject);
@@ -116,23 +115,52 @@ begin
 
   FTypeRadios := TRadioGroup.Create(self);
   CreateTypeRadios(FTypeRadios);
-  FDegreeRadios := TRadioGroup.Create(self);
-  CreateDegreeRadios(FDegreeRadios);
 
-  SetLength(FComboBoxes, 2);
+  FDegreeBox := TGroupBox.Create(self);
+  FDegreeLabel := TLabel.Create(self);
+
+  FDegreeEdit := TSpinEdit.Create(self);
+  CreateDegreeEdit(FDegreeEdit);
+  FDegreeEdit.MinValue := 2;
+  FDegreeEdit.MaxValue := 10;
+
+  SetLength(FComboBoxes, 3);
 
   FTypeRadios.Parent := self;
   FTypeRadios.Caption := 'Regression Type';
   FTypeRadios.Anchors := [];
   FTypeRadios.AnchorParallel(akTop, 5, Self);
+  FTypeRadios.AnchorParallel(akLeft, 5, self);
   FTypeRadios.AnchorParallel(akRight, 5, self);
+
+  FDegreeBox.Parent := self;
+  FDegreeBox.Anchors := [];
+  FDegreeBox.AnchorToNeighbour(akTop, 0, FTypeRadios);
+  FDegreeBox.AnchorParallel(akLeft, 5, self);
+  FDegreeBox.AnchorParallel(akRight, 5, self);
+
+  FDegreeLabel.Parent := FDegreeBox;
+  // This is an ugly way to position the label
+  // There are 2 problems
+  // 1 Setting FDegreeBox caption triggers the change action (yields error)
+  // 2 The two controls within FDegreeBox do not follow anchors at all,
+  //   whether to each other or their parent. Thare are always placed one on top of the other
+  FDegreeLabel.Caption := '                Degree of polynomial';
+//  FDegreeLabel.Anchors := [];
+//  FDegreeLabel.AnchorParallel(akTop, 5, self);
+//  FDegreeLabel.AnchorParallel(akleft, 5, self);
+
+  FDegreeEdit.Parent := FDegreeBox;
+//  FDegreeEdit.Anchors := [];
+//  FDegreeEdit.AnchorParallel(akTop, 35, self);
+//  FDegreeEdit.AnchorParallel(akLeft, 10, self);
 
   ComboBox := TEpiFieldsComboBox.Create(TheOwner);
   ComboBox.Filter := [ftInteger, ftFloat];
   ComboBox.Parent := self;
   ComboBox.AnchorParallel(akLeft, 10, Self);
   ComboBox.AnchorParallel(akRight, 10, Self);
-  ComboBox.AnchorToNeighbour(akTop, 10, FTypeRadios);
+  ComboBox.AnchorToNeighbour(akTop, 10, FDegreeBox);
   ComboBox.OnSelect := @VariableSelect;
   ComboBox.Tag := YVARIABLE_TAG;
   ComboBox.NoItemText := 'Dependent Variable';
@@ -166,28 +194,36 @@ procedure TRegressTypeView.TypeSelectionChanged(Sender: TObject);
 begin
   case TRadioGroup(Sender).ItemIndex of
     0: begin
-      FDataModel.RegressType := rtLinear;
+      FDataModel.RegressType := rtSimple;
+      FDegreeBox.Visible := false;
+      FComboBoxes[XVARIABLE_TAG].Visible := true;
       FMultiVarSelect := false;
     end;
     1: begin
       FDataModel.RegressType := rtLinear;
+      FDegreeBox.Visible := false;
+      FComboBoxes[XVARIABLE_TAG].Visible := false;
       FMultiVarSelect := true;
     end;
     2: begin
       FDataModel.RegressType := rtPolynomial;
+      FDegreeBox.Visible := true;
+      FComboBoxes[XVARIABLE_TAG].Visible := true;
       FMultiVarSelect := false;
     end;
     3: begin
       FDataModel.RegressType := rtLogistic;
+      FDegreeBox.Visible := false;
+      FComboBoxes[XVARIABLE_TAG].Visible := false;
       FMultiVarSelect := true;
     end;
   end;
   DoModified();
 end;
 
-procedure TRegressTypeView.DegreeSelectionChanged(Sender: TObject);
+procedure TRegressTypeView.DegreeChanged(Sender: TObject);
 begin
-  FDataModel.Degree := (TRadioGroup(Sender).ItemIndex + 2).ToString;
+  FDataModel.Degree := FDegreeEdit.Value;
   DoModified();
 end;
 
@@ -216,8 +252,11 @@ begin
   FDataModel.YVariable := nil;
   FDataModel.FitVariable := nil;
   UpdateCombos();
+  FTypeRadios.ItemIndex := 1;
+  FComboBoxes[XVARIABLE_TAG].Visible := false;
+  FDegreeBox.Visible := false;
   FDataModel.RegressType := rtLinear;
-  FDataModel.Degree := '2';
+  FDataModel.Degree := 2;
   DoModified();
 end;
 

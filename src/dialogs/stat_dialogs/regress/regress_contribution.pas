@@ -115,16 +115,15 @@ end;
 
 function TRegressContribution.GetCaption(): UTF8String;
 begin
-  result := 'regress';
+  result := 'Regression';
 end;
 
 function TRegressContribution.GetHelpText(): UTF8String;
 begin
   result :=
-    '1. Select type of regression and dependant variable' + LineEnding +
-    '2: Select Variables' + LineEnding +
-    '3: Click percentage, test, sorting etc.' + LineEnding +
-    '4: Run, Execute or Paste command';
+    '1. Select type of regression and variables' + LineEnding +
+    '2: Select labels and other options' + LineEnding +
+    '3: Run, Execute or Paste command';
 end;
 
 function TRegressContribution.GetViews(Owner: TComponent;

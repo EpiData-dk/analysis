@@ -9,16 +9,16 @@ uses
 
 type
 
-  TRegressType = (rtLinear, rtPolynomial, rtLogistic);
+  TRegressType = (rtSimple, rtLinear, rtPolynomial, rtLogistic);
   TRegressVariable = (rvX, rvY, rvF);
 
-  { TRegressTypeModel }
+  { RegressTypeModel }
 
   TRegressTypeModel = class(IStatDialogModel)
   private
     FExecutor: TExecutor;
     FRegressType: TRegressType;
-    FDegree: String;
+    FDegree: Integer;
     FXVariable: TEpiField;
     FYVariable: TEpiField;
     FFitVariable: TEpiField;
@@ -26,7 +26,7 @@ type
     procedure SetXVariable(AValue: TEpiField);
     procedure SetYVariable(AValue: TEpiField);
     procedure SetFitVariable(AValue: TEpiField);
-    function IsUsed(Field: TEpiField; DependentVariable: TRegressVariable): boolean;
+    function IsUsed(Field: TEpiField; Variable: TRegressVariable): boolean;
   public
     function GenerateScript(): UTF8String;
     function IsDefined(): boolean;
@@ -38,18 +38,17 @@ type
     property YVariable: TEpiField read FYVariable write SetYVariable;
     property FitVariable: TEpiField read FFitVariable write SetFitVariable;
     property RegressType: TRegressType read FRegressType write SetRegressType;
-    property Degree: String read FDegree write FDegree;
+    property Degree: Integer read FDegree write FDegree;
   end;
 
 implementation
 
-{ TRegressModel }
+{ TRegressTypeModel }
 
 procedure TRegressTypeModel.SetRegressType(AValue: TRegressType);
 begin
   if FRegressType = AValue then exit;
   FRegressType := AValue;
-  // if FRegressType = rtPolynomial then activate degree field
 end;
 
 procedure TRegressTypeModel.SetXVariable(AValue: TEpiField);
@@ -71,9 +70,11 @@ begin
 end;
 
 function TRegressTypeModel.IsUsed(Field: TEpiField;
-  DependentVariable: TRegressVariable): boolean;
+  Variable: TRegressVariable): boolean;
 begin
-  result := (not (DependentVariable = rvY)) and (Field = FYVariable);
+  result := (not (Variable = rvY)) and (Field = FYVariable);
+  result := result or ((not (Variable = rvX)) and (Field = FXVariable));
+  result := result or ((not (Variable = rvF)) and (Field = FFitVariable));
 end;
 
 function TRegressTypeModel.GenerateScript(): UTF8String;
@@ -86,11 +87,9 @@ begin
   else
     result += ' %indepvars% ';
   // type
-  if FRegressType = rtLinear then
-    exit;
   case FRegressType of
-    rtPolynomial: result += ' poly:=' + FDegree;
-    rtLogistic:   result += ' logit';
+    rtPolynomial: result += ' !poly:=' + FDegree.ToString;
+    rtLogistic:   result += ' !logit';
   end;
   if Assigned(FFitVariable) then
     result += ' !fit:=' + FFitVariable.Name;
@@ -99,6 +98,11 @@ end;
 function TRegressTypeModel.IsDefined(): boolean;
 begin
   result := Assigned(FYVariable);
+  result := result and
+         (  ((FRegressType in [rtPolynomial, rtSimple]) and
+             Assigned(FXVariable)) or
+            (FRegressType in [rtLinear, rtLogistic])
+         );
 end;
 
 constructor TRegressTypeModel.Create(Executor: TExecutor);
