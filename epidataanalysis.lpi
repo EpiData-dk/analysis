@@ -294,7 +294,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="200">
+    <Units Count="209">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1129,6 +1129,42 @@
         <Filename Value="src/statistics/regress_logistic.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit199>
+      <Unit200>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_statisticoptions_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit200>
+      <Unit201>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_statisticoptions_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit201>
+      <Unit202>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_variables_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit202>
+      <Unit203>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_variables_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit203>
+      <Unit204>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_type_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit204>
+      <Unit205>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_type_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit205>
+      <Unit206>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_primaryoption_view.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit206>
+      <Unit207>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_contribution.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit207>
+      <Unit208>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_primaryoption_model.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit208>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -1138,7 +1174,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/graph/commands/epicurve;src/graph/commands/histogram;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/epicurve;src/graph/commands/barchart;src/dialogs/stat_dialogs/barchart;src/graph/options;src/graph/commands/pareto;src/dialogs/stat_dialogs/pareto;src/main;src/datamodule;src/cmdedit;src/about"/>
+      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/graph/commands/epicurve;src/graph/commands/histogram;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/epicurve;src/graph/commands/barchart;src/dialogs/stat_dialogs/barchart;src/graph/options;src/graph/commands/pareto;src/dialogs/stat_dialogs/pareto;src/main;src/datamodule;src/cmdedit;src/about;src/dialogs/stat_dialogs/regress"/>
       <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
