@@ -27,8 +27,8 @@ type
     FPrimaryOptionsModel: TRegressPrimaryOptionModel;
     FStatisticsOptionsModel: TRegressStatisticOptionsModel;
     FVariablesModel: TRegressVariableModel;
-    FTypeModel: TRegressTypeModel;
-    function CreateTypeView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
+//    FTypeModel: TRegressTypeModel;
+//    function CreateTypeView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
     function CreateVariablesView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
     function CreatePrimaryOptionView(Owner: TComponent): IStatDialogView;
     function CreateStatisticOptionView(Owner: TComponent): IStatDialogView;
@@ -42,11 +42,11 @@ type
 implementation
 
 uses
-  regress_type_view, regress_variables_view, regress_primaryoption_view, regress_statisticoptions_view;
+  {regress_type_view, }regress_variables_view, regress_primaryoption_view, regress_statisticoptions_view;
 
 { TRegressContribution }
 
-function TRegressContribution.CreateTypeView(Owner: TComponent;
+{function TRegressContribution.CreateTypeView(Owner: TComponent;
   Executor: TExecutor): IStatDialogView;
 var
   View: TRegressTypeView;
@@ -58,7 +58,7 @@ begin
 
   Result := View;
 end;
-
+}
 function TRegressContribution.CreateVariablesView(Owner: TComponent;
   Executor: TExecutor): IStatDialogView;
 var
@@ -103,14 +103,15 @@ var
   yVars: UTF8String;
 begin
   result := 'regress ' +
-    FTypeModel.GenerateScript() + ' ' +
+    {FTypeModel.GenerateScript() + ' ' +  }
+    FVariablesModel.GenerateScript() +
     FPrimaryOptionsModel.GenerateScript() +
     FStatisticsOptionsModel.GenerateScript() +
     ';';
-  yVars := FVariablesModel.GenerateScript();
+  {yVars := FVariablesModel.GenerateScript();
   if trim(yVars) <> '' then
     if pos('%indepvars%', result) > 0 then
-      result := StringReplace(result,'%indepvars%',yVars, [rfIgnoreCase]);
+      result := StringReplace(result,'%indepvars%',yVars, [rfIgnoreCase]);}
 end;
 
 function TRegressContribution.GetCaption(): UTF8String;
@@ -130,7 +131,7 @@ function TRegressContribution.GetViews(Owner: TComponent;
   Executor: TExecutor): TStatDialogContributionViewList;
 begin
   result := TStatDialogContributionViewList.Create;
-  result.add(CreateTypeView(Owner, Executor));
+//  result.add(CreateTypeView(Owner, Executor));
   result.add(CreateVariablesView(Owner, Executor));
   result.Add(CreatePrimaryOptionView(Owner));
   result.Add(CreateStatisticOptionView(Owner));
