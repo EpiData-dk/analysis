@@ -294,7 +294,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="208">
+    <Units Count="207">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1146,21 +1146,17 @@
         <IsPartOfProject Value="True"/>
       </Unit203>
       <Unit204>
-        <Filename Value="src/dialogs/stat_dialogs/regress/regress_type_view.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_primaryoption_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit204>
       <Unit205>
-        <Filename Value="src/dialogs/stat_dialogs/regress/regress_primaryoption_view.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_contribution.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit205>
       <Unit206>
-        <Filename Value="src/dialogs/stat_dialogs/regress/regress_contribution.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit206>
-      <Unit207>
         <Filename Value="src/dialogs/stat_dialogs/regress/regress_primaryoption_model.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit207>
+      </Unit206>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

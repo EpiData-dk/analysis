@@ -97,7 +97,7 @@ begin
     FITVARIABLE_TAG:
       FDataModel.FitVariable := Field;
   end;
-
+  UpdateTreeView();
   UpdateCombos();
   DoModified();
 end;
@@ -415,9 +415,11 @@ begin
       FDegreeBox.Visible := false;
       FComboBoxes[XVARIABLE_TAG].Visible := true;
       FVarnamesList.Visible := false;
+      CheckAllFields(false);
     end;
     1: begin
       FDataModel.RegressType := rtLinear;
+      FDataModel.XVariable := nil;
       FDegreeBox.Visible := false;
       FComboBoxes[XVARIABLE_TAG].Visible := false;
       FVarnamesList.Visible := true;
@@ -427,14 +429,18 @@ begin
       FDegreeBox.Visible := true;
       FComboBoxes[XVARIABLE_TAG].Visible := true;
       FVarnamesList.Visible := false;
+      CheckAllFields(false);
     end;
     3: begin
       FDataModel.RegressType := rtLogistic;
+      FDataModel.XVariable := nil;
       FDegreeBox.Visible := false;
       FComboBoxes[XVARIABLE_TAG].Visible := false;
       FVarnamesList.Visible := true;
     end;
   end;
+  FComboBoxes[XVARIABLE_TAG].ItemIndex := 0;
+  UpdateCombos();
   DoModified();
 end;
 

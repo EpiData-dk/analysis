@@ -142,6 +142,7 @@ begin
   Result.Sorted := false;
 
   for Field in FExecutor.SortedFields do
+    if not ((Field = FYVariable) or (Field = FFitVariable)) then
     Result.AddItem(Field);
 
   FreeAndNil(FSelectedFields);

@@ -55,7 +55,7 @@ end;
 
 function TRegressPrimaryOptionModel.GenerateScript(): UTF8String;
 begin
-  Result := '';
+  Result := ' ';
 
   case FVariableLabelType of
     gvtVarName:      Result += '!vn';
