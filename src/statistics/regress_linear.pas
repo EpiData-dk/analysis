@@ -65,7 +65,7 @@ var
 begin
   inherited SetFormula(Varnames);
   DimVector(FCoeff,FParamCt-1);
-  setLength(FB, 1 + FParamCt);
+  setLength(FB, FParamCt);
   plusSign := '';
   if (FConstant) then begin
     // add constant term to model
@@ -84,9 +84,9 @@ var
   InV: TMatrix;
   i, i0: Integer;
 begin
-  DimMatrix(Inv, FParamCt, FParamCt);
+  DimMatrix(Inv, FParamCt-1, FParamCt-1);
   // get betas
-  MulFit(FIndepV, FDepV, 0, FObs-1, FParamCt, FConstant, FCoeff, InV);
+  MulFit(FIndepV, FDepV, 0, FObs-1, FParamCt-1, FConstant, FCoeff, InV);
   if (MathErr = MathOk) then
     Result := ''
   else
@@ -104,7 +104,7 @@ begin
   // get residuals
   DimVector(FResidual,FObs - 1);
   VecSubtr(FFitted, FDepV, FResidual);
-  RegTest(FDepV, FFitted, 0, FObs-1, InV, 0, FParamCt, FRegFit);
+  RegTest(FDepV, FFitted, 0, FObs-1, InV, 0, FParamCt-1, FRegFit);
   if (FConstant and (FRegFit.Vr > MinVarianceResidual)) then
     FFp := 1 - FSnedecor(FRegFit.Nu1, FRegFit.Nu2, FRegFit.F)
   else
@@ -118,7 +118,7 @@ begin
     i0 :=  0
   else
     i0 := 1;
-  for i:= i0 to FParamCt do begin
+  for i:= i0 to FParamCt-1 do begin
     FB[i].Estimate := FCoeff[i];
     FB[i].Se := sqrt(Inv[i,i]);
     FB[i].t := FCoeff[i] / sqrt(Inv[i,i]);
@@ -153,7 +153,7 @@ begin
   for i := 0 to DF.Size -1 do
     EF.AsFloat[i] := b;
 
-  for j := 1 to FParamCt do begin
+  for j := 1 to FParamCt-1 do begin
     v := DF.Fields.FieldByName[FB[j].Name];
     b := FCoeff[j];
     for i := 0 to DF.Size -1 do

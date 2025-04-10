@@ -159,7 +159,7 @@ begin
         for i := 0 to FObs - 1 do
           FIndepV[i, 0] := 1;
     end;
-  if (ix > 0) and (ix <= FParamCt) then
+  if (ix > 0) and (ix < FParamCt) then
     begin
       FB[ix].pLabel := F.GetVariableLabel(FVariableLabelOutput);
       for i := 0 to FObs - 1 do
