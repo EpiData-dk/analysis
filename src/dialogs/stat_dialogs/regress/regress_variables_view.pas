@@ -77,8 +77,6 @@ begin
 end;
 
 procedure TRegressVariableView.CreateDegreeEdit(Field: TSpinEdit);
-var
-  i: Integer;
 begin
   Field.OnChange := @DegreeChanged;
 end;

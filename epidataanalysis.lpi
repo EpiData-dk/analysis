@@ -294,7 +294,7 @@
         <PackageName Value="LCL"/>
       </Item14>
     </RequiredPackages>
-    <Units Count="209">
+    <Units Count="207">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1114,57 +1114,49 @@
         <IsPartOfProject Value="True"/>
       </Unit195>
       <Unit196>
-        <Filename Value="src/statistics/regress_types.pas"/>
+        <Filename Value="src/statistics/regress_linear.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit196>
       <Unit197>
-        <Filename Value="src/statistics/regress_linear.pas"/>
+        <Filename Value="src/statistics/regress_polynomial.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit197>
       <Unit198>
-        <Filename Value="src/statistics/regress_polynomial.pas"/>
+        <Filename Value="src/statistics/regress_logistic.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit198>
       <Unit199>
-        <Filename Value="src/statistics/regress_logistic.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_statisticoptions_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit199>
       <Unit200>
-        <Filename Value="src/dialogs/stat_dialogs/regress/regress_statisticoptions_model.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_statisticoptions_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit200>
       <Unit201>
-        <Filename Value="src/dialogs/stat_dialogs/regress/regress_statisticoptions_view.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_variables_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit201>
       <Unit202>
-        <Filename Value="src/dialogs/stat_dialogs/regress/regress_variables_view.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_variables_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit202>
       <Unit203>
-        <Filename Value="src/dialogs/stat_dialogs/regress/regress_variables_model.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_type_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit203>
       <Unit204>
-        <Filename Value="src/dialogs/stat_dialogs/regress/regress_type_model.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_primaryoption_view.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit204>
       <Unit205>
-        <Filename Value="src/dialogs/stat_dialogs/regress/regress_type_view.pas"/>
+        <Filename Value="src/dialogs/stat_dialogs/regress/regress_contribution.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit205>
       <Unit206>
-        <Filename Value="src/dialogs/stat_dialogs/regress/regress_primaryoption_view.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit206>
-      <Unit207>
-        <Filename Value="src/dialogs/stat_dialogs/regress/regress_contribution.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit207>
-      <Unit208>
         <Filename Value="src/dialogs/stat_dialogs/regress/regress_primaryoption_model.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit208>
+      </Unit206>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
