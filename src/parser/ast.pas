@@ -2347,11 +2347,12 @@ end;
 function TRegressCommand.GetAcceptedOptions: TStatementOptionsMap;
 begin
   Result := inherited GetAcceptedOptions;
-  Result.Insert('nocon',  [rtUndefined]); // no constant term
+  Result.Insert('nocon', ['noc'], [rtUndefined]); // no constant term
   Result.Insert('anova',  [rtUndefined]); // show anova
   Result.Insert('poly',   [rtInteger]);   // polynomial model !poly:=n
   Result.Insert('logit',  [rtUndefined]); // univariate logistic model
   Result.Insert('fit',  [rtObject], [evtField], [evfInternal, evfAsObject]); // variable for estimates
+  Result.Insert('summary', ['sum'], [rtUndefined]); // save summary of deviance
   Result.Insert('q',  [rtUndefined]);
   AddDecimalOptions(Result);
 end;

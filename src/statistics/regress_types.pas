@@ -92,6 +92,7 @@ type
     procedure  SetIndepV(F: TEpiField; Ix: Integer); virtual;
     procedure  DoOutput(); virtual;
     procedure  DoResultVariables(); virtual;
+    procedure  Summary(); virtual;
     function   Estimate(): UTF8String; virtual; abstract;
     function   Fitted(Msg: UTF8String): TVector; virtual; abstract;
     procedure  GetFittedVar(DF: TEpiDatafile; EF: TEpiField); virtual; abstract;
@@ -290,6 +291,11 @@ begin
       lrp.AsFloatVector[i]    := FB[i].p;
     end;
   end;
+end;
+
+procedure TRegressModel.Summary();
+begin
+  // ignore unless overridden
 end;
 
 function TRegressModel.getSS(V: TVector; Lb,Ub: Integer): EpiFloat;

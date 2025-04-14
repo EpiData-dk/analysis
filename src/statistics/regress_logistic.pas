@@ -90,6 +90,7 @@ public
   procedure GetFittedVar(DF: TEpiDatafile; EF: TEpiField); override;
   procedure DoOutput(); override;
   procedure DoResultVariables(); override;
+  procedure Summary(); override;
 end;
 
 
@@ -294,6 +295,21 @@ begin
   lrF.Dr :=  2 * LLm;
   lrF.Dm := lrF.Dn - lrF.Dr;
   lrF.p  := pKhi2(FParamCt-1,lrF.Dr);
+end;
+
+procedure TRegressLogistic.Summary();
+var
+  sumDF: TEpiDataFile;
+begin
+  // check for existing datafile _regress
+
+  // create datafile _regress
+  // add field definitions
+
+  // new record
+
+  // populate the record with results
+
 end;
 
 function TRegressLogistic.Estimate(): UTF8String;

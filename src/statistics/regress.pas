@@ -125,6 +125,11 @@ begin
         Model.DoResultVariables();
         if (not ST.HasOption('q')) then
           Model.DoOutput();
+        if (ST.HasOption(['summary','sum'],opt)) then
+          if (ST.HasOption('logit')) then
+            Model.Summary()
+          else
+            FExecutor.Error('summary ignored');
       end
   else
     FExecutor.Error(msg);
