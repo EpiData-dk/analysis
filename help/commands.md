@@ -385,9 +385,9 @@ See [variables](#referencedvars) on using referenced variables for this command
 
  Hides all output
 
-- `!nc
+- `!nc`
 
-`Do not show counts of observations for each variable
+ Do not show counts of observations for each variable
 
 - `!nt`
 
