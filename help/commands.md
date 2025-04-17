@@ -384,9 +384,9 @@ See [variables](#referencedvars) on using referenced variables for this command
 
  Hides all output
 
-- `!nc
+- `!nc`
 
-`Do not show counts of observations for each variable
+ Do not show counts of observations for each variable
 
 - `!nt`
 
@@ -2039,8 +2039,8 @@ See [Common options](#commonoptions) for options for labels and formats.
 Regression analysis with one or more independent variables, which provides estimates for one of the models:<br/>
 
 - multivariable linear regression<br/>Y = b<sub>0</sub> + b<sub>1</sub>X<sub>1</sub> + b<sub>2</sub>X<sub>2</sub> ... + b<sub>n</sub>X<sub>n</sub>  (n&ge;1)<br/>
-- polynomial regression<br/>y = b<sub>0</sub> + b<sub>1</sub>X + b<sub>2</sub>X<sup>2</sup> + ... b<sub>n</sub>X<sup>n</sup>  (n&ge;2)
-- logistic regression<br/>_p_(X) = 1 / (1 + e<sup>-(b<sub>o</sub> + b<sub>1</sub>x<sub>1</sub> + b<sub>2</sub>x<sub>2</sub> ... + b<sub>n</sub>x<sub>n</sub>)</sup>)  (n&ge;1, y has values 0 or 1)
+- polynomial regression<br/>Y = b<sub>0</sub> + b<sub>1</sub>X + b<sub>2</sub>X<sup>2</sup> + ... b<sub>n</sub>X<sup>n</sup>  (n&ge;2)
+- logistic regression<br/>_p_(Y) = 1 / (1 + e<sup>-(b<sub>o</sub> + b<sub>1</sub>x<sub>1</sub> + b<sub>2</sub>x<sub>2</sub> ... + b<sub>n</sub>x<sub>n</sub>)</sup>)  (n&ge;1, y has values 0 or 1)
 
 ### parameters
 - `dependent variable`
@@ -2052,7 +2052,7 @@ Regression analysis with one or more independent variables, which provides estim
   One or more numeric variables
   
 ### options
-- `!nocon`
+- `!nocon` or `noc`
 
   Do not include the intercept in the model
   
@@ -2078,6 +2078,12 @@ Regression analysis with one or more independent variables, which provides estim
 
   Use the polynomial regression model; there can be only a single `independent variable`. `degree` is an integer > 0.
 
+- `!summary` or `sum`
+
+  Only with `logit`, some information about the model is saved in a specialized dataset within the project `_lrSummary`. The information is listed unless `!q` is specified. The most important information saved includes the model and the model deviance. The null model is included as the first record.
+  
+  While the dataset `_lrSummary` can be examined, its main purpose is to provide the summary table in the output. This dataset is saved with the project, but only if you use the `save` command.
+  
 Estimates are saved as result variables. Use the command `list results` for details
 
 See [Common options](#commonoptions) for other options, for labels and formats
