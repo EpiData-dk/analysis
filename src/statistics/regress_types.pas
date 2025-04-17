@@ -7,7 +7,7 @@ interface
 
 uses
   Classes, SysUtils, epidatafilestypes, epidatafiles, epifields_helper,
-  outputcreator, fgl,
+  outputcreator, fgl, fileutil,
 //  Generics.Collection,
   executor, ast, ana_globals, result_variables, interval_types,
   math, lMath, utypes;
@@ -85,6 +85,13 @@ type
     FFp: EpiFloat;
     FAnova: TAnovaRecord;
     function   getSS(V: TVector; Lb,Ub: Integer): EpiFloat;
+  protected
+    { summary dataset }
+    FSummaryDataFileClass: TEpiDataFileClass;
+//    FSummaryDF: TEpiDatafile;
+    procedure AddField(ADatafile: TEpiDatafile; AName: UTF8String;
+              AType: TEpiFieldType);
+    function GetSummaryDF(AName: UTF8String): TEpiDatafile;
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand); virtual;
     procedure  SetFormula(VarNames: TStrings); virtual;
@@ -93,6 +100,7 @@ type
     procedure  DoOutput(); virtual;
     procedure  DoResultVariables(); virtual;
     procedure  Summary(); virtual;
+    procedure  DoOutputSummary(); virtual;
     function   Estimate(): UTF8String; virtual; abstract;
     function   Fitted(Msg: UTF8String): TVector; virtual; abstract;
     procedure  GetFittedVar(DF: TEpiDatafile; EF: TEpiField); virtual; abstract;
@@ -101,6 +109,7 @@ type
     property   Obs: Integer read FObs write FObs;
     property   StatFmt: String read FStatFmt write FStatFmt;
     property   DataError: Boolean read FDataError;
+    property   SummaryDataFileClass: TEpiDataFileClass read FSummaryDataFileClass;
   end;
   TRegressClass = class of TRegressModel;
 
@@ -109,7 +118,9 @@ type
 implementation
 
 uses
-  LazUTF8, generalutils, options_utils, umeansd;
+  LazUTF8, epidatafilerelations_helper,
+  epicustombase, epidocument, epidatafilerelations,
+  generalutils, options_utils, umeansd;
 
 constructor TRegressModel.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand);
 begin
@@ -295,7 +306,43 @@ end;
 
 procedure TRegressModel.Summary();
 begin
-  // ignore unless overridden
+
+end;
+
+procedure TRegressModel.DoOutputSummary();
+begin
+  FOutputCreator.DoInfoShort('Summary of regression models');
+end;
+
+function TRegressModel.GetSummaryDF(AName: UTF8String): TEpiDatafile;
+var
+  MR: TEpiMasterRelation;
+  Rel: TEpiDatafileRelationList;
+begin
+  result := FExecutor.Document.DataFiles.GetDataFileByName(AName);
+  if Assigned(result) then
+      exit;
+  // Create the summary dataset
+  Rel := Fexecutor.Document.Relations;
+  MR := Rel.NewMasterRelation;
+  result := TEpiDataFile.Create(nil, 0);
+  result.SetLanguage(FExecutor.Datafile.DefaultLang, true);
+  FOutputCreator.DoWarning('Summary dataset created');
+  result.Name := AName;
+  MR.Datafile := result;
+  FExecutor.Document.DataFiles.AddItem(result);
+  FExecutor.UpdateDatasetResultVar;
+end;
+
+procedure TRegressModel.AddField(ADatafile: TEpiDatafile; AName: UTF8String;
+          AType: TEpiFieldType);
+var
+  Field: TEpiField;
+begin
+    if ADatafile.Size > 0 then exit;
+    Field := TEpiField.CreateField(nil, AType);// .CreateField(self, AType);//.NewField(AType); //
+    Field.Name := AName;
+    ADatafile.MainSection.Fields.AddItem(Field);
 end;
 
 function TRegressModel.getSS(V: TVector; Lb,Ub: Integer): EpiFloat;

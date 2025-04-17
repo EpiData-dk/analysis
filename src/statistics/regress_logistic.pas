@@ -61,6 +61,7 @@ TRegressLogistic = class(TRegressModel)
 private
   lrRegTest: TlRegTest;
   F_OR: array of TlrOdds;
+  FSumDF: TEpiDataFile;
 protected
   { fit of logistic function
     Input parameters:  X, Y     = point coordinates
@@ -89,6 +90,7 @@ public
   function  Estimate(): UTF8String; override;
   procedure GetFittedVar(DF: TEpiDatafile; EF: TEpiField); override;
   procedure DoOutput(); override;
+  procedure DoOutputSummary(); override;
   procedure DoResultVariables(); override;
   procedure Summary(); override;
 end;
@@ -300,15 +302,69 @@ end;
 procedure TRegressLogistic.Summary();
 var
   sumDF: TEpiDataFile;
+//  RefMap: TEpiReferenceMap;
+  F: TEpiField;
+  Index: Integer;
 begin
-  // check for existing datafile _regress
-
-  // create datafile _regress
-  // add field definitions
+  inherited Summary();
+  FSumDF := GetSummaryDF('_lrSummary');
+  if FSumDF.Size = 0 then
+    begin
+    //  Create variables and put null model in record 0
+      AddField(FSumDF,'RunDate',ftYMDDate);
+      AddField(FSumDF,'Model',ftString);
+      AddField(FSumDF,'Deviance',ftFloat);
+      AddField(FSumDF,'df',ftInteger);
+      AddField(FSumDF,'p',ftFloat);
+      Index := FSumDF.NewRecords();
+      FSumDF.Fields.FieldByName['RunDate'].AsDateTime[Index] := now;
+      FSumDF.Fields.FieldByName['Model'].AsString[Index] := 'Null model';
+      FSumDF.Fields.FieldByName['Deviance'].AsFloat[Index] := lrRegTest.Dn;
+      FSumDF.Fields.FieldByName['df'].AsInteger[Index] := FObs - 1;
+    end;
 
   // new record
-
+  Index := FSumDF.NewRecords();
   // populate the record with results
+  with FSumDF do begin
+    Fields.FieldByName['RunDate'].AsDateTime[Index] := now;
+    Fields.FieldByName['Model'].AsString[Index] := FModel;
+    Fields.FieldByName['Deviance'].AsFloat[Index] := lrRegTest.Dm;
+    Fields.FieldByName['df'].AsInteger[Index] := FParamCt;
+    Fields.FieldByName['p'].AsFloat[Index] := lrRegTest.p;
+  end;
+end;
+
+procedure TRegressLogistic.DoOutputSummary();
+var
+  T: TOutputTable;
+  S: TEpiDatafile;
+  i, offset: Integer;
+begin
+  S := GetSummaryDF('_lrSummary');
+  if S.Size = 0 then
+    exit;
+  T := FOutputCreator.AddTable;
+  T.ColCount := 5;
+  T.RowCount := S.Size + 1;
+  // Header row
+  T.Cell[0,0].Text := 'Run date';
+  T.Cell[1,0].Text := 'Deviance';
+  T.Cell[2,0].Text := 'df';
+  T.Cell[3,0].Text := 'p';
+  T.Cell[4,0].Text := 'Model';
+  T.SetcolAlignment(4, taLeftJustify);
+  offset := 1;
+  with S do begin
+    for i := 0 to S.Size - 1 do begin
+      T.Cell[0,offset].Text := Fields.FieldByName['RunDate'].AsString[i];
+      T.Cell[1,offset].Text := StatFloatDisplay(StatFmt, Fields.FieldByName['Deviance'].AsFloat[i]);
+      T.Cell[2,offset].Text := Fields.FieldByName['df'].AsString[i];
+      T.Cell[3,offset].Text := FormatP(Fields.FieldByName['p'].AsFloat[i], false);
+      T.Cell[4,offset].Text := Fields.FieldByName['Model'].AsString[i];
+      offset += 1;
+    end;
+  end;
 
 end;
 
