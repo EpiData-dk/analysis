@@ -47,6 +47,7 @@ TlRegTest = record
   Dm : Float; // Regression deviance
   Dr : Float; // Residual deviance
   p  : Float; // Chi-square p (for Dm only)
+  pR2: Float; // McFadden pseudo-R squared
 end;
 
 TlrOdds = record
@@ -219,6 +220,7 @@ begin
   V.Cell[0,3].Text := 'Total';
   V.Cell[1,3].Text := (FObs - 1).ToString;
   V.Cell[2,3].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dn);
+  V.Footer.Text    := 'McFadden pseudo-R-square = ' + StatFloatDisplay(StatFmt, lrRegTest.pR2);
 end;
 
 procedure TRegressLogistic.DoResultVariables();
@@ -236,8 +238,8 @@ begin
   Prefix := '$r_';
   FExecutor.AddResultConst(Prefix + 'model',    ftString).AsStringVector[0]   := FModel;
   FExecutor.AddResultConst(Prefix + 'nIndVar',  ftInteger).AsIntegerVector[0] := FParamCt-1;
-  FExecutor.AddResultConst(Prefix + 'Vr',       ftFloat).AsFloatVector[0]     := FRegFit.Vr;
-
+//  FExecutor.AddResultConst(Prefix + 'Vr',       ftFloat).AsFloatVector[0]     := FRegFit.Vr;
+  FExecutor.AddResultConst(Prefix + 'pR2',      ftFloat).AsFloatVector[0]     := lrRegTest.pR2;
 
   FExecutor.AddResultConst(Prefix + 'devReg',   ftFloat).AsFloatVector[0]   := lrRegTest.Dm;
   FExecutor.AddResultConst(Prefix + 'devRes',   ftFloat).AsFloatVector[0]   := lrRegTest.Dr;
@@ -287,7 +289,7 @@ begin
       end;
     end;
   { calculate null model deviance
-  b[0] = ln(Ym/(1-Ym), where Ym is mean of Y's  (Sum(Y) / n)
+  b[0] = ln(Ym/(1-Ym)), where Ym is mean of Y's  (Sum(Y) / n)
   max log likelihood = n(Ym x ln(Ym) + (1-Ym) x ln(1-Ym))
   model log likelihood = sum(Y x ln(MU) + (1-Y)ln(1-MU))
   }
@@ -297,6 +299,7 @@ begin
   lrF.Dr :=  2 * LLm;
   lrF.Dm := lrF.Dn - lrF.Dr;
   lrF.p  := pKhi2(FParamCt-1,lrF.Dr);
+  lrF.pR2 := lrF.Dm / lrF.Dn;
 end;
 
 procedure TRegressLogistic.Summary();
@@ -316,6 +319,7 @@ begin
       AddField(FSumDF,'Deviance',ftFloat);
       AddField(FSumDF,'df',ftInteger);
       AddField(FSumDF,'p',ftFloat);
+      AddField(FSumDF,'pR2',ftFloat);
       Index := FSumDF.NewRecords();
       FSumDF.Fields.FieldByName['RunDate'].AsDateTime[Index] := now;
       FSumDF.Fields.FieldByName['Model'].AsString[Index] := 'Null model';
@@ -332,6 +336,7 @@ begin
     Fields.FieldByName['Deviance'].AsFloat[Index] := lrRegTest.Dm;
     Fields.FieldByName['df'].AsInteger[Index] := FParamCt;
     Fields.FieldByName['p'].AsFloat[Index] := lrRegTest.p;
+    Fields.FieldByName['pR2'].AsFloat[Index] := lrRegTest.pR2;
   end;
 end;
 
@@ -345,15 +350,16 @@ begin
   if S.Size = 0 then
     exit;
   T := FOutputCreator.AddTable;
-  T.ColCount := 5;
+  T.ColCount := 6;
   T.RowCount := S.Size + 1;
   // Header row
   T.Cell[0,0].Text := 'Run date';
   T.Cell[1,0].Text := 'Deviance';
   T.Cell[2,0].Text := 'df';
   T.Cell[3,0].Text := 'p';
-  T.Cell[4,0].Text := 'Model';
-  T.SetcolAlignment(4, taLeftJustify);
+  T.Cell[4,0].Text := 'pseudo-R2';
+  T.Cell[5,0].Text := 'Model';
+  T.SetColAlignment(5, taLeftJustify);
   offset := 1;
   with S do begin
     for i := 0 to S.Size - 1 do begin
@@ -361,7 +367,8 @@ begin
       T.Cell[1,offset].Text := StatFloatDisplay(StatFmt, Fields.FieldByName['Deviance'].AsFloat[i]);
       T.Cell[2,offset].Text := Fields.FieldByName['df'].AsString[i];
       T.Cell[3,offset].Text := FormatP(Fields.FieldByName['p'].AsFloat[i], false);
-      T.Cell[4,offset].Text := Fields.FieldByName['Model'].AsString[i];
+      T.Cell[4,offset].Text := StatFloatDisplay(StatFmt, Fields.FieldByName['pR2'].AsFloat[i]);
+      T.Cell[5,offset].Text := Fields.FieldByName['Model'].AsString[i];
       offset += 1;
     end;
   end;
