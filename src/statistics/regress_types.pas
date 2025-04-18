@@ -84,6 +84,7 @@ type
     FRegFit: TRegTest;
     FFp: EpiFloat;
     FAnova: TAnovaRecord;
+    FSumDF: TEpiDataFile;
     function   getSS(V: TVector; Lb,Ub: Integer): EpiFloat;
   protected
     { summary dataset }
@@ -91,7 +92,8 @@ type
 //    FSummaryDF: TEpiDatafile;
     procedure AddField(ADatafile: TEpiDatafile; AName: UTF8String;
               AType: TEpiFieldType);
-    function GetSummaryDF(AName: UTF8String): TEpiDatafile;
+    procedure GetSummaryDF(AName: UTF8String;
+              const vars: array of string; const vtypes: array of TEpiFieldType);
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand); virtual;
     procedure  SetFormula(VarNames: TStrings); virtual;
@@ -310,28 +312,46 @@ begin
 end;
 
 procedure TRegressModel.DoOutputSummary();
+var
+  SortFields: TEpiFields;
 begin
-  FOutputCreator.DoInfoShort('Summary of regression models');
+  SortFields := TEpiFields.Create(nil);
+  SortFields.AddItem(FSumDF.Fields.FieldByName['DepVar']);
+  SortFields.AddItem(FSumDF.Fields.FieldByName['Model']);
+  FSumDF.SortRecords(SortFields);
 end;
 
-function TRegressModel.GetSummaryDF(AName: UTF8String): TEpiDatafile;
+procedure TRegressModel.GetSummaryDF(AName: UTF8String;
+          const vars: array of string; const vtypes: array of TEpiFieldType);
 var
   MR: TEpiMasterRelation;
   Rel: TEpiDatafileRelationList;
+  i: Integer;
+  s: String;
+  t: TEpiFieldType;
 begin
-  result := FExecutor.Document.DataFiles.GetDataFileByName(AName);
-  if Assigned(result) then
-      exit;
-  // Create the summary dataset
-  Rel := Fexecutor.Document.Relations;
-  MR := Rel.NewMasterRelation;
-  result := TEpiDataFile.Create(nil, 0);
-  result.SetLanguage(FExecutor.Datafile.DefaultLang, true);
-  FOutputCreator.DoWarning('Summary dataset created');
-  result.Name := AName;
-  MR.Datafile := result;
-  FExecutor.Document.DataFiles.AddItem(result);
-  FExecutor.UpdateDatasetResultVar;
+  FSumDF := FExecutor.Document.DataFiles.GetDataFileByName(AName);
+  if not Assigned(FSumDF) then
+    begin;
+      // Create the summary dataset
+      Rel := Fexecutor.Document.Relations;
+      MR := Rel.NewMasterRelation;
+      FSumDF := TEpiDataFile.Create(nil, 0);
+      FSumDF.SetLanguage(FExecutor.Datafile.DefaultLang, true);
+      FOutputCreator.DoWarning('Summary dataset created');
+      FSumDF.Name := AName;
+      MR.Datafile := FSumDF;
+      FExecutor.Document.DataFiles.AddItem(FSumDF);
+      FExecutor.UpdateDatasetResultVar;
+    end;
+  // check that all variables exist and create any that are missing
+  // this allows us to use a summary dataset from an old version
+  for i := 0 to High(vars) do begin
+    s := vars[i];
+    t := vtypes[i];
+    if not Assigned(FSumDF.Fields.FieldByName[vars[i]]) then
+      AddField(FSumDF, vars[i], vtypes[i]);
+  end;
 end;
 
 procedure TRegressModel.AddField(ADatafile: TEpiDatafile; AName: UTF8String;
@@ -339,8 +359,8 @@ procedure TRegressModel.AddField(ADatafile: TEpiDatafile; AName: UTF8String;
 var
   Field: TEpiField;
 begin
-    if ADatafile.Size > 0 then exit;
-    Field := TEpiField.CreateField(nil, AType);// .CreateField(self, AType);//.NewField(AType); //
+//    if ADatafile.Size > 0 then exit;
+    Field := TEpiField.CreateField(nil, AType);
     Field.Name := AName;
     ADatafile.MainSection.Fields.AddItem(Field);
 end;

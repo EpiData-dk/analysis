@@ -38,6 +38,12 @@ uses
   lmath, utypes, regress_types,
   executor, ast, regress;
 
+const
+  sumVarNames: array of string =
+  ('RunDate', 'DepVar', 'Model', 'Deviance', 'df', 'p', 'pR2');
+  sumVarTypes: array of TEpiFieldType =
+  (ftString, ftString, ftString, ftFloat, ftInteger, ftFloat, ftFloat);
+
 type
 
 { TlRegTest }
@@ -62,7 +68,7 @@ TRegressLogistic = class(TRegressModel)
 private
   lrRegTest: TlRegTest;
   F_OR: array of TlrOdds;
-  FSumDF: TEpiDataFile;
+//  FSumDF: TEpiDataFile;
 protected
   { fit of logistic function
     Input parameters:  X, Y     = point coordinates
@@ -143,19 +149,19 @@ var
   v: UTF8String;
 begin
   inherited SetFormula(Varnames);
-  l := VarNames.Count;
+  FModel := 'logOdds(' + FDepVName + ') ~ '; // override inherited
+  l := FParamCt; //VarNames.Count;
   DimVector(FCoeff,l-1);
   setLength(F_OR, l);
   setLength(FB, l);
   FB[0].Name := 'Constant';
   FB[0].pLabel := 'Constant';
-  v := 'c';
+  FModel += 'c';
   for i := 1 to high(FB) do
     begin
       FB[i].Name := VarNames[i];
-      v += ' + ' + VarNames[i];
+      FModel += ' + ' + VarNames[i];
     end;
-  FModel += 'Logit(' + v + ')';
 end;
 
 procedure TRegressLogistic.DoOutput();
@@ -304,33 +310,35 @@ end;
 
 procedure TRegressLogistic.Summary();
 var
-  sumDF: TEpiDataFile;
-//  RefMap: TEpiReferenceMap;
-  F: TEpiField;
+  Fm: TEpiField;
+  Fv: TEpiField;
   Index: Integer;
+  i: Integer;
+  NullModel: Boolean;
 begin
   inherited Summary();
-  FSumDF := GetSummaryDF('_lrSummary');
-  if FSumDF.Size = 0 then
-    begin
-    //  Create variables and put null model in record 0
-      AddField(FSumDF,'RunDate',ftYMDDate);
-      AddField(FSumDF,'Model',ftString);
-      AddField(FSumDF,'Deviance',ftFloat);
-      AddField(FSumDF,'df',ftInteger);
-      AddField(FSumDF,'p',ftFloat);
-      AddField(FSumDF,'pR2',ftFloat);
-      Index := FSumDF.NewRecords();
-      FSumDF.Fields.FieldByName['RunDate'].AsDateTime[Index] := now;
-      FSumDF.Fields.FieldByName['Model'].AsString[Index] := 'Null model';
-      FSumDF.Fields.FieldByName['Deviance'].AsFloat[Index] := lrRegTest.Dn;
-      FSumDF.Fields.FieldByName['df'].AsInteger[Index] := FObs - 1;
-    end;
-
-  // new record
-  Index := FSumDF.NewRecords();
-  // populate the record with results
+  GetSummaryDF('_lrSummary', sumVarNames, sumVarTypes);
+  //  if there is no null model for this depedent variable, add it now
+  NullModel := false;
   with FSumDF do begin
+    Fm := Fields.FieldByName['Model'];
+    Fv := Fields.FieldByName['DepVar'];
+    for i := 0 to Size - 1 do
+      NullModel := NullModel or (Fm.AsString[i] = '_null model') and (Fv.AsString[i] = FDepVName);
+    if not NullModel then
+      begin
+        Index := NewRecords();
+        Fields.FieldByName['DepVar'].AsString[Index] := FDepVName;
+        Fields.FieldByName['RunDate'].AsDateTime[Index] := now;
+        Fields.FieldByName['Model'].AsString[Index] := '_null model';
+        Fields.FieldByName['Deviance'].AsFloat[Index] := lrRegTest.Dn;
+        Fields.FieldByName['df'].AsInteger[Index] := FObs - 1;
+      end;
+
+  // populate the record with results
+
+    Index := NewRecords();
+    Fields.FieldByName['DepVar'].AsString[Index] := FDepVName;
     Fields.FieldByName['RunDate'].AsDateTime[Index] := now;
     Fields.FieldByName['Model'].AsString[Index] := FModel;
     Fields.FieldByName['Deviance'].AsFloat[Index] := lrRegTest.Dm;
@@ -346,9 +354,11 @@ var
   S: TEpiDatafile;
   i, offset: Integer;
 begin
-  S := GetSummaryDF('_lrSummary');
+  inherited DoOutputSummary();
+  S := FSumDF;
   if S.Size = 0 then
     exit;
+
   T := FOutputCreator.AddTable;
   T.ColCount := 6;
   T.RowCount := S.Size + 1;
