@@ -140,7 +140,7 @@ begin
         exit;
       end;
   if (n*10 < length(FDepV)) or (n > 0.9 * length(FDepv)) then
-    FExecutor.Error('Warning: dependant variable is unbalanced.');
+    FOutputCreator.DoWarning('Warning: dependant variable is unbalanced.');
 end;
 
 procedure TRegressLogistic.SetFormula(VarNames: TStrings);
@@ -150,7 +150,7 @@ var
 begin
   inherited SetFormula(Varnames);
   FModel := 'logOdds(' + FDepVName + ') ~ '; // override inherited
-  l := FParamCt; //VarNames.Count;
+  l := FParamCt;
   DimVector(FCoeff,l-1);
   setLength(F_OR, l);
   setLength(FB, l);
@@ -244,7 +244,6 @@ begin
   Prefix := '$r_';
   FExecutor.AddResultConst(Prefix + 'model',    ftString).AsStringVector[0]   := FModel;
   FExecutor.AddResultConst(Prefix + 'nIndVar',  ftInteger).AsIntegerVector[0] := FParamCt-1;
-//  FExecutor.AddResultConst(Prefix + 'Vr',       ftFloat).AsFloatVector[0]     := FRegFit.Vr;
   FExecutor.AddResultConst(Prefix + 'pR2',      ftFloat).AsFloatVector[0]     := lrRegTest.pR2;
 
   FExecutor.AddResultConst(Prefix + 'devReg',   ftFloat).AsFloatVector[0]   := lrRegTest.Dm;
@@ -324,7 +323,11 @@ begin
     Fm := Fields.FieldByName['Model'];
     Fv := Fields.FieldByName['DepVar'];
     for i := 0 to Size - 1 do
-      NullModel := NullModel or (Fm.AsString[i] = '_null model') and (Fv.AsString[i] = FDepVName);
+      begin
+        NullModel := (Fm.AsString[i] = '_null model') and (Fv.AsString[i] = FDepVName);
+        if NullModel then
+          break;
+      end;
     if not NullModel then
       begin
         Index := NewRecords();

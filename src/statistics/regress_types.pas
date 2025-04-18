@@ -8,14 +8,17 @@ interface
 uses
   Classes, SysUtils, epidatafilestypes, epidatafiles, epifields_helper,
   outputcreator, fgl, fileutil,
-//  Generics.Collection,
   executor, ast, ana_globals, result_variables, interval_types,
   math, lMath, utypes;
 
 resourcestring
+  sANOVA               = 'Analysis of Variance';
   sDegFreedomAbbr      = 'df';
   sFailedErr           = 'failed with error';
+  sMeanSquare          = 'Mean Square';
   sStErrorAbbr         = 's.e.';
+  sSumSquares          = 'Sum of Squares';
+  sTotal               = 'Total';
   sRegAdjustedR2       = 'Adjusted R^2';
   sRegCoefficient      = 'Coefficient';
   sRegCommand          = 'Regression';
@@ -26,7 +29,10 @@ resourcestring
   sRegIntercept        = 'Intercept';
   sRegModel            = 'Model';
   sRegR2               = 'R^2';
+  sRegResidual         = 'Residual';
   sRegResidualVariance = 'Residual variance';
+  sRegSource           = 'Source';
+  sRegSumDSCreated     = 'Summary dataset created';
   sRegTerm             = 'Term';
   sRegTitle            = 'Regression Analysis';
 
@@ -57,6 +63,7 @@ type
   protected
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
+
     { Switches / Appearance }
     FDataError: Boolean;
     FConstant: Boolean;
@@ -67,6 +74,7 @@ type
     FValuelabelOutput: TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
     FStatFmt: String;
+
     { Data }
     FDepV: TVector;
     FIndepV: TMatrix;
@@ -75,9 +83,11 @@ type
     FObs: Integer;
     FDepVLabel,
     FDepVName: UTF8String;
+
     { Model }
     FParamCt: Integer;
     FModel: UTF8String;
+
     { Regression results }
     FB: array of TRegressParameter;
     FCoeff: TVector;
@@ -86,11 +96,11 @@ type
     FAnova: TAnovaRecord;
     FSumDF: TEpiDataFile;
     function   getSS(V: TVector; Lb,Ub: Integer): EpiFloat;
+
   protected
     { summary dataset }
     FSummaryDataFileClass: TEpiDataFileClass;
-//    FSummaryDF: TEpiDatafile;
-    procedure AddField(ADatafile: TEpiDatafile; AName: UTF8String;
+    procedure VerifyField(ADatafile: TEpiDatafile; AName: UTF8String;
               AType: TEpiFieldType);
     procedure GetSummaryDF(AName: UTF8String;
               const vars: array of string; const vtypes: array of TEpiFieldType);
@@ -120,7 +130,7 @@ type
 implementation
 
 uses
-  LazUTF8, epidatafilerelations_helper,
+  LazUTF8,
   epicustombase, epidocument, epidatafilerelations,
   generalutils, options_utils, umeansd;
 
@@ -245,24 +255,24 @@ begin
       A.RowCount := 4;
       with FAnova do
         begin
-          A.Header.Text := 'Analysis of Variance';
+          A.Header.Text := sANOVA;
           A.ColCount := 5;
           A.RowCount := 4;
-          A.Cell[0,0].Text := 'Source';
-          A.Cell[1,0].Text := 'df';
-          A.Cell[2,0].Text := 'Sum of Squares';
-          A.Cell[3,0].Text := 'Mean Square';
+          A.Cell[0,0].Text := sRegSource;
+          A.Cell[1,0].Text := sDegFreedomAbbr;
+          A.Cell[2,0].Text := sSumSquares;
+          A.Cell[3,0].Text := sMeanSquare;
           A.Cell[4,0].Text := 'F';
-          A.Cell[0,1].Text := 'Regression';
+          A.Cell[0,1].Text := sRegCommand;
           A.Cell[1,1].Text := DFB.ToString;
           A.Cell[2,1].Text := StatFloatDisplay(StatFmt, SSB);
           A.Cell[3,1].Text := StatFloatDisplay(StatFmt, MSB);
           A.Cell[4,1].Text := StatFloatDisplay(StatFmt, F);
-          A.Cell[0,2].Text := 'Residual';
+          A.Cell[0,2].Text := sRegResidual;
           A.Cell[1,2].Text := DFW.ToString;
           A.Cell[2,2].Text := StatFloatDisplay(StatFmt, SSW);
           A.Cell[3,2].Text := StatFloatDisplay(StatFmt, MSW);
-          A.Cell[0,3].Text := 'Total';
+          A.Cell[0,3].Text := sTotal;
           A.Cell[1,3].Text := DFT.ToString;
           A.Cell[2,3].Text := StatFloatDisplay(StatFmt, SST);
         end;
@@ -315,10 +325,16 @@ procedure TRegressModel.DoOutputSummary();
 var
   SortFields: TEpiFields;
 begin
+  if not Assigned(FSumDF) then
+    begin
+      FOutputCreator.DoWarning('!sum ignored for this type of regression');
+      exit;
+    end;
   SortFields := TEpiFields.Create(nil);
   SortFields.AddItem(FSumDF.Fields.FieldByName['DepVar']);
   SortFields.AddItem(FSumDF.Fields.FieldByName['Model']);
   FSumDF.SortRecords(SortFields);
+  SortFields.Destroy;
 end;
 
 procedure TRegressModel.GetSummaryDF(AName: UTF8String;
@@ -327,8 +343,6 @@ var
   MR: TEpiMasterRelation;
   Rel: TEpiDatafileRelationList;
   i: Integer;
-  s: String;
-  t: TEpiFieldType;
 begin
   FSumDF := FExecutor.Document.DataFiles.GetDataFileByName(AName);
   if not Assigned(FSumDF) then
@@ -338,7 +352,7 @@ begin
       MR := Rel.NewMasterRelation;
       FSumDF := TEpiDataFile.Create(nil, 0);
       FSumDF.SetLanguage(FExecutor.Datafile.DefaultLang, true);
-      FOutputCreator.DoWarning('Summary dataset created');
+      FOutputCreator.DoWarning(sRegSumDSCreated);
       FSumDF.Name := AName;
       MR.Datafile := FSumDF;
       FExecutor.Document.DataFiles.AddItem(FSumDF);
@@ -346,23 +360,20 @@ begin
     end;
   // check that all variables exist and create any that are missing
   // this allows us to use a summary dataset from an old version
-  for i := 0 to High(vars) do begin
-    s := vars[i];
-    t := vtypes[i];
-    if not Assigned(FSumDF.Fields.FieldByName[vars[i]]) then
-      AddField(FSumDF, vars[i], vtypes[i]);
-  end;
+  for i := 0 to High(vars) do
+      VerifyField(FSumDF, vars[i], vtypes[i]);
 end;
 
-procedure TRegressModel.AddField(ADatafile: TEpiDatafile; AName: UTF8String;
+procedure TRegressModel.VerifyField(ADatafile: TEpiDatafile; AName: UTF8String;
           AType: TEpiFieldType);
 var
   Field: TEpiField;
 begin
-//    if ADatafile.Size > 0 then exit;
-    Field := TEpiField.CreateField(nil, AType);
-    Field.Name := AName;
-    ADatafile.MainSection.Fields.AddItem(Field);
+  if Assigned(ADatafile.Fields.FieldByName[AName]) then
+    exit;
+  Field := TEpiField.CreateField(nil, AType);
+  Field.Name := AName;
+  ADatafile.MainSection.Fields.AddItem(Field);
 end;
 
 function TRegressModel.getSS(V: TVector; Lb,Ub: Integer): EpiFloat;
