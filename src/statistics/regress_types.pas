@@ -11,30 +11,53 @@ uses
   executor, ast, ana_globals, result_variables, interval_types,
   math, lMath, utypes;
 
+{ resource strings for all regress units}
 resourcestring
-  sANOVA               = 'Analysis of Variance';
-  sDegFreedomAbbr      = 'df';
-  sFailedErr           = 'failed with error';
-  sMeanSquare          = 'Mean Square';
-  sStErrorAbbr         = 's.e.';
-  sSumSquares          = 'Sum of Squares';
-  sTotal               = 'Total';
-  sRegAdjustedR2       = 'Adjusted R^2';
-  sRegCoefficient      = 'Coefficient';
-  sRegCommand          = 'Regression';
-  sRegErrMatrixMult    = 'Matrix multiplication error';
-  sRegFNotSupported    = 'F-test is not supported with no constant term';
-  sRegFdf1             = ' on ';
-  sRegFdf2             = ' and ';
-  sRegIntercept        = 'Intercept';
-  sRegModel            = 'Model';
-  sRegR2               = 'R^2';
-  sRegResidual         = 'Residual';
-  sRegResidualVariance = 'Residual variance';
-  sRegSource           = 'Source';
-  sRegSumDSCreated     = 'Summary dataset created';
-  sRegTerm             = 'Term';
-  sRegTitle            = 'Regression Analysis';
+  sANOVA                = 'Analysis of Variance';
+  sDegFreedomAbbr       = 'df';
+  sFailedErr            = 'failed with error';
+  sMeanSquare           = 'Mean Square';
+  sStErrorAbbr          = 's.e.';
+  sSumSquares           = 'Sum of Squares';
+  sTotal                = 'Total';
+  sRegAdjustedR2        = 'Adjusted R^2';
+  sRegCoefficient       = 'Coefficient';
+  sRegCommand           = 'Regression';
+  sRegErrMatrixMult     = 'Matrix multiplication error';
+  sRegFNotSupported     = 'F-test is not supported with no constant term';
+  sRegFdf1              = ' on ';
+  sRegFdf2              = ' and ';
+  sRegIntercept         = 'Intercept';
+  sRegModel             = 'Model';
+  sRegR2                = 'R^2';
+  sRegResidual          = 'Residual';
+  sRegResidualVariance  = 'Residual variance';
+  sRegSource            = 'Source';
+  sRegSumDSCreated      = 'Summary dataset created';
+  sRegTerm              = 'Term';
+  sRegTitle             = 'Regression Analysis';
+  sNoData               = 'No data';
+  sRegNoconWithLogistic = 'Logistic model must have a constant';
+  sRegNoconWithPoly     = 'Polynomial model must have a constant';
+  sRegTooManyTypes      = 'Too many regression types';
+  sRegTypeNotFound      = 'Regression type not found';
+  sDepVarBinary         = 'Dependant variable must have values 0 and 1 only';
+  sDepVarUnbalanced = 'Warning: dependant variable is unbalanced';
+  sConstant = 'Constant';
+  sVariance = 'Variance';
+  sWaldChi2 = 'Wald Chi^2';
+  sOddsRatios = 'Odds ratios';
+  sCIAbbr = 'CI';
+  sAnd = 'and';
+  sOddsRatio = 'Odds ratio';
+  sLowerLimit = 'Lower limit';
+  sUpperLimit = 'Upper limit';
+  sAnalysisDeviance = 'Analysis of Deviance';
+  sDeviance = 'Deviance';
+  sMcFPseudoR2 = 'McFadden pseudo-R-square';
+  sRunDate = 'Run date';
+  sPseudoR2 = 'pseudo-R2';
+  sErrMatrixInversion = 'Error inverting matrix';
 
 const
   MinVarianceResidual = 1.0E-25;

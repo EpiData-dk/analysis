@@ -135,12 +135,12 @@ begin
       inc(n)
     else if (FDepV[i] <>0) then
       begin
-        FExecutor.Error('Dependant variable must have values 0 and 1 only');
+        FExecutor.Error(sDepVarBinary);
         FDataError := true;
         exit;
       end;
   if (n*10 < length(FDepV)) or (n > 0.9 * length(FDepv)) then
-    FOutputCreator.DoWarning('Warning: dependant variable is unbalanced.');
+    FOutputCreator.DoWarning(sDepVarUnbalanced+'.');
 end;
 
 procedure TRegressLogistic.SetFormula(VarNames: TStrings);
@@ -154,8 +154,8 @@ begin
   DimVector(FCoeff,l-1);
   setLength(F_OR, l);
   setLength(FB, l);
-  FB[0].Name := 'Constant';
-  FB[0].pLabel := 'Constant';
+  FB[0].Name := sConstant;
+  FB[0].pLabel := sConstant;
   FModel += 'c';
   for i := 1 to high(FB) do
     begin
@@ -178,8 +178,8 @@ begin
   // Header row
   T.Cell[0,0].Text := sRegTerm;
   T.Cell[1,0].Text := sRegCoefficient;
-  T.Cell[2,0].Text := 'Variance';
-  T.Cell[3,0].Text := 'Wald Chi^2';
+  T.Cell[2, 0].Text := sVariance;
+  T.Cell[3, 0].Text := sWaldChi2;
   T.Cell[4,0].Text := 'p';
   offset := 1;
 
@@ -193,13 +193,13 @@ begin
   end;
 
   O := FOutputCreator.AddTable;
-  O.Header.Text := 'Odds ratios and ' + IntToStr(FConf) + '% CI';
+  O.Header.Text := sOddsRatios+' '+sAnd+' ' + IntToStr(FConf) + '% '+sCIAbbr;
   O.ColCount := 4;
   O.RowCount := Length(FB);
   O.Cell[0,0].Text := sRegTerm;
-  O.Cell[1,0].Text := 'Odds ratio';
-  O.Cell[2,0].Text := 'Lower limit';
-  O.Cell[3,0].Text := 'Upper limit';
+  O.Cell[1, 0].Text := sOddsRatio;
+  O.Cell[2, 0].Text := sLowerLimit;
+  O.Cell[3, 0].Text := sUpperLimit;
 
   for i := 1 to High(F_OR) do begin
     O.Cell[0,i].Text := FB[i].pLabel;
@@ -209,24 +209,25 @@ begin
   end;
 
   V := FOutputCreator.AddTable;
-  V.Header.Text := 'Analysis of Deviance';
+  V.Header.Text := sAnalysisDeviance;
   V.ColCount := 4;
   V.RowCount := 4;
-  V.Cell[0,0].Text := 'Source';
-  V.Cell[1,0].Text := 'df';
-  V.Cell[2,0].Text := 'Deviance';
+  V.Cell[0, 0].Text := sRegSource;
+  V.Cell[1, 0].Text := sDegFreedomAbbr;
+  V.Cell[2, 0].Text := sDeviance;
   V.Cell[3,0].Text := 'p';
-  V.Cell[0,1].Text := 'Regression';
+  V.Cell[0, 1].Text := sRegCommand;
   V.Cell[1,1].Text := (FParamCt-1).ToString;
   V.Cell[2,1].Text := StatFloatDisplay(StatFmt, lrRegTest.Dm);
   V.Cell[3,1].Text := FormatP(lrRegTest.p, false);
-  V.Cell[0,2].Text := 'Residual';
+  V.Cell[0, 2].Text := sRegResidual;
   V.Cell[1,2].Text := (FObs - FParamCt).ToString;
   V.Cell[2,2].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dr);
   V.Cell[0,3].Text := 'Total';
   V.Cell[1,3].Text := (FObs - 1).ToString;
   V.Cell[2,3].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dn);
-  V.Footer.Text    := 'McFadden pseudo-R-square = ' + StatFloatDisplay(StatFmt, lrRegTest.pR2);
+  V.Footer.Text    := sMcFPseudoR2+' = ' + StatFloatDisplay(StatFmt,
+    lrRegTest.pR2);
 end;
 
 procedure TRegressLogistic.DoResultVariables();
@@ -366,12 +367,12 @@ begin
   T.ColCount := 6;
   T.RowCount := S.Size + 1;
   // Header row
-  T.Cell[0,0].Text := 'Run date';
-  T.Cell[1,0].Text := 'Deviance';
-  T.Cell[2,0].Text := 'df';
+  T.Cell[0, 0].Text := sRunDate;
+  T.Cell[1, 0].Text := sDeviance;
+  T.Cell[2, 0].Text := sDegFreedomAbbr;
   T.Cell[3,0].Text := 'p';
-  T.Cell[4,0].Text := 'pseudo-R2';
-  T.Cell[5,0].Text := 'Model';
+  T.Cell[4, 0].Text := sPseudoR2;
+  T.Cell[5, 0].Text := sRegModel;
   T.SetColAlignment(5, taLeftJustify);
   offset := 1;
   with S do begin
@@ -516,7 +517,7 @@ end;
     LinEq(XtSX,Dummy,0,l,Det);
     if (MathErr <> MathOK) then
       begin
-        FExecutor.Error('Error inverting matrix: ' + MathErrMessage);
+        FExecutor.Error(sErrMatrixInversion+': ' + MathErrMessage);
         exit;
       end;
     result := MatVecMul(MatMul(XtSX,MatTranspose(X,0),0),(MatVecMul(SX,W,0)+Y-MU),0);

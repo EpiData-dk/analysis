@@ -10,13 +10,6 @@ uses
   executor, result_variables, epifields_helper, ana_globals,
   lmath, outputcreator, regress_types;
 
-resourcestring
-  sNoData               = 'No data';
-  sRegNoconWithLogistic = 'Logistic model must have a constant';
-  sRegNoconWithPoly     = 'Polynomial model must have a constant';
-  sRegTooManyTypes      = 'Too many regression types';
-  sRegTypeNotFound      = 'Regression type not found';
-
 type
 
   { TRegress }
