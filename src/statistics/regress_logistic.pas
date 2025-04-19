@@ -39,7 +39,7 @@ uses
   executor, ast, regress;
 
 const
-  sumVarNames: array of string =
+  sumVarNames: array of UTF8String =
   ('RunDate', 'DepVar', 'Model', 'Deviance', 'df', 'p', 'pR2');
   sumVarTypes: array of TEpiFieldType =
   (ftString, ftString, ftString, ftFloat, ftInteger, ftFloat, ftFloat);
@@ -226,7 +226,7 @@ begin
   V.Cell[0,3].Text := 'Total';
   V.Cell[1,3].Text := (FObs - 1).ToString;
   V.Cell[2,3].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dn);
-  V.Footer.Text    := sMcFPseudoR2+' = ' + StatFloatDisplay(StatFmt,
+  V.Footer.Text    := 'McFadden ' + sPseudoR2 + ' = ' + StatFloatDisplay(StatFmt,
     lrRegTest.pR2);
 end;
 
@@ -355,28 +355,26 @@ end;
 procedure TRegressLogistic.DoOutputSummary();
 var
   T: TOutputTable;
-  S: TEpiDatafile;
   i, offset: Integer;
 begin
   inherited DoOutputSummary();
-  S := FSumDF;
-  if S.Size = 0 then
-    exit;
+  with FSumDF do begin
+    if Size = 0 then
+      exit;
 
-  T := FOutputCreator.AddTable;
-  T.ColCount := 6;
-  T.RowCount := S.Size + 1;
-  // Header row
-  T.Cell[0, 0].Text := sRunDate;
-  T.Cell[1, 0].Text := sDeviance;
-  T.Cell[2, 0].Text := sDegFreedomAbbr;
-  T.Cell[3,0].Text := 'p';
-  T.Cell[4, 0].Text := sPseudoR2;
-  T.Cell[5, 0].Text := sRegModel;
-  T.SetColAlignment(5, taLeftJustify);
-  offset := 1;
-  with S do begin
-    for i := 0 to S.Size - 1 do begin
+    T := FOutputCreator.AddTable;
+    T.ColCount := 6;
+    T.RowCount := Size + 1;
+    // Header row
+    T.Cell[0, 0].Text := sRunDate;
+    T.Cell[1, 0].Text := sDeviance;
+    T.Cell[2, 0].Text := sDegFreedomAbbr;
+    T.Cell[3,0].Text := 'p';
+    T.Cell[4, 0].Text := sPseudoR2;
+    T.Cell[5, 0].Text := sRegModel;
+    T.SetColAlignment(5, taLeftJustify);
+    offset := 1;
+    for i := 0 to Size - 1 do begin
       T.Cell[0,offset].Text := Fields.FieldByName['RunDate'].AsString[i];
       T.Cell[1,offset].Text := StatFloatDisplay(StatFmt, Fields.FieldByName['Deviance'].AsFloat[i]);
       T.Cell[2,offset].Text := Fields.FieldByName['df'].AsString[i];

@@ -1,5 +1,6 @@
 unit regress_polynomial;
 
+{$codepage UTF-8}
 {$mode ObjFPC}{$H+}
 
 {
@@ -13,6 +14,20 @@ uses
   lmath, utypes, regress_types,
   executor, ast, regress;
 
+const
+  superScriptNum: array of UTF8String =
+    (#$E2#$81#$B0,
+     #$C2#$B9,
+     #$C2#$B2,
+     #$C2#$B3,
+     #$E2#$81#$B4,
+     #$E2#$81#$B5,
+     #$E2#$81#$B6,
+     #$E2#$81#$B7,
+     #$E2#$81#$B8,
+     #$E2#$81#$B9
+    );
+
 type
 
 { TRegressPolynomial }
@@ -21,6 +36,8 @@ TRegressPolynomial = class(TRegressModel)
 private
   FDegree: Integer;
   FPolyIndepV: TVector;
+private
+  function GetSuperscript(i: Integer): UTF8String;
 public
   constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand); override;
   function GetRegressModelClass(): TRegressClass;
@@ -55,8 +72,8 @@ end;
 
 function TRegressPolynomial.Fit(x: EpiFloat): EpiFloat;
 var
-  i, j: Integer;
-  m, v: EpiFloat;
+  i: Integer;
+  m: EpiFloat;
 begin
   if (x = TEpiFloatField.DefaultMissing) then
     begin
@@ -65,9 +82,9 @@ begin
     end;
   m := 1;
   result := 0;
-  for j := 0 to FDegree do
+  for i := 0 to FDegree do
     begin
-      result += m * FCoeff[j];
+      result += m * FCoeff[i];
       m := m * x;
     end;
 end;
@@ -75,22 +92,24 @@ end;
 procedure TRegressPolynomial.SetFormula(VarNames: TStrings);
 var
   i: Integer;
-  plusSign, exponent: String;
+  plusSign: UTF8String;
+  exponent: UTF8String;
   xTerm: UTF8String;
 begin
   inherited SetFormula(Varnames);
   setLength(FB, 1 + FDegree);
   DimVector(FCoeff,1 + FDegree);
   plusSign := '';
-  FB[0].pLabel := 'Intercept';
+  FB[0].pLabel := sRegIntercept;
   FModel += 'c + ';
   exponent := '';
   xTerm := VarNames[1];
+  FB[1].Name := xTerm; // need this for GetFitted
   for i := 1 to FDegree do begin
     FB[i].pLabel := xTerm + exponent;
     FModel += plusSign + xTerm + exponent;
     plusSign := ' + ';
-    exponent := '^' + (i+1).ToString;
+    exponent := getSuperscript(i+1);
   end;
 end;
 
@@ -111,8 +130,7 @@ end;
 function TRegressPolynomial.Estimate(): UTF8String;
 var
   InV: TMatrix;
-  i, i0: Integer;
-  msg: UTF8String;
+  i: Integer;
 begin
   DimMatrix(Inv, FDegree+1, FDegree+1);
   // get betas
@@ -121,7 +139,8 @@ begin
     Result := ''
   else
     begin
-      Result := 'Regression' + ' ' + 'failed with error' + ' : ' + MathErrMessage;
+      Result := sRegCommand + ' ' + sFailedErr + ' : ' +
+        MathErrMessage;
       exit;
     end;
   // get fitted values
@@ -157,14 +176,27 @@ end;
 
 procedure  TRegressPolynomial.GetFittedVar(DF: TEpiDatafile; EF: TEpiField);
 var
-  i, j: Integer;
-  b: EpiFloat;
+  i: Integer;
   v: TEpiField;
 begin
   EF.ResetData;
-  v := DF.Fields.FieldByName[FB[j].Name];
+  v := DF.Fields.FieldByName[FB[1].Name];
   for i := 0 to DF.Size -1 do
     EF.AsFloat[i] := Fit(v.AsFloat[i]);
+end;
+
+function TRegressPolynomial.GetSuperscript(i: Integer): UTF8String;
+var
+  ix: Integer;
+begin
+  result := '';
+  ix := abs(i);
+  repeat
+    result := superScriptNum[ix mod 10] + result;
+    ix := ix div 10;
+  until ix = 0;
+  if i < 0 then
+    result := #$E2#$81#$BB + result;
 end;
 
 initialization

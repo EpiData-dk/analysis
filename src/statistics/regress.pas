@@ -65,7 +65,7 @@ var
   Model: TRegressModel;
   Variables: TStrings;
   Opt: TOption;
-  i, d, nVar: Integer;
+  i, nVar: Integer;
   saveField: TEpiField;
   msg: UTF8String;
 begin
@@ -119,9 +119,11 @@ begin
         if (not ST.HasOption('q')) then
           Model.DoOutput();
         if (ST.HasOption(['summary','sum'],opt)) then
-              Model.Summary();
-              if (not ST.HasOption('q')) then
-                Model.DoOutputSummary();
+          begin
+            Model.Summary();
+            if (not ST.HasOption('q')) then
+              Model.DoOutputSummary();
+          end;
       end
   else
     FExecutor.Error(msg);

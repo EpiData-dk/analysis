@@ -20,7 +20,7 @@ resourcestring
   sStErrorAbbr          = 's.e.';
   sSumSquares           = 'Sum of Squares';
   sTotal                = 'Total';
-  sRegAdjustedR2        = 'Adjusted R^2';
+  sRegAdjusted          = 'Adjusted';
   sRegCoefficient       = 'Coefficient';
   sRegCommand           = 'Regression';
   sRegErrMatrixMult     = 'Matrix multiplication error';
@@ -29,9 +29,9 @@ resourcestring
   sRegFdf2              = ' and ';
   sRegIntercept         = 'Intercept';
   sRegModel             = 'Model';
-  sRegR2                = 'R^2';
   sRegResidual          = 'Residual';
   sRegResidualVariance  = 'Residual variance';
+  sRegR2                = 'R' + #$C2#$B2;
   sRegSource            = 'Source';
   sRegSumDSCreated      = 'Summary dataset created';
   sRegTerm              = 'Term';
@@ -45,7 +45,7 @@ resourcestring
   sDepVarUnbalanced = 'Warning: dependant variable is unbalanced';
   sConstant = 'Constant';
   sVariance = 'Variance';
-  sWaldChi2 = 'Wald Chi^2';
+  sWaldChi2 = 'Wald Chi' + #$C2#$B2;
   sOddsRatios = 'Odds ratios';
   sCIAbbr = 'CI';
   sAnd = 'and';
@@ -54,9 +54,8 @@ resourcestring
   sUpperLimit = 'Upper limit';
   sAnalysisDeviance = 'Analysis of Deviance';
   sDeviance = 'Deviance';
-  sMcFPseudoR2 = 'McFadden pseudo-R-square';
   sRunDate = 'Run date';
-  sPseudoR2 = 'pseudo-R2';
+  sPseudoR2 = 'pseudo-R' + #$C2#$B2;
   sErrMatrixInversion = 'Error inverting matrix';
 
 const
@@ -126,7 +125,7 @@ type
     procedure VerifyField(ADatafile: TEpiDatafile; AName: UTF8String;
               AType: TEpiFieldType);
     procedure GetSummaryDF(AName: UTF8String;
-              const vars: array of string; const vtypes: array of TEpiFieldType);
+              const vars: array of UTF8String; const vtypes: array of TEpiFieldType);
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand); virtual;
     procedure  SetFormula(VarNames: TStrings); virtual;
@@ -260,8 +259,8 @@ begin
       if (FConstant) then
         begin
           V.Cell[0,0].Text := sRegResidualVariance + ':' + StatFloatDisplay(StatFmt, FRegFit.Vr);
-          V.Cell[0,1].Text :=      sRegR2 + ':' + StatFloatDisplay(StatFmt, FRegFit.R2) +
-              '  ' + sRegAdjustedR2 + ':' + StatFloatDisplay(StatFmt, FRegFit.R2a);
+          V.Cell[0,1].Text := sRegR2 + ':' + StatFloatDisplay(StatFmt, FRegFit.R2) +
+              '  ' + sRegAdjusted + sRegR2 + ':' + StatFloatDisplay(StatFmt, FRegFit.R2a);
           V.Cell[0,2].Text := 'F:' + StatFloatDisplay(StatFmt, FRegFit.F) +
               sRegFdf1 + FRegFit.Nu1.ToString + sRegFdf2 +
               FRegFit.Nu2.ToString + ' ' + sDegFreedomAbbr + ' (' +
@@ -361,7 +360,7 @@ begin
 end;
 
 procedure TRegressModel.GetSummaryDF(AName: UTF8String;
-          const vars: array of string; const vtypes: array of TEpiFieldType);
+          const vars: array of UTF8String; const vtypes: array of TEpiFieldType);
 var
   MR: TEpiMasterRelation;
   Rel: TEpiDatafileRelationList;
