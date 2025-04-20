@@ -91,14 +91,14 @@ begin
     Result := ''
   else
     begin
-      Result := 'Regression' + ' ' + 'failed with error' + ' : ' + MathErrMessage;
+      Result := sRegCommand + ' ' + sFailedErr + ': ' + MathErrMessage;
       exit;
     end;
   // get fitted values
   FFitted := MatVecMul(FIndepV, FCoeff, 0);
   if (MathErr <> MathOk) then
     begin
-      Result := 'Matrix multiplication error' + ' : ' + MathErrMessage;
+      Result := sErrMatMult + ' : ' + MathErrMessage;
       exit;
     end;
   // get residuals

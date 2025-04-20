@@ -13,6 +13,53 @@ uses
 
 { resource strings for all regress units}
 resourcestring
+  { Français
+  sANOVA                ='Analyse de variance';
+  sDegFreedomAbbr       ='dl';
+  sFailedErr            ='erreur';
+  sMeanSquare           ='Carrés moyens';
+  sStErrorAbbr          ='err. norm.';
+  sSumSquares           ='Somme des carrés';
+  sTotal                ='Total';
+  sRegAdjustedR2        ='R' + #$C2#$B2 + ' Ajusté';
+  sRegCoefficient       ='Coefficient';
+  sRegCommand           ='Régression';
+  sRegErrMatrixMult     ='Erreur de multiplication de matrice';
+  sRegFNotSupported     ='Le test F n''est pas pris en charge sans terme constant';
+  sRegFdf1              ='sur';
+  sRegFdf2              ='et';
+  sRegIntercept         ='Intercept';
+  sRegModel             ='Modèle';
+  sRegResidual          ='Résidu';
+  sRegResidualVariance  ='Variance résiduelle';
+  sRegR2                ='R' + #$C2#$B2;
+  sRegSource            ='Source';
+  sRegSumDSCreated      ='Jeu de données résumé créé';
+  sRegTerm              ='Terme';
+  sRegTitle             ='Analyse de régression';
+  sNoData               ='Pas de données';
+  sRegNoconWithLogistic ='Le modèle logistique doit avoir une constante';
+  sRegNoconWithPoly     ='Le modèle polynomial doit avoir une constante';
+  sRegTooManyTypes      ='Trop de types de régression';
+  sRegTypeNotFound      ='aucun type de régression n''a été spécifié';
+  sDepVarBinary         ='La variable dépendante doit avoir les valeurs 0 et 1 seulement';
+  sDepVarUnbalanced     ='Attention : la variable dépendante n''est pas équilibrée';
+  sConstant             ='Constante';
+  sVariance             ='Variance';
+  sWaldChi2             ='Wald ' + #$CE#$A7#$C2#$B2;
+  sOddsRatios           ='Rapports de cotes';
+  sCIAbbr               ='IC';
+  sAnd                  ='et';
+  sOddsRatio            ='Rapport de cotes';
+  sLowerLimit           ='Limite inférieure';
+  sUpperLimit           ='Limite supérieure';
+  sAnalysisDeviance     ='Analyse de la déviance';
+  sDeviance             ='Déviance';
+  sRunDate              ='Date d''exécution';
+  sPseudoR2             ='pseudo-R' + #$C2#$B2;
+  sErrMatrixInversion   ='Erreur d''inversion de la matrice';
+  sErrMatMult           = 'Matrix multiplication error';
+  }
   sANOVA                = 'Analysis of Variance';
   sDegFreedomAbbr       = 'df';
   sFailedErr            = 'failed with error';
@@ -20,13 +67,13 @@ resourcestring
   sStErrorAbbr          = 's.e.';
   sSumSquares           = 'Sum of Squares';
   sTotal                = 'Total';
-  sRegAdjusted          = 'Adjusted';
+  sRegAdjustedR2        = 'Adjusted R' + #$C2#$B2;
   sRegCoefficient       = 'Coefficient';
   sRegCommand           = 'Regression';
   sRegErrMatrixMult     = 'Matrix multiplication error';
   sRegFNotSupported     = 'F-test is not supported with no constant term';
-  sRegFdf1              = ' on ';
-  sRegFdf2              = ' and ';
+  sRegFdf1              = 'on';
+  sRegFdf2              = 'and';
   sRegIntercept         = 'Intercept';
   sRegModel             = 'Model';
   sRegResidual          = 'Residual';
@@ -42,21 +89,22 @@ resourcestring
   sRegTooManyTypes      = 'Too many regression types';
   sRegTypeNotFound      = 'Regression type not found';
   sDepVarBinary         = 'Dependant variable must have values 0 and 1 only';
-  sDepVarUnbalanced = 'Warning: dependant variable is unbalanced';
-  sConstant = 'Constant';
-  sVariance = 'Variance';
-  sWaldChi2 = 'Wald Chi' + #$C2#$B2;
-  sOddsRatios = 'Odds ratios';
-  sCIAbbr = 'CI';
-  sAnd = 'and';
-  sOddsRatio = 'Odds ratio';
-  sLowerLimit = 'Lower limit';
-  sUpperLimit = 'Upper limit';
-  sAnalysisDeviance = 'Analysis of Deviance';
-  sDeviance = 'Deviance';
-  sRunDate = 'Run date';
-  sPseudoR2 = 'pseudo-R' + #$C2#$B2;
-  sErrMatrixInversion = 'Error inverting matrix';
+  sDepVarUnbalanced     = 'Warning: dependant variable is unbalanced';
+  sConstant             = 'Constant';
+  sVariance             = 'Variance';
+  sWaldChi2             = 'Wald ' + #$CE#$A7#$C2#$B2;
+  sOddsRatios           = 'Odds ratios';
+  sCIAbbr               = 'CI';
+  sAnd                  = 'and';
+  sOddsRatio            = 'Odds ratio';
+  sLowerLimit           = 'Lower limit';
+  sUpperLimit           = 'Upper limit';
+  sAnalysisDeviance     = 'Analysis of Deviance';
+  sDeviance             = 'Deviance';
+  sRunDate              = 'Run date';
+  sPseudoR2             = 'pseudo-R' + #$C2#$B2;
+  sErrMatrixInversion   = 'Error inverting matrix';
+  sErrMatMult           = 'Matrix multiplication error';
 
 const
   MinVarianceResidual = 1.0E-25;
@@ -262,9 +310,9 @@ begin
         begin
           V.Cell[0,0].Text := sRegResidualVariance + ':' + StatFloatDisplay(StatFmt, FRegFit.Vr);
           V.Cell[0,1].Text := sRegR2 + ':' + StatFloatDisplay(StatFmt, FRegFit.R2) +
-              '  ' + sRegAdjusted + sRegR2 + ':' + StatFloatDisplay(StatFmt, FRegFit.R2a);
-          V.Cell[0,2].Text := 'F:' + StatFloatDisplay(StatFmt, FRegFit.F) +
-              sRegFdf1 + FRegFit.Nu1.ToString + sRegFdf2 +
+              '  ' + sRegAdjustedR2 + ':' + StatFloatDisplay(StatFmt, FRegFit.R2a);
+          V.Cell[0,2].Text := 'F:' + StatFloatDisplay(StatFmt, FRegFit.F) + ' ' +
+              sRegFdf1 + ' ' + FRegFit.Nu1.ToString + ' ' + sRegFdf2 +  ' ' +
               FRegFit.Nu2.ToString + ' ' + sDegFreedomAbbr + ' (' +
               FormatP(FFp, true) + ')';
         end
