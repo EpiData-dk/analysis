@@ -116,7 +116,11 @@ begin
   inherited Create(AExecutor, AOutputCreator, ST);
   FDoAnova := false;
   FDoVariance := false;
-  FConstant := true;
+  if not FConstant then
+    begin
+      FConstant := true;
+      FOutputCreator.DoWarning(sRegNoConWithLogistic);
+    end;
 end;
 
 function TRegressLogistic.GetRegressModelClass(): TRegressClass;
@@ -133,14 +137,15 @@ begin
   for i := 0 to high(FDepV) do
     if (FDepV[i] = 1) then
       inc(n)
-    else if (FDepV[i] <>0) then
+    else if (FDepV[i] <> 0) then
       begin
         FExecutor.Error(sDepVarBinary);
         FDataError := true;
         exit;
       end;
-  if (n*10 < length(FDepV)) or (n > 0.9 * length(FDepv)) then
-    FOutputCreator.DoWarning(sDepVarUnbalanced+'.');
+  if (n < 0.1 * FObs) or (n > 0.9 * FObs) then
+    FOutputCreator.DoWarning(sDepVarUnbalanced +
+        ' p(' + FDepVName + '=1) ~ ' + ((100 * n) div FObs).ToString + '%');
 end;
 
 procedure TRegressLogistic.SetFormula(VarNames: TStrings);

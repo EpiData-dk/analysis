@@ -25,7 +25,8 @@ const
      #$E2#$81#$B6,
      #$E2#$81#$B7,
      #$E2#$81#$B8,
-     #$E2#$81#$B9
+     #$E2#$81#$B9,
+     #$E2#$81#$BB  // -
     );
 
 type
@@ -62,7 +63,11 @@ begin
   inherited Create(AExecutor, AOutputCreator, ST);
   ST.HasOption('poly', opt);
   FDegree := opt.Expr.AsInteger;
-  FConstant := true;
+  if not FConstant then
+    begin
+      FConstant := true;
+      FOutputCreator.DoWarning(sRegNoConWithPoly);
+    end;
 end;
 
 function TRegressPolynomial.GetRegressModelClass(): TRegressClass;
@@ -196,7 +201,7 @@ begin
     ix := ix div 10;
   until ix = 0;
   if i < 0 then
-    result := #$E2#$81#$BB + result;
+    result := superScriptNum[10] + result;
 end;
 
 initialization

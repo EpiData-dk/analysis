@@ -157,6 +157,8 @@ uses
   generalutils, options_utils, umeansd;
 
 constructor TRegressModel.Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand);
+var
+  opt: TOption;
 begin
   FObs := 0;
   FExecutor := AExecutor;
@@ -168,7 +170,7 @@ begin
   FValuelabelOutput    := ValueLabelTypeFromOptionList(ST.Options, FExecutor.SetOptions);
   FDoVariance := true;
   FDoAnova := ST.HasOption('anova');
-  FConstant := not ST.HasOption('nocon');
+  FConstant := not ST.HasOption(['nocon','noc'],opt);
   FDataError := false;
 end;
 
