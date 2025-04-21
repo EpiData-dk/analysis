@@ -96,6 +96,7 @@ begin
     if (Model.DataError) then
       begin
         DF.Free;
+        Model.Destroy;
         Exit;
       end;
     for i := 1 to nVar - 1 do
@@ -103,6 +104,7 @@ begin
     if (Model.DataError) then
       begin
         DF.Free;
+        Model.Destroy;
         Exit;
       end;
     msg := Model.Estimate();
@@ -127,9 +129,10 @@ begin
       end
   else
     FExecutor.Error(msg);
-    DF.Free;
   finally
-end;
+    DF.Free;
+    Model.Destroy;
+  end;
 
 end;
 

@@ -176,6 +176,7 @@ type
               const vars: array of UTF8String; const vtypes: array of TEpiFieldType);
   public
     constructor Create(AExecutor: TExecutor; AOutputCreator: TOutputCreator; ST: TRegressCommand); virtual;
+    destructor Destroy;
     procedure  SetFormula(VarNames: TStrings); virtual;
     procedure  SetDepV(F: TEpiField); virtual;
     procedure  SetIndepV(F: TEpiField; Ix: Integer); virtual;
@@ -220,6 +221,11 @@ begin
   FDoAnova := ST.HasOption('anova');
   FConstant := not ST.HasOption(['nocon','noc'],opt);
   FDataError := false;
+end;
+
+destructor TRegressModel.Destroy;
+begin
+  inherited Destroy;
 end;
 
 procedure TRegressModel.SetFormula(VarNames: TStrings);
