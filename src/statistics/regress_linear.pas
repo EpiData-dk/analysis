@@ -55,7 +55,7 @@ begin
   Msg := '';
   Result := MatVecMul(FIndepV, FCoeff, 0);
   if (MathErr <> MathOk) then
-    Msg := 'Matrix multiplication error' + ' : ' + MathErrMessage;
+    Msg := sErrMatMult + ' : ' + MathErrMessage;
 end;
 
 procedure TRegressLinear.SetFormula(VarNames: TStrings);

@@ -24,7 +24,6 @@ resourcestring
   sRegAdjustedR2        ='R' + #$C2#$B2 + ' Ajusté';
   sRegCoefficient       ='Coefficient';
   sRegCommand           ='Régression';
-  sRegErrMatrixMult     ='Erreur de multiplication de matrice';
   sRegFNotSupported     ='Le test F n''est pas pris en charge sans terme constant';
   sRegFdf1              ='sur';
   sRegFdf2              ='et';
@@ -37,6 +36,7 @@ resourcestring
   sRegSumDSCreated      ='Jeu de données résumé créé';
   sRegTerm              ='Terme';
   sRegTitle             ='Analyse de régression';
+  sRegUniqueVars        ='Les variables ne sont pas unique';
   sNoData               ='Pas de données';
   sRegNoconWithLogistic ='Le modèle logistique doit avoir une constante';
   sRegNoconWithPoly     ='Le modèle polynomial doit avoir une constante';
@@ -58,7 +58,7 @@ resourcestring
   sRunDate              ='Date d''exécution';
   sPseudoR2             ='pseudo-R' + #$C2#$B2;
   sErrMatrixInversion   ='Erreur d''inversion de la matrice';
-  sErrMatMult           = 'Matrix multiplication error';
+  sErrMatMult           ='Erreur de multiplication de la matrice';
   }
   sANOVA                = 'Analysis of Variance';
   sDegFreedomAbbr       = 'df';
@@ -70,7 +70,6 @@ resourcestring
   sRegAdjustedR2        = 'Adjusted R' + #$C2#$B2;
   sRegCoefficient       = 'Coefficient';
   sRegCommand           = 'Regression';
-  sRegErrMatrixMult     = 'Matrix multiplication error';
   sRegFNotSupported     = 'F-test is not supported with no constant term';
   sRegFdf1              = 'on';
   sRegFdf2              = 'and';
@@ -83,6 +82,7 @@ resourcestring
   sRegSumDSCreated      = 'Summary dataset created';
   sRegTerm              = 'Term';
   sRegTitle             = 'Regression Analysis';
+  sRegUniqueVars        = 'Regress command requires unique variable names';
   sNoData               = 'No data';
   sRegNoconWithLogistic = 'Logistic model must have a constant';
   sRegNoconWithPoly     = 'Polynomial model must have a constant';

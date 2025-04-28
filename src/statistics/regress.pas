@@ -211,7 +211,7 @@ var
 begin
   CheckList := TStringList.Create;
   CheckList.Sorted := true;
-  Result := CheckStrings(Varnames, 'Regress command requires unique variable names: ');
+  Result := CheckStrings(Varnames, sRegUniqueVars + ': ');
 end;
 
 end.

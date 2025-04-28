@@ -178,14 +178,17 @@ begin
   T := FOutputCreator.AddTable;
   T.Header.Text := LineEnding + sRegTitle + LineEnding + LineEnding +
                    sRegModel + ' : ' + FModel + LineEnding + LineEnding ;
-  T.ColCount := 5;
+  T.ColCount := 8;
   T.RowCount := Length(FB) + 1;
   // Header row
   T.Cell[0,0].Text := sRegTerm;
   T.Cell[1,0].Text := sRegCoefficient;
-  T.Cell[2, 0].Text := sVariance;
-  T.Cell[3, 0].Text := sWaldChi2;
+  T.Cell[2,0].Text := sVariance;
+  T.Cell[3,0].Text := sWaldChi2;
   T.Cell[4,0].Text := 'p';
+  T.Cell[5,0].Text := sOddsRatio;
+  T.Cell[6,0].Text := '(' + IntToStr(FConf) + '% ' + sCIAbbr;
+  T.Cell[7,0].Text := sOddsRatio + ')';
   offset := 1;
 
   for i := 0 to High(FB) do begin
@@ -194,23 +197,13 @@ begin
     T.Cell[2,offset].Text := StatFloatDisplay(StatFmt, FB[i].se);
     T.Cell[3,offset].Text := StatFloatDisplay(StatFmt, FB[i].t);
     T.Cell[4,offset].Text := FormatP(FB[i].p, false);
+    if i > 0 then
+      begin
+        T.Cell[5,offset].Text := StatFloatDisplay(StatFmt, F_OR[i].oddsRatio);
+        T.Cell[6,offset].Text := StatFloatDisplay(StatFmt, F_OR[i].llOR);
+        T.Cell[7,offset].Text := StatFloatDisplay(StatFmt, F_OR[i].ulOR);
+      end;
     offset += 1;
-  end;
-
-  O := FOutputCreator.AddTable;
-  O.Header.Text := sOddsRatios+' '+sAnd+' ' + IntToStr(FConf) + '% '+sCIAbbr;
-  O.ColCount := 4;
-  O.RowCount := Length(FB);
-  O.Cell[0,0].Text := sRegTerm;
-  O.Cell[1, 0].Text := sOddsRatio;
-  O.Cell[2, 0].Text := sLowerLimit;
-  O.Cell[3, 0].Text := sUpperLimit;
-
-  for i := 1 to High(F_OR) do begin
-    O.Cell[0,i].Text := FB[i].pLabel;
-    O.Cell[1,i].Text := StatFloatDisplay(StatFmt, F_OR[i].oddsRatio);
-    O.Cell[2,i].Text := StatFloatDisplay(StatFmt, F_OR[i].llOR);
-    O.Cell[3,i].Text := StatFloatDisplay(StatFmt, F_OR[i].ulOR);
   end;
 
   V := FOutputCreator.AddTable;
@@ -250,7 +243,7 @@ begin
   Prefix := '$r_';
   FExecutor.AddResultConst(Prefix + 'model',    ftString).AsStringVector[0]   := FModel;
   FExecutor.AddResultConst(Prefix + 'nIndVar',  ftInteger).AsIntegerVector[0] := FParamCt-1;
-  FExecutor.AddResultConst(Prefix + 'pR2',      ftFloat).AsFloatVector[0]     := lrRegTest.pR2;
+  FExecutor.AddResultConst(Prefix + 'pseudoR2', ftFloat).AsFloatVector[0]     := lrRegTest.pR2;
 
   FExecutor.AddResultConst(Prefix + 'devReg',   ftFloat).AsFloatVector[0]   := lrRegTest.Dm;
   FExecutor.AddResultConst(Prefix + 'devRes',   ftFloat).AsFloatVector[0]   := lrRegTest.Dr;
