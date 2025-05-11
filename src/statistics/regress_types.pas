@@ -24,11 +24,13 @@ resourcestring
   sRegAdjustedR2        ='R' + #$C2#$B2 + ' Ajusté';
   sRegCoefficient       ='Coefficient';
   sRegCommand           ='Régression';
+  sRegErrorFit          ='Erreur dans la fonction d''ajustement de la régression';
   sRegFNotSupported     ='Le test F n''est pas pris en charge sans terme constant';
   sRegFdf1              ='sur';
   sRegFdf2              ='et';
   sRegIntercept         ='Intercept';
   sRegModel             ='Modèle';
+  sRegNoConvergence     ='Le modèle Logistique ne converge pas';
   sRegResidual          ='Résidu';
   sRegResidualVariance  ='Variance résiduelle';
   sRegR2                ='R' + #$C2#$B2;
@@ -70,10 +72,12 @@ resourcestring
   sRegAdjustedR2        = 'Adjusted R' + #$C2#$B2;
   sRegCoefficient       = 'Coefficient';
   sRegCommand           = 'Regression';
+  sRegErrorFit          = 'Error in regression fit function';
   sRegFNotSupported     = 'F-test is not supported with no constant term';
   sRegFdf1              = 'on';
   sRegFdf2              = 'and';
   sRegIntercept         = 'Intercept';
+  sRegNoConvergence     = 'Logistic model did not converge';
   sRegModel             = 'Model';
   sRegResidual          = 'Residual';
   sRegResidualVariance  = 'Residual variance';
@@ -280,7 +284,7 @@ var
 begin
   T := FOutputCreator.AddTable;
   T.Header.Text := LineEnding + sRegTitle + LineEnding + LineEnding +
-                   sRegModel + ' : ' + FModel + LineEnding + LineEnding ;
+                   sRegModel + ': ' + FModel + LineEnding + LineEnding ;
   T.ColCount := 5;
   Params := Length(FB) - 1;
   T.RowCount := Params + 2;

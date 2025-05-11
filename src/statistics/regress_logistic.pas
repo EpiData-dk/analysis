@@ -43,6 +43,8 @@ const
   ('RunDate', 'DepVar', 'Model', 'Deviance', 'df', 'p', 'pR2');
   sumVarTypes: array of TEpiFieldType =
   (ftString, ftString, ftString, ftFloat, ftInteger, ftFloat, ftFloat);
+  maxIterations: Integer = 50;
+  convergeTolerance: Float = 0.0000000001;
 
 type
 
@@ -76,13 +78,14 @@ protected
                        MaxIter  = max. number of iterations
                        Tol      = tolerance on parameters
     Output parameters: B        = regression parameters
-                       V        = inverse matrix }
-  procedure epiLogiFit(X        : TMatrix;
+                       V        = inverse matrix
+    returns TRUE if model converged}
+  function epiLogiFit(X        : TMatrix;
                        Y        : TVector;
                        MaxIter  : Integer;
                        Tol      : Float;
                  out   B        : TVector;
-                 out   V        : TMatrix);
+                 out   V        : TMatrix): Boolean;
   function epiLogiFunc(X: TMatrix; B : TVector) : TVector;
   function epiLogiIterate(X: TMatrix; Y: TVector; W: TVector; out XtSX:TMatrix): TVector;
   procedure epiLogiRegTest(Y: TVector;   // Y
@@ -177,7 +180,7 @@ var
 begin
   T := FOutputCreator.AddTable;
   T.Header.Text := LineEnding + sRegTitle + LineEnding + LineEnding +
-                   sRegModel + ' : ' + FModel + LineEnding + LineEnding ;
+                   sRegModel + ': ' + FModel + LineEnding + LineEnding ;
   T.ColCount := 8;
   T.RowCount := Length(FB) + 1;
   // Header row
@@ -221,7 +224,7 @@ begin
   V.Cell[0, 2].Text := sRegResidual;
   V.Cell[1,2].Text := (FObs - FParamCt).ToString;
   V.Cell[2,2].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dr);
-  V.Cell[0,3].Text := 'Total';
+  V.Cell[0,3].Text := sTotal;
   V.Cell[1,3].Text := (FObs - 1).ToString;
   V.Cell[2,3].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dn);
   V.Footer.Text    := 'McFadden ' + sPseudoR2 + ' = ' + StatFloatDisplay(StatFmt,
@@ -344,7 +347,7 @@ begin
     Fields.FieldByName['RunDate'].AsDateTime[Index] := now;
     Fields.FieldByName['Model'].AsString[Index] := FModel;
     Fields.FieldByName['Deviance'].AsFloat[Index] := lrRegTest.Dm;
-    Fields.FieldByName['df'].AsInteger[Index] := FParamCt;
+    Fields.FieldByName['df'].AsInteger[Index] := FParamCt - 1;
     Fields.FieldByName['p'].AsFloat[Index] := lrRegTest.p;
     Fields.FieldByName['pR2'].AsFloat[Index] := lrRegTest.pR2;
   end;
@@ -390,16 +393,18 @@ var
   InV: TMatrix;
   i: Integer;
   zConf: Float;
+  converged: Boolean;
 begin
   FConstant := true;
   DimMatrix(Inv, FParamCt-1, FParamCt-1);
   // get betas
-  epiLogiFit(FIndepV, FDepV, 60, 0.000000001, FCoeff, InV);
-  if (MathErr = MathOk) then
+  converged := epiLogiFit(FIndepV, FDepV, maxIterations, convergeTolerance, FCoeff, InV);
+  if (converged and (MathErr = MathOk)) then
     Result := ''
   else
     begin
-      FExecutor.Error(Result);
+      if (not converged) then
+        result := sRegNoConvergence + ': ' + FModel;
       exit;
     end;
   // get fitted values
@@ -460,7 +465,7 @@ end;
     result := MatVecMul(X, B, 0);
     if (MathErr <> MathOK) then
       begin
-        FExecutor.Error('Error in epiLogiFit: ' + MathErrMessage);
+        FExecutor.Error(sRegErrorFit + ': ' + MathErrMessage);
         result := nil;
         FDataError := true;
         exit;
@@ -520,31 +525,33 @@ end;
     exit;
   end;
 
-  procedure TRegressLogistic.epiLogiFit(X: TMatrix; Y: TVector;
-            MaxIter: Integer; Tol: Float; out B: TVector; out V: TMatrix);
+  function TRegressLogistic.epiLogiFit(X: TMatrix; Y: TVector;
+            MaxIter: Integer; Tol: Float; out B: TVector; out V: TMatrix): Boolean;
   var
     i, l: Integer;
     M: TVector;
     D: TVector;
     T: Float;
   begin
-    if MaxIter = 0 then Exit;
     l := FParamCt-1;
     DimVector(M,l);
     DimVector(D,l);
     M[0] := 1;
     for i := 1 to high(M) do
       M[i] := 0;
-    for i := 0 to MaxIter do
+    for i := 1 to MaxIter do
       begin
         B := epiLogiIterate(X, Y, M, V);
         D := M - B;
         M := B;
         VecAbs(D, 0, l);
         T := max(D);
+        result := not FDataError;
         if (T < Tol) or (FDataError) then
           exit;
       end;
+    // did not converge
+    result := false;
   end;
 
   initialization
