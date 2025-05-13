@@ -110,6 +110,7 @@ begin
     msg := Model.Estimate();
     if (msg = '') then
       begin
+        ST.ExecResult := csrSuccess;
         if (ST.HasOption('fit',opt)) then
           begin
             DF.Free;

@@ -2353,6 +2353,7 @@ begin
   Result.Insert('logit',  [rtUndefined]); // univariate logistic model
   Result.Insert('fit',  [rtObject], [evtField], [evfInternal, evfAsObject]); // variable for estimates
   Result.Insert('summary', ['sum'], [rtUndefined]); // save summary of deviance
+  Result.Insert('debug', [rtUndefined]); // display debug information
   Result.Insert('q',  [rtUndefined]);
   AddDecimalOptions(Result);
 end;

@@ -44,7 +44,7 @@ const
   sumVarTypes: array of TEpiFieldType =
   (ftString, ftString, ftString, ftFloat, ftInteger, ftFloat, ftFloat);
   maxIterations: Integer = 50;
-  convergeTolerance: Float = 0.0000000001;
+  convergeTolerance: Float = 1E-10;
 
 type
 
@@ -77,6 +77,7 @@ protected
                        Lb, Ub   = array bounds
                        MaxIter  = max. number of iterations
                        Tol      = tolerance on parameters
+                       Iter     = show iterations if true
     Output parameters: B        = regression parameters
                        V        = inverse matrix
     returns TRUE if model converged}
@@ -84,6 +85,7 @@ protected
                        Y        : TVector;
                        MaxIter  : Integer;
                        Tol      : Float;
+                       Iter     : Boolean;
                  out   B        : TVector;
                  out   V        : TMatrix): Boolean;
   function epiLogiFunc(X: TMatrix; B : TVector) : TVector;
@@ -398,7 +400,7 @@ begin
   FConstant := true;
   DimMatrix(Inv, FParamCt-1, FParamCt-1);
   // get betas
-  converged := epiLogiFit(FIndepV, FDepV, maxIterations, convergeTolerance, FCoeff, InV);
+  converged := epiLogiFit(FIndepV, FDepV, maxIterations, convergeTolerance, FDebug, FCoeff, InV);
   if (converged and (MathErr = MathOk)) then
     Result := ''
   else
@@ -526,7 +528,7 @@ end;
   end;
 
   function TRegressLogistic.epiLogiFit(X: TMatrix; Y: TVector;
-            MaxIter: Integer; Tol: Float; out B: TVector; out V: TMatrix): Boolean;
+            MaxIter: Integer; Tol: Float; Iter: Boolean; out B: TVector; out V: TMatrix): Boolean;
   var
     i, l: Integer;
     M: TVector;
@@ -547,6 +549,8 @@ end;
         VecAbs(D, 0, l);
         T := max(D);
         result := not FDataError;
+        if (FDebug) then
+          FOutputCreator.DoInfoShort('Iteration ' + i.ToString + ' T=' + T.ToString);
         if (T < Tol) or (FDataError) then
           exit;
       end;

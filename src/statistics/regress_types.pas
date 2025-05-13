@@ -148,6 +148,7 @@ type
     FValuelabelOutput: TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
     FStatFmt: String;
+    FDebug: Boolean;
 
     { Data }
     FDepV: TVector;
@@ -225,6 +226,7 @@ begin
   FDoAnova := ST.HasOption('anova');
   FConstant := not ST.HasOption(['nocon','noc'],opt);
   FDataError := false;
+  FDebug := ST.HasOption('debug');
 end;
 
 destructor TRegressModel.Destroy;

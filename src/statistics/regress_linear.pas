@@ -83,6 +83,7 @@ function TRegressLinear.Estimate(): UTF8String;
 var
   InV: TMatrix;
   i, i0: Integer;
+  cf: Float;
 begin
   DimMatrix(Inv, FParamCt-1, FParamCt-1);
   // get betas
@@ -104,7 +105,11 @@ begin
   // get residuals
   DimVector(FResidual,FObs - 1);
   VecSubtr(FFitted, FDepV, FResidual);
-  RegTest(FDepV, FFitted, 0, FObs-1, InV, 0, FParamCt-1, FRegFit);
+  if (FConstant) then
+    i0 := 0
+  else
+    i0 := 1;
+  RegTest(FDepV, FFitted, 0, FObs-1, InV, i0, FParamCt-1, FRegFit);
   if (FConstant and (FRegFit.Vr > MinVarianceResidual)) then
     FFp := 1 - FSnedecor(FRegFit.Nu1, FRegFit.Nu2, FRegFit.F)
   else
@@ -114,10 +119,6 @@ begin
     end;
   // move this to regress_types? Is it always the same? It is for linear models.
   // Result := inherited Estimate();
-  if (FConstant) then
-    i0 :=  0
-  else
-    i0 := 1;
   for i:= i0 to FParamCt-1 do begin
     FB[i].Estimate := FCoeff[i];
     FB[i].Se := sqrt(Inv[i,i]);
