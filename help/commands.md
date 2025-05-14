@@ -135,6 +135,10 @@ If no quote characters is set, the default " (double quote) is used to identify 
 
 > Note: In files with all string data and where first line is known to be variable names, the program has a high probability of guessing incorrectly whether first line is headers or not. In such cases please use this option to ensure correct reading of data.
 
+- `!nouc`
+
+  When reading a text or csv data file, all string variables will be converted to lower case. This may be useful for sorting data. However, be sure that upper and lower case text fiels have the same meaning.
+  
 - `!pw := "<string>"`
 
  If you use this option with a password protected file (.epx | .epz | .rec), reading will occur directly, otherwise you will be prompted for a password.
