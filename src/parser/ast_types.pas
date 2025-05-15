@@ -87,6 +87,7 @@ type
     stDrop,
     stKeep,
     stMeans,
+    stRegress,
     stAggregate,
     stUse,
     stFreq,
@@ -133,7 +134,7 @@ const
   ASTGraphCommands: TASTStatementTypes =
       [stScatter, stSurvival, stEpiCurve, stHistogram, stBarchart, stPareto];
   ASTVLabelCommands: TASTStatementTypes =
-      [stTables, stCTable, stBrowse, stAggregate, stFreq, stDescribe, stMeans,
+      [stTables, stCTable, stBrowse, stAggregate, stFreq, stDescribe, stMeans, stRegress,
        stScatter, stSurvival, stEpiCurve, stHistogram, stBarchart, stPareto];
 
 type

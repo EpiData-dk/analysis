@@ -1,0 +1,114 @@
+unit regress_contribution;
+
+
+{ TODO
+  Selected variables in combo boxes must be removed from independent variables tree
+}
+{$mode objfpc}{$H+}
+
+interface
+
+uses
+  Classes, SysUtils, stat_dialog_contribution, ExtCtrls, executor,
+  regress_variables_model, regress_primaryoption_model,
+  regress_statisticoptions_model;
+
+type
+
+  { TRegressContribution }
+
+  TRegressContribution = class(IStatDialogContribution)
+  private
+    FPrimaryOptionsModel: TRegressPrimaryOptionModel;
+    FStatisticsOptionsModel: TRegressStatisticOptionsModel;
+    FVariablesModel: TRegressVariableModel;
+    function CreateVariablesView(Owner: TComponent; Executor: TExecutor): IStatDialogView;
+    function CreatePrimaryOptionView(Owner: TComponent): IStatDialogView;
+    function CreateStatisticOptionView(Owner: TComponent): IStatDialogView;
+  public
+    function GenerateScript(): UTF8String;
+    function GetCaption(): UTF8String;
+    function GetHelpText(): UTF8String;
+    function GetViews(Owner: TComponent; Executor: TExecutor): TStatDialogContributionViewList;
+  end;
+
+implementation
+
+uses
+  regress_variables_view, regress_primaryoption_view, regress_statisticoptions_view;
+
+function TRegressContribution.CreateVariablesView(Owner: TComponent;
+  Executor: TExecutor): IStatDialogView;
+var
+  View: TRegressVariableView;
+begin
+  View := TRegressVariableView.Create(Owner);
+  FVariablesModel := TRegressVariableModel.Create(Executor);
+
+  View.SetModel(FVariablesModel);
+
+  Result := View;
+end;
+
+function TRegressContribution.CreatePrimaryOptionView(Owner: TComponent
+  ): IStatDialogView;
+var
+  View: TRegressStatPrimaryOptionsView;
+begin
+  View := TRegressStatPrimaryOptionsView.Create(Owner);
+  FPrimaryOptionsModel := TRegressPrimaryOptionModel.Create();
+
+  View.SetModel(FPrimaryOptionsModel);
+
+  Result := View;
+end;
+
+function TRegressContribution.CreateStatisticOptionView(
+  Owner: TComponent): IStatDialogView;
+var
+  View: TRegressStatisticOptionsView;
+begin
+  View := TRegressStatisticOptionsView.Create(Owner);
+  FStatisticsOptionsModel := TRegressStatisticOptionsModel.Create();
+
+  View.SetModel(FStatisticsOptionsModel);
+
+  Result := View;
+end;
+
+function TRegressContribution.GenerateScript(): UTF8String;
+begin
+  result := 'regress ' +
+    FVariablesModel.GenerateScript() +
+    FPrimaryOptionsModel.GenerateScript() +
+    FStatisticsOptionsModel.GenerateScript() +
+    ';';
+end;
+
+function TRegressContribution.GetCaption(): UTF8String;
+begin
+  result := 'Regression';
+end;
+
+function TRegressContribution.GetHelpText(): UTF8String;
+begin
+  result :=
+    '1. Select type of regression and variables' + LineEnding +
+    '2: Select labels and other options' + LineEnding +
+    '3: Run, Execute or Paste command';
+end;
+
+function TRegressContribution.GetViews(Owner: TComponent;
+  Executor: TExecutor): TStatDialogContributionViewList;
+begin
+  result := TStatDialogContributionViewList.Create;
+  result.add(CreateVariablesView(Owner, Executor));
+  result.Add(CreatePrimaryOptionView(Owner));
+  result.Add(CreateStatisticOptionView(Owner));
+end;
+
+initialization
+  RegisterStatDialogContribution(TRegressContribution.Create);
+
+end.
+

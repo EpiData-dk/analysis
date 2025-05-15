@@ -15,13 +15,13 @@ uses
   Interfaces, sysutils, Forms,
 
   // Required EpiData units
-  ana_procs, wizard_form, datamodule, main, script_runner,
+  ana_procs, wizard_form, datamodule, main, script_runner, means, regress_types,
 
   // ONLY ADD Stat Dialogs HERE
   freq_contribution, tables_contribution, ctable_contribution,
-  means_contribution, describe_contribution, epicurve_contribution,
-  histogram_contribution, scatter_contribution, survival_contribution,
-  barchart_contribution, pareto_contribution,
+  means_contribution, describe_contribution, regress_contribution,
+  epicurve_contribution, histogram_contribution, scatter_contribution,
+  survival_contribution, barchart_contribution, pareto_contribution,
 
   // ONLY ADD GRAPH COMMANDS HERE (delete all other automatically added units).
    scatter, barchart, survival, epicurve, histogram, pareto;
