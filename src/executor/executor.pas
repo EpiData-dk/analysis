@@ -211,6 +211,7 @@ type
     // Variable Commands
     procedure ExecBrowse(ST: TCustomVariableCommand); virtual;
     procedure ExecMean(ST: TCustomVariableCommand); virtual;
+    procedure ExecRegress(ST: TCustomVariableCommand); virtual;
     procedure ExecFreq(ST: TCustomVariableCommand); virtual;
     procedure ExecDescribe(ST: TCustomVariableCommand); virtual;
     procedure ExecSort(ST: TCustomVariableCommand); virtual;
@@ -343,7 +344,7 @@ uses
   aggregate, recode,
 
   // STATISTICS
-  means, freq, tables, ctable, describe;
+  means, freq, tables, ctable, describe, regress;
 
 type
   EExecutorException = class(Exception);
@@ -3394,6 +3395,21 @@ begin
   M.Free;
 end;
 
+procedure TExecutor.ExecRegress(ST: TCustomVariableCommand);
+var
+  R: TRegress;
+  L: TStrings;
+  DF: TEpiDataFile;
+  opt: TOption;
+  HasBy: Boolean;
+begin
+  ST.ExecResult := csrFailed;
+
+  R := TRegress.Create(Self, FOutputCreator);
+  R.ExecRegress(TRegressCommand(ST));
+  R.Free;
+end;
+
 procedure TExecutor.ExecFreq(ST: TCustomVariableCommand);
 var
   L: TStrings;
@@ -4072,6 +4088,9 @@ begin
 
           stMeans:
             ExecMean(TCustomVariableCommand(ST));
+
+          stRegress:
+            ExecRegress(TCustomVariableCommand(ST));
 
           stDescribe:
             ExecDescribe(TCustomVariableCommand(ST));
