@@ -283,7 +283,10 @@ begin
         inc(idx);
       end;
       ytot += ysum;
-      zbar[i] := ysum / N.AsFloat[i];
+      if (N.AsInteger[i] > 0) then
+        zbar[i] := ysum / N.AsFloat[i]
+      else
+        FExecutor.Error('Levene test error - n=1 in stratum ' + i.ToString);
     end;
     zz := ytot / float(obs);
     // numerator sum
@@ -302,11 +305,14 @@ begin
         inc(idx);
       end;
     end;
-    with AnovaRecord do
-    begin
-      W := (float(obs - k) * z1) / (float(lStrata) * z2);
-      pW := fdist(W, lStrata, obs - k);
-    end;
+    z1 := float(obs - k) * z1;
+    z2 := float(lStrata) * z2;
+    if (z2 > 0) then
+      with AnovaRecord do
+      begin
+        W := (float(obs - k) * z1) / (float(lStrata) * z2);
+        pW := fdist(W, lStrata, obs - k);
+      end;
   end; // with ResultDF
 
   // Bartlett's test is sensitive to non-normality of the data
