@@ -41,7 +41,7 @@ type
     FValuelabelOutput: TEpiGetValueLabelType;
     FVariableLabelOutput: TEpiGetVariableLabelType;
     procedure FillDescriptor(ResultDF: TMeansDatafile; CountVar: TEpiField; SIdx, EIdx: Integer; ASum: EpiFloat);
-    procedure DoCalcAnova(ResultDF: TMeansDatafile);
+    procedure DoCalcAnova(ResultDF: TMeansDatafile; CountVar: TEpiField);
   protected
     FExecutor: TExecutor;
     FOutputCreator: TOutputCreator;
@@ -180,11 +180,14 @@ begin
   end;
 end;
 
-procedure TMeans.DoCalcAnova(ResultDF: TMeansDatafile);
+procedure TMeans.DoCalcAnova(ResultDF: TMeansDatafile; CountVar: TEpiField);
 var
-  i, k, lStrata: Integer;
+  i, j, k, idx, lStrata: Integer;
   Obs: Int64;
+  ySum, yTot, val,
+  m, z1, z2, zz,
   ASSW, ASST, Tval: EpiFloat;
+  z, zbar: array of EpiFloat;
   TPoolVar, TSumLogs, TSumNs: EpiFloat;
 begin
   if ResultDF.StratifyVarText = '' then
@@ -252,29 +255,85 @@ begin
         F := TEpiFloatField.DefaultMissing;
         BART := TEpiFloatField.DefaultMissing;
         PBART := TEpiFloatField.DefaultMissing;
+        W := TEpiFloatField.DefaultMissing;
+        PW := TEpiFloatField.DefaultMissing;
         exit; // Skip remaining statistics
       end
     else
       PROB := fdist(F, DFB, DFW);
   end;
 
-  // Should use Levene test of homogeneity of variances
-  // Bartlett's test is simpler, but is sensitive to non-normality of the data
+  k := lStrata + 1; // number of strata; lStrata fills in for k-1
+
+  // Levene's test of homogeneity of variances
+  // ref: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35a.htm
+  // This is the 'medians' version of Levene's test
+  // Calculate Zi
+  with ResultDF do begin
+    setLength(zbar, k);
+    setLength(z, Obs);
+    idx := 0;
+    ytot := 0;
+    for i := 0 to lStrata do begin
+      ysum := 0;
+      m := Median.AsFloat[i];
+      for j := 0 to N.AsInteger[i] - 1 do begin
+        z[idx] := abs(CountVar.AsFloat[idx] - m);
+        ysum += z[idx];
+        inc(idx);
+      end;
+      ytot += ysum;
+      zbar[i] := ysum / N.AsFloat[i];
+    end;
+    zz := ytot / float(obs);
+    // numerator sum
+    z1 := 0;
+    // denominator sum
+    z2 := 0;
+    idx := 0;
+    for i := 0 to lStrata do begin
+      val := zbar[i] - zz;
+      z1 += N.AsFloat[i] * val * val;
+      m := zbar[i];
+      for j := 0 to N.AsInteger[i] -1 do
+      begin
+        val := z[idx] - m;
+        z2 += val * val;
+        inc(idx);
+      end;
+    end;
+    with AnovaRecord do
+    begin
+      W := (float(obs - k) * z1) / (float(lStrata) * z2);
+      pW := fdist(W, lStrata, obs - k);
+    end;
+  end; // with ResultDF
+
+  // Bartlett's test is sensitive to non-normality of the data
   // ref: Engineering Statistics Handbook 1.3.5.7
   //      https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm
   TPoolVar := 0;
   TSumLogs := 0;
   TSumNs   := 0;
-  k        := lStrata + 1; // number of strata; lStrata fills in for k-1
+
   with ResultDF do
     begin
+      with AnovaRecord do
+        begin
+          BART := TEpiFloatField.DefaultMissing;
+          PBART := TEpiFloatField.DefaultMissing;
+        end;
       for i := 0 to lStrata do
         begin
-          TSumLogs += (N.AsInteger[i] - 1) * ln(StdVar.AsFloat[i]); // (N[i]-1) * var[i]
-          TSumNs   += (1/(N.AsInteger[i] - 1));                     // 1 / (N[i]-1)
-          TPoolVar += (N.AsInteger[i] - 1) * StdVar.AsFloat[i]      // (N[i]-1) * var[i]
+          if (N.AsInteger[i] <= 1) then
+            exit      // skip Bartlett test if any stratum has a single observation
+          else begin
+            TSumLogs += (N.AsInteger[i] - 1) * ln(StdVar.AsFloat[i]); // (N[i]-1) * var[i]
+            TSumNs   += (1/(N.AsInteger[i] - 1));                     // 1 / (N[i]-1)
+            TPoolVar += (N.AsInteger[i] - 1) * StdVar.AsFloat[i]      // (N[i]-1) * var[i]
+          end;
         end;
-      TPoolVar := TPoolVar / (Obs - Size);                  // sum / (N-k)
+      TPoolVar := TPoolVar / (Obs - k);                  // sum / (N-k)
 
     with AnovaRecord do
       begin
@@ -377,7 +436,7 @@ begin
   Result.FTotalObs  := InputDF.Size;
   Result.FTotalSSQ  := SSQ;
 
-  DoCalcAnova(Result);
+  DoCalcAnova(Result, CountVar);
 end;
 
 procedure TMeans.DoResultVariables(ResultDF: TMeansDatafile);
@@ -485,6 +544,8 @@ begin
         FExecutor.AddResultConst(Prefix + 'MSW',   ftFloat).AsFloatVector[0]     := MSW;
         FExecutor.AddResultConst(Prefix + 'BART',  ftFloat).AsFloatVector[0]     := BART;
         FExecutor.AddResultConst(Prefix + 'pBART', ftFloat).AsFloatVector[0]     := PBART;
+        FExecutor.AddResultConst(Prefix + 'Levene', ftFloat).AsFloatVector[0]     := W;
+        FExecutor.AddResultConst(Prefix + 'pW', ftFloat).AsFloatVector[0]     := pW;
       end
     else
       begin
@@ -631,6 +692,7 @@ procedure TMeans.DoOutputAnova(AnovaRec: TAnovaRecord);
 var
   T: TOutputTable;
   B: TOutputTable;
+  L: TOutputTable;
 begin
   T := FOutputCreator.AddTable;
   T.Header.Text := 'Analysis of Variance';
@@ -661,6 +723,15 @@ begin
   B.Cell[2,0].Text := 'p Value';
   B.SetRowAlignment(0, taCenter);
 
+  L := FOutputCreator.AddTable;
+  L.Header.Text    := 'Levene''s Test of homogeneity of variances';
+  L.ColCount       := 3;
+  L.RowCount       := 2;
+  L.Cell[0,0].Text := 'DF';
+  L.Cell[1,0].Text := 'W';
+  L.Cell[2,0].Text := 'p Value';
+  L.SetRowAlignment(0, taCenter);
+
   with AnovaRec do
   begin
     T.Cell[0,1].Text := 'Between';
@@ -682,9 +753,18 @@ begin
     T.Cell[2,3].Text := Format('%8.2f', [SST]);
     T.Cell[3,3].Text := Format('%8.2f', [MST]);
 
-    B.Cell[0,1].Text := IntToStr(DFB);
-    B.Cell[1,1].Text := Format('%8.2f', [BART]);
-    B.Cell[2,1].Text := Format('%8.3f', [PBART]);
+    if (BART <> TEpiFloatField.DefaultMissing) then
+      begin
+        B.Cell[0,1].Text := IntToStr(DFB);
+        B.Cell[1,1].Text := Format('%8.2f', [BART]);
+        B.Cell[2,1].Text := Format('%8.3f', [PBART]);
+      end
+    else
+      B.Footer.Text:= 'Cannot calculate Bartlett''s test with a stratum of 1';
+
+    L.Cell[0,1].Text := IntToStr(DFB) + ', ' + IntToStr(DFW);
+    L.Cell[1,1].Text := Format('%8.2f', [W]);
+    L.Cell[2,1].Text := Format('%8.3f', [PW]);
 
   end;
 end;

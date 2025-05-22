@@ -80,7 +80,9 @@ type
     F,         // F statistic or T for single stratum
     PROB,      // F or T probability
     BART,
-    PBART:
+    PBART,
+    W,
+    PW:
       EpiFloat;
   end;
 
