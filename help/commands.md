@@ -9,7 +9,7 @@
 
 | Manage data | Analyze data | Graph data | Write programs
 :---|:---|:---|:---
-[read](#rea) or [save](#sav) a project<br/>[append](#app) or [merge](#mer) data<br/>[aggregate](#agg) data<br/>[use](#use) datasets<br/>create [new](#new) content<br/>[list](#lis) or [browse](#bro) content<br/>[edit](#edi) content<br/>[:=](#assignment) to assign values to a variable<br/>[recode](#rec) a variable<br/>[reorder](#reo) variables<br/>[delete](#dro) content<br/>Consistency and validity [check](#check)<br/>[report](#rep)<br/> | [sort](#sor) records<br/>[select](#sel) records<br/>[count](#cou) records<br/>[describe](#des) variables<br/>[freq](#fre)uencies<br/>[tables](#tab)<br/>[ctable](#cta) with many variables<br/>[means](#mea)<br/>[regress](#reg)ion analysis<br/>[survival](#sur) analysis | [scatter](#sca) or line plot <br/>frequency [bar](#bar) chart <br/>[histogram](#his)<br/>[epicurve](#epi)<br/>[Kaplan-Meier plot](#sur)<br/>*SPC Charts*<br/>[pareto chart](#par)<br/><br/>[Options](#graphoptions) used in all graphs| [if-then](#if)<br>[for](#for) loop<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#commonoptions)<br/>[Types of Variables](#variabletype)<br/>[Variable lists](#variablelist)<br/>[Referenced variables](#referencedvariable)<br/>[run](#run) scripts <br/>[Clean up & stop](#quit)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
+[read](#rea) or [save](#sav) a project<br/>[append](#app) or [merge](#mer) data<br/>[aggregate](#agg) data<br/>[use](#use) datasets<br/>create [new](#new) content<br/>[list](#lis) or [browse](#bro) content<br/>[edit](#edi) content<br/>[:=](#assignment) to assign values to a variable<br/>[recode](#rec) a variable<br/>[reorder](#reo) variables<br/>[delete](#dro) content<br/>Consistency and validity [check](#check)<br/>[report](#rep)<br/> | [sort](#sor) records<br/>[select](#sel) records<br/>[count](#cou) records<br/>[describe](#des) variables<br/>[freq](#fre)uencies<br/>[tables](#tab)<br/>[ctable](#cta) with many variables<br/>[means](#mea)<br/>[regress](#reg)ion analysis<br/>[survival](#sur) analysis | [scatter](#sca) or line plot <br/>frequency [bar](#bar) chart <br/>[histogram](#his)<br/>[epicurve](#epi)<br/>[Kaplan-Meier plot](#sur)<br/>*SPC Charts*<br/>[pareto chart](#par)<br/><br/>[Options](#graphoptions) used in all graphs| [if-then](#if)<br>[for](#for) loop<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#commonoptions)<br/>[Types of Variables](#variabletype)<br/>[Variable lists](#variablelist)<br/>[Referenced variables](#referencedvariable)<br/>[run](#run) scripts <br/>Write [comments](#comment)<br/>[Clean up & stop](#quit)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
 
@@ -2887,19 +2887,18 @@ Execute the commands saved in a .pgm file
 - without parameters, the open file dialogue is started
 
 <a name="comment"></a>
-## // comment
 
+## Comments for programs
 
 ```
-// include comments in your program files
-
+// single line comment
+means x; // end of line comment
 /*
-  multiline comments are also possible
+   Block comment
+   A block comment should have a space or new line before the closing
 */
-
+/* This is a comment*/ is not valid as there is no space before '*/'
 ```
-
-Comments can be on separate lines or go at the end of a command
  
 <a name="runtest"></a>
 ## runtest
