@@ -112,7 +112,7 @@ implementation
 
 uses
   generalutils, ana_globals, statfunctions, result_variables, uerrors, umatrix, umeansd,
-  umath, unlfit, ulineq, uvecfunc, uigmdist;
+  umath, unlfit, ugausjor, uvecfunc, uigmdist;
 
 { TRegressLogistic}
 
@@ -398,7 +398,6 @@ var
   zConf: Float;
   converged: Boolean;
 begin
-  FConstant := true;
   DimMatrix(Inv, FParamCt-1, FParamCt-1);
   // get betas
   converged := epiLogiFit(FIndepV, FDepV, maxIterations, convergeTolerance, FDebug, FCoeff, InV);
@@ -466,7 +465,7 @@ end;
   begin
     DimVector(result,FObs - 1);
     result := MatVecMul(X, B, 0);
-    if (MathErr <> MathOK) then
+    if (MathErr = MatErrDim) then
       begin
         FExecutor.Error(sRegErrorFit + ': ' + MathErrMessage);
         result := nil;
@@ -481,7 +480,6 @@ end;
   var
     i, j, k, n, l: Integer;
     c, Det: Float;
-    Dummy: TVector;
     S: TVector;
     SX: TMatrix;
     MU: TVector;
@@ -493,10 +491,6 @@ end;
     DimMatrix(SX, n, l);
     DimMatrix(XtSX, l, l);
     DimVector(result, l);
-//    Dummy := Fill(0,l,0);
-    DimVector(Dummy, l);
-    for i := 0 to high(Dummy) do
-      Dummy[i] := 0;
     MU := epiLogiFunc(X, W);
     if (FDataError) then exit;
     // get S as vector, not diagonal matrix
@@ -517,11 +511,12 @@ end;
           if (i <> j) then
             XtSX[j,i] := c;
         end;
-    // Invert XtSX; // use linear equation solver for this
-    LinEq(XtSX,Dummy,0,l,Det);
+    // Invert XtSX; // use Gauss-Jordan proc
+    GaussJordan(XtSX,0,l,l,Det);
     if (MathErr <> MathOK) then
       begin
         FExecutor.Error(sErrMatrixInversion+': ' + MathErrMessage);
+        FDataError := true;
         exit;
       end;
     result := MatVecMul(MatMul(XtSX,MatTranspose(X,0),0),(MatVecMul(SX,W,0)+Y-MU),0);
