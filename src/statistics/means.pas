@@ -286,7 +286,7 @@ begin
       if (N.AsInteger[i] > 0) then
         zbar[i] := ysum / N.AsFloat[i]
       else
-        FExecutor.Error('Levene test error - n=1 in stratum ' + i.ToString);
+        FOutputCreator.DoInfoShort('Levene test internal error - n=0 in stratum ' + i.ToString);
     end;
     zz := ytot / float(obs);
     // numerator sum
