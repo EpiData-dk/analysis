@@ -1,24 +1,24 @@
 # EpiData Analysis
 
-### Command and Function Reference Guide (version 2.8)
+<a name="top"></a>
+### Command and Function Reference Guide (version 3.3)
 
-___
+###[Go to the index of commands](#index)
 
-###Commands
+## Commands by function
 
 | Manage data | Analyze data | Graph data | Write programs
 :---|:---|:---|:---
-[read](#read)<br/>[save](#save)<br/>[append](#append)<br/>[merge](#merge)<br/>[aggregate](#aggregate)<br/>[use datasets](#use)<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [describe](#describe) variables<br/>[tables](#tables)<br/>[frequencies](#freq)<br/>[means](#means)<br/>[count](#count)<br/>[survival](#survival) analysis | [scatter](#scatter) plot <br/>[line](#line) plot <br/>frequency [bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve)<br/>[Kaplan-Meier plot](#survival)<br/>*SPC Charts*<br/>[pareto chart](#pareto) | [select](#select) observations<br/>[if-then](#if-then)<br/>[sort](#sort) data<br/>[Disk and file commands](#disk)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#options)<br/>[Types of Variables](#type)<br/>[How to use Variables and References](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
+[read](#rea) or [save](#sav) a project<br/>[append](#app) or [merge](#mer) data<br/>[aggregate](#agg) data<br/>[use](#use) datasets<br/>create [new](#new) content<br/>[list](#lis) or [browse](#bro) content<br/>[edit](#edi) content<br/>[:=](#assignment) to assign values to a variable<br/>[recode](#rec) a variable<br/>[reorder](#reo) variables<br/>[delete](#dro) content<br/>Consistency and validity [check](#check)<br/>[report](#rep)<br/> | [sort](#sor) records<br/>[select](#sel) records<br/>[count](#cou) records<br/>[describe](#des) variables<br/>[freq](#fre)uencies<br/>[tables](#tab)<br/>[ctable](#cta) with many variables<br/>[means](#mea)<br/>[regress](#reg)ion analysis<br/>[survival](#sur) analysis | [scatter](#sca) or line plot <br/>frequency [bar](#bar) chart <br/>[histogram](#his)<br/>[epicurve](#epi)<br/>[Kaplan-Meier plot](#sur)<br/>*SPC Charts*<br/>[pareto chart](#par)<br/><br/>[Options](#graphoptions) used in all graphs| [if-then](#if)<br>[for](#for) loop<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#commonoptions)<br/>[Types of Variables](#variabletype)<br/>[Variable lists](#variablelist)<br/>[Referenced variables](#referencedvariable)<br/>[run](#run) scripts <br/>Write [comments](#comment)<br/>[Clean up & stop](#quit)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
 
-*   Linear regression
 *   SPC graphs - Ichart etc.
 
 ### Syntax for all commands
 
 ```
-command <variables | expression> [!option] [!option := a|b]
+command <variables | expression> [!option] [!option := {a|b}]
 ```
 
 In command descriptions, the following notation is used
@@ -26,23 +26,64 @@ In command descriptions, the following notation is used
 ```
   [ ] : optional specification of observation number.    
   {a|b|...} : indicates alternative choices  
-  <...> : indicates user specified name/identifier  
+  <...> : indicates a user specified name, identifier or expression  
 ```
+
+Almost all commands can be shortened to the first three letters of the command name. The exceptions are `check` and `runtest`. which cannot be shortened.
 
 If you are in doubt of when to use double quotes "" and when not, the rule is:  
 
-* Use "..." for all external references (e.g. "file names.ext") or assignments of text values ( e.g. set "COMMANDLOG" := "ON")  
+* Use "..." for all external references (e.g. "file names.ext") or assignments of text values ( e.g. `set "COMMANDLOG" := "ON"`)  
 * Double quotes are NOT needed for variables, defined value labels, or dataset names
 
+# Disk commands
+
+<a name="cd"></a>
+## cd
+
+```
+cd ["<directory path>"]
+```
+Change the working directory (folder) to the specified path.
+        If no path is given a dialog is shown to select the working directory.
+
+<a name="dir"></a><a name="ls"></a>
+## ls / dir
+
+```
+ls ["<directory path>" | "file name"]
+dir ["<directory path" | "file name"]
+```
+
+List files in a directory
+
+### parameters
+- *directory path* or *file name* may include wild cards (* or ?)
+        If no path is given, the working directory is assumed
+
+<a name="era"></a>
+## erase
+
+```
+erase "<file name>"
+```
+Delete the file from disk.
+
+### parameters
+- <file name> may use wildcards (* or ?), but the directory name should not as this may or may not be allowed by the operating system
+- If no path is given, the current working directory is used.
+
+> Warning: The file is deleted (if the file exist) with no confirmatory question
+
+[Return to the top](#top) or [Go to the index](#index)
 # Read and Save Data
 
-<a id=read>
+<a name=read></a>
 ## read
-</a>
 
-~~~
+```
 read [{"<filename>" | <expression>}] [!options ...]
-~~~
+```
 
 Read a copy of the data file into memory.
 
@@ -118,12 +159,11 @@ fn := "bromar.epx";
 read fn;                // expression using the variable fn
 ```
 
-<a id=save></a>
+<a name=save></a>
 ## save
 
 ```
-save [{"<filename>" | <expression>}] [!replace] [!force] [!output [:="{html | text}"] ]
-     [!format:="{stata|epidata|csv}"] [options]
+save [{"<filename>" | <expression>}] [!options]
 ```
 Save a copy of all variables in memory to a file, to use the data again
 
@@ -203,18 +243,27 @@ Save a copy of all variables in memory to a file, to use the data again
 
  This options adds the [UTF-8 Byte Order Mark](https://en.wikipedia.org/wiki/Byte_order_mark) to the .csv/.txt file.
 
-# Merge, Append & Aggregate      
+[Return to the top](#top) or [Go to the index](#index)
 
-<a name="append"></a>
+# Combine and create data      
+
+<a name="app"></a>
 ## append  
 
 ```
-append [<var1> <var2>...] [!ds := <dataset>] [!fn := "<filename>"]
+append [<var1> <var2>...] [source option]
 ```
 
-Add observations after all observations in current file
+Add observations after all observations in current file. One of the two source types must be used.
 
-### options
+### parameter
+- `variable list`
+
+  The variables to include from the source.
+  
+### source option
+
+One of the following must be provided
 
 - `!fn := "<filename>"`
 
@@ -228,9 +277,9 @@ Add observations after all observations in current file
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="merge"></a>
-
+<a name="mer"></a>
 ## merge  
+
 ```
 merge [<key1> <key2> ...]
       [!fn [:= "<filename>"]] [!ds := <dataset>]
@@ -329,9 +378,8 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
 ```       
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="aggregate" id="aggregate"></a><a name="agg" id="agg"></a>
-
-## aggregate / agg
+<a name="agg"></a>
+## aggregate
 
 ```
 aggregate [<var1> <var2>...] [!options]
@@ -383,7 +431,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 
  Expands the resulting dataset with ALL possible value-combinations from <var1> <var2>... All entries with no data will contain system missing.
 
-See [labeling](#labeling) for options on changing between labels/values
+See [Common options](#commonoptions) for options for labels and formats.
 
 See [formatting](#formatting) for options on formatting percentages
 
@@ -432,10 +480,7 @@ columntxt[5] := .;
 agg sex age family !hd:=columntxt  !mci:=economy !mci:=children ;
  ```       
 
-# Using datasets & Sorting
-
-<a name="use" id="use"></a>
-
+<a name="use"></a>
 ## use
 
 ```
@@ -443,6 +488,11 @@ use <dataset>
 ```
 
 Change the active dataset of a project.
+### parameters
+
+- `dataset`
+
+  The name of a dataset within the current project, without quotes
 
 See [variables](#referencedvars) on using referenced variables for this command
 
@@ -454,34 +504,16 @@ list dataset;
 use datafile_id_2;
 ```      
 
-<a name="sort" id="sort"></a>
+[Return to the top](#top) or [Go to the index](#index)
 
-## sort
-
-```
-sort variable1 [variable2 ...] [!descending]
-```
-
-Sort the current dataset based on the given variables. Sort respects current select!
-
-- `!descending`<br/>
-  `!d`
-
- Sorts the dataset in decending order
-
-See [variables](#referencedvars) on using referenced variables for this command
-
-# Creating content
-
-<a name="creategrp"id="creategrp"></a>
 <a name="new"></a>
+## new
 
-<a name="newproject" id="newproject"></a>
-
-## new project / new p
-
+The `new` command takes several forms, depending on what you want to create.
+## new project
+</a>
 ```
-new project
+new {project | p} [!options]
 ```
 
 Creates a new empty project, e.g. for simulation or testing.
@@ -524,13 +556,17 @@ Creates a new empty project, e.g. for simulation or testing.
 
  Perform a backup when closing the project. The name for the backup is based on the current date/time.
 
-<a name="newdataset" id="newdataset"></a>
-## new dataset / new
+## new dataset
 ```
-new dataset <dataset> [!options...]
+new {dataset | ds} <dataset name> [!options...]
 ```
 
 Create a new dataset for the project. Use the options to specify relations between datasets.  If the command completes successfully, the newly created dataset is automatically [used](#use)
+
+### parameter
+- `dataset name`
+
+  The name of the dataset __not enclosed in quotes__</b>__
 
 ### options            
 
@@ -554,12 +590,10 @@ Create a new dataset for the project. Use the options to specify relations betwe
 
   Used only in combination with !parent. Tells EntryClient what happens after entry of one complete observation   
 
-```  
-0 = new observation
-1 = return to parent
-2 = return on max number of observataions
-3 = stay on the current observation
-```
+  - 0 = new observation
+  - 1 = return to parent
+  - 2 = return on max number of observataions
+  - 3 = stay on the current observation
 
 - `!statusbar := "<text>"`
 
@@ -571,17 +605,28 @@ Create a new dataset for the project. Use the options to specify relations betwe
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="newvariable" id="newvariable"></a>
-
-## new variable / new var / new v
+## new variable
 
 ```
-new variable *variable <type> [:= expression] [!options...]
+new {variable | var | v} <variable name> <type> [:= expression] [!options]
 ```
 
-Create a new variable of a given [type](#types) and optionally assign the value in expression. The variable type and expressions type must be compatible. Variables contain a value for each observation. If no expression is given, all values will be missing.
+Create a new variable of a given type and optionally assign the value in expression. The variable type and expressions type must be compatible. Variables contain a value for each observation. If no expression is given, all values will be missing.
 
-### options            
+### parameters
+- `variablename` 
+
+  The new variable name, <b>not enclosed in quotes</b>
+
+- `type`
+
+  The [type](#variabletype) of variable, either the long or short version
+
+### options
+
+- `expression`
+
+  Immediately assign a value to the variable. If `expression` evaluates to a single value, all observations get that value. If `expression` has other variables in it, then each observation gets the corresponding value.            
 
 - `!label := "<text>"`<br/>
    `!l := "<text>"`
@@ -598,8 +643,7 @@ Create a new variable of a given [type](#types) and optionally assign the value 
 
   Changes the entry length of a variable
 
-- `!decimal := <integer>`<br/>
-   `!dec := <integer>`
+- `!d := <integer>`<br/>
 
   Change the decimal entry length for floating point variables. Changing the decimal length for other variable types have no impact
 
@@ -615,11 +659,9 @@ Create a new variable of a given [type](#types) and optionally assign the value 
 
   Change the entry mode used in EpiData EntryClient
   
-```
-0 = default
-1 = must enter
-2 = no enter
-```
+  - 0 = default
+  - 1 = must enter
+  - 2 = no enter
 
 - `!confirm`
 
@@ -631,28 +673,23 @@ Create a new variable of a given [type](#types) and optionally assign the value 
 
 - `!cmpX := *variable`
 
-Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between the new variable and the assigned variable
+  Where "X" is replaced with one of GT, LT, GE, LE, EQ, NE. Adds comparison between the new variable and the assigned variable
 
 - `!u`<br/>`!memo`
 
-When creating a string variable it is possible to specify the sub type using one of the above options. !u specifies this is an uppercase string variable. !memo specifies this a memo variable
+  When creating a string variable it is possible to specify the sub type using one of the above options. !u specifies this is an uppercase string variable. !memo specifies this a memo variable
 
-- `!dmy> !mdy> !ymd`
+- `!dmy`<br/>`!mdy`<br/>`!ymd`
 
-When creating a date variable it is possible to specify the sub type using one of the above options. !dmy is the default type if no option is used else the specified sub type is used
+  When creating a date variable it is possible to specify the sub type using one of the above options. !dmy is the default type if no option is used else the specified sub type is used
 
 - `!auto [{0|1|2}]`
 
-When creating a variable that supports automatic content (date, time or integer), using this option changes the default type to the automatic type.         
-Integer become AutoIncrement, DMY becomes AutoDMY, etc.
+  When creating a variable that supports automatic content (date, time or integer), using this option changes the default type to the automatic type. Integer become AutoIncrement, DMY becomes AutoDMY, etc. For time and date variables the number specifies when the variable is updated:
 
-  For time and date variables the number specifies when the variable is updated:
-  
-``` 
- 0 = When obervation is created (default)
- 1 = When observation is first saved
- 2 = Each time the record is saved after being edited
-```
+  - 0 = When obervation is created (default)
+  - 1 = When observation is first saved
+  - 2 = Each time the record is saved after being edited
   
 ### examples
 
@@ -670,29 +707,37 @@ new variable v6 date    := today();
 Examples where a value depends on other variables:
 
 ```
-new variable v1 integer := v14 + v17;
 // v1 is equal to sum of v14 and v17
-new variable age date   := integer((today() - dateborn)/365.25)
+new variable v1 integer := v14 + v17;
 // calculated age in whole years
+new variable age date   := integer((today() - dateborn)/365.25)
 ```
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="newglobal" id="newglobal"></a>
-## new global / new g
+## new global
 
 ```
-new global Variable <type> [:= expression]
-new global Variable <integer expression> <type> [:= expression]
+new {global | g} <variable> <type> [:= expression]
 ```          
 
 Create a new global variable
 
 ### parameters
 
-- Variable must be unique. If the variable name is followed by square brackets [...], then a global *vector* is created, where each entry can be individually accessed using
-- *type* is a valid EpiData [type](#type)
-- expression is a value assigned to the global variable. The global variable type and expressions type must be compatible
+- `variable`
+
+  Variable must be unique. If the variable name is followed by square brackets [...], then a global *vector* is created, where each entry can be individually accessed using an index `[ix]`
+
+- `type`
+
+  a valid EpiData [type](#variabletype)
+
+### option
+  
+- `expression`
+
+  a value assigned to the global variable. The global variable type and expressions type must be compatible
 
 A global variable or parameter has only one value, whereas a standard variable has one value for each observation.  Global variables can for most parts be used like as a regular variable.
 
@@ -712,18 +757,25 @@ g7[3]                     := 20;
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="newvaluelabel" id="newvaluelabel"></a>
-## new valuelabel / new vl
+## new valuelabel
 
 ```
 new valuelabel <name> <type> (<value> , <label>) (...) [!m := <value>]
 ```
 
-Create a new value label set with a given [type](#types) (boolean not supported) and assign at least one (value, label) pair.
+Create a new value label set with a given [type](#variabletype) (boolean not supported) and assign at least one (value, label) pair.
 ### parameters
-- Each `(value, label)` pair will be added to the newly created set. The datatype of the value MUST match the defined datatype for the value label set itself. It is not possible to create an empty valuelabel set.
+- `name`
 
-- The valuelabel name must be unique; it cannot be the same as any variable. A useful practice is to start the valuelabel name with an underscore: _
+ The valuelabel name, which must be unique; it cannot be the same as any variable. A useful practice is to start the valuelabel name with an underscore: _
+
+- `type` 
+
+  a valid EpiData [type](#variabletype)
+  
+- `(value, label)`
+
+  Each pair will be added to the newly created set. The datatype of the value MUST match the defined datatype for the value label set itself. It is not possible to create an empty valuelabel set.
 
 > Note: An empty set will restrict data entry to system missing only!
 
@@ -745,19 +797,23 @@ See [edit valuelabels](#editvaluelabel)"> for more advanced use of variables and
 
 See [variables](#referencedvars) on using referenced variables for this command
 
+[Return to the top](#top) or [Go to the index](#index)
+
 # Listing content
 
-<a name="browse" id="browse"></a>
+<a name="brow"></a>
 ## browse
 
 ```
-browse [variable1 [variable2 ...] ] [options]
+browse <variable list> [!options]
 ```
 
 Show the variables mentioned in a spreadsheet grid
 
 ### parameters
-- without variable names, browse all variables
+- `variable list`
+
+  A single variable name or [list of variables](#variablelist); without variable names, browse all variables
 
 After browse has started you may Right Click and see how to close or adapt columns. Browse will, by default, follow the show formats setting.
 
@@ -784,18 +840,26 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 > Note: browse is much faster than list
 
-<a name="list"></a><a name="listdata" id="listdata"></a>
-## list data / list d
+<a name="lis"></a>
+
+## list
+
+The `list` command takes several forms, depending on what you want to show
+
+## list data
+
 ```
-list data [variable1 [variable2 ...]]
+list {data | d} <variable list> [!options]
 ```
 
 Show values on the screen for all variables mentioned, with one observation per line (not limited by the width of the display)
 
-## parameters
-- without variable names, list all variables.
+## parameter
+- `variablelist`
 
-See [labeling](#labeling) for options on changing between labels/values
+  A single variable name or [list of names](#variablelist); without variables, list all variables.
+
+See [Common options](#commonoptions) for options for labels and formats.
 
 > Note: browse is much faster than list.
 
@@ -803,24 +867,24 @@ See [labeling](#labeling) for options on changing between labels/values
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="list_project" id="list_project"></a>
-## list project / list p
+## list project
+
 ```
-list project
+list {project | p} [!options]
 ```
 
 Shows a brief overview of the project
 
-###Options       
+###options       
 
 - `!info` 
 
   Also shows the study information
 
-<a name="listdataset" id="listdataset"></a>
-## list dataset / list ds
+## list dataset
+
 ```
-list dataset
+list {dataset | ds}
 ```
 Shows a list of datasets for the project
 
@@ -829,47 +893,79 @@ Shows a list of datasets for the project
 
   Outputs additional information about the listed datasets
 
-<a name="listvariable" id="listvariable"></a>
-## list variable / list var / list v
+## list variable
+
 ```
-list variable
+list {variable | var | v}
 ```
 
 List all currently defined variable names, types, formats and labels
 
-<a name="listvaluelabel" id="listvaluelabel"></a>
-## list valuelabel / list vl
+## list valuelabel
+
 ```
-list valuelabel
+list {valuelabel | vl}
 ```
 Show the full list of all valuelabel sets. Each set is listed individually as value/label pair and marked whether a value is considered missing or not.
 
-<a name="listresults" id="listresults"></a>
-## list results / list res / list r
+## list results
+
 ```
-list results
+list {results | r}
 ```
 
 List all current result variables and their values.
 
-`means`, `describe`, `tables` and other estimation commands create result variables, e.g. $mean[1] or $count. All result variables for a commandn are cleared when running the same command again.
+`means`, `describe`, `tables` and other estimation commands create result variables, e.g. $mean[1] or $count. All result variables for a command are cleared when running the same command again.
 
-<a name="listglobal" id="listglobal"></a>
-## list global / list g
+## list global
+
 ```
-list global
+list {global | g}
 ```
 
 List currently defined global variables and their types and value. Global variables contain a single value and global vectors contain multiple values. The list shows both types.
 
+## display
+```
+? <expression>
+```
+
+Show result of an expression. It is posible to use all types of variables (standard, results or global) in the expression.
+>Note: if you are using standard variables, you can display a specific observation using the index `[ix]`, where `ix` is an integer > 0.
+
+### parameter
+
+* `<expression>`
+
+  Is any expression that evaluates to a single value
+  
+### examples
+```
+// display theresult of 10 plus the 5th observation of v1
+? v1[5] + 10; 
+// g is a global integer
+? g1 - 10;
+// a result variable
+? means_mean;
+? 241/34;
+? (23 > 19);
+? "a " + "b " + "c";
+```
+[Return to the top](#top) or [Go to the index](#index)
+
 # Editing variable and label definitions
 
-<a name="edit" id="edit"></a><a name="editproject" id="editproject"></a>
-## edit project / edit p
+<a name="edi"></a>
+
+The `edit` command has several forms, allowing you to edit projects, datasets or variable definitions.
+
+## edit project
+
 ```
-edit project
+edit {project | p]
 ```
-Edits a project.
+Edits the open project.
 
 ### options            
 
@@ -898,13 +994,19 @@ Interval at witch Manager and EntryClient automatically saved the project
 
 Perform a backup when closing the project. The name for the backup is based on the current date/time.
 
-<a name="editdataset" id="editdataset"></a>
-## edit dataset / edit ds
+## edit dataset
+
 ```
-edit dataset *dataset1 [!options...]
+edit {dataset | ds} <datasetname> [!options...]
 ```
 Edit an existing dataset in the project.
 
+### parameters
+
+- `datasetname`
+
+  A dataset name, without quotes
+  
 ### options           
 
 - `!label := "<text>"`
@@ -919,12 +1021,10 @@ Edit an existing dataset in the project.
 
   Used only if the dataset is related to a parent. Tells EntryClient what happens after entering the whole observation
   
-```
-0 = new observation,
-1 = return to parent
-2 = return on max observation
-3 = stay on current observation
-```
+  - 0 = new observation,
+  - 1 = return to parent
+  - 2 = return on max observation
+  - 3 = stay on current observation
   
 - `!statusbar := "<text>"`
 
@@ -946,13 +1046,19 @@ Edit an existing dataset in the project.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="editvariable" id="editvariable"></a>
-## edit variable / edit var / edit v
+## edit variable
+
 ```
-edit variable *variable1 [!<options>...]
+edit {variable | var | v} <variable name> [!<options>]
 ```
 
-Edit the metadata of *variable1. The options specify which metadata are changed, multiple options may be used at once
+Edit the metadata of a variable. Multiple options may be used at once.
+
+### parameter
+
+- `variable name`
+
+  A single variable name __not in quotes__ or a variable reference
 
 ### options         
 
@@ -991,12 +1097,10 @@ Edit the metadata of *variable1. The options specify which metadata are changed,
 - `!entry := <integer>`
 
    Changes the entry mode used in EpiData EntryClient
-   
-```
-0 = default
-1 = must enter
-2 = no enter
-```
+
+  - 0 = default
+  - 1 = must enter
+  - 2 = no enter
    
 - `!cmpX := *variable`
 
@@ -1026,15 +1130,23 @@ Edit the metadata of *variable1. The options specify which metadata are changed,
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="editvaluelabel" id="editvaluelabel"></a>
-## edit valuelabel / edit vl
+## edit valuelabel
+
 ```
-edit valuelabel *valuelabel1 [(<value> , <text>) ...] [!m := <value>] [!delete := <value>] [!nomissing := <value>]
+edit {valuelabel | vl} <valuelabel name> [(<value> , <text>) ...] [!options]
 ```
 
 Edit an existing value label set and optionally assign any number of (value, label) pairs.
 
-If a (value, label) pair already exist, the new label will replace the old label. Otherwise the (value, label) pair will be added to the set. The datatype of the value MUST match the datatype for the value label set itself.
+### parameters
+
+- `valuelabel name`
+
+  Name of the valuelable, __not in quotes__
+  
+- `(value, label)`
+
+  The value and its label. If a (value, label) pair already exist, the new label will replace the old label. Otherwise the (value, label) pair will be added to the set. The datatype of the value MUST match the datatype for the value label set itself. 
 
 ### options        
 
@@ -1086,10 +1198,10 @@ for i := 2 to 5 do
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="editdata" id="editdata"></a>
-## edit data / edit d
+## edit data
+
 ```
-edit data [!md] [!nomd] [!mv] [!nomv]
+edit {data | d} [!options]
 ```
 
 Edit the status of observations
@@ -1104,23 +1216,200 @@ Edit the status of observations
 
   Marks / Unmarks the current select observations as verified
 
+<a name="rec"></a>
+## recode
+
+The `recode` command has two forms
+
+```
+recode <from variable> to <to variable> !by := <value> [!options]
+recode<from variable> to <to variable> (<lower bound>, <upper bound> [, <label lext> [, <label value>]]) .. [!options]
+```
+
+Recode transforms data from the <from variable> to the <to variable> but groups data within the same range to a given values.
+Recode can be used in two forms:
+
+* Recode using a specific interval
+
+  In the simple form data are recoded using a specific interval. The size of this interval is specified with the !by := <value> option and starts a 0. If there is no data for a given interval, no value label will be created.
+  
+* Recode using custom intervals:
+
+  With this form it is possible to control all (or partial) aspects of the intervals during the data transformation. At the least the range(s) needs to be specified by the <lower bound> and <upper bound>. In addition to this it is possible to specify a label for the interval and a user defined value for the interval.
+
+## parameters
+* `from variable`
+
+  the original variable
+* `to variable`
+
+  the variable receiving the recoded values
+### second form only
+* `lower bound, upper bound`
+
+  The range to be recoded, inclusive of `lower bound` and exclusive of `upper bound`
+* `label text`
+
+  optional string or global string variable with the label for this interval
+*  
+
+  optional value for the new interval
+  
+### options
+* `!by := <value>`
+
+  size of the intervals. Cannot be used in combination with custrom intervals
+* `!replace`
+
+  Replace the <to variable> or the resulting value label set, if they  already exist. Otherwise, an error will occur.
+* `!max := <value>`
+
+  All data above the max value will be recoded as missing data.
+* `!nvl`
+
+  Do not create a value label set for the TO variable
+* `!i [:= <value>]`
+
+  The lowest interval is recoded to the value 1 and given the value label according to the interval values. Subsequent intervals are recoded to 2,3,4 etc. If a value is specified, start with this instead of 1, subsequent intervals are recoded to <value>+1, +2, +3, etc.
+* `!m := <value>`
+
+  All observations with value . (system missing) in the <to variable> will get this value and the value will be marked as missing in the value label defined by the recode command.
+
+  If the user indicates recoding of system missing values with the !m option, then the user must ensure this does not conflict with other recoding. The <to variable> variable can have sysmis (".") in the followoing ways:
+
+  * Copy all sysmis values in the variable: Do not use the !m option
+To recode an interval to sysmis: Exclude the interval from the declaration.
+  * To recode values below or above a give value to sysmis: use !min and !max options, e.g.
+Recode age to agegrp !by:=5 !min:=10 !max:=75
+
+### examples
+
+```
+read "bromar.epx";
+// Recode data in intervals of 10:  [0, 10) [10, 20) [20, 30) ...
+recode age to ag10 !by := 10     
+// Recode data to intervals: [0, 10) [10,25) [30, 50)
+recode age to ag (0, 10, "Label A") (10, 25) (30, 50, "Label B", 2)
+// note: [0, 10)  will have value label:  0 = "Label A"
+//       [10, 25) will have value label: 10 = "10 - 25"  (default)
+//       [30, 50) will have value label:  2 = "Label B"
+```
+
+
+See [variables](#referencedvars) on using referenced variables for this command
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="assignment"></a>
+## assignment
+
+```
+<variable> := <expression>
+```
+
+Use `:=` to assign the value given in an expression. The variable type and expressions must be compatible otherwise an error will occur.
+
+>Note: `=` is a comparison operator only.
+
+### parameters
+* `variable`
+
+  Any global or data variable
+  
+* `expression`
+
+  Any expression to evalues to either a single value or to values equivalent to a data variable
+  
+### examples
+```
+// all observations get the same value 
+v1 := 1 + 2 * 3 - 4;
+v2 := (2 * pi) * 5;
+v3 := "Hello World!";
+v4 := now();
+v5 := (2 > 3);
+v6 := today();
+       
+//assign a value to individual entries of a variable:
+v1[1] := 3;
+v2[2] := 31.41596;
+v3[3] := "It works!";
+v4[1] := Createtime(12, 34, 56);
+
+// a calculated value is assigned to every observation
+v1 := 1 + v2 * v3;
+       
+// use select to change values for a subgroup
+select (v1 = 0) do v17 := 17;
+select ((v1 = 0) and (v2 = .)) do v17 := 27;
+
+// functions may be used:
+select (age = .) do age := integer((today() - dateborn)/365.25)
+
+```
+
+<a name="reo"></a>
+## reorder
+
+```
+reorder <variable list> [!options]
+```
+
+Reorders the variables specified. This can be used to place specific variables together to be better used with variable expansion
+
+### parameters
+* `variable list`
+
+  a list of variable to move
+  
+### options
+*  `!before := <var>`
+
+
+  Places the variables before this variable
+* `!after:= <var>`
+
+	Places the variables after this variable
+* `!last`
+
+  Places the variables at the end of the list
+
+If no options are specified, the default is to place the variables before all other variables in the list. Use F3 or `list variable` to show the current order of variables.
+
+### examples
+
+```
+read "bromar.epx";
+// Move the variables kmgrpm, agegrp, and decgrp to the front of the list               
+reorder kmgrp agegrp decgrp;     
+// Move the variables age and km in front of agegrp
+reorder age km !before := agegrp 
+```
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="dro"></a>
 # Deleting content
 
-<a name="drop"></a><a name="dropdataset" id="dropdataset"></a>
-## drop dataset / drop ds
+The `drop` command takes several forms, to allow you to remove parts of the current project from computer memory.
+
+## drop dataset
 
 ```
-drop dataset *dataset1* [*dataset2* ...]
+drop {dataset | ds} <name> [name2 ...]
 ```
-
+ 
 Remove the listed datasets (and related datasets) from memory
+
+### parameters
+
+ - `name`, `name2`, etc
+
+ The name(s) of the datasets to drop
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="dropdata" id="dropdata"></a>
-## drop data / drop d
+## drop data
 ```
-drop data [!del]
+drop {data | d} [!del]
 ```
 
 Drop all data within current select from memory. Save the data first if you wish to keep any changes.
@@ -1144,106 +1433,325 @@ read "bromar.epx";
 drop data !del ; // drop all observations "marked for deletion"
 ```        
 
-<a name="dropvariable" id="dropvariable"></a>
-## drop variable / drop var / drop v
+## drop variable
 ```
-drop variable *variable1 [*variable2 ...]
+drop {variable | var | v} <variable list>
 ```
 
 Remove the listed variables from memory
+### parameters
+
+- `variablelist`
+
+  The [list of variables](#variablelist) to drop
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-> Note: The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the [set command](#set) to choose a different interval.
+## keep variable
+```
+keep {variable | var | v} <variable list>
+```
+
+Sometimes it will be simpler to list the variables to keep in memory. With `keep` you drop all variables not included in the list
+### parameters
+
+- `variablelist`
+
+  The [list of variables](#variablelist) to keep
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+[Return to the top](#top) or [Go to the index](#index)
+
+# Consistency and Validity Check of data
+
+<a name="check"></a>
+
+The `check` command takes several forms to allow you to validate different parts of a project.
+ 
+## check data
+
+```
+check data [var1 ...]
+```
+Use this command to perform a check of the data in selected variables (if no variable are specified, then ALL variable are checked).
+
+The data is checked for:
+
+- Data length: Is the number of characters used in data within the length specified for the variable
+- Range/Valuelabel: Is the data within the specified range and/or is it a legal value label
+- Must Enter: Does the variable have data for all observations if it is marked as Must Enter
+- Jumps: If a variable has jumps assigned, do the skipped fields have the correct values
+- Comparison: If a variable is compared to another variable, is the comparison uphold.
+
+### example
+
+```
+read "bromar.epx"
+check data                   // checks all variable
+check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age
+```
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+## check key
+
+```
+check key [var1 ...]
+```
+Check that the data in specified variables are unique and represent a key.
+
+If no variables are specified and a key is already present in the current dataset, this key is checked.
+
+### example
+
+```
+read "bromar.epx"
+check key id                 // checks if the variable ID represents a unique key
+```
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+## check relate
+
+```
+check relate
+```
+Check that all observations have a valid parent observation
+
+### example
+
+```
+read "related_data.epx";  // Load the project
+use child_dataset;        // Change dataset to a related dataset
+check relate;             // Perform the check from the child dataset "upwards" to the parent.
+                          // Must be repeated if you have more levels
+```
+## check study
+
+```
+check study
+```
+Check that the study information of is specified or not.
+
+### example
+
+```
+read "samplev3.epx";  // Load the project
+check study;          // Perform the check
+```
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="rep"></a>
+# REPORTS
+
+
+## report users
+
+```
+report users
+```
+If a project is using Extended Access control, this command will show a condensed report of the log entries and a list of failed login attempts.
+
+If the project is not using Extended Access control, an error will be displayed.
+
+## report validate
+
+```
+report {validate | val} <variable list> [!options]
+```
+Compares two dataset / projects against each other, validating the data content and outputs a report of differences based on the comparison.
+
+### parameter
+
+- `variable list`
+
+  denotes the sorting variables. This is required if not comparing whole projects OR if the datasets does not contain any key variables.
+
+### options
+
+- `!fn := "<string>"`
+
+ Opens an external file to compare with.
+
+- `!ds := <dataset id>`
+
+ Specifies a single dataset (internal/external) to compare with.
+
+- `!nos`
+
+ Excludes all string types from comparison
+
+- `!nodt`
+
+ Excludes all date and time types from comparison
+
+- `!noauto`
+
+ Excludes all auto types from comparison
+
+- `!noc`
+
+ All text comparisons are done case in-sensitive
+
+- `!nol`
+
+ Only show the condensed report - do not show the list of observations
+
+- `!val`
+
+ All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!
+
+### example
+```
+read "bromar.epx";               // Load the project
+
+// Run a report based on the two internal datasets
+// (1st is currently used, 2nd is the one marked with !ds :=...)
+report val id !ds := ds2;
+
+// Run a report based on the two datasets, one internal and one external
+// (1st is currently used, 2nd is the one marked with !ds :=...)
+report val id !fn := "double_entry.epx" !ds := ds1
+
+// If you have two projects there are two ways compare there.
+// If you wish to compare individual dataset, use the options above.
+// If you have two project you wish to make a complete validation on, use following:
+
+// Run a report based on the two complete projects, one internal and one external
+report val !fn := "double_entry.epx"
+
+// The last example is a special case where both the internal and external project only contains
+// a single dataset each. In this case you only need to specify the sorting variable(s)
+// and the external file. The dataset option is not needed since the external project only has a single dataset.
+report val id !fn := "double_entry.epx"
+```
+
+## report countby
+
+```
+report {countby | cby} <variable list> [!options]
+```
+Compares the combination of variables across several datasets. 
+
+The output is a report with a condensed table of the found keys and a complete table with the found unique key values and the count of these in each dataset.
+
+### parameters
+
+- `countby`
+
+  may be shortened to `cby`
+  
+- `variable list`
+
+  The variables var1 .. varn is considere a "key" and each unique combination of this key is counted across all the specified datasets.
+  
+### options
+
+- `!fn := <global string vector>` 
+
+   This option accepts a global vector with the filenames that are included in the report. The files can be in different formats, but the variable names MUST be the same in each file.
+   
+   If a file name is sys.missing (.), the dataset in the currently opened project is used.
+
+- `!ds := <global string vector>` 
+
+   This option accepts a global vector with the dataset name that is included in the report. The number of entries in the dataset variable MUST be the same as the filenames.
+
+- `!nol` 
+
+   Only show the condensed report - do not show the list of observations
+
+### example
+```
+// Setup the input for the report:
+new global filenames[5] string;
+filenames[1] := "count_file_1.epx";
+filenames[2] := "count_file_2.rec";
+filenames[3] := "count_file_3.dta";
+filenames[4] := "count_file_4.csv";
+filenames[5] := .;   // use the current file
+// Setup the dataset names
+new global datasets[5] string;
+datasets[1] := "ds1";
+datasets[2] := "ds1";
+datasets[3] := "ds1";
+datasets[4] := "ds1";
+datasets[5] := "ds1";
+// Run the report:
+report cby id !fn := filenames !ds := datasets
+```
+
+<a name="sor"></a>
+## sort
+
+```
+sort <variable list> [!option]
+```
+
+Sort the current dataset based on the given variables. Sort respects current select!
+
+### parameters
+
+- `variable list`
+
+  The variables to sort on
+  
+### option
+
+- `!descending`<br/>
+  `!d`
+
+ Sorts the dataset in decending order. The default is ascending order.
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+<a name="sel""></a>
+## select records
+
+```
+select (<condition>) do <command>
+select (<condition>) do begin <command block> end;
+```
+Select a subset of records for the subsequent command or command block. The selection only has effect for this commands or commands. Unlike in classic EpiData, the selection is not retained.
+
+### parameters
+- `condition` can be any logical condition that compares individual data values
+- `command` may be any command that operates on data except for `save`
+- `command block` is a group of commands, each of which must end with a semicolon, as in any program
+
+### example
+
+```
+// get the epicurve for children under 18
+select (age < 18) do epicurve onsetdate;
+// get mean age and a food-specific attack rate table for men only
+// select (gender="M") do begin
+means age;
+ctable ill food1-food5 !ar;
+end;
+```
+
+[Return to the top](#top) or [Go to the index](#index)
 
 # Descriptive statistics
 
-<a name="freq" id="freq"></a><a name="fre" id="fre"></a>
-## freq / fre
-```
-freq variable1 [!<option> ...]
-```
-Frequency distribution for `variable1`
-
-### parameters
-- `variable1` may be any [type](#type)
-
-### options
-- `!m`
-
- Include observations with missing data (.)
-
-- `!cum`
-
- Add cumulative percentage
-
-- `!pr`
-
- Add row percentage
-
-- `!ci`
-
- Calculate confidence intervals for row percentage
-
-- `!w:=weightVariable`
-
- weightVariable contains survey weights, which will be used to estimate population percentages.
-
-See [labeling](#labeling) for options on changing between labels/values
-
-See [formatting](#formatting) for options on formatting percentages
-
-See [variables](#referencedvars) on using referenced variables for this command
-
-<a name="means" id="means"></a>
-<a name="t-test" id="t-test"></a>
-<a name="ttest" id="ttest"></a>
-<a name="ftest" id="ftest"></a>
-##  means
+<a name="cou"></a>
+## count
 
 ```
-means variable1 [!by:=variable2] [!t]
+count
 ```
-Basic descriptive statistics for `variable1`, optionally stratified by `variable2` with analysis of variance.
+Counts number of observations. Count may be used with select to count within a subgroup. No parameters or options apply.
 
-- Statistics: count, total, mean, variance, standard deviation, 95% confidence interval for the mean, standard error, skewness, excess kurtosis.
-- Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.
+### result variables:  
+- $count
 
-See [variables](#referencedvars) on using referenced variables for this command
-
-### parameters
-- `variable1` must be numeric
-
-### options
-- `!by:`
-
- Stratify by this variable		    
-
-- `!t:`
-
- Analysis of Variance to test for homogeneity of the mean across strata, including Bartletts test for homogeneity of variance.
-
- With `!by` (stratified), F-test is given.
-
- Without `!by` (one stratum), T-test that mean=0 (e.g. as a paired T-test for the difference in before and after measures)
-
-> Warning:  Check results carefully if !by variable has only one observation in a stratum
-
-Estimates are saved as result variables. Use the command `list results` for details
-
-See [labeling](#labeling) for options on changing between labels/values
-
-### methodology notes:
-
-- confidence intervals given are based on the t-distribution with N-1 degrees of freedom.
-- adjusted Fisher-Pearson coefficient of skewness: see [NIST handbook 1.3.5.11](https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm)
-- excess kurtosis: see [Wikipedia - Kurtosis (accessed 2020/02/08)](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis)
-- Bartlett's Test: see [NIST handbook 1.3.5.7](https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm)
-
-<a name="describe" id="describe"></a>
+<a name="des"></a>
 ## describe
+
 ```
-describe variable list [option list]
+describe <variable list> [!option list]
 ```
 Basic descriptive statistics and frequencies for a group of variables
 
@@ -1251,6 +1759,12 @@ With no options specified, a single table will be provided, with one row per var
 
 For numerical variables, the output will also include mean, standard deviation, minimum, median, maximum
 
+### parameters
+
+- `variable list`
+
+  The list of variables to provide statistics for
+  
 ### statistic options
 Use any combination of options to customize the output
 
@@ -1276,28 +1790,74 @@ Use any combination of options to customize the output
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-See [labeling](#labeling) for options on changing between labels/values
+See [Common options](#commonoptions) for options for labels and formats.
 
 ### methodology notes
 - All statistics are based on the `means` command and all frequencies are based on the `freq` command, so results from `describe` will be exactly the same as those from `means` or `freq`.
 
-<a name="count" id="count"></a>
-## count
-```
-count
-```
-Counts number of observations. Count may be used with select to count within a subgroup. No parameters or options apply.
+[Return to the top](#top) or [Go to the index](#index)
 
-### result variables:  
-- $count
+<a name="fre"></a>
+## freq
 
-<a name="tables" id="tables"></a><a name="tab" id="tab"></a>
-## tables / tab
 ```
-tab *<column variable> <row variable> [!<option> ...]
+freq variable1 [!<option> ...]
 ```
+
+Frequency distribution for `variable1`
+
+### parameter
+- `variable1` 
+
+  may be any [type](#variabletype)
+
+### options
+- `!m`
+
+ Include observations with missing data (.)
+
+- `!cum`
+
+ Add cumulative percentage
+
+- `!pr`
+
+ Add row percentage
+
+- `!ci`
+
+ Calculate confidence intervals for row percentage
+
+- `!w:=weightVariable`
+
+ weightVariable contains survey weights, which will be used to estimate population percentages.
+
+See [Common options](#commonoptions) for options for labels and formats.
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="tab"></a>
+## tables
+
+```
+tables <column variable> <row variable> [!<option> ...]
+```
+
 Crosstabulate the variables chosen.
 
+### parameters
+
+- `column variable`
+
+  This variable's values will be the column labels in the table
+  
+- `row variable`
+
+  The variable's values will be the row labels in the table
+  
 ###  Data and output options
 
 - `!m`
@@ -1391,19 +1951,30 @@ Indicate by !sxxx where the x may include<br/>
 
 > Note:The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the [set command](#set) to choose a different interval.
 
-See [labeling](#labeling) for options on changing between labels/values
+See [Common options](#commonoptions) for options for labels and formats.
 
 See [formatting](#formatting) for options on formatting percentages
 
-<a name="ctable" id="ctable"></a><a name="cta" id="cta"></a>
-## ctable / cta
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="cta"></a>
+## ctable
+
 ```
 cta <column variable> <row variables> [!<option> ...]
 ```
 The ctable command summarizes a series of cross tables for the first variable against each of the following variables.
 
 ### parameters
-- column variable will usually have only two values, as with an outcome
+- `column variable`
+
+  This variable should only have two values, as with an outcome
+- `row variables`
+
+  A [list of variables](#variablelist) that will form the rows ot the compact table
+  
+### options
 
 The ctable options have the same meaning as in the tables command.
 
@@ -1500,38 +2071,138 @@ Only one may be given
  Sort the table rows by key statistic, depending on the estimation options<br/>
  priority is given to RR then OR then Fisher Exact P then Chi<sup>2</sup> P
 
-See [labeling](#labeling) for options on changing between labels/values
-
-See [formatting](#formatting) for options on formatting percentages
+See [Common options](#commonoptions) for options for labels and formats.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="means" id="means"></a><a name="t-test" id="t-test"></a><a name="ttest"
-id="ttest"></a><a name="ftest" id="ftest"></a>
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="mea"></a>
+## means
+
+```
+means variable1 [!by:=variable2] [!t]
+```
+Basic descriptive statistics for `variable1`, optionally stratified by `variable2` with analysis of variance.
+
+- Statistics: count, total, mean, variance, standard deviation, 95% confidence interval for the mean, standard error, skewness, excess kurtosis.
+- Percentiles: minimum, 5%, 10%, 25%, median, 75%, 90%, 95%, maximum.
+
+### parameters
+- `variable1` must be numeric
+
+### options
+- `!by:`
+
+ Stratify by this variable		    
+
+- `!t:`
+
+ Analysis of Variance to test for homogeneity of the mean across strata, including Bartletts test for homogeneity of variance.
+
+ With `!by` (stratified), F-test is given.
+
+ Without `!by` (one stratum), T-test that mean=0 (e.g. as a paired T-test for the difference in before and after measures)
+
+> Warning:  Check results carefully if !by variable has only one observation in a stratum
+
+Estimates are saved as result variables. Use the command `list results` for details
+
+See [Common options](#commonoptions) for options for labels and formats.
+
+> Note: The default is to estimate the 95% confidence interval for odds ratio or risk ratio. See the [set command](#set) to choose a different interval.
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+### methodology notes:
+
+- confidence intervals given are based on the t-distribution with N-1 degrees of freedom.
+- adjusted Fisher-Pearson coefficient of skewness: see [NIST handbook 1.3.5.11](https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm)
+- excess kurtosis: see [Wikipedia - Kurtosis (accessed 2020/02/08)](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis)
+- Bartlett's Test: see [NIST handbook 1.3.5.7](https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm)
+
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="reg"></a>
+## regress
+
+``` 
+regress <dependent variable> <independent variable list> [!options]
+```
+
+Linear regression analysis with one or more independent variables, which provides estimates for the model<br/>
+y = b0 + b1 x var1 + b2 x var2 ...<br/>
+
+### parameters
+- `dependent variable`
+
+  Must be numeric
+  
+- `independent variable list`
+
+  One or more numeric variables
+  
+### options
+- `nocon`
+
+  Do not include the intercept in the model
+- `est := <variable for estimates>`
+
+  Save the estimated values in an existing variable of type `Float`
+  
+- `res := <variable for residuals>`
+
+  Save the residuals in an existing variable of type `Float`
+
+Estimates are saved as result variables. Use the command `list results` for details
+
+See [Common options](#commonoptions) for other options, for labels and formats
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+### methodology notes:
+- estimates are calcualted using the standard least-squares method provided by the [LMATH library](https://wiki.freepascal.org/LMath)
+
+  
+
+[Return to the top](#top) or [Go to the index](#index)
 
 # Graphs and charts
 
-<a name="survival" id="survival"></a><a name="sur"></a>
-## survival / sur
+<a name="sur"></a>
+## survival
+
 ```
-survival outcomevariable timevariable [!by:=stratifyvariable] [options]
-survival outcomevariable date1 date2 [!by:=stratifyvariable] [options]
+survival <outcomevariable> <timevariable> [!by:=stratifyvariable] [!options]
+survival <outcomevariable> <date1> <date2> [!by:=stratifyvariable] [!options]
 ```
+
 Kaplan-Meier plots and lifetables for time-to-failure data with censoring. Tabulations of survival at each time when there were deaths (failures), plus confidence intervals. A summary table shows the median survival by stratum. The KM plot is always provided in a separate window unless !q is specified as an option.
 
 ### parameters
-- `outcome variable` must have discrete values, one of which indicates failure or death
-- `date variable` must be an integer. The outcome variable may be numeric or string
-- `date1` and `date2` must be date variables. Elapsed time is calculated as `date2 - date1`
+- `outcomevariable` 
+
+  The outcome usually has values that indicate 'died' and 'lost to followup'. It must have discrete values, one of which indicates failure or death. The outcome variable may be of type numeric or string.
+
+  
+- `timevariable` 
+
+  A time, usually in days, which must be an integer
+  
+- `date1` and `date2` 
+
+ both must be date variables. Elapsed time, effectively the time variable, is calculated as `date2 - date1`
 
 ### options
 - `!o`
 
  Specify the value of outcome indicating death (failure), which may be numeric or text; the default is zero
 
-- `!by`
+- `!by:=stratifyvariable`
 
- Stratify by this variable
+ Stratify by this variable, which should have a small number of unique values
 
 - `!t`
 
@@ -1561,26 +2232,44 @@ Kaplan-Meier plots and lifetables for time-to-failure data with censoring. Tabul
 
 ### output options
 
-- `!nt` Omit the lifetables
+- `!nt` 
 
-- `!nou` Omit the unstratified lifetable
+  Omit the lifetables
 
-- `!nos` Omit the stratified lifetables
+- `!nou` 
 
-- `!ns` Omit the summary table
-- `!ng` Do not show the KM plot
+  Omit the unstratified lifetable
+
+- `!nos` 
+
+  Omit the stratified lifetables
+
+- `!ns` 
+
+  Omit the summary table
+- `!ng` 
+
+  Do not show the KM plot
 
 ### Kaplan-Meier plot options
 
-- `!cb` Copy the KM plot points to the clipboard for use in other software
+- `!cb` 
 
-By default, confidence intervals are shown as error bars
+  Copy the KM plot points to the clipboard for use in other software
 
-- `!cin` Omit the confidence intervals from the KM plot
+By default, confidence intervals are shown as error bars. Change this with these options:
 
-- `!cib` Show the confidence intervals as shaded bands. The default KM plot shows the upper and lower confidence intervals as dotted lines.
+- `!cin` 
 
-- `!cil` Show the confidence intervals as dotted lines.
+  Omit the confidence intervals from the KM plot
+
+- `!cib` 
+
+  Show the confidence intervals as shaded bands.
+  
+- `!cil` 
+
+  Show the confidence intervals as dotted lines.
 
 ### Graph options
 
@@ -1591,25 +2280,33 @@ By default, confidence intervals are shown as error bars
 Estimates are saved as result variables. Use  `list results` for details
 
 ### methodology
-- confidence intervals calculated using the method in Statistics with Confidence, referenced elsewhere.
+Confidence intervals are calculated using the method in <b>Statistics with Confidence</b>, referenced elsewhere.
 
-See [labeling](#labeling) for options on changing between labels/values
-
-See [variables](#referencedvars) on using referenced variables for this command
+See [Common options](#commonoptions) for other options, for labels and formats
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="scatter" id="scatter"></a>
+See [variables](#referencedvars) on using referenced variables for this command
+
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="sca"></a>
 ## scatter
+
 ```
-scatter Xvariable Yvariable [graphoptionlist]
+scatter <Xvariable> <Yvariable> [graphoptionlist]
 ```
 
-Simple scatter plot for two variables.
+Simple scatter or line plot for two variables.
 
 ### parameters
-- Xvariable may also be integer, float or date/time
-- Yvariable may be integers or float
+- `Xvariable`
+
+  may also be integer, float or date/time
+- `Yvariable`
+
+  may be integers or float
 
 ### options
 - `!l`
@@ -1623,24 +2320,33 @@ Simple scatter plot for two variables.
 - `!colors:="colorMap"`
 
 	colorMap is a string of up to 10 digits mapping the Analysis colours to the chart series. For `scatter`, a single digit may be specified:
+	
 	`scatter xvar yvar !colors:="4"`
 	
 - `scatter` is a graph command and any [graph option](#graphoptions) may be specified
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="fbarchart" id="fbarchart"></a>
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="bar"></a>
 ## barchart
+
 ```
-barchart Variable [StratifyVariable] [options]
+barchart <variable> [StratifyVariable] [!options]
 ```
 Will change to `fbarchart` in a future release
 
 Draw a frequency barchart for `Variable`, showing frequencies or percentages at each indiviual value of the variable.
 
 ### parameters
-- Variable may be of any type
-- Stratifyvariable may be of any type
+- `variable`
+
+  may be of any type
+- `Stratifyvariable`
+
+  may be of any type
 
 ### options
 - `!pct`
@@ -1659,18 +2365,26 @@ Draw a frequency barchart for `Variable`, showing frequencies or percentages at 
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="histogram" id="histogram"></a>
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="his"></a>
 ## histogram
+
 ```
-histogram Variable [StratifyVariable] [options]
+histogram <variable> [StratifyVariable] [!options]
 ```
-Draw a histogram for `Variable`, based on consecutive integer or day intervals. The user is responsible for recoding variables so that consecutive intervals make sense.
+Draw a histogram for `variable`, based on consecutive integer or day intervals. The user is responsible for recoding variables so that consecutive intervals make sense.
 
 A histogram is a frequency bar chart where every integer value within range is represented on the X-axis.
 
 ### parameters
-- Variable may be integer or date
-- Stratifyvariable may be of any type
+- `variable`
+
+  may be integer or date
+- `Stratifyvariable
+
+  may be of any type
 
 ### options
 - `!interval:=i`
@@ -1687,18 +2401,26 @@ A histogram is a frequency bar chart where every integer value within range is r
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="epicurve" id="epicurve"></a>
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="epi"></a>
 ## epicurve
+
 ```
-epicurve <Variable> [StratifyVariable] [options]
+epicurve <Variable> [StratifyVariable] [!options]
 ```
 Draw an epidemic curve for a variable, based on consecutive integer or day intervals. The user is responsible for recoding variables so that consecutive intervals make sense.
 
 An epicurve is a stacked histogram, where individual boxes are shown for each subject
 
 ### parameters
-- Variable may be integer or date
-- StratifyVariable may be of any type
+- `Variable`
+
+  may be integer or date
+- `StratifyVariable`
+
+  may be of any type
 
 ### options
 - `!interval:=i`
@@ -1709,8 +2431,47 @@ An epicurve is a stacked histogram, where individual boxes are shown for each su
 
  `epicurve` is a graph command and any [graph option](#graphoptions) may be specified except for `!ymin`
 
-<a name="graphoptions" id="graphoptions"></a> 
+
+[Return to the top](#top) or [Go to the index](#index)
+
+# SPC Charts
+
+<a name="par"></a>
+## pareto
+
+```
+pareto <Variable> [!options]
+```
+Draw a pareto chart for a variable. The chart has two components: a bar chart showing counts for the variable in descending order by count and a line chart showing cumulative percentages.
+
+### parameters
+- `Variable`
+
+  may be of any type
+
+### options
+- `!by:=sVariable`
+
+  `sVariable` may be of any type
+  
+  There will be a chart for each value of `sVariable`. The charts will appear as tabs within a window.
+  
+- `!w:=wVariable`
+
+   weight the counts using `wVariable`
+   
+- graph options
+
+   `pareto` is a graph command and any graph option may be specified
+
+See [variables](#referencedvars) on using referenced variables for this command
+
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="graphoptions"> </a>
 ## graph options
+
 
 Any of the graph commands may use the following options.
 
@@ -1735,9 +2496,9 @@ Any of the graph commands may use the following options.
 	- if a given value will excluded data from the graph, then it is ignored
 	- for some graphs, specifing xmin or ymin := 0 may be required to force the axis to begin at zero
 
-- `!c|colors := "color specification string"`
+- `!c|colors := "color map"`
 
-   `color specification string` can take two forms
+   `color map` can take two forms
    
    - up to ten digits (0-9) representing the order that the standard colors will be used. The standard colors (0-9) are Black, Blue, Red, Green, Yellow, White, SkyBlue, Fuchsia, Gray, Aqua. The default order is 1234567890. That means the first color for a graph is blue, then red, green, etc.
 
@@ -1766,274 +2527,72 @@ Any of the graph commands may use the following options.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-# SPC Charts
-<a name="pareto" id="pareto"></a>
-## pareto
+
+[Return to the top](#top) or [Go to the index](#index)
+
+# Programming
+
+<a name="if"></a>
+## If ... then
+
 ```
-pareto <Variable> [options]
+if (<condition>) then do <command> [else do <command>]
+if (<condition>) then do begin <command block> end;
+if (<condition>) then do begin <command block> end else <command block> end;
 ```
-Draw a pareto chart for a variable. The chart has two components: a bar chart showing counts for the variable in descending order by count and a line chart showing cumulative percentages.
+This is a "flow" control statement - which will evaluate a logical expression once and execute the command(s) following then when the logical expression is true. 
+The else clause is optional and is only executed if evaluation of the logical expression is false. For complex logical expressions, use parentheses for clarity.
+> Note: This statement is not normally used to change values of variables
 
 ### parameters
-- `Variable` may be of any type
+- `condition` can be any logical condition that uses constants, global variables, a single result variable, or a single data value
+- `command` may be any command that operates on data except for `save`
+- `command block` is a group of commands, each of which must end with a semicolon, as in any program
 
-### options
-- `!by:=sVariable`
-
-  `sVariable` may be of any type
-  
-  There will be a chart for each value of `sVariable`. The charts will appear as tabs within a window.
-  
-- `!w:=wVariable`
-
-   weight the counts using `wVariable`
-   
-- graph options
-
-   `pareto` is a graph command and any graph option may be specified
-
-See [variables](#referencedvars) on using referenced variables for this command
-
-# Consistency and Validity Check of data
-
-<a name="checkdata" id="checkdata"></a><a name="check"></a>
-## check data
-```
-check data [var1 ...]
-```
-Use this command to perform a check of the data in selected variables (if no variable are specified, then ALL variable are checked).
-
-The data is checked for:
-
-- Data length: Is the number of characters used in data within the length specified for the variable
-- Range/Valuelabel: Is the data within the specified range and/or is it a legal value label
-- Must Enter: Does the variable have data for all observations if it is marked as Must Enter
-- Jumps: If a variable has jumps assigned, do the skipped fields have the correct values
-- Comparison: If a variable is compared to another variable, is the comparison uphold.
-
-### example
+### examples
 
 ```
-read "bromar.epx"
-check data                   // checks all variable
-check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age
+if (dayofweek(today()) = 1) then
+freq v12   // will show variable v12 if run on Monday
+else
+freq v13;  // will show variable v13 on other days of week.
 ```
 
-See [variables](#referencedvars) on using referenced variables for this command
-
-<a name="checkkey" id="checkkey"></a>
-## check key
-```
-check key [var1 ...]
-```
-Check that the data in specified variables are unique and represent a key.
-
-If no variables are specified and a key is already present in the current dataset, this key is checked.
-
-### example
+<a name="for"></a>
+## For loop
 
 ```
-read "bromar.epx"
-check key id                 // checks if the variable ID represents a unique key
+for <var> := <start value> {to | downto} <end value> do <command>;
+for <var> := <start value> {to | downto} <end value> do begin <command block> end;
 ```
 
-See [variables](#referencedvars) on using referenced variables for this command
+The `for` statement loops through the integer values from start to end either in ascending order (to) or descending order (downto).
+If the values are in the wrong order (e.g. start value > end value, and the order is ascending) then the statements are not executed.
+`var` Must be an integer type global variable (single or vector) 
+The result of <start value> and <end value> must be an integer values
 
-<a name="checkrelate" id="checkrelate"></a>
-## check relate
-```
-check relate
-```
-Check that all observations have a valid parent observation
-
-### example
+### examples
 
 ```
-read "related_data.epx";  // Load the project
-use child_dataset;        // Change dataset to a related dataset
-check relate;             // Perform the check from the child dataset "upwards" to the parent.
-                          // Must be repeated if you have more levels
-```
-<a name="checkstudy" id="checkstudy"></a>
-## check study
-```
-check study
-```
-Check that the study information of is specified or not.
-
-### example
-
-```
-read "samplev3.epx";  // Load the project
-check study;          // Perform the check
+new variable ID integer;   // this creates the new ID variable
+new global i integer;
+for i := 1 to size(@dataset[1]) do
+ID := i;
+// variable ID now has the sequential number that each observation has in a dataset.
+// You may sort the data before doing so.
+//Note: Another way to do this without a for command is
+new variable ID integer := _n;
+// _n is shorthand for the current record number
 ```
 
-# REPORTS
 
-<a name="report" id="report_users"></a>
-## report users
-```
-report users
-```
-If a project is using Extended Access control, this command will show a condensed report of the log entries and a list of failed login attempts.
-
-If the project is not using Extended Access control, an error will be displayed.
-
-<a name="report" id="report_validate"></a>
-## report validate / report val
-```
-report validate [var1 var2 ...] [!options]
-```
-Compares two dataset / projects against each other, validating the data content and outputs a report of differences based on the comparison.
-
-### parameters
-The variables var1 .. var2 denotes the sorting variables. This is required if not comparing whole projects OR if the datasets does not contain and key variables.
-
-### options
-
-- `!fn := "<string>"`
-
- Opens an external file to compare with.
-
-- `!ds := <dataset id>`
-
- Specifies a single dataset (internal/external) to compare with.
-
-- `!nos`
-
- Excludes all string types from comparison
-
-- `!nodt`
-
- Excludes all date and time types from comparison
-
-- `!noauto`
-
- Excludes all auto types from comparison
-
-- `!noc`
-
- All text comparisons are done case in-sensitive
-
-- `!nol`
-
- Only show the condensed report - do not show the list of observations
-
-- `!val`
-
- All records that pass the comparison will be marked as verified. The pass is based on the option chosen from above!
-
-### example
-```
-read "bromar.epx";               // Load the project
-
-// Run a report based on the two internal datasets
-// (1st is currently used, 2nd is the one marked with !ds :=...)
-report val id !ds := ds2;
-
-// Run a report based on the two datasets, one internal and one external
-// (1st is currently used, 2nd is the one marked with !ds :=...)
-report val id !fn := "double_entry.epx" !ds := ds1
-
-// If you have two projects there are two ways compare there.
-// If you wish to compare individual dataset, use the options above.
-// If you have two project you wish to make a complete validation on, use following:
-
-// Run a report based on the two complete projects, one internal and one external
-report val !fn := "double_entry.epx"
-
-// The last example is a special case where both the internal and external project only contains
-// a single dataset each. In this case you only need to specify the sorting variable(s)
-// and the external file. The dataset option is not needed since the external project only has a single dataset.
-report val id !fn := "double_entry.epx"
-```
-
-<a name="report" id="report_countby"></a>
-## report countby / report cby
-```
-report cby [var1 var2 ...] [!options]
-```
-Compares the combination of variables across several datasets. The variables var1 .. varn is considere a "key" and each unique combination of this key is counted across all the specified datasets.
-
-The output is a report with a condensed table of the found keys and a complete table with the found unique key values and the count of these in each dataset.
-
-### options
-
-- `!fn := <global string vector>` 
-
-   This option accepts a global vector with the filenames that are included in the report. The files can be in different formats, but the variable names MUST be the same in each file.
-   
-   If a file name is sys.missing (.), the dataset in the currently opened project is used.
-
-- `!ds := <global string vector>` 
-
-   This option accepts a global vector with the dataset name that is included in the report. The number of entries in the dataset variable MUST be the same as the filenames.
-
-- `!nol` 
-
-   Only show the condensed report - do not show the list of observations
-
-### example
-```
-// Setup the input for the report:
-new global filenames[5] string;
-filenames[1] := "count_file_1.epx";
-filenames[2] := "count_file_2.rec";
-filenames[3] := "count_file_3.dta";
-filenames[4] := "count_file_4.csv";
-filenames[5] := .;   // use the current file
-// Setup the dataset names
-new global datasets[5] string;
-datasets[1] := "ds1";
-datasets[2] := "ds1";
-datasets[3] := "ds1";
-datasets[4] := "ds1";
-datasets[5] := "ds1";
-// Run the report:
-report cby id !fn := filenames !ds := datasets
-```
-
-<a name="disk" id="disk"></a>
-# Disk commands
-
-<a name="cd" id="cd"</a>
-## cd
-```
-cd ["<directory path>"]
-```
-Change the working directory (folder) to the specified path.
-        If no path is given a dialog is shown to select the working directory.
-
-<a name="dir" id="dir"></a><a name="ls"></a>
-## ls / dir
-```
-ls ["<directory path>" | "file name"]
-dir ["<directory path" | "file name"]
-```
-
-List files in a directory
-
-### parameters
-- *directory path* or *file name* may include wild cards (* or ?)
-        If no path is given, the working directory is assumed
-
-<a name="erase" id="erase"></a>
-## erase
-```
-erase "<file name>"
-```
-Delete the file from disk.
-
-### parameters
-- <file name> may use wildcards (* or ?), but the directory name should not as this may or may not be allowed by the operating system
-- If no path is given, the current working directory is used.
-
-> Warning: The file is deleted (if the file exist) with no confirmatory question
+[Return to the top](#top) or [Go to the index](#index)
 
 # Program-wide options
 
-<a name="set" id="set"></a>
+<a name="set"></a>
 ## set
+
 ```
 set ["parameter"] [:= "value"]
 ```
@@ -2064,7 +2623,7 @@ set "echo" := "off";
 set "COMMANDLINE FONT COLOUR" := "#FFF000";
 ```
 <!-- NOT IMPLEMENTED
-For any command:  `set option [cmd] := [options]`
+For any command:  `set option [cmd] := [!options]`
 e.g.  
 `set option means := "!t"`
 When the specified command is executed the options mentioned will be added to the command.
@@ -2082,8 +2641,8 @@ BROWSER FONT STYLE | <fsBold/fsItalic/fsUnderline> | " " | Adjust the style of t
 BROWSER OBS DEFAULT COLOUR | hex colour code | "#F0F0F0" | Adjust the colour of "obs" column for normal/default observations |
 BROWSER OBS DELETED COLOUR | hex colour code | "#FF0000" | Adjust the colour of "obs" column for observations marked for deletion |
 BROWSER OBS VERIFIED COLOUR | hex colour code | "#008080" | Adjust the colour of "obs" column for verified observations |
-BROWSER VALUE LABEL | L/V/LV/VL | V | Default option for output of variable data (value and/or label). See [Valuelabels](#labeling) for options. This options applies to "list data" and "browse" only |
-BROWSER VARIABLE LABEL | VLA / VLN / VN / VNL | VN | Default option for displaying variable name and/or label. See [Variable labels](#variablelabels) for options. This options applies to "list data" and "browse" only |
+BROWSER VALUE LABEL | L/V/LV/VL | V | Default option for output of variable data (value and/or label). See [Common options](#commonoptions) for options. This options applies to "list data" and "browse" only |
+BROWSER VARIABLE LABEL | VLA / VLN / VN / VNL | VN | Default option for displaying variable name and/or label. See [Common options](#commonoptions) for options. This options applies to "list data" and "browse" only |
 COMMANDLINE BG COLOUR | hex colour code | "#FFFFFF" | Adjust the colour of the background. e.g. #000000 is black.  |
 COMMANDLINE FONT COLOUR | hex colour code | "#000000" | Adjust the colour of the font. e.g. #FFF000 is yellow.  |
 COMMANDLINE FONT NAME | string | (depends on the operating system) | Name of the font used in the commandline edit.  |
@@ -2118,14 +2677,18 @@ SHOW DEBUG | ON/OFF | ON | If "ON" then lines containing debug information is sh
 SHOW ERROR | ON/OFF | ON | If "ON" then lines containing error information is shown. "OFF" = no output
 SHOW INFO | ON/OFF | ON | If "ON" then lines containing informational output is shown. "OFF" = no output
 SHOW WARNING | ON/OFF | ON | If "ON" then lines containing warning information is shown. "OFF" = no output
-STATISTICS VALUE LABEL | L/V/LV/VL | L | Default option for output of variable data (value and/or label). See [Valuelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
-STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for displaying variable name and/or label. See [Variablelabels](#labeling) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
+STATISTICS VALUE LABEL | L/V/LV/VL | L | Default option for output of variable data (value and/or label). See [Common options](#commonoptions) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
+STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for displaying variable name and/or label. See [Common options](#commonoptions) for options. This options applies to commands not covered by "BROWSER VALUE LABEL"
 
-<a name="options" id="options"></a>
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="commonoptions"></a>
 # Common options
 
-<a name="labeling" id="labeling"></a>
+<a name="valuelabels"></a>
 ### Valuelabels
+
 
 - `!v`  Show only the value, (**fallback if no label to corresponding value)
 
@@ -2135,8 +2698,9 @@ STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for disp
 
 - `!lv`  Show the label then the value
 
-<a name="variablelabels" id="variablelabels"></a>
+<a name="variablelabels"></a>
 ### Variable Labels
+
 
 - `!vn`  Show only the name, (**fallback if no variable label assigned)
 
@@ -2146,8 +2710,9 @@ STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for disp
 
 - `!vln`  Show the label then the name
 
-<a name="formatting" id="formatting"></a>
+<a name="decimals"></a>
 ### Decimals for percentages or statistics
+
 
 - `!d0` 0 decimals
 
@@ -2161,38 +2726,41 @@ STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for disp
 
 - `!d5` 5 decimals
 
-<a name="type" id="type"></a>
+<a name="variabletype"></a>
 ## Variable types
+
+The follow types are defined for standard, result and global variables. All variable types may be missing.
 
 - integer / int / i
 
-  A variable (standard, result or global) that contains an integer value.
+  a positive or negative integer value
 
 - float / f
-  A variable (standard, result or global) that contains an floating point value.
+  
+  a positive or negativefloating point value
 
-> Note: all floating points shown on screen appear in the current national setting (locale),
-        but input (from editor or command line) must always use "." (period) as the decimal separator.
-         The saved data in a given project can be used in different national settings without giving problems or need for conversions.
+  > Note: all floating points shown on screen appear in the current national setting (locale), but input (from editor or command line) must always use "." (period) as the decimal separator. The saved data in a given project can be used in different national settings without giving problems or need for conversions.
 
 - string / str / s
 
-  A variable (standard, result or global) that may contain any string
+  a string containing any characters
 
 - boolean / bool / b
 
-  A variable (standard, result or global) that contains only true or false
+  true or false
 
 - time / t
 
-  A variable (standard, result or global) that contains a time value.
+  a time value
 
 - date / d
 
-  A variable (standard, result or global) that contains a date value. All new date variables created will be a DMY type, but this may change in the future.
+  a date value
+  
+  > Note: all new date variables created in Analysis will be a DMY type, but this may change in the future.
 
-<a name="referencedvars" id="referencedvars"></a>
-## Variable references
+<a name="variablelist"></a>
+## Variable lists
 
 Any command that accepts more than one variable as parameters can use the following schemes for variable expansion.
 
@@ -2222,9 +2790,14 @@ list data V?  ;          // V?  is expanded to V1, V2, V3 and V4
 list data V1??;          // V1?? is expanded to V100 only!
 ```
 
-A `referenced` variable may also be used in the expansion. These will be evaluated before the expansion!
+A `referenced` variable may also be used in the expansion. These will be evaluated before the expansion! See below.
 
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="referencedvariable"></a>
 ## Referenced Variable
+
 ```
 @{variable1}
 ```
@@ -2297,14 +2870,43 @@ for i:= 2 to 5 do
    end;
 ```
 
+
+[Return to the top](#top) or [Go to the index](#index)
+
 #Programming aids
 
-These are not normally used in interactive mode
+<a name="run"></a>
+## run
 
-<a name="programgrp" id="programgrp"></a>
+```
+run ["<filename.pgm>"]
+```
 
-<a name="runtest" id="runtest"></a>
+Execute the commands saved in a .pgm file
+### parameters
+- `filename.pgm`
+
+  may include a path
+
+- without parameters, the open file dialogue is started
+
+<a name="comment"></a>
+
+## Comments for programs
+
+```
+// single line comment
+means x; // end of line comment
+/*
+   Block comment
+   A block comment should have a space or new line before the closing
+*/
+/* This is a comment*/ is not valid as there is no space before '*/'
+```
+ 
+<a name="runtest"></a>
 ## runtest
+
 ```
 runtest ["<directory path>"]
 ```
@@ -2319,51 +2921,64 @@ This is provided for testing of correct estimation etc.
 
 - without parameters, the open file dialogue is started
 
+<a name="ver"></a>
+## version
 
-<a name="run"></a>
-## run
 ```
-run ["<filename.pgm>"]
+version
 ```
-Execute the commands saved in a .pgm file
-### parameters
-- `filename.pgm`
 
-  may include a path
+Display the Epidata Analysis software information. This is important to include if you are requesting help. It is the same information available from the Analysis menu.
+ 
 
-- without parameters, the open file dialogue is started
+[Return to the top](#top) or [Go to the index](#index)
 
-<a name="stop" id="stop"></a>
 # Clean up - stop
 
-<a name="close" id="close"></a>
+<a name="quit"></a>
+## quit
+
+```
+quit
+```
+
+Close the current project and exit. Any unsaved changes will be lost.
+<a name="clo"></a>
 ## close
+
 ```
 close
 ```
+
 Stop using a project
 - all unsaved variables and changes to existing variables and labels will be lost
 - global variables will remain in memory
 
-<a name="cls" id="cls"></a>
+<a name="cls"></a>
 ## cls
+
 ```
 cls
 ```
+
 Clear the output screen
 
-<a name="clh" id="clh"></a>
+<a name="clh"></a>
 ## clh
+
 ```
 clh
 ```
+
 Clear the history of commands
 
-<a name="reset" id="reset"></a>
+<a name="res"></a>
 ## reset
+
 ```
 reset
 ```
+
 Reset of all parameters of the program!
 This is almost equivalent of doing:
 ```
@@ -2374,10 +2989,14 @@ clh;
 ```
 > Note:  `reset` also clears all result variables!
 
-<a name="functions" id="functions"></a>
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="functions"></a>
 # Functions available in EpiData Analysis
 
 In the following, *takes* indicates the variable type for each parameter and *result* indicates the type of the result of the function:
+
 - s: string
 - b: boolean
 - d: date
@@ -2394,7 +3013,7 @@ Parameters may be variables read from fields, created variables, or any expressi
 function | takes | result | example
 :---|:---|:---|:---
 <a name="length"></a>length(str) | s | i | `length("Abcde")` => 5
-<a name="post"></a>pos(instr, findstr) | s, s | i | `pos("Abcde", "cd")` => 3<br/>`pos("Abcde", "z")` => 0
+<a name="pos"></a>pos(instr, findstr) | s, s | i | `pos("Abcde", "cd")` => 3<br/>`pos("Abcde", "z")` => 0
 <a name="substring"></a><a name="substr"></a>substring(str, start, len) | s, i, i | s | `substring("Abcde", 2, 3)` => "bcd"
 <a name="trim"></a>trim(str) | s | s | trim("Abcde ") => "Abcde"<br/>`trim(" Abcde")` => "Abcde"
 <a name="lower"></a>lower(str) | s | s | `lower("Abcde")` => "abcde"
@@ -2496,6 +3115,7 @@ verified([index]) | [i] | b | Returns true/false whether the record is marked as
 
 operator | syntax | result | meaning | example
 :---|:---|:---|:---|:---
+:= | any := any | | assignment | types must be compatible
 + | n+n | n | addition | `1+2` => 3
 + | s+any<br/>any+s | s | concatenation | `"A"+"B"` => "AB"<br/>`"A"+1` => "A1"
 + | d+n | d | date addition | `"30/11/2004"+31` => "31/12/2004"
@@ -2507,7 +3127,7 @@ operator | syntax | result | meaning | example
 div | n div n | i | integer result of division | `5 div 2` => 2<br/>`5 div 0` => missing
 ^ | n^n | f | exponentiation | `5^2` => 25 <br/> `4^0.`5 => 2
 ( ) | | | group expressions | `(5\*(2+4))/2` => 15<br/>`5\*2+4/2` == (5\*2)+(4/2) => 12
-= | n = n | b | equal |`1 = 2` => FALSE
+= | n = n | b | is equal to |`1 = 2` => FALSE
 < | n < n | b | less than | `1<2` => TRUE
 > | n > n | b | greater than | `1>2` => FALSE
 <= | n <= n | b | less than or equal | `1<=2` => TRUE<br/>`2<=2` => TRUE
@@ -2515,12 +3135,15 @@ div | n div n | i | integer result of division | `5 div 2` => 2<br/>`5 div 0` =>
 <> | n <> n | b | not equal to | `1<>2` => TRUE<br/>`1<>1` => FALSE
 $ | $resultvar  | | result value | `? $count` => 4027
 
-<a name="startup" id="startup"></a>
+
+[Return to the top](#top) or [Go to the index](#index)
+
+<a name="startup"></a>
 ## Startup options for EpiData Analysis
 
 The use of startup options depends on the operating system. You may be able to create a desktop shortcut that includes these or start analysis from the command line.
 
-epidataanalysis [options]
+epidataanalysis [!options]
 
 ### options
 
@@ -2543,3 +3166,14 @@ With Linux:
 ```
 ./epidataanalysis -i /path/to/startup.pgm
 ```
+
+[Return to the top](#top)
+
+<a name="index"></a>
+# Command index
+
+> Note: Where there is an abbreviated form of the command, it is also shown.
+
+|   |   |   |
+:---|:---|:---|
+[aggregate / agg](#agg)<br/>[append / app](#app)<br/>[barchart / bar](#bar)<br/>[begin](#)<br/>[browse / bro](#bro)<br/>[cd](#cd)<br/>[check](#check)<br/>[clh](#clh)<br/>[cls](#cls)<br/>[count / cou](#cou)<br/>[ctable / cta](#cta)<br/>[delete / del](#del)<br/>[edit / edi](#edi)<br/> | [epicurve / epi](#epi)<br/>[erase / era](#era)<br/>[for](#)<br/>[freq / fre](#fre)<br/>[histogram / his](#his)<br/>[if](#if)<br/>[keep / kee](#kee)<br/>[ls](#ls)<br/>[means / mea](#mea)<br/>[merge / mer](#mer)<br/>[new / new](#new)<br/>[recode / rec](#rec)<br/>[regress / reg](#reg)<br/> | [reorder / reo](#reo)<br/>[report / rep](#rep)<br/>[reset / res](#res)<br/>[run](#run)<br/>[runtest](#runtest)<br/>[save / sav](#sav)<br/>[select / sel](#sel)<br/>[set / set](#set)<br/>[sort / sor](#sor)<br/>[survival / sur](#sur)<br/>[tables / tab](#tab)<br/>[use / use](#use)<br/>[version / ver](#ver)<br/>
