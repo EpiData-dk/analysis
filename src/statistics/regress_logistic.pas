@@ -148,6 +148,7 @@ begin
         FDataError := true;
         exit;
       end;
+  if (FObs < 100) then
   if (n < 0.1 * FObs) or (n > 0.9 * FObs) then
     FOutputCreator.DoWarning(sDepVarUnbalanced +
         ' p(' + FDepVName + '=1) ~ ' + ((100 * n) div FObs).ToString + '%');
