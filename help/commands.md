@@ -8,7 +8,7 @@ ___
 
 | Manage data | Analyze data | Graph data | Write programs
 :---|:---|:---|:---
-[read](#read) or [save](#save) a project<br/>[append](#append) or [merge](#merge) data<br/>[aggregate](#aggregate) data<br/>[use](#use) datasets<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [sort](#sort) records<br/>[select](#select) records<br/>[count](#count) records<br/>[describe](#describe) variables<br/>[frequencies](#freq)<br/>[tables](#tables)<br/>[ctable](#ctable) with many variables<br/>[means](#means)<br/>[regress](#regress)ion analysis<br/>[survival](#survival) analysis | [scatter](#scatter) plot <br/>[line](#scatter) plot <br/>frequency [bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve)<br/>[Kaplan-Meier plot](#survival)<br/>*SPC Charts*<br/>[pareto chart](#pareto)<br/>[Options](graphoptions) used in all graphs| [if-then](#if-then)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#commonoptions)<br/>[Types of Variables](#variabletype)<br/>[Variable lists](#variablelist)<br/>[Referenced variables](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Startup options](#startup)
+[read](#read) or [save](#save) a project<br/>[append](#append) or [merge](#merge) data<br/>[aggregate](#aggregate) data<br/>[use](#use) datasets<br/>create [new](#new) content<br/>[list](#list) content<br/>[edit](#edit) content<br/>[delete](#drop) content<br/>[Consistency and Validity Checks](#check)<br/>[Reports](#report)<br/> | [sort](#sort) records<br/>[select](#select) records<br/>[count](#count) records<br/>[describe](#describe) variables<br/>[frequencies](#freq)<br/>[tables](#tables)<br/>[ctable](#ctable) with many variables<br/>[means](#means)<br/>[regress](#regress)ion analysis<br/>[survival](#survival) analysis | [scatter](#scatter) plot <br/>[line](#scatter) plot <br/>frequency [bar](#barchart) chart <br/>[histogram](#histogram)<br/>[epicurve](#epicurve)<br/>[Kaplan-Meier plot](#survival)<br/>*SPC Charts*<br/>[pareto chart](#pareto)<br/>[Options](graphoptions) used in all graphs| [if-then](#if-then)<br/>[set](#set) parameters <br/>[Labels, Values and format in output](#commonoptions)<br/>[Types of Variables](#variabletype)<br/>[Variable lists](#variablelist)<br/>[Referenced variables](#referencedvars)<br/>[run](#run) scripts <br/>[Clean up & stop](#stop)<br/>[Functions](#functions)<br/>[Operators](#operators)<br/>[Comments for programs](#comment)<br/>[Startup options](#startup)
 
 Some commands are currently only available in EpiData Analysis Classic. [Download EpiData Classic here](http://epidata.dk/download.php#ea)
 
@@ -1827,7 +1827,7 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 - `!t:`
 
- Analysis of Variance to test for homogeneity of the mean across strata, including Bartletts test for homogeneity of variance.
+ Analysis of Variance to test for homogeneity of the mean across strata, including Bartlett's test and Levene's test for homogeneity of variance.
 
  With `!by` (stratified), F-test is given.
 
@@ -2709,6 +2709,20 @@ samevalue<br/>(x, y) | n, d, t | b | `samevalue($mean1, 1.23456789123456)`<br/>r
 cwd() | | s | Returns the current working directory
 deleted([index]) | [i] |  b | Returns true/false whether the record is marked for deletion. If no index is supplied the current record number is tested<br/>`select deleted() do edit data !nomd`<br/>selects records marked for deletion and unmarks them
 verified([index]) | [i] | b | Returns true/false whether the record is marked as verified. If no index is supplied the current record number is tested:<br/>`select verified() do edit data !nomd` <br/>selects records marked for deletion and unmarks them
+
+<a name="comment"></a>
+## Comments for programs
+
+```
+// single line comment
+means x; // end of line comment
+/*
+   Block comment
+   A block comment should have a space or new line before the closing
+*/
+/* This is a comment*/ is not valid as there is no space before '*/'
+```
+
 
 <a name="operators" id="operators"></a>
 ## Operators used in EpiData Analysis
