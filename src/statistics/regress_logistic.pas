@@ -40,9 +40,9 @@ uses
 
 const
   sumVarNames: array of UTF8String =
-  ('RunDate', 'DepVar', 'Model', 'Deviance', 'df', 'p', 'pR2');
+  ('RunDate', 'DepVar', 'Model', 'Deviance', 'df', 'p', 'pR2', 'AIC');
   sumVarTypes: array of TEpiFieldType =
-  (ftString, ftString, ftString, ftFloat, ftInteger, ftFloat, ftFloat);
+  (ftString, ftString, ftString, ftFloat, ftInteger, ftFloat, ftFloat, ftFloat);
   maxIterations: Integer = 50;
   convergeTolerance: Float = 1E-10;
 
@@ -56,6 +56,7 @@ TlRegTest = record
   Dr : Float; // Residual deviance
   p  : Float; // Chi-square p (for Dm only)
   pR2: Float; // McFadden pseudo-R squared
+  AIC: Float; // AIC (Akaike Information Criterion)
 end;
 
 TlrOdds = record
@@ -230,8 +231,10 @@ begin
   V.Cell[0,3].Text := sTotal;
   V.Cell[1,3].Text := (FObs - 1).ToString;
   V.Cell[2,3].Text :=  StatFloatDisplay(StatFmt, lrRegTest.Dn);
-  V.Footer.Text    := 'McFadden ' + sPseudoR2 + ' = ' + StatFloatDisplay(StatFmt,
-    lrRegTest.pR2);
+  V.Footer.Text    := 'McFadden ' + sPseudoR2 + ' = ' +
+                   StatFloatDisplay(StatFmt, lrRegTest.pR2) + LineEnding +
+                   'AIC = ' +
+                   StatFloatDisplay(StatFmt, lrRegTest.AIC);
 end;
 
 procedure TRegressLogistic.DoResultVariables();
@@ -250,6 +253,7 @@ begin
   FExecutor.AddResultConst(Prefix + 'model',    ftString).AsStringVector[0]   := FModel;
   FExecutor.AddResultConst(Prefix + 'nIndVar',  ftInteger).AsIntegerVector[0] := FParamCt-1;
   FExecutor.AddResultConst(Prefix + 'pseudoR2', ftFloat).AsFloatVector[0]     := lrRegTest.pR2;
+  FExecutor.AddResultConst(Prefix + 'AIC',      ftFloat).AsFloatVector[0]     := lrRegTest.AIC;
 
   FExecutor.AddResultConst(Prefix + 'devReg',   ftFloat).AsFloatVector[0]   := lrRegTest.Dm;
   FExecutor.AddResultConst(Prefix + 'devRes',   ftFloat).AsFloatVector[0]   := lrRegTest.Dr;
@@ -291,11 +295,11 @@ begin
     begin
       if (Y[i] = 1) then
         begin
-          LLm += ln(1/F[i]);
+          LLm += ln(F[i]);
           inc(s);
         end
       else begin
-        LLm += ln(1/(1-F[i]));
+        LLm += ln(1-F[i]);
       end;
     end;
   { calculate null model deviance
@@ -306,10 +310,11 @@ begin
   d := s.ToDouble / n.ToDouble;
   LLn := n*(d*ln(d)+(1-d)*ln(1-d));
   lrF.Dn := -2 * LLn;
-  lrF.Dr :=  2 * LLm;
+  lrF.Dr := -2 * LLm;
   lrF.Dm := lrF.Dn - lrF.Dr;
   lrF.p  := pKhi2(FParamCt-1,lrF.Dr);
   lrF.pR2 := lrF.Dm / lrF.Dn;
+  lrF.AIC := (-2 * LLm) + (2 * FParamCt);
 end;
 
 procedure TRegressLogistic.Summary();
@@ -353,6 +358,7 @@ begin
     Fields.FieldByName['df'].AsInteger[Index] := FParamCt - 1;
     Fields.FieldByName['p'].AsFloat[Index] := lrRegTest.p;
     Fields.FieldByName['pR2'].AsFloat[Index] := lrRegTest.pR2;
+    Fields.FieldByName['AIC'].AsFloat[Index] := lrRegTest.AIC;
   end;
 end;
 
@@ -367,16 +373,17 @@ begin
       exit;
 
     T := FOutputCreator.AddTable;
-    T.ColCount := 6;
+    T.ColCount := 7;
     T.RowCount := Size + 1;
     // Header row
     T.Cell[0, 0].Text := sRunDate;
     T.Cell[1, 0].Text := sDeviance;
     T.Cell[2, 0].Text := sDegFreedomAbbr;
-    T.Cell[3,0].Text := 'p';
+    T.Cell[3, 0].Text := 'p';
     T.Cell[4, 0].Text := sPseudoR2;
-    T.Cell[5, 0].Text := sRegModel;
-    T.SetColAlignment(5, taLeftJustify);
+    T.Cell[5, 0].Text := 'AIC';
+    T.Cell[6, 0].Text := sRegModel;
+    T.SetColAlignment(6, taLeftJustify);
     offset := 1;
     for i := 0 to Size - 1 do begin
       T.Cell[0,offset].Text := Fields.FieldByName['RunDate'].AsString[i];
@@ -384,7 +391,8 @@ begin
       T.Cell[2,offset].Text := Fields.FieldByName['df'].AsString[i];
       T.Cell[3,offset].Text := FormatP(Fields.FieldByName['p'].AsFloat[i], false);
       T.Cell[4,offset].Text := StatFloatDisplay(StatFmt, Fields.FieldByName['pR2'].AsFloat[i]);
-      T.Cell[5,offset].Text := Fields.FieldByName['Model'].AsString[i];
+      T.Cell[5,offset].Text := Fields.FieldByName['AIC'].AsString[i];
+      T.Cell[6,offset].Text := Fields.FieldByName['Model'].AsString[i];
       offset += 1;
     end;
   end;
