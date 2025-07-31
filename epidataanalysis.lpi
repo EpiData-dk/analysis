@@ -11,6 +11,10 @@
       <Title Value="Analysis"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
+      <XPManifest>
+        <TextName Value="EpiDataAssociation.EpiData.Analysis"/>
+        <TextDesc Value="Data analysis module"/>
+      </XPManifest>
       <Icon Value="0"/>
     </General>
     <VersionInfo>
@@ -22,9 +26,6 @@
     <BuildModes Count="7">
       <Item1 Name="Default" Default="True"/>
       <Item2 Name="Win32">
-        <MacroValues Count="1">
-          <Macro2 Name="LCLWidgetType" Value="win32"/>
-        </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
@@ -91,9 +92,6 @@
         </CompilerOptions>
       </Item3>
       <Item4 Name="Linux32">
-        <MacroValues Count="1">
-          <Macro5 Name="LCLWidgetType" Value="gtk2"/>
-        </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
@@ -147,9 +145,6 @@
         </CompilerOptions>
       </Item5>
       <Item6 Name="Darwin32">
-        <MacroValues Count="1">
-          <Macro1 Name="LCLWidgetType" Value="carbon"/>
-        </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
@@ -185,7 +180,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/barchart;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/barchart;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/help;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/graph/options;src/dialogs/stat_dialogs/pareto"/>
+            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/barchart;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/barchart;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/help;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/graph/options;src/dialogs/stat_dialogs/pareto;src/datamodule"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -205,11 +200,11 @@
         </CompilerOptions>
       </Item7>
       <SharedMatrixOptions Count="5">
-        <Item1 ID="324748042522" Modes="Darwin32" Type="IDEMacro" MacroName="LCLWidgetType" Value="carbon"/>
-        <Item2 ID="123055442727" Modes="Win32" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
+        <Item1 ID="324748042522" Type="IDEMacro" MacroName="LCLWidgetType" Value="carbon"/>
+        <Item2 ID="123055442727" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
         <Item3 ID="329491697955" Modes="Win64" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
         <Item4 ID="081215147691" Modes="Darwin64" Type="IDEMacro" MacroName="LCLWidgetType" Value="cocoa"/>
-        <Item5 ID="279386422299" Modes="Linux32,Linux64" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
+        <Item5 ID="279386422299" Modes="Linux64" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
       </SharedMatrixOptions>
     </BuildModes>
     <PublishOptions>
@@ -1173,7 +1168,7 @@
     </Parsing>
     <CodeGeneration>
       <Optimizations>
-        <OptimizationLevel Value="0"/>
+        <OptimizationLevel Value="2"/>
       </Optimizations>
     </CodeGeneration>
     <Linking>
@@ -1184,7 +1179,8 @@
     </Linking>
     <Other>
       <CustomOptions Value="-dEPI_CHROMIUM_HTML1
--dEPI_BETA"/>
+-dEPI_BETA
+-WM10.15"/>
     </Other>
   </CompilerOptions>
   <Debugging>
