@@ -16,3 +16,4 @@ src/grammar/buildgrammer.sh
 validator
 help/commands.html
 .DS_Store
+*.res
