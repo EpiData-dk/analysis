@@ -112,6 +112,14 @@ function FormatP(Val: EpiFloat; ShowP: Boolean): UTF8String;
 var
   prefix: UTF8string = '';
 begin
+  // special case of zero ([p=]0)
+  if (ShowP) then prefix := 'p=';
+  if (Val = 0) then
+    begin
+      Result := prefix + '0';
+      exit;
+    end;
+  // special cases of low p ([p]< ...)
   if (ShowP) then prefix := 'p';
   if (Val < 0.0001) then
     begin
@@ -123,6 +131,7 @@ begin
       Result := prefix + '<0.001';
       exit;
     end;
+  // p >= 0.001, show actual value
   if (ShowP) then prefix := 'p=';
   if (Val = TEpiFloatField.DefaultMissing) then
     Result := prefix + '-'
