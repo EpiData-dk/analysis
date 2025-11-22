@@ -33,7 +33,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/pareto"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/pareto;src/LMath/lmGenMath;src/LMath;src/LMath/lmLinearAlgebra;src/LMath/lmRegression;src/LMath/lmMathStat;src/LMath/lmMathUtil;src/LMath/lmOptimum;src/LMath/lmRandoms"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -66,7 +66,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/barchart;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/barchart;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/help;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/graph/options;src/dialogs/stat_dialogs/pareto"/>
+            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/barchart;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/barchart;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/help;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/graph/options;src/dialogs/stat_dialogs/pareto;src/LMath/lmGenMath;src/LMath;src/LMath/lmLinearAlgebra;src/LMath/lmRegression;src/LMath/lmMathStat;src/LMath/lmMathUtil;src/LMath/lmOptimum;src/LMath/lmRandoms"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -99,7 +99,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/pareto"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/pareto;src/LMath/lmGenMath;src/LMath;src/LMath/lmLinearAlgebra;src/LMath/lmRegression;src/LMath/lmMathStat;src/LMath/lmMathUtil;src/LMath/lmOptimum;src/LMath/lmRandoms"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -127,7 +127,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/barchart;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/barchart;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/help;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/graph/options;src/dialogs/stat_dialogs/pareto"/>
+            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/barchart;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/barchart;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/help;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/graph/options;src/dialogs/stat_dialogs/pareto;src/LMath/lmGenMath;src/LMath;src/LMath/lmLinearAlgebra;src/LMath/lmRegression;src/LMath/lmMathStat;src/LMath/lmMathUtil;src/LMath/lmOptimum;src/LMath/lmRandoms"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -152,7 +152,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/pareto"/>
+            <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/help;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/pareto;src/LMath/lmGenMath;src/LMath;src/LMath/lmLinearAlgebra;src/LMath/lmRegression;src/LMath/lmMathStat;src/LMath/lmMathUtil;src/LMath/lmOptimum;src/LMath/lmRandoms"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -180,7 +180,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/barchart;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/barchart;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/help;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/graph/options;src/dialogs/stat_dialogs/pareto;src/datamodule"/>
+            <OtherUnitFiles Value="src;src/auxunits;src/commandtree;src/controls;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/barchart;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/dialogs/stat_dialogs/epicurve;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/means;src/dialogs/stat_dialogs/scatter;src/dialogs/stat_dialogs/survival;src/dialogs/stat_dialogs/tables;src/editor;src/executor;src/functions;src/graph;src/graph/chartaxesconfiguration;src/graph/chartcommand;src/graph/chartconfiguration;src/graph/charttitles;src/graph/commands;src/graph/commands/barchart;src/graph/commands/epicurve;src/graph/commands/histogram;src/graph/commands/scatter;src/graph/commands/survival;src/graph/graphform;src/help;src/output;src/parser;src/sidewindows;src/statements;src/statistics;src/statusbar;src/utils;src/graph/options;src/dialogs/stat_dialogs/pareto;src/datamodule;src/LMath/lmGenMath;src/LMath;src/LMath/lmLinearAlgebra;src/LMath/lmRegression;src/LMath/lmMathStat;src/LMath/lmMathUtil;src/LMath/lmOptimum;src/LMath/lmRandoms"/>
             <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -240,53 +240,50 @@
         </Mode2>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="14">
+    <RequiredPackages Count="13">
       <Item1>
-        <PackageName Value="LMath"/>
+        <PackageName Value="laz.virtualtreeview_package"/>
       </Item1>
       <Item2>
-        <PackageName Value="laz.virtualtreeview_package"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item2>
       <Item3>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="luicontrols"/>
       </Item3>
       <Item4>
-        <PackageName Value="luicontrols"/>
+        <PackageName Value="luicomponents"/>
       </Item4>
       <Item5>
-        <PackageName Value="luicomponents"/>
+        <PackageName Value="ChsDet"/>
       </Item5>
       <Item6>
-        <PackageName Value="ChsDet"/>
+        <PackageName Value="lnetbase"/>
       </Item6>
       <Item7>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="lclextensions_package"/>
       </Item7>
       <Item8>
-        <PackageName Value="lclextensions_package"/>
+        <PackageName Value="dcpcrypt"/>
       </Item8>
       <Item9>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="FrameViewer09"/>
       </Item9>
       <Item10>
-        <PackageName Value="FrameViewer09"/>
+        <PackageName Value="epidatacore_visuals"/>
+        <MinVersion Major="2" Valid="True"/>
       </Item10>
       <Item11>
-        <PackageName Value="epidatacore_visuals"/>
+        <PackageName Value="epidatacore"/>
         <MinVersion Major="2" Valid="True"/>
       </Item11>
       <Item12>
-        <PackageName Value="epidatacore"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="SynEdit"/>
       </Item12>
       <Item13>
-        <PackageName Value="SynEdit"/>
-      </Item13>
-      <Item14>
         <PackageName Value="LCL"/>
-      </Item14>
+      </Item13>
     </RequiredPackages>
-    <Units Count="207">
+    <Units Count="229">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1149,6 +1146,94 @@
         <Filename Value="src/dialogs/stat_dialogs/regress/regress_primaryoption_model.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit206>
+      <Unit207>
+        <Filename Value="src/LMath/lmGenMath/uerrors.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit207>
+      <Unit208>
+        <Filename Value="src/LMath/lmath.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit208>
+      <Unit209>
+        <Filename Value="src/LMath/lmGenMath/utypes.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit209>
+      <Unit210>
+        <Filename Value="src/LMath/lmLinearAlgebra/umatrix.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit210>
+      <Unit211>
+        <Filename Value="src/LMath/lmRegression/uregtest.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit211>
+      <Unit212>
+        <Filename Value="src/LMath/lmRegression/umulfit.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit212>
+      <Unit213>
+        <Filename Value="src/LMath/lmMathStat/uibtdist.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit213>
+      <Unit214>
+        <Filename Value="src/LMath/lmRegression/upolfit.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit214>
+      <Unit215>
+        <Filename Value="src/LMath/lmMathStat/umeansd.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit215>
+      <Unit216>
+        <Filename Value="src/LMath/lmRegression/unlfit.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit216>
+      <Unit217>
+        <Filename Value="src/LMath/lmMathUtil/uvecfunc.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit217>
+      <Unit218>
+        <Filename Value="src/LMath/lmLinearAlgebra/ugausjor.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit218>
+      <Unit219>
+        <Filename Value="src/LMath/lmMathStat/uigmdist.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit219>
+      <Unit220>
+        <Filename Value="src/LMath/lmOptimum/umarq.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit220>
+      <Unit221>
+        <Filename Value="src/LMath/lmOptimum/ubfgs.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit221>
+      <Unit222>
+        <Filename Value="src/LMath/lmOptimum/usimplex.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit222>
+      <Unit223>
+        <Filename Value="src/LMath/lmOptimum/usimann.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit223>
+      <Unit224>
+        <Filename Value="src/LMath/lmOptimum/ugenalg.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit224>
+      <Unit225>
+        <Filename Value="src/LMath/lmOptimum/umcmc.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit225>
+      <Unit226>
+        <Filename Value="src/LMath/lmMathUtil/ustrings.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit226>
+      <Unit227>
+        <Filename Value="src/LMath/lmRandoms/urandom.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit227>
+      <Unit228>
+        <Filename Value="src/LMath/lmMathStat/umedian.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit228>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -1158,7 +1243,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);src/grammar"/>
-      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/graph/commands/epicurve;src/graph/commands/histogram;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/epicurve;src/graph/commands/barchart;src/dialogs/stat_dialogs/barchart;src/graph/options;src/graph/commands/pareto;src/dialogs/stat_dialogs/pareto;src/main;src/datamodule;src/cmdedit;src/about;src/dialogs/stat_dialogs/regress"/>
+      <OtherUnitFiles Value="src;src/functions;src/statistics;src/utils;src/auxunits;src/output;src/executor;src/statements;src/statusbar;src/editor;src/parser;src/commandtree;src/sidewindows;src/dialogs;src/dialogs/stat_dialogs;src/dialogs/stat_dialogs/means;src/controls;src/dialogs/stat_dialogs/freq;src/dialogs/stat_dialogs/tables;src/dialogs/stat_dialogs/ctable;src/dialogs/stat_dialogs/describe;src/graph/commands;src/graph;src/graph/commands/scatter;src/graph/graphform;src/graph/chartcommand;src/graph/charttitles;src/graph/chartconfiguration;src/graph/chartaxesconfiguration;src/dialogs/stat_dialogs/scatter;src/graph/commands/survival;src/dialogs/stat_dialogs/survival;src/graph/commands/epicurve;src/graph/commands/histogram;src/dialogs/stat_dialogs/histogram;src/dialogs/stat_dialogs/epicurve;src/graph/commands/barchart;src/dialogs/stat_dialogs/barchart;src/graph/options;src/graph/commands/pareto;src/dialogs/stat_dialogs/pareto;src/main;src/datamodule;src/cmdedit;src/about;src/dialogs/stat_dialogs/regress;src/LMath/lmGenMath;src/LMath;src/LMath/lmLinearAlgebra;src/LMath/lmRegression;src/LMath/lmMathStat;src/LMath/lmMathUtil;src/LMath/lmOptimum;src/LMath/lmRandoms"/>
       <UnitOutputDirectory Value="target/units/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
