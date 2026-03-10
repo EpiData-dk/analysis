@@ -12,6 +12,7 @@
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
       <XPManifest>
+        <DpiAware Value="True"/>
         <TextName Value="EpiDataAssociation.EpiData.Analysis"/>
         <TextDesc Value="Data analysis module"/>
       </XPManifest>
@@ -19,9 +20,11 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MajorVersionNr Value="3"/>
-      <MinorVersionNr Value="3"/>
-      <Attributes pvaSpecialBuild="True"/>
+      <MajorVersionNr Value="4"/>
+      <MinorVersionNr Value="4"/>
+      <RevisionNr Value="1"/>
+      <Attributes pvaPreRelease="True"/>
+      <StringTable FileDescription="EpiData Analysis" LegalCopyright="EpiData Association"/>
     </VersionInfo>
     <BuildModes Count="7">
       <Item1 Name="Default" Default="True"/>
@@ -1167,6 +1170,8 @@
       </SyntaxOptions>
     </Parsing>
     <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
+      <RelocatableUnit Value="True"/>
       <Optimizations>
         <OptimizationLevel Value="2"/>
       </Optimizations>

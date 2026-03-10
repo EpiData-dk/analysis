@@ -4,7 +4,7 @@
 
 ___
 
-###Commands
+### Commands
 
 | Manage data | Analyze data | Graph data | Write programs
 :---|:---|:---|:---
@@ -35,9 +35,8 @@ If you are in doubt of when to use double quotes "" and when not, the rule is:
 
 # Disk commands
 
-<a name="cd">
+<a name="cd"></a>
 ## cd
-</a>
 
 ```
 cd ["<directory path>"]
@@ -45,9 +44,9 @@ cd ["<directory path>"]
 Change the working directory (folder) to the specified path.
         If no path is given a dialog is shown to select the working directory.
 
-<a name="dir"></a><a name="ls">
+<a name="dir"></a><a name="ls"></a>
 ## ls / dir
-</a>
+
 ```
 ls ["<directory path>" | "file name"]
 dir ["<directory path" | "file name"]
@@ -59,9 +58,9 @@ List files in a directory
 - *directory path* or *file name* may include wild cards (* or ?)
         If no path is given, the working directory is assumed
 
-<a name="erase">
+<a name="erase"></a>
 ## erase
-</a>
+
 ```
 erase "<file name>"
 ```
@@ -74,9 +73,8 @@ Delete the file from disk.
 > Warning: The file is deleted (if the file exist) with no confirmatory question
 
 # Read and Save Data
-<a name=read>
+<a name=read></a>
 ## read
-</a>
 
 ~~~
 read [{"<filename>" | <expression>}] [!options ...]
@@ -152,9 +150,9 @@ fn := "bromar.epx";
 read fn;                // expression using the variable fn
 ```
 
-<a name=save>
+<a name=save></a>
 ## save
-</a>
+
 ```
 save [{"<filename>" | <expression>}] [!replace] [!force] [!output [:="{html | text}"] ]
      [!format:="{stata|epidata|csv}"] [options]
@@ -239,9 +237,9 @@ Save a copy of all variables in memory to a file, to use the data again
 
 # Combine and create data      
 
-<a name="append">
+<a name="append"></a>
 ## append  
-</a>
+
 ```
 append [<var1> <var2>...] [!ds := <dataset>] [!fn := "<filename>"]
 ```
@@ -262,9 +260,9 @@ Add observations after all observations in current file
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="merge">
+<a name="merge"></a>
 ## merge  
-</a>
+
 ```
 merge [<key1> <key2> ...]
       [!fn [:= "<filename>"]] [!ds := <dataset>]
@@ -363,9 +361,9 @@ merge patientid !ds := firstdataset !filename := "PatientNames.epx"
 ```       
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="aggregate"></a><a name="agg">
+<a name="aggregate"></a><a name="agg"></a>
 ## aggregate / agg
-</a>
+
 ```
 aggregate [<var1> <var2>...] [!options]
 ```
@@ -465,9 +463,9 @@ columntxt[5] := .;
 agg sex age family !hd:=columntxt  !mci:=economy !mci:=children ;
  ```       
 
-<a name="use">
+<a name="use"></a>
 ## use
-</a>
+
 ```
 use <dataset>
 ```
@@ -489,9 +487,9 @@ list dataset;
 use datafile_id_2;
 ```      
 
-<a name="new">
+<a name="new"></a>
 ## new project / new p
-</a>
+
 ```
 new project [options]
 ```
@@ -690,9 +688,9 @@ new variable age date   := integer((today() - dateborn)/365.25)
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="newglobal">
+<a name="newglobal"></a>
 ## new global / new g
-</a>
+
 ```
 new global <variable> <type> [:= expression]
 ```          
@@ -731,9 +729,9 @@ g7[3]                     := 20;
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="newvaluelabel">
+<a name="newvaluelabel"></a>
 ## new valuelabel / new vl
-</a>
+
 ```
 new valuelabel <name> <type> (<value> , <label>) (...) [!m := <value>]
 ```
@@ -774,9 +772,9 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 # Listing content
 
-<a name="browse">
+<a name="browse"></a>
 ## browse
-</a>
+
 ```
 browse [variable list] ] [options]
 ```
@@ -813,9 +811,9 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 > Note: browse is much faster than list
 
-<a name="list"></a><a name="listdata">
+<a name="list"></a><a name="listdata"></a>
 ## list data / list d
-</a>
+
 ```
 list data [variablelist]
 ```
@@ -835,9 +833,9 @@ See [Common options](#commonoptions) for options for labels and formats.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="listproject">
+<a name="listproject"></a>
 ## list project / list p
-</a>
+
 ```
 list project
 ```
@@ -850,9 +848,9 @@ Shows a brief overview of the project
 
   Also shows the study information
 
-<a name="listdataset">
+<a name="listdataset"></a>
 ## list dataset / list ds
-</a>
+
 ```
 list dataset
 ```
@@ -863,26 +861,26 @@ Shows a list of datasets for the project
 
   Outputs additional information about the listed datasets
 
-<a name="listvariable">
+<a name="listvariable"></a>
 ## list variable / list var / list v
-</a>
+
 ```
 list variable
 ```
 
 List all currently defined variable names, types, formats and labels
 
-<a name="listvaluelabel">
+<a name="listvaluelabel"></a>
 ## list valuelabel / list vl
-</a>
+
 ```
 list valuelabel
 ```
 Show the full list of all valuelabel sets. Each set is listed individually as value/label pair and marked whether a value is considered missing or not.
 
-<a name="listresults">
+<a name="listresults"></a>
 ## list results / list res / list r
-</a>
+
 ```
 list results
 ```
@@ -891,9 +889,9 @@ List all current result variables and their values.
 
 `means`, `describe`, `tables` and other estimation commands create result variables, e.g. $mean[1] or $count. All result variables for a command are cleared when running the same command again.
 
-<a name="listglobal">
+<a name="listglobal"></a>
 ## list global / list g
-</a>
+
 ```
 list global
 ```
@@ -929,9 +927,9 @@ Show result of an expression. It is posible to use all types of variables (stand
 
 # Editing variable and label definitions
 
-<a name="edit"></a><a name="editproject">
+<a name="edit"></a><a name="editproject"></a>
 ## edit project / edit p
-</a>
+
 ```
 edit project
 ```
@@ -964,9 +962,9 @@ Interval at witch Manager and EntryClient automatically saved the project
 
 Perform a backup when closing the project. The name for the backup is based on the current date/time.
 
-<a name="editdataset">
+<a name="editdataset"></a>
 ## edit dataset / edit ds
-</a>
+
 ```
 edit dataset <datasetname> [!options...]
 ```
@@ -1017,9 +1015,9 @@ Edit an existing dataset in the project.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="editvariable">
+<a name="editvariable"></a>
 ## edit variable / edit var / edit v
-</a>
+
 ```
 edit variable *variable1 [!<options>...]
 ```
@@ -1096,9 +1094,9 @@ Edit the metadata of *variable1. The options specify which metadata are changed,
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="editvaluelabel">
+<a name="editvaluelabel"></a>
 ## edit valuelabel / edit vl
-</a>
+
 ```
 edit valuelabel <name> [(<value> , <text>) ...] [!m := <value>] [!delete := <value>] [!nomissing := <value>]
 ```
@@ -1165,9 +1163,9 @@ for i := 2 to 5 do
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="editdata">
+<a name="editdata"></a>
 ## edit data / edit d
-</a>
+
 ```
 edit data [!md] [!nomd] [!mv] [!nomv]
 ```
@@ -1349,9 +1347,9 @@ reorder age km !before := agegrp
 
 # Deleting content
 
-<a name="drop"></a><a name="dropdataset">
+<a name="drop"></a><a name="dropdataset"></a>
 ## drop dataset / drop ds
-</a>
+
 ```
 drop dataset <name> [name2 ...]
 ```
@@ -1366,9 +1364,9 @@ Remove the listed datasets (and related datasets) from memory
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="dropdata">
+<a name="dropdata"></a>
 ## drop data / drop d
-</a>
+
 ```
 drop data [!del]
 ```
@@ -1394,9 +1392,9 @@ read "bromar.epx";
 drop data !del ; // drop all observations "marked for deletion"
 ```        
 
-<a name="dropvariable">
+<a name="dropvariable"></a>
 ## drop variable / drop var / drop v
-</a>
+
 ```
 drop variable [variablelist]
 ```
@@ -1413,9 +1411,9 @@ See [variables](#referencedvars) on using referenced variables for this command
 
 # Consistency and Validity Check of data
 
-<a name="checkdata"></a><a name="check">
+<a name="checkdata"></a><a name="check"></a>
 ## check data
-</a>
+
 ```
 check data [var1 ...]
 ```
@@ -1439,9 +1437,9 @@ check data dectime kmgrp age // Only checks the variables dectime, kmgrp and age
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="checkkey">
+<a name="checkkey"></a>
 ## check key
-</a>
+
 ```
 check key [var1 ...]
 ```
@@ -1458,9 +1456,9 @@ check key id                 // checks if the variable ID represents a unique ke
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="checkrelate">
+<a name="checkrelate"></a>
 ## check relate
-</a>
+
 ```
 check relate
 ```
@@ -1474,9 +1472,9 @@ use child_dataset;        // Change dataset to a related dataset
 check relate;             // Perform the check from the child dataset "upwards" to the parent.
                           // Must be repeated if you have more levels
 ```
-<a name="checkstudy">
+<a name="checkstudy"></a>
 ## check study
-</a>
+
 ```
 check study
 ```
@@ -1489,9 +1487,9 @@ read "samplev3.epx";  // Load the project
 check study;          // Perform the check
 ```
 
-<a name="report">
+<a name="report"></a>
 # REPORTS
-</a>
+
 
 ## report users
 ```
@@ -1616,8 +1614,9 @@ report cby id !fn := filenames !ds := datasets
 # Descriptive statistics
 
 <a name="count">
-## count
 </a>
+
+## count
 ```
 count
 ```
@@ -1627,8 +1626,9 @@ Counts number of observations. Count may be used with select to count within a s
 - $count
 
 <a name="sort">
-## sort
 </a>
+
+## sort
 ```
 sort variable1 [variable2 ...] [!descending]
 ```
@@ -1642,9 +1642,10 @@ Sort the current dataset based on the given variables. Sort respects current sel
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="select"">
-# Select records
+<a name="select">
 </a>
+
+# Select records
 ```
 select (<condition>) do <command>
 select (<condition>) do begin <command block> end;
@@ -1662,15 +1663,16 @@ Select a subset of records for the subsequent command or command block. The sele
 // get the epicurve for children under 18
 select (age < 18) do epicurve onsetdate;
 // get mean age and a food-specific attack rate table for men only
-// select (gender="M") do begin
+select (gender="M") do begin
 means age;
 ctable ill food1-food5 !ar;
 end;
 ```
 
 <a name="describe">
-## describe
 </a>
+
+## describe
 ```
 describe <variable list> [option list]
 ```
@@ -1716,9 +1718,9 @@ See [Common options](#commonoptions) for options for labels and formats.
 ### methodology notes
 - All statistics are based on the `means` command and all frequencies are based on the `freq` command, so results from `describe` will be exactly the same as those from `means` or `freq`.
 
-<a name="freq"></a><a name="fre">
+<a name="freq"></a><a name="fre"></a>
 ## freq / fre
-</a>
+
 ```
 freq variable1 [!<option> ...]
 ```
@@ -1752,9 +1754,9 @@ See [Common options](#commonoptions) for options for labels and formats.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="tables"></a><a name="tab">
+<a name="tables"></a><a name="tab"></a>
 ## tables / tab
-</a>
+
 ```
 tab <column variable> <row variable> [!<option> ...]
 ```
@@ -1867,9 +1869,9 @@ See [Common options](#commonoptions) for options for labels and formats.
 
 See [formatting](#formatting) for options on formatting percentages
 
-<a name="ctable"></a><a name="cta">
+<a name="ctable"></a><a name="cta"></a>
 ## ctable / cta
-</a>
+
 ```
 cta <column variable> <row variables> [!<option> ...]
 ```
@@ -2030,9 +2032,9 @@ See [Common options](#commonoptions) for options for labels and formats.
 - excess kurtosis: see [Wikipedia - Kurtosis (accessed 2020/02/08)](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis)
 - Bartlett's Test: see [NIST handbook 1.3.5.7](https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm)
 
-<a name="regress">
+<a name="regress"></a>
 ## regress / reg
-</a>
+
 ``` regress <dependent variable> <independent variable list> [options]
 ```
 
@@ -2096,9 +2098,9 @@ See [variables](#referencedvars) on using referenced variables for this command
   
 # Graphs and charts
 
-<a name="survival"></a><a name="sur">
+<a name="survival"></a><a name="sur"></a>
 ## survival / sur
-</a>
+
 ```
 survival <outcomevariable> <timevariable> [!by:=stratifyvariable] [options]
 survival <outcomevariable> <date1> <date2> [!by:=stratifyvariable] [options]
@@ -2213,9 +2215,9 @@ See [variables](#referencedvars) on using referenced variables for this command
 See [variables](#referencedvars) on using referenced variables for this command
 
 <a name="line"></a>
-<a name="scatter">
+<a name="scatter"></a>
 ## scatter
-</a>
+
 ```
 scatter <Xvariable> <Yvariable> [graphoptionlist]
 ```
@@ -2249,9 +2251,9 @@ Simple scatter or line plot for two variables.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="barchart">
+<a name="barchart"></a>
 ## barchart
-</a>
+
 ```
 barchart <variable> [StratifyVariable] [options]
 ```
@@ -2284,9 +2286,9 @@ Draw a frequency barchart for `Variable`, showing frequencies or percentages at 
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="histogram">
+<a name="histogram"></a>
 ## histogram
-</a>
+
 ```
 histogram <variable> [StratifyVariable] [options]
 ```
@@ -2317,9 +2319,9 @@ A histogram is a frequency bar chart where every integer value within range is r
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="epicurve">
+<a name="epicurve"></a>
 ## epicurve
-</a>
+
 ```
 epicurve <Variable> [StratifyVariable] [options]
 ```
@@ -2345,9 +2347,9 @@ An epicurve is a stacked histogram, where individual boxes are shown for each su
  `epicurve` is a graph command and any [graph option](#graphoptions) may be specified except for `!ymin`
 
 # SPC Charts
-<a name="pareto">
+<a name="pareto"></a>
 ## pareto
-</a>
+
 ```
 pareto <Variable> [options]
 ```
@@ -2376,9 +2378,9 @@ Draw a pareto chart for a variable. The chart has two components: a bar chart sh
 See [variables](#referencedvars) on using referenced variables for this command
 
 
-<a name="graphoptions"> 
+<a name="graphoptions"></a>
 ## graph options
-</a>
+
 
 Any of the graph commands may use the following options.
 
@@ -2434,9 +2436,9 @@ Any of the graph commands may use the following options.
 
 See [variables](#referencedvars) on using referenced variables for this command
 
-<a name="if-then" id="if-then">
+<a name="if-then" id="if-then"></a>
 # If ... then
-</a>
+
 ```
 if (<condition>) then do <command> [else do <command>]
 if (<condition>) then do begin <command block> end;
@@ -2451,9 +2453,9 @@ if (<condition>) then do begin <command block> end else <command block> end;
 
 # Program-wide options
 
-<a name="set">
+<a name="set"></a>
 ## set
-</a>
+
 ```
 set ["parameter"] [:= "value"]
 ```
@@ -2544,9 +2546,9 @@ STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for disp
 <a name="commonoptions"></a>
 # Common options
 
-<a name="valuelabels">
+<a name="valuelabels"></a>
 ### Valuelabels
-</a>
+
 
 - `!v`  Show only the value, (**fallback if no label to corresponding value)
 
@@ -2556,9 +2558,9 @@ STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for disp
 
 - `!lv`  Show the label then the value
 
-<a name="variablelabels">
+<a name="variablelabels"></a>
 ### Variable Labels
-</a>
+
 
 - `!vn`  Show only the name, (**fallback if no variable label assigned)
 
@@ -2568,9 +2570,9 @@ STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for disp
 
 - `!vln`  Show the label then the name
 
-<a name="decimals">
+<a name="decimals"></a>
 ### Decimals for percentages or statistics
-</a>
+
 
 - `!d0` 0 decimals
 
@@ -2584,9 +2586,9 @@ STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for disp
 
 - `!d5` 5 decimals
 
-<a name="variabletype">
+<a name="variabletype"></a>
 ## Variable types
-</a>
+
 
 - integer / int / i
 
@@ -2615,9 +2617,9 @@ STATISTICS VARIABLE LABEL | VLA / VLN / VN / VNL | VLA | Default option for disp
 
   A variable (standard, result or global) that contains a date value. All new date variables created will be a DMY type, but this may change in the future.
 
-<a name="variablelist">
+<a name="variablelist"></a>
 ## Variable lists
-</a>
+
 Any command that accepts more than one variable as parameters can use the following schemes for variable expansion.
 
 - `var1-var4` (dash) 
@@ -2648,9 +2650,9 @@ list data V1??;          // V1?? is expanded to V100 only!
 
 A `referenced` variable may also be used in the expansion. These will be evaluated before the expansion! See below.
 
-<a name="referencedvariable">
+<a name="referencedvariable"></a>
 ## Referenced Variable
-</a>
+
 ```
 @{variable1}
 ```
@@ -2738,9 +2740,9 @@ Execute the commands saved in a .pgm file
 
 - without parameters, the open file dialogue is started
 
-<a name="runtest">
+<a name="runtest"></a>
 ## runtest
-</a>
+
 ```
 runtest ["<directory path>"]
 ```
@@ -2759,9 +2761,8 @@ This is provided for testing of correct estimation etc.
 <a name="close"></a>
 # Clean up - stop
 
-<a name="close">
 ## close
-</a>
+
 ```
 close
 ```
@@ -2769,25 +2770,25 @@ Stop using a project
 - all unsaved variables and changes to existing variables and labels will be lost
 - global variables will remain in memory
 
-<a name="cls">
+<a name="cls"></a>
 ## cls
-</a>
+
 ```
 cls
 ```
 Clear the output screen
 
-<a name="clh">
+<a name="clh"></a>
 ## clh
-</a>
+
 ```
 clh
 ```
 Clear the history of commands
 
-<a name="reset">
+<a name="reset"></a>
 ## reset
-</a>
+
 ```
 reset
 ```
@@ -2801,9 +2802,9 @@ clh;
 ```
 > Note:  `reset` also clears all result variables!
 
-<a name="functions">
+<a name="functions"></a>
 # Functions available in EpiData Analysis
-</a>
+
 In the following, *takes* indicates the variable type for each parameter and *result* indicates the type of the result of the function:
 
 - s: string
