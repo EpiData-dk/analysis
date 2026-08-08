@@ -243,51 +243,87 @@
         </Mode2>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="14">
+    <RequiredPackages Count="26">
       <Item1>
-        <PackageName Value="LMath"/>
+        <PackageName Value="lmlinearalgebra"/>
       </Item1>
       <Item2>
-        <PackageName Value="laz.virtualtreeview_package"/>
+        <PackageName Value="lmMathUtil"/>
       </Item2>
       <Item3>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="lmnonlineq"/>
       </Item3>
       <Item4>
-        <PackageName Value="luicontrols"/>
+        <PackageName Value="lmoptimum"/>
       </Item4>
       <Item5>
-        <PackageName Value="luicomponents"/>
+        <PackageName Value="lmpolynoms"/>
       </Item5>
       <Item6>
-        <PackageName Value="ChsDet"/>
+        <PackageName Value="lmrandoms"/>
       </Item6>
       <Item7>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="lmRegression"/>
       </Item7>
       <Item8>
-        <PackageName Value="lclextensions_package"/>
+        <PackageName Value="lmspecregress"/>
       </Item8>
       <Item9>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="lmmathstat"/>
       </Item9>
       <Item10>
-        <PackageName Value="FrameViewer09"/>
+        <PackageName Value="lmintegrals"/>
       </Item10>
       <Item11>
-        <PackageName Value="epidatacore_visuals"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="lmgenmath"/>
       </Item11>
       <Item12>
-        <PackageName Value="epidatacore"/>
-        <MinVersion Major="2" Valid="True"/>
+        <PackageName Value="lmDSP"/>
       </Item12>
       <Item13>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="LMath"/>
       </Item13>
       <Item14>
-        <PackageName Value="LCL"/>
+        <PackageName Value="laz.virtualtreeview_package"/>
       </Item14>
+      <Item15>
+        <PackageName Value="TAChartLazarusPkg"/>
+      </Item15>
+      <Item16>
+        <PackageName Value="luicontrols"/>
+      </Item16>
+      <Item17>
+        <PackageName Value="luicomponents"/>
+      </Item17>
+      <Item18>
+        <PackageName Value="ChsDet"/>
+      </Item18>
+      <Item19>
+        <PackageName Value="lnetbase"/>
+      </Item19>
+      <Item20>
+        <PackageName Value="lclextensions_package"/>
+      </Item20>
+      <Item21>
+        <PackageName Value="dcpcrypt"/>
+      </Item21>
+      <Item22>
+        <PackageName Value="FrameViewer09"/>
+      </Item22>
+      <Item23>
+        <PackageName Value="epidatacore_visuals"/>
+        <MinVersion Major="2" Valid="True"/>
+      </Item23>
+      <Item24>
+        <PackageName Value="epidatacore"/>
+        <MinVersion Major="2" Valid="True"/>
+      </Item24>
+      <Item25>
+        <PackageName Value="SynEdit"/>
+      </Item25>
+      <Item26>
+        <PackageName Value="LCL"/>
+      </Item26>
     </RequiredPackages>
     <Units Count="207">
       <Unit0>
@@ -1185,7 +1221,7 @@
     <Other>
       <CustomOptions Value="-dEPI_CHROMIUM_HTML1
 -dEPI_BETA
--WM10.15"/>
+-WM11.0"/>
     </Other>
   </CompilerOptions>
   <Debugging>

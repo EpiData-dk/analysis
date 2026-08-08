@@ -1041,6 +1041,7 @@ type
   { TOptionList }
 
   TOptionList = class(TAbstractSyntaxTreeBase)
+  // TODO: implement abstract method DoObservedChange (make it empty)
   private
     type
       TOptList = specialize TFPGList<TOption>;
