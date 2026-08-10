@@ -106,13 +106,13 @@ var
   I, J, K, L, I1, K1, L1, Mn, Its           : Integer;
   C, F, G, H, T, X, Y, Z, Tst1, Tst2, Scale : Float;
   R                                         : TVector;
+{$GOTO ON}
 
 label
   190, 210, 270, 290, 360, 390, 430, 460,
   475, 490, 520, 540, 565, 580, 650, 700;
 
 begin
-{$GOTO ON}
   if Ub2 > Ub1 then
   begin
     SetErrCode(MatErrDim);
