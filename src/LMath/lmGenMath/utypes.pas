@@ -12,7 +12,7 @@
 unit utypes;
 
 interface
-{$mode ObjFPC}{$H+}
+
 {$i types.inc}
 {-------------------------------------------------------------------
 Approximate equality functions
