@@ -68,5 +68,6 @@
 -Fu./src/LMath/lmLinearAlgebra
 -Fu./src/LMath/lmMathStat
 -Fu./src/LMath/lmMathUtil
+-Fu./src/LMath/lmOptimum
 -Fu./src/LMath/lmRandoms
 -Fu./src/LMath/lmRegression
