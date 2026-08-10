@@ -131,8 +131,7 @@ begin
   else
     FExecutor.Error(msg);
   finally
-    DF.Free;
-    Model.Free;
+
   end;
 
 end;
