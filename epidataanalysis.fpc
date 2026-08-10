@@ -34,6 +34,7 @@
 -Fu./src/dialogs/stat_dialogs/means
 -Fu./src/dialogs/stat_dialogs/pareto
 -Fu./src/dialogs/stat_dialogs/scatter
+-Fu./src/dialogs/stat_dialogs/regress
 -Fu./src/dialogs/stat_dialogs/survival
 -Fu./src/dialogs/stat_dialogs/tables
 -Fu./src/editor
