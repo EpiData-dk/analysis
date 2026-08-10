@@ -2,7 +2,7 @@
   Incomplete Beta function.
   Translated from C code in Cephes library (http://www.moshier.net)
   ****************************************************************** }
-{$mode objfpc}{$H+}{-Sg}
+{$mode objfpc}{$H+}
 
 unit uibeta;
 
@@ -68,6 +68,7 @@ const
     K1, K2, K3, K4, K5, K6, K7, K8,
     R, T, Ans, Thresh : Float;
     N : Integer;
+  {$GOTO ON}
   label
     CDone;
   begin
@@ -238,13 +239,14 @@ CDone:
 
 CDone:
     CFrac2 := Ans;
+{$GOTO OFF}
   end;
-
   function IBeta(A, B, X : Float) : Float;
   var
     A1, B1, X1, T, W, Xc, Y : Float;
     Flag : Boolean;
-  label
+  {$GOTO ON}
+label
     Done;
   begin
     SetErrCode(FOk);
@@ -339,5 +341,6 @@ Done:
 
     IBeta := T;
   end;
+{$GOTO OFF}
 
 end.

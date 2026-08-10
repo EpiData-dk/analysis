@@ -1,7 +1,7 @@
 { ******************************************************************
   Singular value decomposition
   ****************************************************************** }
-{$mode objfpc}{$H+}{-Sg}
+{$mode objfpc}{$H+}
 
 unit usvd;
 
@@ -112,6 +112,7 @@ label
   475, 490, 520, 540, 565, 580, 650, 700;
 
 begin
+{$GOTO ON}
   if Ub2 > Ub1 then
   begin
     SetErrCode(MatErrDim);
@@ -395,6 +396,7 @@ begin
       V[J,K] := - V[J,K];
 700: end;
   SetErrCode(MatOk);
+  {$GOTO OFF}
 end;
 
 procedure SV_SetZero(S      : TVector;
