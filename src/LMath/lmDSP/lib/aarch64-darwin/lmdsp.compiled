@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<CONFIG>
-  <Lazarus Version="4.2"/>
-  <Compiler Value="/usr/local/bin/fpc" Date="1621181457"/>
-  <Params Value="-MObjFPC -Scghi -CX -O2 -l -vewnhibq -Fu/Users/jamie/ep/components/LMath/lmDSP/ -Fu/Applications/lazarus/packager/units/aarch64-darwin -Fu/Applications/lazarus/components/lazutils/lib/aarch64-darwin -Fu/Users/jamie/ep/components/LMath/lmGenMath/lib/aarch64-darwin -Fu/Applications/lazarus/components/freetype/lib/aarch64-darwin -Fu/Applications/lazarus/lcl/units/aarch64-darwin -Fu/Applications/lazarus/lcl/units/aarch64-darwin/cocoa -Fu/Users/jamie/ep/components/LMath/lmMathUtil/lib/aarch64-darwin -Fu/Users/jamie/ep/components/LMath/lmLinearAlgebra/lib/aarch64-darwin -Fu/Users/jamie/ep/components/LMath/lmMathStat/lib/aarch64-darwin -FU/Users/jamie/ep/components/LMath/lmDSP/lib/aarch64-darwin/ -dLCL -dLCLcocoa lmdsp.pas"/>
-</CONFIG>
