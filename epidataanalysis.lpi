@@ -283,7 +283,7 @@
         <PackageName Value="LCL"/>
       </Item13>
     </RequiredPackages>
-    <Units Count="249">
+    <Units Count="250">
       <Unit0>
         <Filename Value="epidataanalysis.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1316,6 +1316,10 @@
         <Filename Value="src/LMath/lmGenMath/uigamma.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit248>
+      <Unit249>
+        <Filename Value="src/LMath/lmLinearAlgebra/ulineq.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit249>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

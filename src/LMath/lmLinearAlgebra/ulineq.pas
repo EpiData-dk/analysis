@@ -10,8 +10,7 @@ interface
 uses
   utypes, uErrors, uminmax;
 
-{ 
-  Solves a linear system according to the Gauss-Jordan method
+{ Solves a linear system according to the Gauss-Jordan method
   
   Input parameters  : A      = system matrix
                       B      = constant vector
@@ -23,6 +22,7 @@ uses
   
   Possible results  : MatOk   : No error
                       MatSing : Singular matrix }
+
 procedure LinEq(A       : TMatrix;
                 B       : TVector;
                 Lb, Ub  : Integer;
