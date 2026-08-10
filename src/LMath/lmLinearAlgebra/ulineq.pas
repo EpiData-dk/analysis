@@ -23,6 +23,11 @@ uses
   Possible results  : MatOk   : No error
                       MatSing : Singular matrix }
 
+procedure LinEq(A       : TMatrix;
+                B       : TVector;
+                Lb, Ub  : Integer;
+                out Det : Float);
+
 implementation
 
 procedure LinEq(A       : TMatrix;
