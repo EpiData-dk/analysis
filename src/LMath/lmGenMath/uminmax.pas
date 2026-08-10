@@ -2,6 +2,8 @@
   Minimum, maximum, sign and exchange
   ****************************************************************** }
 
+{$mode ObjFPC}{$H+}
+
 unit uminmax;
 
 interface

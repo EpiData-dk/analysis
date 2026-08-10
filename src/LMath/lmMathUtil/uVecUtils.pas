@@ -1,5 +1,7 @@
 unit uVecUtils;
 
+{$mode ObjFPC}{$H+}
+
 interface
 uses uTypes, uErrors, uMinMax;
 

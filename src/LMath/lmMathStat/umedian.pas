@@ -2,6 +2,8 @@
   Median and quantiles
   ****************************************************************** }
 
+{$mode ObjFPC}{$H+}
+
 unit umedian;
 
 interface
