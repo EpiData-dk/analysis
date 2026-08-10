@@ -1,6 +1,7 @@
 { ******************************************************************
   Solution of a system of linear equations by Gauss-Jordan method
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit ugausjor;
 

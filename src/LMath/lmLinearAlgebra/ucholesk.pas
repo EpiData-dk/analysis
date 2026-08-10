@@ -1,6 +1,7 @@
 { ******************************************************************
   Cholesky factorization of a positive definite symmetric matrix
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit ucholesk;
 

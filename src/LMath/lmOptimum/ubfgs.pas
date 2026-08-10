@@ -2,6 +2,7 @@
   Minimization of a function of several variables by the
   Broyden-Fletcher-Goldfarb-Shanno (BFGS) method
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit ubfgs;
 

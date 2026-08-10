@@ -1,6 +1,7 @@
 { ******************************************************************
   Minimization of a function of several variables along a line
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit ulinmin;
 

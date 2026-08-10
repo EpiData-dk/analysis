@@ -2,6 +2,7 @@
   Polynomial evaluations for special functions.
   Translated from C code in Cephes library (http://www.moshier.net)
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit upolev;
 

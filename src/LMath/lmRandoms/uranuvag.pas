@@ -19,6 +19,7 @@
   (s[]=0, rndint > 0), UVAG bootstraps itself to full entropy in under
   300 cycles.  Very robust, no bad seeds.
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit uranuvag;
 

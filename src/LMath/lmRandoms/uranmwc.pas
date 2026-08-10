@@ -1,6 +1,7 @@
 { ******************************************************************
   Marsaglia's Multiply-With-Carry random number generator
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit uranmwc;
 

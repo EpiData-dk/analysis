@@ -1,6 +1,7 @@
 { ******************************************************************
   Probability functions related to the Gamma function
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit ugamdist;
 

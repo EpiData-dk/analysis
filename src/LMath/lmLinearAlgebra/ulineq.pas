@@ -2,6 +2,7 @@
   Solution of a system of linear equations with a single
   constant vector by Gauss-Jordan method
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit ulineq;
 

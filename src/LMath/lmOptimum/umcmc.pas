@@ -19,6 +19,7 @@
   The variance-covariance matrix of the simulated distribution is
   re-evaluated at the end of each cycle and used for the next cycle.
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit umcmc;
 

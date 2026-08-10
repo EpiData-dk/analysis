@@ -2,6 +2,7 @@
   Incomplete Beta function.
   Translated from C code in Cephes library (http://www.moshier.net)
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit uibeta;
 

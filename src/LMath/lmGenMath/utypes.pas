@@ -7,6 +7,7 @@
        SINGLEREAL   (Single precision, 4 bytes)
        EXTENDEDREAL (Extended precision, 10 bytes)
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit utypes;
 

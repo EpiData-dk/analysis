@@ -1,6 +1,7 @@
 { ******************************************************************
   Probability functions related to the incomplete Gamma function
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit uigmdist;
 

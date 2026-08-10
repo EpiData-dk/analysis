@@ -1,6 +1,7 @@
 { ******************************************************************
   Multiple linear regression (Singular Value Decomposition)
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit usvdfit;
 

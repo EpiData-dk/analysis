@@ -8,6 +8,7 @@
          1997, 31, 161-201
   Thanks to Magali Camut for her contribution
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit ugenalg;
 

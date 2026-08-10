@@ -4,6 +4,7 @@
   Adapted from Fortran program SIMANN by Bill Goffe:
   http://www.netlib.org/opt/simann.f
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit usimann;
 

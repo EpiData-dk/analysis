@@ -1,6 +1,7 @@
 { ******************************************************************
   Probability functions related to the incomplete Beta function
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit uibtdist;
 

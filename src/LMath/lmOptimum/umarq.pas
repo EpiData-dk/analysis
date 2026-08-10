@@ -2,6 +2,7 @@
   Minimization of a function of several variables by Marquardt's
   method
   ****************************************************************** }
+{$mode objfpc}{$H+}
 
 unit umarq;
 
