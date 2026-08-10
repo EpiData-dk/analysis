@@ -63,3 +63,17 @@
 -Fu./src/statistics
 -Fu./src/statusbar
 -Fu./src/utils
+-Fu./src/LMath
+-Fu./src/LMath/lmDSP
+-Fu./src/LMath/lmGenMath
+-Fu./src/LMath/lmIntegrals
+-Fu./src/LMath/lmLinearAlgebra
+-Fu./src/LMath/lmMathStat
+-Fu./src/LMath/lmMathUtil
+-Fu./src/LMath/lmNonLinEq
+-Fu./src/LMath/lmOptimum
+-Fu./src/LMath/lmPlotter
+-Fu./src/LMath/lmPolynoms
+-Fu./src/LMath/lmRandoms
+-Fu./src/LMath/lmRegression
+-Fu./src/LMath/lmSpecRegress
