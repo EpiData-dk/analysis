@@ -1,6 +1,6 @@
 # EpiData Analysis
 
-### Command and Function Reference Guide (version 3.3)
+### Command and Function Reference Guide (version 3.4)
 
 ___
 
