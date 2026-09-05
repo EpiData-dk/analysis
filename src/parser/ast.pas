@@ -2685,6 +2685,7 @@ begin
   Result.Insert('nou', [rtUndefined]);     // no unstratified table
   Result.Insert('nos', [rtUndefined]);     // no stratified tables
   Result.Insert('ns',  [rtUndefined]);     // no summary output
+  Result.Insert('ng', [rtUndefined]);      // no graph output
   Result.Insert('t',  ['test'], [rtUndefined]);     // log-rank test and hazard ratio (valid with !by)
   Result.Insert('cb',  [rtUndefined]);     // put KM plot points into clipboard
   Result.Insert('cin',['cinone'], [rtUndefined]);     // no confidence intervals on plots

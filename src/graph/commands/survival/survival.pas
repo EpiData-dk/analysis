@@ -749,6 +749,7 @@ var
   T: TOutputTable;
   StatFmt: String;
   i:  Integer;
+  // first and last parts of header empty as they are filled programatically
   line1: array of UTF8String = ('',sTotal,sTotal,sMin,sMax,sTotal,sMedian,sSurHazard,'');
   line2: array of UTF8String = ('',sSurAtRisk,sSurFailures,sTime,sTime,sTime,sSurCommand,sRatio,'');
 
@@ -776,7 +777,7 @@ var
 
 begin
   StatFmt := '%' + IntToStr(3 + FDecimals) + '.' + IntToStr(FDecimals) + 'F';
-  line2[high(line2)] :=  '(' + IntToStr(FConf) + '% ' + sConfIntervalAbbr + ')';
+
   T                 := FOutputCreator.AddTable;
   T.Header.Text     := sSurHeader + ' - ' + sSurHeader2;
   T.ColCount        := 9;
@@ -784,10 +785,11 @@ begin
   // table headings
   if (FStrata > 0) then
     T.Cell[0, 0].Text := sBy + LineEnding + FStratVarName;
-  for i := 1 to high(line1) do
+  for i := 1 to high(line1) - 1 do
       if (i < 7) or
          ((FStrata > 0) and (ST.HasOption('t'))) then
         T.Cell[i, 0].Text := line1[i] + LineEnding +line2[i];
+  T.Cell[high(line1),0].Text := LineEnding + '(' + IntToStr(FConf) + '% ' + sConfIntervalAbbr + ')';
   // table contents
   for i := 1 to FStrata do
     outputStratumResults(i, i);
