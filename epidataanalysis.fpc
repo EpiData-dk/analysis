@@ -34,6 +34,7 @@
 -Fu./src/dialogs/stat_dialogs/means
 -Fu./src/dialogs/stat_dialogs/pareto
 -Fu./src/dialogs/stat_dialogs/scatter
+-Fu./src/dialogs/stat_dialogs/regress
 -Fu./src/dialogs/stat_dialogs/survival
 -Fu./src/dialogs/stat_dialogs/tables
 -Fu./src/editor
@@ -63,3 +64,11 @@
 -Fu./src/statistics
 -Fu./src/statusbar
 -Fu./src/utils
+-Fu./src/LMath
+-Fu./src/LMath/lmGenMath
+-Fu./src/LMath/lmLinearAlgebra
+-Fu./src/LMath/lmMathStat
+-Fu./src/LMath/lmMathUtil
+-Fu./src/LMath/lmOptimum
+-Fu./src/LMath/lmRandoms
+-Fu./src/LMath/lmRegression
