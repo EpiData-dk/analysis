@@ -155,7 +155,7 @@ begin
   // get residuals
   DimVector(FResidual,FObs - 1);
   VecSubtr(FFitted, FDepV, FResidual);
-  RegTest(FDepV, FFitted, 0, FObs-1, InV, 0, FParamCt, FRegFit);
+  RegTest(FDepV, FFitted, 0, FObs-1, InV, 0, FDegree, FRegFit);
   FFp := 1 - FSnedecor(FRegFit.Nu1, FRegFit.Nu2, FRegFit.F);
 
   for i:= 0 to FDegree do begin
