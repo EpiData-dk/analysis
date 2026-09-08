@@ -43,4 +43,20 @@ Collection of Freepascal / Lazarus components and applications by Luiz Américo
 
 * Qt5 framework - LGPL 3.0 (currently Linux versions only)
 
-Qt is a cross-platform application development framework for desktop, embedded and mobile.
+Qt is a C++ toolkit for cross-platform application development.
+
+Qt provides single-source portability across all major desktop operating systems. It is also available for embedded Linux and other embedded and mobile operating systems.
+
+Qt is available under multiple licensing options designed to accommodate the needs of our various users.
+
+Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of GNU (L)GPL.
+
+Qt licensed under GNU (L)GPL is appropriate for the development of Qt applications provided you can comply with the terms and conditions of the respective licenses.
+
+See qt.io/licensing for an overview of Qt licensing.
+
+Copyright (C) The Qt Company Ltd. and other contributors.
+
+Qt and the Qt logo are trademarks of The Qt Company Ltd.
+
+Qt is The Qt Company Ltd. product developed as an open source project. See qt.io for more information.
