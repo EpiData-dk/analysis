@@ -1936,12 +1936,7 @@ begin
   FOptions.Insert(ANA_SO_INCLUDE_DELETED, TSetOption.Create('OFF', rtBoolean));
 
   FOptions.Insert(ANA_SO_TUTORIAL_FOLDER,
-    TFolderOption.Create({$IFDEF DARWIN}
-                        ResolveDots(ProgramDirectory + '../../../docs')
-                      {$ELSE}
-                        ProgramDirectory + 'docs'
-                      {$ENDIF},
-                      rtString));
+    TFolderOption.Create(ProgramDirectory + 'docs',rtString));
   // STATISTICS
   SOpt := TSetOption.Create('95', rtInteger);
   SOpt.LegalValues.Add('90');

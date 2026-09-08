@@ -24,6 +24,11 @@ type
       var Special: boolean; var FG, BG: TColor);
     function GetModified: boolean;
     procedure NoneExecuteAction(Sender: TObject);
+    procedure RunAllExecuteAction(Sender: TObject);
+    procedure RunSelectedExecuteAction(Sender: TObject);
+    procedure RunCopyExecuteAction(Sender: TObject);
+    procedure RunCutExecuteAction(Sender: TObject);
+    procedure RunPasteExecuteAction(Sender: TObject);
     procedure SetFileName(AValue: UTF8String);
     procedure UpdateCaption;
   private
@@ -483,6 +488,32 @@ begin
   ShowMessage('Action not implemented yet');
 end;
 
+procedure TEditorPage.RunAllExecuteAction(Sender: TObject);
+begin
+  PerformRunAll();
+end;
+
+procedure TEditorPage.RunSelectedExecuteAction(Sender: TObject);
+begin
+  PerformRunSelected();
+end;
+
+procedure TEditorPage.RunCopyExecuteAction(Sender: TObject);
+begin
+  PerformCopy();
+end;
+
+procedure TEditorPage.RunCutExecuteAction(Sender: TObject);
+begin
+  PerformCut();
+end;
+
+procedure TEditorPage.RunPasteExecuteAction(Sender: TObject);
+begin
+  PerformPaste();
+end;
+
+
 procedure TEditorPage.RunAsync(Data: PtrInt);
 var
   Command: TSynEditorCommand;
@@ -557,6 +588,8 @@ end;
 procedure TEditorPage.BeforeStatementHandler(Statement: TCustomStatement);
 var
   Idx: Integer;
+  S: UTF8String;
+  CIdx: Integer;
 begin
   if (not FExecuting) then exit;
   if Assigned(Statement.FindCustomData(EDITOR_COMMAND_OUTPUT)) then exit;
@@ -566,7 +599,16 @@ begin
 
   Idx := Statement.LineNo - 1;
   if (Idx >= 0) then
-    FOutputCreator.DoCommand('.' + OutputCreatorNormalizeText(FExecutingLines[Idx]));
+    // parse out the actual command being run
+    // no output for begin; or end;
+    begin
+      S := OutputCreatorNormalizeText(copy(FExecutingLines[Idx],Statement.ColNo,1000));
+      CIdx := pos(';',S);
+      if (CIdx > 0)  then
+        S := copy(S,0,CIdx);
+      if (AnsiCompareText(S,'begin;')<>0) then
+        FOutputCreator.DoCommand('.' + S);
+    end;
 end;
 
 procedure TEditorPage.FontChangeEvent(Sender: TObject);
@@ -632,12 +674,12 @@ begin
   ModifyShortCuts;
 
   LPopupMenu := TPopupMenu.Create(FEditor);
-  LPopupMenu.Items.Add(CreateActionAndMenuItem('Copy', @NoneExecuteAction, 0));
-  LPopupMenu.Items.Add(CreateActionAndMenuItem('Cut', @NoneExecuteAction, 0));
-  LPopupMenu.Items.Add(CreateActionAndMenuItem('Paste', @NoneExecuteAction, 0));
+  LPopupMenu.Items.Add(CreateActionAndMenuItem('Copy', @RunCopyExecuteAction, 0));
+  LPopupMenu.Items.Add(CreateActionAndMenuItem('Cut', @RunCutExecuteAction, 0));
+  LPopupMenu.Items.Add(CreateActionAndMenuItem('Paste', @RunPasteExecuteAction, 0));
   LPopupMenu.Items.Add(CreateDivider());
-  LPopupMenu.Items.Add(CreateActionAndMenuItem('Run Selected', @NoneExecuteAction, 0));
-  LPopupMenu.Items.Add(CreateActionAndMenuItem('Run All', @NoneExecuteAction, 0));
+  LPopupMenu.Items.Add(CreateActionAndMenuItem('Run Selected', @RunSelectedExecuteAction, 0));
+  LPopupMenu.Items.Add(CreateActionAndMenuItem('Run All', @RunAllExecuteAction, 0)); //@NoneExecuteAction, 0));
 
   FEditor.PopupMenu := LPopupMenu;
 

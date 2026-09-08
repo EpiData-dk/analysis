@@ -2357,6 +2357,7 @@ begin
   Result.Insert('cum', [rtUndefined]);
   Result.Insert('pr',  [rtUndefined]);
   Result.Insert('ci',  [rtUndefined]);
+  Result.Insert('w',   AllResultDataTypes, [evtField], [evfInternal, evfAsObject]);
   Result.Insert('q',   [rtUndefined]);
   AddDecimalOptions(Result);
 end;

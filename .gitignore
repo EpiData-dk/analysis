@@ -14,5 +14,4 @@ src/grammar/*.log
 ppas.sh
 src/grammar/buildgrammer.sh
 validator
-.DS_Store
 help/commands.html

@@ -90,34 +90,46 @@ procedure TSystemCmd.DoLS(ST: TCustomStringCommand);
 var
   FS: TFileSearcher;
   S: UTF8String;
+  P: UTF8String;
   T: TOutputTable;
   i: Integer;
   PRec: PSearchRec;
 begin
   S := '';
+  P := '';
 
   if Assigned(ST.StringExpr) then
     S := ExpandFileNameUTF8(ST.StringExpr.AsString);  //permits use of ~ for home directory on MacOS
-//    S := ST.StringExpr.AsString;
 
   if (S = '') then
     S := GetCurrentDirUTF8;
 
-  if (not DirectoryExistsUTF8(S)) then
-    begin
-      FOutputCreator.DoError('"' + S + '"' + ' does not exist');
-      ST.ExecResult := csrFailed;
-      Exit;
-    end;
+  FS := TFileSearcher.Create;
+  FS.OnFileFound := @LSEntryFound;
 
+  // are we searching a directory?
+  if (DirectoryExistsUTF8(S)) then
+    FS.OnDirectoryFound := @LSEntryFound
+  else
+  // looks like a directory name, file name or wildcard was specified
+  // so don't include directories
+    begin
+      P := ExtractFileName(S);
+      S := ExtractFilePath(S);
+    end;
   FLSList := TStringList.Create;
   FLSList.Sorted := true;
 
-  FS := TFileSearcher.Create;
-  FS.OnDirectoryFound := @LSEntryFound;
-  FS.OnFileFound      := @LSEntryFound;
-  FS.Search(S, '', false);
+  FS.Search(S, P, false);
   FS.Free;
+
+  if (FLSList.Count = 0) then
+    begin
+      FOutputCreator.DoError('"' + S + P + '"' + ' does not exist');
+      ST.ExecResult := csrFailed;
+      FLSList.Free;
+      Exit;
+    end;
 
   T := FOutputCreator.AddTable;
   T.RowCount := FLSList.Count + 1;

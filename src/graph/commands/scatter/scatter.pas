@@ -63,6 +63,7 @@ var
   sOffset: array of Integer;
   msg, sTitle: UTF8String;
 begin
+  Command.ExecResult := csrFailed;
   sColors := ChartColorsFromOptions(Command.Options, FExecutor.SetOptions, msg);
   if (msg <> '') then
   begin
@@ -192,13 +193,16 @@ begin
       .SetXAxisTitle(XVar.GetVariableLabel(VariableLabelType))
       .SetYAxisTitle(YVar.GetVariableLabel(VariableLabelType));
 
-    ChartConfiguration.GetAxesConfiguration()
-      .GetXAxisConfiguration()
-      .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
+  ChartConfiguration.GetAxesConfiguration()
+    .GetXAxisConfiguration()
+    .SetShowAxisMarksAsDates(XVar.FieldType in DateFieldTypes);
 
-    ChartConfiguration.GetAxesConfiguration()
-      .GetYAxisConfiguration()
-      .SetShowAxisMarksAsDates(YVar.FieldType in DateFieldTypes);
+  ChartConfiguration.GetAxesConfiguration()
+    .GetYAxisConfiguration()
+    .SetShowAxisMarksAsDates(YVar.FieldType in DateFieldTypes);
+
+  Result.AddChart(Chart, ChartConfiguration);
+  Command.ExecResult := csrSuccess;
 
     with Chart do
       begin
