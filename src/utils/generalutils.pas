@@ -13,6 +13,7 @@ function PercentileIndexNIST(const Size: integer; const Percentile: Double; out 
 function FormatP(Val: EpiFloat; ShowP: Boolean): UTF8String;
 function FormatCI(Val1: EpiFloat; Val2: EpiFLoat; Pct: Integer; Options:TOptionList): UTF8String;
 function FormatRatio(Val: EpiFloat; Options: TOptionList): UTF8String;
+function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;
 
 implementation
 
@@ -112,6 +113,14 @@ function FormatP(Val: EpiFloat; ShowP: Boolean): UTF8String;
 var
   prefix: UTF8string = '';
 begin
+  // special case of zero ([p=]0)
+  if (ShowP) then prefix := 'p=';
+  if (Val = 0) then
+    begin
+      Result := prefix + '0';
+      exit;
+    end;
+  // special cases of low p ([p]< ...)
   if (ShowP) then prefix := 'p';
   if (Val < 0.0001) then
     begin
@@ -123,6 +132,7 @@ begin
       Result := prefix + '<0.001';
       exit;
     end;
+  // p >= 0.001, show actual value
   if (ShowP) then prefix := 'p=';
   if (Val = TEpiFloatField.DefaultMissing) then
     Result := prefix + '-'
@@ -145,6 +155,15 @@ begin
   else
     Result := Format('%.' + IntToStr(DecimalFromOption(Options, 2)) + 'f', [Val]);
 end;
+
+function StatFloatDisplay(const fmt: String; const val: EpiFloat):string;
+begin
+  if (val = TEpiFloatField.DefaultMissing) then
+    Result := '.'
+  else
+    Result := Format(fmt, [val]);
+end;
+
 
 end.
 

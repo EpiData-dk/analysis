@@ -1192,6 +1192,17 @@ type
     constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
   end;
 
+ { TRegressCommand }
+
+  TRegressCommand = class(TCustomVariableCommand)
+  protected
+    function GetAcceptedOptions: TStatementOptionsMap; override;
+    function GetAcceptedVariableCount: TBoundArray; override;
+    function GetAcceptedVariableTypesAndFlags(Index: Integer): TTypesAndFlagsRec; override;
+  public
+    constructor Create(AVariableList: TVariableList; AOptionList: TOptionList);
+  end;
+
   { TAggregateCommand }
 
   TAggregateCommand = class(TCustomVariableCommand)
@@ -2331,6 +2342,44 @@ begin
   inherited Create(AVariableList, AOptionList, stMeans);
 end;
 
+ { TRegressCommand }
+
+function TRegressCommand.GetAcceptedOptions: TStatementOptionsMap;
+begin
+  Result := inherited GetAcceptedOptions;
+  Result.Insert('nocon', ['noc'], [rtUndefined]); // no constant term
+  Result.Insert('anova',  [rtUndefined]); // show anova
+  Result.Insert('poly',   [rtInteger]);   // polynomial model !poly:=n
+  Result.Insert('logit',  [rtUndefined]); // univariate logistic model
+  Result.Insert('fit',  [rtObject], [evtField], [evfInternal, evfAsObject]); // variable for estimates
+  Result.Insert('summary', ['sum'], [rtUndefined]); // save summary of deviance
+  Result.Insert('debug', [rtUndefined]); // display debug information
+  Result.Insert('q',  [rtUndefined]);
+  AddDecimalOptions(Result);
+end;
+
+function TRegressCommand.GetAcceptedVariableCount: TBoundArray;
+begin
+  Result := inherited GetAcceptedVariableCount;
+  if (HasOption('poly')) then
+    Result[0] := 2
+  else
+    Result[0] := -2;
+end;
+
+function TRegressCommand.GetAcceptedVariableTypesAndFlags(Index: Integer
+  ): TTypesAndFlagsRec;
+begin
+  result := inherited GetAcceptedVariableTypesAndFlags(Index);
+  result.ResultTypes := [rtFloat, rtInteger];
+end;
+
+constructor TRegressCommand.Create(AVariableList: TVariableList;
+  AOptionList: TOptionList);
+begin
+  inherited Create(AVariableList, AOptionList, stRegress);
+end;
+
 { TBrowseCommand }
 
 function TBrowseCommand.GetAcceptedOptions: TStatementOptionsMap;
@@ -2636,6 +2685,7 @@ begin
   Result.Insert('nou', [rtUndefined]);     // no unstratified table
   Result.Insert('nos', [rtUndefined]);     // no stratified tables
   Result.Insert('ns',  [rtUndefined]);     // no summary output
+  Result.Insert('ng', [rtUndefined]);      // no graph output
   Result.Insert('t',  ['test'], [rtUndefined]);     // log-rank test and hazard ratio (valid with !by)
   Result.Insert('cb',  [rtUndefined]);     // put KM plot points into clipboard
   Result.Insert('cin',['cinone'], [rtUndefined]);     // no confidence intervals on plots
@@ -4129,6 +4179,7 @@ class function TCustomVariableCommand.CreateCustomVariableCommand(
 begin
   case ST of
     stMeans:     Result := TMeansCommand.Create(AVariableList, AOptionList);
+    stRegress:   Result := TRegressCommand.Create(AVariableList, AOptionList);
     stBrowse:    Result := TBrowseCommand.Create(AVariableList, AOptionList);
     stFreq:      Result := TFreqCommand.Create(AVariableList, AOptionList);
     stSort:      Result := TSortCommand.Create(AVariableList, AOptionList);
@@ -7243,6 +7294,7 @@ begin
     'fre': Result := stFreq;
     'ls':  Result := stLS;
     'mea': Result := stMeans;
+    'reg': Result := stRegress;
     'mer': Result := stMerge;
     'qui': Result := stQuit;
     'rea': Result := stRead;

@@ -48,6 +48,7 @@ opReport      = 'report'
 opTables      = 'tab'('les')?
 opCTable      = 'cta'('ble')?
 opMeans       = 'mea'('ns')?
+opRegress     = 'reg'('ress)?
 opUse         = 'use'
 opBrowse      = 'bro'('wse')?
 opFreq        = 'fre'('q')?
@@ -140,6 +141,7 @@ opSet         = 'set'
 <Report Command>                           ::= opReport <Variable> <Optional Indexed Variable List> <Option List>
 
 <Variable Command>                         ::= opMeans
+                                           |   opRegress
                                            |   opBrowse
                                            |   opFreq
                                            |   opSort
